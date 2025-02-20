@@ -1298,7 +1298,7 @@ export const buildCompleteUsers = async (context, clients) => {
   for (let userIndex = 0; userIndex < clients.length; userIndex += 1) {
     const client = clients[userIndex];
     const user = users.get(client.internal_id);
-    const groups = user.groupIds.map((groupId) => resolvedObject[groupId])
+    const groups = (user?.groupIds ?? []).map((groupId) => resolvedObject[groupId])
       .filter((e) => isNotEmptyField(e));
     const roles = R.uniq(groups.map((group) => groupsRoles.get(group.internal_id)).flat())
       .map((roleId) => resolvedObject[roleId]).filter((e) => isNotEmptyField(e));
@@ -1314,7 +1314,7 @@ export const buildCompleteUsers = async (context, clients) => {
       capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
     }
     const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
-    const organizations = (user.organizationIds ?? []).map((organizationId) => resolvedObject[organizationId]);
+    const organizations = (user?.organizationIds ?? []).map((organizationId) => resolvedObject[organizationId]);
     const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
     const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
     const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
