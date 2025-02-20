@@ -7,7 +7,8 @@ import {
   handleChangeOperatorFiltersUtil,
   handleChangeRepresentationFilterUtil,
   handleRemoveFilterUtil,
-  handleRemoveRepresentationFilterUtil, handleReplaceFilterValuesUtil,
+  handleRemoveRepresentationFilterUtil,
+  handleReplaceFilterValuesUtil,
   handleSwitchLocalModeUtil,
 } from './filtersManageStateUtil';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
