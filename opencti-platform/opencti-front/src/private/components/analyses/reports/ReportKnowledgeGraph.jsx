@@ -187,7 +187,7 @@ class ReportKnowledgeGraphComponent extends Component {
         }
       }
       this.initialized = true;
-      // this.zoomed += 1;
+      this.zoomed += 1;
       const currentCanvas = document.getElementsByTagName('canvas')[0];
       if (!this.canvas) {
         this.canvas = currentCanvas;
