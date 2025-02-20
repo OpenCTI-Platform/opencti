@@ -7,7 +7,7 @@ interface ImportFilesUploadProgressProps {
   totalCount: number;
   uploadedFiles: { name: string; status?: 'success' | 'error' }[];
   uploadStatus: 'uploading' | 'success' | undefined;
-  BulkResult: React.FC<{ variablesToString: (v: any) => string }>;
+  BulkResult: React.FC<{ variablesToString: (variables: { file: File }) => string }>;
 }
 
 const ImportFilesUploadProgress: React.FC<ImportFilesUploadProgressProps> = ({
@@ -50,7 +50,7 @@ const ImportFilesUploadProgress: React.FC<ImportFilesUploadProgressProps> = ({
           </ListItem>
         ))}
       </List>
-      {uploadStatus === 'success' && <BulkResult variablesToString={(v) => v} />}
+      {uploadStatus === 'success' && <BulkResult variablesToString={(v) => v.file.name} />}
     </div>
   );
 };

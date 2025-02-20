@@ -97,7 +97,7 @@ function useBulkCommit<M extends MutationParameters>({
 
   const BulkResult = ({ variablesToString }: BulkResultProps<M>) => (
     <>
-      {currentCount === count && (
+      {currentCount === count && currentCount - inError.length > 0 && (
         <Alert variant="outlined" sx={{ marginTop: 2 }}>
           <Typography>
             {currentCount - inError.length} {successLabel[type]}
