@@ -1,7 +1,5 @@
-import { alpha } from '@mui/material/styles';
-import { CloudUploadOutlined } from '@mui/icons-material';
-import { Box, Button, TextField, Typography } from '@mui/material';
 import React from 'react';
+import { Box, Button, TextField } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Field, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';

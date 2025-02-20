@@ -5,7 +5,7 @@ import { AssociatedEntityOption } from '@components/common/form/AssociatedEntity
 import { Option } from '@components/common/form/ReferenceField';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
-import { graphql } from 'react-relay';
+import { graphql, UseMutationConfig } from 'react-relay';
 import { ImportFilesDialogGlobalMutation } from '@components/common/files/import_files/__generated__/ImportFilesDialogGlobalMutation.graphql';
 import { ImportFilesDialogEntityMutation } from '@components/common/files/import_files/__generated__/ImportFilesDialogEntityMutation.graphql';
 import { Link } from 'react-router-dom';
@@ -51,6 +51,7 @@ const importFilesDialogEntityMutation = graphql`
 interface ImportFilesDialogProps {
   open: boolean;
   handleClose: () => void;
+  entityId?: string;
 }
 
 type OptionsFormValues = {
@@ -58,7 +59,7 @@ type OptionsFormValues = {
   associatedEntity: AssociatedEntityOption;
 };
 
-const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
+const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
 
   const [activeStep, setActiveStep] = useState(0);
@@ -84,24 +85,31 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
     bulkCurrentCount,
     BulkResult,
   } = useBulkCommit<ImportFilesDialogGlobalMutation | ImportFilesDialogEntityMutation>({
-    commit: commitGlobal,
+    commit: (args) => (
+      entityId
+        ? commitEntity(args as UseMutationConfig<ImportFilesDialogEntityMutation>)
+        : commitGlobal(args as UseMutationConfig<ImportFilesDialogGlobalMutation>)
+    ),
     type: 'files',
   });
 
   const onSubmit: FormikConfig<OptionsFormValues>['onSubmit'] = (values, { setErrors }) => {
     setUploadStatus('uploading');
-    const entityId = values.associatedEntity?.value || undefined;
+    const selectedEntityId = entityId && (values.associatedEntity?.value || undefined);
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
 
-    const commit = entityId ? commitEntity : commitGlobal;
-
-    const variables = files.map((file) => (entityId
-      ? { id: entityId, file, fileMarkings: fileMarkingIds }
+    const variables = files.map((file) => (selectedEntityId
+      ? { id: selectedEntityId, file, fileMarkings: fileMarkingIds }
       : { file, fileMarkings: fileMarkingIds }));
+
     setUploadedFiles(files.map(({ name }) => ({ name })));
 
     bulkCommit({
-      commit,
+      commit: (args) => (
+        selectedEntityId
+          ? commitEntity(args as UseMutationConfig<ImportFilesDialogEntityMutation>)
+          : commitGlobal(args as UseMutationConfig<ImportFilesDialogGlobalMutation>)
+      ),
       variables,
       onStepError: (error, { file: { name } }) => {
         handleErrorInForm(error, setErrors);
@@ -156,7 +164,7 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
             <ImportFilesStepper activeStep={activeStep} setActiveStep={setActiveStep} />
             <Box sx={{ paddingBlock: 10 }}>
               {activeStep === 0 && <ImportFilesUploader files={files} onChange={(newFiles) => setFiles(newFiles)}/>}
-              {activeStep === 1 && <ImportFilesOptions optionsFormikContext={optionsContext} />}
+              {activeStep === 1 && <ImportFilesOptions optionsFormikContext={optionsContext} entityId={entityId} />}
             </Box>
           </>
         ) : (

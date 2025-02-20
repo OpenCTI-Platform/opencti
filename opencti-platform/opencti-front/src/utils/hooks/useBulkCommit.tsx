@@ -24,11 +24,11 @@ interface BulkResultProps<M extends MutationParameters> {
   variablesToString: (variables: VariablesOf<M>) => string
 }
 
-function useBulkCommit<T extends MutationParameters>({
+function useBulkCommit<M extends MutationParameters>({
   commit: defaultCommit, // Default commit function
   relayUpdater,
   type = 'entities',
-}: UseBulkCommitArgs<T>) {
+}: UseBulkCommitArgs<M>) {
   const { t_i18n } = useFormatter();
 
   const [count, setCount] = useState(0);
@@ -50,13 +50,13 @@ function useBulkCommit<T extends MutationParameters>({
   }, [count, currentCount]);
 
   // Accepts an optional `commit` function override
-  const bulkCommit = <T extends M>({
+  const bulkCommit = ({
     commit = defaultCommit, // Fallback to default commit
     variables,
     onStepCompleted,
     onStepError,
     onCompleted,
-  }: UseBulkCommit_commits<T> & { commit?: (args: UseMutationConfig<T>) => void }) => {
+  }: UseBulkCommit_commits<M> & { commit?: (args: UseMutationConfig<M>) => void }) => {
     if (!commit) {
       throw new Error('bulkCommit: No commit function provided.');
     }
@@ -68,11 +68,11 @@ function useBulkCommit<T extends MutationParameters>({
 
     variables.forEach((variable) => {
       commit({
-        variables: variable as VariablesOf<T>, // Explicitly cast variables
+        variables: variable as VariablesOf<M>, // Explicitly cast variables
         updater: relayUpdater,
         onError: (error) => {
           setCurrentCount((c) => c + 1);
-          setInError((err) => [...err, [variable as VariablesOf<T>, error]]);
+          setInError((err) => [...err, [variable as VariablesOf<M>, error]]);
           onStepError?.(error, variable);
         },
         onCompleted: () => {
@@ -95,7 +95,7 @@ function useBulkCommit<T extends MutationParameters>({
     files: t_i18n('files not imported'),
   };
 
-  const BulkResult = ({ variablesToString }: BulkResultProps<T>) => (
+  const BulkResult = ({ variablesToString }: BulkResultProps<M>) => (
     <>
       {currentCount === count && (
         <Alert variant="outlined" sx={{ marginTop: 2 }}>
