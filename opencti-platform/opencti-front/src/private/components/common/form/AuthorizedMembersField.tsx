@@ -285,7 +285,7 @@ const AuthorizedMembersField = ({
                 type="checkbox"
                 name="applyAccesses"
                 label={t_i18n('Activate access restriction')}
-                disabled={!canDeactivate || draftContext}
+                disabled={draftContext}
                 onChange={(_: string, val: string) => {
                   changeApplyAccesses(val === 'true', resetForm, setField);
                 }}
