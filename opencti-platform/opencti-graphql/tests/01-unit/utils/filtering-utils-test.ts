@@ -1,8 +1,68 @@
-import { describe, it, expect } from 'vitest';
-import { addFilter, convertRelationRefsFilterKeys, replaceFilterKey } from '../../../src/utils/filtering/filtering-utils';
+import { describe, expect, it } from 'vitest';
+import { addFilter, convertRelationRefsFilterKeys, checkFilterGroupSyntax, replaceFilterKey } from '../../../src/utils/filtering/filtering-utils';
 import type { FilterGroup } from '../../../src/generated/graphql';
 
 describe('Filtering utils', () => {
+  it('should check a filter syntax', async () => {
+    const filterGroup1 = {
+      mode: 'or',
+      filters: [
+        { key: [], values: ['Report'], operator: 'eq', mode: 'or' },
+        { key: ['publication_date'], values: ['YYY'] },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(checkFilterGroupSyntax(filterGroup1)).toThrowError('A filter key must be defined for every filter');
+    const filterGroup2 = {
+      mode: 'or',
+      filters: [
+        { key: ['publication_date'], values: ['YYY'] },
+      ],
+      filterGroups: [{
+        mode: 'or',
+        filters: [
+          { key: [''], values: ['marking1'], operator: 'eq', mode: 'or' },
+          { key: ['objectLabel'], values: ['label1'], operator: 'eq', mode: 'or' },
+        ],
+        filterGroups: [],
+      }],
+    } as FilterGroup;
+    expect(checkFilterGroupSyntax(filterGroup2)).toThrowError('A filter key must be defined for every filter');
+  });
+  it('should check a filter syntax for filter with "within" operator', async () => {
+    const filterGroup1 = {
+      mode: 'or',
+      filters: [
+        { key: ['published'], values: ['now'], operator: 'within' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(checkFilterGroupSyntax(filterGroup1)).toThrowError('A filter with "within" operator must have 2 values');
+    const filterGroup2 = {
+      mode: 'or',
+      filters: [
+        { key: ['published'], values: ['now', ''], operator: 'within' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(checkFilterGroupSyntax(filterGroup2)).toThrowError('A filter with "within" operator must have 2 values');
+    const filterGroup3 = {
+      mode: 'or',
+      filters: [
+        { key: ['published'], values: ['now-1y', 'now3'], operator: 'within' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(checkFilterGroupSyntax(filterGroup3)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
+    const filterGroup4 = {
+      mode: 'or',
+      filters: [
+        { key: ['published'], values: ['now-1y', 'now'], operator: 'within' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(checkFilterGroupSyntax(filterGroup4)).toBeUndefined();
+  });
   it('should add a filter to a filter group and separate them with the AND mode', async () => {
     const filterGroup = {
       mode: 'or',
