@@ -1,7 +1,6 @@
 import session from 'express-session';
 import nconf from 'nconf';
 import * as R from 'ramda';
-import { uniq } from 'ramda';
 import conf, { booleanConf, OPENCTI_SESSION } from '../config/conf';
 import SessionStoreMemory from './sessionStore-memory';
 import RedisStore from './sessionStore-redis';
