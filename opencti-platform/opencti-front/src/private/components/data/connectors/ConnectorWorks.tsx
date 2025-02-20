@@ -135,16 +135,9 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
 
   return (
     <>
-      {inProgress && (
       <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('In progress works')}{` (${works.length})`}
+        {inProgress ? t_i18n('In progress works') : t_i18n('Completed works')}{` (${works.length})`}
       </Typography>
-      )}
-      {isCompleted && (
-        <Typography variant="h4" gutterBottom={true}>
-          {t_i18n('Completed works')}{` (${works.length})`}
-        </Typography>
-      )}
       <div>
         {works.length === 0 && (
         <Paper
