@@ -302,7 +302,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     return (
       <div>
         <div className={classes.parameters}>
-          <div style={{ float: 'left', marginRight: 20, marginTop: -10 }}>
+          <div style={{ float: 'left', marginRight: 20 }}>
             <SearchInput
               variant="small"
               onSubmit={this.handleSearch.bind(this)}
@@ -310,7 +310,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
             />
           </div>
           <div className={classes.views}>
-            <div style={{ float: 'right', marginTop: -20 }}>
+            <div style={{ float: 'right', marginTop: -10 }}>
               <ToggleButtonGroup
                 size="small"
                 color="secondary"
