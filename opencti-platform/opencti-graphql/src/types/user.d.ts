@@ -39,7 +39,6 @@ interface AuthUser extends BasicStoreIdentifier {
   allowed_marking: Array<StoreMarkingDefinition>
   default_marking?: Array<{ entity_type: string, values: Array<StoreMarkingDefinition> }>
   max_shareable_marking: Array<StoreMarkingDefinition>
-  all_marking: Array<StoreMarkingDefinition>
   api_token: string
   account_status: string
   effective_confidence_level: ConfidenceLevel | null
@@ -58,4 +57,6 @@ interface AuthContext {
   draft_context?: string | undefined
   eventId?: string | undefined
   user_inside_platform_organization: boolean
+  user_otp_validated?: boolean
+  user_with_session?: boolean
 }

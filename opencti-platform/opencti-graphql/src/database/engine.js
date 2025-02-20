@@ -469,9 +469,10 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       // If user have no marking, he can only access to data with no markings.
       must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING) } });
     } else {
+      const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
       // Markings should be grouped by types for restriction
       const userGroupedMarkings = R.groupBy((m) => m.definition_type, user.allowed_marking);
-      const allGroupedMarkings = R.groupBy((m) => m.definition_type, user.all_marking);
+      const allGroupedMarkings = R.groupBy((m) => m.definition_type, allMarkings);
       const markingGroups = Object.keys(allGroupedMarkings);
       const mustNotHaveOneOf = [];
       for (let index = 0; index < markingGroups.length; index += 1) {

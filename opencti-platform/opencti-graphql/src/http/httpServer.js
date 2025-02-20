@@ -21,6 +21,7 @@ import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ForbiddenAccess } from '../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { isNotEmptyField } from '../database/utils';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -136,7 +137,7 @@ const createHttpServer = async () => {
         executeContext.req = req;
         executeContext.res = res;
         const settings = await getEntityFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-        executeContext.otp_mandatory = settings.otp_mandatory;
+        executeContext.otp_mandatory = settings.otp_mandatory ?? false;
         executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
         if (isFeatureEnabled('DRAFT_WORKSPACE')) {
           executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
@@ -151,11 +152,17 @@ const createHttpServer = async () => {
               executeContext.draft_context = user.draft_context;
             }
             executeContext.user = userWithOrigin(req, user);
+            executeContext.user_otp_validated = true;
+            executeContext.user_with_session = isNotEmptyField(req?.session?.user);
+            if (executeContext.user_with_session) {
+              executeContext.user_otp_validated = req?.session?.user.otp_validated ?? false;
+            }
             if (isBypassUser(executeContext.user)) {
               executeContext.user_inside_platform_organization = true;
             } else {
               const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
-              executeContext.user_inside_platform_organization = settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
+              executeContext.user_inside_platform_organization = settings.platform_organization
+                ? userOrganizationIds.includes(settings.platform_organization) : true;
             }
           }
         } catch (error) {
