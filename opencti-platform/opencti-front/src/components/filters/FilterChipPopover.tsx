@@ -318,7 +318,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   };
   const getSpecificFilter = (fDefinition?: FilterDefinition): ReactNode => {
     if (fDefinition?.type === 'date') {
-      console.log('filter', filter);
       if (filterOperator === 'within') {
         const values = filterValues.length > 0 ? filterValues : DEFAULT_WITHIN_FILTER_VALUES;
         return (

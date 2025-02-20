@@ -30,19 +30,22 @@ export const handleChangeOperatorFiltersUtil = ({ filters, id, operator }: Filte
   operator: string
 }>): FilterGroup => {
   return updateFilters(filters, (f) => {
-    let values = [...f.values];
-    if (['nil', 'not_nil'].includes(operator)) {
-      values = [];
-    } else if (operator === 'within' && f.operator !== 'within') {
-      values = DEFAULT_WITHIN_FILTER_VALUES;
-    }
-    return (f.id === id
-      ? {
+    if (f.id === id) {
+      let values = [...f.values];
+      if (['nil', 'not_nil'].includes(operator)) {
+        values = [];
+      } else if (operator === 'within' && f.operator !== 'within') {
+        values = DEFAULT_WITHIN_FILTER_VALUES;
+      } else if (f.operator === 'within' && operator !== 'within') {
+        values = [];
+      }
+      return {
         ...f,
         operator,
         values,
-      }
-      : f);
+      };
+    }
+    return f;
   });
 };
 
