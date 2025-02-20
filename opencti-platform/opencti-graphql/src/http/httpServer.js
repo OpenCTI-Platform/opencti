@@ -153,9 +153,9 @@ const createHttpServer = async () => {
             }
             executeContext.user = userWithOrigin(req, user);
             executeContext.user_otp_validated = true;
-            executeContext.user_with_session = isNotEmptyField(req?.session?.user);
+            executeContext.user_with_session = isNotEmptyField(req.session?.user);
             if (executeContext.user_with_session) {
-              executeContext.user_otp_validated = req?.session?.user.otp_validated ?? false;
+              executeContext.user_otp_validated = req.session?.user.otp_validated ?? false;
             }
             if (isBypassUser(executeContext.user)) {
               executeContext.user_inside_platform_organization = true;
