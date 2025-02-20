@@ -1305,7 +1305,7 @@ export const buildCompleteUsers = async (context, clients) => {
     const markings = R.uniq(groups.map((group) => groupsMarkings.get(group.internal_id)).flat())
       .map((markingId) => markingsMap.get(markingId)).filter((e) => isNotEmptyField(e));
     const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
-    const capabilities = roles.map((role) => rolesCapabilities.get(role.internal_id)).flat()
+    const capabilities = R.uniq(roles.map((role) => rolesCapabilities.get(role.internal_id)).flat())
       .map((capabilityId) => resolvedObject[capabilityId]).filter((e) => isNotEmptyField(e));
     // Force push the bypass for default admin
     const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
