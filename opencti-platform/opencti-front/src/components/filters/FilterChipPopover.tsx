@@ -3,13 +3,16 @@ import Popover from '@mui/material/Popover';
 import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
+import Alert from '@mui/material/Alert';
 import FilterDate from '@components/common/lists/FilterDate';
-import { Autocomplete, MenuItem, Select } from '@mui/material';
+import { Autocomplete, MenuItem, Select, Typography } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import { addDays, subDays } from 'date-fns';
+import { Link } from 'react-router-dom';
+
 import {
   FilterSearchContext,
   getAvailableOperatorForFilter,
@@ -160,6 +163,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   fintelTemplatesContext,
 }) => {
   const { t_i18n } = useFormatter();
+
   const filter = filters.find((f) => f.id === params.filterId);
   const filterKey = filter?.key ?? '';
   const filterOperator = filter?.operator ?? '';
@@ -464,6 +468,18 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               padding: 8,
             }}
           >
+          <Alert severity={'info'} sx={{ marginBottom: 1 }}>
+            <Typography variant="caption" >
+              {t_i18n('', {
+                id: 'This filter may exclude some results (link)',
+                values: {
+                  link: <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?h=#the-regardingof-filter-key">
+                    {t_i18n('more info')}
+                  </Link>,
+                },
+              })}
+            </Typography>
+          </Alert>
           {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey)}
           <Chip
             style={{
