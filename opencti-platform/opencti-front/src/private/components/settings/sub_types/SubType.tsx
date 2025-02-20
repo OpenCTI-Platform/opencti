@@ -7,6 +7,8 @@ import EntitySettingCustomOverview from '@components/settings/sub_types/entity_s
 import { useTheme } from '@mui/styles';
 import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { useParams } from 'react-router-dom';
+import RequestAccessConfigurationPopover from '@components/settings/sub_types/request_access/RequestAccessConfigurationPopover';
+import RequestAccessStatus from '@components/settings/sub_types/request_access/RequestAccessStatus';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
@@ -21,6 +23,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -31,7 +35,7 @@ const entitySettingSubscription = graphql`
 `;
 
 export const subTypeQuery = graphql`
-  query SubTypeQuery($id: String!) {
+  query SubTypeQuery($id: String!){
     subType(id: $id) {
       id
       label
@@ -43,15 +47,12 @@ export const subTypeQuery = graphql`
         ...EntitySettingSettings_entitySetting
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesGrid_templates
-      }
-      statuses {
-        id
-        order
-        template {
-          name
-          color
+        requestAccessConfiguration{
+            ...RequestAccessStatusFragment_requestAccess
+            ...RequestAccessConfigurationEdition_requestAccess
         }
       }
+      ...ItemStatusTemplate_global
     }
   }
 `;
@@ -63,6 +64,8 @@ interface SubTypeProps {
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
   if (!subType) return <ErrorNotFound/>;
@@ -127,13 +130,36 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 <div style={{ marginTop: 10 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Workflow')}
-                    <SubTypeStatusPopover subTypeId={subType.id} />
+                    <SubTypeStatusPopover subTypeId={subType.id} scope={StatusScopeEnum.GLOBAL} />
                   </Typography>
                 </div>
                 <ItemStatusTemplate
-                  statuses={subType.statuses}
+                  data={subType}
                   disabled={!subType.workflowEnabled}
+                  scope={StatusScopeEnum.GLOBAL}
                 />
+              </>
+            }
+            {subType.settings?.requestAccessConfiguration && isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
+              && <>
+                <div style={{ marginTop: 20 }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Request access workflow')}
+                    <SubTypeStatusPopover subTypeId={subType.id} scope={StatusScopeEnum.REQUEST_ACCESS}/>
+                  </Typography>
+                  <ItemStatusTemplate
+                    data={subType}
+                    disabled={false}
+                    scope={StatusScopeEnum.REQUEST_ACCESS}
+                  />
+                </div>
+                <div style={{ marginTop: 20 }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Request access action configuration')}
+                    <RequestAccessConfigurationPopover data={subType.settings.requestAccessConfiguration}/>
+                    <RequestAccessStatus data={subType.settings.requestAccessConfiguration}/>
+                  </Typography>
+                </div>
               </>
             }
           </Paper>
