@@ -24,10 +24,14 @@ import { export_max_size } from '../../utils/utils';
 const styles = (theme) => ({
   parameters: {
     display: 'flex',
-    alignItems: 'center',
     gap: theme.spacing(1),
     marginBottom: theme.spacing(2),
     flexWrap: 'wrap',
+  },
+  sortFieldContainer: {
+    display: 'flex',
+    gap: theme.spacing(1),
+    alignItems: 'center',
   },
   cardsContainer: {
     margin: '10px 0 0 -15px',
@@ -101,43 +105,45 @@ class ListCards extends Component {
                   }}
                 />
                 )}
-                <InputLabel classes={{ root: classes.sortFieldLabel }}>
-                  {t('Sort by')}
-                </InputLabel>
-                <FormControl>
-                  <Select
-                    name="sort-by"
-                    value={sortBy}
-                    size="small"
-                    variant="outlined"
-                    onChange={this.sortBy.bind(this)}
-                    inputProps={{
-                      name: 'sort-by',
-                      id: 'sort-by',
-                    }}
-                  >
-                    <MenuItem key='_score' value='_score'>
-                      {t('Score')}
-                    </MenuItem>
-                    {toPairs(dataColumns).map((dataColumn) => (
-                      <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
-                        {t(dataColumn[1].label)}
+                <div className={classes.sortFieldContainer}>
+                  <InputLabel classes={{ root: classes.sortFieldLabel }}>
+                    {t('Sort by')}
+                  </InputLabel>
+                  <FormControl>
+                    <Select
+                      name="sort-by"
+                      value={sortBy}
+                      size="small"
+                      variant="outlined"
+                      onChange={this.sortBy.bind(this)}
+                      inputProps={{
+                        name: 'sort-by',
+                        id: 'sort-by',
+                      }}
+                    >
+                      <MenuItem key='_score' value='_score'>
+                        {t('Score')}
                       </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <IconButton
-                  aria-label="Sort by"
-                  onClick={this.reverse.bind(this)}
-                  size="small"
-                >
-                  {orderAsc ? (
-                    <ArrowDownward fontSize="small" />
-                  ) : (
-                    <ArrowUpward fontSize="small" />
-                  )}
-                </IconButton>
-                <div className={classes.filler} />
+                      {toPairs(dataColumns).map((dataColumn) => (
+                        <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
+                          {t(dataColumn[1].label)}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <IconButton
+                    aria-label="Sort by"
+                    onClick={this.reverse.bind(this)}
+                    size="small"
+                  >
+                    {orderAsc ? (
+                      <ArrowDownward fontSize="small"/>
+                    ) : (
+                      <ArrowUpward fontSize="small"/>
+                    )}
+                  </IconButton>
+                </div>
+                <div className={classes.filler}/>
                 <div style={{ display: 'flex' }}>
                   {numberOfElements && (
                   <div style={{ marginRight: '8px', alignSelf: 'center' }}>
@@ -146,67 +152,67 @@ class ListCards extends Component {
                   </div>
                   )}
                   {(typeof handleChangeView === 'function'
-                  || typeof handleToggleExports === 'function') && (
-                  <ToggleButtonGroup
-                    size="small"
-                    color="secondary"
-                    value="cards"
-                    exclusive={true}
-                    onChange={(_, value) => {
-                      if (value && value === 'export') {
-                        handleToggleExports();
-                      } else if (value) {
-                        handleChangeView(value);
-                      }
-                    }}
-                  >
-                    {typeof handleChangeView === 'function' && (
-                      <ToggleButton value="cards" aria-label="cards">
-                        <Tooltip title={t('Cards view')}>
-                          <ViewModuleOutlined fontSize="small" />
-                        </Tooltip>
-                      </ToggleButton>
-                    )}
-                    {typeof handleChangeView === 'function' && (
-                      <ToggleButton value="lines" aria-label="lines">
-                        <Tooltip title={t('Lines view')}>
-                          <ViewListOutlined color="primary" fontSize="small" />
-                        </Tooltip>
-                      </ToggleButton>
-                    )}
-                    {typeof handleToggleExports === 'function'
-                      && !exportDisabled && (
-                        <ToggleButton value="export" aria-label="export">
-                          <Tooltip title={t('Open export panel')}>
-                            <FileDownloadOutlined
-                              color={openExports ? 'secondary' : 'primary'}
-                              fontSize="small"
-                            />
+                    || typeof handleToggleExports === 'function') && (
+                    <ToggleButtonGroup
+                      size="small"
+                      color="secondary"
+                      value="cards"
+                      exclusive={true}
+                      onChange={(_, value) => {
+                        if (value && value === 'export') {
+                          handleToggleExports();
+                        } else if (value) {
+                          handleChangeView(value);
+                        }
+                      }}
+                    >
+                      {typeof handleChangeView === 'function' && (
+                        <ToggleButton value="cards" aria-label="cards">
+                          <Tooltip title={t('Cards view')}>
+                            <ViewModuleOutlined fontSize="small"/>
                           </Tooltip>
                         </ToggleButton>
-                    )}
-                    {typeof handleToggleExports === 'function'
-                      && exportDisabled && (
-                        <Tooltip
-                          title={`${
-                            t(
-                              'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                            ) + export_max_size
-                          })`}
-                        >
-                          <span>
-                            <ToggleButton
-                              size="small"
-                              value="export"
-                              aria-label="export"
-                              disabled={true}
-                            >
-                              <FileDownloadOutlined fontSize="small" />
-                            </ToggleButton>
-                          </span>
-                        </Tooltip>
-                    )}
-                  </ToggleButtonGroup>
+                      )}
+                      {typeof handleChangeView === 'function' && (
+                        <ToggleButton value="lines" aria-label="lines">
+                          <Tooltip title={t('Lines view')}>
+                            <ViewListOutlined color="primary" fontSize="small"/>
+                          </Tooltip>
+                        </ToggleButton>
+                      )}
+                      {typeof handleToggleExports === 'function'
+                        && !exportDisabled && (
+                          <ToggleButton value="export" aria-label="export">
+                            <Tooltip title={t('Open export panel')}>
+                              <FileDownloadOutlined
+                                color={openExports ? 'secondary' : 'primary'}
+                                fontSize="small"
+                              />
+                            </Tooltip>
+                          </ToggleButton>
+                      )}
+                      {typeof handleToggleExports === 'function'
+                        && exportDisabled && (
+                          <Tooltip
+                            title={`${
+                              t(
+                                'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                              ) + export_max_size
+                            })`}
+                          >
+                            <span>
+                              <ToggleButton
+                                size="small"
+                                value="export"
+                                aria-label="export"
+                                disabled={true}
+                              >
+                                <FileDownloadOutlined fontSize="small"/>
+                              </ToggleButton>
+                            </span>
+                          </Tooltip>
+                      )}
+                    </ToggleButtonGroup>
                   )}
                   {/*
                   * Passing in createButton because cannot use hooks here.
@@ -228,14 +234,14 @@ class ListCards extends Component {
                 }}
               />
               {typeof handleToggleExports === 'function' && (
-              <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-                <StixDomainObjectsExports
-                  open={openExports}
-                  handleToggle={handleToggleExports.bind(this)}
-                  paginationOptions={paginationOptions}
-                  exportContext={exportContext}
-                />
-              </Security>
+                <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+                  <StixDomainObjectsExports
+                    open={openExports}
+                    handleToggle={handleToggleExports.bind(this)}
+                    paginationOptions={paginationOptions}
+                    exportContext={exportContext}
+                  />
+                </Security>
               )}
               <div className={classes.cardsContainer}>{children}</div>
             </>
