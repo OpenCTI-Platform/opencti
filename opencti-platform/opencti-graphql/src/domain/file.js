@@ -24,7 +24,7 @@ import { telemetry } from '../config/tracing';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
 import { UnsupportedError } from '../config/errors';
-import { getDraftFilePrefix } from '../database/draft-utils';
+import { getDraftFilePrefix, isDraftFile } from '../database/draft-utils';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -178,7 +178,7 @@ export const uploadPending = async (context, user, args) => {
 
 export const deleteImport = async (context, user, fileName) => {
   const draftContext = getDraftContext(context, user);
-  if (draftContext && !fileName.startsWith(getDraftFilePrefix(draftContext))) {
+  if (draftContext && !isDraftFile(fileName, draftContext)) {
     throw UnsupportedError('Cannot delete non draft imports in draft');
   }
   // Imported file must be handled specifically

@@ -79,7 +79,7 @@ import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
-import { FILES_UPDATE_KEY, getDraftChanges, getDraftFilePrefix } from '../database/draft-utils';
+import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -786,7 +786,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
 
 export const stixCoreObjectImportDelete = async (context, user, fileId) => {
   const draftContext = getDraftContext(context, user);
-  if (draftContext && !fileId.startsWith(getDraftFilePrefix(draftContext))) {
+  if (draftContext && !isDraftFile(fileId, draftContext)) {
     throw UnsupportedError('Cannot delete non draft imports in draft');
   }
   if (!draftContext && !fileId.startsWith('import')) {

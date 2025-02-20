@@ -31,7 +31,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
-import { getDraftFilePrefix } from './draft-utils';
+import { getDraftFilePrefix, isDraftFile } from './draft-utils';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -126,18 +126,22 @@ export const storageInit = async () => {
 
 export const isStorageAlive = () => initializeBucket();
 
+export const deleteFileFromStorage = async (id) => {
+  return s3Client.send(new s3.DeleteObjectCommand({
+    Bucket: bucketName,
+    Key: id
+  }));
+};
+
 export const deleteFile = async (context, user, id) => {
   const draftContext = getDraftContext(context, user);
-  if (draftContext && !id.startsWith(getDraftFilePrefix(draftContext))) {
+  if (draftContext && !isDraftFile(id, draftContext)) {
     throw UnsupportedError('Cannot delete non draft imports in draft');
   }
   const up = await loadFile(context, user, id);
   logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
   // Delete in S3
-  await s3Client.send(new s3.DeleteObjectCommand({
-    Bucket: bucketName,
-    Key: id
-  }));
+  await deleteFileFromStorage(id);
   // Delete associated works
   await deleteWorkForFile(context, user, id);
   // Delete index file
@@ -168,10 +172,7 @@ export const deleteRawFiles = async (context, user, ids) => {
   for (let i = 0; i < ids.length; i += 1) {
     const id = ids[i];
     // Delete in S3
-    await s3Client.send(new s3.DeleteObjectCommand({
-      Bucket: bucketName,
-      Key: id
-    }));
+    await deleteFileFromStorage(id);
   }
   return true;
 };

@@ -315,9 +315,11 @@ const ImportContentComponent = ({
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
   return (
     <div style={{ paddingRight: isNewImportScreensEnabled && !inDraftOverview ? 200 : 0 }}>
-      {!inDraftOverview && <Breadcrumbs
+      {!inDraftOverview && (
+      <Breadcrumbs
         elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
-                           />}
+      />
+      )}
       {isNewImportScreensEnabled && !inDraftOverview && <ImportMenu/>}
       <Grid
         container={true}
@@ -605,12 +607,15 @@ const ImportContentComponent = ({
             </Form>
           )}
         </Formik>
+        {!inDraftOverview && (
         <WorkbenchFileCreator
           handleCloseCreate={handleCloseCreate}
           openCreate={displayCreate}
           onCompleted={onCreateWorkbenchCompleted}
         />
+        )}
       </div>
+      {!inDraftOverview && (
       <Fab
         onClick={handleOpenCreate}
         color="primary"
@@ -620,6 +625,7 @@ const ImportContentComponent = ({
       >
         <Add />
       </Fab>
+      )}
     </div>
   );
 };

@@ -230,19 +230,14 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     handleClose();
     window.location.pathname = url;
   };
-  const generateDraftIcon = () => {
-    const draftColor = getDraftModeColor(theme);
-    return isExternalReferenceAttachment || isContainsReference ? (
-      <DocumentScannerOutlined style={{ color: draftColor }} />
-    ) : (
-      <FileOutline style={{ color: draftColor }} />
-    );
-  };
   const generateIcon = () => {
+    const fileInDraft = file?.draftVersion;
+    const color = fileInDraft ? getDraftModeColor(theme) : theme.palette.primary.main;
+    const fileColor = (nested || fileInDraft) ? color : 'inherit';
     return isExternalReferenceAttachment || isContainsReference ? (
-      <DocumentScannerOutlined color="primary" />
+      <DocumentScannerOutlined style={{ color }} />
     ) : (
-      <FileOutline color={nested ? 'primary' : 'inherit'} />
+      <FileOutline style={{ color: fileColor }} />
     );
   };
   const listUri = `${APP_BASE_PATH}/storage/${
@@ -289,8 +284,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               />
             </Tooltip>
           )}
-          {!isProgress && !isFail && !isOutdated && file?.draftVersion && generateDraftIcon()}
-          {!isProgress && !isFail && !isOutdated && !file?.draftVersion && generateIcon()}
+          {!isProgress && !isFail && !isOutdated && generateIcon()}
         </ListItemIcon>
         <Tooltip title={!isFail && !isOutdated ? file?.name : ''}>
           <ListItemText

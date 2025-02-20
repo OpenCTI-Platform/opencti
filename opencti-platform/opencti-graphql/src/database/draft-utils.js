@@ -1,3 +1,4 @@
+import { files } from '../schema/attribute-definition';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { getDraftContext } from '../utils/draftContext';
@@ -7,6 +8,10 @@ import { EditOperation } from '../generated/graphql';
 
 export const getDraftFilePrefix = (draftId) => {
   return `draft/${draftId}/`;
+};
+
+export const isDraftFile = (fileKey, draftId) => {
+  return fileKey.startsWith(getDraftFilePrefix(draftId));
 };
 
 export const buildDraftFilter = (context, user, opts = {}) => {
@@ -56,12 +61,13 @@ export const isDraftSupportedEntity = (element) => {
   return !isInternalObject(element.entity_type) && !isInternalRelationship(element.entity_type);
 };
 
-export const FILES_UPDATE_KEY = 'x_opencti_files';
+export const FILES_UPDATE_KEY = files.name;
 // Transform a raw update patched stored in a draft_updates_patch to a list of reverse field patch inputs
 export const buildReverseUpdateFieldPatch = (rawUpdatePatch) => {
   const resulReverseFieldPatch = [];
   if (rawUpdatePatch) {
     const parsedUpdatePatch = JSON.parse(rawUpdatePatch);
+    // no need for now to reverse files because draft_change is cleared.
     const updatePatchKeys = Object.keys(parsedUpdatePatch).filter((k) => k !== FILES_UPDATE_KEY);
     for (let i = 0; i < updatePatchKeys.length; i += 1) {
       const currentKey = updatePatchKeys[i];
