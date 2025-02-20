@@ -82,7 +82,6 @@ interface BasicInputProps {
 
 interface RelativeDateInputProps extends BasicInputProps {
   valueOrder: number;
-  disabled?: boolean;
 }
 
 const BasicInput: FunctionComponent<BasicInputProps> = ({
@@ -129,17 +128,40 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   label,
   type,
   valueOrder,
-  disabled,
 }) => {
+  const { t_i18n } = useFormatter();
+  const [dateInput, setDateInput] = useState(filterValues);
+  const isFilterValuesCorrect = (values: string[]) => {
+    if (values.length !== 2) {
+      return false;
+    }
+    if (values.includes('')) {
+      return false;
+    }
+    return true;
+  };
+  const generateErrorMessage = (values: string[]) => {
+    if (values.length !== 2) {
+      return t_i18n('The value must not be empty');
+    }
+    if (values.includes('')) {
+      return t_i18n('The value must not be empty.');
+    }
+    return undefined;
+  };
   const handleChangeRelativeDateFilter = (value: string) => {
-    helpers?.handleAddSingleValueFilter(
-      filter?.id ?? '',
-      value,
-    );
+    const newValues = [...dateInput];
+    newValues[valueOrder] = value;
+    setDateInput(newValues);
+    if (isFilterValuesCorrect(newValues)) {
+      helpers?.handleReplaceFilterValues(
+        filter?.id ?? '',
+        newValues,
+      );
+    }
   };
   return (
     <TextField
-      disabled={disabled}
       variant="outlined"
       size="small"
       fullWidth={true}
@@ -156,6 +178,8 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       onBlur={(event) => {
         handleChangeRelativeDateFilter(event.target.value);
       }}
+      error={!isFilterValuesCorrect(dateInput)}
+      helperText={generateErrorMessage(dateInput)}
     />
   );
 };
@@ -404,13 +428,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const getSpecificFilter = (fDefinition?: FilterDefinition): ReactNode => {
     if (fDefinition?.type === 'date') {
       if (filterOperator === 'within') {
+        const values = filterValues.length > 0 ? filterValues : ['now-1d', 'now'];
         return (
           <>
             <div style={{ marginBottom: 10 }}>{t_i18n('From')}</div>
             <RelativeDateInput
               filter={filter}
               filterKey={filterKey}
-              filterValues={filterValues}
+              filterValues={values}
               helpers={helpers}
               label={t_i18n('From')}
               valueOrder={0}
@@ -419,10 +444,9 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             <RelativeDateInput
               filter={filter}
               filterKey={filterKey}
-              filterValues={['now']}
-              label={t_i18n('now')}
+              filterValues={values}
+              label={t_i18n('To')}
               valueOrder={1}
-              disabled
             />
           </>
         );

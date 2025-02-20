@@ -2188,85 +2188,94 @@ const buildLocalMustFilter = async (validFilter) => {
   }
   // 03. Handle values according to the operator
   if (operator !== 'nil' && operator !== 'not_nil') {
-    for (let i = 0; i < values.length; i += 1) {
-      if (values[i] === 'EXISTS') {
-        if (arrayKeys.length > 1) {
-          throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
+    if (operator === 'within') {
+      if (arrayKeys.length > 1) {
+        throw UnsupportedError('Within filter must have only one field', { keys: arrayKeys });
+      }
+      if (values.length !== 2) {
+        throw UnsupportedError('Within filter must have two values', { values });
+      }
+      valuesFiltering.push({ range: { [headKey]: { gte: values[0], lte: values[1] } } });
+    } else {
+      for (let i = 0; i < values.length; i += 1) {
+        if (values[i] === 'EXISTS') {
+          if (arrayKeys.length > 1) {
+            throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
+          }
+          valuesFiltering.push({ exists: { field: headKey } });
+        } else if (operator === 'eq' || operator === 'not_eq') {
+          const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
+          targets.push({
+            multi_match: {
+              fields: arrayKeys.map((k) => buildFieldForQuery(k)),
+              query: values[i].toString(),
+            },
+          });
+        } else if (operator === 'match') {
+          valuesFiltering.push({
+            multi_match: {
+              fields: arrayKeys,
+              query: values[i].toString(),
+            },
+          });
+        } else if (operator === 'wildcard') {
+          valuesFiltering.push({
+            query_string: {
+              query: `"${values[i].toString()}"`,
+              fields: arrayKeys,
+            },
+          });
+        } else if (operator === 'contains' || operator === 'not_contains') {
+          const targets = operator === 'contains' ? valuesFiltering : noValuesFiltering;
+          const val = specialElasticCharsEscape(values[i].toString());
+          targets.push({
+            query_string: {
+              query: `*${val.replace(/\s/g, '\\ ')}*`,
+              analyze_wildcard: true,
+              fields: arrayKeys.map((k) => `${k}.keyword`),
+            },
+          });
+        } else if (operator === 'starts_with' || operator === 'not_starts_with') {
+          const targets = operator === 'starts_with' ? valuesFiltering : noValuesFiltering;
+          const val = specialElasticCharsEscape(values[i].toString());
+          targets.push({
+            query_string: {
+              query: `${val.replace(/\s/g, '\\ ')}*`,
+              analyze_wildcard: true,
+              fields: arrayKeys.map((k) => `${k}.keyword`),
+            },
+          });
+        } else if (operator === 'ends_with' || operator === 'not_ends_with') {
+          const targets = operator === 'ends_with' ? valuesFiltering : noValuesFiltering;
+          const val = specialElasticCharsEscape(values[i].toString());
+          targets.push({
+            query_string: {
+              query: `*${val.replace(/\s/g, '\\ ')}`,
+              analyze_wildcard: true,
+              fields: arrayKeys.map((k) => `${k}.keyword`),
+            },
+          });
+        } else if (operator === 'script') {
+          valuesFiltering.push({
+            script: {
+              script: values[i].toString()
+            },
+          });
+        } else if (operator === 'search') {
+          const shouldSearch = elGenerateFieldTextSearchShould(values[i].toString(), arrayKeys);
+          const bool = {
+            bool: {
+              should: shouldSearch,
+              minimum_should_match: 1,
+            },
+          };
+          valuesFiltering.push(bool);
+        } else { // range operators
+          if (arrayKeys.length > 1) {
+            throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
+          }
+          valuesFiltering.push({ range: { [headKey]: { [operator]: values[i] } } });
         }
-        valuesFiltering.push({ exists: { field: headKey } });
-      } else if (operator === 'eq' || operator === 'not_eq') {
-        const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
-        targets.push({
-          multi_match: {
-            fields: arrayKeys.map((k) => buildFieldForQuery(k)),
-            query: values[i].toString(),
-          },
-        });
-      } else if (operator === 'match') {
-        valuesFiltering.push({
-          multi_match: {
-            fields: arrayKeys,
-            query: values[i].toString(),
-          },
-        });
-      } else if (operator === 'wildcard') {
-        valuesFiltering.push({
-          query_string: {
-            query: `"${values[i].toString()}"`,
-            fields: arrayKeys,
-          },
-        });
-      } else if (operator === 'contains' || operator === 'not_contains') {
-        const targets = operator === 'contains' ? valuesFiltering : noValuesFiltering;
-        const val = specialElasticCharsEscape(values[i].toString());
-        targets.push({
-          query_string: {
-            query: `*${val.replace(/\s/g, '\\ ')}*`,
-            analyze_wildcard: true,
-            fields: arrayKeys.map((k) => `${k}.keyword`),
-          },
-        });
-      } else if (operator === 'starts_with' || operator === 'not_starts_with') {
-        const targets = operator === 'starts_with' ? valuesFiltering : noValuesFiltering;
-        const val = specialElasticCharsEscape(values[i].toString());
-        targets.push({
-          query_string: {
-            query: `${val.replace(/\s/g, '\\ ')}*`,
-            analyze_wildcard: true,
-            fields: arrayKeys.map((k) => `${k}.keyword`),
-          },
-        });
-      } else if (operator === 'ends_with' || operator === 'not_ends_with') {
-        const targets = operator === 'ends_with' ? valuesFiltering : noValuesFiltering;
-        const val = specialElasticCharsEscape(values[i].toString());
-        targets.push({
-          query_string: {
-            query: `*${val.replace(/\s/g, '\\ ')}`,
-            analyze_wildcard: true,
-            fields: arrayKeys.map((k) => `${k}.keyword`),
-          },
-        });
-      } else if (operator === 'script') {
-        valuesFiltering.push({
-          script: {
-            script: values[i].toString()
-          },
-        });
-      } else if (operator === 'search') {
-        const shouldSearch = elGenerateFieldTextSearchShould(values[i].toString(), arrayKeys);
-        const bool = {
-          bool: {
-            should: shouldSearch,
-            minimum_should_match: 1,
-          },
-        };
-        valuesFiltering.push(bool);
-      } else { // range operators
-        if (arrayKeys.length > 1) {
-          throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
-        }
-        const rangeOperator = operator === 'within' ? 'gte' : operator;
-        valuesFiltering.push({ range: { [headKey]: { [rangeOperator]: values[i] } } });
       }
     }
   }

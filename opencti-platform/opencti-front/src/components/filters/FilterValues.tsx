@@ -112,6 +112,11 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     return (
       <Fragment key={id}>
+        {filterOperator === 'within' && filterValues[0] === id
+          && <div>
+            [
+          </div>
+        }
         <FilterValuesContent
           redirection={tooltip ? false : redirection}
           isFilterTooltip={!!tooltip}
@@ -121,7 +126,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           filterDefinition={filterDefinition}
           filterOperator={filterOperator}
         />
-        {filterKey !== 'regardingOf' && last(filterValues) !== id && (
+        {filterKey !== 'regardingOf' && filterOperator !== 'within' && last(filterValues) !== id && (
           <div
             className={operatorClassName}
             onClick={operatorOnClick}
@@ -129,6 +134,11 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
           </div>
         )}
+        {filterOperator === 'within'
+          && <div>
+            {last(filterValues) === id ? ']' : ','}
+          </div>
+        }
       </Fragment>
     );
   });
