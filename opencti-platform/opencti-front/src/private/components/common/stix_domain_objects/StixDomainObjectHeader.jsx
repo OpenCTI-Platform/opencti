@@ -23,7 +23,6 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
@@ -46,24 +45,6 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import useHelper from '../../../../utils/hooks/useHelper';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  alias: {
-    margin: '4px 7px 0 0',
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 28,
-  },
-  aliasesInput: {
-    margin: '4px 15px 0 10px',
-    float: 'left',
-  },
-  actionButtons: {
-    display: 'flex',
-  },
-}));
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -248,7 +229,6 @@ const aliasValidation = (t) => Yup.object().shape({
 });
 
 const StixDomainObjectHeader = (props) => {
-  const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const {
@@ -409,7 +389,7 @@ const StixDomainObjectHeader = (props) => {
   return (
     <React.Suspense fallback={<span />}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing(1) }}>
-        <div style={{ display: 'flex', gap: theme.spacing(2) }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(2) }}>
           <Tooltip title={getMainRepresentative(stixDomainObject)}>
             <Typography
               variant="h1"
@@ -449,10 +429,10 @@ const StixDomainObjectHeader = (props) => {
               </FormControl>
             </div>
           )}
-          <div style={{ display: 'flex' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             {(!noAliases && aliases.length > 0) && (
-              <div>
-                {R.take(5, aliases).map(
+              <>
+                {aliases.slice(0, 5).map(
                   (label) => label.length > 0 && (
                     <Security
                       needs={[KNOWLEDGE_KNUPDATE]}
@@ -460,7 +440,12 @@ const StixDomainObjectHeader = (props) => {
                       placeholder={
                         <Tooltip title={label}>
                           <Chip
-                            classes={{ root: classes.alias }}
+                            sx={{
+                              marginRight: '4px',
+                              fontSize: 12,
+                              lineHeight: '12px',
+                              height: 28,
+                            }}
                             label={truncate(label, 40)}
                           />
                         </Tooltip>
@@ -468,7 +453,12 @@ const StixDomainObjectHeader = (props) => {
                     >
                       <Tooltip title={label}>
                         <Chip
-                          classes={{ root: classes.alias }}
+                          sx={{
+                            marginRight: '4px',
+                            fontSize: 12,
+                            lineHeight: '12px',
+                            height: 28,
+                          }}
                           label={truncate(label, 40)}
                           onDelete={
                             enableReferences
@@ -480,7 +470,7 @@ const StixDomainObjectHeader = (props) => {
                     </Security>
                   ),
                 )}
-              </div>
+              </>
             )}
             {!noAliases && (
               <Slide
@@ -503,7 +493,10 @@ const StixDomainObjectHeader = (props) => {
                           name="new_alias"
                           autoFocus={true}
                           placeholder={t_i18n('New alias')}
-                          className={classes.aliasesInput}
+                          sx={{
+                            margin: '4px 15px 0 10px',
+                            float: 'left',
+                          }}
                           onChange={handleChangeNewAlias}
                           value={newAlias}
                           onKeyDown={(e) => {
@@ -563,7 +556,7 @@ const StixDomainObjectHeader = (props) => {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div className={classes.actionButtons}>
+          <div style={{ display: 'flex' }}>
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
@@ -598,7 +591,7 @@ const StixDomainObjectHeader = (props) => {
               <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixDomainObject.id} />
             )}
             {isKnowledgeUpdater && (
-              <div className={classes.popover}>
+              <div>
                 {/* TODO remove this when all components are pure function without compose() */}
                 {!React.isValidElement(PopoverComponent) ? (
                   <PopoverComponent
@@ -640,7 +633,10 @@ const StixDomainObjectHeader = (props) => {
                     name="new_alias"
                     autoFocus={true}
                     placeholder={t_i18n('New alias')}
-                    className={classes.aliasesInput}
+                    sx={{
+                      margin: '4px 15px 0 10px',
+                      float: 'left',
+                    }}
                     onChange={handleChangeNewAlias}
                     value={newAlias}
                     onKeyDown={(e) => {
@@ -715,7 +711,10 @@ const StixDomainObjectHeader = (props) => {
                       autoFocus={true}
                       fullWidth={true}
                       placeholder={t_i18n('New aliases')}
-                      className={classes.aliasesInput}
+                      sx={{
+                        margin: '4px 15px 0 10px',
+                        float: 'left',
+                      }}
                       onChange={handleChangeNewAlias}
                       value={newAlias}
                       onKeyDown={(e) => {
