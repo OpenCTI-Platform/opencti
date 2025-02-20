@@ -3,42 +3,45 @@ import AssociatedEntityField, { AssociatedEntityOption } from '@components/commo
 import { Box } from '@mui/material';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import React from 'react';
+import { FormikContextType, FormikProvider } from 'formik';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface ImportFilesOptionsProps {
-  setFieldValue: (name: string, values: Option[] | AssociatedEntityOption) => void;
+  optionsFormikContext: FormikContextType<{ fileMarkings: Option[]; associatedEntity: AssociatedEntityOption }>;
   entityId?: string;
 }
 
-const ImportFilesOptions = ({ setFieldValue, entityId }: ImportFilesOptionsProps) => {
+const ImportFilesOptions = ({ optionsFormikContext, entityId }: ImportFilesOptionsProps) => {
   const { t_i18n } = useFormatter();
   return (
-    <Box sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 2,
-      width: '50%',
-    }}
-    >
-      <ObjectMarkingField
-        name="fileMarkings"
-        label={t_i18n('File marking definition levels')}
-        style={fieldSpacingContainerStyle}
-        setFieldValue={setFieldValue}
-        required={false}
-      />
-      {!entityId
+    <FormikProvider value={optionsFormikContext}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        width: '50%',
+      }}
+      >
+        <ObjectMarkingField
+          name="fileMarkings"
+          label={t_i18n('File marking definition levels')}
+          style={fieldSpacingContainerStyle}
+          setFieldValue={optionsFormikContext.setFieldValue}
+          required={false}
+        />
+        {!entityId
         && (
           <div style={{ paddingTop: '10px' }}>
             <AssociatedEntityField
               label={t_i18n('Associated entity')}
               name="associatedEntity"
-              onChange={setFieldValue}
+              onChange={optionsFormikContext.setFieldValue}
             />
           </div>
         )}
-    </Box>
+      </Box>
+    </FormikProvider>
   );
 };
 

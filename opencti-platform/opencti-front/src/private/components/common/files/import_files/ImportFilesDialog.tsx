@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography, Box } from '@mui/material';
-import { Formik } from 'formik';
+import { FormikConfig, useFormik } from 'formik';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { Option } from '@components/common/form/ReferenceField';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
@@ -53,7 +53,7 @@ interface ImportFilesDialogProps {
   handleClose: () => void;
 }
 
-type SubmittedFormValues = {
+type OptionsFormValues = {
   fileMarkings: Option[];
   associatedEntity: AssociatedEntityOption;
 };
@@ -88,9 +88,8 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
     type: 'files',
   });
 
-  const handleSubmit = (values: SubmittedFormValues, { setErrors }) => {
+  const onSubmit: FormikConfig<OptionsFormValues>['onSubmit'] = (values, { setErrors }) => {
     setUploadStatus('uploading');
-    console.log({ values });
     const entityId = values.associatedEntity?.value || undefined;
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
 
@@ -126,80 +125,83 @@ const ImportFilesDialog = ({ open, handleClose }: ImportFilesDialogProps) => {
     });
   };
 
+  const optionsContext = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      fileMarkings: [] as Option[],
+      associatedEntity: { label: '', value: '', type: '' } as AssociatedEntityOption,
+    },
+    onSubmit,
+  });
+
   return (
-    <Formik
-      enableReinitialize={true}
-      initialValues={{
-        fileMarkings: [],
-        associatedEntity: { label: '', value: '', type: '' },
+    <Dialog
+      open={open}
+      TransitionComponent={Transition}
+      fullWidth
+      maxWidth={false}
+      PaperProps={{
+        elevation: 1,
+        style: {
+          height: '100vh',
+        },
       }}
-      onSubmit={handleSubmit}
     >
-      {({ submitForm, setFieldValue, values }) => (
-        <Dialog
-          open={open}
-          TransitionComponent={Transition}
-          fullWidth
-          maxWidth={false}
-          PaperProps={{
-            elevation: 1,
-            style: {
-              height: '100vh',
-            },
-          }}
-        >
-          <DialogTitle>
-            <Typography variant="h5">{t_i18n('Import files')}</Typography>
-          </DialogTitle>
-          <DialogContent sx={{ paddingInline: 20, marginBlock: 10 }}>
-            {!uploadStatus ? (
-              <>
-                <ImportFilesStepper activeStep={activeStep} setActiveStep={setActiveStep} />
-                <Box sx={{ paddingBlock: 10 }}>
-                  {activeStep === 0 && <ImportFilesUploader files={files} onChange={(newFiles) => setFiles(newFiles)}/>}
-                  {activeStep === 1 && <ImportFilesOptions setFieldValue={setFieldValue}/>}
-                </Box>
-              </>
+      <DialogTitle>
+        <Typography variant="h5">{t_i18n('Import files')}</Typography>
+      </DialogTitle>
+      <DialogContent sx={{ paddingInline: 20, marginBlock: 10 }}>
+        {!uploadStatus ? (
+          <>
+            <ImportFilesStepper activeStep={activeStep} setActiveStep={setActiveStep} />
+            <Box sx={{ paddingBlock: 10 }}>
+              {activeStep === 0 && <ImportFilesUploader files={files} onChange={(newFiles) => setFiles(newFiles)}/>}
+              {activeStep === 1 && <ImportFilesOptions optionsFormikContext={optionsContext} />}
+            </Box>
+          </>
+        ) : (
+          <ImportFilesUploadProgress
+            currentCount={bulkCurrentCount}
+            totalCount={bulkCount}
+            uploadedFiles={uploadedFiles}
+            uploadStatus={uploadStatus}
+            BulkResult={BulkResult}
+          />
+        )}
+      </DialogContent>
+      <DialogActions>
+        {!uploadStatus ? (
+          <>
+            <Button onClick={() => handleClose()}>
+              {t_i18n('Cancel')}
+            </Button>
+            {activeStep < 1 ? (
+              <Button onClick={() => setActiveStep(activeStep + 1)} color="secondary">
+                {t_i18n('Next')}
+              </Button>
             ) : (
-              <ImportFilesUploadProgress
-                currentCount={bulkCurrentCount}
-                totalCount={bulkCount}
-                uploadedFiles={uploadedFiles}
-                uploadStatus={uploadStatus}
-                BulkResult={BulkResult}
-              />
+              <Button onClick={optionsContext.submitForm} color="secondary">
+                {t_i18n('Import')}
+              </Button>
             )}
-          </DialogContent>
-          <DialogActions>
-            {!uploadStatus ? (
-              <>
-                <Button onClick={() => handleClose()}>
-                  {t_i18n('Cancel')}
-                </Button>
-                {activeStep < 1 ? (
-                  <Button onClick={() => setActiveStep(activeStep + 1)} color="secondary">
-                    {t_i18n('Next')}
-                  </Button>
-                ) : (
-                  <Button onClick={submitForm} color="secondary">
-                    {t_i18n('Import')}
-                  </Button>
-                )}
-              </>
-            ) : uploadStatus === 'success'
+          </>
+        ) : uploadStatus === 'success'
               && (
-                (values.associatedEntity?.value || undefined) ? (<Button onClick={() => handleClose()} component={Link} to={`${resolveLink(values.associatedEntity.type)}/${values.associatedEntity.value}/files`}>
-                  {t_i18n('Navigate to entity')}
-                </Button>)
+                (optionsContext.values.associatedEntity?.value || undefined) ? (
+                  <Button
+                    onClick={() => handleClose()}
+                    component={Link}
+                    to={`${resolveLink(optionsContext.values.associatedEntity.type)}/${optionsContext.values.associatedEntity.value}/files`}
+                  >
+                    {t_i18n('Navigate to entity')}
+                  </Button>)
                   : (<Button onClick={() => handleClose()}>
                     {t_i18n('Close')}
                   </Button>)
               )
             }
-          </DialogActions>
-        </Dialog>
-      )}
-    </Formik>
+      </DialogActions>
+    </Dialog>
   );
 };
 
