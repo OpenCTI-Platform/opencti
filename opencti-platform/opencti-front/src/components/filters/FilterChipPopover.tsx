@@ -29,6 +29,8 @@ import { FilterRepresentative } from './FiltersModel';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import useAttributes from '../../utils/hooks/useAttributes';
+import RelativeDateInput from './RelativeDateInput';
+import BasicFilterInput from './BasicFilterInput';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -71,118 +73,6 @@ const OperatorKeyValues: {
   within: 'Within',
 };
 
-interface BasicInputProps {
-  filter?: Filter;
-  filterKey: string;
-  helpers?: handleFilterHelpers;
-  filterValues: string[];
-  label: string;
-  type?: string;
-}
-
-interface RelativeDateInputProps extends BasicInputProps {
-  valueOrder: number;
-}
-
-const BasicInput: FunctionComponent<BasicInputProps> = ({
-  filter,
-  filterKey,
-  helpers,
-  filterValues,
-  label,
-  type,
-}) => {
-  return (
-    <TextField
-      variant="outlined"
-      size="small"
-      fullWidth={true}
-      id={filter?.id ?? `${filterKey}-id`}
-      label={label}
-      type={type}
-      defaultValue={filterValues[0]}
-      autoFocus={true}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') {
-          helpers?.handleAddSingleValueFilter(
-            filter?.id ?? '',
-            (event.target as HTMLInputElement).value,
-          );
-        }
-      }}
-      onBlur={(event) => {
-        helpers?.handleAddSingleValueFilter(
-          filter?.id ?? '',
-          event.target.value,
-        );
-      }}
-    />
-  );
-};
-
-const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
-  filter,
-  filterKey,
-  helpers,
-  filterValues,
-  label,
-  type,
-  valueOrder,
-}) => {
-  const { t_i18n } = useFormatter();
-  const [dateInput, setDateInput] = useState(filterValues);
-  const isFilterValuesCorrect = (values: string[]) => {
-    if (values.length !== 2) {
-      return false;
-    }
-    if (values.includes('')) {
-      return false;
-    }
-    return true;
-  };
-  const generateErrorMessage = (values: string[]) => {
-    if (values.length !== 2) {
-      return t_i18n('The value must not be empty');
-    }
-    if (values.includes('')) {
-      return t_i18n('The value must not be empty.');
-    }
-    return undefined;
-  };
-  const handleChangeRelativeDateFilter = (value: string) => {
-    const newValues = [...dateInput];
-    newValues[valueOrder] = value;
-    setDateInput(newValues);
-    if (isFilterValuesCorrect(newValues)) {
-      helpers?.handleReplaceFilterValues(
-        filter?.id ?? '',
-        newValues,
-      );
-    }
-  };
-  return (
-    <TextField
-      variant="outlined"
-      size="small"
-      fullWidth={true}
-      id={filter?.id ?? `${filterKey}-id`}
-      label={label}
-      type={type}
-      defaultValue={filterValues[valueOrder]}
-      autoFocus={true}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') {
-          handleChangeRelativeDateFilter((event.target as HTMLInputElement).value);
-        }
-      }}
-      onBlur={(event) => {
-        handleChangeRelativeDateFilter(event.target.value);
-      }}
-      error={!isFilterValuesCorrect(dateInput)}
-      helperText={generateErrorMessage(dateInput)}
-    />
-  );
-};
 export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   params,
   handleClose,
@@ -455,7 +345,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     }
     if (isNumericFilter(fDefinition?.type)) {
       return (
-        <BasicInput
+        <BasicFilterInput
           filter={filter}
           filterKey={filterKey}
           filterValues={filterValues}
@@ -467,7 +357,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     }
     if (isBasicTextFilter(filterDefinition)) {
       return (
-        <BasicInput
+        <BasicFilterInput
           filter={filter}
           filterKey={filterKey}
           filterValues={filterValues}
