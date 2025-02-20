@@ -8,7 +8,7 @@
  */
 // eslint-disable-next-line import/prefer-default-export
 export const pointInPolygon = (
-  polygon: [number, number][],
+  polygon: number[][],
   point: [number, number],
 ) => {
   let odd = false;
