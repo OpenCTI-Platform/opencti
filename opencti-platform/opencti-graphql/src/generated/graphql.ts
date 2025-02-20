@@ -13640,6 +13640,7 @@ export type Mutation = {
   aiImproveWriting?: Maybe<Scalars['String']['output']>;
   aiMakeLonger?: Maybe<Scalars['String']['output']>;
   aiMakeShorter?: Maybe<Scalars['String']['output']>;
+  aiNLQ?: Maybe<Scalars['String']['output']>;
   aiSummarize?: Maybe<Scalars['String']['output']>;
   aiSummarizeFiles?: Maybe<Scalars['String']['output']>;
   aiThreatGenerateReport?: Maybe<Scalars['String']['output']>;
@@ -14091,6 +14092,11 @@ export type MutationAiMakeShorterArgs = {
   content: Scalars['String']['input'];
   format?: InputMaybe<Format>;
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationAiNlqArgs = {
+  search: Scalars['String']['input'];
 };
 
 
@@ -37521,6 +37527,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   aiImproveWriting?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiImproveWritingArgs, 'content' | 'id'>>;
   aiMakeLonger?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiMakeLongerArgs, 'content' | 'id'>>;
   aiMakeShorter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiMakeShorterArgs, 'content' | 'id'>>;
+  aiNLQ?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiNlqArgs, 'search'>>;
   aiSummarize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiSummarizeArgs, 'content' | 'id'>>;
   aiSummarizeFiles?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiSummarizeFilesArgs, 'elementId' | 'id'>>;
   aiThreatGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiThreatGenerateReportArgs, 'id' | 'threatId'>>;

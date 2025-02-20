@@ -18,7 +18,7 @@ import { ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/g
 import { RELATION_EXTERNAL_REFERENCE } from '../../schema/stixRefRelationship';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
-import type { InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiSummarizeFilesArgs } from '../../generated/graphql';
+import type { InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiNlqArgs, MutationAiSummarizeFilesArgs } from '../../generated/graphql';
 import { Format, Tone } from '../../generated/graphql';
 import { isEmptyField } from '../../database/utils';
 import { queryAi } from '../../database/ai-llm';
@@ -292,5 +292,13 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
   ${filesContent.join('')}
   `;
   const response = await queryAi(id, SYSTEM_PROMPT, prompt, user);
+  return response;
+};
+
+export const generateNLQresponse = async (context: AuthContext, user: AuthUser, args: MutationAiNlqArgs) => {
+  await checkEnterpriseEdition(context);
+  const { search } = args;
+  const prompt = ''; // TODO
+  const response = await queryAi(null, SYSTEM_PROMPT, prompt, user);
   return response;
 };
