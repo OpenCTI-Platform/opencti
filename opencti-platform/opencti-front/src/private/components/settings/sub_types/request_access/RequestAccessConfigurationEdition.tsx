@@ -5,7 +5,6 @@ import { Form, Formik } from 'formik';
 import { StatusTemplateFieldData } from '@components/common/form/StatusTemplateField';
 import Button from '@mui/material/Button';
 import { FormikConfig } from 'formik/dist/types';
-import { RequestAccessStatusFragment_entitySetting$key } from '@components/settings/sub_types/request_access/__generated__/RequestAccessStatusFragment_entitySetting.graphql';
 import {
   RequestAccessConfigurationEditionMutation,
   RequestAccessConfigureInput,
@@ -16,6 +15,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { RequestAccessConfigurationEdition_entitySettings$key } from './__generated__/RequestAccessConfigurationEdition_entitySettings.graphql';
 
 const requestAccessConfigurationMutation = graphql`
     mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {
@@ -82,7 +82,7 @@ export const requestAccessConfigurationFragment = graphql`
 
 interface RequestAccessWorkflowProps {
   handleClose: () => void;
-  queryRef: RequestAccessStatusFragment_entitySetting$key
+  queryRef: RequestAccessConfigurationEdition_entitySettings$key
   open?: boolean
 }
 
