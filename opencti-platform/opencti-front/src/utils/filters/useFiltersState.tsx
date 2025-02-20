@@ -8,6 +8,7 @@ import {
   handleChangeRepresentationFilterUtil,
   handleRemoveFilterUtil,
   handleRemoveRepresentationFilterUtil,
+  handleReplaceFilterValuesUtil,
   handleSwitchLocalModeUtil,
 } from './filtersManageStateUtil';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
@@ -58,6 +59,13 @@ const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, def
       setFiltersState((prevState) => ({
         ...prevState,
         filters: handleAddSingleValueFilterUtil({ filters: prevState.filters, id, valueId }),
+        latestAddFilterId: undefined,
+      }));
+    },
+    handleReplaceFilterValues: (id: string, values: string[]) => {
+      setFiltersState((prevState) => ({
+        ...prevState,
+        filters: handleReplaceFilterValuesUtil({ filters: prevState.filters, id, values }),
         latestAddFilterId: undefined,
       }));
     },

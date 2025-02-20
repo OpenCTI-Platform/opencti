@@ -159,3 +159,17 @@ export const maskString = (value) => (value ? '•'.repeat(value.length) : '');
 export const stringWithZeroWidthSpace = (value) => {
   return (value.match(/.{1,10}/g) ?? []).join('​');
 };
+
+/**
+ * Check if a string is in a correct date format
+ * (usefull to check if a value in a filter of type date is correct)
+ *
+ * @param stringDate String
+ * @returns {boolean} If the string is in a correct date format.
+ */
+export const isValidDate = (stringDate) => {
+  const dateParsed = Date.parse(stringDate);
+  if (!dateParsed) return false;
+  const dateInstance = new Date(dateParsed);
+  return dateInstance.toISOString() === stringDate;
+};

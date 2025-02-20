@@ -119,6 +119,7 @@ enum FilterOperator {
   nil
   not_nil
   search
+  within
 }
 
 # noinspection GraphQLSchemaValidation

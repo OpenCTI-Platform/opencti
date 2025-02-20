@@ -8293,7 +8293,8 @@ export enum FilterOperator {
   Script = 'script',
   Search = 'search',
   StartsWith = 'starts_with',
-  Wildcard = 'wildcard'
+  Wildcard = 'wildcard',
+  Within = 'within'
 }
 
 export type FintelTemplate = BasicObject & InternalObject & {
