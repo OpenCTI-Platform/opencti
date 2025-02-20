@@ -111,7 +111,7 @@ import {
   REL_INDEX_PREFIX,
   RULE_PREFIX
 } from '../schema/general';
-import { isAnId } from '../schema/schemaUtils';
+import { isAnId, isValidDate } from '../schema/schemaUtils';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
@@ -505,13 +505,6 @@ export const stixLoadByFilters = async (context, user, types, args) => {
   return elements ? elements.map((element) => convertStoreToStix(element)) : [];
 };
 // endregion
-
-export const isValidDate = (stringDate) => {
-  const dateParsed = Date.parse(stringDate);
-  if (!dateParsed) return false;
-  const dateInstance = new Date(dateParsed);
-  return dateInstance.toISOString() === stringDate;
-};
 
 // used to get a "restricted" value of a current attribute value depending on the value type
 const restrictValue = (entityValue) => {

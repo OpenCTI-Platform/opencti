@@ -25,7 +25,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
 import { isEmptyField } from '../../database/utils';
-import { isValidDate } from '../../database/middleware';
+import { isValidDate } from '../../schema/schemaUtils';
 
 //----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
