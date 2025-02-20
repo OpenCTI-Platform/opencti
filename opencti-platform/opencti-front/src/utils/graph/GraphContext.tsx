@@ -7,41 +7,35 @@ import { GraphNode, GraphLink, LibGraphProps, GraphState, OctiGraphPositions } f
 import { useFormatter } from '../../components/i18n';
 import useGraphParser, { ObjectToParse } from './utils/useGraphParser';
 
+type Setter<T> = Dispatch<SetStateAction<T>>;
+
 type GraphRef2D = graph2d.ForceGraphMethods<graph2d.NodeObject<GraphNode>, graph2d.LinkObject<GraphNode, GraphLink>>;
 type GraphRef3D = graph3d.ForceGraphMethods<graph3d.NodeObject<GraphNode>, graph3d.LinkObject<GraphNode, GraphLink>>;
 
-// API available when calling hook useGraphContext().
 interface GraphContextValue {
-  // --- data of the graph
-  graphData: LibGraphProps['graphData']
-  addNode: (node: GraphNode) => void
-  removeNode: (id: string) => void
-  addLink: (link: GraphLink) => void
-  removeLink: (id: string) => void
   // --- DOM references
   graphRef2D: MutableRefObject<GraphRef2D | undefined>
   graphRef3D: MutableRefObject<GraphRef3D | undefined>
+  // --- data of the graph
+  graphData: LibGraphProps['graphData']
+  setGraphData: Setter<LibGraphProps['graphData']>
   // --- graph state (config saved in URL and local storage)
   graphState: GraphState
-  setGraphStateProp: <K extends keyof GraphState>(key: K, value: GraphState[K]) => void
+  setGraphState: Setter<GraphState>
   // --- selected nodes
   selectedNodes: GraphNode[]
-  setSelectedNodes: Dispatch<SetStateAction<GraphNode[]>>
-  addSelectedNode: (node: GraphNode) => void
-  removeSelectedNode: (node: GraphNode) => void
+  setSelectedNodes: Setter<GraphNode[]>
   // --- selected links
   selectedLinks: GraphLink[]
-  setSelectedLinks: Dispatch<SetStateAction<GraphLink[]>>
-  addSelectedLink: (link: GraphLink) => void
-  removeSelectedLink: (link: GraphLink) => void
-  // --- utils data derived from graphData
+  setSelectedLinks: Setter<GraphLink[]>
+  // --- utils data derived from input data.
   stixCoreObjectTypes: string[]
   markingDefinitions: { id: string, definition: string }[]
   creators: { id: string, name: string }[]
   positions: OctiGraphPositions
   // --- misc
   isAddRelationOpen: boolean
-  setIsAddRelationOpen: Dispatch<SetStateAction<boolean>>
+  setIsAddRelationOpen: Setter<boolean>
 }
 
 const GraphContext = createContext<GraphContextValue | undefined>(undefined);
@@ -73,9 +67,9 @@ export const GraphProvider = ({
   localStorageKey,
   data,
 }: GraphProviderProps) => {
-  const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t_i18n } = useFormatter();
   const { buildGraphData } = useGraphParser();
 
   const graphRef2D = useRef<GraphRef2D | undefined>();
@@ -83,46 +77,9 @@ export const GraphProvider = ({
 
   const [graphData, setGraphData] = useState<LibGraphProps['graphData']>();
   useEffect(() => {
+    // Rebuild graph data when input data has changed.
     setGraphData(buildGraphData(data.objects, data.positions));
   }, [data]);
-
-  const addNode = (node: GraphNode) => {
-    setGraphData((oldData) => {
-      const withoutExisting = (oldData?.nodes ?? []).filter((n) => n.id !== node.id);
-      return {
-        nodes: [...withoutExisting, node],
-        links: oldData?.links ?? [],
-      };
-    });
-  };
-
-  const removeNode = (id: string) => {
-    setGraphData((oldData) => {
-      return {
-        nodes: (oldData?.nodes ?? []).filter((node) => node.id !== id),
-        links: oldData?.links ?? [],
-      };
-    });
-  };
-
-  const addLink = (link: GraphLink) => {
-    setGraphData((oldData) => {
-      const withoutExisting = (oldData?.links ?? []).filter((l) => l.id !== link.id);
-      return {
-        links: [...withoutExisting, link],
-        nodes: oldData?.nodes ?? [],
-      };
-    });
-  };
-
-  const removeLink = (id: string) => {
-    setGraphData((oldData) => {
-      return {
-        links: (oldData?.links ?? []).filter((link) => link.id !== id),
-        nodes: oldData?.nodes ?? [],
-      };
-    });
-  };
 
   // Dynamically compute all entity types in graphData.
   const stixCoreObjectTypes = useMemo(() => {
@@ -164,66 +121,46 @@ export const GraphProvider = ({
     saveViewParameters(navigate, location, localStorageKey, graphState);
   }, [graphState]);
 
-  /**
-   * Helper function to easily modify one property in the state.
-   *
-   * @param key Name of the property to change.
-   * @param value New value for the property.
-   */
-  const setGraphStateProp = <K extends keyof GraphState>(key: K, value: GraphState[K]) => {
-    setGraphState((oldState) => {
-      return { ...oldState, [key]: value };
-    });
-  };
-
   const [selectedNodes, setSelectedNodes] = useState<GraphNode[]>([]);
   const [selectedLinks, setSelectedLinks] = useState<GraphLink[]>([]);
 
-  const addSelectedLink = (link: GraphLink) => {
-    const existing = selectedLinks.find((l) => l.id === link.id);
-    if (!existing) setSelectedLinks((old) => [...old, link]);
-  };
+  useEffect(() => {
+    // On selection change, reset relationship select mode.
+    setGraphState((oldState) => ({
+      ...oldState,
+      selectRelationshipMode: null,
+    }));
+  }, [selectedNodes]);
 
-  const removeSelectedLink = (link: GraphLink) => {
-    setSelectedLinks((old) => old.filter((l) => l.id !== link.id));
-  };
-
-  const addSelectedNode = (node: GraphNode) => {
-    const existing = selectedNodes.find((n) => n.id === node.id);
-    if (!existing) setSelectedNodes((old) => [...old, node]);
-  };
-
-  const removeSelectedNode = (node: GraphNode) => {
-    setSelectedNodes((old) => old.filter((n) => n.id !== node.id));
-  };
-
+  // Put inside context because the dialog to create relationship can be
+  // opened by other source than click in toolbar (cf <RelationSelection />).
   const [isAddRelationOpen, setIsAddRelationOpen] = useState(false);
 
   const value = useMemo<GraphContextValue>(() => ({
+    graphRef2D,
+    graphRef3D,
     graphData,
-    addNode,
-    removeNode,
-    addLink,
-    removeLink,
     stixCoreObjectTypes,
     markingDefinitions,
     creators,
-    positions: data.positions,
-    graphRef2D,
-    graphRef3D,
     graphState,
-    setGraphStateProp,
     selectedLinks,
-    setSelectedLinks,
-    addSelectedLink,
-    removeSelectedLink,
     selectedNodes,
-    setSelectedNodes,
-    addSelectedNode,
-    removeSelectedNode,
     isAddRelationOpen,
+    positions: data.positions,
+    setGraphData,
+    setGraphState,
+    setSelectedLinks,
+    setSelectedNodes,
     setIsAddRelationOpen,
-  }), [graphState, selectedLinks, selectedNodes, data, graphData, isAddRelationOpen]);
+  }), [
+    graphData,
+    graphState,
+    selectedLinks,
+    selectedNodes,
+    data,
+    isAddRelationOpen,
+  ]);
 
   return (
     <GraphContext.Provider value={value}>

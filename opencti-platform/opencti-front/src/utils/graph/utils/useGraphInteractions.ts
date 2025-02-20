@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
 import { NodeObject } from 'react-force-graph-2d';
 import { useGraphContext } from '../GraphContext';
-import type { GraphNode, LibGraphProps, GraphState } from '../graph.types';
+import { GraphNode, LibGraphProps, GraphState, GraphLink } from '../graph.types';
 import { RectangleSelectionProps } from '../components/RectangleSelection';
 import { getMainRepresentative, getSecondaryRepresentative } from '../../defaultRepresentatives';
 import useGraphParser, { ObjectToParse } from './useGraphParser';
@@ -10,24 +9,17 @@ const useGraphInteractions = () => {
   const { buildNode, buildLink } = useGraphParser();
 
   const {
-    graphData,
-    addNode: contextAddNode,
-    removeNode: contextRemoveNode,
-    addLink: contextAddLink,
-    removeLink: contextRemoveLink,
-    positions,
     graphRef2D,
     graphRef3D,
+    graphData,
     graphState,
+    positions,
     selectedLinks,
     selectedNodes,
-    setGraphStateProp,
+    setGraphData,
+    setGraphState,
     setSelectedLinks,
     setSelectedNodes,
-    addSelectedLink,
-    addSelectedNode,
-    removeSelectedLink,
-    removeSelectedNode,
   } = useGraphContext();
 
   const {
@@ -43,9 +35,17 @@ const useGraphInteractions = () => {
     disabledCreators,
   } = graphState;
 
-  useEffect(() => {
-    setGraphStateProp('selectRelationshipMode', null);
-  }, [selectedNodes]);
+  /**
+   * Internal function to easily modify one property in the state.
+   *
+   * @param key Name of the property to change.
+   * @param value New value for the property.
+   */
+  const setGraphStateProp = <K extends keyof GraphState>(key: K, value: GraphState[K]) => {
+    setGraphState((oldState) => {
+      return { ...oldState, [key]: value };
+    });
+  };
 
   const toggleMode3D = () => {
     setGraphStateProp('mode3D', !mode3D);
@@ -116,6 +116,24 @@ const useGraphInteractions = () => {
     const shouldIgnore = z?.k === 1 && z.x === 0 && z.y === 0;
     if (shouldIgnore) return; // Those zoom values are from graph init, ignore.
     setGraphStateProp('zoom', z);
+  };
+
+  const addSelectedLink = (link: GraphLink) => {
+    const existing = selectedLinks.find((l) => l.id === link.id);
+    if (!existing) setSelectedLinks((old) => [...old, link]);
+  };
+
+  const removeSelectedLink = (link: GraphLink) => {
+    setSelectedLinks((old) => old.filter((l) => l.id !== link.id));
+  };
+
+  const addSelectedNode = (node: GraphNode) => {
+    const existing = selectedNodes.find((n) => n.id === node.id);
+    if (!existing) setSelectedNodes((old) => [...old, node]);
+  };
+
+  const removeSelectedNode = (node: GraphNode) => {
+    setSelectedNodes((old) => old.filter((n) => n.id !== node.id));
   };
 
   /**
@@ -291,19 +309,43 @@ const useGraphInteractions = () => {
   };
 
   const addNode = (data: ObjectToParse) => {
-    contextAddNode(buildNode(data, positions));
+    const node = buildNode(data, positions);
+    setGraphData((oldData) => {
+      const withoutExisting = (oldData?.nodes ?? []).filter((n) => n.id !== node.id);
+      return {
+        nodes: [...withoutExisting, node],
+        links: oldData?.links ?? [],
+      };
+    });
   };
 
   const removeNode = (nodeId: string) => {
-    contextRemoveNode(nodeId);
+    setGraphData((oldData) => {
+      return {
+        nodes: (oldData?.nodes ?? []).filter((node) => node.id !== nodeId),
+        links: oldData?.links ?? [],
+      };
+    });
   };
 
   const addLink = (data: ObjectToParse) => {
-    contextAddLink(buildLink(data)); // TODO does it work with nested?
+    const link = buildLink(data); // TODO does it work with nested?
+    setGraphData((oldData) => {
+      const withoutExisting = (oldData?.links ?? []).filter((l) => l.id !== link.id);
+      return {
+        links: [...withoutExisting, link],
+        nodes: oldData?.nodes ?? [],
+      };
+    });
   };
 
   const removeLink = (linkId: string) => {
-    contextRemoveLink(linkId);
+    setGraphData((oldData) => {
+      return {
+        links: (oldData?.links ?? []).filter((link) => link.id !== linkId),
+        nodes: oldData?.nodes ?? [],
+      };
+    });
   };
 
   return {
