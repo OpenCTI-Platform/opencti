@@ -68,9 +68,16 @@ const DraftContextBanner = () => {
           id: draftContext.id,
         },
         onCompleted: () => {
-          setApproving(false);
-          MESSAGING$.notifySuccess('Draft validation in progress');
-          navigate('/');
+          commitExitDraft({
+            variables: {
+              input: { key: 'draft_context', value: '' },
+            },
+            onCompleted: () => {
+              setApproving(false);
+              MESSAGING$.notifySuccess('Draft validation in progress');
+              navigate('/');
+            },
+          });
         },
       });
     }
