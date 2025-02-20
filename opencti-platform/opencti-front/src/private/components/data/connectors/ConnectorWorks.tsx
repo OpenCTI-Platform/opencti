@@ -88,7 +88,6 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   options,
   relay,
   inProgress,
-  isCompleted,
 }) => {
   const works = data.works?.edges ?? [];
   const { t_i18n, nsdt } = useFormatter();

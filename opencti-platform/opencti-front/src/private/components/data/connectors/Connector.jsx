@@ -789,7 +789,7 @@ const ConnectorComponent = ({ connector, relay }) => {
         variables={optionsFinished}
         render={({ props }) => {
           if (props) {
-            return <ConnectorWorks data={props} options={optionsFinished} isCompleted={true} />;
+            return <ConnectorWorks data={props} options={optionsFinished}/>;
           }
           return <Loader variant="inElement" />;
         }}
