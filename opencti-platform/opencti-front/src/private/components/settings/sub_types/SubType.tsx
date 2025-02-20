@@ -47,8 +47,10 @@ export const subTypeQuery = graphql`
         ...EntitySettingSettings_entitySetting
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesGrid_templates
-        ...RequestAccessStatusFragment_entitySetting
-        ...RequestAccessConfigurationEdition_entitySettings
+        requestAccessConfiguration{
+            ...RequestAccessStatusFragment_requestAccess
+            ...RequestAccessConfigurationEdition_requestAccess
+        }
       }
       ...ItemStatusTemplate_global
     }
@@ -138,7 +140,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 />
               </>
             }
-            {isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
+            {subType.settings?.requestAccessConfiguration && isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
               && <>
                 <div style={{ marginTop: 20 }}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -154,8 +156,8 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                 <div style={{ marginTop: 20 }}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t_i18n('Request access action configuration')}
-                    <RequestAccessConfigurationPopover id={subType.id} data={subType.settings}/>
-                    <RequestAccessStatus data={subType.settings}/>
+                    <RequestAccessConfigurationPopover data={subType.settings.requestAccessConfiguration}/>
+                    <RequestAccessStatus data={subType.settings.requestAccessConfiguration}/>
                   </Typography>
                 </div>
               </>

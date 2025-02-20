@@ -11,51 +11,25 @@ import {
 } from '@components/settings/sub_types/request_access/__generated__/RequestAccessConfigurationEditionMutation.graphql';
 import StatusTemplateFieldScoped from '@components/settings/sub_types/request_access/StatusTemplateFieldScoped';
 import GroupField, { GroupFieldOption } from '@components/common/form/GroupField';
+import {
+  RequestAccessConfigurationEdition_requestAccess$key,
+} from '@components/settings/sub_types/request_access/__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
-import { RequestAccessConfigurationEdition_entitySettings$key } from './__generated__/RequestAccessConfigurationEdition_entitySettings.graphql';
 
 const requestAccessConfigurationMutation = graphql`
     mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {
         requestAccessConfigure(input: $input) {
-            approved_status {
-                id
-                template {
-                    id
-                    color
-                    name
-                }
-            }
-            declined_status {
-                id
-                template {
-                    id
-                    color
-                    name
-                }
-            }
-            approval_admin {
-                id
-                name
-            }
-        }
-    }
-`;
-
-export const requestAccessConfigurationEditionQuery = graphql`
-    query RequestAccessConfigurationEditionQuery($id: String!) {
-        entitySetting(id: $id) {
-            ...RequestAccessConfigurationEdition_entitySettings
+            ...RequestAccessStatusFragment_requestAccess
+            ...RequestAccessConfigurationEdition_requestAccess
         }
     }
 `;
 
 export const requestAccessConfigurationFragment = graphql`
-  fragment RequestAccessConfigurationEdition_entitySettings on EntitySetting {
-    id
-    requestAccessConfiguration {
+  fragment RequestAccessConfigurationEdition_requestAccess on RequestAccessConfiguration {
         approved_status {
             id
             template {
@@ -76,13 +50,12 @@ export const requestAccessConfigurationFragment = graphql`
             id
             name
         }
-    }
   }
 `;
 
 interface RequestAccessWorkflowProps {
   handleClose: () => void;
-  queryRef: RequestAccessConfigurationEdition_entitySettings$key
+  data: RequestAccessConfigurationEdition_requestAccess$key
   open?: boolean
 }
 
@@ -95,13 +68,13 @@ interface RequestAccessEditionFormInputs {
 const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflowProps> = ({
   handleClose,
   open,
-  queryRef,
+  data,
 }) => {
   const { t_i18n } = useFormatter();
-  const queryData = useFragment(requestAccessConfigurationFragment, queryRef);
-  const approvedTemplateStatus = queryData?.requestAccessConfiguration?.approved_status?.template;
-  const declinedTemplateStatus = queryData?.requestAccessConfiguration?.declined_status?.template;
-  const adminData = queryData?.requestAccessConfiguration?.approval_admin;
+  const requestAccessData = useFragment(requestAccessConfigurationFragment, data);
+  const approvedTemplateStatus = requestAccessData.approved_status?.template;
+  const declinedTemplateStatus = requestAccessData.declined_status?.template;
+  const adminData = requestAccessData.approval_admin;
   const initialValues: RequestAccessEditionFormInputs = {
     acceptedTemplate: {
       color: approvedTemplateStatus ? approvedTemplateStatus.color : '#fff',
