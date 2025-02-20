@@ -5,6 +5,7 @@ import { makeStyles } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
+import getFilterFromEntityTypeAndNodeType, { DiamondNodeType } from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
 import type { Theme } from '../../../../../../../components/Theme';
 import { useFormatter } from '../../../../../../../components/i18n';
 import { emptyFilled } from '../../../../../../../utils/String';
@@ -59,6 +60,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const NodeAdversary = ({ data }: NodeProps) => {
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { stixDomainObject, entityLink } = data;
   const isArsenal = ['Malware', 'Tool', 'Channel'].includes(stixDomainObject.entity_type);
@@ -69,7 +71,9 @@ const NodeAdversary = ({ data }: NodeProps) => {
   const usedBy = R.uniq((stixDomainObject.usedBy?.edges ?? [])
     .map((n: { node: { from: { name: string } } }) => n?.node?.from?.name))
     .join(', ');
-  const { t_i18n } = useFormatter();
+
+  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.infrastructure);
+
   return (
     <div className={classes.node} >
       <div className={classes.nodeContent}>
@@ -84,7 +88,7 @@ const NodeAdversary = ({ data }: NodeProps) => {
       </div>
       <Button
         component={Link}
-        to={`${entityLink}/all`}
+        to={`${entityLink}/all?filters=${generatedFilters}`}
         variant="contained"
         size="small"
         classes={{ root: classes.buttonExpand }}
