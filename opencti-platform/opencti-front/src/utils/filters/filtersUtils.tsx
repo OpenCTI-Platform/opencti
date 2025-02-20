@@ -816,19 +816,22 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
   };
 };
 
-export const useBuildEntityTypeBasedFilterContext = (entityTypeParam: string | string[], filters: FilterGroup | undefined): FilterGroup => {
+export const useBuildEntityTypeBasedFilterContext = (
+  entityTypeParam: string | string[],
+  filters: FilterGroup | undefined,
+  excludedEntityTypeParam: string | undefined,
+): FilterGroup => {
   const entityTypes = Array.isArray(entityTypeParam) ? entityTypeParam : [entityTypeParam];
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes);
+  const entityTypeFilter = { key: 'entity_type', values: entityTypes, operator: 'eq', mode: 'or' };
+  const entityTypeFilters = [entityTypeFilter];
+  if (excludedEntityTypeParam) {
+    const excludedEntityTypeFilter = { key: 'entity_type', values: [excludedEntityTypeParam], operator: 'not_eq', mode: 'or' };
+    entityTypeFilters.push(excludedEntityTypeFilter);
+  }
   return {
     mode: 'and',
-    filters: [
-      {
-        key: 'entity_type',
-        values: entityTypes,
-        operator: 'eq',
-        mode: 'or',
-      },
-    ],
+    filters: entityTypeFilters,
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 };

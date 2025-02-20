@@ -77,7 +77,7 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
   // TODO fix total to include only stix domain objects & SCO & stix core relationships & sightings & stix domain objects
   const totalCount = computeSumOfList(distributionResult.map((r: { label: string, count: number }) => r.count));
   const entitiesCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixDomainObject(r.label)).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixDomainObject(r.label) && !isStixDomainObjectContainer(r.label)).map((r: { count: number }) => r.count)
   );
   const observablesCount = computeSumOfList(
     distributionResult.filter((r: { label: string }) => isStixCyberObservable(r.label)).map((r: { count: number }) => r.count)
