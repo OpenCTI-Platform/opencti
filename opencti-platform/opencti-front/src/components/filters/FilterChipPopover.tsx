@@ -444,7 +444,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             && <div
               style={{ width: 150, display: 'inline-block' }}
                >
-              <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} />
+              <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
             </div>
           }
         </>

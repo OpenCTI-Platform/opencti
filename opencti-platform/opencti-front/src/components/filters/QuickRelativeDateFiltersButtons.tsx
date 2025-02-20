@@ -7,11 +7,13 @@ import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-
 interface QuickRelativeDateFiltersButtonsProps {
   filter?: Filter;
   helpers?: handleFilterHelpers;
+  handleClose: () => void;
 }
 
 const QuickRelativeDateFiltersButtons: FunctionComponent<QuickRelativeDateFiltersButtonsProps> = ({
   filter,
   helpers,
+  handleClose,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -25,6 +27,7 @@ const QuickRelativeDateFiltersButtons: FunctionComponent<QuickRelativeDateFilter
   ];
   const handleClick = (value: string) => {
     helpers?.handleReplaceFilterValues(filter?.id ?? '', [value, 'now']);
+    handleClose();
   };
   return (
     <div style={{ marginLeft: 20 }}>
