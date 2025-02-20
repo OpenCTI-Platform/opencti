@@ -34,6 +34,7 @@ const IntrusionSetKnowledgeComponent = ({
   const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(intrusionSet.entity_type, schema);
+
   return (
     <>
       <Routes>
