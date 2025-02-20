@@ -153,17 +153,17 @@ EntityDetailsRightsBarProps
         }}
       >
         {selectedEntity.entity_type === 'basic-relationship' && (
-          <BasicRelationshipDetails relation={selectedEntity} />
+          <BasicRelationshipDetails relation={selectedEntity as GraphLink} />
         )}
         {selectedEntity.parent_types.includes('stix-relationship')
           && selectedEntity.entity_type !== 'basic-relationship' && (
-            <RelationshipDetails relation={selectedEntity} />
+            <RelationshipDetails relation={selectedEntity as GraphLink} />
         )}
         {selectedEntity.parent_types.includes('Stix-Core-Object') && (
-          <EntityDetails entity={selectedEntity} />
+          <EntityDetails entity={selectedEntity as GraphNode} />
         )}
         {selectedEntity.parent_types.includes('Stix-Meta-Object') && (
-          <StixMetaObjectDetails entity={selectedEntity} />
+          <StixMetaObjectDetails entity={selectedEntity as GraphNode} />
         )}
       </div>
     </Drawer>

@@ -16,7 +16,6 @@ import useQueryLoading from '../../hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
 import ItemMarkings from '../../../components/ItemMarkings';
-import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import ItemIcon from '../../../components/ItemIcon';
 import type { Theme } from '../../../components/Theme';
@@ -27,6 +26,7 @@ import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ItemConfidence from '../../../components/ItemConfidence';
 import FieldOrEmpty from '../../../components/FieldOrEmpty';
 import ItemEntityType from '../../../components/ItemEntityType';
+import { GraphNode } from '../graph.types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -545,7 +545,7 @@ EntityDetailsComponentProps
 };
 
 interface EntityDetailsProps {
-  entity: SelectedEntity;
+  entity: GraphNode;
   queryRef: PreloadedQuery<EntityDetailsQuery>;
 }
 

@@ -6,7 +6,6 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../components/i18n';
 import useQueryLoading from '../../hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import { getMainRepresentative } from '../../defaultRepresentatives';
 import { truncate } from '../../String';
@@ -14,6 +13,7 @@ import ItemCreators from '../../../components/ItemCreators';
 import { StixMetaObjectDetailsQuery } from './__generated__/StixMetaObjectDetailsQuery.graphql';
 import ItemMarkings from '../../../components/ItemMarkings';
 import ItemEntityType from '../../../components/ItemEntityType';
+import { GraphNode } from '../graph.types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -119,7 +119,7 @@ StixMetaObjectDetailsComponentProps
 };
 
 interface StixMetaObjectDetailsProps {
-  entity: SelectedEntity;
+  entity: GraphNode;
   queryRef: PreloadedQuery<StixMetaObjectDetailsQuery>;
 }
 
