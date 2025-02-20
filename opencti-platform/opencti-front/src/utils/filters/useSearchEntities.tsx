@@ -24,11 +24,9 @@ import { NotifierFieldQuery } from '@components/common/form/NotifierField';
 import { NotifierFieldSearchQuery$data } from '@components/common/form/__generated__/NotifierFieldSearchQuery.graphql';
 import { killChainPhasesSearchQuery } from '@components/settings/KillChainPhases';
 import { KillChainPhasesSearchQuery$data } from '@components/settings/__generated__/KillChainPhasesSearchQuery.graphql';
-import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
 import { triggersQueriesSearchQuery } from '@components/profile/triggers/TriggersQueries';
 import { TriggersQueriesSearchQuery$data } from '@components/profile/triggers/__generated__/TriggersQueriesSearchQuery.graphql';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
-import { markingDefinitionsLinesSearchQuery } from '@components/settings/MarkingDefinitionsQuery';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import { useFormatter } from '../../components/i18n';
@@ -39,6 +37,7 @@ import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
 import { contextFilters, entityTypesFilters } from './filtersUtils';
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
+import { convertMarking } from '../edition';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -349,21 +348,14 @@ const useSearchEntities = ({
 
     // fetches markings and add them to the set
     const buildOptionsFromMarkingsSearchQuery = (key: string) => {
-      fetchQuery(markingDefinitionsLinesSearchQuery, {
-        search: event.target.value !== 0 ? event.target.value : '',
-      })
-        .toPromise()
-        .then((data) => {
-          const markedByEntities: EntityValue[] = (
-            (data as MarkingDefinitionsQuerySearchQuery$data)?.markingDefinitions?.edges ?? []
-          ).flatMap(({ node }) => (!node.definition ? [] : {
-            label: node.definition,
-            value: node.id,
-            type: 'Marking-Definition',
-            color: node.x_opencti_color ?? undefined,
-          }));
-          unionSetEntities(key, markedByEntities);
-        });
+      const allowedMarkingDefinitions = me.allowed_marking?.map(convertMarking) ?? [];
+      const markedByEntities: EntityValue[] = allowedMarkingDefinitions.flatMap((m) => ({
+        label: m.label,
+        value: m.value,
+        color: m.color,
+        type: 'Marking-Definition',
+      }));
+      unionSetEntities(key, markedByEntities);
     };
 
     // fetches kill chain phases and add them to the set
