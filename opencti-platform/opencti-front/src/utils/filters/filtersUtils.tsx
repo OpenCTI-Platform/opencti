@@ -37,6 +37,8 @@ export const emptyFilterGroup = {
 export const SELF_ID = 'SELF_ID';
 export const SELF_ID_VALUE = 'CURRENT ENTITY';
 
+export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
+
 export const FiltersVariant = {
   list: 'list',
   dialog: 'dialog',

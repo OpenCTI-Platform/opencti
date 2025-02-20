@@ -11,6 +11,7 @@ import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import { addDays, subDays } from 'date-fns';
 import {
+  DEFAULT_WITHIN_FILTER_VALUES,
   FilterSearchContext,
   getAvailableOperatorForFilter,
   getSelectedOptions,
@@ -317,8 +318,9 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   };
   const getSpecificFilter = (fDefinition?: FilterDefinition): ReactNode => {
     if (fDefinition?.type === 'date') {
+      console.log('filter', filter);
       if (filterOperator === 'within') {
-        const values = filterValues.length > 0 ? filterValues : ['now-1d', 'now'];
+        const values = filterValues.length > 0 ? filterValues : DEFAULT_WITHIN_FILTER_VALUES;
         return (
           <>
             <div style={{ marginBottom: 10 }}>{t_i18n('From')}</div>

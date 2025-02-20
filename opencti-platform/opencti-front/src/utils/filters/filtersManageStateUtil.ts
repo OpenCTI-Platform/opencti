@@ -1,4 +1,5 @@
 import { Filter, FilterGroup, FilterValue } from './filtersHelpers-types';
+import { DEFAULT_WITHIN_FILTER_VALUES } from './filtersUtils';
 
 type FiltersLocalStorageUtilProps<U> = {
   filters: FilterGroup,
@@ -28,13 +29,21 @@ export const handleChangeOperatorFiltersUtil = ({ filters, id, operator }: Filte
   id: string,
   operator: string
 }>): FilterGroup => {
-  return updateFilters(filters, (f) => (f.id === id
-    ? {
-      ...f,
-      operator,
-      values: ['nil', 'not_nil'].includes(operator) ? [] : f.values,
+  return updateFilters(filters, (f) => {
+    let values = [...f.values];
+    if (['nil', 'not_nil'].includes(operator)) {
+      values = [];
+    } else if (operator === 'within' && f.operator !== 'within') {
+      values = DEFAULT_WITHIN_FILTER_VALUES;
     }
-    : f));
+    return (f.id === id
+      ? {
+        ...f,
+        operator,
+        values,
+      }
+      : f);
+  });
 };
 
 export const handleSwitchLocalModeUtil = ({ filters, filter }: FiltersLocalStorageUtilProps<{
