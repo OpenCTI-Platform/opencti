@@ -20,7 +20,26 @@ import { RequestAccessConfigurationEdition_entitySettings$key } from './__genera
 const requestAccessConfigurationMutation = graphql`
     mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {
         requestAccessConfigure(input: $input) {
-            ...RequestAccessConfigurationEdition_entitySettings
+            approved_status {
+                id
+                template {
+                    id
+                    color
+                    name
+                }
+            }
+            declined_status {
+                id
+                template {
+                    id
+                    color
+                    name
+                }
+            }
+            approval_admin {
+                id
+                name
+            }
         }
     }
 `;
