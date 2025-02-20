@@ -141,8 +141,10 @@ export const createStatusTemplate = async (context: AuthContext, user: AuthUser,
 };
 
 export const createStatus = async (context: AuthContext, user: AuthUser, subTypeId: string, input: StatusAddInput) => {
+  logApp.info('[SATUS] createStatus', { input, subTypeId });
   validateSetting(subTypeId, 'workflow_configuration');
   const data = await createEntity(context, user, { type: subTypeId, ...input }, ENTITY_TYPE_STATUS);
+  logApp.info('[SATUS] createStatus created', { data });
   await publishUserAction({
     user,
     event_type: 'mutation',
