@@ -10,8 +10,16 @@ export const getDraftFilePrefix = (draftId) => {
   return `draft/${draftId}/`;
 };
 
-export const isDraftFile = (fileKey, draftId) => {
-  return fileKey.startsWith(getDraftFilePrefix(draftId));
+export const getDraftContextFilesPrefix = (context) => {
+  const draftContext = getDraftContext(context, context.user);
+  if (draftContext) {
+    return getDraftFilePrefix(draftContext);
+  }
+  return '';
+};
+
+export const isDraftFile = (fileKey, draftId, suffix = '') => {
+  return fileKey.startsWith(getDraftFilePrefix(draftId) + suffix);
 };
 
 export const buildDraftFilter = (context, user, opts = {}) => {

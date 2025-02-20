@@ -5,8 +5,7 @@ import { batchCreator } from '../domain/user';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { buildDraftVersion } from '../modules/draftWorkspace/draftWorkspace-domain';
-import { getDraftContext } from '../utils/draftContext';
-import { getDraftFilePrefix } from '../database/draft-utils';
+import { getDraftContextFilesPrefix } from '../database/draft-utils';
 
 const creatorLoader = batchLoader(batchCreator);
 const domainLoader = batchLoader(batchStixDomainObjects);
@@ -17,11 +16,8 @@ const fileResolvers = {
   Query: {
     file: (_, { id }, context) => loadFile(context, context.user, id),
     importFiles: (_, opts, context) => {
-      if (getDraftContext(context, context.user)) {
-        const globalDraftFile = `${getDraftFilePrefix(getDraftContext(context, context.user))}import/global`;
-        return paginatedForPathWithEnrichment(context, context.user, globalDraftFile, undefined, opts);
-      }
-      return paginatedForPathWithEnrichment(context, context.user, 'import/global', undefined, opts);
+      const globalFilesPath = `${getDraftContextFilesPrefix(context)}import/global`;
+      return paginatedForPathWithEnrichment(context, context.user, globalFilesPath, undefined, opts);
     },
     pendingFiles: (_, opts, context) => { // correspond to global workbenches (i.e. worbenches in Data > Import)
       return paginatedForPathWithEnrichment(context, context.user, 'import/pending', undefined, opts);

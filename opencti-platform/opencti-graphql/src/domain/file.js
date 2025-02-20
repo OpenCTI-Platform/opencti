@@ -24,7 +24,7 @@ import { telemetry } from '../config/tracing';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
 import { UnsupportedError } from '../config/errors';
-import { getDraftFilePrefix, isDraftFile } from '../database/draft-utils';
+import { isDraftFile } from '../database/draft-utils';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -129,7 +129,7 @@ export const uploadImport = async (context, user, args) => {
 
 export const uploadPending = async (context, user, args) => {
   if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot upload pending in draft');
+    throw UnsupportedError('Cannot create a workbench in draft');
   }
   const { file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false, file_markings = [] } = args;
   let finalFile = file;
@@ -184,8 +184,8 @@ export const deleteImport = async (context, user, fileName) => {
   // Imported file must be handled specifically
   // File deletion must publish a specific event
   // and update the updated_at field of the source entity
-  const draftFileImport = `${getDraftFilePrefix(draftContext)}import`;
-  const isImportFile = fileName.startsWith('import') || (draftContext && fileName.startsWith(draftFileImport));
+  const isDraftFileImport = draftContext && isDraftFile(fileName, draftContext, 'import');
+  const isImportFile = fileName.startsWith('import') || isDraftFileImport;
   if (isImportFile && !fileName.includes('global') && !fileName.includes('pending')) {
     await stixCoreObjectImportDelete(context, context.user, fileName);
     return fileName;
