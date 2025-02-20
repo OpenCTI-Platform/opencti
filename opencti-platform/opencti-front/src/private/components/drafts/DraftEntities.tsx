@@ -13,6 +13,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useHelper from '../../../utils/hooks/useHelper';
+import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 
 const draftEntitiesLineFragment = graphql`
     fragment DraftEntities_node on StixCoreObject {
@@ -116,10 +117,12 @@ const LOCAL_STORAGE_KEY = 'draft_entities';
 
 interface DraftEntitiesProps {
   entitiesType?: string;
+  excludedEntitiesType?: string;
 }
 
 const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   entitiesType = 'Stix-Core-Object',
+  excludedEntitiesType,
 }) => {
   const { draftId } = useParams() as { draftId: string };
   const { isFeatureEnable } = useHelper();
@@ -159,8 +162,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     filters,
     searchTerm,
   } = viewStorage;
-
-  const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters, excludedEntitiesType);
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
