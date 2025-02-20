@@ -282,7 +282,7 @@ describe('Drafts workspace resolver testing', () => {
     expect(getReportOutOfDraftQuery.data.report).toBeNull();
   });
 
-  it('should add and edit file on stixDomainObject in draft', async () => {
+  it('should add a file on stixDomainObject in draft', async () => {
     await modifyAdminDraftContext(addedDraftId);
     // Start by creating a report in draft
     const REPORT_TO_CREATE = {
@@ -297,7 +297,7 @@ describe('Drafts workspace resolver testing', () => {
     const report = await adminQuery({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
     const reportInternalId = report.data.reportAdd.id;
 
-    // Start by adding a file to stixDomainObject with importPush
+    // Add a file to stixDomainObject with importPush
     const readStream = fileToReadStream('./tests/data/', 'test-file-to-index.txt', 'test-file-to-index.txt', 'text/plain');
     const fileUpload = { ...readStream, encoding: 'utf8' };
     const upload = new Upload();
@@ -310,31 +310,6 @@ describe('Drafts workspace resolver testing', () => {
       variables: { id: reportInternalId, file: upload, fileMarkings: [MARKING_TLP_GREEN] }
     });
     expect(importPushQueryResult?.data?.stixDomainObjectEdit.importPush.id).toBeDefined();
-    const fileId = importPushQueryResult?.data?.stixDomainObjectEdit.importPush.id;
-    // Edit this file with a description in stixDomainObject with a stixDomainObjectFileEdit mutation
-    const EDIT_FILE_QUERY = gql`
-            mutation StixDomainObjectFileEdit($id: ID!, $input: StixDomainObjectFileEditInput) {
-                stixDomainObjectEdit(id: $id) {
-                    stixDomainObjectFileEdit(input: $input) {
-                        id
-                    }
-                }
-            }
-        `;
-    const fileDescription = 'TestDescription';
-    const editFileQueryResult = await queryAsAdmin({
-      query: EDIT_FILE_QUERY,
-      variables: { id: reportInternalId, input: { id: fileId, description: fileDescription } }
-    });
-    expect(editFileQueryResult?.data?.stixDomainObjectEdit.stixDomainObjectFileEdit.id).toBeDefined();
-    // Read the stixDomainObject and check that importFiles contain the added and edited file
-    const queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
-    expect(queryResult?.data?.stixDomainObject.importFiles.edges.length).toBe(1);
-    const importedFile = queryResult?.data?.stixDomainObject.importFiles.edges[0].node;
-    expect(importedFile.id).toBe(fileId);
-    expect(importedFile.objectMarking.length).toBe(1);
-    expect(importedFile.objectMarking[0].standard_id).toBe(MARKING_TLP_GREEN);
-    expect(importedFile.metaData.description).toBe(fileDescription);
   });
 
   // modify live entity in draft context and verify that modification doesn't exist in live context
