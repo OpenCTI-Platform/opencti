@@ -32,6 +32,7 @@ import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-
 import useAttributes from '../../utils/hooks/useAttributes';
 import RelativeDateInput from './RelativeDateInput';
 import BasicFilterInput from './BasicFilterInput';
+import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -428,14 +429,24 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           />
           {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey)}
         </div>
-        : <div
+        : <>
+          <div
             style={{
               width: 250,
               padding: 8,
+              display: 'inline-block',
             }}
           >
-          {displayOperatorAndFilter(filterKey)}
-        </div>
+            {displayOperatorAndFilter(filterKey)}
+          </div>
+          {filterOperator === 'within'
+            && <div
+              style={{ width: 150, display: 'inline-block' }}
+               >
+              <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} />
+            </div>
+          }
+        </>
       }
     </Popover>
   );
