@@ -337,6 +337,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               filter={filter}
               filterKey={filterKey}
               filterValues={values}
+              helpers={helpers}
               label={t_i18n('To')}
               valueOrder={1}
             />
