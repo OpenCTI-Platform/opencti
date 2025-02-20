@@ -305,7 +305,7 @@ describe('Drafts workspace resolver testing', () => {
       executor(fileUpload);
     });
     upload.file = fileUpload;
-    const importPushQueryResult = await queryAsAdmin({
+    const importPushQueryResult = await adminQuery({
       query: IMPORT_FILE_QUERY,
       variables: { id: reportInternalId, file: upload, fileMarkings: [MARKING_TLP_GREEN] }
     });
@@ -396,7 +396,7 @@ describe('Drafts workspace resolver testing', () => {
       executor(fileUpload);
     });
     upload.file = fileUpload;
-    await queryAsAdmin({
+    await adminQuery({
       query: IMPORT_FILE_QUERY,
       variables: { id: reportStandardId, file: upload, fileMarkings: [MARKING_TLP_GREEN] }
     });
