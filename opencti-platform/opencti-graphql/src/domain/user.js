@@ -67,8 +67,6 @@ import { UnitSystem } from '../generated/graphql';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
-const AUTH_BEARER = 'Bearer';
-const AUTH_BASIC = 'BasicAuth';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
@@ -134,11 +132,6 @@ const extractTokenFromBasicAuth = async (authorization) => {
     return tokenUUID;
   }
   return null;
-};
-
-export const findByCache = async (context, user, userId) => {
-  const platformUsers = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_USER);
-  return platformUsers.get(userId) || INTERNAL_USERS[userId] || SYSTEM_USER;
 };
 
 export const findById = async (context, user, userId) => {
@@ -338,7 +331,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, userMarking
     maxShareableMarkings = [...maxShareableMarkings.map(({ value }) => value), ...allShareableMarkings];
   }
   const computedMarkings = computeAvailableMarkings(computeUserMarkings, all);
-  return { user: computedMarkings, all, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
+  return { user: computedMarkings, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
 };
 
 export const roleCapabilities = async (context, user, roleId) => {
@@ -1171,15 +1164,18 @@ export const otpUserActivation = async (context, user, { secret, code }) => {
     const patch = { otp_activated: true, otp_secret: secret, otp_qr: uri };
     const { element } = await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, patch);
     context.req.session.user.otp_validated = isValidated;
-    return element;
+    return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
   }
   throw AuthenticationFailure();
 };
 
 export const otpUserDeactivation = async (context, user, id) => {
+  if (!context.user_with_session) {
+    throw UnsupportedError('You need to deactivate your current 2FA in a valid user session');
+  }
   const patch = { otp_activated: false, otp_secret: '', otp_qr: '' };
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_USER, patch);
-  return element;
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
 export const otpUserLogin = async (req, user, { code }) => {
@@ -1192,14 +1188,6 @@ export const otpUserLogin = async (req, user, { code }) => {
   }
   req.session.user.otp_validated = isValidated;
   return isValidated;
-};
-
-const buildSessionUser = (user, provider) => {
-  return {
-    id: user.id,
-    session_creation: now(),
-    otp_validated: user.otp_validated || provider === AUTH_BEARER, // 2FA is implicitly validated when login from token
-  };
 };
 
 const virtualOrganizationAdminCapability = {
@@ -1349,13 +1337,12 @@ export const buildCompleteUsers = async (context, clients) => {
       administrated_organizations,
       otp_activated: client.otp_activated ?? false,
       individual_id: individualMap.get(client.user_email)?.internal_id,
-      allowed_marking: marking.user,
-      all_marking: marking.all,
-      default_marking: marking.default,
-      max_shareable_marking: marking.max_shareable,
       effective_confidence_level,
       no_creators,
       restrict_delete,
+      allowed_marking: marking.user,
+      default_marking: marking.default,
+      max_shareable_marking: marking.max_shareable,
     });
   }
   return resolvedUsers;
@@ -1381,11 +1368,10 @@ export const resolveUserById = async (context, id) => {
   return buildCompleteUser(context, client);
 };
 
-export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId, provider) => {
+export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) => {
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   if (platformUsers.has(tokenOrId)) {
     let authenticatedUser = platformUsers.get(tokenOrId);
-    authenticatedUser.otp_validated = provider === AUTH_BEARER; // TODO What about basic?
     const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     validateUser(authenticatedUser, settings);
     const applicantId = req.headers['opencti-applicant-id'];
@@ -1455,12 +1441,11 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   validateUser(logged, settings);
   // Build and save the session
-  const sessionUser = buildSessionUser(logged, provider);
-  req.session.user = sessionUser;
+  req.session.user = { id: user.id, session_creation: now(), otp_validated: false };
   req.session.session_provider = provider;
   req.session.save();
   // Publish the login event
-  const userOrigin = userWithOrigin(req, sessionUser);
+  const userOrigin = userWithOrigin(req, logged);
   await publishUserAction({
     user: userOrigin,
     event_type: 'authentication',
@@ -1489,22 +1474,20 @@ export const authenticateUserFromRequest = async (context, req) => {
       const headProvider = HEADERS_AUTHENTICATORS[i];
       const user = await headProvider.reqLoginHandler(req);
       if (user) {
-        return await authenticateUserByTokenOrUserId(context, req, user.id, headProvider.provider);
+        return await authenticateUserByTokenOrUserId(context, req, user.id);
       }
     }
   }
   // If user not identified, try to extract token from bearer
-  let loginProvider = AUTH_BEARER;
   let tokenUUID = extractTokenFromBearer(req.headers.authorization);
   // If no bearer specified, try with basic auth
   if (!tokenUUID) {
-    loginProvider = AUTH_BASIC;
     tokenUUID = await extractTokenFromBasicAuth(req.headers.authorization);
   }
   // Get user from the token if found
   if (tokenUUID) {
     try {
-      return await authenticateUserByTokenOrUserId(context, req, tokenUUID, loginProvider);
+      return await authenticateUserByTokenOrUserId(context, req, tokenUUID);
     } catch (err) {
       logApp.error('Error resolving user by token', { cause: err });
     }

@@ -26,7 +26,6 @@ import {
   findCapabilities,
   findCreators,
   findDefaultDashboards,
-  findByCache,
   findParticipants,
   findRoleById,
   findRoles,
@@ -71,7 +70,7 @@ const creatorLoader = batchLoader(batchCreator);
 
 const userResolvers = {
   Query: {
-    me: (_, __, context) => findByCache(context, context.user, context.user.id),
+    me: (_, __, context) => context.user,
     user: (_, { id }, context) => findById(context, context.user, id),
     otpGeneration: (_, __, context) => otpUserGeneration(context.user),
     users: (_, args, context) => findAll(context, context.user, args),
