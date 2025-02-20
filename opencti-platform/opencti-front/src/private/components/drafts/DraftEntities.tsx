@@ -162,6 +162,8 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     searchTerm,
   } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters, excludedEntitiesType);
+  const relevantDraftOperationFilter = { key: 'draft_change.draft_operation', values: ['create', 'update'], operator: 'eq', mode: 'or' };
+  const toolbarFilters = { ...contextFilters, filters: [...contextFilters.filters, relevantDraftOperationFilter] };
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -225,12 +227,11 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           resolvePath={(data: DraftEntitiesLines_data$data) => data.draftWorkspaceEntities?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          toolbarFilters={toolbarFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={draftEntitiesLineFragment}
           entityTypes={[entitiesType]}
           removeFromDraftEnabled
-          disableSelectAll // TODO: To handle selectAll
           createButton={
             entitiesType === 'Stix-Cyber-Observable' ? (
               <>
