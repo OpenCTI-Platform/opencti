@@ -35,7 +35,7 @@ import { notify } from '../../database/redis';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
-import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { isStixCyberObservable, isStixCyberObservableHashedObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
@@ -76,10 +76,10 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
   // TODO fix total to include only stix domain objects & SCO & stix core relationships & sightings & stix domain objects
   const totalCount = computeSumOfList(distributionResult.map((r: { label: string, count: number }) => r.count));
   const entitiesCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixDomainObject(r.label)).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixDomainObject(r.label) && !isStixDomainObjectContainer(r.label)).map((r: { count: number }) => r.count)
   );
   const observablesCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixCyberObservable(r.label)).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixCyberObservable(r.label) || isStixCyberObservableHashedObservable(r.label)).map((r: { count: number }) => r.count)
   );
   const relationshipsCount = computeSumOfList(
     distributionResult.filter((r: { label: string }) => isStixCoreRelationship(r.label)).map((r: { count: number }) => r.count)

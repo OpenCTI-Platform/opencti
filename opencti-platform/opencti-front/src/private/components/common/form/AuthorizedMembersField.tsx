@@ -18,6 +18,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Creator, CREATOR_AUTHORIZED_CONFIG } from '../../../../utils/authorizedMembers';
 import SwitchField from '../../../../components/fields/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 /**
  * Returns true if the authorized member option is generic.
@@ -80,6 +81,7 @@ const AuthorizedMembersField = ({
   const { setFieldValue } = form;
   const { name, value } = field;
   const { me } = useAuth();
+  const draftContext = useDraftContext();
 
   // Value in sync with internal Formik field 'applyAccesses'.
   // Require to use a state in addition to the Formik field because
@@ -283,7 +285,7 @@ const AuthorizedMembersField = ({
                 type="checkbox"
                 name="applyAccesses"
                 label={t_i18n('Activate access restriction')}
-                disabled={!canDeactivate}
+                disabled={!!draftContext}
                 onChange={(_: string, val: string) => {
                   changeApplyAccesses(val === 'true', resetForm, setField);
                 }}

@@ -141,7 +141,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
         />
         <Route
           path="/entities"
-          element={<DraftEntities entitiesType={'Stix-Domain-Object'}/>}
+          element={<DraftEntities entitiesType={'Stix-Domain-Object'} excludedEntitiesType={'Container'}/>}
         />
         <Route
           path="/observables"
