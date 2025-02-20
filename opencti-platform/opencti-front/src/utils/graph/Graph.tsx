@@ -14,6 +14,7 @@ import LassoSelection from './components/LassoSelection';
 import useGraphFilter from './utils/useGraphFilter';
 import EntitiesDetailsRightsBar from './components/EntitiesDetailsRightBar';
 import type { Theme } from '../../components/Theme';
+import RelationSelection from './components/RelationSelection';
 
 export interface GraphProps extends GraphToolbarProps {
   parentRef: MutableRefObject<HTMLDivElement | null>
@@ -54,6 +55,7 @@ const Graph = ({
     graphRef3D,
     graphData,
     setSelectedNodes,
+    setIsAddRelationOpen,
     selectedLinks,
     selectedNodes,
     graphState: {
@@ -118,6 +120,18 @@ const Graph = ({
             graph={graphRef2D}
             // TODO update LassoSelection component when every refacto done
             setSelectedNodes={(nodes) => setSelectedNodes(Array.from(nodes) as GraphNode[])}
+          />
+          <RelationSelection
+            width={width}
+            height={height}
+            activated={!selectFree && !selectFreeRectangle}
+            graphDataNodes={graphData?.nodes ?? []}
+            graph={graphRef2D}
+            // TODO update RelationSelection component when every refacto done
+            setSelectedNodes={(nodes) => {
+              setSelectedNodes(Array.from(nodes) as GraphNode[]);
+              setIsAddRelationOpen(true);
+            }}
           />
           <RectangleSelection
             graphId={graphId}

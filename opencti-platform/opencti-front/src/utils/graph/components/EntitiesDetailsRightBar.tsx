@@ -17,6 +17,7 @@ import { useFormatter } from '../../../components/i18n';
 import { isStixNestedRefRelationship } from '../../Relation';
 import StixMetaObjectDetails from './StixMetaObjectDetails';
 import BasicRelationshipDetails from './BasicRelationshipDetails';
+import { GraphLink, GraphNode, isGraphLink, isGraphNode } from '../graph.types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,28 +41,8 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
-export interface SelectedEntity {
-  id: string;
-  label: string;
-  relationship_type?: string;
-  entity_type: string;
-  parent_types: string[];
-  source?: SelectedEntity;
-  target?: SelectedEntity;
-  fromId?: string;
-  fromType?: string;
-  toId?: string;
-  toType?: string;
-  source_id?: string;
-  target_id?: string;
-  markedBy?: {
-    id: string;
-    definition: string;
-  }[];
-}
-
 interface EntityDetailsRightsBarProps {
-  selectedEntities: SelectedEntity[];
+  selectedEntities: (GraphNode | GraphLink)[];
 }
 const EntitiesDetailsRightsBar: FunctionComponent<
 EntityDetailsRightsBarProps
@@ -69,26 +50,25 @@ EntityDetailsRightsBarProps
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const uniqSelectedEntities: SelectedEntity[] = selectedEntities
-    .filter(
-      (item, index) => selectedEntities.findIndex((entity) => entity.id === item.id) === index,
-    )
+  const uniqSelectedEntities = selectedEntities
     .map((n) => {
-      if (n.source && n.target) {
+      if (
+        isGraphLink(n)
+        && n.source && typeof n.source !== 'string'
+        && n.target && typeof n.target !== 'string'
+      ) {
         const source = n.source.label;
         const target = n.target.label;
         return { ...n, label: `${source} ➡️ ${target}` };
       }
-      if (n.fromType && n.toType) {
+      if (isGraphNode(n) && n.fromType && n.toType) {
         const source = n.fromType;
         const target = n.toType;
         return { ...n, label: `${source} ➡️ ${target}` };
       }
       return n;
     });
-  const [selectedEntity, setSelectedEntity] = useState<SelectedEntity>(
-    uniqSelectedEntities[0],
-  );
+  const [selectedEntity, setSelectedEntity] = useState(uniqSelectedEntities[0]);
   useEffect(() => {
     if (uniqSelectedEntities[0] !== selectedEntity) {
       setSelectedEntity(uniqSelectedEntities[0]);

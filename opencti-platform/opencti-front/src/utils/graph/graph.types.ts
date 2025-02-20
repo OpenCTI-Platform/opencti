@@ -41,6 +41,13 @@ export interface GraphNode extends GraphElement {
   numberOfConnectedElement?: number
 }
 
+export const isGraphNode = (o: GraphNode | GraphLink): o is GraphNode => {
+  return (o as GraphNode).img !== undefined;
+};
+export const isGraphLink = (o: GraphNode | GraphLink): o is GraphLink => {
+  return (o as GraphLink).source_id !== undefined;
+};
+
 export type LibGraphProps = ForceGraphProps<GraphNode, GraphLink>;
 
 export interface OctiGraphPositions {

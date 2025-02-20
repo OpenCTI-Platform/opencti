@@ -3,6 +3,8 @@ import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { graphql, useFragment } from 'react-relay';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
+import ReportPopover from '@components/analyses/reports/ReportPopover';
+import ContainerHeader from '@components/common/containers/ContainerHeader';
 import useReportKnowledgeGraphDeleteRelation from './useReportKnowledgeGraphDeleteRelation';
 import { ReportKnowledgeGraph_fragment$data, ReportKnowledgeGraph_fragment$key } from './__generated__/ReportKnowledgeGraph_fragment.graphql';
 import type { Theme } from '../../../../components/Theme';
@@ -14,6 +16,8 @@ import useReportKnowledgeGraphAddRelation from './useReportKnowledgeGraphAddRela
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
 import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteractions';
 import useReportKnowledgeGraphEdit from './useReportKnowledgeGraphEdit';
+import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
+import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
 
 const reportGraphFragment = graphql`
   fragment ReportKnowledgeGraph_fragment on Report {
@@ -382,6 +386,7 @@ const reportGraphFragment = graphql`
 `;
 
 interface ReportKnowledgeGraphComponentProps {
+  mode: string
   enableReferences: boolean
   report: ReportKnowledgeGraph_fragment$data
 }
@@ -389,6 +394,7 @@ interface ReportKnowledgeGraphComponentProps {
 const ReportKnowledgeGraphComponent = ({
   enableReferences,
   report,
+  mode,
 }: ReportKnowledgeGraphComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
@@ -457,6 +463,19 @@ const ReportKnowledgeGraphComponent = ({
 
   return (
     <div style={graphContainerStyle} ref={ref}>
+      <ContainerHeader
+        knowledge
+        enableSuggestions
+        container={report}
+        currentMode={mode}
+        PopoverComponent={<ReportPopover id={report.id} />}
+        link={`/dashboard/analyses/reports/${report.id}/knowledge`}
+        modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+        onApplied={(suggestions: ObjectToParse[]) => {
+          suggestions.forEach((suggestion) => addLink(suggestion));
+        }}
+        investigationAddFromContainer={investigationAddFromContainer}
+      />
       <Graph
         parentRef={ref}
         onPositionsChanged={savePositions}
@@ -490,10 +509,12 @@ const ReportKnowledgeGraph = ({
   const localStorageKey = `report-${report.id}-knowledge-graph`;
 
   const reportData = useMemo(() => {
-    return {
-      objects: (report.objects?.edges ?? []).flatMap((n) => (n ? { ...n.node, types: n.types } : [])),
-      positions: deserializeObject(report.x_opencti_graph_data),
-    };
+    const objects = (report.objects?.edges ?? []).flatMap((n) => {
+      if (!n) return []; // filter empty nodes.
+      return { ...n.node, types: n.types };
+    }) as unknown as ObjectToParse[];
+    const positions = deserializeObject(report.x_opencti_graph_data);
+    return { objects, positions };
   }, [report]);
 
   return (

@@ -36,7 +36,7 @@ const GraphToolbarContentTools = ({
 }: GraphToolbarContentToolsProps) => {
   const { t_i18n } = useFormatter();
 
-  const [addRelationOpen, setAddRelationOpen] = useState(false);
+  const { isAddRelationOpen, setIsAddRelationOpen } = useGraphContext();
   const [relationReversed, setRelationReversed] = useState(false);
 
   const [addNestedOpen, setAddNestedOpen] = useState(false);
@@ -51,11 +51,13 @@ const GraphToolbarContentTools = ({
   const {
     selectedNodes,
     selectedLinks,
+    graphData,
   } = useGraphContext();
 
   const {
     addNode,
     removeNode,
+    removeLink,
   } = useGraphInteractions();
 
   if (!container) return null;
@@ -83,6 +85,14 @@ const GraphToolbarContentTools = ({
     objectsTo = relationReversed || sightingReversed || nestedReversed ? [selectedLinks[0]] : [selectedNodes[0]];
   }
 
+  const removeFromAddPanel = (node: { id: string }) => {
+    // Remove links associated to removed node
+    (graphData?.links ?? []).filter(({ source_id, target_id }) => {
+      return source_id === node.id || target_id === node.id;
+    }).forEach(({ id }) => removeLink(id));
+    removeNode(node.id);
+  };
+
   return (
     <>
       <ContainerAddStixCoreObjectsInGraph
@@ -93,7 +103,7 @@ const GraphToolbarContentTools = ({
         defaultMarkingDefinitions={container.objectMarking ?? []}
         targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
         onAdd={addNode}
-        onDelete={({ id }: { id: string }) => removeNode(id)}
+        onDelete={removeFromAddPanel}
         confidence={container.confidence}
         enableReferences={enableReferences}
       />
@@ -107,11 +117,11 @@ const GraphToolbarContentTools = ({
         Icon={<LinkOutlined />}
         disabled={!canAddRelation}
         color="primary"
-        onClick={() => setAddRelationOpen(true)}
+        onClick={() => setIsAddRelationOpen(true)}
         title={t_i18n('Create a relationship')}
       />
       <StixCoreRelationshipCreation
-        open={addRelationOpen}
+        open={isAddRelationOpen}
         confidence={container.confidence}
         defaultCreatedBy={convertCreatedBy(container)}
         defaultMarkingDefinitions={convertMarkings(container)}
@@ -123,7 +133,7 @@ const GraphToolbarContentTools = ({
         handleReverseRelation={() => setRelationReversed((r) => !r)}
         handleClose={() => {
           setRelationReversed(false);
-          setAddRelationOpen(false);
+          setIsAddRelationOpen(false);
         }}
       />
 

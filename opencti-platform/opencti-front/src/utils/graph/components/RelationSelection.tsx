@@ -2,8 +2,9 @@ import { SimplePaletteColorOptions } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, MutableRefObject, useCallback, useEffect, useRef } from 'react';
-import { ForceGraphMethods } from 'react-force-graph-2d';
+import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
 import type { Theme } from '../../../components/Theme';
+import { GraphLink, GraphNode } from '../graph.types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -14,13 +15,13 @@ const useStyles = makeStyles({
   },
 });
 
-interface LassoSelectionProps {
+interface RelationSelectionProps {
   width: number
   height: number
   activated: boolean
   setSelectedNodes: (nodes: Set<Coord>) => void
   graphDataNodes: Coord[]
-  graph: MutableRefObject<ForceGraphMethods>
+  graph: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>
 }
 
 interface Coord {
@@ -40,12 +41,12 @@ interface ContextHandlerProps {
   setSelectedNodes?: (nodes: Set<Coord>) => void
   activated?: boolean
   storeFreeSelectionFunction?: (event: MouseEvent) => void
-  graph?: MutableRefObject<ForceGraphMethods>
+  graph?: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>
 }
 
 const DISTANCE = 5;
 
-const RelationSelection: FunctionComponent<LassoSelectionProps> = ({
+const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
   width,
   height,
   graphDataNodes,
@@ -114,7 +115,7 @@ const RelationSelection: FunctionComponent<LassoSelectionProps> = ({
       const firstNode = Array.from(selectedNodes).at(0);
       const lastNode = Array.from(selectedNodes).at(-1);
 
-      if (!firstNode || !lastNode) {
+      if (!firstNode || !lastNode || !graph.current) {
         return;
       }
       const firstNodeCoords: Coord = graph.current.graph2ScreenCoords(firstNode.x, firstNode.y);
@@ -133,7 +134,7 @@ const RelationSelection: FunctionComponent<LassoSelectionProps> = ({
   };
 
   const storeFreeSelection = (e: MouseEvent) => {
-    if (freeHand && activated) {
+    if (freeHand && activated && graph.current) {
       coord = reposition(e);
       currentContext.lineTo(coord.x, coord.y);
       const { left, top } = lineRef.current?.getBoundingClientRect() ?? { left: 0, top: 0 };

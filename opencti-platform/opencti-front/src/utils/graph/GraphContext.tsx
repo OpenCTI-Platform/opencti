@@ -39,6 +39,9 @@ interface GraphContextValue {
   markingDefinitions: { id: string, definition: string }[]
   creators: { id: string, name: string }[]
   positions: OctiGraphPositions
+  // --- misc
+  isAddRelationOpen: boolean
+  setIsAddRelationOpen: Dispatch<SetStateAction<boolean>>
 }
 
 const GraphContext = createContext<GraphContextValue | undefined>(undefined);
@@ -83,6 +86,8 @@ export const GraphProvider = ({
     console.log('[GraphContext] Data has been rebuild');
     setGraphData(buildGraphData(data.objects, data.positions));
   }, [data]);
+
+  console.log(graphData);
 
   const addNode = (node: GraphNode) => {
     setGraphData((oldData) => {
@@ -131,7 +136,8 @@ export const GraphProvider = ({
       })
       .sort((a, b) => a.label.localeCompare(b.label))
       .map((node) => node.entity_type)
-      .filter((v, i, a) => a.indexOf(v) === i);
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .filter((v) => !['Note', 'Opinion'].includes(v));
   }, [graphData]);
 
   // Dynamically compute all marking definitions in graphData.
@@ -194,6 +200,8 @@ export const GraphProvider = ({
     setSelectedNodes((old) => old.filter((n) => n.id !== node.id));
   };
 
+  const [isAddRelationOpen, setIsAddRelationOpen] = useState(false);
+
   const value = useMemo<GraphContextValue>(() => ({
     graphData,
     addNode,
@@ -216,7 +224,9 @@ export const GraphProvider = ({
     setSelectedNodes,
     addSelectedNode,
     removeSelectedNode,
-  }), [graphState, selectedLinks, selectedNodes, data, graphData]);
+    isAddRelationOpen,
+    setIsAddRelationOpen,
+  }), [graphState, selectedLinks, selectedNodes, data, graphData, isAddRelationOpen]);
 
   return (
     <GraphContext.Provider value={value}>

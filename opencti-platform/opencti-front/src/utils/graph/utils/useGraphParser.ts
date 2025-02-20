@@ -206,7 +206,9 @@ const useGraphParser = () => {
   };
 
   const buildGraphData = (objects: ObjectToParse[], graphPositions: OctiGraphPositions) => {
-    const uniqObjects = R.uniqBy(R.prop('id'), objects);
+    const uniqObjects = R.uniqBy(R.prop('id'), objects)
+      .filter((object) => !['Note', 'Opinion'].includes(object.entity_type));
+    const uniqIds = uniqObjects.map((o) => o.id);
     const relationshipsIdsInNestedRelationship = objects.flatMap((o) => {
       if (o.from && o.to && (o.from.relationship_type || o.to.relationship_type)) {
         return o.from?.relationship_type ? o.from.id : o.to.id;
@@ -216,6 +218,8 @@ const useGraphParser = () => {
 
     const links = uniqObjects.flatMap((o) => {
       if (!o.from || !o.to) return [];
+      if (!uniqIds.includes(o.from.id)) return [];
+      if (!uniqIds.includes(o.to.id)) return [];
       if (
         o.parent_types.includes('basic-relationship')
         && !relationshipsIdsInNestedRelationship.includes(o.id)
