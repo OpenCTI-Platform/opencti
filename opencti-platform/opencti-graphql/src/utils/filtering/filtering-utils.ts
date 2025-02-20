@@ -1,5 +1,4 @@
 import { uniq } from 'ramda';
-import { isDate } from 'moment';
 import { buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
@@ -26,6 +25,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
 import { isEmptyField } from '../../database/utils';
+import { isValidDate } from '../../database/middleware';
 
 //----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
@@ -68,7 +68,7 @@ export const checkFilterGroupSyntax = (filterGroup: FilterGroup) => {
       throw UnsupportedError('A filter with "within" operator must have 2 values', { filter: f });
     }
     const regex = /^now-\d+[smhHdwMy]$/;
-    if (values.some((v) => !v.matches(regex) && v !== 'now' && !isDate(v))) {
+    if (values.some((v) => !v.matches(regex) && v !== 'now' && !isValidDate(v))) {
       throw UnsupportedError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.', { filter: f });
     }
   });

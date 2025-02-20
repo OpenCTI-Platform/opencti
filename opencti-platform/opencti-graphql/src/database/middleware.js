@@ -506,7 +506,7 @@ export const stixLoadByFilters = async (context, user, types, args) => {
 };
 // endregion
 
-const isValidDate = (stringDate) => {
+export const isValidDate = (stringDate) => {
   const dateParsed = Date.parse(stringDate);
   if (!dateParsed) return false;
   const dateInstance = new Date(dateParsed);

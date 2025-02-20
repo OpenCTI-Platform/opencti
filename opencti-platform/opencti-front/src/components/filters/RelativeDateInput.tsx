@@ -2,6 +2,8 @@ import React, { FunctionComponent, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { useFormatter } from '../i18n';
 import { BasicFilterInputProps } from './BasicFilterInput';
+import { RELATIVE_DATE_REGEX } from '../../utils/filters/filtersUtils';
+import { isValidDate } from '../../utils/String';
 
 interface RelativeDateInputProps extends BasicFilterInputProps {
   valueOrder: number;
@@ -26,8 +28,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       return t_i18n('The value must not be empty.');
     }
     const newValue = values[valueOrder];
-    const regex = /^now-\d+[smhHdwMy]$/; // the value must be: 'now-', then a number, then a letter among: [smhHdwMy]
-    if (!newValue.match(regex) && newValue !== 'now') {
+    if (!newValue.match(RELATIVE_DATE_REGEX) && newValue !== 'now' && !isValidDate(newValue)) {
       return t_i18n('The value must be a datetime or a relative date in correct elastic format.');
     }
     return undefined;
