@@ -13,29 +13,7 @@ import { useFormatter } from '../../../../../components/i18n';
 export const requestAccessFragment = graphql`
   fragment RequestAccessStatusFragment_entitySetting on EntitySetting {
     id
-    target_type
-    requestAccessConfiguration {
-        approved_status {
-            id
-            template {
-                id
-                color
-                name
-            }
-        }
-        declined_status {
-            id
-            template {
-                id
-                color
-                name
-            }
-        }
-        approval_admin {
-            id
-            name
-        }
-    }
+    ...RequestAccessConfigurationEdition_entitySettings
   }
 `;
 

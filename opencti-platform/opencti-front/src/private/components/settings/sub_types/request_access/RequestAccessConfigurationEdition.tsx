@@ -20,26 +20,7 @@ import { RequestAccessConfigurationEdition_entitySettings$key } from './__genera
 const requestAccessConfigurationMutation = graphql`
     mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {
         requestAccessConfigure(input: $input) {
-            approved_status {
-                id
-                template {
-                    id
-                    color
-                    name
-                }
-            }
-            declined_status {
-                id
-                template {
-                    id
-                    color
-                    name
-                }
-            }
-            approval_admin {
-                id
-                name
-            }
+            ...RequestAccessConfigurationEdition_entitySettings
         }
     }
 `;
@@ -47,7 +28,7 @@ const requestAccessConfigurationMutation = graphql`
 export const requestAccessConfigurationEditionQuery = graphql`
     query RequestAccessConfigurationEditionQuery($id: String!) {
         entitySetting(id: $id) {
-            ...RequestAccessStatusFragment_entitySetting
+            ...RequestAccessConfigurationEdition_entitySettings
         }
     }
 `;
