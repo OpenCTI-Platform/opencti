@@ -76,10 +76,7 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
     .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
     .join(', ');
 
-  console.log('stixDomainObject : ', stixDomainObject);
-  const generatedFilter = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.infrastructure);
-
-  const encoded = encodeURIComponent(generatedFilter);
+  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.infrastructure);
 
   return (
     <div style={styles.node}>
@@ -99,8 +96,7 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
       </div>
       <Button
         component={Link}
-        to={`${entityLink}/all`}
-        // to={`${entityLink}/all?filters=${encoded}`}
+        to={`${entityLink}/all?filters=${generatedFilters}`}
         variant="contained"
         size="small"
         sx={styles.buttonExpand}

@@ -14,7 +14,7 @@ enum DiamondEntityType {
 const filterContentFromEntityTypeAndNodeType = {
   [DiamondEntityType.threatActorGroup]: {
     [DiamondNodeType.adversary]: {
-      entityType: ['Campaign', 'Intrusion-Set', 'Threat-Actor-Group'],
+      entityType: ['Campaign', 'Intrusion-Set', 'Incident'],
       relationships: ['attributed-to'],
     },
     [DiamondNodeType.infrastructure]: {
@@ -28,7 +28,7 @@ const filterContentFromEntityTypeAndNodeType = {
   },
   [DiamondEntityType.threatActorIndividual]: {
     [DiamondNodeType.adversary]: {
-      entityType: ['Campaign', 'Intrusion-Set', 'Threat-Actor-Individual'],
+      entityType: ['Campaign', 'Intrusion-Set', 'Incident'],
       relationships: ['attributed-to'],
     },
     [DiamondNodeType.infrastructure]: {
@@ -42,7 +42,7 @@ const filterContentFromEntityTypeAndNodeType = {
   },
   [DiamondEntityType.intrusionSet]: {
     [DiamondNodeType.adversary]: {
-      entityType: ['Campaign', 'Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual'],
+      entityType: ['Campaign', 'Threat-Actor-Group', 'Threat-Actor-Individual'],
       relationships: ['attributed-to'],
     },
     [DiamondNodeType.infrastructure]: {
@@ -56,7 +56,7 @@ const filterContentFromEntityTypeAndNodeType = {
   },
   [DiamondEntityType.campaign]: {
     [DiamondNodeType.adversary]: {
-      entityType: ['Campaign', 'Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual'],
+      entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Incident'],
       relationships: ['attributed-to'],
     },
     [DiamondNodeType.infrastructure]: {
@@ -94,14 +94,10 @@ const getFilterFromEntityTypeAndNodeType = (entity_type: DiamondEntityType, node
         mode: 'or',
       },
     ],
+    filterGroups: [],
   };
 
-  return JSON.stringify({
-    mode: 'and',
-    filters: [],
-    filterGroups: [filterGroups],
-  });
-  // return JSON.stringify(filterGroups);
+  return encodeURIComponent(JSON.stringify(filterGroups));
 };
 
 export default getFilterFromEntityTypeAndNodeType;
