@@ -18,15 +18,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [dateInput, setDateInput] = useState(filterValues);
-  const isFilterValuesCorrect = (values: string[]) => {
-    if (values.length !== 2) {
-      return false;
-    }
-    if (values.includes('')) {
-      return false;
-    }
-    return true;
-  };
   const generateErrorMessage = (values: string[]) => {
     if (values.length !== 2) {
       return t_i18n('The value must not be empty');
@@ -34,13 +25,18 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     if (values.includes('')) {
       return t_i18n('The value must not be empty.');
     }
+    const newValue = values[valueOrder];
+    const regex = /^now-\d+[smhHdwMy]$/; // the value must be: 'now-', then a number, then a letter among: [smhHdwMy]
+    if (!newValue.match(regex) && newValue !== 'now') {
+      return t_i18n('The value must be a datetime or a relative date in correct elastic format.');
+    }
     return undefined;
   };
   const handleChangeRelativeDateFilter = (value: string) => {
     const newValues = [...dateInput];
     newValues[valueOrder] = value;
     setDateInput(newValues);
-    if (isFilterValuesCorrect(newValues)) {
+    if (!generateErrorMessage(newValues)) {
       helpers?.handleReplaceFilterValues(
         filter?.id ?? '',
         newValues,
@@ -65,7 +61,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       onBlur={(event) => {
         handleChangeRelativeDateFilter(event.target.value);
       }}
-      error={!isFilterValuesCorrect(dateInput)}
+      error={generateErrorMessage(dateInput) !== undefined}
       helperText={generateErrorMessage(dateInput)}
     />
   );
