@@ -9,6 +9,8 @@ import GraphToolbarDisplayTools from './GraphToolbarDisplayTools';
 import GraphToolbarSelectTools from './GraphToolbarSelectTools';
 import GraphToolbarFilterTools from './GraphToolbarFilterTools';
 import GraphToolbarContentTools, { GraphToolbarContentToolsProps } from './GraphToolbarContentTools';
+import GraphToolbarTimeRange from './GraphToolbarTimeRange';
+import { useGraphContext } from '../GraphContext';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps;
 
@@ -16,9 +18,9 @@ const GraphToolbar = (props: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
   const navOpen = localStorage.getItem('navOpen') === 'true';
 
-  const {
-    selectBySearch,
-  } = useGraphInteractions();
+  const { graphState } = useGraphContext();
+  const { showTimeRange } = graphState;
+  const { selectBySearch } = useGraphInteractions();
 
   return (
     <Drawer
@@ -29,7 +31,8 @@ const GraphToolbar = (props: GraphToolbarProps) => {
         style: {
           zIndex: 1,
           paddingLeft: navOpen ? 180 : 60,
-          height: 54,
+          height: showTimeRange ? 134 : 54,
+          transition: 'height 0.2s ease',
         },
       }}
     >
@@ -56,6 +59,8 @@ const GraphToolbar = (props: GraphToolbarProps) => {
 
         <GraphToolbarContentTools {...props} />
       </div>
+
+      <GraphToolbarTimeRange />
     </Drawer>
   );
 };

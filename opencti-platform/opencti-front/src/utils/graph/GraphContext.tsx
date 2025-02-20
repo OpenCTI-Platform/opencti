@@ -6,6 +6,7 @@ import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../ListPar
 import { GraphNode, GraphLink, LibGraphProps, GraphState, OctiGraphPositions } from './graph.types';
 import { useFormatter } from '../../components/i18n';
 import useGraphParser, { ObjectToParse } from './utils/useGraphParser';
+import { computeTimeRangeInterval, computeTimeRangeValues, GraphTimeRange } from './utils/graphTimeRange';
 
 type Setter<T> = Dispatch<SetStateAction<T>>;
 
@@ -33,6 +34,7 @@ interface GraphContextValue {
   markingDefinitions: { id: string, definition: string }[]
   creators: { id: string, name: string }[]
   positions: OctiGraphPositions
+  timeRange: GraphTimeRange
   // --- misc
   isAddRelationOpen: boolean
   setIsAddRelationOpen: Setter<boolean>
@@ -80,6 +82,15 @@ export const GraphProvider = ({
     // Rebuild graph data when input data has changed.
     setGraphData(buildGraphData(data.objects, data.positions));
   }, [data]);
+
+  // Dynamically compute time range values
+  const timeRange = useMemo(() => {
+    const interval = computeTimeRangeInterval(data.objects);
+    return {
+      interval,
+      values: computeTimeRangeValues(interval, data.objects),
+    };
+  }, [data.objects]);
 
   // Dynamically compute all entity types in graphData.
   const stixCoreObjectTypes = useMemo(() => {
@@ -147,6 +158,7 @@ export const GraphProvider = ({
     selectedLinks,
     selectedNodes,
     isAddRelationOpen,
+    timeRange,
     positions: data.positions,
     setGraphData,
     setGraphState,

@@ -1,9 +1,15 @@
 import { defaultDate } from '../../defaultRepresentatives';
 import { isDateStringNone } from '../../../components/i18n';
 import { dayEndDate, daysAfter, daysAgo, jsDate, minutesBefore, minutesBetweenDates, timestamp } from '../../Time';
+import { ObjectToParse } from './useGraphParser';
 
-interface TimeRangeObject {
-  parent_types: string[]
+export interface GraphTimeRange {
+  interval: [Date, Date]
+  values: {
+    index: number,
+    time: number,
+    value: number
+  }[]
 }
 
 /**
@@ -13,7 +19,9 @@ interface TimeRangeObject {
  * @param objects Array of objects to determine time range.
  * @returns [start, end] both date objects.
  */
-export const computeTimeRangeInterval = (objects: TimeRangeObject[]) => {
+export const computeTimeRangeInterval = (
+  objects: ObjectToParse[],
+): GraphTimeRange['interval'] => {
   let startDate = jsDate(daysAgo(1));
   let endDate = jsDate(dayEndDate());
 
@@ -22,7 +30,7 @@ export const computeTimeRangeInterval = (objects: TimeRangeObject[]) => {
     const date = defaultDate(o);
     if (!isRelationship || date === null || isDateStringNone(date)) return [];
     return jsDate(date);
-  }).sort();
+  }).sort((a, b) => a.getTime() - b.getTime());
 
   if (filteredDates.length >= 1) {
     startDate = jsDate(daysAgo(1, filteredDates[0]));
@@ -41,7 +49,10 @@ export const computeTimeRangeInterval = (objects: TimeRangeObject[]) => {
  * @param objects Objects to split into segments.
  * @returns An array of tuples (time, number of objects inside segment).
  */
-export const computeTimeRangeValues = (interval: [Date, Date], objects: TimeRangeObject[]) => {
+export const computeTimeRangeValues = (
+  interval: GraphTimeRange['interval'],
+  objects: ObjectToParse[],
+): GraphTimeRange['values'] => {
   const minutes = minutesBetweenDates(interval[0], interval[1]);
   const intervalInMinutes = Math.ceil(minutes / 100);
   const intervalInSeconds = intervalInMinutes * 60;
@@ -54,7 +65,7 @@ export const computeTimeRangeValues = (interval: [Date, Date], objects: TimeRang
   });
 
   return Array(100).fill(0).map((_, i) => {
-    const time = timestamp(minutesBefore(minutes - i * intervalInMinutes, interval[1]));
+    const time: number = timestamp(minutesBefore(minutes - i * intervalInMinutes, interval[1]));
     const datesInsideInterval = elementsDates.filter((d) => d >= time && d <= time + intervalInSeconds);
     return {
       time,
