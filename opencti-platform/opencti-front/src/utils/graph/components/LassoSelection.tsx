@@ -4,8 +4,8 @@ import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
 import type { Theme } from '../../../components/Theme';
-import { pointInPolygon } from '../../Graph';
 import { GraphLink, GraphNode } from '../graph.types';
+import { pointInPolygon } from '../utils/graphUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

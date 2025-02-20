@@ -83,11 +83,8 @@ export const GraphProvider = ({
 
   const [graphData, setGraphData] = useState<LibGraphProps['graphData']>();
   useEffect(() => {
-    console.log('[GraphContext] Data has been rebuild');
     setGraphData(buildGraphData(data.objects, data.positions));
   }, [data]);
-
-  console.log(graphData);
 
   const addNode = (node: GraphNode) => {
     setGraphData((oldData) => {

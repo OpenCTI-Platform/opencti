@@ -6,6 +6,7 @@
  * @param point Point to see if inside polygon.
  * @returns True if the point is inside the polygon.
  */
+// eslint-disable-next-line import/prefer-default-export
 export const pointInPolygon = (
   polygon: [number, number][],
   point: [number, number],
