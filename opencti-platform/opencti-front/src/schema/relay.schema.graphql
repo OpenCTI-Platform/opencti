@@ -9023,6 +9023,7 @@ type Mutation {
   aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String
   aiSummarize(id: ID!, content: String!, format: Format): String
   aiExplain(id: ID!, content: String!): String
+  aiNLQ(search: String!): String
   obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasContainerGenerateScenarioWithInjectPlaceholders`.")
   obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasThreatGenerateScenarioWithInjectPlaceholders`.")
   obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasVictimGenerateScenarioWithInjectPlaceholders`.")
