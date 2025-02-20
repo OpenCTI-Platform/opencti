@@ -38,10 +38,6 @@ export class TelemetryMeterManager {
     this.instancesCount = n;
   }
 
-  setActiveUsersCount(n: number) {
-    this.activeUsersCount = n;
-  }
-
   setUsersCount(n: number) {
     this.usersCount = n;
   }

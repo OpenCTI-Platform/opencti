@@ -64,20 +64,6 @@ export const findSessions = () => {
   });
 };
 
-// return the list of users ids that have a session activ in the last maxInactivityDuration min
-export const usersWithActiveSession = (maxInactivityDurationInMin = 1) => {
-  const { store } = applicationSession;
-  return new Promise((accept) => {
-    store.all((_, result) => {
-      const usersWithSession = uniq(result
-        .filter((n) => n.user
-          && (n.cookie.originalMaxAge / 1000 - n.redis_key_ttl) / 60 < maxInactivityDurationInMin) // the time with no activity in the session is < to 1 hour
-        .map((s) => s.user.id));
-      accept(usersWithSession);
-    });
-  });
-};
-
 export const findUserSessions = async (userId) => {
   const sessions = await findSessions();
   const userSessions = sessions.filter((s) => s.user_id === userId);
