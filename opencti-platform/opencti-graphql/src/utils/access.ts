@@ -362,10 +362,10 @@ class TracingContext {
   }
 }
 
-export const executionContext = (source: string, auth?: AuthUser): AuthContext => {
+export const executionContext = (source: string, auth?: AuthUser, draftContext?: string): AuthContext => {
   const tracer = trace.getTracer('instrumentation-opencti', '1.0.0');
   const tracing = new TracingContext(tracer);
-  return { otp_mandatory: false, source, tracing, user: auth ?? undefined };
+  return { otp_mandatory: false, source, tracing, user: auth ?? undefined, draft_context: draftContext ?? undefined };
 };
 
 export const INTERNAL_USERS = {

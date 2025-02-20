@@ -305,10 +305,10 @@ describe('Drafts workspace resolver testing', () => {
       executor(fileUpload);
     });
     upload.file = fileUpload;
-    const importPushQueryResult = await adminQuery({
+    const importPushQueryResult = await queryAsAdmin({
       query: IMPORT_FILE_QUERY,
       variables: { id: reportInternalId, file: upload, fileMarkings: [MARKING_TLP_GREEN] }
-    });
+    }, addedDraftId);
     expect(importPushQueryResult?.data?.stixDomainObjectEdit.importPush.id).toBeDefined();
   });
 
@@ -396,10 +396,10 @@ describe('Drafts workspace resolver testing', () => {
       executor(fileUpload);
     });
     upload.file = fileUpload;
-    await adminQuery({
+    await queryAsAdmin({
       query: IMPORT_FILE_QUERY,
       variables: { id: reportStandardId, file: upload, fileMarkings: [MARKING_TLP_GREEN] }
-    });
+    }, addedDraftId);
 
     // Verify that validation bundle contains report
     const bundleData = await buildDraftValidationBundle(testContext, ADMIN_USER, addedDraftId);
