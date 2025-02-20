@@ -59,10 +59,12 @@ const GraphToolbarEditObject = ({
   const closeEditionForm = async () => {
     if (objectToEdit) {
       if (category === 'domainObject' || category === 'observable') {
-        const data = await fetchQuery(stixCoreObjectRefetchQuery, { id: objectToEdit.id }).toPromise();
+        const data = await fetchQuery(stixCoreObjectRefetchQuery, { id: objectToEdit.id })
+          .toPromise() as { stixCoreObject: ObjectToParse };
         addNode(data.stixCoreObject);
       } else {
-        const data = await fetchQuery(relationshipRefetchQuery, { id: objectToEdit.id }).toPromise();
+        const data = await fetchQuery(relationshipRefetchQuery, { id: objectToEdit.id })
+          .toPromise() as { stixRelationship: ObjectToParse };
         addNode(data.stixRelationship);
       }
     }
