@@ -91,7 +91,7 @@ const NodeVictimology = ({ data }: NodeProps) => {
         {t_i18n('View all')}
       </Button>
       <Handle
-        sx={{ visibility: 'hidden' }}
+        style={{ visibility: 'hidden' }}
         type="target"
         position={Position.Top}
         isConnectable={false}

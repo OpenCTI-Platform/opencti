@@ -151,5 +151,7 @@ export const getRelationshipTypesForEntityType = (entityType: string, schema: Sc
     .filter(([key, _]) => key.startsWith(`${entityType}_`) || key.endsWith(`_${entityType}`))
     .flatMap(([_, values]) => values);
 
-  return [...new Set(relationshipList), DEFAULT_RELATION];
+  const uniqRelationshipList = new Set(relationshipList);
+  uniqRelationshipList.add(DEFAULT_RELATION);
+  return Array.from(uniqRelationshipList);
 };

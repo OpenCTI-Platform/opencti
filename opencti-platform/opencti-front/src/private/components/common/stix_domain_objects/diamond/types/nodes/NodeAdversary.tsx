@@ -25,7 +25,7 @@ const NodeAdversary = ({ data }: NodeProps) => {
     .map((n: { node: { from: { name: string } } }) => n?.node?.from?.name))
     .join(', ');
 
-  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.infrastructure);
+  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.adversary);
 
   return (
     <div style={{
@@ -48,11 +48,11 @@ const NodeAdversary = ({ data }: NodeProps) => {
         padding: '20px',
       }}
       >
-        <Typography variant="h3" gutterBottom={true}>
+        <Typography variant="h3" gutterBottom>
           {t_i18n('Aliases')}
         </Typography>
         {emptyFilled(aliases)}
-        <Typography variant="h3" gutterBottom={true} sx={{ marginTop: 20 }}>
+        <Typography variant="h3" gutterBottom sx={{ marginTop: '20px' }}>
           {isArsenal ? t_i18n('Last used by') : t_i18n('Last attributions')}
         </Typography>
         {isArsenal ? emptyFilled(usedBy) : emptyFilled(attributedTo)}
@@ -87,7 +87,7 @@ const NodeAdversary = ({ data }: NodeProps) => {
         {t_i18n('View all')}
       </Button>
       <Handle
-        sx={{ visibility: 'hidden' }}
+        style={{ visibility: 'hidden' }}
         type="target"
         position={Position.Bottom}
         isConnectable={false}
