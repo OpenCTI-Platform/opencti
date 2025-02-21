@@ -12,6 +12,7 @@ import { useFormatter } from '../../../../../components/i18n';
 
 export const requestAccessFragment = graphql`
   fragment RequestAccessStatusFragment_requestAccess on RequestAccessConfiguration {
+      id
       approved_status {
           id
           template {
@@ -89,7 +90,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
             color: declinedToRfiStatus?.template?.color,
             borderColor: declinedToRfiStatus?.template?.color,
             backgroundColor: hexToRGB(
-              '#000000',
+              declinedToRfiStatus?.template?.color ?? '#000000',
             ),
           }}
         />
