@@ -230,6 +230,8 @@ const ConnectorComponent = ({ connector, relay }) => {
 
   const optionsInProgress = {
     count: 50,
+    orderBy: 'created_at',
+    orderMode: 'asc',
     filters: {
       mode: 'and',
       filters: [
@@ -768,30 +770,26 @@ const ConnectorComponent = ({ connector, relay }) => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('In progress works')}
-      </Typography>
+
       <QueryRenderer
         query={connectorWorksQuery}
         variables={optionsInProgress}
         render={({ props }) => {
           if (props) {
             return (
-              <ConnectorWorks data={props} options={optionsInProgress} />
+              <ConnectorWorks data={props} options={optionsInProgress} inProgress={true}/>
             );
           }
           return <Loader variant="inElement" />;
         }}
       />
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Completed works')}
-      </Typography>
+
       <QueryRenderer
         query={connectorWorksQuery}
         variables={optionsFinished}
         render={({ props }) => {
           if (props) {
-            return <ConnectorWorks data={props} options={optionsFinished} />;
+            return <ConnectorWorks data={props} options={optionsFinished}/>;
           }
           return <Loader variant="inElement" />;
         }}
