@@ -214,6 +214,10 @@ export const buildViewParamsFromUrlAndStorage = (
       ? split(',', finalParams.createdBy)
       : [];
   }
+  if (typeof finalParams.selectedTimeRangeInterval === 'string') {
+    finalParams.selectedTimeRangeInterval = finalParams.selectedTimeRangeInterval
+      .split(',').map((d) => new Date(d));
+  }
   saveViewParameters(navigate, location, localStorageKey, finalParams);
   return finalParams;
 };
