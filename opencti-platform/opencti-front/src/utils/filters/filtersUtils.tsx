@@ -819,14 +819,15 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
 export const useBuildEntityTypeBasedFilterContext = (
   entityTypeParam: string | string[],
   filters: FilterGroup | undefined,
-  excludedEntityTypeParam?: string | undefined,
+  excludedEntityTypeParam?: string | string[] | undefined,
 ): FilterGroup => {
   const entityTypes = Array.isArray(entityTypeParam) ? entityTypeParam : [entityTypeParam];
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes);
   const entityTypeFilter = { key: 'entity_type', values: entityTypes, operator: 'eq', mode: 'or' };
   const entityTypeFilters = [entityTypeFilter];
-  if (excludedEntityTypeParam) {
-    const excludedEntityTypeFilter = { key: 'entity_type', values: [excludedEntityTypeParam], operator: 'not_eq', mode: 'or' };
+  if (excludedEntityTypeParam && excludedEntityTypeParam.length > 0) {
+    const excludedEntityTypes = Array.isArray(excludedEntityTypeParam) ? excludedEntityTypeParam : [excludedEntityTypeParam];
+    const excludedEntityTypeFilter = { key: 'entity_type', values: excludedEntityTypes, operator: 'not_eq', mode: 'or' };
     entityTypeFilters.push(excludedEntityTypeFilter);
   }
   return {
