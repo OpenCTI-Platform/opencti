@@ -62,6 +62,22 @@ describe('Filtering utils', () => {
       filterGroups: [],
     } as FilterGroup;
     expect(checkFilterGroupSyntax(filterGroup4)).toBeUndefined();
+    const filterGroup5 = {
+      mode: 'or',
+      filters: [
+        { key: ['published'], values: ['now', '2039-09-T00:51:35.000Z'], operator: 'within' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(checkFilterGroupSyntax(filterGroup5)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
+    const filterGroup6 = {
+      mode: 'or',
+      filters: [
+        { key: ['published'], values: ['2023-09-01T00:51:35.000Z', '2023-09-30T00:51:35.000Z'], operator: 'within' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(checkFilterGroupSyntax(filterGroup6)).toBeUndefined();
   });
   it('should add a filter to a filter group and separate them with the AND mode', async () => {
     const filterGroup = {

@@ -251,6 +251,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.length).toEqual(5);
   });
   it('should list entities according to filters: one filter', async () => {
+    // report_types = threat-report
     const queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
       variables: {
@@ -2191,5 +2192,43 @@ describe('Complex filters combinations for elastic queries', () => {
     queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking2StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.markingDefinition).toBeNull();
+  });
+  it('should list entities according to relative date time range filters', async () => {
+    // published within [2023-09-01, 2023-09-30]
+    let queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'published',
+            values: ['2023-09-01T00:51:35.000Z', '2023-09-30T00:51:35.000Z'],
+            operator: 'within',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(3); // the reports published in September 2023: report1, report2, report4
+    // published within last 5 years and now --> this test won't pass anymore after the 2026-01-10 and should be changed at this moment
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'published',
+            values: ['now-5y', 'now'],
+            operator: 'within',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(4); // the reports published in the last 4 years: report1, report2, report3, report4
   });
 });
