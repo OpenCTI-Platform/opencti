@@ -10,59 +10,9 @@ import type { Theme } from '../../../../../../../components/Theme';
 import { useFormatter } from '../../../../../../../components/i18n';
 import { emptyFilled } from '../../../../../../../utils/String';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const getStyles = ((theme: Theme) => ({
-  node: {
-    position: 'relative',
-    border:
-      theme.palette.mode === 'dark'
-        ? '1px solid rgba(255, 255, 255, 0.12)'
-        : '1px solid rgba(0, 0, 0, 0.12)',
-    borderRadius: 4,
-    backgroundColor: theme.palette.background.paper,
-    width: 400,
-    height: 300,
-    paddingBottom: 25,
-  },
-  nodeContent: {
-    width: '100%',
-    height: '100%',
-    overflowY: 'auto',
-    padding: 20,
-  },
-  handle: {
-    visibility: 'hidden',
-  },
-  label: {
-    marginTop: 20,
-  },
-  buttonExpand: {
-    position: 'absolute',
-    left: 0,
-    bottom: 0,
-    width: '100%',
-    height: 25,
-    color: theme.palette.primary.main,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .1)'
-          : 'rgba(0, 0, 0, .1)',
-    '&:hover': {
-      backgroundColor:
-          theme.palette.mode === 'dark'
-            ? 'rgba(255, 255, 255, .2)'
-            : 'rgba(0, 0, 0, .2)',
-    },
-  },
-}));
-
 const NodeCapabilities = ({ data }: NodeProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const styles = getStyles(theme);
 
   const { stixDomainObject, entityLink } = data;
 
