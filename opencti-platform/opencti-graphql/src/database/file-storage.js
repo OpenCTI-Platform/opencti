@@ -313,7 +313,7 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
     // 03. Check if metadata contains an entity_id, we need to check if the user has real access to this instance
-    const { metaData, name, size, lastModified, lastModifiedSinceMin } = document;
+    const { metaData } = document;
     if (metaData.entity_id) {
       if (!isUserHasCapability(user, KNOWLEDGE)) {
         throw FunctionalError('File not found or restricted', { filename: fileS3Path });
@@ -325,12 +325,9 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
     }
     // All good, return the file
     return {
+      ...document,
       id: fileS3Path,
-      name,
-      size,
       information: '',
-      lastModified,
-      lastModifiedSinceMin,
       uploadStatus: 'complete',
       metaData
     };
