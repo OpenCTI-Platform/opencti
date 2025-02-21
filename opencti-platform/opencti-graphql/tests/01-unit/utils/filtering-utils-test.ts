@@ -12,7 +12,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(checkFilterGroupSyntax(filterGroup1)).toThrowError('A filter key must be defined for every filter');
+    expect(() => checkFilterGroupSyntax(filterGroup1)).toThrowError('A filter key must be defined for every filter');
     const filterGroup2 = {
       mode: 'or',
       filters: [
@@ -21,13 +21,13 @@ describe('Filtering utils', () => {
       filterGroups: [{
         mode: 'or',
         filters: [
-          { key: [''], values: ['marking1'], operator: 'eq', mode: 'or' },
+          { key: [], values: ['marking1'], operator: 'eq', mode: 'or' },
           { key: ['objectLabel'], values: ['label1'], operator: 'eq', mode: 'or' },
         ],
         filterGroups: [],
       }],
     } as FilterGroup;
-    expect(checkFilterGroupSyntax(filterGroup2)).toThrowError('A filter key must be defined for every filter');
+    expect(() => checkFilterGroupSyntax(filterGroup2)).toThrowError('A filter key must be defined for every filter');
   });
   it('should check a filter syntax for filter with "within" operator', async () => {
     const filterGroup1 = {
@@ -37,7 +37,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(checkFilterGroupSyntax(filterGroup1)).toThrowError('A filter with "within" operator must have 2 values');
+    expect(() => checkFilterGroupSyntax(filterGroup1)).toThrowError('A filter with "within" operator must have 2 values');
     const filterGroup2 = {
       mode: 'or',
       filters: [
@@ -45,7 +45,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(checkFilterGroupSyntax(filterGroup2)).toThrowError('A filter with "within" operator must have 2 values');
+    expect(() => checkFilterGroupSyntax(filterGroup2)).toThrowError('A filter with "within" operator must have 2 values');
     const filterGroup3 = {
       mode: 'or',
       filters: [
@@ -53,7 +53,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(checkFilterGroupSyntax(filterGroup3)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
+    expect(() => checkFilterGroupSyntax(filterGroup3)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
     const filterGroup4 = {
       mode: 'or',
       filters: [
@@ -61,7 +61,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(checkFilterGroupSyntax(filterGroup4)).toBeUndefined();
+    expect(() => checkFilterGroupSyntax(filterGroup4)).not.toThrowError();
     const filterGroup5 = {
       mode: 'or',
       filters: [
@@ -69,7 +69,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(checkFilterGroupSyntax(filterGroup5)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
+    expect(() => checkFilterGroupSyntax(filterGroup5)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
     const filterGroup6 = {
       mode: 'or',
       filters: [
@@ -77,7 +77,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(checkFilterGroupSyntax(filterGroup6)).toBeUndefined();
+    expect(() => checkFilterGroupSyntax(filterGroup6)).not.toThrowError();
   });
   it('should add a filter to a filter group and separate them with the AND mode', async () => {
     const filterGroup = {
