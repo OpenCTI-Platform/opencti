@@ -198,7 +198,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     );
   };
 
-  const BasicFilterDate = () => (
+  const BasicFilterDate = ({ value }: { value?: string }) => (
     <FilterDate
       defaultHandleAddFilter={handleDateChange}
       filterKey={filterKey}
@@ -206,6 +206,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       inputValues={inputValues}
       setInputValues={setInputValues}
       filterLabel={filterLabel}
+      filterValue={value}
     />
   );
 
@@ -344,7 +345,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           </>
         );
       }
-      return <BasicFilterDate />;
+      return <BasicFilterDate value={filterValues.length > 0 ? filterValues[0] : undefined} />;
     }
     if (isNumericFilter(fDefinition?.type)) {
       return (
