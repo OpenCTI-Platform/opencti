@@ -25,7 +25,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [dateInput, setDateInput] = useState(filterValues);
-  const [isDatePicker, setIsDatePicker] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const generateErrorMessage = (values: string[]) => {
@@ -52,48 +51,51 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       );
     }
   };
+  const handleChangeValue = (value: string) => {
+    const newValues = [...dateInput];
+    newValues[valueOrder] = value;
+    setDateInput(newValues);
+  };
   const handleChangeAbsoluteDateFilter = (value: Date | null) => {
     if (value) {
       handleChangeRangeDateFilter(value.toISOString());
     }
   };
   const handleChangeInputStyle = () => {
-    setIsDatePicker(!isDatePicker);
     setIsDatePickerOpen(true);
   };
   return (
     <div style={{ display: 'flex' }}>
-      {isDatePicker
-        ? <DateTimePicker
-            open={isDatePickerOpen}
-            onClose={() => setIsDatePickerOpen(false)}
-            onOpen={() => setIsDatePickerOpen(true)}
-            sx={{ marginTop: 1 }}
-            onChange={handleChangeAbsoluteDateFilter}
-            value={new Date(filterValues[valueOrder])}
-          />
-        : <TextField
-            variant="outlined"
-            size="small"
-            fullWidth={true}
-            id={filter?.id ?? `${filterKey}-id`}
-            label={label}
-            type={type}
-            defaultValue={filterValues[valueOrder]}
-            autoFocus={true}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                handleChangeRangeDateFilter((event.target as HTMLInputElement).value);
-              }
-            }}
-            onBlur={(event) => {
-              handleChangeRangeDateFilter(event.target.value);
-            }}
-            error={generateErrorMessage(dateInput) !== undefined}
-            helperText={generateErrorMessage(dateInput)}
-          />
+      {isDatePickerOpen
+        && <DateTimePicker
+          open={true}
+          onClose={() => setIsDatePickerOpen(false)}
+          sx={{ display: 'none' }}
+          onChange={handleChangeAbsoluteDateFilter}
+           />
       }
-      <Button size="small" sx={{ width: '1%', color: theme.palette.text.primary }} onClick={handleChangeInputStyle}>
+      <TextField
+        variant="outlined"
+        size="small"
+        fullWidth={true}
+        id={filter?.id ?? `${filterKey}-id`}
+        label={label}
+        type={type}
+        value={dateInput[valueOrder]}
+        onChange={(event) => handleChangeValue(event.target.value)}
+        autoFocus={true}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            handleChangeRangeDateFilter((event.target as HTMLInputElement).value);
+          }
+        }}
+        onBlur={(event) => {
+          handleChangeRangeDateFilter(event.target.value);
+        }}
+        error={generateErrorMessage(dateInput) !== undefined}
+        helperText={generateErrorMessage(dateInput)}
+      />
+      <Button size="small" sx={{ marginLeft: -1, marginRight: -3, color: theme.palette.text.primary }} onClick={handleChangeInputStyle}>
         <DateRangeOutlined/>
       </Button>
     </div>
