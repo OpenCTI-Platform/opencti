@@ -217,6 +217,8 @@ export const buildViewParamsFromUrlAndStorage = (
   if (typeof finalParams.selectedTimeRangeInterval === 'string') {
     finalParams.selectedTimeRangeInterval = finalParams.selectedTimeRangeInterval
       .split(',').map((d) => new Date(d));
+  } else if (Array.isArray(finalParams.selectedTimeRangeInterval)) {
+    finalParams.selectedTimeRangeInterval = finalParams.selectedTimeRangeInterval.map((d) => new Date(d));
   }
   saveViewParameters(navigate, location, localStorageKey, finalParams);
   return finalParams;
