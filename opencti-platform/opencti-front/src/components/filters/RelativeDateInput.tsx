@@ -26,6 +26,8 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   const theme = useTheme();
   const [dateInput, setDateInput] = useState(filterValues);
   const [isDatePicker, setIsDatePicker] = useState(false);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+
   const generateErrorMessage = (values: string[]) => {
     if (values.length !== 2) {
       return t_i18n('The value must not be empty');
@@ -57,11 +59,20 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   };
   const handleChangeInputStyle = () => {
     setIsDatePicker(!isDatePicker);
+    setIsDatePickerOpen(true);
   };
   return (
     <div style={{ display: 'flex' }}>
       {isDatePicker
-        ? <TextField
+        ? <DateTimePicker
+            open={isDatePickerOpen}
+            onClose={() => setIsDatePickerOpen(false)}
+            onOpen={() => setIsDatePickerOpen(true)}
+            sx={{ marginTop: 1 }}
+            onChange={handleChangeAbsoluteDateFilter}
+            value={new Date(filterValues[valueOrder])}
+          />
+        : <TextField
             variant="outlined"
             size="small"
             fullWidth={true}
@@ -80,10 +91,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
             }}
             error={generateErrorMessage(dateInput) !== undefined}
             helperText={generateErrorMessage(dateInput)}
-          />
-        : <DateTimePicker
-            sx={{ marginTop: 1 }}
-            onChange={handleChangeAbsoluteDateFilter}
           />
       }
       <Button size="small" sx={{ width: '1%', color: theme.palette.text.primary }} onClick={handleChangeInputStyle}>
