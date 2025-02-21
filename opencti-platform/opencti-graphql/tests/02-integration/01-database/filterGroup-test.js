@@ -2203,7 +2203,7 @@ describe('Complex filters combinations for elastic queries', () => {
           mode: 'and',
           filters: [{
             key: 'published',
-            values: ['2023-09-01T00:51:35.000Z', '2023-09-30T00:51:35.000Z'],
+            values: ['2023-09-01T23:20:00.000Z', '2023-09-30T23:20:00.000Z'],
             operator: 'within',
             mode: 'or',
           }],
