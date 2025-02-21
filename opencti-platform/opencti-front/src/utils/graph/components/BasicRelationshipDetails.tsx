@@ -2,11 +2,11 @@ import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import { hexToRGB, itemColor } from '../Colors';
+import { hexToRGB, itemColor } from '../../Colors';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
-import ItemMarkings from '../../components/ItemMarkings';
-import { useFormatter } from '../../components/i18n';
-import type { SelectedEntity } from './EntitiesDetailsRightBar';
+import ItemMarkings from '../../../components/ItemMarkings';
+import { useFormatter } from '../../../components/i18n';
+import { GraphLink } from '../graph.types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -23,7 +23,7 @@ const useStyles = makeStyles({
   },
 });
 interface BasicRelationshipDetailsProps {
-  relation: SelectedEntity,
+  relation: GraphLink,
 }
 const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps> = ({ relation }) => {
   const classes = useStyles();

@@ -10,21 +10,21 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
-import useQueryLoading from '../hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../components/Loader';
-import { useFormatter } from '../../components/i18n';
-import ExpandableMarkdown from '../../components/ExpandableMarkdown';
-import ItemMarkings from '../../components/ItemMarkings';
-import ItemAuthor from '../../components/ItemAuthor';
-import ItemConfidence from '../../components/ItemConfidence';
-import type { SelectedEntity } from './EntitiesDetailsRightBar';
-import ErrorNotFound from '../../components/ErrorNotFound';
+import useQueryLoading from '../../hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../components/Loader';
+import { useFormatter } from '../../../components/i18n';
+import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
+import ItemMarkings from '../../../components/ItemMarkings';
+import ItemAuthor from '../../../components/ItemAuthor';
+import ItemConfidence from '../../../components/ItemConfidence';
+import ErrorNotFound from '../../../components/ErrorNotFound';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
-import type { Theme } from '../../components/Theme';
-import ItemIcon from '../../components/ItemIcon';
-import ItemCreators from '../../components/ItemCreators';
+import type { Theme } from '../../../components/Theme';
+import ItemIcon from '../../../components/ItemIcon';
+import ItemCreators from '../../../components/ItemCreators';
 import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
-import ItemEntityType from '../../components/ItemEntityType';
+import ItemEntityType from '../../../components/ItemEntityType';
+import { GraphLink } from '../graph.types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -584,7 +584,7 @@ RelationshipDetailsComponentProps
 };
 
 interface RelationshipDetailsProps {
-  relation: SelectedEntity;
+  relation: GraphLink;
   queryRef: PreloadedQuery<RelationshipDetailsQuery>;
 }
 

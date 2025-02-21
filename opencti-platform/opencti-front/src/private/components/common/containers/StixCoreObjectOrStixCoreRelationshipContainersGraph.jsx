@@ -26,7 +26,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { stixDomainObjectMutationFieldPatch } from '../stix_domain_objects/StixDomainObjectEditionOverview';
 import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
-import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/components/EntitiesDetailsRightBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { isNotEmptyField } from '../../../../utils/utils';
 

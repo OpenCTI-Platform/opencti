@@ -31,8 +31,8 @@ import {
   nodeThreePaint,
 } from '../../../../utils/Graph';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
-import LassoSelection from '../../../../utils/graph/LassoSelection';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/components/EntitiesDetailsRightBar';
+import LassoSelection from '../../../../utils/graph/components/LassoSelection';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import WorkspaceHeader from '../WorkspaceHeader';
@@ -40,7 +40,7 @@ import InvestigationGraphBar from './InvestigationGraphBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
 import { isNotEmptyField } from '../../../../utils/utils';
-import RelationSelection from '../../../../utils/graph/RelationSelection';
+import RelationSelection from '../../../../utils/graph/components/RelationSelection';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
