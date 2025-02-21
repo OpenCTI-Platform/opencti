@@ -12738,6 +12738,7 @@ type RequestAccessMember {
 }
 
 type RequestAccessConfiguration {
+  id: ID!
   approved_status: Status
   declined_status: Status
   approval_admin: [RequestAccessMember]

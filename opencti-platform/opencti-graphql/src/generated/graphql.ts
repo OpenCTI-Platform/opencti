@@ -23429,6 +23429,7 @@ export type RequestAccessConfiguration = {
   approval_admin?: Maybe<Array<Maybe<RequestAccessMember>>>;
   approved_status?: Maybe<Status>;
   declined_status?: Maybe<Status>;
+  id: Scalars['ID']['output'];
 };
 
 export type RequestAccessConfigureInput = {
@@ -39887,6 +39888,7 @@ export type RequestAccessConfigurationResolvers<ContextType = any, ParentType ex
   approval_admin?: Resolver<Maybe<Array<Maybe<ResolversTypes['RequestAccessMember']>>>, ParentType, ContextType>;
   approved_status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   declined_status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
