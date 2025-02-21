@@ -3,11 +3,11 @@ import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { useFormatter } from '../../components/i18n';
-import useQueryLoading from '../hooks/useQueryLoading';
+import { useFormatter } from '../../../components/i18n';
+import useQueryLoading from '../../hooks/useQueryLoading';
 import { RelationShipFromAndToQuery } from './__generated__/RelationShipFromAndToQuery.graphql';
-import { truncate } from '../String';
-import { getMainRepresentative } from '../defaultRepresentatives';
+import { truncate } from '../../String';
+import { getMainRepresentative } from '../../defaultRepresentatives';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

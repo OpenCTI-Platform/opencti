@@ -184,7 +184,7 @@ export const stixCoreRelationshipEditionOverviewQuery = graphql`
 
 export interface StixCoreRelationshipEditionOverviewProps {
   handleClose: () => void;
-  handleDelete: () => void;
+  handleDelete?: () => void;
   queryRef: PreloadedQuery<StixCoreRelationshipEditionOverviewQuery>;
   stixCoreRelationship: StixCoreRelationshipEditionOverview_stixCoreRelationship$data;
   noStoreUpdate: boolean;
