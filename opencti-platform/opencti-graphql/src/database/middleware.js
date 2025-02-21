@@ -26,7 +26,6 @@ import {
   extractIdsFromStoreObject,
   extractObjectsRestrictionsFromInputs,
   fillTimeSeries,
-  INDEX_DRAFT_OBJECTS,
   INDEX_INFERRED_RELATIONSHIPS,
   inferIndexFromConceptType,
   isEmptyField,
@@ -40,6 +39,7 @@ import {
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+  toBase64,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE
@@ -52,6 +52,7 @@ import {
   elHistogramCount,
   elIndexElements,
   elList,
+  elMarkElementsAsDraftDelete,
   elPaginate,
   elUpdateElement,
   elUpdateEntityConnections,
@@ -208,10 +209,11 @@ import {
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
-import { storeFileConverter } from './file-storage';
+import { getFileContent, storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -464,12 +466,35 @@ export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
   return instance ? convertStoreToStix(instance) : undefined;
 };
+const convertStoreToStixWithResolvedFiles = async (instance) => {
+  const instanceInStix = convertStoreToStix(instance);
+  const nonResolvedFiles = instanceInStix.extensions[STIX_EXT_OCTI].files;
+  if (nonResolvedFiles) {
+    for (let i = 0; i < nonResolvedFiles.length; i += 1) {
+      const currentFile = nonResolvedFiles[i];
+      const currentFileUri = currentFile.uri;
+      const fileId = currentFileUri.replace('/storage/get/', '');
+      currentFile.data = toBase64(await getFileContent(fileId));
+      currentFile.no_trigger_import = true;
+    }
+  }
+  return instanceInStix;
+};
 export const stixLoadByIds = async (context, user, ids, opts = {}) => {
+  const { resolveStixFiles = false } = opts;
   const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
   // As stix load by ids doesn't respect the ordering we need to remap the result
   const loadedInstancesMap = new Map(elements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }))
     .flat().map((o) => o.ids.map((id) => [id, o.instance])).flat());
-  return ids.map((id) => loadedInstancesMap.get(id)).filter((i) => isNotEmptyField(i)).map((e) => convertStoreToStix(e));
+  if (resolveStixFiles) {
+    const fileResolvedInstancesPromise = ids.map((id) => loadedInstancesMap.get(id))
+      .filter((i) => isNotEmptyField(i))
+      .map((e) => (convertStoreToStixWithResolvedFiles(e)));
+    return Promise.all(fileResolvedInstancesPromise);
+  }
+  return ids.map((id) => loadedInstancesMap.get(id))
+    .filter((i) => isNotEmptyField(i))
+    .map((e) => (convertStoreToStix(e)));
 };
 export const stixLoadByIdStringify = async (context, user, id) => {
   const data = await stixLoadById(context, user, id);
@@ -3226,7 +3251,7 @@ const draftInternalDeleteElement = async (context, user, draftElement) => {
     // Try to get the lock in redis
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
 
-    await elDeleteElements(context, user, [draftElement]);
+    await elMarkElementsAsDraftDelete(context, user, [draftElement]);
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -3246,7 +3271,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
-  if (element._index.includes(INDEX_DRAFT_OBJECTS)) {
+  if (getDraftContext(context, user)) {
     return draftInternalDeleteElement(context, user, element);
   }
   // region confidence control
@@ -3275,7 +3300,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   const participantIds = [element.internal_id];
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds);
     if (isStixRefRelationship(element.entity_type)) {
       const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
       const references = await Promise.all(referencesPromises);

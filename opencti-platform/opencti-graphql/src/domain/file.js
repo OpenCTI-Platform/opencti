@@ -22,6 +22,9 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { FilterMode, OrderingMode } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { getDraftContext } from '../utils/draftContext';
+import { UnsupportedError } from '../config/errors';
+import { isDraftFile } from '../database/draft-utils';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -125,6 +128,9 @@ export const uploadImport = async (context, user, args) => {
 };
 
 export const uploadPending = async (context, user, args) => {
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot create a workbench in draft');
+  }
   const { file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false, file_markings = [] } = args;
   let finalFile = file;
   const meta = { labels_text: labels ? labels.join(';') : undefined };
@@ -171,10 +177,16 @@ export const uploadPending = async (context, user, args) => {
 };
 
 export const deleteImport = async (context, user, fileName) => {
+  const draftContext = getDraftContext(context, user);
+  if (draftContext && !isDraftFile(fileName, draftContext)) {
+    throw UnsupportedError('Cannot delete non draft imports in draft');
+  }
   // Imported file must be handled specifically
   // File deletion must publish a specific event
   // and update the updated_at field of the source entity
-  if (fileName.startsWith('import') && !fileName.includes('global') && !fileName.includes('pending')) {
+  const isDraftFileImport = draftContext && isDraftFile(fileName, draftContext, 'import');
+  const isImportFile = fileName.startsWith('import') || isDraftFileImport;
+  if (isImportFile && !fileName.includes('global') && !fileName.includes('pending')) {
     await stixCoreObjectImportDelete(context, context.user, fileName);
     return fileName;
   }

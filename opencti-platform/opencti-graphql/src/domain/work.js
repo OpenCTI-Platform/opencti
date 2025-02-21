@@ -172,7 +172,7 @@ export const deleteWorkForSource = async (sourceId) => {
 
 export const createWork = async (context, user, connector, friendlyName, sourceId, args = {}) => {
   // Create the new work
-  const { receivedTime = null, fileMarkings = [] } = args;
+  const { receivedTime = null, fileMarkings = [], draftContext } = args;
   // Create the work and an initial job
   const { id: workId, timestamp } = generateWorkId(connector.internal_id);
   const work = {
@@ -198,6 +198,9 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     errors: [],
     [buildRefRelationKey(RELATION_OBJECT_MARKING)]: [...fileMarkings]
   };
+  if (draftContext) {
+    work.draft_context = draftContext;
+  }
   await elIndex(INDEX_HISTORY, work);
   return loadWorkById(context, user, workId);
 };

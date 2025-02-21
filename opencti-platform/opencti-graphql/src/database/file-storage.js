@@ -30,6 +30,8 @@ import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
+import { getDraftContext } from '../utils/draftContext';
+import { getDraftFilePrefix, isDraftFile } from './draft-utils';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -124,14 +126,22 @@ export const storageInit = async () => {
 
 export const isStorageAlive = () => initializeBucket();
 
-export const deleteFile = async (context, user, id) => {
-  const up = await loadFile(context, user, id);
-  logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
-  // Delete in S3
-  await s3Client.send(new s3.DeleteObjectCommand({
+export const deleteFileFromStorage = async (id) => {
+  return s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
     Key: id
   }));
+};
+
+export const deleteFile = async (context, user, id) => {
+  const draftContext = getDraftContext(context, user);
+  if (draftContext && !isDraftFile(id, draftContext)) {
+    throw UnsupportedError('Cannot delete non draft imports in draft');
+  }
+  const up = await loadFile(context, user, id);
+  logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
+  // Delete in S3
+  await deleteFileFromStorage(id);
   // Delete associated works
   await deleteWorkForFile(context, user, id);
   // Delete index file
@@ -153,6 +163,16 @@ export const deleteFiles = async (context, user, ids) => {
   for (let i = 0; i < ids.length; i += 1) {
     const id = ids[i];
     await deleteFile(context, user, id);
+  }
+  return true;
+};
+
+export const deleteRawFiles = async (context, user, ids) => {
+  logApp.debug(`[FILE STORAGE] raw delete files ${ids} by ${user.user_email}`);
+  for (let i = 0; i < ids.length; i += 1) {
+    const id = ids[i];
+    // Delete in S3
+    await deleteFileFromStorage(id);
   }
   return true;
 };
@@ -414,6 +434,7 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
 export const uploadJobImport = async (context, user, file, entityId, opts = {}) => {
   const { manual = false, connectorId = null, configuration = null, bypassValidation = false, validationMode = defaultValidationMode } = opts;
   const validationModeToUse = isFeatureEnabled('DRAFT_WORKSPACE') ? validationMode : 'workbench';
+  const draftContext = getDraftContext(context, user);
   let connectors = await connectorsForImport(context, user, file.metaData.mimetype, true, !manual);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);
@@ -424,7 +445,9 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
   if (connectors.length > 0) {
     // Create job and send ask to broker
     const createConnectorWork = async (connector) => {
-      const work = await createWork(context, user, connector, `Manual import of ${file.name}`, file.id);
+      const contextOutOfDraft = { ...context, draft_context: '' };
+      const messageToUse = draftContext ? `Manual import of ${file.name} in draft ${draftContext}` : `Manual import of ${file.name}`;
+      const work = await createWork(contextOutOfDraft, user, connector, messageToUse, file.id, { draftContext });
       return { connector, work };
     };
     const actionList = await Promise.all(connectors.map((connector) => createConnectorWork(connector)));
@@ -435,6 +458,7 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
         internal: {
           work_id: work.id, // Related action for history
           applicant_id: user.id, // User asking for the import
+          draft_id: draftContext ?? null, // If we are in a draft, import in current draft context
         },
         event: {
           file_id: file.id,
@@ -442,8 +466,8 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
           file_markings: file.metaData.file_markings ?? [],
           file_fetch: `/storage/get/${file.id}`, // Path to get the file
           entity_id: entityId, // Context of the upload*
-          validation_mode: validationModeToUse,
-          bypass_validation: bypassValidation, // Force no validation
+          validation_mode: draftContext ? 'draft' : validationModeToUse, // Force to draft if we are in draft
+          bypass_validation: draftContext ? true : bypassValidation, // Force no validation: always force it when in draft
         },
         configuration: connectorConfiguration
       };
@@ -474,6 +498,12 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
   // We lowercase the file name to make it case-insensitive
   let key = `${filePath}/${truncatedFileName.toLowerCase()}`;
+  // In draft, we add a prefix to file path
+  const draftContext = getDraftContext(context, user);
+  if (draftContext) {
+    const draftPrefix = getDraftFilePrefix(draftContext);
+    key = `${draftPrefix}${key}`;
+  }
   const currentFile = await documentFindById(context, user, key);
   if (currentFile) {
     // If file exists, we want to use it's internal_id to use the same casing and keep it compatible

@@ -1,9 +1,26 @@
+import { files } from '../schema/attribute-definition';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { getDraftContext } from '../utils/draftContext';
 import { READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE } from '../modules/draftWorkspace/draftOperations';
 import { EditOperation } from '../generated/graphql';
+
+export const getDraftFilePrefix = (draftId) => {
+  return `draft/${draftId}/`;
+};
+
+export const getDraftContextFilesPrefix = (context) => {
+  const draftContext = getDraftContext(context, context.user);
+  if (draftContext) {
+    return getDraftFilePrefix(draftContext);
+  }
+  return '';
+};
+
+export const isDraftFile = (fileKey, draftId, suffix = '') => {
+  return fileKey.startsWith(getDraftFilePrefix(draftId) + suffix);
+};
 
 export const buildDraftFilter = (context, user, opts = {}) => {
   const { includeDeletedInDraft = false } = opts;
@@ -52,12 +69,14 @@ export const isDraftSupportedEntity = (element) => {
   return !isInternalObject(element.entity_type) && !isInternalRelationship(element.entity_type);
 };
 
+export const FILES_UPDATE_KEY = files.name;
 // Transform a raw update patched stored in a draft_updates_patch to a list of reverse field patch inputs
 export const buildReverseUpdateFieldPatch = (rawUpdatePatch) => {
   const resulReverseFieldPatch = [];
   if (rawUpdatePatch) {
     const parsedUpdatePatch = JSON.parse(rawUpdatePatch);
-    const updatePatchKeys = Object.keys(parsedUpdatePatch);
+    // no need for now to reverse files because draft_change is cleared.
+    const updatePatchKeys = Object.keys(parsedUpdatePatch).filter((k) => k !== FILES_UPDATE_KEY);
     for (let i = 0; i < updatePatchKeys.length; i += 1) {
       const currentKey = updatePatchKeys[i];
       const currentValues = parsedUpdatePatch[currentKey];

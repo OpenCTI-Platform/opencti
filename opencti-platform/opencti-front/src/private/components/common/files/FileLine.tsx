@@ -23,6 +23,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { ListItemButton } from '@mui/material';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import { useTheme } from '@mui/styles';
 import useAuth from '../../../../utils/hooks/useAuth';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
@@ -34,6 +36,7 @@ import { truncate } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction='up' ref={ref} {...otherProps}>{children}</Slide>
@@ -105,7 +108,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 }) => {
   const classes = useStyles();
   const { me } = useAuth();
+  const draftContext = useDraftContext();
   const { t_i18n, fld } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayRemove, setDisplayRemove] = useState(false);
@@ -225,12 +230,14 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     handleClose();
     window.location.pathname = url;
   };
-
   const generateIcon = () => {
+    const fileInDraft = file?.draftVersion;
+    const color = fileInDraft ? getDraftModeColor(theme) : theme.palette.primary.main;
+    const fileColor = (nested || fileInDraft) ? color : 'inherit';
     return isExternalReferenceAttachment || isContainsReference ? (
-      <DocumentScannerOutlined color="primary" />
+      <DocumentScannerOutlined style={{ color }} />
     ) : (
-      <FileOutline color={nested ? 'primary' : 'inherit'} />
+      <FileOutline style={{ color: fileColor }} />
     );
   };
   const listUri = `${APP_BASE_PATH}/storage/${
@@ -368,7 +375,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               </Menu>
             </>
           )}
-          {!isExternalReferenceAttachment && (
+          {!isExternalReferenceAttachment && (!draftContext || file?.draftVersion) && (
             <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
               <>
                 {isFail || isOutdated ? (
@@ -525,6 +532,10 @@ const FileLine = createFragmentContainer(FileLineComponent, {
     fragment FileLine_file on File {
       id
       name
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       uploadStatus
       lastModified
       lastModifiedSinceMin
