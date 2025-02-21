@@ -164,8 +164,8 @@ export const metrics = async (context, user) => {
   const metricApi = async () => {
     const httpClient = await amqpHttpClient();
     const overview = await httpClient.get(`/api/vhosts${VHOST_PATH}`).then((response) => response.data);
-    const version = await httpClient.get(`/api/version`).then((response) => response.data);
-    overview.rabbitmq_version = version;
+    const version = await httpClient.get(`/api/overview`).then((response) => response.data);
+    overview.rabbitmq_version = version.rabbitmq_version;
     const queues = await httpClient.get(`/api/queues${VHOST_PATH}`).then((response) => response.data);
     // Compute number of push queues
     const platformQueues = queues.filter((q) => q.name.startsWith(RABBIT_QUEUE_PREFIX));
