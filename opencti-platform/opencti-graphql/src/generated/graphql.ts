@@ -3802,11 +3802,6 @@ export type ConnectorInfoInput = {
   run_and_terminate: Scalars['Boolean']['input'];
 };
 
-export enum ConnectorListenProtocol {
-  Amqp = 'AMQP',
-  Api = 'API'
-}
-
 export type ConnectorMetadata = {
   __typename?: 'ConnectorMetadata';
   configuration: Scalars['String']['output'];
@@ -31298,7 +31293,6 @@ export type ResolversTypes = ResolversObject<{
   ConnectorConfiguration: ResolverTypeWrapper<ConnectorConfiguration>;
   ConnectorInfo: ResolverTypeWrapper<ConnectorInfo>;
   ConnectorInfoInput: ConnectorInfoInput;
-  ConnectorListenProtocol: ConnectorListenProtocol;
   ConnectorMetadata: ResolverTypeWrapper<ConnectorMetadata>;
   ConnectorQueueDetails: ResolverTypeWrapper<ConnectorQueueDetails>;
   ConnectorType: ConnectorType;

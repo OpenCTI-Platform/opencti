@@ -18,7 +18,6 @@ import { publishUserAction } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
 import {
-  ConnectorListenProtocol,
   ConnectorType,
   type EditContext,
   type EditInput,
