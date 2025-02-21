@@ -61,7 +61,7 @@ export const checkFilterGroupSyntax = (filterGroup: FilterGroup) => {
   const withinFilters = filterGroup.filters.filter((f) => f.operator === FilterOperator.Within);
   withinFilters.forEach((f) => {
     const { values } = f;
-    if (!(values.length === 2)) {
+    if (values.length !== 2) {
       throw UnsupportedError('A filter with "within" operator must have 2 values', { filter: f });
     }
     if (values.some((v) => v === null || v === '')) {
