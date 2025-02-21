@@ -25,10 +25,10 @@ import {
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import GroupingKnowledgeGraphBar from './GroupingKnowledgeGraphBar';
 import { groupingMutationFieldPatch } from './GroupingEditionOverview';
-import LassoSelection from '../../../../utils/graph/LassoSelection';
+import LassoSelection from '../../../../utils/graph/components/LassoSelection';
 import { hexToRGB } from '../../../../utils/Colors';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/components/EntitiesDetailsRightBar';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { getMainRepresentative, getSecondaryRepresentative } from '../../../../utils/defaultRepresentatives';

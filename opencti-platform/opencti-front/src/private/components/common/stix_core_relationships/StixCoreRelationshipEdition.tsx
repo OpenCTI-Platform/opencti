@@ -48,14 +48,14 @@ type StixCoreRelationshipEditionContainerProps = {
   open: boolean;
   inGraph: boolean;
   noStoreUpdate: boolean;
-  handleDelete: () => void;
+  handleDelete?: () => void;
   handleClose: () => void;
 };
 
 type StixCoreRelationshipEditionProps = {
   stixCoreRelationshipId: string;
   noStoreUpdate: boolean;
-  handleDelete: () => void;
+  handleDelete?: () => void;
   handleClose: () => void;
 };
 

@@ -1,3 +1,5 @@
+import { fromB64, toB64 } from './String';
+
 /**
  * Get the value of a property of an object.
  * Examples of path : objectLabel.value, representative.main, created_at...
@@ -38,3 +40,15 @@ export function getObjectPropertyWithoutEmptyValues<T extends object>(object: T,
 }
 
 export const isEmptyObject = (o: object) => Object.keys(o).length === 0;
+
+export const serializeObject = (o: object) => toB64(JSON.stringify(o));
+
+export const deserializeObject = (data: string | null | undefined) => {
+  if (data) {
+    const decodedData = JSON.parse(fromB64(data));
+    if (typeof decodedData === 'object') {
+      return decodedData;
+    }
+  }
+  return {};
+};

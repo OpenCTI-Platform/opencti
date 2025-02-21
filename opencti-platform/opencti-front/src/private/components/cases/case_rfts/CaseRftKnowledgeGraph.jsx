@@ -33,8 +33,8 @@ import {
   nodeThreePaint,
 } from '../../../../utils/Graph';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
-import LassoSelection from '../../../../utils/graph/LassoSelection';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/components/EntitiesDetailsRightBar';
+import LassoSelection from '../../../../utils/graph/components/LassoSelection';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import { caseRftMutationFieldPatch } from './CaseRftEditionOverview';
@@ -44,7 +44,7 @@ import CaseRftPopover from './CaseRftPopover';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { isNotEmptyField } from '../../../../utils/utils';
-import RelationSelection from '../../../../utils/graph/RelationSelection';
+import RelationSelection from '../../../../utils/graph/components/RelationSelection';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];

@@ -10,23 +10,23 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Button from '@mui/material/Button';
-import { useFormatter } from '../../components/i18n';
-import ItemAuthor from '../../components/ItemAuthor';
-import useQueryLoading from '../hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../components/Loader';
-import ExpandableMarkdown from '../../components/ExpandableMarkdown';
-import ItemMarkings from '../../components/ItemMarkings';
-import type { SelectedEntity } from './EntitiesDetailsRightBar';
-import ErrorNotFound from '../../components/ErrorNotFound';
-import ItemIcon from '../../components/ItemIcon';
-import type { Theme } from '../../components/Theme';
-import { getMainRepresentative } from '../defaultRepresentatives';
-import { truncate } from '../String';
-import ItemCreators from '../../components/ItemCreators';
+import { useFormatter } from '../../../components/i18n';
+import ItemAuthor from '../../../components/ItemAuthor';
+import useQueryLoading from '../../hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../components/Loader';
+import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
+import ItemMarkings from '../../../components/ItemMarkings';
+import ErrorNotFound from '../../../components/ErrorNotFound';
+import ItemIcon from '../../../components/ItemIcon';
+import type { Theme } from '../../../components/Theme';
+import { getMainRepresentative } from '../../defaultRepresentatives';
+import { truncate } from '../../String';
+import ItemCreators from '../../../components/ItemCreators';
 import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
-import ItemConfidence from '../../components/ItemConfidence';
-import FieldOrEmpty from '../../components/FieldOrEmpty';
-import ItemEntityType from '../../components/ItemEntityType';
+import ItemConfidence from '../../../components/ItemConfidence';
+import FieldOrEmpty from '../../../components/FieldOrEmpty';
+import ItemEntityType from '../../../components/ItemEntityType';
+import { GraphNode } from '../graph.types';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -545,7 +545,7 @@ EntityDetailsComponentProps
 };
 
 interface EntityDetailsProps {
-  entity: SelectedEntity;
+  entity: GraphNode;
   queryRef: PreloadedQuery<EntityDetailsQuery>;
 }
 
