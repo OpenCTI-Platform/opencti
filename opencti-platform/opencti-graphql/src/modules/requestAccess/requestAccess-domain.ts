@@ -225,7 +225,7 @@ export const getRequestAccessConfiguration = async (
   logApp.info('[OPENCTI-MODULE][Request Access] getRequestAccessConfiguration - entitySetting:', { rfiEntitySettings });
   let declinedStatus;
   let approvedStatus;
-  let approvalAdmin;
+  const allAdmins = [];
   if (rfiEntitySettings) {
     logApp.info('[OPENCTI-MODULE][Request Access] rfiEntitySettings ok', {
       approvedId: rfiEntitySettings.request_access_workflow?.approved_workflow_id,
@@ -250,19 +250,24 @@ export const getRequestAccessConfiguration = async (
       const approvalAdminIds = rfiEntitySettings.request_access_workflow?.approval_admin;
 
       if (approvalAdminIds.length > 0) {
-        const group: BasicGroupEntity = await findGroupById(context, user, approvalAdminIds[0]) as unknown as BasicGroupEntity;
-        logApp.info('[OPENCTI-MODULE][Request Access] approval_admin members:', { group });
-        approvalAdmin = {
-          id: group.id,
-          name: group.name
-        };
+        for (let i = 0; i < approvalAdminIds.length; i += 1) {
+          const group: BasicGroupEntity = await findGroupById(context, user, approvalAdminIds[0]) as unknown as BasicGroupEntity;
+          logApp.info('[OPENCTI-MODULE][Request Access] approval_admin members:', { group });
+          // group previously selected can be deleted at some point.
+          if (group) {
+            allAdmins.push({
+              id: group.id,
+              name: group.name
+            });
+          }
+        }
       }
     }
 
     const requestAccessConfigResult: RequestAccessConfiguration = {
       declined_status: declinedStatus,
       approved_status: approvedStatus,
-      approval_admin: [approvalAdmin],
+      approval_admin: allAdmins,
       id: REQUEST_ACCESS_CONFIGURATION_ID,
     };
     logApp.info('[OPENCTI-MODULE][Request Access] getRequestAccessConfiguration result:', requestAccessConfigResult);
