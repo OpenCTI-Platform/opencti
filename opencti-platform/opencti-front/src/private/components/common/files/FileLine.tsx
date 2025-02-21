@@ -25,6 +25,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { ListItemButton } from '@mui/material';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useTheme } from '@mui/styles';
+import { OverridableStringUnion } from '@mui/types';
 import useAuth from '../../../../utils/hooks/useAuth';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
@@ -135,6 +136,13 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const fileMarkings = me.allowed_marking?.filter(({ id }) => (file_markings ?? []).includes(id)) ?? [];
 
   const isImportActive = () => connectors && connectors.filter((x) => x.data.active).length > 0;
+  const fileDeleteDraftDisabled = !!draftContext && !file?.draftVersion;
+  let deleteFileColor:OverridableStringUnion<'inherit' | 'disabled' | 'primary'> = 'primary';
+  if (nested) {
+    deleteFileColor = 'inherit';
+  } else if (fileDeleteDraftDisabled) {
+    deleteFileColor = 'disabled';
+  }
   const history = [];
 
   if (isOutdated) {
@@ -375,40 +383,44 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               </Menu>
             </>
           )}
-          {!isExternalReferenceAttachment && (!draftContext || file?.draftVersion) && (
+          {!isExternalReferenceAttachment && (
             <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
               <>
                 {isFail || isOutdated ? (
-                  <Tooltip title={t_i18n('Delete this file')}>
+                  <Tooltip title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}>
                     <span>
                       <IconButton
                         disabled={isProgress}
-                        color={nested ? 'inherit' : 'primary'}
                         onClick={(event) => {
                           event.preventDefault();
                           event.stopPropagation();
+                          if (fileDeleteDraftDisabled) {
+                            return;
+                          }
                           handleOpenRemove();
                         }}
                         size="small"
                       >
-                        <DeleteOutlined fontSize="small" />
+                        <DeleteOutlined fontSize="small" color={deleteFileColor} />
                       </IconButton>
                     </span>
                   </Tooltip>
                 ) : (
-                  <Tooltip title={t_i18n('Delete this file')}>
+                  <Tooltip title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}>
                     <span>
                       <IconButton
                         disabled={isProgress}
-                        color={nested ? 'inherit' : 'primary'}
                         onClick={(event) => {
                           event.preventDefault();
                           event.stopPropagation();
+                          if (fileDeleteDraftDisabled) {
+                            return;
+                          }
                           handleOpenDelete();
                         }}
                         size="small"
                       >
-                        <DeleteOutlined fontSize="small" />
+                        <DeleteOutlined fontSize="small" color={deleteFileColor} />
                       </IconButton>
                     </span>
                   </Tooltip>
