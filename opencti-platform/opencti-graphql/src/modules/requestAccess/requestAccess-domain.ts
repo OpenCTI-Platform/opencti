@@ -35,6 +35,9 @@ import { findById as findGroupById } from '../../domain/group';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
+// having an id is required for Relay
+const REQUEST_ACCESS_CONFIGURATION_ID = '7059b2f9-86d4-419b-9fde-adf825090820';
+
 export enum ActionStatus {
   APPROVED = 'APPROVED',
   DECLINED = 'DECLINED',
@@ -259,7 +262,8 @@ export const getRequestAccessConfiguration = async (
     const requestAccessConfigResult: RequestAccessConfiguration = {
       declined_status: declinedStatus,
       approved_status: approvedStatus,
-      approval_admin: [approvalAdmin]
+      approval_admin: [approvalAdmin],
+      id: REQUEST_ACCESS_CONFIGURATION_ID,
     };
     logApp.info('[OPENCTI-MODULE][Request Access] getRequestAccessConfiguration result:', requestAccessConfigResult);
     return requestAccessConfigResult;
@@ -317,10 +321,11 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
     name: groupData.name,
   };
 
-  const requestAccessConfigResult = {
+  const requestAccessConfigResult: RequestAccessConfiguration = {
     declined_status: declinedStatusData,
     approved_status: approvedStatusData,
-    approval_admin: [approvalAdmin]
+    approval_admin: [approvalAdmin],
+    id: REQUEST_ACCESS_CONFIGURATION_ID
   };
   return requestAccessConfigResult;
 };
