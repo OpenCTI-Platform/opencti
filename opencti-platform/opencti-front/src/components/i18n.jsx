@@ -254,7 +254,7 @@ export const useFormatter = () => {
       day: 'numeric',
       month: 'numeric',
       year: 'numeric',
-    });
+    }).replace(',', ''); // remove comma between date and hours
   };
 
   const MONTH_IN_MILLIS = 2.592e9;

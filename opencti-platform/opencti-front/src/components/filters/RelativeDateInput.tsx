@@ -61,9 +61,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       handleChangeRangeDateFilter(value.toISOString());
     }
   };
-  const handleChangeInputStyle = () => {
-    setIsDatePickerOpen(true);
-  };
   return (
     <div style={{ display: 'flex' }}>
       {isDatePickerOpen
@@ -95,7 +92,11 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         error={generateErrorMessage(dateInput) !== undefined}
         helperText={generateErrorMessage(dateInput)}
       />
-      <Button size="small" sx={{ marginLeft: -1, marginRight: -3, color: theme.palette.text.primary }} onClick={handleChangeInputStyle}>
+      <Button
+        size="small"
+        sx={{ marginLeft: -1, marginRight: -3, color: theme.palette.text.primary }}
+        onClick={() => setIsDatePickerOpen(true)}
+      >
         <DateRangeOutlined/>
       </Button>
     </div>
