@@ -19,7 +19,7 @@ import {
   CONNECTOR_INTERNAL_EXPORT_FILE,
   INPUT_GRANTED_REFS,
 } from '../schema/general';
-import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { isEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -56,7 +56,7 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
   return mergeEntities(context, user, targetId, sourceIds);
 };
 
-export const sendStixBundle = async (context, user, connectorId, bundle) => {
+export const sendStixBundle = async (context, user, connectorId, bundle, work_id) => {
   try {
     // 01. Simple check bundle
     const jsonBundle = JSON.parse(bundle);
@@ -68,18 +68,22 @@ export const sendStixBundle = async (context, user, connectorId, bundle) => {
     if (!connector) {
       throw UnsupportedError('Invalid connector');
     }
-    const workName = `${connector.name} run @ ${now()}`;
-    const work = await createWork(context, user, connector, workName, connector.internal_id, { receivedTime: now() });
-    const content = Buffer.from(bundle, 'utf-8').toString('base64');
-    if (jsonBundle.objects.length === 1) {
-      // Only add explicit expectation if the worker will not split anything
-      await updateExpectationsNumber(context, context.user, work.id, jsonBundle.objects.length);
+    let target_work_id = work_id;
+    if (isEmptyField(work_id)) {
+      const workName = `${connector.name} run @ ${now()}`;
+      const work = await createWork(context, user, connector, workName, connector.internal_id, { receivedTime: now() });
+      target_work_id = work.id;
+      if (jsonBundle.objects.length === 1) {
+        // Only add explicit expectation if the worker will not split anything
+        await updateExpectationsNumber(context, context.user, target_work_id, jsonBundle.objects.length);
+      }
     }
+    const content = Buffer.from(bundle, 'utf-8').toString('base64');
     await pushToWorkerForConnector(connectorId, {
       type: 'bundle',
       applicant_id: user.internal_id,
       content,
-      work_id: work.id,
+      work_id: target_work_id,
       update: true
     });
     return true;
