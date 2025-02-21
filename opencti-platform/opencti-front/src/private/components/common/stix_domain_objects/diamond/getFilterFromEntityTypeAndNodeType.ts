@@ -4,7 +4,7 @@ export enum DiamondNodeType {
   capabilities = 'capabilities',
 }
 
-enum DiamondEntityType {
+export enum DiamondEntityType {
   threatActorGroup = 'Threat-Actor-Group',
   threatActorIndividual = 'Threat-Actor-Individual',
   intrusionSet = 'Intrusion-Set',
