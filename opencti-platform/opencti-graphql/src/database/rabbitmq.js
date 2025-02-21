@@ -32,7 +32,7 @@ const PORT = conf.get('rabbitmq:port');
 const USERNAME = conf.get('rabbitmq:username');
 const PASSWORD = conf.get('rabbitmq:password');
 const VHOST = conf.get('rabbitmq:vhost');
-const VHOST_PATH = VHOST === '/' ? '' : `/${VHOST}`;
+const VHOST_PATH = VHOST === '/' ? '/%2f' : `/${VHOST}`;
 const USE_SSL_MGMT = booleanConf('rabbitmq:management_ssl', false);
 const HOSTNAME_MGMT = conf.get('rabbitmq:hostname_management') || HOSTNAME;
 const PORT_MGMT = conf.get('rabbitmq:port_management');
@@ -163,7 +163,9 @@ export const send = (exchangeName, routingKey, message) => {
 export const metrics = async (context, user) => {
   const metricApi = async () => {
     const httpClient = await amqpHttpClient();
-    const overview = await httpClient.get('/api/overview').then((response) => response.data);
+    const overview = await httpClient.get(`/api/vhosts${VHOST_PATH}`).then((response) => response.data);
+    const version = await httpClient.get(`/api/version`).then((response) => response.data);
+    overview.rabbitmq_version = version;
     const queues = await httpClient.get(`/api/queues${VHOST_PATH}`).then((response) => response.data);
     // Compute number of push queues
     const platformQueues = queues.filter((q) => q.name.startsWith(RABBIT_QUEUE_PREFIX));
