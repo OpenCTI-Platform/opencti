@@ -80,6 +80,7 @@ export interface GraphState {
   disabledEntityTypes: string[]
   disabledCreators: string[]
   disabledMarkings: string[]
+  selectedTimeRangeInterval?: [Date, Date]
   zoom?: {
     k: number
     x: number

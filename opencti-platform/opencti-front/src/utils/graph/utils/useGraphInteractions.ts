@@ -88,6 +88,10 @@ const useGraphInteractions = () => {
     setGraphStateProp('selectFreeRectangle', !selectFreeRectangle);
   };
 
+  const setSelectedTimeRange = (range: [Date, Date]) => {
+    setGraphStateProp('selectedTimeRangeInterval', range);
+  };
+
   const toggleSelectFree = () => {
     setGraphStateProp('selectFreeRectangle', false);
     setGraphStateProp('selectFree', !selectFree);
@@ -377,6 +381,7 @@ const useGraphInteractions = () => {
     removeNode,
     addLink,
     removeLink,
+    setSelectedTimeRange,
   };
 };
 

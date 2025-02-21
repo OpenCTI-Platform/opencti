@@ -1,15 +1,51 @@
-import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
-import React from 'react';
+import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis, Tooltip, TooltipProps } from 'recharts';
+import React, { CSSProperties } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { computeTimeRangeValuesDomain } from '../utils/graphTimeRange';
+import { computeTimeRangeValuesDomain, GraphTimeRange } from '../utils/graphTimeRange';
 import type { Theme } from '../../../components/Theme';
 import { useGraphContext } from '../GraphContext';
 import { dateFormat } from '../../Time';
 import TimeRange from '../../../components/range_slider/RangeSlider';
+import { useFormatter } from '../../../components/i18n';
+import useGraphInteractions from '../utils/useGraphInteractions';
+
+const TimeRangeTooltip: TooltipProps<number, string>['content'] = ({
+  active,
+  payload,
+}) => {
+  const { fldt } = useFormatter();
+  const theme = useTheme<Theme>();
+
+  if (!active || !payload || !payload[0]) return null;
+
+  const { time, value }: GraphTimeRange['values'][0] = payload[0].payload;
+  const date = fldt(time * 1000);
+
+  const style: CSSProperties = {
+    transform: 'translate(-50%, -40px)',
+    background: theme.palette.background.paper,
+    padding: theme.spacing(1),
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    borderRadius: theme.spacing(0.5),
+    display: 'flex',
+    gap: theme.spacing(1),
+  };
+
+  return (
+    <div style={style}>
+      <span>{date}</span>
+      <span>-</span>
+      <span>{value}</span>
+    </div>
+  );
+};
 
 const GraphToolbarTimeRange = () => {
   const theme = useTheme<Theme>();
-  const { timeRange } = useGraphContext();
+  const { setSelectedTimeRange } = useGraphInteractions();
+  const { timeRange, graphState } = useGraphContext();
+  const { selectedTimeRangeInterval } = graphState;
 
   return (
     <div style={{
@@ -39,12 +75,14 @@ const GraphToolbarTimeRange = () => {
             range={[15, 200]}
             domain={computeTimeRangeValuesDomain(timeRange.values)}
           />
+          <Tooltip content={TimeRangeTooltip} />
           <Scatter
             data={timeRange.values}
             fill={theme.palette.primary.main}
           />
         </ScatterChart>
       </ResponsiveContainer>
+
       <div style={{
         position: 'absolute',
         top: 30,
@@ -55,10 +93,10 @@ const GraphToolbarTimeRange = () => {
       >
         <TimeRange
           ticksNumber={15}
-          selectedInterval={timeRange.interval} // TODO change
+          selectedInterval={selectedTimeRangeInterval ?? timeRange.interval}
           timelineInterval={timeRange.interval}
           onUpdateCallback={() => null}
-          onChangeCallback={console.log}
+          onChangeCallback={setSelectedTimeRange}
           formatTick={dateFormat}
           containerClassName="timerange"
         />
