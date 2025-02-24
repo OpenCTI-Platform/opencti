@@ -431,6 +431,8 @@ class CaseRfiKnowledgeGraphBar extends Component {
     const toSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.tail(selectedNodes)))
       : [];
+    console.log(fromSelectedTypes);
+    console.log(toSelectedTypes);
     const relationEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
       || (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1);
