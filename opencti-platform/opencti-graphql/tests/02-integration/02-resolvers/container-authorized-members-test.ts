@@ -505,7 +505,7 @@ describe('Case Incident Response and organization sharing standard behavior with
     const caseIRQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(caseIRQueryResult).not.toBeNull();
     expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
-    expect(caseIRQueryResult?.data?.objectOrganization[0].id).toEqual(organizationId);
+    expect(caseIRQueryResult?.data?.caseIncident.objectOrganization[0].id).toEqual(organizationId);
   });
   it('should Editor user from different organization access Case Incident Response', async () => {
     const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
