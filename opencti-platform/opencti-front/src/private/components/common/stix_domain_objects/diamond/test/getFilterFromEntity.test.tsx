@@ -2,9 +2,10 @@ import { describe, it, expect } from 'vitest';
 import getFilterFromEntityTypeAndNodeType, { DiamondEntityType, DiamondNodeType } from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
 
 describe('get the filters from Threat-actor-group, containing a diamond ', () => {
-  const entityType = 'Threat-Actor-Group' as DiamondEntityType;
+  const entityType = DiamondEntityType.threatActorGroup;
+
   it('should list filter for adversary', () => {
-    const nodeType = 'adversary' as DiamondNodeType;
+    const nodeType = DiamondNodeType.adversary;
     const expectedFilters = {
       mode: 'and',
       filters: [
@@ -38,8 +39,9 @@ describe('get the filters from Threat-actor-group, containing a diamond ', () =>
     const results = getFilterFromEntityTypeAndNodeType(entityType, nodeType);
     expect(results).toEqual(encodedFilters);
   });
+
   it('should list filter for infrastructure', () => {
-    const nodeType = 'infrastructure' as DiamondNodeType;
+    const nodeType = DiamondNodeType.infrastructure;
     const expectedFilters = {
       mode: 'and',
       filters: [
@@ -80,9 +82,10 @@ describe('get the filters from Threat-actor-group, containing a diamond ', () =>
 });
 
 describe('get the filters from Malware, containing a diamond ', () => {
-  const entityType = 'Malware' as DiamondEntityType;
+  const entityType = DiamondEntityType.malware;
+
   it('should list filter for adversary', () => {
-    const nodeType = 'adversary' as DiamondNodeType;
+    const nodeType = DiamondNodeType.adversary;
     const expectedFilters = {
       mode: 'and',
       filters: [
@@ -116,8 +119,9 @@ describe('get the filters from Malware, containing a diamond ', () => {
     const results = getFilterFromEntityTypeAndNodeType(entityType, nodeType);
     expect(results).toEqual(encodedFilters);
   });
+
   it('should list filter for infrastructure', () => {
-    const nodeType = 'infrastructure' as DiamondNodeType;
+    const nodeType = DiamondNodeType.infrastructure;
     const expectedFilters = {
       mode: 'and',
       filters: [
