@@ -1,7 +1,7 @@
 import { Edit } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import React, { FunctionComponent, useState } from 'react';
-import RequestAccessConfigurationEdition from '@components/settings/sub_types/request_access/RequestAccessConfigurationEdition';
+import RequestAccessConfigurationEdition from '@components/settings/sub_types/workflow/RequestAccessConfigurationEdition';
 import { RequestAccessConfigurationEdition_requestAccess$key } from './__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
 
 interface RequestAccessWorkflowEditionProps {
