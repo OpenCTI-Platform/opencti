@@ -43,7 +43,7 @@ const externalReferenceEnrichmentLinesDeleteMutation = graphql`
 const externalReferenceEnrichmentLinesAskEnrich = graphql`
   mutation ExternalReferenceEnrichmentLinesMutation(
     $id: ID!
-    $connectorId: [ID!]!
+    $connectorId: ID!
   ) {
     externalReferenceEdit(id: $id) {
       askEnrichment(connectorId: $connectorId) {

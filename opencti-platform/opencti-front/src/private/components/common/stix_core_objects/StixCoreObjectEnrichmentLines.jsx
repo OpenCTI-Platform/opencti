@@ -41,7 +41,7 @@ const stixCoreObjectEnrichmentLinesDeleteMutation = graphql`
 `;
 
 const stixCoreObjectEnrichmentLinesAskEnrich = graphql`
-  mutation StixCoreObjectEnrichmentLinesMutation($id: ID!, $connectorId: [ID!]!) {
+  mutation StixCoreObjectEnrichmentLinesMutation($id: ID!, $connectorId: ID!) {
     stixCoreObjectEdit(id: $id) {
       askEnrichment(connectorId: $connectorId) {
         id
