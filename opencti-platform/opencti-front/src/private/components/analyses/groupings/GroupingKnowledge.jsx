@@ -233,7 +233,7 @@ class GroupingKnowledgeComponent extends Component {
                   if (props && props.grouping) {
                     return (
                       <GroupingKnowledgeGraph
-                        grouping={props.grouping}
+                        data={props.grouping}
                         mode={mode}
                         enableReferences={enableReferences}
                       />

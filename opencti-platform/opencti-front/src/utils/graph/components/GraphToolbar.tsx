@@ -32,6 +32,7 @@ const GraphToolbar = (props: GraphToolbarProps) => {
           zIndex: 1,
           paddingLeft: navOpen ? 180 : 60,
           height: showTimeRange ? 134 : 54,
+          overflow: 'hidden',
           transition: 'height 0.2s ease',
         },
       }}
