@@ -200,7 +200,41 @@ const notAddableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'De
 const notUpdatableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
 const notScannableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
 const notEnrichableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
-const typesWithScore = ['Stix-Cyber-Observable', 'Indicator'];
+const typesWithScore = [
+  'Stix-Cyber-Observable',
+  'Indicator',
+  'Autonomous-System',
+  'Directory',
+  'Domain-Name',
+  'Email-Addr',
+  'Email-Message',
+  'Email-Mime-Part-Type',
+  'StixFile',
+  'X509-Certificate',
+  'IPv4-Addr',
+  'IPv6-Addr',
+  'Mac-Addr',
+  'Mutex',
+  'Network-Traffic',
+  'Process',
+  'Software',
+  'Url',
+  'User-Account',
+  'Windows-Registry-Key',
+  'Windows-Registry-Value-Type',
+  'Cryptographic-Key',
+  'Cryptocurrency-Wallet',
+  'Hostname',
+  'Text',
+  'Credential',
+  'Tracking-Number',
+  'User-Agent',
+  'Bank-Account',
+  'Phone-Number',
+  'Payment-Card',
+  'Media-Content',
+  'Persona',
+];
 const typesWithSeverity = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
 const typesWithPriority = ['Case-Incident', 'Case-Rft', 'Case-Rfi'];
 const typesWithAssignee = ['Case-Incident', 'Case-Rft', 'Case-Rfi', 'Report'];
