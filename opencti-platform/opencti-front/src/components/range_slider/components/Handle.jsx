@@ -5,7 +5,7 @@ const Handle = ({
   error,
   domain: [min, max],
   handle: { id, value, percent = 0 },
-  disabled,
+  disabled = false,
   getHandleProps,
 }) => {
   const leftPosition = `${percent}%`;
@@ -38,7 +38,5 @@ Handle.propTypes = {
   disabled: PropTypes.bool,
   style: PropTypes.object,
 };
-
-Handle.defaultProps = { disabled: false };
 
 export default Handle;

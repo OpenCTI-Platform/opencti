@@ -509,7 +509,7 @@ interface ReportKnowledgeGraphtProps extends Omit<ReportKnowledgeGraphComponentP
   data: ReportKnowledgeGraph_fragment$key
 }
 
-const reportKnowledgeGraph = ({
+const ReportKnowledgeGraph = ({
   data,
   ...otherProps
 }: ReportKnowledgeGraphtProps) => {
@@ -524,4 +524,4 @@ const reportKnowledgeGraph = ({
   );
 };
 
-export default reportKnowledgeGraph;
+export default ReportKnowledgeGraph;

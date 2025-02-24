@@ -2,7 +2,7 @@ import { getMinutes } from 'date-fns';
 import PropTypes from 'prop-types';
 import React from 'react';
 
-const Tick = ({ tick, count, format }) => {
+const Tick = ({ tick, count, format = (d) => d }) => {
   const isFullHour = !getMinutes(tick.value);
 
   const tickLabelStyle = {
@@ -35,7 +35,5 @@ Tick.propTypes = {
   count: PropTypes.number.isRequired,
   format: PropTypes.func.isRequired,
 };
-
-Tick.defaultProps = { format: (d) => d };
 
 export default Tick;
