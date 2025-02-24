@@ -1,5 +1,6 @@
 import { Mistral } from '@mistralai/mistralai';
 import OpenAI from 'openai';
+import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { isEmptyField } from './utils';
 import { notify } from './redis';
@@ -41,19 +42,21 @@ if (AI_ENABLED && AI_TOKEN) {
   }
 }
 
-export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
+export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser, requestOpts?: any) => {
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
     logApp.debug('[AI] Querying MistralAI with prompt', { questionStart: userMessage.substring(0, 100) });
-    const response = await (client as Mistral)?.chat.stream({
+    const request: ChatCompletionStreamRequest = {
       model: AI_MODEL,
       messages: [
         { role: 'system', content: systemMessage },
-        { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) }
+        { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) },
       ],
-    });
+      ...requestOpts,
+    };
+    const response = await (client as Mistral)?.chat.stream(request);
     let content = '';
     if (response) {
       // eslint-disable-next-line no-restricted-syntax
@@ -116,11 +119,11 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
   }
 };
 
-export const queryAi = async (busId: string | null, developerMessage: string | null, userMessage: string, user: AuthUser) => {
+export const queryAi = async (busId: string | null, developerMessage: string | null, userMessage: string, user: AuthUser, requestOpts?: any) => {
   const finalDeveloperMessage = developerMessage || 'You are an assistant helping a cyber threat intelligence analyst to better understand cyber threat intelligence data.';
   switch (AI_TYPE) {
     case 'mistralai':
-      return queryMistralAi(busId, finalDeveloperMessage, userMessage, user);
+      return queryMistralAi(busId, finalDeveloperMessage, userMessage, user, requestOpts);
     case 'openai':
       return queryChatGpt(busId, finalDeveloperMessage, userMessage, user);
     default:
