@@ -28,12 +28,6 @@ export const StatusTemplateFieldScopedSearchQuery = graphql`
   }
 `;
 
-export interface StatusTemplateFieldData {
-  label: string | undefined;
-  value: string | undefined;
-  color: string | undefined;
-}
-
 const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProps> = ({
   name,
   style,
@@ -42,9 +36,7 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
   scope,
 }) => {
   const { t_i18n } = useFormatter();
-
-  // const [statusTemplateInput, setStatusTemplateInput] = useState<string>('');
-  const [statusTemplates, setStatusTemplates] = useState<StatusTemplateFieldData[]>([]);
+  const [statusTemplates, setStatusTemplates] = useState<Option[]>([]);
 
   const searchStatusTemplates = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -56,7 +48,7 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
       .toPromise()
       .then((data) => {
         const queryData: StatusTemplateFieldScopedSearchQuery$data = data as unknown as StatusTemplateFieldScopedSearchQuery$data;
-        const fieldData: StatusTemplateFieldData[] = queryData?.statusTemplatesByStatusScope?.map((statusData) => {
+        const fieldData: Option[] = queryData?.statusTemplatesByStatusScope?.map((statusData: Option) => {
           return { label: statusData?.name, value: statusData?.id, color: statusData?.color };
         }) || [];
         setStatusTemplates(fieldData);

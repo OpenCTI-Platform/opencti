@@ -15,6 +15,7 @@ import Transition from './Transition';
 import { RequestAccessDialogMutation$variables } from './__generated__/RequestAccessDialogMutation.graphql';
 import { handleErrorInForm } from '../relay/environment';
 import useAuth from '../utils/hooks/useAuth';
+import { fieldSpacingContainerStyle } from '../utils/field';
 
 const requestAccessDialogMutation = graphql`
   mutation RequestAccessDialogMutation($input: RequestAccessAddInput!) {
@@ -88,7 +89,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
         onClose={onClose}
       >
         <DialogContent>
-          <DialogTitle style={{ padding: '16px 0' }}>{t_i18n('Request Access for entity')}</DialogTitle>
+          <DialogTitle style={{ padding: '16px 0' }}>{t_i18n('Request Access')}</DialogTitle>
           <Formik
             initialValues={initialValues}
             onSubmit={onSubmit}
@@ -108,14 +109,14 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
                       label={t_i18n('Enter justification for requesting this entity')}
                       fullWidth={true}
                       variant="standard"
-                      style={{ marginTop: 20 }}
+                      style={fieldSpacingContainerStyle}
                       askAi={true}
                       multiline={true}
                       minRows={5}
                     />
                     <ObjectOrganizationField
                       name="organizations"
-                      style={{ width: '100%', paddingTop: '16px', marginBottom: 20 }}
+                      style={fieldSpacingContainerStyle}
                       label={t_i18n('Select the organization of your choice for requesting this entity')}
                       multiple={false}
                       alert={false}
