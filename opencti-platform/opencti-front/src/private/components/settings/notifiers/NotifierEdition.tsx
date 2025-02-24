@@ -88,7 +88,7 @@ interface NotifierEditionComponentProps {
 interface NotifierEditionValues {
   name: string
   description?: string | null
-  authorized_members?: Option[]
+  restricted_members?: Option[]
   notifier_connector_id?: Option
 }
 
@@ -112,7 +112,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
   const initialValues: NotifierEditionValues = {
     name: data?.name ?? '',
     description: data?.description,
-    authorized_members: convertAuthorizedMembers(data),
+    restricted_members: convertAuthorizedMembers(data),
     notifier_connector_id: data?.notifier_connector ? { value: data.notifier_connector.id, label: data.notifier_connector.name } : undefined,
   };
   const submitForm = (
@@ -129,7 +129,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
           const inputs = [
             { key: 'name', value: [values.name] },
             { key: 'description', value: [values.description] },
-            { key: 'authorized_members', value: values.authorized_members?.map(({ value }) => value) },
+            { key: 'restricted_members', value: values.restricted_members?.map(({ value }) => value) },
             { key: 'notifier_connector_id', value: [values.notifier_connector_id?.value] },
             { key: 'notifier_configuration', value: [JSON.stringify(current.state.formData)] },
           ];
@@ -187,7 +187,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
               style={fieldSpacingContainerStyle}
               onChange={setFieldValue}
               multiple={true}
-              name="authorized_members"
+              name="restricted_members"
             />
             <JsonForm
               uiSchema={{

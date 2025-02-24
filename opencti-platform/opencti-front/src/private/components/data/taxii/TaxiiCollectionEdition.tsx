@@ -36,7 +36,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface TaxiiCollectionCreationForm {
-  authorized_members: Option[]
+  restricted_members: Option[]
   taxii_public?: boolean | null
   name: string | null
   description: string | null
@@ -58,7 +58,7 @@ const taxiiCollectionMutationFieldPatch = graphql`
 const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().shape({
   name: Yup.string().required(requiredSentence),
   description: Yup.string().nullable(),
-  authorized_members: Yup.array().nullable(),
+  restricted_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
   include_inferences: Yup.bool().nullable(),
   score_to_confidence: Yup.bool().nullable(),
@@ -71,7 +71,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
     name: taxiiCollection.name ?? '',
     description: taxiiCollection.description ?? '',
     taxii_public: taxiiCollection.taxii_public,
-    authorized_members: convertAuthorizedMembers(taxiiCollection),
+    restricted_members: convertAuthorizedMembers(taxiiCollection),
     include_inferences: taxiiCollection.include_inferences,
     score_to_confidence: taxiiCollection.score_to_confidence,
   };
@@ -185,7 +185,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
                 onChange={handleSubmitFieldOptions}
                 multiple={true}
                 helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
-                name="authorized_members"
+                name="restricted_members"
               />
             )}
           </Alert>

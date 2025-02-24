@@ -30,7 +30,7 @@ const ingestionTaxiiCollectionValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
   user_id: Yup.mixed().nullable(),
   confidence_to_score: Yup.bool().nullable(),
-  authorized_members: Yup.array().required(t('This field is required')).min(1, t('This field is required')),
+  restricted_members: Yup.array().required(t('This field is required')).min(1, t('This field is required')),
 });
 
 const IngestionTaxiiCollectionEditionContainer = ({
@@ -71,12 +71,12 @@ const IngestionTaxiiCollectionEditionContainer = ({
     }).catch(() => false);
   const initialValues = R.pipe(
     R.assoc('user_id', convertUser(ingestionTaxiiCollection, 'user')),
-    R.assoc('authorized_members', convertAuthorizedMembers(ingestionTaxiiCollection)),
+    R.assoc('restricted_members', convertAuthorizedMembers(ingestionTaxiiCollection)),
     R.pick([
       'name',
       'description',
       'user_id',
-      'authorized_members',
+      'restricted_members',
       'confidence_to_score',
     ]),
   )(ingestionTaxiiCollection);
@@ -123,7 +123,7 @@ const IngestionTaxiiCollectionEditionContainer = ({
               style={fieldSpacingContainerStyle}
               onChange={handleSubmitFieldOptions}
               multiple={true}
-              name="authorized_members"
+              name="restricted_members"
             />
             <Field
               component={SwitchField}

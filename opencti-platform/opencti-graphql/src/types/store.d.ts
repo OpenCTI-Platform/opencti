@@ -184,7 +184,7 @@ interface BasicStoreCommon extends BasicStoreBase {
   [RELATION_OBJECT_ASSIGNEE]?: Array<string>;
   [RELATION_OBJECT_PARTICIPANT]?: Array<string>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
-  authorized_members?: Array<AuthorizedMember>;
+  restricted_members?: Array<AuthorizedMember>;
 }
 
 interface StoreCommon {
@@ -433,7 +433,7 @@ interface BasicStoreEntityFeed extends BasicStoreEntity {
       attribute: string;
     }];
   }>;
-  authorized_members: Array<AuthorizedMember>;
+  restricted_members: Array<AuthorizedMember>;
 }
 
 interface BasicStoreCyberObservable extends BasicStoreCommon {

@@ -2,7 +2,7 @@ import { uniq } from 'ramda';
 import { isEmptyField } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicGroupEntity, BasicStoreEntity } from '../types/store';
-import type { MemberAccess, MemberAccessInput } from '../generated/graphql';
+import type { MemberAccess, MemberAccessInput, MemberGroupRestriction } from '../generated/graphql';
 import {
   type AuthorizedMember,
   isUserHasCapabilities,
@@ -32,13 +32,13 @@ export const getAuthorizedMembers = async (
   entity: BasicStoreEntity
 ): Promise<MemberAccess[]> => {
   let authorizedMembers: MemberAccess[] = [];
-  if (isEmptyField(entity.authorized_members)) {
+  if (isEmptyField(entity.restricted_members)) {
     return authorizedMembers;
   }
   if (!validateUserAccessOperation(user, entity, 'manage-access')) {
     return authorizedMembers; // return empty if user doesn't have the right access_right
   }
-  const membersIds = (entity.authorized_members ?? []).map((e) => e.id);
+  const membersIds = (entity.restricted_members ?? []).map((e) => e.id);
   const args = {
     connectionFormat: false,
     first: 100,
@@ -49,9 +49,15 @@ export const getAuthorizedMembers = async (
     },
   };
   const members = await findAllMembers(context, user, args);
-  authorizedMembers = (entity.authorized_members ?? []).map((am) => {
-    const member = members.find((m) => (m as BasicStoreEntity).id === am.id) as BasicStoreEntity;
-    return { id: am.id, name: member?.name ?? '', entity_type: member?.entity_type ?? '', access_right: am.access_right };
+  authorizedMembers = (entity.restricted_members ?? []).map((currentAuthMember) => {
+    const member = members.find((m) => (m as BasicStoreEntity).id === currentAuthMember.id) as BasicStoreEntity;
+    let groups_restriction: MemberGroupRestriction[] = [];
+    if (currentAuthMember.groups_restriction_ids) {
+      groups_restriction = currentAuthMember.groups_restriction_ids.map((groupId: string) => {
+        return { id: groupId, name: 'TODO' };
+      });
+    }
+    return { id: currentAuthMember.id, name: member?.name ?? '', entity_type: member?.entity_type ?? '', access_right: currentAuthMember.access_right, groups_restriction };
   });
   return authorizedMembers;
 };
@@ -103,7 +109,7 @@ export const editAuthorizedMembers = async (
 ) => {
   if (getDraftContext(context, user)) throw UnsupportedError('Cannot edit authorized members in draft');
   const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
-  let authorized_members: { id: string, access_right: string }[] | null = null;
+  let restricted_members: { id: string, access_right: string, groups_restriction_ids: string[] | null | undefined }[] | null = null;
 
   if (input) {
     // validate input (validate access right) and remove duplicates
@@ -125,10 +131,16 @@ export const editAuthorizedMembers = async (
       throw FunctionalError('It should have at least one valid member with admin access');
     }
 
-    authorized_members = filteredInput.map(({ id, access_right }) => ({ id, access_right }));
+    restricted_members = filteredInput.map(({ id, access_right, groups_restriction_ids }) => {
+      const member = { id, access_right, groups_restriction_ids };
+      if (!groups_restriction_ids) {
+        delete member.groups_restriction_ids;
+      }
+      return member;
+    });
   }
 
-  const patch = { authorized_members };
+  const patch = { restricted_members };
   const { element } = await patchAttribute(context, user, entityId, entityType, patch);
   if (busTopicKey) {
     return notify(BUS_TOPICS[busTopicKey].EDIT_TOPIC, element, user);

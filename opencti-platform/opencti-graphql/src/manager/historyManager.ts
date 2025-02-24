@@ -166,7 +166,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
       applicant_id: event.data.origin?.applicant_id,
       timestamp: eventDate,
       context_data: contextData,
-      authorized_members: stix.extensions[STIX_EXT_OCTI].authorized_members,
+      restricted_members: stix.extensions[STIX_EXT_OCTI].authorized_members,
       'rel_object-marking.internal_id': R.uniq(eventMarkingRefs),
       'rel_granted.internal_id': R.uniq(eventGrantedRefsIds),
     };
