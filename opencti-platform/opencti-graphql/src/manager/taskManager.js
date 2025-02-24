@@ -173,7 +173,7 @@ const baseOperationBuilder = (actionType, operations, element) => {
     baseOperationObject.opencti_operation = 'restore';
   }
   if (actionType === 'KNOWLEDGE_REMOVE') {
-    baseOperationObject.opencti_operation = 'delete-force';
+    baseOperationObject.opencti_operation = 'delete_force';
   }
   if (actionType === ACTION_TYPE_ENRICHMENT) {
     baseOperationObject.opencti_operation = 'enrichment';
@@ -186,7 +186,7 @@ const baseOperationBuilder = (actionType, operations, element) => {
   }
   // Draft management
   if (actionType === ACTION_TYPE_REMOVE_FROM_DRAFT) {
-    baseOperationObject.opencti_operation = 'revert-draft';
+    baseOperationObject.opencti_operation = 'revert_draft';
   }
   // Rule management
   if (actionType === ACTION_TYPE_RULE_APPLY) {
@@ -579,7 +579,7 @@ const taskHandlerGenerator = (context) => {
       if (action.context?.field === 'container-object') {
         return 'KNOWLEDGE_CONTAINER';
       }
-      // Support generic knowledge§
+      // Support generic knowledge
       if ([ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_REMOVE].includes(action.type)) {
         return 'KNOWLEDGE_CHANGE';
       }

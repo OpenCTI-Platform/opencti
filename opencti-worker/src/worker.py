@@ -320,14 +320,15 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     case (
                         "delete"  # Standard delete
                         | "restore"  # Restore an operation from trash
-                        | "delete-force"  # Delete with no trash
+                        | "delete_force"  # Delete with no trash
                         | "share"  # Share an element
                         | "unshare"  # Unshare an element
                         | "rule_apply"  # Applying a rule (start engine)
                         | "rule_clear"  # Clearing a rule (stop engine)
                         | "rules_rescan"  # Rescan a rule (massive operation in UI)
                         | "enrichment"  # Ask for enrichment (massive operation in UI)
-                        | "clear_access_restriction"  # Clear access members ((massive operation in UI)
+                        | "clear_access_restriction"  # Clear access members (massive operation in UI)
+                        | "revert_draft"  # Cancel draft modification (massive operation in UI)
                     ):
                         data_object = event_content["data"]
                         data_object["opencti_operation"] = event_type

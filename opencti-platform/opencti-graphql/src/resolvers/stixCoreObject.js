@@ -5,6 +5,7 @@ import {
   analysisClear,
   askElementAnalysisForConnector,
   askElementEnrichmentForConnector,
+  askElementEnrichmentForConnectors,
   batchMarkingDefinitions,
   casesPaginated,
   containersPaginated,
@@ -171,6 +172,7 @@ const stixCoreObjectResolvers = {
         return removeOrganizationRestriction(context, context.user, id, organizationId, directContainerSharing);
       },
       askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
+      askEnrichments: ({ connectorIds }) => askElementEnrichmentForConnectors(context, context.user, id, connectorIds),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
       askAnalysis: ({ contentSource, contentType, connectorId }) => askElementAnalysisForConnector(context, context.user, id, contentSource, contentType, connectorId),
       analysisPush: (args) => stixCoreObjectAnalysisPush(context, context.user, id, args),

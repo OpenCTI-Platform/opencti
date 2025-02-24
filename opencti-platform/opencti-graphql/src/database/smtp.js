@@ -31,7 +31,7 @@ export const smtpIsAlive = async () => {
     try {
       await transporter.verify();
     } catch {
-      logApp.warn('SMTP seems down, email notification will may not work');
+      logApp.warn('SMTP seems down, email notification may not work');
     }
   }
   return true;

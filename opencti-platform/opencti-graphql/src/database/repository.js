@@ -86,7 +86,7 @@ export const connectorsForWorker = async (context, user) => {
   for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
     registeredConnectors.push({
       id: `background-task-${i}`,
-      name: `Background ${i} queue`,
+      name: `Background task ${i} queue`,
       connector_scope: [],
       config: connectorConfig(`background-task-${i}`),
       active: true

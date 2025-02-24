@@ -8339,7 +8339,8 @@ type ExternalReferenceEditMutations {
   contextClean: ExternalReference
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
-  askEnrichment(connectorId: [ID!]!): [Work!]
+  askEnrichment(connectorId: ID!): Work
+  askEnrichments(connectorIds: [ID!]!): [Work!]
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
 }
 
@@ -8389,7 +8390,8 @@ type StixCoreObjectEditMutations {
   clearAccessRestriction: StixCoreObject
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
   restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
-  askEnrichment(connectorId: [ID!]!): [Work!]
+  askEnrichment(connectorId: ID!): Work
+  askEnrichments(connectorIds: [ID!]!): [Work!]
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean

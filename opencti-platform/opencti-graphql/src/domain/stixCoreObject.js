@@ -339,8 +339,7 @@ export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjec
   return stixCoreObject.id;
 };
 
-export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
-  const connectorIds = Array.isArray(connectorId) ? connectorId : [connectorId];
+export const askElementEnrichmentForConnectors = async (context, user, enrichedId, connectorIds) => {
   const connectors = await storeLoadByIds(context, user, connectorIds, ENTITY_TYPE_CONNECTOR);
   const element = await internalLoadById(context, user, enrichedId);
   if (!element) {
@@ -369,7 +368,7 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
     await pushToConnector(connector.internal_id, message);
     const baseData = {
       id: enrichedId,
-      connector_id: connectorId,
+      connector_id: connector.internal_id,
       connector_name: connector.name,
       entity_name: extractEntityRepresentativeName(element),
       entity_type: element.entity_type
@@ -385,6 +384,11 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
     works.push(work);
   }
   return works;
+};
+
+export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
+  const works = await askElementEnrichmentForConnectors(context, user, enrichedId, [connectorId]);
+  return works.length > 0 ? works[0] : null;
 };
 
 // region stats
