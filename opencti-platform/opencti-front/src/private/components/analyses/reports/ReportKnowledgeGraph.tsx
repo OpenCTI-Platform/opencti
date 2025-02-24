@@ -9,7 +9,6 @@ import useReportKnowledgeGraphDeleteRelation from './useReportKnowledgeGraphDele
 import { ReportKnowledgeGraph_fragment$data, ReportKnowledgeGraph_fragment$key } from './__generated__/ReportKnowledgeGraph_fragment.graphql';
 import type { Theme } from '../../../../components/Theme';
 import Graph, { GraphProps } from '../../../../utils/graph/Graph';
-import { deserializeObject } from '../../../../utils/object';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
 import { encodeGraphData } from '../../../../utils/Graph';
 import useReportKnowledgeGraphAddRelation from './useReportKnowledgeGraphAddRelation';
@@ -18,6 +17,7 @@ import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteract
 import useReportKnowledgeGraphEdit from './useReportKnowledgeGraphEdit';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
+import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
 
 const reportGraphFragment = graphql`
   fragment ReportKnowledgeGraph_fragment on Report {
@@ -385,6 +385,14 @@ const reportGraphFragment = graphql`
   }
 `;
 
+export const reportKnowledgeGraphQuery = graphql`
+  query ReportKnowledgeGraphQuery($id: String) {
+    report(id: $id) {
+      ...ReportKnowledgeGraph_fragment
+    }
+  }
+`;
+
 interface ReportKnowledgeGraphComponentProps {
   mode: string
   enableReferences: boolean
@@ -501,33 +509,19 @@ interface ReportKnowledgeGraphtProps extends Omit<ReportKnowledgeGraphComponentP
   data: ReportKnowledgeGraph_fragment$key
 }
 
-const ReportKnowledgeGraph = ({
+const reportKnowledgeGraph = ({
   data,
   ...otherProps
 }: ReportKnowledgeGraphtProps) => {
   const report = useFragment(reportGraphFragment, data);
+  const reportData = useMemo(() => getObjectsToParse(report), [report]);
   const localStorageKey = `report-${report.id}-knowledge-graph`;
 
-  const reportData = useMemo(() => {
-    const objects = (report.objects?.edges ?? []).flatMap((n) => {
-      if (!n) return []; // filter empty nodes.
-      return { ...n.node, types: n.types };
-    }) as unknown as ObjectToParse[];
-    const positions = deserializeObject(report.x_opencti_graph_data);
-    return { objects, positions };
-  }, [report]);
-
   return (
-    <GraphProvider
-      localStorageKey={localStorageKey}
-      data={reportData}
-    >
-      <ReportKnowledgeGraphComponent
-        report={report}
-        {...otherProps}
-      />
+    <GraphProvider localStorageKey={localStorageKey} data={reportData}>
+      <ReportKnowledgeGraphComponent report={report}{...otherProps} />
     </GraphProvider>
   );
 };
 
-export default ReportKnowledgeGraph;
+export default reportKnowledgeGraph;

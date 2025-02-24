@@ -39,7 +39,7 @@ const subscription = graphql`
     stixDomainObject(id: $id) {
       ... on Report {
         ...Report_report
-        ...ReportKnowledgeGraph_report
+        ...ReportKnowledgeGraph_fragment
         ...ReportEditionContainer_report
         ...StixCoreObjectContent_stixCoreObject
       }
