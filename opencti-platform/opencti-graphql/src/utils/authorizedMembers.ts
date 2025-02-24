@@ -2,7 +2,7 @@ import { uniq } from 'ramda';
 import { isEmptyField } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicGroupEntity, BasicStoreEntity } from '../types/store';
-import type { MemberAccess, MemberAccessInput } from '../generated/graphql';
+import type { MemberAccess, MemberAccessInput, MemberGroupRestriction } from '../generated/graphql';
 import {
   type AuthorizedMember,
   isUserHasCapabilities,
@@ -49,9 +49,15 @@ export const getAuthorizedMembers = async (
     },
   };
   const members = await findAllMembers(context, user, args);
-  authorizedMembers = (entity.authorized_members ?? []).map((am) => {
-    const member = members.find((m) => (m as BasicStoreEntity).id === am.id) as BasicStoreEntity;
-    return { id: am.id, name: member?.name ?? '', entity_type: member?.entity_type ?? '', access_right: am.access_right };
+  authorizedMembers = (entity.authorized_members ?? []).map((currentAuthMember) => {
+    const member = members.find((m) => (m as BasicStoreEntity).id === currentAuthMember.id) as BasicStoreEntity;
+    let groups_restriction: MemberGroupRestriction[] = [];
+    if (currentAuthMember.groups_restriction_ids) {
+      groups_restriction = currentAuthMember.groups_restriction_ids.map((groupId: string) => {
+        return { id: groupId, name: 'TODO' };
+      });
+    }
+    return { id: currentAuthMember.id, name: member?.name ?? '', entity_type: member?.entity_type ?? '', access_right: currentAuthMember.access_right, groups_restriction };
   });
   return authorizedMembers;
 };
@@ -125,7 +131,7 @@ export const editAuthorizedMembers = async (
       throw FunctionalError('It should have at least one valid member with admin access');
     }
 
-    authorized_members = filteredInput.map(({ id, access_right }) => ({ id, access_right }));
+    authorized_members = filteredInput.map(({ id, access_right, groups_restriction_ids }) => ({ id, access_right, groups_restriction_ids }));
   }
 
   const patch = { authorized_members };
