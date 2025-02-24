@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /*
 Copyright (c) 2021-2025 Filigran SAS
 
@@ -29,6 +30,7 @@ import { elSearchFiles } from '../../database/file-search';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
+import { jsonFiltersSchema } from './ai-utils';
 
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
@@ -298,7 +300,16 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
 export const generateNLQresponse = async (context: AuthContext, user: AuthUser, args: MutationAiNlqArgs) => {
   await checkEnterpriseEdition(context);
   const { search } = args;
-  const prompt = ''; // TODO
-  const response = await queryAi(null, SYSTEM_PROMPT, prompt, user);
+  const systemPrompt = 'You are an expert in cybersecurity and OpenCTI query filters. Your task is to extract OpenCTI filters from a given user input, which will be used to search for specific entities in the OpenCTI database.';
+  const userPrompt = search;
+  const requestOpts = {
+    response_format: {
+      type: 'json_schema',
+    },
+    json_schema: jsonFiltersSchema,
+    stream: false,
+    temperature: 0.0,
+  };
+  const response = await queryAi(null, systemPrompt, userPrompt, user, requestOpts);
   return response;
 };
