@@ -51,12 +51,6 @@ export const StatusTemplateFieldQuery = graphql`
   }
 `;
 
-export interface StatusTemplateFieldData {
-  label: string | undefined;
-  value: string | undefined;
-  color: string | undefined;
-}
-
 const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
   name,
   style,
