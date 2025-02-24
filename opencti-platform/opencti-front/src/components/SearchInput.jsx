@@ -77,12 +77,13 @@ const SearchInput = (props) => {
     variant,
     keyword,
     placeholder = `${t_i18n('Search these results')}...`,
+    setAskAI,
+    askAI,
     ...otherProps
   } = props;
   const { isFeatureEnable } = useHelper();
   const isNLQEnabled = isFeatureEnable('NLQ');
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
-  const [askAI, setAskAI] = useState(false);
   const handleChangeAskAI = () => {
     if (isEnterpriseEdition) {
       setAskAI(!askAI);
