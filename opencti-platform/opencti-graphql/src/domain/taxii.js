@@ -1,11 +1,10 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { elIndex, elPaginate } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS, isNotEmptyField, READ_STIX_DATA_WITH_INFERRED, READ_STIX_INDICES } from '../database/utils';
-import { generateInternalId, generateStandardId } from '../schema/identifier';
+import { elPaginate } from '../database/engine';
+import { isNotEmptyField, READ_STIX_DATA_WITH_INFERRED, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
-import { deleteElementById, stixLoadByIds, updateAttribute } from '../database/middleware';
+import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../database/middleware';
 import { listAllEntities, listEntities, storeLoadById } from '../database/middleware-loader';
 import { FunctionalError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -16,31 +15,29 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
+import { authorizedMembers } from '../schema/attribute-definition';
 
 const MAX_TAXII_PAGINATION = conf.get('app:data_sharing:taxii:max_pagination_result') || 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
 // Taxii graphQL handlers
 export const createTaxiiCollection = async (context, user, input) => {
-  const collectionId = generateInternalId();
   const data = {
-    id: collectionId,
-    internal_id: collectionId,
-    standard_id: generateStandardId(ENTITY_TYPE_TAXII_COLLECTION, input),
-    entity_type: ENTITY_TYPE_TAXII_COLLECTION,
     authorized_authorities: [TAXIIAPI_SETCOLLECTIONS],
     ...input,
   };
-  await elIndex(INDEX_INTERNAL_OBJECTS, data);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'administration',
-    message: `creates Taxii collection \`${input.name}\``,
-    context_data: { id: collectionId, entity_type: ENTITY_TYPE_TAXII_COLLECTION, input }
-  });
-  return data;
+  const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_TAXII_COLLECTION, { complete: true });
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_access: 'administration',
+      message: `creates Taxii collection \`${input.name}\``,
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_TAXII_COLLECTION, input }
+    });
+  }
+  return element;
 };
 export const findById = async (context, user, collectionId) => {
   return storeLoadById(context, user, collectionId, [ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_INGESTION_TAXII_COLLECTION]);
@@ -58,7 +55,7 @@ export const findAll = (context, user, args) => {
 export const taxiiCollectionEditField = async (context, user, collectionId, input) => {
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
-    if (key === 'authorized_members') {
+    if (key === authorizedMembers.name) {
       item.value = value.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
     }
     return item;

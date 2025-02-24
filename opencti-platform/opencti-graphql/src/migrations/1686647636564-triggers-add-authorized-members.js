@@ -16,7 +16,7 @@ export const up = async (next) => {
     const authorizedMembersInput = triggerUserIds.map((userId) => {
       return { id: userId, access_right: MEMBER_ACCESS_RIGHT_ADMIN };
     });
-    const patch = { authorized_members: authorizedMembersInput };
+    const patch = { restricted_members: authorizedMembersInput };
     await patchAttribute(context, context.user, trigger.id, ENTITY_TYPE_TRIGGER, patch);
   };
   await Promise.map(triggers, updateTriggers, { concurrency: ES_MAX_CONCURRENCY });

@@ -102,6 +102,9 @@ export const complexConversionFilterKeys = [
   RELATION_FROM_ROLE_FILTER, // nested relation for the from role of a relationship
   RELATION_TO_ROLE_FILTER, // nested relation for the to role of a relationship
   ALIAS_FILTER, // key that target both the 'aliases' and 'x_opencti_aliases' attributes
+  'authorized_members', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
+  'authorized_members.id', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
+  'restricted_members.id', // nested filter on restricted members
 ];
 
 // list of the special filtering keys

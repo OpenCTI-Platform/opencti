@@ -200,7 +200,7 @@ describe('User access entity testing', async () => {
     spec_version: '2.1',
     entity_type: 'Report',
     internal_id: 'f13cd64f-9268-4d77-9850-eb6fbe322463',
-    authorized_members: [
+    restricted_members: [
       {
         id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
         access_right: 'admin'

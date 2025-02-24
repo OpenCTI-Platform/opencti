@@ -3,6 +3,7 @@ import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StoreEntity, BasicStoreEntity } from '../../types/store';
 import type { CsvMapper } from '../../generated/graphql';
 import { IngestionAuthType } from '../../generated/graphql';
+import type { AuthorizedMember } from '../../utils/access';
 
 // region Rss ingestion
 export const ENTITY_TYPE_INGESTION_RSS = 'IngestionRss';
@@ -132,12 +133,7 @@ export interface BasicStoreEntityIngestionTaxiiCollection extends BasicStoreEnti
   user_id: string | undefined
   confidence_to_score: boolean
   ingestion_running: boolean
-  authorized_members: {
-    access_right: string
-    entity_type: string
-    id: string
-    name: string
-  }[];
+  restricted_members: Array<AuthorizedMember>;
 }
 
 export interface StoreEntityIngestionTaxiiCollection extends StoreEntity {

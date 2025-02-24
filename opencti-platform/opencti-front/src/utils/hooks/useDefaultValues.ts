@@ -99,6 +99,10 @@ const useDefaultValues = <Values extends FormikValues>(
   }
   const defaultValuesAttributes = [...entitySettings.defaultValuesAttributes];
   const keys = Object.keys(initialValues);
+  // authorized_members renaming
+  if (keys.includes('authorized_members')) {
+    keys.push(INPUT_AUTHORIZED_MEMBERS);
+  }
   const defaultValues: Record<string, unknown> = {};
   let enableDefaultMarking = false;
   defaultValuesAttributes.forEach(
@@ -172,7 +176,11 @@ const useDefaultValues = <Values extends FormikValues>(
       }
     });
   }
-
+  // authorized_members renaming
+  if (defaultValues[INPUT_AUTHORIZED_MEMBERS]) {
+    defaultValues.authorized_members = defaultValues[INPUT_AUTHORIZED_MEMBERS];
+    delete defaultValues[INPUT_AUTHORIZED_MEMBERS];
+  }
   return {
     ...initialValues,
     ...defaultValues,

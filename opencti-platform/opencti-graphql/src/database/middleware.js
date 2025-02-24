@@ -195,7 +195,17 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage } from './generate-message';
-import { authorizedMembersActivationDate, confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
+import {
+  authorizedMembers,
+  authorizedMembersActivationDate,
+  confidence,
+  creators,
+  iAliasedIds,
+  iAttributes,
+  modified,
+  updatedAt,
+  xOpenctiStixIds
+} from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
@@ -1903,7 +1913,7 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
 
   const authorizedMembersIds = patchElements.slice(0, 3).flatMap(([,operations]) => {
     return operations.slice(0, 3).flatMap(({ key, value }) => {
-      return key === 'authorized_members' ? (value ?? []).map(({ id }) => id) : [];
+      return key === authorizedMembers.name ? (value ?? []).map(({ id }) => id) : [];
     });
   });
   let members = [];
@@ -1940,11 +1950,11 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
   // Check user access update
   let accessOperation = 'edit';
-  if (updates.some((e) => e.key === 'authorized_members')) {
+  if (updates.some((e) => e.key === authorizedMembers.name)) {
     accessOperation = 'manage-access';
     if (schemaAttributesDefinition.getAttribute(initial.entity_type, authorizedMembersActivationDate.name)
-      && (!initial.authorized_members || initial.authorized_members.length === 0)
-      && updates.some((e) => e.key === 'authorized_members' && e.value?.length > 0)) {
+      && (!initial.restricted_members || initial.restricted_members.length === 0)
+      && updates.some((e) => e.key === authorizedMembers.name && e.value?.length > 0)) {
       updates.push({
         key: authorizedMembersActivationDate.name,
         value: [now()]
@@ -3030,9 +3040,14 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   const input = { ...rawInput };
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
+  // authorized_members renaming
+  if (input.authorized_members?.length > 0) {
+    input.restricted_members = input.authorized_members;
+    delete input.authorized_members;
+  }
   // endregion
   // validate authorized members access (when creating a new entity with authorized members)
-  if (input.authorized_members?.length > 0) {
+  if (input.restricted_members?.length > 0) {
     if (!validateUserAccessOperation(user, input, 'manage-access')) {
       throw ForbiddenAccess();
     }
