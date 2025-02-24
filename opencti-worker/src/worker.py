@@ -202,7 +202,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
         data: str,
     ) -> Optional[bool]:
         try:
-            callback_uri = self.connector["config"]["listen_callback_uri"]
+            callback_uri = self.connector["config"].get("listen_callback_uri")
             request_headers = {
                 "User-Agent": "pycti/" + __version__,
                 "Authorization": "Bearer " + self.opencti_token,
@@ -699,7 +699,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                         )
                         self.consumer_threads[push_queue].start()
                     # Listen for webhook message
-                    if connector["config"]["listen_callback_uri"] is not None:
+                    if connector["config"].get("listen_callback_uri") is not None:
                         listen_queue = connector["config"]["listen"]
                         self.queues.append(listen_queue)
                         if listen_queue in self.listen_api_threads:
