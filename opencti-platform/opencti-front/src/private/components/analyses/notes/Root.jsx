@@ -101,7 +101,7 @@ const RootNote = () => {
                           </CollaborativeSecurity>
                         }
                         redirectToContent={false}
-                        disableAuthorizedMembers={true}
+                        disableAuthorizedMembers={false}
                         enableEnricher={true}
                         enableEnrollPlaybook={true}
                       />
@@ -116,7 +116,7 @@ const RootNote = () => {
                         </CollaborativeSecurity>
                       }
                       redirectToContent={false}
-                      disableAuthorizedMembers={true}
+                      disableAuthorizedMembers={false}
                       enableEnricher={true}
                       enableEnrollPlaybook={true}
                     />

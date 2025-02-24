@@ -30752,6 +30752,7 @@ export type WorkTracking = {
 
 export enum WorksOrdering {
   Score = '_score',
+  CreatedAt = 'created_at',
   Status = 'status',
   Timestamp = 'timestamp'
 }

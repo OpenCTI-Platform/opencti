@@ -197,6 +197,141 @@ describe('Filters utils', () => {
       const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['File'], ['Malware', 'Report', 'Country', 'City']);
       expect(result).toEqual(['Report', 'File', 'Malware']);
     });
+
+    it('should return correct types if there are filter groups with no entity types', () => {
+      // filters: (Malware) OR (label=label1 AND marking=marking1)
+      // result: []
+      const filters = {
+        mode: 'or',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Malware'] },
+        ],
+        filterGroups: [{
+          mode: 'and',
+          filters: [
+            { key: 'objectLabel', operator: 'eq', values: ['label1-id'] },
+            { key: 'objectMarking', operator: 'eq', values: ['marking1-id'] },
+          ],
+          filterGroups: [],
+        }],
+      };
+      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, [], []);
+      expect(result).toEqual([]);
+      // filters: (Malware) AND (label=label1 OR marking=marking1)
+      // result: Malware
+      const filters2 = {
+        mode: 'and',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Malware'] },
+        ],
+        filterGroups: [{
+          mode: 'or',
+          filters: [
+            { key: 'objectLabel', operator: 'eq', values: ['label1-id'] },
+            { key: 'objectMarking', operator: 'eq', values: ['marking1-id'] },
+          ],
+          filterGroups: [],
+        }],
+      };
+      const result2 = getEntityTypeTwoFirstLevelsFilterValues(filters2, [], []);
+      expect(result2).toEqual(['Malware']);
+    });
+
+    it('should return correct types if there are filter groups with entity types', () => {
+      // filters: (Malware) OR (City AND label=label1 AND marking=marking1)
+      // result: Malware, City
+      const filters = {
+        mode: 'or',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Malware'] },
+        ],
+        filterGroups: [{
+          mode: 'and',
+          filters: [
+            { key: 'entity_type', operator: 'eq', values: ['City'] },
+            { key: 'objectLabel', operator: 'eq', values: ['label1-id'] },
+            { key: 'objectMarking', operator: 'eq', values: ['marking1-id'] },
+          ],
+          filterGroups: [],
+        }],
+      };
+      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, [], []);
+      expect(result).toEqual(['Malware', 'City']);
+      // filters: (Malware) AND (City OR label=label1)
+      // result: Malware
+      const filters2 = {
+        mode: 'and',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Malware'] },
+        ],
+        filterGroups: [{
+          mode: 'or',
+          filters: [
+            { key: 'entity_type', operator: 'eq', values: ['City'] },
+            { key: 'objectLabel', operator: 'eq', values: ['label1-id'] },
+          ],
+          filterGroups: [],
+        }],
+      };
+      const result2 = getEntityTypeTwoFirstLevelsFilterValues(filters2, [], []);
+      expect(result2).toEqual(['Malware']);
+    });
+
+    it('should return correct types if there are filter groups with sub entity types', () => {
+      // filters: (Stix-Cyber-Observable) AND (File OR label=label1)
+      // result: Stix-Cyber-Observable
+      const filters = {
+        mode: 'and',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Stix-Cyber-Observable'] },
+        ],
+        filterGroups: [{
+          mode: 'or',
+          filters: [
+            { key: 'entity_type', operator: 'eq', values: ['File'] },
+            { key: 'objectLabel', operator: 'eq', values: ['label1-id'] },
+          ],
+          filterGroups: [],
+        }],
+      };
+      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['File', 'Domain-Name'], []);
+      expect(result).toEqual(['Stix-Cyber-Observable']);
+      // filters: (Stix-Cyber-Observable) AND (File)
+      // result: File
+      const filters2 = {
+        mode: 'and',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Stix-Cyber-Observable'] },
+        ],
+        filterGroups: [{
+          mode: 'or',
+          filters: [
+            { key: 'entity_type', operator: 'eq', values: ['File'] },
+          ],
+          filterGroups: [],
+        }],
+      };
+      const result2 = getEntityTypeTwoFirstLevelsFilterValues(filters2, ['File', 'Domain-Name'], []);
+      expect(result2).toEqual(['File']);
+      // filters: (Stix-Cyber-Observable) OR (File AND label=label1)
+      // result: Stix-Cyber-Observable
+      const filters3 = {
+        mode: 'or',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Stix-Cyber-Observable'] },
+        ],
+        filterGroups: [{
+          mode: 'and',
+          filters: [
+            { key: 'entity_type', operator: 'eq', values: ['File'] },
+            { key: 'objectLabel', operator: 'eq', values: ['label1-id'] },
+          ],
+          filterGroups: [],
+        }],
+      };
+      const result3 = getEntityTypeTwoFirstLevelsFilterValues(filters3, ['File', 'Domain-Name'], []);
+      expect(result3).toEqual(['Stix-Cyber-Observable', 'File']);
+    });
   });
 });
 

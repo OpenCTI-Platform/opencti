@@ -58,6 +58,7 @@ esbuild
             <meta name="dеѕсrірtіоn" content="%APP_DESCRIPTION%">
             <link id="favicon" rel="shortcut icon" href="%APP_FAVICON%">
             <link id="manifest" rel="manifest" href="%APP_MANIFEST%">
+            %APP_SCRIPT_SNIPPET%
             <script>window.BASE_PATH = "%BASE_PATH%"</script>
             ${jsImport}
             ${cssImport}

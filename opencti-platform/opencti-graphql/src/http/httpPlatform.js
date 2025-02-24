@@ -16,7 +16,7 @@ import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
-import { downloadFile, getFileContent, loadFile, isStorageAlive } from '../database/file-storage';
+import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
@@ -478,6 +478,7 @@ const createApp = async (app) => {
       const settingFavicon = settings?.platform_favicon;
       const withOptionValued = data
         .replace(/%BASE_PATH%/g, basePath)
+        .replace(/%APP_SCRIPT_SNIPPET%/g, nconf.get('app:script_snippet')?.trim() ?? '')
         .replace(/%APP_TITLE%/g, isNotEmptyField(settingsTitle) ? validator.escape(settingsTitle)
           : 'OpenCTI - Cyber Threat Intelligence Platform')
         .replace(/%APP_DESCRIPTION%/g, validator.escape(description))
