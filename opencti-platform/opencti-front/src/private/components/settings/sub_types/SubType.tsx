@@ -89,6 +89,8 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
   const hasTemplates = subType.settings?.availableSettings.includes('templates');
 
+  const hasRequestAccessConfig = subType.settings?.requestAccessConfiguration && isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow');
+
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),
     padding: theme.spacing(2),
@@ -140,7 +142,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
             {subType.settings?.availableSettings.includes('workflow_configuration')
               && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false}/>
             }
-            {subType.settings?.requestAccessConfiguration && isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
+            {hasRequestAccessConfig
               && <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={subType.settings.requestAccessConfiguration}/>
             }
           </Paper>
