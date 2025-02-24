@@ -172,7 +172,7 @@ export const deleteWorkForSource = async (sourceId) => {
 
 export const createWork = async (context, user, connector, friendlyName, sourceId, args = {}) => {
   // Create the new work
-  const { receivedTime = null, fileMarkings = [], draftContext } = args;
+  const { receivedTime = null, background_task_id, fileMarkings = [], draftContext } = args;
   // Create the work and an initial job
   const { id: workId, timestamp } = generateWorkId(connector.internal_id);
   const work = {
@@ -184,6 +184,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     // For specific type, specific id is required
     event_type: connector.connector_type,
     event_source_id: sourceId,
+    background_task_id,
     // Users
     user_id: user.id, // User asking for the action
     connector_id: connector.internal_id, // Connector responsible for the action

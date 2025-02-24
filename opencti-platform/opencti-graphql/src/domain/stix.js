@@ -9,24 +9,14 @@ import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
 import { createWork, updateExpectationsNumber } from './work';
 import { pushToConnector, pushToWorkerForConnector } from '../database/rabbitmq';
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObjectShareableContainer, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
-import {
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_OBJECT,
-  ABSTRACT_STIX_RELATIONSHIP,
-  CONNECTOR_INTERNAL_EXPORT_FILE,
-  INPUT_GRANTED_REFS,
-} from '../schema/general';
+import { isStixDomainObjectShareableContainer } from '../schema/stixDomainObject';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, INPUT_GRANTED_REFS } from '../schema/general';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { createQueryTask } from './backgroundTask';
-import { getParentTypes } from '../schema/schemaUtils';
 import { internalLoadById, storeLoadById } from '../database/middleware-loader';
-import { schemaTypesDefinition } from '../schema/schema-types';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 import { specialTypesExtensions } from '../database/file-storage';
@@ -37,14 +27,15 @@ import { checkUserCanShareMarkings } from './user';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
 
-export const stixDelete = async (context, user, id) => {
+export const stixDelete = async (context, user, id, opts = {}) => {
   const element = await internalLoadById(context, user, id);
   if (element) {
     if (isStixObject(element.entity_type) || isStixRelationship(element.entity_type)) {
       // To handle delete synchronization events, we force the forceDelete flag to true, because we don't want delete events to create trash entries on synchronized platforms
       // THIS IS NOT IDEAL: we ideally would need to add the forceDelete flag to all delete related methods on the API,
       // and let the worker call this method with the flag set to true in case of synchronization
-      await deleteElementById(context, user, element.id, element.entity_type, { forceDelete: true });
+      const forceDelete = opts.forceDelete !== undefined ? opts.forceDelete : true;
+      await deleteElementById(context, user, element.id, element.entity_type, { forceDelete });
       return element.id;
     }
     throw UnsupportedError('This method can only delete Stix element');
@@ -246,68 +237,63 @@ export const exportTransformFilters = (filteringArgs, orderOptions) => {
 };
 
 export const generateFiltersForSharingTask = (containerId) => {
-  const allowedDomainsShared = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT)
-    .filter((s) => {
-      if (s === ENTITY_TYPE_CONTAINER_OPINION || s === ENTITY_TYPE_CONTAINER_NOTE) return false;
-      return !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(s).includes(o));
-    });
-  const SCAN_ENTITIES = [...allowedDomainsShared, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_RELATIONSHIP];
-  const filters = {
+  return {
     mode: 'and',
-    filters: [
-      {
-        key: ['objects'],
-        values: [containerId],
-      },
-      {
-        key: ['entity_type'],
-        values: SCAN_ENTITIES,
-      }
-    ],
+    filters: [{
+      key: ['ids'],
+      values: [containerId],
+    }],
     filterGroups: [],
   };
-  return filters;
 };
 
 const createSharingTask = async (context, type, containerId, organizationId) => {
   const filters = generateFiltersForSharingTask(containerId);
-
+  const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   // orderMode is on created_at, see buildQueryFilters in backgroundTask
   // need to be desc for share/unshare to have events in the right order in stream (entity send before relations)
   // containerId required to send an event after all container content is shared.
   const input = {
     filters: JSON.stringify(filters),
-    actions: [{ type, context: { values: [organizationId] }, containerId }],
+    actions: [{ type, context: { values: organizationIds }, containerId }],
     scope: 'KNOWLEDGE',
     orderMode: 'asc'
   };
   await createQueryTask(context, context.user, input);
 };
 
-export const addOrganizationRestriction = async (context, user, fromId, organizationId) => {
+export const addOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot restrict organization in draft');
   }
+  const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
-  const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_ADD }];
+  // If container, create a sharing task
+  if (isStixDomainObjectShareableContainer(from.entity_type) && !directContainerSharing) {
+    await createSharingTask(context, 'SHARE', from.internal_id, organizationIds);
+    return from;
+  }
+  // If standard, just share directly
+  const updates = [{ key: INPUT_GRANTED_REFS, value: organizationIds, operation: UPDATE_OPERATION_ADD }];
   // We skip references validation when updating organization sharing
   const data = await updateAttribute(context, user, fromId, from.entity_type, updates, { bypassValidation: true });
-  if (isStixDomainObjectShareableContainer(from.entity_type)) {
-    await createSharingTask(context, 'SHARE', fromId, organizationId);
-  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_OBJECT].EDIT_TOPIC, data.element, user);
 };
 
-export const removeOrganizationRestriction = async (context, user, fromId, organizationId) => {
+export const removeOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot remove organization restriction in draft');
   }
+  const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
-  const updates = [{ key: INPUT_GRANTED_REFS, value: [organizationId], operation: UPDATE_OPERATION_REMOVE }];
+  // If container, create a sharing task
+  if (isStixDomainObjectShareableContainer(from.entity_type) && !directContainerSharing) {
+    await createSharingTask(context, 'UNSHARE', from.internal_id, organizationIds);
+    return from;
+  }
+  // If standard, just share directly
+  const updates = [{ key: INPUT_GRANTED_REFS, value: organizationIds, operation: UPDATE_OPERATION_REMOVE }];
   // We skip references validation when updating organization sharing
   const data = await updateAttribute(context, user, fromId, from.entity_type, updates, { bypassValidation: true });
-  if (isStixDomainObjectShareableContainer(from.entity_type)) {
-    await createSharingTask(context, 'UNSHARE', fromId, organizationId);
-  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_OBJECT].EDIT_TOPIC, data.element, user);
 };

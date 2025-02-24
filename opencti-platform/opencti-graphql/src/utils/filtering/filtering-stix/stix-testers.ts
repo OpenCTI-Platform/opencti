@@ -36,7 +36,8 @@ import {
   EPSS_SCORE_FILTER,
   CVSS_BASE_SCORE_FILTER,
   CVSS_BASE_SEVERITY_FILTER,
-  REPORT_TYPES_FILTER
+  REPORT_TYPES_FILTER,
+  IDS_FILTER
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -54,6 +55,16 @@ import { extractStixRepresentative } from '../../../database/stix-representative
  */
 export const testMarkingFilter = (stix: any, filter: Filter) => {
   const stixValues: string[] = stix.object_marking_refs ?? [];
+  return testStringFilter(filter, stixValues);
+};
+
+/**
+ * ENTITY IDS
+ * - ids is type in stix (in extension or generated from stix data)
+ * - we must also search in other ids
+ */
+export const testIds = (stix: any, filter: Filter) => {
+  const stixValues: string[] = [stix.extensions?.[STIX_EXT_OCTI]?.id, stix.id, ...(stix.extensions?.[STIX_EXT_OCTI]?.stix_ids ?? [])];
   return testStringFilter(filter, stixValues);
 };
 
@@ -373,6 +384,7 @@ export const testCvssSeverity = (stix: any, filter: Filter) => {
  */
 export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   // basic keys
+  [IDS_FILTER]: testIds,
   [ASSIGNEE_FILTER]: testAssignee,
   [PARTICIPANT_FILTER]: testParticipant,
   [CONFIDENCE_FILTER]: testConfidence,
