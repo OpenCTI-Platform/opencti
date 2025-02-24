@@ -19,6 +19,7 @@ import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
+import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
@@ -42,6 +43,8 @@ import xtmhubLight from '../../../static/images/xtm/xtm_hub_light.png';
 import { isNotEmptyField } from '../../../utils/utils';
 import useHelper from '../../../utils/hooks/useHelper';
 import ItemBoolean from '../../../components/ItemBoolean';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -132,6 +135,12 @@ const topBarQuery = graphql`
   }
 `;
 
+const topBarAskAINLQMutation = graphql`
+  mutation TopBarAskAINLQMutation($search: String!) {
+    aiNLQ(search: $search)
+  }
+`;
+
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
 }) => {
@@ -142,6 +151,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const location = useLocation();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const {
@@ -154,6 +164,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
   );
+  const [askAI, setAskAI] = useState(false);
+  const [commitMutationNLQ] = useApiMutation<TopBarAskAINLQMutation>(topBarAskAINLQMutation);
+
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
   const handleNewNotificationsNumber = (
@@ -218,7 +231,21 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setXtmOpen({ open: false, anchorEl: null });
   };
   const handleSearch = (searchKeyword: string) => {
-    handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
+    if (askAI && isEnterpriseEdition) {
+      commitMutationNLQ({
+        variables: {
+          search: searchKeyword,
+        },
+        onCompleted: (response: TopBarAskAINLQMutation$data) => {
+          console.log('response', response);
+        },
+        onError: (error: Error) => {
+          console.log('error', error);
+        },
+      });
+    } else {
+      handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
+    }
   };
   const handleOpenDrawer = () => {
     setOpenDrawer(true);
@@ -265,6 +292,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             <SearchInput
               onSubmit={handleSearch}
               keyword={keyword}
+              setAskAI={setAskAI}
+              askAI={askAI}
               variant="topBar"
               placeholder={`${t_i18n('Search the platform')}...`}
               fullWidth={true}
