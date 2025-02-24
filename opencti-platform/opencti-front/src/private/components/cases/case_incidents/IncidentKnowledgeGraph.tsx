@@ -472,7 +472,7 @@ const IncidentKnowledgeGraphComponent = ({
         container={incident}
         currentMode={mode}
         PopoverComponent={<IncidentPopover id={incident.id} />}
-        link={`/dashboard/analyses/incidents/${incident.id}/knowledge`}
+        link={`/dashboard/cases/incidents/${incident.id}/knowledge`}
         modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
         onApplied={(suggestions: ObjectToParse[]) => {
           suggestions.forEach((suggestion) => addLink(suggestion));
