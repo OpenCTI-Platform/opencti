@@ -56,7 +56,9 @@ export interface RequestAccessAction {
   type?: string,
   status: string,
   executionDate?: Date,
-  workflowMapping: RequestAccessActionStatus[]
+  workflowMapping: RequestAccessActionStatus[],
+  acceptColor:string
+  declineColor:string
 }
 
 export const getPlatformOrganization = async (context: AuthContext, user: AuthUser) => {
@@ -368,7 +370,9 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     type: input.request_access_type?.toString(),
     entities: input.request_access_entities,
     status: ActionStatus.NEW,
-    workflowMapping: allActionStatuses
+    workflowMapping: allActionStatuses,
+    acceptColor: '#2e6a40', // TODO map status colors
+    declineColor: '#730b0b', // TODO map status colors
   };
 
   const firstStatus: BasicWorkflowStatus = await findFirstWorkflowStatus(context, user);

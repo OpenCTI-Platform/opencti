@@ -5,10 +5,10 @@ import React, { FunctionComponent } from 'react';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from '@mui/material';
-import { RequestAccessStatusFragment_requestAccess$key } from '@components/settings/sub_types/request_access/__generated__/RequestAccessStatusFragment_requestAccess.graphql';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { hexToRGB } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
+import { RequestAccessStatusFragment_requestAccess$key } from './__generated__/RequestAccessStatusFragment_requestAccess.graphql';
 
 export const requestAccessFragment = graphql`
   fragment RequestAccessStatusFragment_requestAccess on RequestAccessConfiguration {

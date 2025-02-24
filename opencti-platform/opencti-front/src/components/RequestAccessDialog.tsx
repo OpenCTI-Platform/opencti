@@ -42,14 +42,9 @@ interface RequestAccessFormAddInput {
 
 const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose, entitiesIds }) => {
   const { t_i18n } = useFormatter();
-  let meResolvedId;
-  try {
-    // FIXME find why it's breaking GraphIQL
-    const { me } = useAuth();
-    meResolvedId = me.id;
-  } catch (e) {
-    // When called from public, no useAuth()
-  }
+  const { me } = useAuth();
+  const meResolvedId = me.id;
+
   const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
     successMessage: `${t_i18n('Your request for access has been successfully taken into account')}`,
   });

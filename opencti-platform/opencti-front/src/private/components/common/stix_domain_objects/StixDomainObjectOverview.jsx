@@ -169,6 +169,8 @@ const StixDomainObjectOverview = ({
 
   let requestAccess = null;
   let isRequestAccessNew = false;
+  let acceptButtonColor = '#555';
+  let declineButtonColor = '#555';
 
   if (stixDomainObject.x_opencti_request_access) {
     requestAccess = JSON.parse(stixDomainObject.x_opencti_request_access);
@@ -176,6 +178,9 @@ const StixDomainObjectOverview = ({
     // Find action status that correspond to current RFI status.
     const currentActionStatus = requestAccess.workflowMapping.find((status) => status.rfiStatusId === stixDomainObject.status.id);
     isRequestAccessNew = currentActionStatus && currentActionStatus.actionStatus === 'NEW';
+    acceptButtonColor = requestAccess.acceptColor ?? '#555';
+    declineButtonColor = requestAccess.declineColor ?? '#555';
+    console.log(`acceptButtonColor${acceptButtonColor}`);
   }
 
   const onSubmitValidateRequestAccess = () => {
@@ -234,7 +239,7 @@ const StixDomainObjectOverview = ({
                     <Button
                       color="primary"
                       variant="outlined"
-                      style={{ marginRight: 10 }}
+                      style={{ marginRight: 10, color: acceptButtonColor, borderColor: acceptButtonColor }}
                       onClick={onSubmitValidateRequestAccess}
                     >
                       {t_i18n('Validate')}
@@ -242,6 +247,7 @@ const StixDomainObjectOverview = ({
                     <Button
                       color="primary"
                       variant="outlined"
+                      style={{ color: declineButtonColor, borderColor: declineButtonColor }}
                       onClick={onSubmitDeclineRequestAccess}
                     >
                       {t_i18n('Decline')}
