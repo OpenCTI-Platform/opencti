@@ -3,10 +3,10 @@ import { graphql } from 'react-relay';
 import { Option } from '@components/common/form/ReferenceField';
 import { Field } from 'formik';
 import { Label } from 'mdi-material-ui';
-import { StatusTemplateFieldScopedSearchQuery$data } from '@components/settings/sub_types/request_access/__generated__/StatusTemplateFieldScopedSearchQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import { fetchQuery } from '../../../../../relay/environment';
 import AutocompleteField from '../../../../../components/AutocompleteField';
+import { StatusTemplateFieldScopedSearchQuery$data } from './__generated__/StatusTemplateFieldScopedSearchQuery.graphql';
 
 interface StatusTemplateFieldScopedProps {
   name: string;

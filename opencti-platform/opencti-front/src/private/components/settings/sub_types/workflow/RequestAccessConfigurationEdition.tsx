@@ -5,19 +5,14 @@ import { Form, Formik } from 'formik';
 import { StatusTemplateFieldData } from '@components/common/form/StatusTemplateField';
 import Button from '@mui/material/Button';
 import { FormikConfig } from 'formik/dist/types';
-import {
-  RequestAccessConfigurationEditionMutation,
-  RequestAccessConfigureInput,
-} from '@components/settings/sub_types/request_access/__generated__/RequestAccessConfigurationEditionMutation.graphql';
-import StatusTemplateFieldScoped from '@components/settings/sub_types/request_access/StatusTemplateFieldScoped';
+import StatusTemplateFieldScoped from '@components/settings/sub_types/workflow/StatusTemplateFieldScoped';
 import GroupField, { GroupFieldOption } from '@components/common/form/GroupField';
-import {
-  RequestAccessConfigurationEdition_requestAccess$key,
-} from '@components/settings/sub_types/request_access/__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { RequestAccessConfigurationEdition_requestAccess$key } from './__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
+import { RequestAccessConfigurationEditionMutation, RequestAccessConfigureInput } from './__generated__/RequestAccessConfigurationEditionMutation.graphql';
 
 const requestAccessConfigurationMutation = graphql`
     mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {

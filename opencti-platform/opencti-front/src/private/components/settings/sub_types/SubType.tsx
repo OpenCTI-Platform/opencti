@@ -7,11 +7,9 @@ import EntitySettingCustomOverview from '@components/settings/sub_types/entity_s
 import { useTheme } from '@mui/styles';
 import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { useParams } from 'react-router-dom';
-import RequestAccessConfigurationPopover from '@components/settings/sub_types/request_access/RequestAccessConfigurationPopover';
-import RequestAccessStatus from '@components/settings/sub_types/request_access/RequestAccessStatus';
+import GlobalWorkflowSettings from '@components/settings/sub_types/workflow/GlobalWorkflowSettings';
+import RequestAccessSettings from '@components/settings/sub_types/workflow/RequestAccessSettings';
 import { useFormatter } from '../../../../components/i18n';
-import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
-import SubTypeStatusPopover from './SubTypeWorkflowPopover';
 import EntitySettingSettings from './entity_setting/EntitySettingSettings';
 import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
 import CustomizationMenu from '../CustomizationMenu';
@@ -24,7 +22,6 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import useHelper from '../../../../utils/hooks/useHelper';
-import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -52,7 +49,8 @@ export const subTypeQuery = graphql`
             ...RequestAccessConfigurationEdition_requestAccess
         }
       }
-      ...ItemStatusTemplate_global
+      ...GlobalWorkflowSettings_global
+      ...RequestAccessSettings_requestAccess
     }
   }
 `;
@@ -125,50 +123,31 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
             className={'paper-for-grid'}
           >
             <EntitySettingSettings entitySettingsData={subType.settings} />
-            {subType.settings?.availableSettings.includes('workflow_configuration')
-              && <>
-                <div style={{ marginTop: 10 }}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Workflow')}
-                    <SubTypeStatusPopover subTypeId={subType.id} scope={StatusScopeEnum.GLOBAL} />
-                  </Typography>
-                </div>
-                <ItemStatusTemplate
-                  data={subType}
-                  disabled={!subType.workflowEnabled}
-                  scope={StatusScopeEnum.GLOBAL}
-                />
-              </>
-            }
-            {subType.settings?.requestAccessConfiguration && isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
-              && <>
-                <div style={{ marginTop: 20 }}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Request access workflow')}
-                    <SubTypeStatusPopover subTypeId={subType.id} scope={StatusScopeEnum.REQUEST_ACCESS}/>
-                  </Typography>
-                  <ItemStatusTemplate
-                    data={subType}
-                    disabled={false}
-                    scope={StatusScopeEnum.REQUEST_ACCESS}
-                  />
-                </div>
-                <div style={{ marginTop: 20 }}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Request access action configuration')}
-                    <RequestAccessConfigurationPopover data={subType.settings.requestAccessConfiguration}/>
-                    <RequestAccessStatus data={subType.settings.requestAccessConfiguration}/>
-                  </Typography>
-                </div>
-              </>
-            }
           </Paper>
         </Grid>
 
         {hasTemplates && <FintelTemplatesGrid data={subType.settings} />}
 
+        <Grid item xs={6}>
+          <Typography variant="h4" gutterBottom={true}>
+            {t_i18n('Worflow')}
+          </Typography>
+          <Paper
+            style={paperStyle}
+            variant="outlined"
+            className={'paper-for-grid'}
+          >
+            {subType.settings?.availableSettings.includes('workflow_configuration')
+              && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false}/>
+            }
+            {subType.settings?.requestAccessConfiguration && isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow')
+              && <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={subType.settings.requestAccessConfiguration}/>
+            }
+          </Paper>
+        </Grid>
+
         {subType.settings?.availableSettings.includes('attributes_configuration') && (
-          <Grid item xs={12}>
+          <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
               {t_i18n('Attributes')}
             </Typography>
