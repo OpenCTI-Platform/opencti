@@ -224,6 +224,7 @@ export default defineConfig({
       apply: 'serve',
       transformIndexHtml(html) {
         return html.replace(/%BASE_PATH%/g, basePath)
+          .replace(/%APP_SCRIPT_SNIPPET%/g,  '')
           .replace(/%APP_TITLE%/g, "OpenCTI Dev")
           .replace(/%APP_DESCRIPTION%/g, "OpenCTI Development platform")
           .replace(/%APP_FAVICON%/g, `${basePath}/static/ext/favicon.png`)
