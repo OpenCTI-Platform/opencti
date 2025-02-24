@@ -180,7 +180,6 @@ const StixDomainObjectOverview = ({
     isRequestAccessNew = currentActionStatus && currentActionStatus.actionStatus === 'NEW';
     acceptButtonColor = requestAccess.acceptColor ?? '#555';
     declineButtonColor = requestAccess.declineColor ?? '#555';
-    console.log(`acceptButtonColor${acceptButtonColor}`);
   }
 
   const onSubmitValidateRequestAccess = () => {

@@ -2,11 +2,11 @@ import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import { Form, Formik } from 'formik';
-import { StatusTemplateFieldData } from '@components/common/form/StatusTemplateField';
 import Button from '@mui/material/Button';
 import { FormikConfig } from 'formik/dist/types';
 import StatusTemplateFieldScoped from '@components/settings/sub_types/workflow/StatusTemplateFieldScoped';
 import GroupField, { GroupFieldOption } from '@components/common/form/GroupField';
+import { Option } from '@components/common/form/ReferenceField';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
@@ -24,27 +24,27 @@ const requestAccessConfigurationMutation = graphql`
 
 export const requestAccessConfigurationFragment = graphql`
   fragment RequestAccessConfigurationEdition_requestAccess on RequestAccessConfiguration {
+    id
+    approved_status {
+      id
+      template {
         id
-        approved_status {
-            id
-            template {
-                id
-                color
-                name
-            }
-        }
-        declined_status {
-            id
-            template {
-                id
-                color
-                name
-            }
-        }
-        approval_admin {
-            id
-            name
-        }
+        color
+        name
+      }
+    }
+    declined_status {
+      id
+      template {
+        id
+        color
+        name
+      }
+    }
+    approval_admin {
+      id
+      name
+    }
   }
 `;
 
@@ -55,8 +55,8 @@ interface RequestAccessWorkflowProps {
 }
 
 interface RequestAccessEditionFormInputs {
-  acceptedTemplate: StatusTemplateFieldData
-  declinedTemplate: StatusTemplateFieldData
+  acceptedTemplate: Option
+  declinedTemplate: Option
   approvalAdmin: GroupFieldOption
 }
 
@@ -90,7 +90,7 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
   const [commit] = useApiMutation<RequestAccessConfigurationEditionMutation>(
     requestAccessConfigurationMutation,
     undefined,
-    { successMessage: `Request access configuration ${t_i18n('successfully updated')}` },
+    { successMessage: `${t_i18n('Request access configuration successfully updated')}` },
   );
 
   const onSubmit: FormikConfig<RequestAccessEditionFormInputs>['onSubmit'] = (
@@ -98,8 +98,8 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: RequestAccessConfigureInput = {
-      approved_status_id: values.acceptedTemplate.value || '', // FIXME remove || ''
-      declined_status_id: values.declinedTemplate.value || '', // FIXME remove || ''
+      approved_status_id: values.acceptedTemplate.value,
+      declined_status_id: values.declinedTemplate.value,
       approval_admin: [values.approvalAdmin.value],
     };
     commit({
@@ -137,7 +137,7 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
               <StatusTemplateFieldScoped
                 name="acceptedTemplate"
                 setFieldValue={setFieldValue}
-                helpertext={'Request for information status to use when access request is accepted.'}
+                helpertext={t_i18n('Request for information status to use when access request is accepted.')}
                 required={true}
                 style={fieldSpacingContainerStyle}
                 scope='REQUEST_ACCESS'
@@ -145,7 +145,7 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
               <StatusTemplateFieldScoped
                 name="declinedTemplate"
                 setFieldValue={setFieldValue}
-                helpertext={'Request for information status to use when access request is declined.'}
+                helpertext={t_i18n('Request for information status to use when access request is declined.')}
                 required={true}
                 style={fieldSpacingContainerStyle}
                 scope='REQUEST_ACCESS'
