@@ -120,8 +120,7 @@ export const up = async (next) => {
   };
 
   const invalidRelationsDuplicatesIds = [];
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < invalidRelationships.length; i++) {
+  for (let i = 0; i < invalidRelationships.length; i+=1) {
     const invalidRelationship = invalidRelationships[i];
     const hasDuplicate = await searchRelatedToDuplicateFn(invalidRelationship.fromId, invalidRelationship.toId);
     if (hasDuplicate) invalidRelationsDuplicatesIds.push(invalidRelationship.internal_id);
