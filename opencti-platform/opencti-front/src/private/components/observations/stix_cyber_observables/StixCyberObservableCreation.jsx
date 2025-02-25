@@ -576,7 +576,7 @@ const StixCyberObservableCreation = ({
                     }),
                   file: Yup.mixed().when([], {
                     is: () => status.type === 'Artifact',
-                    then: () => Yup.mixed().required(t_i18n('This field is required for an Artifact')),
+                    then: () => Yup.mixed().required(t_i18n('This field is required')),
                     otherwise: () => Yup.mixed().nullable(),
                   }),
                 };
