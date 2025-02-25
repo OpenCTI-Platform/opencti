@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import StixRelationshipsNumber from '@components/common/stix_relationships/StixRelationshipsNumber';
 import StixRelationshipsList from '@components/common/stix_relationships/StixRelationshipsList';
 import StixRelationshipsDistributionList from '@components/common/stix_relationships/StixRelationshipsDistributionList';
@@ -271,4 +271,4 @@ const DashboardRelationshipsViz = ({
   }
 };
 
-export default DashboardRelationshipsViz;
+export default memo(DashboardRelationshipsViz);

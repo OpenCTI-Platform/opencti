@@ -28,7 +28,6 @@ const WidgetMultiAreas = ({
   const { fsd, mtdy, yd } = useFormatter();
 
   const options: ApexOptions = useMemo(() => {
-    console.log('options');
     let formatter = fsd;
     if (interval === 'month' || interval === 'quarter') {
       formatter = mtdy;

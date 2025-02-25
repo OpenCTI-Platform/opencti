@@ -1,3 +1,4 @@
+import React, { memo } from 'react';
 import AuditsNumber from '@components/common/audits/AuditsNumber';
 import AuditsList from '@components/common/audits/AuditsList';
 import AuditsDistributionList from '@components/common/audits/AuditsDistributionList';
@@ -11,7 +12,6 @@ import AuditsRadar from '@components/common/audits/AuditsRadar';
 import AuditsMultiHeatMap from '@components/common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '@components/common/audits/AuditsTreeMap';
 import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
-import React from 'react';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
 import type { Widget } from '../../../../utils/widget/widget';
 
@@ -204,4 +204,4 @@ const DashboardAuditsViz = ({
   }
 };
 
-export default DashboardAuditsViz;
+export default memo(DashboardAuditsViz);

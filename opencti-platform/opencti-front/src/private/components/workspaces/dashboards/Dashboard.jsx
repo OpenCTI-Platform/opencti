@@ -55,31 +55,35 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
     };
   }, []);
 
-  const manifest = workspace.manifest && workspace.manifest.length > 0
-    ? deserializeDashboardManifestForFrontend(fromB64(workspace.manifest))
-    : { widgets: {}, config: {} };
+  const manifest = useMemo(() => {
+    return workspace.manifest && workspace.manifest.length > 0
+      ? deserializeDashboardManifestForFrontend(fromB64(workspace.manifest))
+      : { widgets: {}, config: {} };
+  }, [workspace]);
 
-  const widgets = useMemo(() => Object.values(manifest.widgets).map((widget) => {
-    let mainEntityTypes = ['Stix-Core-Object'];
-    if (widget.perspective === 'relationships') {
-      mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
-    } else if (widget.perspective === 'audits') {
-      mainEntityTypes = ['History'];
-    }
+  const widgets = useMemo(() => {
+    return Object.values(manifest.widgets).map((widget) => {
+      let mainEntityTypes = ['Stix-Core-Object'];
+      if (widget.perspective === 'relationships') {
+        mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
+      } else if (widget.perspective === 'audits') {
+        mainEntityTypes = ['History'];
+      }
 
-    return {
-      widget,
-      widgetCleanFilters: {
-        ...widget,
-        dataSelection: widget.dataSelection.map((data) => ({
-          ...data,
-          filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainEntityTypes),
-          dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
-          dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
-        })),
-      },
-    };
-  }), [workspace]);
+      return {
+        widget,
+        widgetCleanFilters: {
+          ...widget,
+          dataSelection: widget.dataSelection.map((data) => ({
+            ...data,
+            filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainEntityTypes),
+            dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
+            dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
+          })),
+        },
+      };
+    });
+  }, [manifest]);
 
   const userHasEditAccess = workspace.currentUserAccessRight === 'admin'
     || workspace.currentUserAccessRight === 'edit';

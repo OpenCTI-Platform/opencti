@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import WidgetText from '../../../../components/dashboard/WidgetText';
 import type { Widget } from '../../../../utils/widget/widget';
 
@@ -20,4 +20,4 @@ const DashboardRawViz = ({ widget }: DashboardRawVizProps) => {
   }
 };
 
-export default DashboardRawViz;
+export default memo(DashboardRawViz);

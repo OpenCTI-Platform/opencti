@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import StixDomainObjectBookmarksList from '@components/common/stix_domain_objects/StixDomainObjectBookmarksList';
 import StixCoreObjectsNumber from '@components/common/stix_core_objects/StixCoreObjectsNumber';
 import StixCoreObjectsList from '@components/common/stix_core_objects/StixCoreObjectsList';
@@ -245,4 +245,4 @@ const DashboardEntitiesViz = ({
   }
 };
 
-export default DashboardEntitiesViz;
+export default memo(DashboardEntitiesViz);
