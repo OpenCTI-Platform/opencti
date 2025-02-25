@@ -166,10 +166,7 @@ const StixDomainObjectOverview = ({
     ? stixDomainObject.createdBy?.x_opencti_reliability
     : stixDomainObject.x_opencti_reliability;
 
-  let isRequestAccessRFI = false;
-  if (stixDomainObject.x_opencti_request_access) {
-    isRequestAccessRFI = true;
-  }
+  const isRequestAccessRFI = stixDomainObject.x_opencti_request_access && isRequestAccessFeatureEnabled;
 
   return (
     <>
@@ -178,7 +175,7 @@ const StixDomainObjectOverview = ({
       </Typography>
       <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
         <Grid container={false} spacing={3}>
-          {isRequestAccessFeatureEnabled && isRequestAccessRFI && (
+          {isRequestAccessRFI && (
             <ProcessingStatusOverview data={stixDomainObject}/>
           )}
         </Grid>
