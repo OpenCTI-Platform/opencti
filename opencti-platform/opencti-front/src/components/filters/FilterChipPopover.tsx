@@ -447,7 +447,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                 marginLeft: '10px',
                 marginTop: '10px',
                 marginBottom: '10px',
-              }} />
+              }}
+              />
               <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
             </div>
           }
