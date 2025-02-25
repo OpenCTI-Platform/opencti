@@ -6576,6 +6576,11 @@ export enum DraftOperation {
   UpdateLinked = 'update_linked'
 }
 
+export enum DraftStatus {
+  Open = 'open',
+  Validated = 'validated'
+}
+
 export type DraftVersion = {
   __typename?: 'DraftVersion';
   draft_id: Scalars['String']['output'];
@@ -6586,12 +6591,14 @@ export type DraftWorkspace = BasicObject & InternalObject & {
   __typename?: 'DraftWorkspace';
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  draft_status: DraftStatus;
   entity_id?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   objectsCount: DraftObjectsCount;
   parent_types: Array<Scalars['String']['output']>;
+  processingCount: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
 };
 
@@ -31413,6 +31420,7 @@ export type ResolversTypes = ResolversObject<{
   DomainNameAddInput: DomainNameAddInput;
   DraftObjectsCount: ResolverTypeWrapper<DraftObjectsCount>;
   DraftOperation: DraftOperation;
+  DraftStatus: DraftStatus;
   DraftVersion: ResolverTypeWrapper<DraftVersion>;
   DraftWorkspace: ResolverTypeWrapper<BasicStoreEntityDraftWorkspace>;
   DraftWorkspaceAddInput: DraftWorkspaceAddInput;
@@ -35049,12 +35057,14 @@ export type DraftVersionResolvers<ContextType = any, ParentType extends Resolver
 export type DraftWorkspaceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftWorkspace'] = ResolversParentTypes['DraftWorkspace']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  draft_status?: Resolver<ResolversTypes['DraftStatus'], ParentType, ContextType>;
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objectsCount?: Resolver<ResolversTypes['DraftObjectsCount'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  processingCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
