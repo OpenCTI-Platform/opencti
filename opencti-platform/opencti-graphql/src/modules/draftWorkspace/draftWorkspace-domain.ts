@@ -38,6 +38,7 @@ import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/st
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { deleteAllDraftFiles } from '../../database/file-storage-helper';
+import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -236,7 +237,11 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   const deletedEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_DELETE);
   const deleteEntitiesIds = deletedEntities.map((e) => e.internal_id);
   const deleteStixEntities = await stixLoadByIds(contextInDraft, user, deleteEntitiesIds, includeDeleteOption);
-  const deleteStixEntitiesModified = deleteStixEntities.map((d: any) => ({ ...d, opencti_operation: 'delete' }));
+  const deleteStixEntitiesModified = deleteStixEntities.map((d: any) => {
+    const stixWithOperation = { ...d };
+    stixWithOperation.extensions[STIX_EXT_OCTI].opencti_operation = 'delete';
+    return stixWithOperation;
+  });
 
   // Send update with "field patch" info
   const updateEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE && e.draft_change.draft_updates_patch);
@@ -245,7 +250,10 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   const updateStixEntitiesWithPatchPromises = updateStixEntities.map(async (d: any) => {
     const updateFieldPatchNonResolved = buildUpdateFieldPatch(updateEntities.find((e) => e.standard_id === d.id).draft_change.draft_updates_patch);
     const updateFieldPatchResolved = await resolveDraftUpdateFiles(contextInDraft, user, updateFieldPatchNonResolved);
-    return { ...d, opencti_operation: 'patch', opencti_field_patch: updateFieldPatchResolved };
+    const stixWithPatch = { ...d };
+    stixWithPatch.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
+    stixWithPatch.extensions[STIX_EXT_OCTI].opencti_field_patch = updateFieldPatchResolved;
+    return stixWithPatch;
   });
   const updateStixEntitiesWithPatch = await Promise.all(updateStixEntitiesWithPatchPromises);
 
