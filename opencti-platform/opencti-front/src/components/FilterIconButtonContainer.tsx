@@ -1,6 +1,6 @@
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import React, { Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
+import React, { Fragment, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
@@ -9,15 +9,7 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
-import {
-  convertOperatorToIcon,
-  filterOperatorsWithIcon,
-  FilterSearchContext,
-  FiltersRestrictions,
-  isFilterEditable,
-  isRegardingOfFilterWarning,
-  useFilterDefinition
-} from '../utils/filters/filtersUtils';
+import { convertOperatorToIcon, filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
@@ -177,7 +169,7 @@ FilterIconButtonContainerProps
   const filtersRepresentativesMap = new Map<string, FilterRepresentative>(
     filtersRepresentatives.map((n: FilterRepresentative) => [n.id, n]),
   );
-  const [filterChipsParams, setFilterChipsParams] = React.useState<FilterChipsParameter>({
+  const [filterChipsParams, setFilterChipsParams] = useState<FilterChipsParameter>({
     filter: undefined,
     anchorEl: undefined,
   } as FilterChipsParameter);
@@ -290,15 +282,12 @@ FilterIconButtonContainerProps
         );
         const isNotLastFilter = index < displayedFilters.length - 1;
 
-        console.log('currentFilter', currentFilter);
-        const displayFilterWarning = isRegardingOfFilterWarning(currentFilter);
-        console.log('displayFilterWarning', displayFilterWarning);
         const chipVariant = currentFilter.values.length === 0 && !['nil', 'not_nil'].includes(filterOperator ?? 'eq')
           ? 'outlined'
           : 'filled';
         // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
         const chipSx = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
-          ? { bgcolor: `${displayFilterWarning ? 'warning' : chipColor}.dark` }
+          ? { bgcolor: `${chipColor}.dark` }
           : undefined;
         const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
           && isFilterEditable(filtersRestrictions, filterKey, filterValues);
@@ -344,7 +333,7 @@ FilterIconButtonContainerProps
                       redirection={redirection}
                       onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
                       isReadWriteFilter={isReadWriteFilter}
-                      chipColor={displayFilterWarning ? 'warning' : chipColor}
+                      chipColor={chipColor}
                       entityTypes={entityTypes}
                       filtersRestrictions={filtersRestrictions}
                     />
