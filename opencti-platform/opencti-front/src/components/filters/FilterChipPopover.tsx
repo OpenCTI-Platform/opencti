@@ -324,7 +324,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
         const values = filterValues.length > 0 ? filterValues : DEFAULT_WITHIN_FILTER_VALUES;
         return (
           <>
-            <div style={{ marginBottom: 10 }}>{t_i18n('From')}</div>
+            <div style={{ marginTop: 10 }} />
             <RelativeDateInput
               filter={filter}
               filterKey={filterKey}
@@ -333,7 +333,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               label={t_i18n('From')}
               valueOrder={0}
             />
-            <div style={{ marginTop: 15, marginBottom: 10 }}>{t_i18n('To')}</div>
+            <div style={{ marginTop: 25 }} />
             <RelativeDateInput
               filter={filter}
               filterKey={filterKey}
@@ -431,24 +431,23 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           />
           {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey)}
         </div>
-        : <>
+        : <div style={{ display: 'inline-flex' }}>
           <div
             style={{
               width: 250,
               padding: 8,
-              display: 'inline-block',
             }}
           >
             {displayOperatorAndFilter(filterKey)}
           </div>
           {filterOperator === 'within'
             && <div
-              style={{ width: 150, display: 'inline-block' }}
+              style={{ width: 150 }}
                >
               <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
             </div>
           }
-        </>
+        </div>
       }
     </Popover>
   );
