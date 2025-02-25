@@ -62,22 +62,19 @@ interface SendMailArgs {
  * Actual sending of email, used by the background task.
  * @param context
  * @param user
- * @param useOctiTemplate
- * @param object
- * @param body
- * @param emails
- * @param attachFileIds
- * @param htmlToBodyFileId
+ * @param opts
  */
 export const sendDisseminationEmail = async (
   context: AuthContext,
   user: AuthUser,
-  useOctiTemplate: boolean,
-  object: string,
-  body: string,
-  emails: string[],
-  attachFileIds: string[],
-  htmlToBodyFileId: string | null | undefined,
+  opts: {
+    useOctiTemplate: boolean,
+    object: string,
+    body: string,
+    emails: string[],
+    attachFileIds: string[],
+    htmlToBodyFileId: string | null | undefined,
+  }
 ) => {
   const toEmail = conf.get('app:dissemination_list:to_email');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
@@ -86,10 +83,10 @@ export const sendDisseminationEmail = async (
   let generatedEmailBody = '';
   const allowedTypesInAttachment = ['application/pdf', 'text/html'];
   const allowedTypesInBody = ['text/html'];
-  const emailTemplate = useOctiTemplate ? OCTI_EMAIL_TEMPLATE : BASIC_EMAIL_TEMPLATE;
+  const emailTemplate = opts.useOctiTemplate ? OCTI_EMAIL_TEMPLATE : BASIC_EMAIL_TEMPLATE;
 
-  for (let i = 0; i < attachFileIds.length; i += 1) {
-    const attachFileId = attachFileIds[i];
+  for (let i = 0; i < opts.attachFileIds.length; i += 1) {
+    const attachFileId = opts.attachFileIds[i];
     const file = await loadFile(context, user, attachFileId);
     const canBeDisseminated = file && allowedTypesInAttachment.includes(file.metaData.mimetype);
     if (!canBeDisseminated) {
@@ -100,25 +97,25 @@ export const sendDisseminationEmail = async (
     attachmentListForSendMail.push({ filename: file.name, content: stream });
   }
 
-  if (htmlToBodyFileId) {
-    const bodyFile = await loadFile(context, user, htmlToBodyFileId);
+  if (opts.htmlToBodyFileId) {
+    const bodyFile = await loadFile(context, user, opts.htmlToBodyFileId);
     const canBeInBody = bodyFile && allowedTypesInBody.includes(bodyFile.metaData.mimetype);
     if (!canBeInBody) {
-      throw UnsupportedError(`File type in the body must be ${allowedTypesInBody}`, { id: htmlToBodyFileId });
+      throw UnsupportedError(`File type in the body must be ${allowedTypesInBody}`, { id: opts.htmlToBodyFileId });
     }
     const fileContent = await getFileContent(bodyFile.id);
     generatedEmailBody = ejs.render(emailTemplate, { settings, body: fileContent });
     sentFiles.push(bodyFile);
   } else {
-    const emailBodyFormatted = body.replaceAll('\n', '<br/>');
+    const emailBodyFormatted = opts.body.replaceAll('\n', '<br/>');
     generatedEmailBody = ejs.render(emailTemplate, { settings, body: emailBodyFormatted });
   }
 
   const sendMailArgs: SendMailArgs = {
     from: settings.platform_email,
     to: toEmail,
-    bcc: [...emails, user.user_email],
-    subject: object,
+    bcc: [...opts.emails, user.user_email],
+    subject: opts.object,
     html: generatedEmailBody,
     attachments: attachmentListForSendMail,
   };
@@ -146,7 +143,15 @@ export const sendToDisseminationList = async (context: AuthContext, user: AuthUs
 
   const { emails } = disseminationList;
   // sending mail
-  const sentFiles = await sendDisseminationEmail(context, user, use_octi_template, email_object, email_body, emails, email_attachment_ids, html_to_body_file_id);
+  const opts = {
+    useOctiTemplate: use_octi_template,
+    object: email_object,
+    body: email_body,
+    emails,
+    attachFileIds: email_attachment_ids,
+    htmlToBodyFileId: html_to_body_file_id
+  };
+  const sentFiles = await sendDisseminationEmail(context, user, opts);
   // activity logs
   const enrichInput = { ...input, files: sentFiles, dissemination: disseminationList.name };
   const baseData = {
