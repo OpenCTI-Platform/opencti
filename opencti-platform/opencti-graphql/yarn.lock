@@ -6517,9 +6517,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"compression@npm:1.7.5":
-  version: 1.7.5
-  resolution: "compression@npm:1.7.5"
+"compression@npm:1.8.0":
+  version: 1.8.0
+  resolution: "compression@npm:1.8.0"
   dependencies:
     bytes: "npm:3.1.2"
     compressible: "npm:~2.0.18"
@@ -6528,7 +6528,7 @@ __metadata:
     on-headers: "npm:~1.0.2"
     safe-buffer: "npm:5.2.1"
     vary: "npm:~1.1.2"
-  checksum: 10/c69cf6da151db6f9db2e242b6a0039ad41975ee886c385cff2920c5f8f7050678e0ee9a021437af033536c451791de529de376851b8d31fee42ca2d6adca03f0
+  checksum: 10/ca213b9bd03e56c7c3596399d846237b5f0b31ca4cdeaa76a9547cd3c1465fbcfcb0fe93a5d7ff64eff28383fc65b53f1ef8bb2720d11bb48ad8c0836c502506
   languageName: node
   linkType: hard
 
@@ -11439,7 +11439,7 @@ __metadata:
     bluebird: "npm:3.7.2"
     body-parser: "npm:1.20.3"
     canonicalize: "npm:2.0.0"
-    compression: "npm:1.7.5"
+    compression: "npm:1.8.0"
     content-disposition: "npm:0.5.4"
     cors: "npm:2.8.5"
     cross-env: "npm:7.0.3"
