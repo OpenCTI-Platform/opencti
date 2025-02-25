@@ -295,16 +295,18 @@ FilterIconButtonContainerProps
           <Fragment key={currentFilter.id ?? `filter-${index}`}>
             <Tooltip
               title={
-                <FilterValues
-                  label={keyLabel}
-                  tooltip={true}
-                  currentFilter={currentFilter}
-                  handleSwitchLocalMode={handleSwitchLocalMode}
-                  filtersRepresentativesMap={filtersRepresentativesMap}
-                  redirection={redirection}
-                  entityTypes={entityTypes}
-                  filtersRestrictions={filtersRestrictions}
-                />
+                filterKey === 'regardingOf'
+                  ? undefined
+                  : <FilterValues
+                      label={keyLabel}
+                      tooltip={true}
+                      currentFilter={currentFilter}
+                      handleSwitchLocalMode={handleSwitchLocalMode}
+                      filtersRepresentativesMap={filtersRepresentativesMap}
+                      redirection={redirection}
+                      entityTypes={entityTypes}
+                      filtersRestrictions={filtersRestrictions}
+                    />
               }
             >
               <Box

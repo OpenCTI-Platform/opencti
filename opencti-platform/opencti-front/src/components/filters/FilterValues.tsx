@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { WarningOutlined } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 import { FiltersRestrictions, isFilterEditable, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
@@ -145,7 +146,17 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     return (
       <>
         {isWarning && (
-          <Tooltip title={t_i18n('All the results may not be displayed for these filter values, read documentation for more information')}>
+          <Tooltip title={
+            t_i18n('', {
+              id: 'All the results may not be displayed for these filter values, read documentation for more information.',
+              values: {
+                link: <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?h=regarding#the-regardingof-filter-key">
+                  {t_i18n('read documentation')}
+                </Link>,
+              },
+            })
+          }
+          >
             <WarningOutlined
               color={'inherit'}
               style={{ fontSize: 20, color: '#f44336', marginRight: 4 }}
