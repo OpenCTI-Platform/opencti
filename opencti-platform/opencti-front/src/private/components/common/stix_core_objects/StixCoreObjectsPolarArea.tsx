@@ -122,10 +122,10 @@ const StixCoreObjectsPolarAreaComponent = ({
 };
 
 interface StixCoreObjectsPolarAreaProps {
-  startDate: string
-  endDate: string
+  startDate?: string | null
+  endDate?: string | null
   dataSelection: WidgetDataSelection[]
-  parameters: WidgetParameters
+  parameters?: WidgetParameters | null
   variant?: string
   height?: CSSProperties['height']
   withExportPopover?: boolean
@@ -169,7 +169,7 @@ const StixCoreObjectsPolarArea = ({
   return (
     <WidgetContainer
       height={height}
-      title={parameters.title ?? t_i18n('Distribution of entities')}
+      title={parameters?.title ?? t_i18n('Distribution of entities')}
       variant={variant}
     >
       {queryRef ? (
