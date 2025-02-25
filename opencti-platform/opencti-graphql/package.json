@@ -47,7 +47,7 @@
     "@aws-sdk/lib-storage": "3.679.0",
     "@aws-sdk/property-provider": "3.374.0",
     "@datadog/pprof": "5.5.1",
-    "@elastic/elasticsearch": "8.17.0",
+    "@elastic/elasticsearch": "8.17.1",
     "@escape.tech/graphql-armor": "3.1.2",
     "@graphql-tools/import": "7.0.13",
     "@graphql-tools/merge": "9.0.19",
