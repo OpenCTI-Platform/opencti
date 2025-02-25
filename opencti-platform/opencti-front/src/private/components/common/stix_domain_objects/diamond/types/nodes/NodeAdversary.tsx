@@ -27,7 +27,7 @@ const NodeAdversary = ({ data }: NodeProps) => {
   const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.adversary);
 
   return (
-    <NodeContainer link={`${entityLink}/all?filters=${generatedFilters}`} position={Position.Bottom} height={200}>
+    <NodeContainer link={`${entityLink}/all?filters=${generatedFilters}&view=entities`} position={Position.Bottom} height={200}>
       <>
         <Typography variant="h3" gutterBottom>
           {t_i18n('Aliases')}

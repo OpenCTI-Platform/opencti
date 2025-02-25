@@ -27,7 +27,7 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
   const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.infrastructure);
 
   return (
-    <NodeContainer link={`${entityLink}/all?filters=${generatedFilters}`} position={Position.Left}>
+    <NodeContainer link={`${entityLink}/all?filters=${generatedFilters}&view=entities`} position={Position.Left}>
       <>
         <Typography variant="h3" gutterBottom>
           {t_i18n('Last used IP addresses')}

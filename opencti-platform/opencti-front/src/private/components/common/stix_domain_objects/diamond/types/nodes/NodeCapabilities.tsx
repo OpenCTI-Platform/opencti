@@ -25,7 +25,7 @@ const NodeCapabilities = ({ data }: NodeProps) => {
   const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.capabilities);
 
   return (
-    <NodeContainer link={`${entityLink}/all?filters=${generatedFilters}`} position={Position.Right}>
+    <NodeContainer link={`${entityLink}/all?filters=${generatedFilters}&view=entities`} position={Position.Right}>
       <>
         <Typography variant="h3" gutterBottom>
           {t_i18n('Last used attack patterns')}
