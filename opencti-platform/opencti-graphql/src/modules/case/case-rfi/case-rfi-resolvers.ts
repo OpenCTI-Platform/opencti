@@ -3,7 +3,8 @@ import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_OBJECT_ASSIGNEE } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 import { addCaseRfi, caseRfiContainsStixObjectOrStixRelationship, findAll, findById } from './case-rfi-domain';
-import { approveRequestAccess, declineRequestAccess } from '../../requestAccess/requestAccess-domain';
+import { approveRequestAccess, declineRequestAccess, getRequestAccessConfiguration } from '../../requestAccess/requestAccess-domain';
+import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
 
 const caseRfiResolvers: Resolvers = {
   Query: {
@@ -12,6 +13,9 @@ const caseRfiResolvers: Resolvers = {
     caseRfiContainsStixObjectOrStixRelationship: (_, args, context) => {
       return caseRfiContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
+  },
+  CaseRfi: {
+    requestAccessConfiguration: (entitySetting, _, context) => getRequestAccessConfiguration(context, context.user, entitySetting as unknown as BasicStoreEntityEntitySetting),
   },
   CaseRfisOrdering: {
     creator: 'creator_id',
