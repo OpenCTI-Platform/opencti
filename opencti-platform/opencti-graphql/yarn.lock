@@ -11522,7 +11522,7 @@ __metadata:
     turndown: "npm:7.2.0"
     typescript: "npm:5.7.3"
     unzipper: "npm:0.12.3"
-    uuid: "npm:11.0.5"
+    uuid: "npm:11.1.0"
     uuid-time: "npm:1.0.0"
     validator: "npm:13.12.0"
     vitest: "npm:2.0.5"
@@ -14153,12 +14153,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:11.0.5":
-  version: 11.0.5
-  resolution: "uuid@npm:11.0.5"
+"uuid@npm:11.1.0":
+  version: 11.1.0
+  resolution: "uuid@npm:11.1.0"
   bin:
     uuid: dist/esm/bin/uuid
-  checksum: 10/0594ecdff3051e15d4a2c614b4c72e73af373bde0a5d156512353c01156975295d024ae8d7151846d7bd4d22ccd251b16ed51b4318fa71505fb20ad984102dc1
+  checksum: 10/d2da43b49b154d154574891ced66d0c83fc70caaad87e043400cf644423b067542d6f3eb641b7c819224a7cd3b4c2f21906acbedd6ec9c6a05887aa9115a9cf5
   languageName: node
   linkType: hard
 
