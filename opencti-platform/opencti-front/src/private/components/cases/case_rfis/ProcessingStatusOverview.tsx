@@ -7,7 +7,6 @@ import { declineRequestAccessMutation, validateRequestAccessMutation } from '@co
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import ItemStatus from '../../../../components/ItemStatus';
-import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseRfi_caseRfi$data } from './__generated__/CaseRfi_caseRfi.graphql';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -17,12 +16,11 @@ interface CaseRfiRequestAccessOverviewProps {
 }
 
 const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
-  const entitySettings = useEntitySettings('Case-Rfi');
   const { t_i18n } = useFormatter();
   let requestAccessData = null;
   let isRequestAccessNew = false;
-  let acceptButtonColor = '#555';
-  let declineButtonColor = '#555';
+  const approvedButtonColor = data.requestAccessConfiguration?.approved_status?.template?.color;
+  const declineButtonColor = data.requestAccessConfiguration?.declined_status?.template?.color;
 
   if (data.x_opencti_request_access) {
     requestAccessData = JSON.parse(data.x_opencti_request_access);
@@ -30,8 +28,6 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
     // Find action status that correspond to current RFI status.
     const currentActionStatus = requestAccessData.workflowMapping.find((status: any) => status.rfiStatusId === data.status?.id);
     isRequestAccessNew = currentActionStatus && currentActionStatus.actionStatus === 'NEW';
-    acceptButtonColor = entitySettings[0]?.requestAccessConfiguration?.approved_status?.template?.color ?? '#555';
-    declineButtonColor = entitySettings[0]?.requestAccessConfiguration?.declined_status?.template?.color ?? '#555';
   }
 
   const onSubmitValidateRequestAccess = () => {
@@ -93,7 +89,7 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
             <Button
               color="primary"
               variant="outlined"
-              style={{ marginRight: 10, color: acceptButtonColor, borderColor: acceptButtonColor }}
+              style={{ marginRight: 10, color: approvedButtonColor, borderColor: approvedButtonColor }}
               onClick={onSubmitValidateRequestAccess}
             >
               {t_i18n('Validate')}
