@@ -2431,7 +2431,11 @@ class OpenCTIStix2:
                     )
 
     def apply_patch(self, item):
-        field_patch = item["opencti_field_patch"]
+        field_patch = self.opencti.get_attribute_in_extension(
+            "opencti_field_patch", item
+        )
+        if field_patch is None:
+            field_patch = item["opencti_field_patch"]
         field_patch_without_files = [
             op for op in field_patch if op["key"] != "x_opencti_files"
         ]
@@ -2458,6 +2462,19 @@ class OpenCTIStix2:
                 )
         self.apply_patch_files(item)
 
+    def apply_opencti_operation(self, item, operation):
+        if operation == "delete":
+            delete_id = item["id"]
+            self.opencti.stix.delete(id=delete_id)
+        elif operation == "merge":
+            target_id = item["merge_target_id"]
+            source_ids = item["merge_source_ids"]
+            self.opencti.stix.merge(id=target_id, object_ids=source_ids)
+        elif operation == "patch":
+            self.apply_patch(item=item)
+        else:
+            raise ValueError("Not supported opencti_operation")
+
     def import_item(
         self,
         item,
@@ -2469,18 +2486,13 @@ class OpenCTIStix2:
         worker_logger = self.opencti.logger_class("worker")
         try:
             self.opencti.set_retry_number(processing_count)
-            if "opencti_operation" in item:
-                if item["opencti_operation"] == "delete":
-                    delete_id = item["id"]
-                    self.opencti.stix.delete(id=delete_id)
-                elif item["opencti_operation"] == "merge":
-                    target_id = item["merge_target_id"]
-                    source_ids = item["merge_source_ids"]
-                    self.opencti.stix.merge(id=target_id, object_ids=source_ids)
-                elif item["opencti_operation"] == "patch":
-                    self.apply_patch(item=item)
-                else:
-                    raise ValueError("Not supported opencti_operation")
+            opencti_operation = self.opencti.get_attribute_in_extension(
+                "opencti_operation", item
+            )
+            if opencti_operation is not None:
+                self.apply_opencti_operation(item, opencti_operation)
+            elif "opencti_operation" in item:
+                self.apply_opencti_operation(item, item["opencti_operation"])
             elif item["type"] == "relationship":
                 # Import relationship
                 self.import_relationship(item, update, types)
