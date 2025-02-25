@@ -34,6 +34,8 @@ import { truncate } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction='up' ref={ref} {...otherProps}>{children}</Slide>
@@ -109,9 +111,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayRemove, setDisplayRemove] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
   const [displayDownload, setDisplayDownload] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
@@ -150,13 +150,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     .join(', ');
   const encodedFilePath = encodeURIComponent(file?.id ?? '');
 
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-  };
 
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
+  const deletion = useDeletion({ handleClose });
+  const { deleting, handleOpenDelete, handleCloseDelete, setDeleting } = deletion;
 
   const handleOpenRemove = () => {
     setDisplayRemove(true);
@@ -194,7 +190,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       },
       onCompleted: () => {
         setDeleting(false);
-        setDisplayDelete(false);
+        handleCloseDelete();
         setDisplayRemove(false);
         if (onDelete) {
           onDelete();
@@ -207,9 +203,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     });
   };
 
-  const handleRemoveFile = (fileId: string | undefined) => {
-    if (fileId) {
-      executeRemove(FileLineDeleteMutation, { fileName: fileId });
+  const handleRemoveFile = () => {
+    if (file?.id) {
+      executeRemove(FileLineDeleteMutation, { fileName: file.id });
     }
   };
 
@@ -412,42 +408,14 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         </ListItemSecondaryAction>
       </ListItemButton>
       <FileWork file={file} nested={workNested} />
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this file?')}
-            {isContainsReference && (
-              <Alert
-                severity="warning"
-                variant="outlined"
-                style={{ position: 'relative', marginTop: 20 }}
-              >
-                {t_i18n(
-                  'This file is linked to an external reference. If you delete it, the reference will be deleted as well.',
-                )}
-              </Alert>
-            )}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={() => handleRemoveFile(file?.id)}
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={handleRemoveFile}
+        message={t_i18n('Do you want to delete this file?')}
+        warning={isContainsReference
+          ? { message: t_i18n('This file is linked to an external reference. If you delete it, the reference will be deleted as well.') }
+          : undefined}
+      />
       <Dialog
         open={displayRemove}
         PaperProps={{ elevation: 1 }}
