@@ -57,8 +57,6 @@ export interface RequestAccessAction {
   status: string,
   executionDate?: Date,
   workflowMapping: RequestAccessActionStatus[],
-  acceptColor:string
-  declineColor:string
 }
 
 export const getPlatformOrganization = async (context: AuthContext, user: AuthUser) => {
@@ -68,7 +66,6 @@ export const getPlatformOrganization = async (context: AuthContext, user: AuthUs
 
 export const getRfiEntitySettings = async (context: AuthContext, user: AuthUser) => {
   return findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
-  // return getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
 };
 
 export const verifyRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
@@ -371,8 +368,6 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     entities: input.request_access_entities,
     status: ActionStatus.NEW,
     workflowMapping: allActionStatuses,
-    acceptColor: '#2e6a40', // TODO map status colors
-    declineColor: '#730b0b', // TODO map status colors
   };
 
   const firstStatus: BasicWorkflowStatus = await findFirstWorkflowStatus(context, user);
