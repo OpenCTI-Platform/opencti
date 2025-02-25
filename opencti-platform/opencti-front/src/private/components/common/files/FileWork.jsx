@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { propOr, compose } from 'ramda';
+import * as R from 'ramda';
+import { compose, propOr } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import List from '@mui/material/List';
@@ -12,17 +13,13 @@ import ListItemText from '@mui/material/ListItemText';
 import { ArchitectureOutlined, CheckCircleOutlined, DeleteOutlined, WarningOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import * as R from 'ramda';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import { useNavigate } from 'react-router-dom';
 import { commitMutation } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -63,16 +60,23 @@ const FileWorkComponent = (props) => {
     file: { works },
     nested,
   } = props;
-  const [deleting, setDeleting] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(null);
+  const { t_i18n } = useFormatter();
+  const [workId, setWorkId] = useState(null);
   const navigate = useNavigate();
   const draftContext = useDraftContext();
+  const deletion = useDeletion({});
+  const { handleOpenDelete, handleCloseDelete, setDeleting } = deletion;
 
   const navigateToDraft = (draftId) => {
     navigate(`/dashboard/drafts/${draftId}`);
   };
 
-  const deleteWork = (workId) => {
+  const handleDelete = (workId) => {
+    setWorkId(workId);
+    handleOpenDelete();
+  };
+
+  const deleteWork = () => {
     commitMutation({
       mutation: fileWorkDeleteMutation,
       variables: { workId },
@@ -86,7 +90,8 @@ const FileWorkComponent = (props) => {
       },
       onCompleted: () => {
         setDeleting(false);
-        setDisplayDelete(null);
+        setWorkId(null);
+        handleCloseDelete();
       },
     });
   };
@@ -193,7 +198,7 @@ const FileWorkComponent = (props) => {
                 <Tooltip title={!isCurrentContextWork ? t('Not available in draft') : t('Delete')}>
                   <span>
                     <IconButton
-                      onClick={() => isCurrentContextWork && setDisplayDelete(work.id)}
+                      onClick={() => isCurrentContextWork && handleDelete(work.id)}
                       disabled={work.status === 'deleting'}
                       size="small"
                     >
@@ -205,31 +210,11 @@ const FileWorkComponent = (props) => {
             </Tooltip>
           );
         })}
-      <Dialog
-        open={displayDelete !== null}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={() => setDisplayDelete(null)}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t('Do you want to remove this job?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDisplayDelete(null)} disabled={deleting}>
-            {t('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={() => deleteWork(displayDelete)}
-            disabled={deleting}
-          >
-            {t('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={deleteWork}
+        message={t_i18n('Do you want to delete this job?')}
+      />
     </List>
   );
 };

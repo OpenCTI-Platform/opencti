@@ -5,11 +5,6 @@ import { ImportFilesContentQuery, ImportFilesContentQuery$variables } from '@com
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { DeleteOutlined, GetAppOutlined } from '@mui/icons-material';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import { ImportFilesContentLines_data$data } from '@components/data/import/__generated__/ImportFilesContentLines_data.graphql';
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -18,12 +13,14 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { deleteNode } from '../../../../utils/store';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import stopEvent from '../../../../utils/domEvent';
+import useDeletion from '../../../../utils/hooks/useDeletion';
+import DeleteDialog from '../../../../components/DeleteDialog';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
   mutation ImportFilesContentFileLineDeleteMutation($fileName: String) {
@@ -126,7 +123,7 @@ const ImportFilesContent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Upload Files | Import | Data'));
-  const [displayDelete, setDisplayDelete] = useState<string>('');
+  const [fileId, setFileId] = useState<string>('');
 
   const initialValues = {
     filters: emptyFilterGroup,
@@ -153,23 +150,38 @@ const ImportFilesContent = () => {
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ImportFilesContentQuery>;
 
+  const deletion = useDeletion({});
+  const { handleOpenDelete, handleCloseDelete } = deletion;
+
+  const handleRemove = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: string) => {
+    stopEvent(e);
+    setFileId(id);
+    handleOpenDelete();
+  };
+
   const [deleteFile] = useApiMutation(WorkbenchFileLineDeleteMutation);
-  const handleRemoveFile = (id: string) => {
+  const handleRemoveFile = () => {
     deleteFile({
-      variables: { fileName: id },
+      variables: { fileName: fileId },
       optimisticUpdater: (store) => {
-        const fileStore = store.get(id);
+        const fileStore = store.get(fileId);
         fileStore?.setValue(0, 'lastModifiedSinceMin');
         fileStore?.setValue('progress', 'uploadStatus');
       },
       updater: (store) => {
-        const fileStore = store.get(id);
+        const fileStore = store.get(fileId);
         fileStore?.setValue(0, 'lastModifiedSinceMin');
         fileStore?.setValue('progress', 'uploadStatus');
-        deleteNode(store, 'Pagination_global_importFiles', queryPaginationOptions, id);
+        deleteNode(store, 'Pagination_global_importFiles', queryPaginationOptions, fileId);
       },
-      onCompleted: () => setDisplayDelete(''),
-      onError: () => setDisplayDelete(''),
+      onCompleted: () => {
+        setFileId('');
+        handleCloseDelete();
+      },
+      onError: () => {
+        setFileId('');
+        handleCloseDelete();
+      },
     });
   };
 
@@ -200,29 +212,11 @@ const ImportFilesContent = () => {
     <div style={{ height: '100%', paddingRight: 200 }} className="break">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]} />
       <ImportMenu />
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={!!displayDelete}
-        slots={{ transition: Transition }}
-        onClose={() => setDisplayDelete('')}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this file?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDisplayDelete('')}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={() => handleRemoveFile(displayDelete)}
-            color="secondary"
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={handleRemoveFile}
+        message={t_i18n('Do you want to delete this file?')}
+      />
       {queryRef && (
         <DataTable
           dataColumns={{
@@ -273,7 +267,7 @@ const ImportFilesContent = () => {
                   <IconButton
                     disabled={isProgress}
                     color={'primary'}
-                    onClick={() => setDisplayDelete(id)}
+                    onClick={(e) => handleRemove(e, id)}
                     size="small"
                   >
                     <DeleteOutlined fontSize="small" />
