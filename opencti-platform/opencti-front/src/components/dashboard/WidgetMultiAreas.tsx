@@ -1,7 +1,7 @@
 import { useTheme } from '@mui/styles';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import { areaChartOptions } from '../../utils/Charts';
