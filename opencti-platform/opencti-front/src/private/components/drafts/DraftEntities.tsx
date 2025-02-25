@@ -31,6 +31,18 @@ const draftEntitiesLineFragment = graphql`
             x_opencti_order
             x_opencti_color
         }
+        objectLabel {
+            id
+            value
+            color
+        }
+        createdBy {
+            ... on Identity {
+                id
+                name
+                entity_type
+            }
+        }
         creators {
             id
             name
@@ -104,10 +116,12 @@ const LOCAL_STORAGE_KEY = 'draft_entities';
 
 interface DraftEntitiesProps {
   entitiesType?: string;
+  excludedEntitiesType?: string;
 }
 
 const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   entitiesType = 'Stix-Core-Object',
+  excludedEntitiesType,
 }) => {
   const { draftId } = useParams() as { draftId: string };
   const { isFeatureEnable } = useHelper();
@@ -147,8 +161,9 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     filters,
     searchTerm,
   } = viewStorage;
-
-  const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters, excludedEntitiesType);
+  const relevantDraftOperationFilter = { key: 'draft_change.draft_operation', values: ['create', 'update', 'delete'], operator: 'eq', mode: 'or' };
+  const toolbarFilters = { ...contextFilters, filters: [...contextFilters.filters, relevantDraftOperationFilter] };
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -212,12 +227,11 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           resolvePath={(data: DraftEntitiesLines_data$data) => data.draftWorkspaceEntities?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          toolbarFilters={toolbarFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={draftEntitiesLineFragment}
           entityTypes={[entitiesType]}
           removeFromDraftEnabled
-          disableSelectAll // TODO: To handle selectAll
           createButton={
             entitiesType === 'Stix-Cyber-Observable' ? (
               <>

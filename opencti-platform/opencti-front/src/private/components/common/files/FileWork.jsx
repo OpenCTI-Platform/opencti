@@ -23,6 +23,7 @@ import { useNavigate } from 'react-router-dom';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -68,6 +69,7 @@ const FileWorkComponent = (props) => {
   const navigate = useNavigate();
   const { isFeatureEnable } = useHelper();
   const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
+  const draftContext = useDraftContext();
 
   const navigateToDraft = (draftId) => {
     navigate(`/dashboard/drafts/${draftId}`);
@@ -134,6 +136,7 @@ const FileWorkComponent = (props) => {
               work.connector,
             )}${statusText}`;
           };
+          const isCurrentContextWork = (!draftContext || work.draft_context === draftContext.id);
           return (
             <Tooltip
               title={messageToDisplay}
@@ -177,7 +180,7 @@ const FileWorkComponent = (props) => {
                     <span className={classes.itemText}>{secondaryLabel}</span>
                   }
                 />
-                {!!work.draft_context && isDraftFeatureEnabled && (
+                {!!work.draft_context && isDraftFeatureEnabled && !draftContext && (
                 <Tooltip title={t('Navigate to draft')}>
                   <span>
                     <IconButton
@@ -190,15 +193,14 @@ const FileWorkComponent = (props) => {
                   </span>
                 </Tooltip>
                 )}
-                <Tooltip title={t('Delete')}>
+                <Tooltip title={!isCurrentContextWork ? t('Not available in draft') : t('Delete')}>
                   <span>
                     <IconButton
-                      color="primary"
-                      onClick={() => setDisplayDelete(work.id)}
+                      onClick={() => isCurrentContextWork && setDisplayDelete(work.id)}
                       disabled={work.status === 'deleting'}
                       size="small"
                     >
-                      <DeleteOutlined fontSize="small" />
+                      <DeleteOutlined fontSize="small" color={isCurrentContextWork ? 'primary' : 'disabled'}/>
                     </IconButton>
                   </span>
                 </Tooltip>

@@ -27,6 +27,18 @@ const draftSightingsLineFragment = graphql`
             draft_id
             draft_operation
         }
+        objectLabel {
+            id
+            value
+            color
+        }
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
         status {
             id
             order
@@ -291,6 +303,8 @@ const DraftSightings = () => {
   } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('stix-sighting-relationship', filters);
+  const relevantDraftOperationFilter = { key: 'draft_change.draft_operation', values: ['create', 'update', 'delete'], operator: 'eq', mode: 'or' };
+  const toolbarFilters = { ...contextFilters, filters: [...contextFilters.filters, relevantDraftOperationFilter] };
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -363,12 +377,11 @@ const DraftSightings = () => {
         resolvePath={(data: DraftSightingsLines_data$data) => data.draftWorkspaceSightingRelationships?.edges?.map((n) => n?.node)}
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
-        toolbarFilters={contextFilters}
+        toolbarFilters={toolbarFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={draftSightingsLineFragment}
         entityTypes={['stix-sighting-relationship']}
         removeFromDraftEnabled
-        disableSelectAll
       />
       )}
     </span>

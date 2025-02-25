@@ -1839,8 +1839,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   // Update all needed attributes with inner elements if needed
   const updatedInputs = [];
   const impactedInputs = [];
-  const isWorkflowChange = inputKeys.includes(X_WORKFLOW_ID);
-  const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
     const ins = innerUpdateAttribute(instance, input);
@@ -1857,22 +1855,8 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
             value: R.symmetricDifference(previous ?? [], input.value ?? []),
             previous,
           });
-        } else { // REPLACE
-          // Specific input resolution for workflow
-          // eslint-disable-next-line no-lonely-if
-          if (input.key === X_WORKFLOW_ID) {
-            // workflow_id is not a relation but message must contain the name and not the internal id
-            const workflowId = R.head(input.value);
-            const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
-            updatedInputs.push({
-              operation: input.operation,
-              key: input.key,
-              value: [workflowStatus ? workflowStatus.name : null],
-              previous,
-            });
-          } else {
-            updatedInputs.push({ ...input, previous });
-          }
+        } else {
+          updatedInputs.push({ ...input, previous });
         }
       }
       // endregion
@@ -1901,8 +1885,23 @@ const computeDateFromEventId = (context) => {
   return utcDate(parseInt(context.eventId.split('-')[0], 10)).toISOString();
 };
 
-export const generateUpdateMessage = async (context, entityType, inputs) => {
-  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
+export const generateUpdateMessage = async (context, user, entityType, inputs) => {
+  const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
+  const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
+  const resolvedInputs = inputs.map((i) => {
+    if (i.key === X_WORKFLOW_ID) {
+      // workflow_id is not a relation but message must contain the name and not the internal id
+      const workflowId = R.head(i.value);
+      const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
+      return ({
+        ...i,
+        value: [workflowStatus ? workflowStatus.name : null],
+      });
+    }
+    return i;
+  });
+
+  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, resolvedInputs);
   const patchElements = Object.entries(inputsByOperations);
   if (patchElements.length === 0) {
     throw UnsupportedError('Generating update message with empty inputs fail');
@@ -2255,7 +2254,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
-      const message = await generateUpdateMessage(context, updatedInstance.entity_type, updatedInputs);
+      const message = await generateUpdateMessage(context, user, updatedInstance.entity_type, updatedInputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -2946,7 +2945,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
         // Generate the new version of the from
         instance[key] = [...(instance[key] ?? []), targetElement];
       }
-      const message = await generateUpdateMessage(context, instance.entity_type, inputs);
+      const message = await generateUpdateMessage(context, user, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -3326,7 +3325,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         // Generate the new version of the from
         instance[key] = withoutElementDeleted;
       }
-      const message = await generateUpdateMessage(context, instance.entity_type, inputs);
+      const message = await generateUpdateMessage(context, user, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,

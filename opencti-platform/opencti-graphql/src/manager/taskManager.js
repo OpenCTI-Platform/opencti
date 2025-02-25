@@ -59,7 +59,7 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { indicatorEditField, promoteIndicatorToObservables } from '../modules/indicator/indicator-domain';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
-import { objectOrganization, RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, objectOrganization, RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
@@ -89,6 +89,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
+import { stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from '../domain/stixObjectOrStixRelationship';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -265,7 +266,12 @@ const executeAdd = async (context, user, actionContext, element) => {
   if (contextType === ACTION_TYPE_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
-      await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: field });
+      if (isStixRefRelationship(field)) {
+        const addRefInput = { relationship_type: field, toIds: [target] };
+        await stixObjectOrRelationshipAddRefRelations(context, user, element.id, addRefInput, element.entity_type);
+      } else {
+        await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: field });
+      }
     }
   }
   if (contextType === ACTION_TYPE_REVERSED_RELATION) {
@@ -285,7 +291,11 @@ const executeRemove = async (context, user, actionContext, element) => {
   if (contextType === ACTION_TYPE_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
-      await deleteRelationsByFromAndTo(context, user, element.id, target, field, ABSTRACT_BASIC_RELATIONSHIP);
+      if (isStixRefRelationship(field)) {
+        await stixObjectOrRelationshipDeleteRefRelation(context, user, element.id, target, field, element.entity_type);
+      } else {
+        await deleteRelationsByFromAndTo(context, user, element.id, target, field, ABSTRACT_BASIC_RELATIONSHIP);
+      }
     }
   }
   if (contextType === ACTION_TYPE_REVERSED_RELATION) {

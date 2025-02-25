@@ -215,6 +215,8 @@ const DraftRelationships = () => {
   } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
+  const relevantDraftOperationFilter = { key: 'draft_change.draft_operation', values: ['create', 'update', 'delete'], operator: 'eq', mode: 'or' };
+  const toolbarFilters = { ...contextFilters, filters: [...contextFilters.filters, relevantDraftOperationFilter] };
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -275,12 +277,11 @@ const DraftRelationships = () => {
         resolvePath={(data: DraftRelationshipsLines_data$data) => data.draftWorkspaceRelationships?.edges?.map((n) => n?.node)}
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
-        toolbarFilters={contextFilters}
+        toolbarFilters={toolbarFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={draftRelationshipsLineFragment}
         entityTypes={['stix-core-relationship']}
         removeFromDraftEnabled
-        disableSelectAll
       />
       )}
     </span>

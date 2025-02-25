@@ -105,6 +105,7 @@ const buildQueryFilters = async (context, user, filters, search, taskPosition, s
     after: taskPosition,
     filters: inputFilters,
     search: search && search.length > 0 ? search : null,
+    includeDeletedInDraft: true,
   };
 };
 
