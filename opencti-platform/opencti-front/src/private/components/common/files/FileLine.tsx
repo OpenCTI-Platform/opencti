@@ -162,7 +162,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     .join(', ');
   const encodedFilePath = encodeURIComponent(file?.id ?? '');
 
-
   const deletion = useDeletion({ handleClose });
   const { deleting, handleOpenDelete, handleCloseDelete, setDeleting } = deletion;
 

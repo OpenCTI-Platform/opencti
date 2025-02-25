@@ -71,8 +71,8 @@ const FileWorkComponent = (props) => {
     navigate(`/dashboard/drafts/${draftId}`);
   };
 
-  const handleDelete = (workId) => {
-    setWorkId(workId);
+  const handleDelete = (id) => {
+    setWorkId(id);
     handleOpenDelete();
   };
 
