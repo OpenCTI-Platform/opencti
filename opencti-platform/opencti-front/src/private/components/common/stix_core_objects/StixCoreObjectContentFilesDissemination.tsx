@@ -123,7 +123,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
                 color="primary"
               />
               }
-            label={t_i18n('Use OCTI template')}
+            label={t_i18n('Use OpenCTI template')}
           />
           <DisseminationListField/>
           <Field

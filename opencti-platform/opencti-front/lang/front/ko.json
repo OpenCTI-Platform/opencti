@@ -3272,7 +3272,7 @@
   "Use default marking definitions of the user": "사용자의 기본 마킹 정의 사용",
   "Use file content as email body": "파일 콘텐츠를 이메일 본문으로 사용",
   "Use functional dates": "기능 날짜 사용",
-  "Use OCTI template": "OCTI 템플릿 사용",
+  "Use OpenCTI template": "OpenCTI 템플릿 사용",
   "Use perfect synchronization": "완벽한 동기화 사용",
   "Use stateless mode": "상태 비저장 모드 사용",
   "Use technical dates": "기술 날짜 사용",
