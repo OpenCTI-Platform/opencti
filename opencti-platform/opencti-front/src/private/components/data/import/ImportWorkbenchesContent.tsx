@@ -170,7 +170,6 @@ const ImportWorkbenchesContent = () => {
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ImportWorkbenchesContentQuery>;
 
-
   const deletion = useDeletion({});
   const { handleOpenDelete, handleCloseDelete } = deletion;
 
