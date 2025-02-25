@@ -17,6 +17,7 @@ import StixCoreObjectsTreeMap from '@components/common/stix_core_objects/StixCor
 import StixCoreObjectsWordCloud from '@components/common/stix_core_objects/StixCoreObjectsWordCloud';
 import type { Widget } from '../../../../utils/widget/widget';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
+import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 interface DashboardEntitiesVizProps {
   widget: Widget
@@ -41,12 +42,25 @@ const DashboardEntitiesViz = ({
     ? formatDate(dayStartDate(null, false))
     : config.endDate;
 
+  let mainEntityTypes = ['Stix-Core-Object'];
+  if (widget.perspective === 'relationships') {
+    mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
+  } else if (widget.perspective === 'audits') {
+    mainEntityTypes = ['History'];
+  }
+  const dataSelection = widget.dataSelection.map((data) => ({
+    ...data,
+    filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainEntityTypes),
+    dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
+    dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
+  }));
+
   switch (widget.type) {
     case 'bookmark':
       return (
         <StixDomainObjectBookmarksList
           variant="inLine"
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
@@ -57,7 +71,7 @@ const DashboardEntitiesViz = ({
           variant="inLine"
           endDate={endDate}
           startDate={startDate}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           withoutTitle={false} // because calling js component in ts
@@ -70,7 +84,7 @@ const DashboardEntitiesViz = ({
           endDate={endDate}
           startDate={startDate}
           widgetId={widget.id}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
@@ -82,7 +96,7 @@ const DashboardEntitiesViz = ({
           variant="inLine"
           endDate={endDate}
           startDate={startDate}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
@@ -95,7 +109,7 @@ const DashboardEntitiesViz = ({
           startDate={startDate}
           isReadOnly={isReadonly}
           withExportPopover={true}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
@@ -108,7 +122,7 @@ const DashboardEntitiesViz = ({
           startDate={startDate}
           isReadOnly={isReadonly}
           withExportPopover={true}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
@@ -121,7 +135,7 @@ const DashboardEntitiesViz = ({
           startDate={startDate}
           isReadOnly={isReadonly}
           withExportPopover={true}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
@@ -132,7 +146,7 @@ const DashboardEntitiesViz = ({
           variant="inLine"
           endDate={endDate}
           startDate={startDate}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
@@ -145,7 +159,7 @@ const DashboardEntitiesViz = ({
           startDate={startDate}
           isReadOnly={isReadonly}
           withExportPopover={true}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
         />
       );
@@ -157,14 +171,14 @@ const DashboardEntitiesViz = ({
           startDate={startDate}
           isReadOnly={isReadonly}
           withExportPopover={true}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters}
         />
       );
     case 'horizontal-bar':
       if (
-        widget.dataSelection.length > 1
-        && widget.dataSelection[0].attribute?.endsWith('_id')
+        dataSelection.length > 1
+        && dataSelection[0].attribute?.endsWith('_id')
       ) {
         return (
           <StixCoreObjectsMultiHorizontalBars
@@ -173,7 +187,7 @@ const DashboardEntitiesViz = ({
             startDate={startDate}
             isReadOnly={isReadonly}
             withExportPopover={true}
-            dataSelection={widget.dataSelection}
+            dataSelection={dataSelection}
             parameters={widget.parameters as object} // because calling js component in ts
             height={undefined} // because calling js component in ts
           />
@@ -186,7 +200,7 @@ const DashboardEntitiesViz = ({
           startDate={startDate}
           isReadOnly={isReadonly}
           withExportPopover={true}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
@@ -199,7 +213,7 @@ const DashboardEntitiesViz = ({
           startDate={startDate}
           isReadOnly={isReadonly}
           withExportPopover={true}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
@@ -212,7 +226,7 @@ const DashboardEntitiesViz = ({
           startDate={startDate}
           isReadOnly={isReadonly}
           withExportPopover={true}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
@@ -225,7 +239,7 @@ const DashboardEntitiesViz = ({
           startDate={startDate}
           isReadOnly={isReadonly}
           withExportPopover={true}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
         />
@@ -236,7 +250,7 @@ const DashboardEntitiesViz = ({
           variant="inLine"
           endDate={endDate}
           startDate={startDate}
-          dataSelection={widget.dataSelection}
+          dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
         />
       );

@@ -19,11 +19,7 @@ import WorkspaceWidgetPopover from './WorkspaceWidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
 import WorkspaceWidgetConfig from './WorkspaceWidgetConfig';
 import { ErrorBoundary } from '../../Error';
-import {
-  deserializeDashboardManifestForFrontend,
-  serializeDashboardManifestForBackend,
-  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
-} from '../../../../utils/filters/filtersUtils';
+import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
 import useHelper from '../../../../utils/hooks/useHelper';
 
 const COL_WIDTH = 30;
@@ -62,27 +58,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
   }, [workspace]);
 
   const widgets = useMemo(() => {
-    return Object.values(manifest.widgets).map((widget) => {
-      let mainEntityTypes = ['Stix-Core-Object'];
-      if (widget.perspective === 'relationships') {
-        mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
-      } else if (widget.perspective === 'audits') {
-        mainEntityTypes = ['History'];
-      }
-
-      return {
-        widget,
-        widgetCleanFilters: {
-          ...widget,
-          dataSelection: widget.dataSelection.map((data) => ({
-            ...data,
-            filters: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.filters, mainEntityTypes),
-            dynamicFrom: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicFrom, ['Stix-Core-Object']),
-            dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
-          })),
-        },
-      };
-    });
+    return Object.values(manifest.widgets).map((widget) => widget);
   }, [manifest]);
 
   const userHasEditAccess = workspace.currentUserAccessRight === 'admin'
@@ -266,7 +242,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
         onResizeStart={userCanEdit ? (_, { i }) => handleResize(i) : undefined}
         onResizeStop={userCanEdit ? handleResize : undefined}
       >
-        {widgets.map(({ widget, widgetCleanFilters }) => {
+        {widgets.map((widget) => {
           return (
             <Paper
               key={widget.id}
@@ -289,27 +265,27 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                   <>
                     {widget.perspective === 'entities' && (
                       <DashboardEntitiesViz
-                        widget={widgetCleanFilters}
+                        widget={widget}
                         isReadonly={!isWrite}
                         config={manifest.config}
                       />
                     )}
                     {widget.perspective === 'relationships' && (
                       <DashboardRelationshipsViz
-                        widget={widgetCleanFilters}
+                        widget={widget}
                         isReadonly={!isWrite}
                         config={manifest.config}
                       />
                     )}
                     {widget.perspective === 'audits' && (
                       <DashboardAuditsViz
-                        widget={widgetCleanFilters}
+                        widget={widget}
                         isReadonly={!isWrite}
                         config={manifest.config}
                       />
                     )}
                     {widget.perspective === null && (
-                      <DashboardRawViz widget={widgetCleanFilters} />
+                      <DashboardRawViz widget={widget} />
                     )}
                   </>
                 )}
