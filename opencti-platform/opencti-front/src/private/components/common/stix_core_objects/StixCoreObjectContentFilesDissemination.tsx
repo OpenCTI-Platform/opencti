@@ -31,8 +31,6 @@ interface DisseminationInput {
   disseminationListId: string;
   emailObject: string;
   emailBody: string;
-  includeHtmlInBody: boolean;
-  useDefaultTemplate: boolean;
 }
 
 export const DisseminationListSendInputMutation = graphql`
@@ -105,8 +103,6 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     disseminationListId: '',
     emailObject: '',
     emailBody: '',
-    includeHtmlInBody: false,
-    useDefaultTemplate: true,
   };
   return (
     <Formik
