@@ -1,12 +1,25 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
+import Button from '@mui/material/Button';
+import { Link } from 'react-router-dom';
+import { Handle, Position } from 'reactflow';
+import { useFormatter } from 'src/components/i18n';
 import type { Theme } from '../../../../../../../components/Theme';
 
 interface NodeContainerProps {
-  content: React.ReactNode;
+  children: ReactNode;
+  height?: number;
+  link: string;
+  position: Position;
 }
 
-const NodeContainer: FunctionComponent<NodeContainerProps> = ({ content }) => {
+const NodeContainer: FunctionComponent<NodeContainerProps> = ({
+  children,
+  height = 300,
+  link,
+  position,
+}) => {
+  const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
   return (
@@ -18,7 +31,7 @@ const NodeContainer: FunctionComponent<NodeContainerProps> = ({ content }) => {
       borderRadius: '4px',
       backgroundColor: theme.palette.background.paper,
       width: '400px',
-      height: '300px',
+      height: `${height}px`,
       paddingBottom: '25px',
     }}
     >
@@ -29,8 +42,43 @@ const NodeContainer: FunctionComponent<NodeContainerProps> = ({ content }) => {
         padding: '20px',
       }}
       >
-        {content}
+        {children}
       </div>
+      <Button
+        component={Link}
+        to={link}
+        variant="contained"
+        size="small"
+        sx={{
+          position: 'absolute',
+          left: 0,
+          bottom: 0,
+          width: '100%',
+          height: '25px',
+          color: theme.palette.primary.main,
+          borderTopLeftRadius: 0,
+          borderTopRightRadius: 0,
+          backgroundColor:
+            theme.palette.mode === 'dark'
+              ? 'rgba(255, 255, 255, .1)'
+              : 'rgba(0, 0, 0, .1)',
+          '&:hover': {
+            backgroundColor:
+              theme.palette.mode === 'dark'
+                ? 'rgba(255, 255, 255, .2)'
+                : 'rgba(0, 0, 0, .2)',
+          },
+        }}
+        className="nodrag nopan"
+      >
+        {t_i18n('View all')}
+      </Button>
+      <Handle
+        style={{ visibility: 'hidden' }}
+        type="target"
+        position={position}
+        isConnectable={false}
+      />
     </div>
   );
 };
