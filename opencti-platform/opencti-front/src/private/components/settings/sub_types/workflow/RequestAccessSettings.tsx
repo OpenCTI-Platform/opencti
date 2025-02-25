@@ -11,18 +11,18 @@ import ItemStatusTemplate from '../../../../../components/ItemStatusTemplate';
 import { RequestAccessSettings_requestAccess$key } from './__generated__/RequestAccessSettings_requestAccess.graphql';
 
 const requestAccessSettingsFragment = graphql`
-    fragment RequestAccessSettings_requestAccess on SubType {
-        statusesRequestAccess {
-            id
-            order
-            scope
-            template {
-                id
-                name
-                color
-            }
-        }
+  fragment RequestAccessSettings_requestAccess on SubType {
+    statusesRequestAccess {
+      id
+      order
+      scope
+      template {
+        id
+        name
+        color
+      }
     }
+  }
 `;
 
 interface RequestAccessSettingsProps {

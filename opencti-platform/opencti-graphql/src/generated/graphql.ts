@@ -2564,6 +2564,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  requestAccessConfiguration?: Maybe<RequestAccessConfiguration>;
   revoked: Scalars['Boolean']['output'];
   severity?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
@@ -33952,6 +33953,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRfiRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseRfiReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

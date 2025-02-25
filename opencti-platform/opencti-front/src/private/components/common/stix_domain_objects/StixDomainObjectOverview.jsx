@@ -168,18 +168,13 @@ const StixDomainObjectOverview = ({
     : stixDomainObject.x_opencti_reliability;
 
   let requestAccess = null;
-  let isRequestAccessNew = false;
-  let acceptButtonColor = '#555';
-  let declineButtonColor = '#555';
+
+  const approvedButtonColor = stixDomainObject.requestAccessConfiguration?.approved_status?.template?.color;
+  const declineButtonColor = stixDomainObject.requestAccessConfiguration?.declined_status?.template?.color;
 
   if (stixDomainObject.x_opencti_request_access) {
     requestAccess = JSON.parse(stixDomainObject.x_opencti_request_access);
     // see RequestAccessAction interface in backend
-    // Find action status that correspond to current RFI status.
-    const currentActionStatus = requestAccess.workflowMapping.find((status) => status.rfiStatusId === stixDomainObject.status.id);
-    isRequestAccessNew = currentActionStatus && currentActionStatus.actionStatus === 'NEW';
-    acceptButtonColor = requestAccess.acceptColor ?? '#555';
-    declineButtonColor = requestAccess.declineColor ?? '#555';
   }
 
   const onSubmitValidateRequestAccess = () => {
@@ -233,12 +228,11 @@ const StixDomainObjectOverview = ({
                     status={stixDomainObject.status}
                     disabled={!stixDomainObject.workflowEnabled}
                   />
-                  {isRequestAccessNew && (
                   <div>
                     <Button
                       color="primary"
                       variant="outlined"
-                      style={{ marginRight: 10, color: acceptButtonColor, borderColor: acceptButtonColor }}
+                      style={{ marginRight: 10, color: approvedButtonColor, borderColor: approvedButtonColor }}
                       onClick={onSubmitValidateRequestAccess}
                     >
                       {t_i18n('Validate')}
@@ -251,7 +245,7 @@ const StixDomainObjectOverview = ({
                     >
                       {t_i18n('Decline')}
                     </Button>
-                  </div>)}
+                  </div>
                 </div>
                 <Divider style={{ marginTop: 20 }}/>
               </Grid>

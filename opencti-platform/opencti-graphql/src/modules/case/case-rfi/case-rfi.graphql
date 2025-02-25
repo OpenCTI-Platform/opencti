@@ -168,6 +168,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   priority: String
   x_opencti_request_access: String
   x_opencti_workflow_id: String
+  requestAccessConfiguration: RequestAccessConfiguration
 }
 
 # Ordering

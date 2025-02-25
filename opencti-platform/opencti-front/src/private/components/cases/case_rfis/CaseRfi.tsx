@@ -89,6 +89,18 @@ const caseRfiFragment = graphql`
     }
     workflowEnabled
     x_opencti_request_access
+    requestAccessConfiguration {
+      approved_status {
+        template {
+          color
+        }
+      }
+      declined_status {
+        template {
+          color
+        }
+      }
+    }
     ...CaseRfiDetails_case
     ...ContainerStixObjectsOrStixRelationships_container
   }
