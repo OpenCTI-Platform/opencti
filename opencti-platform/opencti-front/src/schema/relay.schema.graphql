@@ -10652,6 +10652,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   severity: String
   priority: String
   x_opencti_request_access: String
+  requestAccessConfiguration: RequestAccessConfiguration
   x_opencti_workflow_id: String
   requestAccessConfiguration: RequestAccessConfiguration
 }
