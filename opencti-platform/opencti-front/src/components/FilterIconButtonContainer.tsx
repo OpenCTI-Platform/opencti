@@ -9,7 +9,15 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
-import { convertOperatorToIcon, filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
+import {
+  convertOperatorToIcon,
+  filterOperatorsWithIcon,
+  FilterSearchContext,
+  FiltersRestrictions,
+  isFilterEditable,
+  isRegardingOfFilterWarning,
+  useFilterDefinition
+} from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
@@ -282,12 +290,15 @@ FilterIconButtonContainerProps
         );
         const isNotLastFilter = index < displayedFilters.length - 1;
 
+        console.log('currentFilter', currentFilter);
+        const displayFilterWarning = isRegardingOfFilterWarning(currentFilter);
+        console.log('displayFilterWarning', displayFilterWarning);
         const chipVariant = currentFilter.values.length === 0 && !['nil', 'not_nil'].includes(filterOperator ?? 'eq')
           ? 'outlined'
           : 'filled';
         // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
         const chipSx = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled'
-          ? { bgcolor: `${chipColor}.dark` }
+          ? { bgcolor: `${displayFilterWarning ? 'warning' : chipColor}.dark` }
           : undefined;
         const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
           && isFilterEditable(filtersRestrictions, filterKey, filterValues);
@@ -333,7 +344,7 @@ FilterIconButtonContainerProps
                       redirection={redirection}
                       onClickLabel={(event) => handleChipClick(event, currentFilter?.id)}
                       isReadWriteFilter={isReadWriteFilter}
-                      chipColor={chipColor}
+                      chipColor={displayFilterWarning ? 'warning' : chipColor}
                       entityTypes={entityTypes}
                       filtersRestrictions={filtersRestrictions}
                     />

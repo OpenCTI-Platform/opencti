@@ -972,3 +972,25 @@ export const cleanFilters = (filters: FilterGroup, helpers: handleFilterHelpers,
   const filtersToRemoveIds = allListedFilters.filter((f) => !newAvailableFilterKeys.includes(f.key)).map((f) => f.id ?? '');
   filtersToRemoveIds.forEach((id) => helpers.handleRemoveFilterById(id));
 };
+
+export const isRegardingOfFilterWarning = (filter: Filter) => {
+  if (filter.key === 'regardingOf') {
+    const relationshipTypes: string[] = filter.values.filter((v) => v.key === 'relationship_type').map((f) => f.values).flat();
+    console.log('relationshipTypes', relationshipTypes);
+    const entitiesValues: string[] = filter.values.filter((v) => v.key === 'id').map((f) => f.values).flat();
+    if (relationshipTypes.includes('targets')) {
+      return true;
+    }
+    if (relationshipTypes.includes('located-at')) {
+      return true;
+    }
+    if (relationshipTypes.includes('related-to')) {
+      return true;
+    }
+    if (relationshipTypes.includes('indicates')) {
+      return true;
+    }
+    return false;
+  }
+  return false;
+};
