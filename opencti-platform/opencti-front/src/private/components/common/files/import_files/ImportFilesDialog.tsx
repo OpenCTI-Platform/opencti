@@ -70,13 +70,13 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
   const [commitGlobal] = useApiMutation<ImportFilesDialogGlobalMutation>(
     importFilesDialogGlobalMutation,
     undefined,
-    { successMessage: `${t_i18n('files')} ${t_i18n('successfully uploaded')}` },
+    { successMessage: t_i18n('files successfully uploaded') },
   );
 
   const [commitEntity] = useApiMutation<ImportFilesDialogEntityMutation>(
     importFilesDialogEntityMutation,
     undefined,
-    { successMessage: `${t_i18n('files')} ${t_i18n('successfully uploaded')}` },
+    { successMessage: t_i18n('files successfully uploaded') },
   );
 
   const {

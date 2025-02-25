@@ -31,57 +31,58 @@ const ImportFilesFreeText = ({ onSumbit, onClose }: { onSumbit: (file: File) => 
     resetForm();
   };
 
-  return (<Formik<FileFreeTextType>
-    enableReinitialize={true}
-    initialValues={{
-      content: '',
-    }}
-    onSubmit={createFileFreeText}
+  return (
+    <Formik<FileFreeTextType>
+      enableReinitialize={true}
+      initialValues={{
+        content: '',
+      }}
+      onSubmit={createFileFreeText}
+    >
+      {({ handleReset, submitForm, isSubmitting, values }) => {
+        return (
+          <Box sx={{
+            paddingInline: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: theme.spacing(4),
+          }}
           >
-    {({ handleReset, submitForm, isSubmitting, values }) => {
-      return (
-        <Box sx={{
-          paddingInline: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: theme.spacing(4),
-        }}
-        >
-          <Field
-            as={TextField}
-            label={t_i18n('Content')}
-            fullWidth
-            multiline
-            autoFocus
-            name="content"
-            rows="10"
-            variant="standard"
-            InputProps={{ sx: { background: theme.palette.background.paper } }}
-            InputLabelProps={{ shrink: true }}
-          />
-          <Box sx={{ display: 'flex', marginLeft: 'auto' }}>
-            <Button
-              disabled={isSubmitting}
-              onClick={() => {
-                handleReset();
-                onClose();
-              }}
-            >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              disabled={isSubmitting || values.content.length === 0}
-              onClick={submitForm}
-            >
-              {t_i18n('Create file')}
-            </Button>
-          </Box>
-        </Box>);
-    }}
-  </Formik>);
+            <Field
+              as={TextField}
+              label={t_i18n('Content')}
+              fullWidth
+              multiline
+              autoFocus
+              name="content"
+              rows="10"
+              variant="standard"
+              InputProps={{ sx: { background: theme.palette.background.paper } }}
+              InputLabelProps={{ shrink: true }}
+            />
+            <Box sx={{ display: 'flex', marginLeft: 'auto' }}>
+              <Button
+                disabled={isSubmitting}
+                onClick={() => {
+                  handleReset();
+                  onClose();
+                }}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                color="secondary"
+                disabled={isSubmitting || values.content.length === 0}
+                onClick={submitForm}
+              >
+                {t_i18n('Create file')}
+              </Button>
+            </Box>
+          </Box>);
+      }}
+    </Formik>);
 };
 
 export default ImportFilesFreeText;
