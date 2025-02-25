@@ -33,7 +33,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
+import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from '../../../utils/SearchUtils';
 import octiDark from '../../../static/images/xtm/octi_dark.png';
 import octiLight from '../../../static/images/xtm/octi_light.png';
 import obasDark from '../../../static/images/xtm/obas_dark.png';
@@ -237,10 +237,11 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           search: searchKeyword,
         },
         onCompleted: (response: TopBarAskAINLQMutation$data) => {
-          console.log('response', response);
+          console.log('response.aiNLQ', response.aiNLQ);
+          handleSearchByFilter('knowledge', navigate, response.aiNLQ);
         },
         onError: (error: Error) => {
-          console.log('error', error);
+          console.log('error', error); // TODO
         },
       });
     } else {
