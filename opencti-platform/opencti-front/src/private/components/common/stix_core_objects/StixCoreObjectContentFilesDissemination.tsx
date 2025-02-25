@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Box, Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { graphql } from 'react-relay';
@@ -8,6 +8,8 @@ import * as Yup from 'yup';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useTheme } from '@mui/styles';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import DisseminationListField from '../../../../components/fields/DisseminationListField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
@@ -21,6 +23,7 @@ interface StixCoreObjectContentFilesDisseminationProps {
   entityId: string;
   fileId: string;
   fileName: string;
+  fileType: string;
   onClose: () => void;
 }
 
@@ -43,15 +46,18 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   fileId,
   entityId,
   fileName,
+  fileType,
   onClose,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const [useFileContent, setUseFileContent] = useState(false);
+  const [useOctiTemplate, setUseOctiTemplate] = useState(true);
 
   const basicShape = {
     disseminationListId: Yup.string().required(t_i18n('This field is required')),
     emailObject: Yup.string().required(t_i18n('This field is required')),
-    emailBody: Yup.string().required(t_i18n('This field is required')),
+    emailBody: useFileContent ? Yup.string() : Yup.string().required(t_i18n('This field is required')),
   };
   const validator = Yup.object().shape(basicShape);
   const [commitMutation, inProgress] = useApiMutation(
@@ -75,9 +81,11 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
         id: values.disseminationListId,
         input: {
           entity_id: entityId,
+          use_octi_template: useOctiTemplate,
           email_object: values.emailObject,
           email_body: emailBodyFormatted,
-          email_attachment_ids: [fileId],
+          email_attachment_ids: useFileContent ? [] : [fileId],
+          html_to_body_file_id: useFileContent ? fileId : undefined,
         },
       },
       onCompleted: () => {
@@ -106,6 +114,17 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
     >
       {({ isSubmitting, submitForm, handleReset }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <FormControlLabel
+            style={{ marginBottom: theme.spacing(2) }}
+            control={
+              <Switch
+                checked={useOctiTemplate}
+                onChange={() => setUseOctiTemplate(!useOctiTemplate)}
+                color="primary"
+              />
+              }
+            label={t_i18n('Use OpenCTI template')}
+          />
           <DisseminationListField/>
           <Field
             component={TextField}
@@ -115,6 +134,22 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             required
             style={fieldSpacingContainerStyle}
           />
+          {fileType === 'text/html' && (
+            <FormControlLabel
+              style={{
+                marginTop: theme.spacing(2),
+              }}
+              control={
+                <Switch
+                  checked={useFileContent}
+                  onChange={() => setUseFileContent(!useFileContent)}
+                  color="primary"
+                />
+                }
+              label={t_i18n('Use file content as email body')}
+            />
+          )}
+          {!useFileContent && (
           <Field
             component={MarkdownField}
             label={t_i18n('Email body')}
@@ -125,6 +160,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             required
             style={fieldSpacingContainerStyle}
           />
+          )}
           <Field
             component={TextField}
             label={t_i18n('File')}

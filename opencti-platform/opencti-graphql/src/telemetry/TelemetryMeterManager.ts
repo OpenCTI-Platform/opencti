@@ -22,6 +22,8 @@ export class TelemetryMeterManager {
   // Number of active connectors
   activeConnectorsCount = 0;
 
+  disseminationCount = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -50,6 +52,10 @@ export class TelemetryMeterManager {
     this.activeConnectorsCount = n;
   }
 
+  addDisseminationCount() {
+    this.disseminationCount += 1;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
@@ -69,5 +75,6 @@ export class TelemetryMeterManager {
     this.registerGauge('total_instances_count', 'cluster number of instances', 'instancesCount');
     this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
+    this.registerGauge('call_dissemination', 'dissemination feature usage', 'disseminationCount');
   }
 }

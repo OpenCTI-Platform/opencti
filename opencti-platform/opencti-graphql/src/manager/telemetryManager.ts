@@ -38,6 +38,8 @@ const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
 const TELEMETRY_COUNT_ACTIVE_USERS = isFeatureEnabled('TELEMETRY_COUNT_ACTIVE_USERS');
 
+let filigranTelemetryMeterManager: TelemetryMeterManager;
+
 const telemetryInitializer = async (): Promise<HandlerInput> => {
   const context = executionContext('telemetry_manager');
   const filigranMetricReaders = [];
@@ -99,9 +101,15 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   });
   const resource = Resource.default().merge(filigranResource);
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));
-  const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
+  filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
   filigranTelemetryMeterManager.registerFiligranTelemetry();
   return filigranTelemetryMeterManager;
+};
+
+export const addDisseminationCount = () => {
+  if (filigranTelemetryMeterManager) {
+    filigranTelemetryMeterManager.addDisseminationCount();
+  }
 };
 
 const fetchTelemetryData = async (manager: TelemetryMeterManager) => {

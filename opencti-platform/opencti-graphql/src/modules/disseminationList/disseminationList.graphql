@@ -29,7 +29,7 @@ type DisseminationListEdge {
 
 # Queries
 type Query {
-  disseminationList(id: String!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
+  disseminationList(id: ID!): DisseminationList @auth(for: [SETTINGS_SETDISSEMINATION])
   disseminationLists(
     first: Int
     after: ID
@@ -48,9 +48,11 @@ input DisseminationListAddInput {
 
 input DisseminationListSendInput {
   entity_id: ID!
+  use_octi_template: Boolean!
   email_object: String!
   email_body: String!
   email_attachment_ids: [ID!]!
+  html_to_body_file_id: ID
 }
 
 type Mutation {
