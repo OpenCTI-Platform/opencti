@@ -380,6 +380,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     x_opencti_request_access: `${JSON.stringify(action)}`,
     authorized_members,
     x_opencti_workflow_id: firstStatus.id,
+    revoked: false
   };
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
   logApp.info(`[OPENCTI-MODULE][Request access] - RFI created with id=${requestForInformation.id}`);
