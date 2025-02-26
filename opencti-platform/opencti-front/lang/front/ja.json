@@ -2986,6 +2986,7 @@
   "The value must not be empty": "値は空であってはならない",
   "The value must not be empty.": "値は空であってはならない。",
   "The values do not match": "値が一致しません",
+  "The values must be different.": "値は異なっていなければならない。",
   "The variable name should not contain spaces": "変数名にスペースを含んではならない",
   "The variable name should not contain special characters": "変数名に特殊文字を含んではならない",
   "The widget is not called in the content": "ウィジェットはコンテンツ内で呼び出されない",

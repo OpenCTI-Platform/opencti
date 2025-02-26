@@ -2986,6 +2986,7 @@
   "The value must not be empty": "값이 비어 있지 않아야 합니다",
   "The value must not be empty.": "값이 비어 있지 않아야 합니다.",
   "The values do not match": "값이 일치하지 않습니다",
+  "The values must be different.": "값이 달라야 합니다.",
   "The variable name should not contain spaces": "변수 이름에 공백이 없어야 합니다",
   "The variable name should not contain special characters": "변수 이름에는 특수 문자를 포함하지 않아야 합니다",
   "The widget is not called in the content": "콘텐츠에서 위젯이 호출되지 않음",

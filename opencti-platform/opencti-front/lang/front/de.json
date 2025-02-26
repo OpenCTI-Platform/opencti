@@ -2986,6 +2986,7 @@
   "The value must not be empty": "Der Wert darf nicht leer sein",
   "The value must not be empty.": "Der Wert darf nicht leer sein.",
   "The values do not match": "Die Werte stimmen nicht überein",
+  "The values must be different.": "Die Werte müssen unterschiedlich sein.",
   "The variable name should not contain spaces": "Der Variablenname sollte keine Leerzeichen enthalten",
   "The variable name should not contain special characters": "Der Variablenname sollte keine Sonderzeichen enthalten",
   "The widget is not called in the content": "Das Widget wird nicht im Inhalt aufgerufen",

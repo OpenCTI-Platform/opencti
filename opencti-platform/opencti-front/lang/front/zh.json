@@ -2986,6 +2986,7 @@
   "The value must not be empty": "值不能为空",
   "The value must not be empty.": "值不能为空。",
   "The values do not match": "该值不匹配",
+  "The values must be different.": "数值必须不同。",
   "The variable name should not contain spaces": "变量名不应包含空格",
   "The variable name should not contain special characters": "变量名不应包含特殊字符",
   "The widget is not called in the content": "在内容中不调用部件",
