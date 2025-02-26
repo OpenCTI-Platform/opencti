@@ -1,8 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { now } from 'moment';
 import type { AuthUser } from '../../../src/types/user';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
-import { AMBER_GROUP, GREEN_GROUP, PLATFORM_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { AMBER_GROUP, GREEN_GROUP, PLATFORM_ORGANIZATION, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { DEFAULT_ROLE, SYSTEM_USER } from '../../../src/utils/access';
 import type { CaseRfiAddInput } from '../../../src/generated/graphql';
@@ -45,13 +46,17 @@ describe('Middleware test coverage on organization sharing verification', () => 
 
   it('should RFI under group X org authorized members be protected', async () => {
     const rfiInput: CaseRfiAddInput = {
-      name: 'CaseRFI',
-      created: '2025-02-25T17:15:38+01:00',
+      name: 'CaseRFI no group restriction IDs',
+      created: now(),
       authorized_members: [
         {
           id: platformOrganizationEntity.id,
           access_right: 'admin',
-          groups_restriction_ids: [greenGroup.id]
+
+        },
+        {
+          id: USER_EDITOR.id,
+          access_right: 'view',
         },
       ],
       revoked: false
