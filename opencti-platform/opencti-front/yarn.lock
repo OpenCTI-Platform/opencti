@@ -4197,6 +4197,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mui/styles@npm:5.16.13":
+  version: 5.16.13
+  resolution: "@mui/styles@npm:5.16.13"
+  dependencies:
+    "@babel/runtime": "npm:^7.23.9"
+    "@emotion/hash": "npm:^0.9.1"
+    "@mui/private-theming": "npm:^5.16.13"
+    "@mui/types": "npm:^7.2.15"
+    "@mui/utils": "npm:^5.16.13"
+    clsx: "npm:^2.1.0"
+    csstype: "npm:^3.1.3"
+    hoist-non-react-statics: "npm:^3.3.2"
+    jss: "npm:^10.10.0"
+    jss-plugin-camel-case: "npm:^10.10.0"
+    jss-plugin-default-unit: "npm:^10.10.0"
+    jss-plugin-global: "npm:^10.10.0"
+    jss-plugin-nested: "npm:^10.10.0"
+    jss-plugin-props-sort: "npm:^10.10.0"
+    jss-plugin-rule-value-function: "npm:^10.10.0"
+    jss-plugin-vendor-prefixer: "npm:^10.10.0"
+    prop-types: "npm:^15.8.1"
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/d097500206b7c886554f49761532a5c35cdf346b0ffd170feafd930dbcdbab137d4ff9a38e5ecad599b8e09a2e1e235808675b6f857dc2bb06f9db0c51ef8e8a
+  languageName: node
+  linkType: hard
+
 "@mui/styles@npm:5.16.14":
   version: 5.16.14
   resolution: "@mui/styles@npm:5.16.14"
@@ -4732,7 +4763,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-avatar@npm:^1.1.3":
+"@radix-ui/react-avatar@npm:1.1.3":
   version: 1.1.3
   resolution: "@radix-ui/react-avatar@npm:1.1.3"
   dependencies:
@@ -12199,17 +12230,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filigran-ui@npm:0.32.1":
-  version: 0.32.1
-  resolution: "filigran-ui@npm:0.32.1"
+"filigran-ui@npm:0.34.4":
+  version: 0.34.4
+  resolution: "filigran-ui@npm:0.34.4"
   dependencies:
     "@dnd-kit/core": "npm:6.1.0"
     "@dnd-kit/modifiers": "npm:7.0.0"
     "@dnd-kit/sortable": "npm:8.0.0"
     "@hookform/resolvers": "npm:3.6.0"
+    "@mui/styles": "npm:5.16.13"
     "@radix-ui/react-accordion": "npm:1.2.0"
     "@radix-ui/react-alert-dialog": "npm:1.1.1"
-    "@radix-ui/react-avatar": "npm:^1.1.3"
+    "@radix-ui/react-avatar": "npm:1.1.3"
     "@radix-ui/react-checkbox": "npm:1.1.1"
     "@radix-ui/react-dialog": "npm:1.1.1"
     "@radix-ui/react-dropdown-menu": "npm:2.1.1"
@@ -12227,15 +12259,19 @@ __metadata:
     cmdk: "npm:1.0.0"
     embla-carousel-react: "npm:8.5.2"
     filigran-icon: "npm:^0.10.0"
+    ramda: "npm:0.30.1"
+    react-color: "npm:2.19.3"
     react-easy-sort: "npm:1.6.0"
     react-hook-form: "npm:7.52.0"
+    react-router-dom: "npm:7.1.5"
     tailwind-merge: "npm:2.3.0"
     tailwindcss-animate: "npm:1.0.7"
+    usehooks-ts: "npm:3.1.0"
     zod: "npm:3.23.8"
   peerDependencies:
     react: ^16.8 || ^17.0 || ^18.0 || ^19.0
     react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0
-  checksum: 10/70252537bcd2aa3dc7e6523f9182a7487c21acf2a7642d8db06557970e8ca7a9b96c9b511704a5c855b83c9be0b47bc3457eca28b4030f9f4b85253f75803963
+  checksum: 10/3629ec760cfa2a31a5b852f3144e066ef87b22409d154c260c530c508ac17a2b753d2f529bf5226cb138c39324b7782e22384c176fef97c24c7b8722628e4eb0
   languageName: node
   linkType: hard
 
@@ -16861,7 +16897,7 @@ __metadata:
     express: "npm:4.21.2"
     extract-files: "npm:13.0.0"
     filigran-icon: "npm:0.14.0"
-    filigran-ui: "npm:0.32.1"
+    filigran-ui: "npm:0.34.4"
     formik: "npm:2.4.6"
     formik-mui: "npm:5.0.0-alpha.0"
     formik-mui-lab: "npm:1.0.0"
@@ -18212,6 +18248,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-router-dom@npm:7.1.5":
+  version: 7.1.5
+  resolution: "react-router-dom@npm:7.1.5"
+  dependencies:
+    react-router: "npm:7.1.5"
+  peerDependencies:
+    react: ">=18"
+    react-dom: ">=18"
+  checksum: 10/caf34daec7ef6fdd4043dd56295fe6d5de4a2bfbbd650897b8cde23571a51f73f2b0ef2681a55f46ef524dc7e360b1f6c55d5b5bb1875196b48917042b52d82d
+  languageName: node
+  linkType: hard
+
 "react-router@npm:6.29.0":
   version: 6.29.0
   resolution: "react-router@npm:6.29.0"
@@ -18220,6 +18268,24 @@ __metadata:
   peerDependencies:
     react: ">=16.8"
   checksum: 10/c3d0ce685a74818bf904900a6a9172eab7470d92df46804563743f666759cb3395f46743c784d51be57d878f84188ddf4477c3b5f029b6132e59692b8e3dc1ef
+  languageName: node
+  linkType: hard
+
+"react-router@npm:7.1.5":
+  version: 7.1.5
+  resolution: "react-router@npm:7.1.5"
+  dependencies:
+    "@types/cookie": "npm:^0.6.0"
+    cookie: "npm:^1.0.1"
+    set-cookie-parser: "npm:^2.6.0"
+    turbo-stream: "npm:2.4.0"
+  peerDependencies:
+    react: ">=18"
+    react-dom: ">=18"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+  checksum: 10/3802ff0e0419aa53c1824b1ad2ebac6facb918306c67ff64ed86b5cbc49197c15f077b84e425f57beb24dd01cd5818a100da5269b8e160deee62b06fda008b56
   languageName: node
   linkType: hard
 
@@ -19215,6 +19281,13 @@ __metadata:
   version: 2.0.0
   resolution: "set-blocking@npm:2.0.0"
   checksum: 10/8980ebf7ae9eb945bb036b6e283c547ee783a1ad557a82babf758a065e2fb6ea337fd82cac30dd565c1e606e423f30024a19fff7afbf4977d784720c4026a8ef
+  languageName: node
+  linkType: hard
+
+"set-cookie-parser@npm:^2.6.0":
+  version: 2.7.1
+  resolution: "set-cookie-parser@npm:2.7.1"
+  checksum: 10/c92b1130032693342bca13ea1b1bc93967ab37deec4387fcd8c2a843c0ef2fd9a9f3df25aea5bb3976cd05a91c2cf4632dd6164d6e1814208fb7d7e14edd42b4
   languageName: node
   linkType: hard
 
@@ -20448,6 +20521,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"turbo-stream@npm:2.4.0":
+  version: 2.4.0
+  resolution: "turbo-stream@npm:2.4.0"
+  checksum: 10/7079bbc82b58340f783144cd669cc7e598288523103a8d68bb8a4c6bb28c64eccb71d389b33aab07788d3a9030638b795709e15cb8486f722b1cdac59cb58afc
+  languageName: node
+  linkType: hard
+
 "turndown-plugin-gfm@npm:1.0.2":
   version: 1.0.2
   resolution: "turndown-plugin-gfm@npm:1.0.2"
@@ -21076,6 +21156,17 @@ __metadata:
   version: 3.1.1
   resolution: "use@npm:3.1.1"
   checksum: 10/08a130289f5238fcbf8f59a18951286a6e660d17acccc9d58d9b69dfa0ee19aa038e8f95721b00b432c36d1629a9e32a464bf2e7e0ae6a244c42ddb30bdd8b33
+  languageName: node
+  linkType: hard
+
+"usehooks-ts@npm:3.1.0":
+  version: 3.1.0
+  resolution: "usehooks-ts@npm:3.1.0"
+  dependencies:
+    lodash.debounce: "npm:^4.0.8"
+  peerDependencies:
+    react: ^16.8.0  || ^17 || ^18
+  checksum: 10/6aef8affd3c053a3040b7421816dab85eb21601c5203496a705bafc32eb973fb519a2b0ddda527962e361d248f3a1c49df130620efe871c8f89e897451ed1cc7
   languageName: node
   linkType: hard
 
