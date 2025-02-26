@@ -443,7 +443,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           {filterOperator === 'within'
             && <div style={{ width: 150, display: 'inline-flex' }}>
               <div style={{
-                borderLeft: '0.5px solid',
+                color: 'disabled',
+                borderLeft: '1px solid',
                 marginLeft: '10px',
                 marginTop: '10px',
                 marginBottom: '10px',
