@@ -1,5 +1,5 @@
 import Chart from '@components/common/charts/Chart';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { heatMapOptions } from '../../utils/Charts';
@@ -55,38 +55,42 @@ const WidgetMultiHeatMap = ({
   const theme = useTheme<Theme>();
   const { fsd } = useFormatter();
 
-  const interval = Math.trunc((maxValue - minValue) / 9);
-  const colorRanges = Array(10)
-    .fill(0)
-    .map((_, i) => ({
-      from:
+  const options: ApexOptions = useMemo(() => {
+    const interval = Math.trunc((maxValue - minValue) / 9);
+    const colorRanges = Array(10)
+      .fill(0)
+      .map((_, i) => ({
+        from:
         minValue + (i + 1) * interval - interval === 0
           ? 1
           : minValue + (i + 1) * interval - interval,
-      to: minValue + (i + 1) * interval,
-      color:
+        to: minValue + (i + 1) * interval,
+        color:
         theme.palette.mode === 'dark'
           ? darkColors[i + 1]
           : lightColors[i + 1],
-    }));
-  colorRanges.push({
-    from: 0,
-    to: 0,
-    color:
+      }));
+    colorRanges.push({
+      from: 0,
+      to: 0,
+      color:
       theme.palette.mode === 'dark' ? darkColors[0] : lightColors[0],
-  });
+    });
+
+    return heatMapOptions(
+      theme,
+      true,
+      fsd,
+      undefined,
+      undefined,
+      isStacked,
+      colorRanges,
+    ) as ApexOptions;
+  }, [maxValue, minValue]);
 
   return (
     <Chart
-      options={heatMapOptions(
-        theme,
-        true,
-        fsd,
-        undefined,
-        undefined,
-        isStacked,
-        colorRanges,
-      ) as ApexOptions}
+      options={options}
       series={data}
       type="heatmap"
       width="100%"

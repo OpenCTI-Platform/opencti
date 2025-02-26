@@ -1,5 +1,5 @@
 import Chart from '@components/common/charts/Chart';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { polarAreaChartOptions } from '../../utils/Charts';
@@ -22,19 +22,24 @@ const WidgetPolarArea = ({
   const theme = useTheme<Theme>();
   const { buildWidgetLabelsOption, buildWidgetColorsOptions } = useDistributionGraphData();
 
-  const chartData = data.flatMap((n) => (n ? (n.value ?? 0) : []));
-  const labels = buildWidgetLabelsOption(data, groupBy);
-  const colors = buildWidgetColorsOptions(data, groupBy);
+  const chartData = useMemo(() => data.flatMap((n) => (n ? (n.value ?? 0) : [])), [data]);
+
+  const options: ApexOptions = useMemo(() => {
+    const labels = buildWidgetLabelsOption(data, groupBy);
+    const colors = buildWidgetColorsOptions(data, groupBy);
+
+    return polarAreaChartOptions(
+      theme,
+      labels,
+      undefined,
+      'bottom',
+      colors,
+    ) as ApexOptions;
+  }, [data, groupBy]);
 
   return (
     <Chart
-      options={polarAreaChartOptions(
-        theme,
-        labels,
-        undefined,
-        'bottom',
-        colors,
-      ) as ApexOptions}
+      options={options}
       series={chartData}
       type="polarArea"
       width="100%"

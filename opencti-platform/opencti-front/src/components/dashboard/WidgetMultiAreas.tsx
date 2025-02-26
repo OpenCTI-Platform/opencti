@@ -1,7 +1,7 @@
 import { useTheme } from '@mui/styles';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import { areaChartOptions } from '../../utils/Charts';
@@ -27,25 +27,29 @@ const WidgetMultiAreas = ({
   const theme = useTheme<Theme>();
   const { fsd, mtdy, yd } = useFormatter();
 
-  let formatter = fsd;
-  if (interval === 'month' || interval === 'quarter') {
-    formatter = mtdy;
-  }
-  if (interval === 'year') {
-    formatter = yd;
-  }
+  const options: ApexOptions = useMemo(() => {
+    let formatter = fsd;
+    if (interval === 'month' || interval === 'quarter') {
+      formatter = mtdy;
+    }
+    if (interval === 'year') {
+      formatter = yd;
+    }
+
+    return areaChartOptions(
+      theme,
+      !interval || ['day', 'week'].includes(interval),
+      formatter,
+      simpleNumberFormat,
+      interval && !['day', 'week'].includes(interval) ? 'dataPoints' : undefined,
+      isStacked,
+      hasLegend,
+    ) as ApexOptions;
+  }, []);
 
   return (
     <Chart
-      options={areaChartOptions(
-        theme,
-        !interval || ['day', 'week'].includes(interval),
-        formatter,
-        simpleNumberFormat,
-        interval && !['day', 'week'].includes(interval) ? 'dataPoints' : undefined,
-        isStacked,
-        hasLegend,
-      ) as ApexOptions}
+      options={options}
       series={series}
       type="area"
       width="100%"

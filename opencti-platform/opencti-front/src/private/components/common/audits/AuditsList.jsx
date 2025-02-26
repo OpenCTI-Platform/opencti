@@ -103,10 +103,10 @@ const auditsListQuery = graphql`
 `;
 
 const AuditsList = ({
-  variant = null,
+  variant,
   height,
-  startDate = null,
-  endDate = null,
+  startDate,
+  endDate,
   dataSelection,
   parameters = {},
 }) => {

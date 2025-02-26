@@ -1,5 +1,5 @@
 import Chart from '@components/common/charts/Chart';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { useFormatter } from '../i18n';
@@ -26,26 +26,31 @@ const WidgetTree = ({
   const theme = useTheme();
   const { t_i18n } = useFormatter();
 
-  const chartData = data.map((n) => {
-    const item = { x: n.label, y: n.value };
-    if (isFieldForIdentifier(groupBy)) {
-      item.x = getMainRepresentative(n.entity);
-    } else if (groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
-      item.x = t_i18n(`entity_${n.label}`);
-    }
-    return item;
-  });
+  const series = useMemo(() => {
+    const chartData = data.map((n) => {
+      const item = { x: n.label, y: n.value };
+      if (isFieldForIdentifier(groupBy)) {
+        item.x = getMainRepresentative(n.entity);
+      } else if (groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
+        item.x = t_i18n(`entity_${n.label}`);
+      }
+      return item;
+    });
+    return [{ data: chartData }];
+  }, [data, groupBy]);
 
-  const series = [{ data: chartData }];
+  const options: ApexOptions = useMemo(() => {
+    return treeMapOptions(
+      theme,
+      simpleNumberFormat,
+      'bottom',
+      isDistributed,
+    ) as ApexOptions;
+  }, [isDistributed]);
 
   return (
     <Chart
-      options={treeMapOptions(
-        theme,
-        simpleNumberFormat,
-        'bottom',
-        isDistributed,
-      ) as ApexOptions}
+      options={options}
       series={series}
       type="treemap"
       width="100%"
