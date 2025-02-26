@@ -3751,6 +3751,9 @@ export type Connector = BasicObject & InternalObject & {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  manager_contract_configuration?: Maybe<Array<ConnectorContractConfiguration>>;
+  manager_id?: Maybe<Scalars['String']['output']>;
+  manager_status?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   only_contextual?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -3781,6 +3784,12 @@ export type ConnectorConfiguration = {
   configuration: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+};
+
+export type ConnectorContractConfiguration = {
+  __typename?: 'ConnectorContractConfiguration';
+  key: Scalars['String']['output'];
+  value: Scalars['String']['output'];
 };
 
 export type ConnectorInfo = {
@@ -31316,6 +31325,7 @@ export type ResolversTypes = ResolversObject<{
   Connector: ResolverTypeWrapper<Omit<Connector, 'configurations' | 'connector_user' | 'works'> & { configurations?: Maybe<Array<ResolversTypes['ConnectorConfiguration']>>, connector_user?: Maybe<ResolversTypes['User']>, works?: Maybe<Array<Maybe<ResolversTypes['Work']>>> }>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
   ConnectorConfiguration: ResolverTypeWrapper<ConnectorConfiguration>;
+  ConnectorContractConfiguration: ResolverTypeWrapper<ConnectorContractConfiguration>;
   ConnectorInfo: ResolverTypeWrapper<ConnectorInfo>;
   ConnectorInfoInput: ConnectorInfoInput;
   ConnectorMetadata: ResolverTypeWrapper<ConnectorMetadata>;
@@ -32179,6 +32189,7 @@ export type ResolversParentTypes = ResolversObject<{
   Connector: Omit<Connector, 'configurations' | 'connector_user' | 'works'> & { configurations?: Maybe<Array<ResolversParentTypes['ConnectorConfiguration']>>, connector_user?: Maybe<ResolversParentTypes['User']>, works?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>> };
   ConnectorConfig: ConnectorConfig;
   ConnectorConfiguration: ConnectorConfiguration;
+  ConnectorContractConfiguration: ConnectorContractConfiguration;
   ConnectorInfo: ConnectorInfo;
   ConnectorInfoInput: ConnectorInfoInput;
   ConnectorMetadata: ConnectorMetadata;
@@ -34046,6 +34057,9 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ConnectorContractConfiguration']>>, ParentType, ContextType>;
+  manager_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  manager_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   only_contextual?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -34071,6 +34085,12 @@ export type ConnectorConfigurationResolvers<ContextType = any, ParentType extend
   configuration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ConnectorContractConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorContractConfiguration'] = ResolversParentTypes['ConnectorContractConfiguration']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -42380,6 +42400,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;
+  ConnectorContractConfiguration?: ConnectorContractConfigurationResolvers<ContextType>;
   ConnectorInfo?: ConnectorInfoResolvers<ContextType>;
   ConnectorMetadata?: ConnectorMetadataResolvers<ContextType>;
   ConnectorQueueDetails?: ConnectorQueueDetailsResolvers<ContextType>;

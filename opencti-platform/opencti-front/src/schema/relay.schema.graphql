@@ -1992,6 +1992,11 @@ type ConnectorQueueDetails {
   messages_size: Float!
 }
 
+type ConnectorContractConfiguration {
+  key: String!
+  value: String!
+}
+
 type Connector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
@@ -2019,6 +2024,9 @@ type Connector implements BasicObject & InternalObject {
   works(status: String): [Work]
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
+  manager_id: String
+  manager_status: String
+  manager_contract_configuration: [ConnectorContractConfiguration!]
 }
 
 type RuleExecutionError {
