@@ -38,6 +38,20 @@ export const connectors = async (context, user) => {
   return map((conn) => completeConnector(conn), [...elements, ...builtInElements]);
 };
 
+export const connectorsForManager = async (context, user, managerId) => {
+  const args = {
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'manager_id', values: [managerId] }],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+    connectionFormat: false
+  };
+  const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], args);
+  return map((conn) => completeConnector(conn), elements);
+};
+
 export const connectorsForWorker = async (context, user) => {
   // Expose connectors
   const registeredConnectors = await connectors(context, user);

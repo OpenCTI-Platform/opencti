@@ -19710,6 +19710,7 @@ export type Query = {
   connectorsForAnalysis?: Maybe<Array<Maybe<Connector>>>;
   connectorsForExport?: Maybe<Array<Maybe<Connector>>>;
   connectorsForImport?: Maybe<Array<Maybe<Connector>>>;
+  connectorsForManager?: Maybe<Array<Connector>>;
   connectorsForNotification?: Maybe<Array<Maybe<Connector>>>;
   connectorsForWorker?: Maybe<Array<Maybe<Connector>>>;
   container?: Maybe<Container>;
@@ -20300,6 +20301,11 @@ export type QueryCityArgs = {
 
 export type QueryConnectorArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryConnectorsForManagerArgs = {
+  managerId: Scalars['ID']['input'];
 };
 
 
@@ -39368,6 +39374,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   connectorsForAnalysis?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForExport?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForImport?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
+  connectorsForManager?: Resolver<Maybe<Array<ResolversTypes['Connector']>>, ParentType, ContextType, RequireFields<QueryConnectorsForManagerArgs, 'managerId'>>;
   connectorsForNotification?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForWorker?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   container?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<QueryContainerArgs>>;
