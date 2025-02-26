@@ -1,17 +1,22 @@
 import { filter, includes, map, pipe } from 'ramda';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
 import { listAllEntities, listEntities, storeLoadById } from './middleware-loader';
-import { isEmptyField } from './utils';
+import { isEmptyField, isNotEmptyField } from './utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { PLATFORM_VERSION } from '../config/conf';
+import { shortHash } from '../schema/schemaUtils';
+import { getEntitiesMapFromCache } from './cache';
+import { SYSTEM_USER } from '../utils/access';
 
 export const completeConnector = (connector) => {
   if (connector) {
     const completed = { ...connector };
+    completed.is_managed = isNotEmptyField(connector.manager_id);
     completed.connector_scope = connector.connector_scope ? connector.connector_scope.split(',') : [];
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);
     completed.active = connector.built_in ? (connector.active ?? true) : (sinceNowInMinutes(connector.updated_at) < 5);
@@ -32,10 +37,39 @@ export const connector = async (context, user, id) => {
   return element;
 };
 
+export const computeManagerConnectorConfiguration = async (context, user, cn) => {
+  const config = [...cn.manager_contract_configuration ?? []];
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  config.push({ key: 'CONNECTOR_ID', value: cn.internal_id });
+  config.push({ key: 'CONNECTOR_NAME', value: cn.name });
+  config.push({ key: 'CONNECTOR_TYPE', value: cn.connector_type });
+  config.push({ key: 'OPENCTI_TOKEN', value: platformUsers.get(cn.connector_user_id)?.api_token });
+  return config.sort();
+};
+
+export const computeManagerConnectorImage = (cn) => {
+  return isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${PLATFORM_VERSION}` : null;
+};
+
+export const computeManagerContractHash = async (context, user, cn) => {
+  const image = computeManagerConnectorImage(cn);
+  const config = await computeManagerConnectorConfiguration(context, user, cn);
+  const subHash = config.map((c) => `${c.key}|${c.value}`);
+  return shortHash({ image, subHash, state: cn.connector_state_timestamp });
+};
+
 export const connectors = async (context, user) => {
   const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false });
   const builtInElements = await builtInConnectorsRuntime(context, user);
   return map((conn) => completeConnector(conn), [...elements, ...builtInElements]);
+};
+
+export const connectorManager = async (context, user, managerId) => {
+  return storeLoadById(context, user, managerId, ENTITY_TYPE_CONNECTOR_MANAGER);
+};
+
+export const connectorManagers = async (context, user) => {
+  return listAllEntities(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
 };
 
 export const connectorsForManager = async (context, user, managerId) => {
@@ -49,7 +83,7 @@ export const connectorsForManager = async (context, user, managerId) => {
     connectionFormat: false
   };
   const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], args);
-  return map((conn) => completeConnector(conn), elements);
+  return elements.map((conn) => completeConnector(conn));
 };
 
 export const connectorsForWorker = async (context, user) => {

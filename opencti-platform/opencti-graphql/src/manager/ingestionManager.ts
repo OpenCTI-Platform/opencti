@@ -3,8 +3,8 @@ import { parseStringPromise as xmlParse } from 'xml2js';
 import TurndownService from 'turndown';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
-import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
 import { AxiosError } from 'axios';
 import { lockResources } from '../lock/master-lock';
@@ -19,7 +19,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
-import type { AuthContext } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import type {
   BasicStoreEntityIngestionCsv,
   BasicStoreEntityIngestionRss,
@@ -516,7 +516,7 @@ export const processCsvLines = async (
     const work = await createWorkForIngestion(context, ingestion);
     const bundlerOpts : CsvBundlerIngestionOpts = {
       workId: work.id,
-      applicantUser: ingestionUser,
+      applicantUser: ingestionUser as AuthUser,
       entity: undefined, // TODO is it possible to ingest in entity context ?
       csvMapper: csvMapperParsed,
       connectorId: connectorIdFromIngestId(ingestion.id),
