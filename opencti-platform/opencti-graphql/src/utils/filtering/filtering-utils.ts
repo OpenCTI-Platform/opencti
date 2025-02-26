@@ -279,7 +279,7 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
 /**
  * Check the filter keys exist in the schema
  */
-const checkFilterKeys = (filterGroup: FilterGroup) => {
+export const checkFilterKeys = (filterGroup: FilterGroup) => {
   // TODO improvement: check filters keys correspond to the entity types if types is given
   const keys = extractFilterKeys(filterGroup)
     .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys

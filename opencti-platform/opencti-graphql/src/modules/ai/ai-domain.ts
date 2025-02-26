@@ -30,7 +30,7 @@ import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
-import { emptyFilterGroup } from '../../utils/filtering/filtering-utils';
+import { checkFilterKeys, emptyFilterGroup, isFilterGroupFormatCorrect } from '../../utils/filtering/filtering-utils';
 import { logApp } from '../../config/conf';
 import { NLQPromptTemplate } from './ai-nlq-utils';
 
@@ -304,7 +304,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   const { search } = args;
   const promptValue = await NLQPromptTemplate.formatPromptValue({ text: search });
 
-  // query the model
+  // 01. query the model
   const rawResponse = await queryNLQAi(promptValue);
   let parsedResponse;
   try {
@@ -314,9 +314,19 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
     return JSON.stringify(emptyFilterGroup);
   }
 
-  // check the filters are in a correct format
+  // 02. check the filters are in a correct format
+  if (!isFilterGroupFormatCorrect(parsedResponse)) {
+    logApp.error('[AI NLQ] Result filters are not in a correct format', { data: parsedResponse });
+    return JSON.stringify(emptyFilterGroup);
+  }
+  try {
+    checkFilterKeys(parsedResponse);
+  } catch (error) {
+    logApp.error('[AI NLQ] Some result filters keys are not correct', { error, data: parsedResponse });
+    return JSON.stringify(emptyFilterGroup);
+  }
 
-  // map entities ids
+  // 03. map entities ids
 
   // return the stringified filters
   return JSON.stringify(parsedResponse);
