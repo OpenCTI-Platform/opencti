@@ -310,6 +310,7 @@ const useGraphInteractions = () => {
     setGraphStateProp('disabledEntityTypes', []);
     setGraphStateProp('disabledMarkings', []);
     setGraphStateProp('disabledCreators', []);
+    setGraphStateProp('selectedTimeRangeInterval', undefined);
   };
 
   const addNode = (data: ObjectToParse) => {

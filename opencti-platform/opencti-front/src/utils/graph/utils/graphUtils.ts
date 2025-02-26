@@ -1,3 +1,6 @@
+import { deserializeObject } from '../../object';
+import { ObjectToParse } from './useGraphParser';
+
 /**
  * Determines if a point is inside a polygon.
  * A point is in a polygon if a line from the point to infinity crosses the polygon an odd number of times.
@@ -29,4 +32,30 @@ export const pointInPolygon = (
   }
   // If the number of crossings was odd, the point is in the polygon
   return odd;
+};
+
+interface GraphQueryData {
+  objects: {
+    edges: readonly ({
+      types: readonly (string | undefined | null)[]
+      node: object
+    } | null | undefined)[] | undefined | null
+  } | undefined | null
+  x_opencti_graph_data: string | undefined | null
+}
+
+/**
+ * Helper function to prepare data received from query to be able to
+ * understand by graph component.
+ *
+ * @param data Query data.
+ * @returns Comprehensive data for Graph.
+ */
+export const getObjectsToParse = (data: GraphQueryData) => {
+  const objects = (data.objects?.edges ?? []).flatMap((n) => {
+    if (!n) return []; // filter empty nodes.
+    return { ...n.node, types: n.types };
+  }) as unknown as ObjectToParse[];
+  const positions = deserializeObject(data.x_opencti_graph_data);
+  return { objects, positions };
 };

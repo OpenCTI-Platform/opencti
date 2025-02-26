@@ -662,7 +662,7 @@ StixSightingRelationshipCreation.propTypes = {
   firstSeen: PropTypes.string,
   lastSeen: PropTypes.string,
   confidence: PropTypes.number,
-  defaultCreatedBy: PropTypes.object,
+  defaultCreatedBy: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   defaultMarkingDefinitions: PropTypes.array,
   handleClose: PropTypes.func,
   handleReverseSighting: PropTypes.func,
