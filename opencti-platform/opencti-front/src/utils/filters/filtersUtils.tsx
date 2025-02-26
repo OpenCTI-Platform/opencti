@@ -972,3 +972,31 @@ export const cleanFilters = (filters: FilterGroup, helpers: handleFilterHelpers,
   const filtersToRemoveIds = allListedFilters.filter((f) => !newAvailableFilterKeys.includes(f.key)).map((f) => f.id ?? '');
   filtersToRemoveIds.forEach((id) => helpers.handleRemoveFilterById(id));
 };
+
+export const isRegardingOfFilterWarning = (
+  filter: Filter,
+  observablesTypes: string[],
+  filtersRepresentativesMap: Map<string, FilterRepresentative>,
+) => {
+  if (filter.key === 'regardingOf') {
+    const relationshipTypes: string[] = filter.values.filter((v) => v.key === 'relationship_type').map((f) => f.values).flat();
+    const entitiesIds: string[] = filter.values.filter((v) => v.key === 'id').map((f) => f.values).flat();
+    const entityTypes = entitiesIds
+      .map((id) => filtersRepresentativesMap.get(id)?.entity_type)
+      .filter((t) => !!t) as string[];
+    if (relationshipTypes.includes('targets')
+      && entityTypes.some((type) => ['Attack-Pattern', 'Campaign', 'Incident', 'Intrusion-Set', 'Malware', 'Threat-Actor-Individual', 'Threat-Actor-Group'].includes(type))) {
+      return true;
+    } if (relationshipTypes.includes('located-at')
+      && entityTypes.some((type) => ['City', 'IPv4-Addr', 'IPv6-Addr'].includes(type))) {
+      return true;
+    } if (relationshipTypes.includes('related-to')
+      && entityTypes.some((type) => [...observablesTypes, 'Stix-Cyber-Observable'].includes(type))) {
+      return true;
+    } if (relationshipTypes.includes('indicates')
+      && entityTypes.some((type) => ['Indicator'].includes(type))) {
+      return true;
+    }
+  }
+  return false;
+};

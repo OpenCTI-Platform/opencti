@@ -24,7 +24,7 @@ export const up = async (next) => {
   const context = executionContext('migration');
 
   // 1st pass
-  // Cleaning all threats from any re_related-to related to observables
+  // Cleaning all threats from any rel_related-to related to observables
   logMigration.info('[OPENCTI] Cleaning deprecated rels for observable related-to...');
   const relKeyRelatedTo = 'rel_related-to.internal_id';
   const bulkOperationsRelatedTo = [];
