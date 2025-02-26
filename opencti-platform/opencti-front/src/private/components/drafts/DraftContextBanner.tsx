@@ -14,6 +14,7 @@ import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { truncate } from '../../../utils/String';
 import { MESSAGING$ } from '../../../relay/environment';
 import Transition from '../../../components/Transition';
+import DraftProcessingStatus from "@components/drafts/DraftProcessingStatus";
 
 export const draftContextBannerMutation = graphql`
   mutation DraftContextBannerMutation(
@@ -24,6 +25,8 @@ export const draftContextBannerMutation = graphql`
       draftContext {
         id
         name
+        draft_status
+        processingCount
       }
     }
   }
@@ -86,6 +89,9 @@ const DraftContextBanner = () => {
   return (
     <div style={{ padding: '0 12px', flex: 1 }}>
       <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+        <div>
+          <DraftProcessingStatus/>
+        </div>
         <div style={{ padding: '0 12px', flex: 1 }}>
           <DraftBlock body={truncate(currentDraftContextName, 40)}/>
         </div>
