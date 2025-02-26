@@ -65,15 +65,14 @@ export const defaultMarkingDefinitions = async (context, group) => {
 
 export const mergeDefaultMarking = async (defaultMarkings) => {
   const results = [];
-  defaultMarkings.filter((d) => !!d.entity_type)
-    .forEach((d) => {
-      const existing = results.find((r) => r.entity_type === d.entity_type);
-      if (existing) {
-        existing.values = [...(d.values ?? []), ...existing.values];
-      } else {
-        results.push(d);
-      }
-    });
+  defaultMarkings.filter((d) => !!d.entity_type).forEach((d) => {
+    const existing = results.find((r) => r.entity_type === d.entity_type);
+    if (existing) {
+      existing.values = [...(d.values ?? []), ...existing.values];
+    } else {
+      results.push(d);
+    }
+  });
 
   return results;
 };
@@ -91,10 +90,9 @@ export const defaultMarkingDefinitionsFromGroups = async (context, userGroups) =
     });
   }).flat();
   // Merge default marking by group
-  // Clean default marking by entity type
-  return defaultMarkingsFlat
-    .map((defaultMarkings) => mergeDefaultMarking(defaultMarkings))
-    .map((defaultMarkings) => {
+  return mergeDefaultMarking(defaultMarkingsFlat)
+    .then((defaultMarkings) => {
+      // Clean default marking by entity type
       return Promise.all(defaultMarkings.map(async (d) => {
         return {
           entity_type: d.entity_type,
@@ -215,6 +213,7 @@ export const groupEditDefaultMarking = async (context, user, groupId, defaultMar
   }
   const patch = { default_marking: existingDefaultMarking };
   const { element } = await patchAttribute(context, user, groupId, ENTITY_TYPE_GROUP, patch);
+  await groupUsersCacheRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
 
