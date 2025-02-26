@@ -10,6 +10,7 @@ import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import { addDays, subDays } from 'date-fns';
+import { useTheme } from '@mui/material/styles';
 import {
   DEFAULT_WITHIN_FILTER_VALUES,
   FilterSearchContext,
@@ -90,6 +91,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   fintelTemplatesContext,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const filter = filters.find((f) => f.id === params.filterId);
   const filterKey = filter?.key ?? '';
   const filterOperator = filter?.operator ?? '';
@@ -443,8 +445,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           {filterOperator === 'within'
             && <div style={{ width: 150, display: 'inline-flex' }}>
               <div style={{
-                color: 'disabled',
-                borderLeft: '1px solid',
+                color: theme.palette.text.disabled,
+                borderLeft: '0.5px solid',
                 marginLeft: '10px',
                 marginTop: '10px',
                 marginBottom: '10px',
