@@ -95,7 +95,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
 
   const onSubmit: FormikConfig<OptionsFormValues>['onSubmit'] = (values, { setErrors }) => {
     setUploadStatus('uploading');
-    const selectedEntityId = entityId && (values.associatedEntity?.value || undefined);
+    const selectedEntityId = entityId ?? (values.associatedEntity?.value || undefined);
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
 
     const variables = files.map((file) => (selectedEntityId

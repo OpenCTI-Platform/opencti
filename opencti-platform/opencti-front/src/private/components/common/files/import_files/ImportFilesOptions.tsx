@@ -19,6 +19,7 @@ const ImportFilesOptions = ({ optionsFormikContext, entityId }: ImportFilesOptio
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
+        justifySelf: 'center',
         gap: 2,
         width: '50%',
       }}
