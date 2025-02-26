@@ -34,11 +34,21 @@ export const pointInPolygon = (
   return odd;
 };
 
+interface ContainerEdges {
+  edges: readonly ({
+    types?: readonly (string | undefined | null)[] | undefined | null
+    node: object
+  } | null | undefined)[] | undefined | null
+}
 interface GraphQueryData {
   objects: {
     edges: readonly ({
-      types: readonly (string | undefined | null)[]
-      node: object
+      types?: readonly (string | undefined | null)[] | undefined | null
+      node: object & {
+        reports?: ContainerEdges | undefined | null
+        groupings?: ContainerEdges | undefined | null
+        cases?: ContainerEdges | undefined | null
+      }
     } | null | undefined)[] | undefined | null
   } | undefined | null
   x_opencti_graph_data: string | undefined | null
@@ -54,7 +64,13 @@ interface GraphQueryData {
 export const getObjectsToParse = (data: GraphQueryData) => {
   const objects = (data.objects?.edges ?? []).flatMap((n) => {
     if (!n) return []; // filter empty nodes.
-    return { ...n.node, types: n.types };
+    // For correlation.
+    const linkedContainers = [
+      ...(n.node.reports?.edges ?? []),
+      ...(n.node.groupings?.edges ?? []),
+      ...(n.node.cases?.edges ?? []),
+    ].flatMap((e) => (e ? e.node : []));
+    return { ...n.node, types: n.types, linkedContainers };
   }) as unknown as ObjectToParse[];
   const positions = deserializeObject(data.x_opencti_graph_data);
   return { objects, positions };

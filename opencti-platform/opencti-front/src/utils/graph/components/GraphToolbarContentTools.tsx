@@ -20,10 +20,10 @@ import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './Gra
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery: GraphQLTaggedNode
   relationshipRefetchQuery: GraphQLTaggedNode
-  onAddRelation: (rel: ObjectToParse) => void
+  onAddRelation?: (rel: ObjectToParse) => void
   container?: GraphContainer
   enableReferences?: boolean
-  onContainerDeleteRelation: GraphToolbarDeleteConfirmProps['onContainerDeleteRelation']
+  onContainerDeleteRelation?: GraphToolbarDeleteConfirmProps['onContainerDeleteRelation']
 }
 
 const GraphToolbarContentTools = ({
@@ -59,8 +59,6 @@ const GraphToolbarContentTools = ({
     removeNode,
     removeLink,
   } = useGraphInteractions();
-
-  if (!container) return null;
 
   const head = selectedNodes.slice(0, 1);
   const tail = selectedNodes.slice(-1);
@@ -102,111 +100,124 @@ const GraphToolbarContentTools = ({
 
   return (
     <>
-      <ContainerAddStixCoreObjectsInGraph
-        knowledgeGraph={true} // TODO change for correlation?
-        containerId={container.id}
-        containerStixCoreObjects={container.objects}
-        defaultCreatedBy={container.createdBy ?? null}
-        defaultMarkingDefinitions={container.objectMarking ?? []}
-        targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
-        onAdd={addNode}
-        onDelete={removeFromAddPanel}
-        confidence={container.confidence}
-        enableReferences={enableReferences}
-      />
+      {container && (
+        <ContainerAddStixCoreObjectsInGraph
+          knowledgeGraph={true} // TODO change for correlation?
+          containerId={container.id}
+          containerStixCoreObjects={container.objects}
+          defaultCreatedBy={container.createdBy ?? null}
+          defaultMarkingDefinitions={container.objectMarking ?? []}
+          targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+          onAdd={addNode}
+          onDelete={removeFromAddPanel}
+          confidence={container.confidence}
+          enableReferences={enableReferences}
+        />
+      )}
 
       <GraphToolbarEditObject
         stixCoreObjectRefetchQuery={stixCoreObjectRefetchQuery}
         relationshipRefetchQuery={relationshipRefetchQuery}
       />
 
-      <GraphToolbarItem
-        Icon={<LinkOutlined />}
-        disabled={!canAddRelation}
-        color="primary"
-        onClick={() => setIsAddRelationOpen(true)}
-        title={t_i18n('Create a relationship')}
-      />
-      <StixCoreRelationshipCreation
-        open={isAddRelationOpen}
-        confidence={container.confidence}
-        defaultCreatedBy={convertCreatedBy(container)}
-        defaultMarkingDefinitions={convertMarkings(container)}
-        fromObjects={objectsFrom}
-        toObjects={objectsTo}
-        startTime={minutesBefore(1, now())}
-        stopTime={now()}
-        handleResult={onAddRelation}
-        handleReverseRelation={() => setRelationReversed((r) => !r)}
-        handleClose={() => {
-          setRelationReversed(false);
-          setIsAddRelationOpen(false);
-        }}
-      />
+      {onAddRelation && container && (
+        <>
+          <GraphToolbarItem
+            Icon={<LinkOutlined />}
+            disabled={!canAddRelation}
+            color="primary"
+            onClick={() => setIsAddRelationOpen(true)}
+            title={t_i18n('Create a relationship')}
+          />
+          <StixCoreRelationshipCreation
+            open={isAddRelationOpen}
+            confidence={container.confidence}
+            defaultCreatedBy={convertCreatedBy(container)}
+            defaultMarkingDefinitions={convertMarkings(container)}
+            fromObjects={objectsFrom}
+            toObjects={objectsTo}
+            startTime={minutesBefore(1, now())}
+            stopTime={now()}
+            handleResult={onAddRelation}
+            handleReverseRelation={() => setRelationReversed((r) => !r)}
+            handleClose={() => {
+              setRelationReversed(false);
+              setIsAddRelationOpen(false);
+            }}
+          />
+          <StixNestedRefRelationshipCreationFromKnowledgeGraph
+            nestedRelationExist={hasNested}
+            openCreateNested={addNestedOpen}
+            nestedEnabled={canAddRelation}
+            relationFromObjects={objectsFrom}
+            relationToObjects={objectsTo}
+            handleSetNestedRelationExist={setHasNested}
+            handleOpenCreateNested={() => setAddNestedOpen(true)}
+          />
+          <StixNestedRefRelationshipCreation
+            open={addNestedOpen}
+            fromObjects={objectsFrom}
+            toObjects={objectsTo}
+            startTime={dateFormat(container.published)}
+            stopTime={dateFormat(container.published)}
+            confidence={container.confidence}
+            handleResult={onAddRelation}
+            handleReverseRelation={() => setNestedReversed((r) => !r)}
+            defaultMarkingDefinitions={container.objectMarking ?? []}
+            handleClose={() => {
+              setNestedReversed(false);
+              setAddNestedOpen(false);
+            }}
+          />
+        </>
+      )}
 
-      <StixNestedRefRelationshipCreationFromKnowledgeGraph
-        nestedRelationExist={hasNested}
-        openCreateNested={addNestedOpen}
-        nestedEnabled={canAddRelation}
-        relationFromObjects={objectsFrom}
-        relationToObjects={objectsTo}
-        handleSetNestedRelationExist={setHasNested}
-        handleOpenCreateNested={() => setAddNestedOpen(true)}
-      />
-      <StixNestedRefRelationshipCreation
-        open={addNestedOpen}
-        fromObjects={objectsFrom}
-        toObjects={objectsTo}
-        startTime={dateFormat(container.published)}
-        stopTime={dateFormat(container.published)}
-        confidence={container.confidence}
-        handleResult={onAddRelation}
-        handleReverseRelation={() => setNestedReversed((r) => !r)}
-        defaultMarkingDefinitions={container.objectMarking ?? []}
-        handleClose={() => {
-          setNestedReversed(false);
-          setAddNestedOpen(false);
-        }}
-      />
+      {container && (
+        <>
+          <GraphToolbarItem
+            Icon={<VisibilityOutlined />}
+            disabled={!canAddRelation}
+            color="primary"
+            onClick={() => setAddSightingOpen(true)}
+            title={t_i18n('Create a sighting')}
+          />
+          <StixSightingRelationshipCreation
+            open={addSightingOpen}
+            fromObjects={objectsFrom}
+            toObjects={objectsTo}
+            confidence={container.confidence}
+            firstSeen={dateFormat(container.published)}
+            lastSeen={dateFormat(container.published)}
+            defaultCreatedBy={convertCreatedBy(container)}
+            defaultMarkingDefinitions={convertMarkings(container)}
+            handleResult={onAddRelation}
+            handleReverseSighting={() => setSightingReversed((r) => !r)}
+            handleClose={() => {
+              setSightingReversed(false);
+              setAddSightingOpen(false);
+            }}
+          />
+        </>
+      )}
 
-      <GraphToolbarItem
-        Icon={<VisibilityOutlined />}
-        disabled={!canAddRelation}
-        color="primary"
-        onClick={() => setAddSightingOpen(true)}
-        title={t_i18n('Create a sighting')}
-      />
-      <StixSightingRelationshipCreation
-        open={addSightingOpen}
-        fromObjects={objectsFrom}
-        toObjects={objectsTo}
-        confidence={container.confidence}
-        firstSeen={dateFormat(container.published)}
-        lastSeen={dateFormat(container.published)}
-        defaultCreatedBy={convertCreatedBy(container)}
-        defaultMarkingDefinitions={convertMarkings(container)}
-        handleResult={onAddRelation}
-        handleReverseSighting={() => setSightingReversed((r) => !r)}
-        handleClose={() => {
-          setSightingReversed(false);
-          setAddSightingOpen(false);
-        }}
-      />
-
-      <GraphToolbarItem
-        Icon={<DeleteOutlined />}
-        disabled={!canDelete}
-        color="primary"
-        onClick={() => setRemoveDialogOpen(true)}
-        title={t_i18n('Remove selected items')}
-      />
-      <GraphToolbarRemoveConfirm
-        open={removeDialogOpen}
-        container={container}
-        enableReferences={enableReferences}
-        onClose={() => setRemoveDialogOpen(false)}
-        onContainerDeleteRelation={onContainerDeleteRelation}
-      />
+      {onContainerDeleteRelation && container && (
+        <>
+          <GraphToolbarItem
+            Icon={<DeleteOutlined />}
+            disabled={!canDelete}
+            color="primary"
+            onClick={() => setRemoveDialogOpen(true)}
+            title={t_i18n('Remove selected items')}
+          />
+          <GraphToolbarRemoveConfirm
+            open={removeDialogOpen}
+            container={container}
+            enableReferences={enableReferences}
+            onClose={() => setRemoveDialogOpen(false)}
+            onContainerDeleteRelation={onContainerDeleteRelation}
+          />
+        </>
+      )}
     </>
   );
 };

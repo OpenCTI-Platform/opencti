@@ -58,6 +58,7 @@ const DEFAULT_STATE: GraphState = {
 interface GraphProviderProps {
   children: ReactNode
   localStorageKey: string
+  context?: 'knowledge' | 'correlation'
   data: {
     objects: ObjectToParse[]
     positions: OctiGraphPositions
@@ -66,13 +67,14 @@ interface GraphProviderProps {
 
 export const GraphProvider = ({
   children,
+  context = 'knowledge',
   localStorageKey,
   data,
 }: GraphProviderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const { buildGraphData } = useGraphParser();
+  const { buildGraphData, buildCorrelationData } = useGraphParser();
 
   const graphRef2D = useRef<GraphRef2D | undefined>();
   const graphRef3D = useRef<GraphRef3D | undefined>();
@@ -80,7 +82,9 @@ export const GraphProvider = ({
   const [graphData, setGraphData] = useState<LibGraphProps['graphData']>();
   useEffect(() => {
     // Rebuild graph data when input data has changed.
-    setGraphData(buildGraphData(data.objects, data.positions));
+    setGraphData(context === 'knowledge'
+      ? buildGraphData(data.objects, data.positions)
+      : buildCorrelationData(data.objects, data.positions));
   }, [data]);
 
   // Dynamically compute time range values
