@@ -4,7 +4,6 @@ import { ArrowRightAltOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import { useFormatter } from './i18n';
 import { hexToRGB } from '../utils/Colors';
-import { StatusScope } from './__generated__/ItemStatusTemplate_global.graphql';
 
 export interface StatusTemplateType {
   id: string,
@@ -21,7 +20,6 @@ export interface StatusType {
 interface ItemStatusTemplateProps {
   statuses: StatusType[],
   disabled: boolean,
-  scope: StatusScope,
 }
 
 const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => {

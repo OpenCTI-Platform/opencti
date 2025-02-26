@@ -51,7 +51,6 @@ const GlobalWorkflowSettings = ({ subTypeId, data, workflowEnabled }: GlobalWork
       <ItemStatusTemplate
         statuses={statusList}
         disabled={!workflowEnabled}
-        scope={StatusScopeEnum.GLOBAL}
       />
     </>
   );
