@@ -409,6 +409,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
       lock = await lock.extend(maxTtl);
       queue();
     } catch (error) {
+      logApp.error('Execution timeout, error extending resources', { locks });
       if (process.send) {
         // If process.send, we use a child process
         process.send({ operation: opts.child_operation, type: 'abort', success: false });
