@@ -36,7 +36,7 @@ import {
 } from '../domain/work';
 import { batchCreator } from '../domain/user';
 import { now } from '../utils/format';
-import { connector, connectors, connectorsForAnalysis, connectorsForImport, connectorsForNotification, connectorsForWorker } from '../database/repository';
+import { connector, connectors, connectorsForAnalysis, connectorsForImport, connectorsForManager, connectorsForNotification, connectorsForWorker } from '../database/repository';
 import { batchLoader } from '../database/middleware';
 import { getConnectorQueueSize } from '../database/rabbitmq';
 
@@ -46,6 +46,7 @@ const connectorResolvers = {
   Query: {
     connector: (_, { id }, context) => connector(context, context.user, id),
     connectors: (_, __, context) => connectors(context, context.user),
+    connectorsForManager: (_, { managerId }, context) => connectorsForManager(context, context.user, managerId),
     connectorsForWorker: (_, __, context) => connectorsForWorker(context, context.user),
     connectorsForExport: (_, __, context) => connectorsForExport(context, context.user),
     connectorsForImport: (_, __, context) => connectorsForImport(context, context.user),
