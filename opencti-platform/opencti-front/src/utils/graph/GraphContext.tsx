@@ -33,32 +33,21 @@ interface GraphContextValue {
   stixCoreObjectTypes: string[]
   markingDefinitions: { id: string, definition: string }[]
   creators: { id: string, name: string }[]
+  objects: ObjectToParse[]
   positions: OctiGraphPositions
   timeRange: GraphTimeRange
   // --- misc
+  context?: string
   isAddRelationOpen: boolean
   setIsAddRelationOpen: Setter<boolean>
 }
 
 const GraphContext = createContext<GraphContextValue | undefined>(undefined);
 
-const DEFAULT_STATE: GraphState = {
-  mode3D: false,
-  modeTree: null,
-  withForces: true,
-  selectFreeRectangle: false,
-  selectFree: false,
-  selectRelationshipMode: null,
-  showTimeRange: false,
-  disabledEntityTypes: [],
-  disabledCreators: [],
-  disabledMarkings: [],
-};
-
 interface GraphProviderProps {
   children: ReactNode
   localStorageKey: string
-  context?: 'knowledge' | 'correlation'
+  context?: string
   data: {
     objects: ObjectToParse[]
     positions: OctiGraphPositions
@@ -67,7 +56,7 @@ interface GraphProviderProps {
 
 export const GraphProvider = ({
   children,
-  context = 'knowledge',
+  context,
   localStorageKey,
   data,
 }: GraphProviderProps) => {
@@ -79,13 +68,38 @@ export const GraphProvider = ({
   const graphRef2D = useRef<GraphRef2D | undefined>();
   const graphRef3D = useRef<GraphRef3D | undefined>();
 
+  const DEFAULT_STATE: GraphState = {
+    mode3D: false,
+    modeTree: null,
+    withForces: true,
+    selectFreeRectangle: false,
+    selectFree: false,
+    selectRelationshipMode: null,
+    correlationMode: context === 'correlation' ? 'observables' : null,
+    showTimeRange: false,
+    disabledEntityTypes: [],
+    disabledCreators: [],
+    disabledMarkings: [],
+  };
+
+  const [graphState, setGraphState] = useState<GraphState>(() => {
+    // Load initial state for URL and local storage.
+    const params = buildViewParamsFromUrlAndStorage(navigate, location, localStorageKey);
+    return { ...DEFAULT_STATE, ...params };
+  });
+
   const [graphData, setGraphData] = useState<LibGraphProps['graphData']>();
   useEffect(() => {
+    const objects = context === 'correlation' && graphState.correlationMode === 'observables'
+      ? data.objects.filter((o) => (
+        o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
+      ))
+      : data.objects;
     // Rebuild graph data when input data has changed.
-    setGraphData(context === 'knowledge'
-      ? buildGraphData(data.objects, data.positions)
-      : buildCorrelationData(data.objects, data.positions));
-  }, [data]);
+    setGraphData(context === 'correlation'
+      ? buildCorrelationData(objects, data.positions)
+      : buildGraphData(objects, data.positions));
+  }, [data, graphState.correlationMode]);
 
   // Dynamically compute time range values
   const timeRange = useMemo(() => {
@@ -125,12 +139,6 @@ export const GraphProvider = ({
       .filter((v, i, a) => a.findIndex((item) => JSON.stringify(item) === JSON.stringify(v)) === i);
   }, [graphData]);
 
-  const [graphState, setGraphState] = useState<GraphState>(() => {
-    // Load initial state for URL and local storage.
-    const params = buildViewParamsFromUrlAndStorage(navigate, location, localStorageKey);
-    return { ...DEFAULT_STATE, ...params };
-  });
-
   useEffect(() => {
     // On state change, update URL and local storage.
     saveViewParameters(navigate, location, localStorageKey, graphState);
@@ -163,6 +171,8 @@ export const GraphProvider = ({
     selectedNodes,
     isAddRelationOpen,
     timeRange,
+    context,
+    objects: data.objects,
     positions: data.positions,
     setGraphData,
     setGraphState,

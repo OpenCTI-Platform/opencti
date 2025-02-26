@@ -33,6 +33,7 @@ const useGraphInteractions = () => {
     disabledEntityTypes,
     disabledMarkings,
     disabledCreators,
+    correlationMode,
   } = graphState;
 
   /**
@@ -110,6 +111,11 @@ const useGraphInteractions = () => {
     else if (selectRelationshipMode === 'parent') setGraphStateProp('selectRelationshipMode', 'deselect');
     else if (selectRelationshipMode === 'deselect') setGraphStateProp('selectRelationshipMode', null);
     else if (selectRelationshipMode === null) setGraphStateProp('selectRelationshipMode', 'children');
+  };
+
+  const switchCorrelationMode = () => {
+    if (correlationMode !== 'all') setGraphStateProp('correlationMode', 'all');
+    else setGraphStateProp('correlationMode', 'observables');
   };
 
   const toggleTimeRange = () => {
@@ -361,6 +367,7 @@ const useGraphInteractions = () => {
     toggleSelectFreeRectangle,
     toggleSelectFree,
     switchSelectRelationshipMode,
+    switchCorrelationMode,
     toggleTimeRange,
     saveZoom,
     toggleLink,

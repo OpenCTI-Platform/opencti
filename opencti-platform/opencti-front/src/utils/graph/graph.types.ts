@@ -76,6 +76,7 @@ export interface GraphState {
   selectFreeRectangle: boolean
   selectFree: boolean
   selectRelationshipMode: 'children' | 'parent' | 'deselect' | null
+  correlationMode: 'all' | 'observables' | null
   showTimeRange: boolean
   disabledEntityTypes: string[]
   disabledCreators: string[]
