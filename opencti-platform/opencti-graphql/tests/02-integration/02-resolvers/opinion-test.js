@@ -184,7 +184,7 @@ describe('Opinion resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).not.toBeNull();
-    expect(queryResult.data.opinion.objects.edges.length).toEqual(5);
+    expect(queryResult.data.opinion.objects.edges.length).toEqual(5); // 6 without APT41 with specific marking
   });
   it('should opinion contains stix object or stix relationship accurate', async () => {
     const intrusionSet = await elLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');

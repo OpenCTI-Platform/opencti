@@ -469,9 +469,10 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       // If user have no marking, he can only access to data with no markings.
       must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING) } });
     } else {
+      const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
       // Markings should be grouped by types for restriction
       const userGroupedMarkings = R.groupBy((m) => m.definition_type, user.allowed_marking);
-      const allGroupedMarkings = R.groupBy((m) => m.definition_type, user.all_marking);
+      const allGroupedMarkings = R.groupBy((m) => m.definition_type, allMarkings);
       const markingGroups = Object.keys(allGroupedMarkings);
       const mustNotHaveOneOf = [];
       for (let index = 0; index < markingGroups.length; index += 1) {
@@ -520,7 +521,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
     // If user have organization management role, he can bypass this restriction.
     // If platform is for specific organization, only user from this organization can access empty defined
     const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-    // We want to exlucde a set of entities from organization restrictions while forcing restrictions for an other set of entities
+    // We want to exclude a set of entities from organization restrictions while forcing restrictions for another set of entities
     const excludedEntityMatches = {
       bool: {
         must: [
@@ -540,7 +541,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       }
     };
     if (settings.platform_organization) {
-      if (user.inside_platform_organization) {
+      if (context.user_inside_platform_organization) {
         // Data are visible independently of the organizations
         // Nothing to restrict.
       } else {

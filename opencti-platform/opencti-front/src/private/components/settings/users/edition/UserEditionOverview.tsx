@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
@@ -6,23 +6,19 @@ import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import FormHelperText from '@mui/material/FormHelperText';
 import { UserEditionOverview_user$data } from '@components/settings/users/edition/__generated__/UserEditionOverview_user.graphql';
-import Typography from '@mui/material/Typography';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/styles';
 import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
 import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
+
 import { useFormatter } from '../../../../../components/i18n';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import { Accordion, AccordionSummary } from '../../../../../components/Accordion';
-import SwitchField from '../../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../../components/PasswordTextField';
 import type { Theme } from '../../../../../components/Theme';
 
@@ -82,7 +78,6 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
   lastname: Yup.string().nullable(),
   language: Yup.string().nullable(),
   description: Yup.string().nullable(),
-  stateless_session: Yup.bool(),
   account_status: Yup.string(),
   account_lock_after_date: Yup.date().nullable(),
   objectOrganization: userIsOnlyOrganizationAdmin ? Yup.array().min(1, t('Minimum one organization')).required(t('This field is required')) : Yup.array(),
@@ -108,7 +103,6 @@ UserEditionOverviewComponentProps
   const [commitFieldPatch] = useApiMutation(userMutationFieldPatch);
   const [commitOrganizationAdd] = useApiMutation(userMutationOrganizationAdd);
   const [commitOrganizationDelete] = useApiMutation(userMutationOrganizationDelete);
-  const [openOptions, setOpenOptions] = useState(user.stateless_session);
 
   const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const external = user.external === true;
@@ -123,7 +117,6 @@ UserEditionOverviewComponentProps
     lastname: user.lastname,
     language: user.language,
     api_token: user.api_token,
-    stateless_session: user.stateless_session,
     description: user.description,
     account_status: user.account_status,
     account_lock_after_date: user.account_lock_after_date,
@@ -330,27 +323,6 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
           />
-          <div style={{ marginTop: 20 }}>
-            <Accordion expanded={openOptions} onChange={() => setOpenOptions(!openOptions)}>
-              <AccordionSummary id="accordion-panel">
-                <Typography>{t_i18n('Advanced options')}</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Alert icon={false} severity="error" variant="outlined" style={{ position: 'relative', marginTop: 8 }}>
-                  <div>{t_i18n('Use these options if you know what you are doing')}</div>
-                </Alert>
-                <Field
-                  component={SwitchField}
-                  containerstyle={{ marginTop: 20 }}
-                  type="checkbox"
-                  name="stateless_session"
-                  label={t_i18n('Use stateless mode')}
-                  onChange={handleSubmitField}
-                />
-                <div>{t_i18n('Use this option only if this user is not able to manage http session')}</div>
-              </AccordionDetails>
-            </Accordion>
-          </div>
         </Form>
       )}
     </Formik>
@@ -382,7 +354,6 @@ const UserEditionOverview = createFragmentContainer(
         theme
         api_token
         otp_activated
-        stateless_session
         otp_qr
         account_status
         account_lock_after_date

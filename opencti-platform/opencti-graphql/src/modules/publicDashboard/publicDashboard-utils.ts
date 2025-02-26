@@ -107,7 +107,6 @@ export const getWidgetArguments = async (
     origin: { user_id: platformUser.id, referer: 'public-dashboard' },
     capabilities: [accessKnowledgeCapability],
     allowed_marking: allowedMaxMarkings, // ACL - Markings
-    inside_platform_organization: true // ACL - Organization
     // ACL - Authorized members
     // ACL - Authorized authorities
   };

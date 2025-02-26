@@ -3,20 +3,9 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import {
-  ACCOUNT_STATUS_ACTIVE,
-  ACCOUNT_STATUS_EXPIRED,
-  ACCOUNT_STATUSES,
-  BUS_TOPICS,
-  DEFAULT_ACCOUNT_STATUS,
-  ENABLED_DEMO_MODE,
-  isFeatureEnabled,
-  logApp,
-  OPENCTI_SESSION,
-  PLATFORM_VERSION
-} from '../config/conf';
+import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, resetCacheForEntity } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, refreshCacheForEntity } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
@@ -31,9 +20,9 @@ import {
   listEntitiesThroughRelationsPaginated,
   storeLoadById,
 } from '../database/middleware-loader';
-import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
-import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { delEditContext, notify, setEditContext } from '../database/redis';
+import { killUserSessions } from '../database/session';
+import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../schema/general';
@@ -53,14 +42,14 @@ import {
   BYPASS,
   executionContext,
   INTERNAL_USERS,
-  isOnlyOrgaAdmin,
+  INTERNAL_USERS_WITHOUT_REDACTED,
   isBypassUser,
+  isOnlyOrgaAdmin,
   isUserHasCapability,
   REDACTED_USER,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER,
-  VIRTUAL_ORGANIZATION_ADMIN,
-  INTERNAL_USERS_WITHOUT_REDACTED
+  VIRTUAL_ORGANIZATION_ADMIN
 } from '../utils/access';
 import { ASSIGNEE_FILTER, CREATOR_FILTER, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
 import { now, utcDate } from '../utils/format';
@@ -78,13 +67,11 @@ import { UnitSystem } from '../generated/graphql';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
-export const AUTH_BEARER = 'Bearer';
-const AUTH_BASIC = 'BasicAuth';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
 
-const roleSessionRefresh = async (context, user, roleId) => {
+const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
   const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });
   const groupIds = groupsRoles.map((group) => group.fromId);
@@ -92,17 +79,12 @@ const roleSessionRefresh = async (context, user, roleId) => {
   const usersGroups = await listAllRelations(context, user, RELATION_MEMBER_OF, { toId: groupIds, toTypes: [ENTITY_TYPE_GROUP] });
   const userIds = R.uniq(usersGroups.map((u) => u.fromId));
   // Mark for refresh all impacted sessions
-  const sessions = await findSessionsForUsers(userIds);
-  await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
+  return internalFindByIds(context, user, userIds);
 };
 
-export const usersSessionRefresh = async (userIds) => {
-  const sessions = await findSessionsForUsers(userIds);
-  await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
-};
-
-export const userSessionRefresh = async (userId) => {
-  return usersSessionRefresh([userId]);
+const roleUsersCacheRefresh = async (context, user, roleId) => {
+  const users = await computeImpactedUsers(context, user, roleId);
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, users, user);
 };
 
 export const userWithOrigin = (req, user) => {
@@ -328,55 +310,28 @@ export const checkUserCanShareMarkings = async (context, user, markingsToShare) 
   }
 };
 
-const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilities) => {
-  const groupIds = userGroups.map((r) => r.id);
+const getUserAndGlobalMarkings = async (context, userId, userGroups, userMarkings, capabilities) => {
   const userCapabilities = capabilities.map((c) => c.name);
   const shouldBypass = userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
   const allMarkingsPromise = getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, groupIds);
-  let userMarkings;
+  const defaultGroupMarkingsPromise = defaultMarkingDefinitionsFromGroups(context, userGroups);
+  let computeUserMarkings;
   let maxShareableMarkings;
   const [all, defaultMarkings] = await Promise.all([allMarkingsPromise, defaultGroupMarkingsPromise]);
-
   if (shouldBypass) { // Bypass user have all platform markings and can share all markings
-    userMarkings = all;
+    computeUserMarkings = all;
     maxShareableMarkings = all;
   } else { // Standard user have markings related to his groups
-    userMarkings = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
-
-    const notShareableMarkings = userGroups.flatMap(
-      ({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value === 'none')
-        .map(({ type }) => type)
-    );
-
+    computeUserMarkings = userMarkings;
+    const notShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value === 'none').map(({ type }) => type));
     maxShareableMarkings = userGroups.flatMap(({ max_shareable_markings }) => max_shareable_markings?.filter(({ value }) => value !== 'none')).filter((m) => !!m);
-
     const allShareableMarkings = all.filter(({ definition_type }) => (
       !notShareableMarkings.includes(definition_type) && !maxShareableMarkings.some(({ type }) => type === definition_type)
-    )).filter(({ id }) => userMarkings.some((m) => m.id === id)).map(({ id }) => id);
+    )).filter(({ id }) => computeUserMarkings.some((m) => m.id === id)).map(({ id }) => id);
     maxShareableMarkings = [...maxShareableMarkings.map(({ value }) => value), ...allShareableMarkings];
   }
-
-  const computedMarkings = computeAvailableMarkings(userMarkings, all);
-  return { user: computedMarkings, all, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
-};
-
-export const getRoles = async (context, userGroups) => {
-  const groupIds = userGroups.map((r) => r.id);
-  return listAllToEntitiesThroughRelations(context, SYSTEM_USER, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
-};
-
-export const getCapabilities = async (context, userId, userRoles) => {
-  const roleIds = userRoles.map((r) => r.id);
-  const capabilities = await listAllToEntitiesThroughRelations(context, SYSTEM_USER, roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
-  // Force push the bypass for default admin
-  const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
-  if (userId === OPENCTI_ADMIN_UUID && withoutBypass) {
-    const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
-    capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
-    return capabilities;
-  }
-  return capabilities;
+  const computedMarkings = computeAvailableMarkings(computeUserMarkings, all);
+  return { user: computedMarkings, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
 };
 
 export const roleCapabilities = async (context, user, roleId) => {
@@ -403,7 +358,6 @@ export const findCapabilities = (context, user, args) => {
 };
 
 export const roleDelete = async (context, user, roleId) => {
-  await roleSessionRefresh(context, user, roleId);
   const deleted = await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
   await publishUserAction({
     user,
@@ -413,7 +367,8 @@ export const roleDelete = async (context, user, roleId) => {
     message: `deletes role \`${deleted.name}\``,
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: deleted }
   });
-  return roleId;
+  await roleUsersCacheRefresh(context, user, roleId);
+  return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].DELETE_TOPIC, deleted, user).then(() => roleId);
 };
 
 export const roleCleanContext = async (context, user, roleId) => {
@@ -445,7 +400,6 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
   if (!targetUser) {
     throw FunctionalError('Cannot add the relation, User cannot be found.');
   }
-
   const input = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   const created = await createRelation(context, user, input);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : created.from.user_email;
@@ -457,9 +411,6 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     message: `adds ${created.toType} \`${extractEntityRepresentativeName(created.to)}\` to user \`${actionEmail}\``,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
-
-  await userSessionRefresh(userId);
-  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
@@ -470,6 +421,10 @@ export const assignOrganizationNameToUser = async (context, user, userId, organi
 };
 
 export const assignGroupToUser = async (context, user, userId, groupName) => {
+  const targetUser = await findById(context, user, userId);
+  if (!targetUser) {
+    throw FunctionalError('Cannot add the relation, User cannot be found.');
+  }
   // No need for audit log here, only use for provider login
   const generateToId = generateStandardId(ENTITY_TYPE_GROUP, { name: groupName });
   const assignInput = {
@@ -478,7 +433,7 @@ export const assignGroupToUser = async (context, user, userId, groupName) => {
     relationship_type: RELATION_MEMBER_OF,
   };
   const rel = await createRelation(context, user, assignInput);
-  await userSessionRefresh(userId);
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
   return rel;
 };
 
@@ -646,7 +601,7 @@ export const roleEditField = async (context, user, roleId, input) => {
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for role \`${element.name}\``,
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input }
   });
-  await roleSessionRefresh(context, user, roleId);
+  await roleUsersCacheRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, element, user);
 };
 
@@ -668,7 +623,7 @@ export const roleAddRelation = async (context, user, roleId, input) => {
     message: `adds ${relationData.to.entity_type} \`${extractEntityRepresentativeName(relationData.to)}\` for role \`${role.name}\``,
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: finalInput }
   });
-  await roleSessionRefresh(context, user, roleId);
+  await roleUsersCacheRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
 };
 
@@ -690,7 +645,7 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
     message: `removes ${deleted.to.entity_type} \`${extractEntityRepresentativeName(deleted.to)}\` for role \`${role.name}\``,
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input }
   });
-  await roleSessionRefresh(context, user, roleId);
+  await roleUsersCacheRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
@@ -705,7 +660,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       throw ForbiddenAccess();
     }
   }
-  let refreshSessionNeeded = false;
+  let refreshUserNeeded = false;
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (input.key === 'password') {
@@ -730,7 +685,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     }
     if (input.key === 'user_confidence_level') {
       // user's effective level might have changed, we need to refresh session info
-      refreshSessionNeeded = true;
+      refreshUserNeeded = true;
     }
     if (input.key === 'draft_context') {
       // draft context might have changed, we need to check draft context exists and refresh session info
@@ -739,7 +694,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         const draftWorkspace = await internalLoadById(context, user, draftContext);
         if (!draftWorkspace) throw Error('Could not find draft workspace');
       }
-      refreshSessionNeeded = true;
+      refreshUserNeeded = true;
     }
     if (input.key === 'unit_system') {
       const unit = R.head(input.value).toString();
@@ -750,21 +705,20 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     inputs.push(input);
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
-  if (refreshSessionNeeded) { // refresh session after update
-    await userSessionRefresh(userId);
-  }
   const input = updatedInputsToData(element, inputs);
   const personalUpdate = user.id === userId;
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : element.user_email;
-  const userAction = {
+  await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: personalUpdate ? 'extended' : 'administration',
     message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
-  };
-  await publishUserAction(userAction);
+  });
+  if (refreshUserNeeded) {
+    await refreshCacheForEntity(element); // Me edit must reset the local cache directly
+  }
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
@@ -872,7 +826,6 @@ export const meEditField = async (context, user, userId, inputs, password = null
       }
     }
   });
-
   return userEditField(context, user, userId, inputs);
 };
 
@@ -991,7 +944,7 @@ export const userDelete = async (context, user, userId) => {
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: deleted }
   });
   await killUserSessions(userId);
-  return userId;
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, deleted, user).then(() => userId);
 };
 
 export const userAddRelation = async (context, user, userId, input) => {
@@ -1020,8 +973,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     message: `adds ${relationData.toType} \`${extractEntityRepresentativeName(relationData.to)}\` for user \`${actionEmail}\``,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: finalInput }
   });
-  await userSessionRefresh(userId);
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user).then(() => relationData);
 };
 
 export const userDeleteRelation = async (context, user, targetUser, toId, relationshipType) => {
@@ -1039,7 +991,6 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
     message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for user \`${actionEmail}\``,
     context_data: { id: targetUser.id, entity_type: ENTITY_TYPE_USER, input }
   });
-  await userSessionRefresh(targetUser.id);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
@@ -1085,17 +1036,11 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for user \`${actionEmail}\``,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
-  await userSessionRefresh(userId);
-  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
 
 export const loginFromProvider = async (userInfo, opts = {}) => {
-  const {
-    providerGroups = [],
-    providerOrganizations = [],
-    autoCreateGroup = false,
-  } = opts;
+  const { providerGroups = [], providerOrganizations = [], autoCreateGroup = false } = opts;
   const context = executionContext('login_provider');
   // region test the groups existence and eventually auto create groups
   if (providerGroups.length > 0) {
@@ -1200,15 +1145,12 @@ export const otpUserGeneration = (user) => {
 };
 
 export const userAddIndividual = async (context, user) => {
-  const individualInput = { name: user.name, contact_information: user.user_email };
+  const targetUser = await findById(context, user, user.id);
+  const individualInput = { name: targetUser.name, contact_information: targetUser.user_email };
   // We need to bypass validation here has we maybe not setup all require fields
-  const individual = await addIndividual(context, user, individualInput, { bypassValidation: true });
-  // Need to check that in the future, seems that the queryAsAdmin in test fails without that
-  if (context.req?.session) {
-    context.req.session.user.individual_id = individual.id;
-  }
-  await userSessionRefresh(user.internal_id);
-  return individual;
+  const individual = await addIndividual(context, targetUser, individualInput, { bypassValidation: true });
+  await refreshCacheForEntity(targetUser); // Auto add must reset the local cache directly
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user).then(() => individual);
 };
 
 export const otpUserActivation = async (context, user, { secret, code }) => {
@@ -1222,16 +1164,18 @@ export const otpUserActivation = async (context, user, { secret, code }) => {
     const patch = { otp_activated: true, otp_secret: secret, otp_qr: uri };
     const { element } = await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, patch);
     context.req.session.user.otp_validated = isValidated;
-    context.req.session.user.otp_activated = true;
-    return element;
+    return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
   }
   throw AuthenticationFailure();
 };
 
 export const otpUserDeactivation = async (context, user, id) => {
+  if (!context.user_with_session) {
+    throw UnsupportedError('You need to deactivate your current 2FA in a valid user session');
+  }
   const patch = { otp_activated: false, otp_secret: '', otp_qr: '' };
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_USER, patch);
-  return element;
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
 export const otpUserLogin = async (req, user, { code }) => {
@@ -1246,90 +1190,6 @@ export const otpUserLogin = async (req, user, { code }) => {
   return isValidated;
 };
 
-const regenerateUserSession = async (user, req, res) => {
-  await delUserContext(user);
-  return new Promise((resolve) => {
-    res.clearCookie(OPENCTI_SESSION);
-    req.session.regenerate(() => {
-      resolve(user.id);
-    });
-  });
-};
-
-const buildSessionUser = (origin, impersonate, provider, settings) => {
-  const user = impersonate ?? origin;
-  const sessionUser = {
-    id: user.id,
-    individual_id: user.individual_id,
-    session_creation: now(),
-    session_password: user.password,
-    api_token: user.api_token,
-    internal_id: user.internal_id,
-    user_email: user.user_email,
-    otp_activated: user.otp_activated || provider === AUTH_BEARER,
-    otp_validated: user.otp_validated || (!user.otp_activated && !settings.otp_mandatory) || provider === AUTH_BEARER, // 2FA is implicitly validated when login from token
-    otp_secret: user.otp_secret,
-    otp_mandatory: settings.otp_mandatory,
-    name: user.name,
-    external: user.external,
-    login_provider: provider,
-    account_status: user.account_status,
-    account_lock_after_date: user.account_lock_after_date,
-    unit_system: user.unit_system,
-    submenu_show_icons: user.submenu_show_icons,
-    submenu_auto_collapse: user.submenu_auto_collapse,
-    monochrome_labels: user.monochrome_labels,
-    groups: user.groups,
-    roles: user.roles,
-    impersonate: impersonate !== undefined,
-    impersonate_user_id: impersonate !== undefined ? origin.id : null,
-    capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
-    default_hidden_types: user.default_hidden_types,
-    group_ids: user.groups?.map((g) => g.internal_id) ?? [],
-    organizations: user.organizations ?? [],
-    administrated_organizations: user.administrated_organizations ?? [],
-    inside_platform_organization: user.inside_platform_organization,
-    allowed_marking: user.allowed_marking.map((m) => ({
-      id: m.id,
-      standard_id: m.standard_id,
-      internal_id: m.internal_id,
-      definition_type: m.definition_type,
-    })),
-    max_shareable_marking: user.max_shareable_marking.map((m) => ({
-      id: m.id,
-      standard_id: m.standard_id,
-      internal_id: m.internal_id,
-      definition_type: m.definition_type,
-    })),
-    default_marking: user.default_marking?.map((entry) => ({
-      entity_type: entry.entity_type,
-      values: entry.values?.map((m) => ({
-        id: m.id,
-        standard_id: m.standard_id,
-        internal_id: m.internal_id,
-        definition_type: m.definition_type,
-      }))
-    })),
-    all_marking: user.all_marking.map((m) => ({
-      id: m.id,
-      standard_id: m.standard_id,
-      internal_id: m.internal_id,
-      definition_type: m.definition_type,
-    })),
-    session_version: PLATFORM_VERSION,
-    effective_confidence_level: user.effective_confidence_level,
-    no_creators: user.no_creators,
-    restrict_delete: user.restrict_delete,
-    personal_notifiers: user.personal_notifiers,
-    ...user.provider_metadata
-  };
-
-  if (isFeatureEnabled('DRAFT_WORKSPACE')) {
-    return { ...sessionUser, draft_context: user.draft_context };
-  }
-  return sessionUser;
-};
-
 const virtualOrganizationAdminCapability = {
   id: uuid(),
   standard_id: `capability--${uuid()}`,
@@ -1339,11 +1199,6 @@ const virtualOrganizationAdminCapability = {
   created_at: Date.now(),
   updated_at: Date.now()
 };
-const getStackTrace = () => {
-  const obj = {};
-  Error.captureStackTrace(obj, getStackTrace);
-  return obj.stack;
-};
 
 export const isSensitiveChangesAllowed = (userId, roles) => {
   if (userId === OPENCTI_ADMIN_UUID) {
@@ -1352,76 +1207,153 @@ export const isSensitiveChangesAllowed = (userId, roles) => {
   return roles.some(({ can_manage_sensitive_config }) => can_manage_sensitive_config);
 };
 
+export const buildCompleteUsers = async (context, clients) => {
+  const resolvedUsers = [];
+  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const contactInformationFilter = { mode: 'and', filters: [{ key: 'contact_information', values: clients.map((c) => c.user_email) }], filterGroups: [] };
+  const individualArgs = { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, connectionFormat: false, noFiltersChecking: true };
+  const individualsPromise = listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
+  const authRelationships = [RELATION_PARTICIPATE_TO, RELATION_MEMBER_OF, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_ACCESSES_TO];
+  const relations = await listAllRelations(context, SYSTEM_USER, authRelationships, { indices: READ_RELATIONSHIPS_INDICES });
+  const users = new Map();
+  const roleIds = new Set();
+  const groupIds = new Set();
+  const capabilityIds = new Set();
+  const organizationIds = new Set();
+  const groupsRoles = new Map();
+  const groupsMarkings = new Map();
+  const rolesCapabilities = new Map();
+  for (let index = 0; index < relations.length; index += 1) {
+    const { fromId, entity_type, toId } = relations[index];
+    // group <- RELATION_ACCESSES_TO -> marking
+    if (entity_type === RELATION_ACCESSES_TO) {
+      if (groupsMarkings.has(fromId)) {
+        const markings = groupsMarkings.get(fromId);
+        groupsMarkings.set(toId, [...(markings ?? []), toId]);
+      } else {
+        groupsMarkings.set(fromId, [toId]);
+      }
+    }
+    // user <- RELATION_PARTICIPATE_TO -> organization
+    if (entity_type === RELATION_PARTICIPATE_TO) {
+      organizationIds.add(toId);
+      if (users.has(fromId)) {
+        const user = users.get(fromId);
+        if (user.organizationIds) {
+          user.organizationIds.push(toId);
+        } else {
+          user.organizationIds = [toId];
+        }
+        users.set(fromId, user);
+      } else {
+        users.set(fromId, { organizationIds: [toId] });
+      }
+    }
+    // user <- RELATION_MEMBER_OF -> group
+    if (entity_type === RELATION_MEMBER_OF) {
+      groupIds.add(toId);
+      if (users.has(fromId)) {
+        const user = users.get(fromId);
+        if (user.groupIds) {
+          user.groupIds.push(toId);
+        } else {
+          user.groupIds = [toId];
+        }
+        users.set(fromId, user);
+      } else {
+        users.set(fromId, { groupIds: [toId] });
+      }
+    }
+    // role <- RELATION_HAS_CAPABILITY -> capability
+    if (entity_type === RELATION_HAS_CAPABILITY) {
+      roleIds.add(fromId);
+      capabilityIds.add(toId);
+      if (rolesCapabilities.has(fromId)) {
+        const capabilities = rolesCapabilities.get(fromId);
+        rolesCapabilities.set(fromId, [...(capabilities ?? []), toId]);
+      } else {
+        rolesCapabilities.set(fromId, [toId]);
+      }
+    }
+    // group <- RELATION_HAS_ROLE -> role
+    if (entity_type === RELATION_HAS_ROLE) {
+      groupIds.add(fromId);
+      roleIds.add(toId);
+      if (groupsRoles.has(fromId)) {
+        const roles = groupsRoles.get(fromId);
+        groupsRoles.set(toId, [...(roles ?? []), toId]);
+      } else {
+        groupsRoles.set(fromId, [toId]);
+      }
+    }
+  }
+  const ids = [...Array.from(groupIds), ...Array.from(roleIds), ...Array.from(organizationIds), ...Array.from(capabilityIds)];
+  const resolvedObject = await internalFindByIds(context, SYSTEM_USER, ids, { toMap: true });
+  const individuals = await individualsPromise;
+  const individualMap = new Map();
+  for (let indexIndividual = 0; indexIndividual < individuals.length; indexIndividual += 1) {
+    const individual = individuals[indexIndividual];
+    individualMap.set(individual.contact_information, individual);
+  }
+  for (let userIndex = 0; userIndex < clients.length; userIndex += 1) {
+    const client = clients[userIndex];
+    const user = users.get(client.internal_id);
+    const groups = (user?.groupIds ?? []).map((groupId) => resolvedObject[groupId])
+      .filter((e) => isNotEmptyField(e));
+    const roles = R.uniq(groups.map((group) => groupsRoles.get(group.internal_id)).flat())
+      .map((roleId) => resolvedObject[roleId]).filter((e) => isNotEmptyField(e));
+    const markings = R.uniq(groups.map((group) => groupsMarkings.get(group.internal_id)).flat())
+      .map((markingId) => markingsMap.get(markingId)).filter((e) => isNotEmptyField(e));
+    const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
+    const capabilities = R.uniq(roles.map((role) => rolesCapabilities.get(role.internal_id)).flat())
+      .map((capabilityId) => resolvedObject[capabilityId]).filter((e) => isNotEmptyField(e));
+    // Force push the bypass for default admin
+    const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
+    if (client.internal_id === OPENCTI_ADMIN_UUID && withoutBypass) {
+      const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
+      capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
+    }
+    const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
+    const organizations = (user?.organizationIds ?? []).map((organizationId) => resolvedObject[organizationId]);
+    const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
+    const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
+    const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
+    const administrated_organizations = organizations.filter((o) => (o.authorized_authorities ?? []).includes(client.id));
+    const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, capabilities });
+    const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
+    const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
+    const marking = await getUserAndGlobalMarkings(context, client.id, groups, markings, capabilities);
+    if (administrated_organizations.length > 0) {
+      capabilities.push(virtualOrganizationAdminCapability);
+    }
+    resolvedUsers.push({
+      ...client,
+      ...canManageSensitiveConfig,
+      roles,
+      capabilities,
+      default_hidden_types,
+      groups,
+      organizations,
+      administrated_organizations,
+      otp_activated: client.otp_activated ?? false,
+      individual_id: individualMap.get(client.user_email)?.internal_id,
+      effective_confidence_level,
+      no_creators,
+      restrict_delete,
+      allowed_marking: marking.user,
+      default_marking: marking.default,
+      max_shareable_marking: marking.max_shareable,
+    });
+  }
+  return resolvedUsers;
+};
+
 export const buildCompleteUser = async (context, client) => {
   if (!client) {
     return undefined;
   }
-  const initialCallStack = getStackTrace();
-  logApp.debug('Building complete user', { client, stack: initialCallStack });
-  const contactInformationFilter = {
-    mode: 'and',
-    filters: [{ key: 'contact_information', values: [client.user_email] }],
-    filterGroups: [],
-  };
-  // find user corresponding individual (we need only to get the first one)
-  const individualArgs = { first: 1, indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, connectionFormat: false, noFiltersChecking: true };
-  const individualsPromise = listEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
-  const organizationsPromise = listAllToEntitiesThroughRelations(
-    context,
-    SYSTEM_USER,
-    client.id,
-    RELATION_PARTICIPATE_TO,
-    ENTITY_TYPE_IDENTITY_ORGANIZATION,
-    { withInferences: true }
-  );
-  const userGroupsPromise = listAllToEntitiesThroughRelations(context, SYSTEM_USER, client.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
-  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const [individuals, organizations, groups] = await Promise.all([individualsPromise, organizationsPromise, userGroupsPromise]);
-  const userOrganizationIds = organizations.map((m) => m.internal_id);
-  const isUserPlatform = settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
-  const roles = await getRoles(context, groups);
-  const capabilities = await getCapabilities(context, client.id, roles);
-  const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
-  const marking = await getUserAndGlobalMarkings(context, client.id, groups, capabilities);
-  const administrated_organizations = organizations.filter((o) => o.authorized_authorities?.includes(client.id));
-  if (administrated_organizations.length > 0) {
-    capabilities.push(virtualOrganizationAdminCapability);
-  }
-  const individualId = individuals.length > 0 ? R.head(individuals).id : undefined;
-
-  // Default hidden types
-  const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
-  const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
-  const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));
-
-  // effective confidence level
-  const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, capabilities });
-
-  // Other groups attribute
-  const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
-  const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
-
-  const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
-
-  return {
-    ...client,
-    ...canManageSensitiveConfig,
-    roles,
-    capabilities,
-    default_hidden_types,
-    groups,
-    organizations,
-    administrated_organizations,
-    individual_id: individualId,
-    inside_platform_organization: isUserPlatform,
-    allowed_marking: marking.user,
-    all_marking: marking.all,
-    default_marking: marking.default,
-    max_shareable_marking: marking.max_shareable,
-    effective_confidence_level,
-    no_creators,
-    restrict_delete,
-  };
+  const users = await buildCompleteUsers(context, [client]);
+  return users[0];
 };
 
 export const resolveUserByIdFromCache = async (context, id) => {
@@ -1436,9 +1368,22 @@ export const resolveUserById = async (context, id) => {
   return buildCompleteUser(context, client);
 };
 
-export const resolveUserByToken = async (context, tokenValue) => {
-  const client = await elLoadBy(context, SYSTEM_USER, 'api_token', tokenValue, ENTITY_TYPE_USER);
-  return buildCompleteUser(context, client);
+export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) => {
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  if (platformUsers.has(tokenOrId)) {
+    let authenticatedUser = platformUsers.get(tokenOrId);
+    const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    validateUser(authenticatedUser, settings);
+    const applicantId = req.headers['opencti-applicant-id'];
+    if (applicantId && isBypassUser(authenticatedUser)) {
+      authenticatedUser = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
+      if (!authenticatedUser) {
+        throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
+      }
+    }
+    return userWithOrigin(req, authenticatedUser);
+  }
+  throw FunctionalError(`Cant identify with ${tokenOrId}`);
 };
 
 export const userRenewToken = async (context, user, userId) => {
@@ -1490,132 +1435,64 @@ const validateUser = (user, settings) => {
   }
 };
 
-export const internalAuthenticateUser = async (context, req, user, provider, { token, previousSession, isSessionRefresh }) => {
-  let impersonate;
-  const logged = await buildCompleteUser(context, user);
+export const sessionAuthenticateUser = async (context, req, user, provider) => {
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const logged = platformUsers.get(user.internal_id);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   validateUser(logged, settings);
-  const applicantId = req.headers['opencti-applicant-id'];
-  if (isNotEmptyField(applicantId) && logged.id !== applicantId) {
-    if (isBypassUser(logged)) {
-      const applicantUser = await resolveUserByIdFromCache(context, applicantId);
-      if (isEmptyField(applicantUser)) {
-        logApp.warn('User cant be impersonate (not exists)', { applicantId });
-      } else {
-        impersonate = applicantUser;
-      }
-    }
-  }
-  const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
-  // If previous session stored, some specific attributes needs to follow
-  if (previousSession) {
-    sessionUser.otp_validated = previousSession.otp_validated;
-    sessionUser.impersonate = previousSession.impersonate;
-    sessionUser.impersonate_user_id = previousSession.impersonate_user_id;
-  }
-  const userOrigin = userWithOrigin(req, sessionUser);
-  if (isEmptyField(user.stateless_session) || user.stateless_session === false) {
-    if (!isSessionRefresh) {
-      await publishUserAction({
-        user: userOrigin,
-        event_type: 'authentication',
-        event_access: 'administration',
-        event_scope: 'login',
-        context_data: { provider }
-      });
-    }
-    req.session.user = sessionUser;
-    req.session.session_provider = { provider, token };
-    req.session.session_refresh = false;
-    req.session.save();
-  }
+  // Build and save the session
+  req.session.user = { id: user.id, session_creation: now(), otp_validated: false };
+  req.session.session_provider = provider;
+  req.session.save();
+  // Publish the login event
+  const userOrigin = userWithOrigin(req, logged);
+  await publishUserAction({
+    user: userOrigin,
+    event_type: 'authentication',
+    event_access: 'administration',
+    event_scope: 'login',
+    context_data: { provider }
+  });
   return userOrigin;
 };
 
-export const authenticateUser = async (context, req, user, provider, opts = {}) => {
-  // Build the user session with only required fields
-  return internalAuthenticateUser(context, req, user, provider, opts);
-};
-
 export const HEADERS_AUTHENTICATORS = [];
-export const authenticateUserFromRequest = async (context, req, res, isSessionRefresh = false) => {
-  const auth = req.session?.user;
-  // If user already have a session
-  if (auth && !isSessionRefresh) {
-    // User already identified, we need to enforce the session validity
-    const { provider, token } = req.session.session_provider;
-    // For bearer, validate that the bearer is the same as the session
-    if (provider === AUTH_BEARER) {
-      const currentToken = extractTokenFromBearer(req.headers.authorization);
-      if (currentToken !== token) {
-        // Session doesn't match, kill the current session and try to re auth
-        await regenerateUserSession(auth, req, res);
-        return await authenticateUserFromRequest(context, req, res);
-      }
-    }
-    // For basic auth, validate that user and password match the session
-    if (provider === AUTH_BASIC) {
-      const { username, password } = extractInfoFromBasicAuth(req.headers.authorization);
-      const sameUsername = username === auth.user_email;
-      const sessionPassword = auth.session_password;
-      const passwordCompare = isNotEmptyField(password) && isNotEmptyField(sessionPassword);
-      const samePassword = passwordCompare && bcrypt.compareSync(password, sessionPassword);
-      if (!sameUsername || !samePassword) {
-        // Session doesn't match, kill the current session and try to re auth
-        await regenerateUserSession(auth, req, res);
-        return await authenticateUserFromRequest(context, req, res);
-      }
-    }
-    // Other providers doesn't need specific validation, session management is enough
-    // For impersonate auth, the applicant id must match the session
-    const applicantId = req.headers['opencti-applicant-id'];
-    const isNotSameUser = auth.id !== applicantId;
-    const isImpersonateChange = auth.impersonate && isNotSameUser;
-    const isNowImpersonate = isNotSameUser && !auth.impersonate && isBypassUser(auth) && applicantId;
-    if (isImpersonateChange || isNowImpersonate) {
-      // Impersonate doesn't match, kill the current session and try to re auth
-      return await authenticateUserFromRequest(context, req, res, true);
-    }
-    // If session is marked for refresh, reload the user data in the session
-    // If session is old by a past application version, make a refresh
-    if (auth.session_version !== PLATFORM_VERSION || req.session.session_refresh) {
-      const refreshOpts = { token, previousSession: auth, isSessionRefresh: true };
-      const user = await internalLoadById(context, SYSTEM_USER, auth.impersonate_user_id ?? auth.id);
-      return await internalAuthenticateUser(context, req, user, provider, refreshOpts);
-    }
-    // If everything ok, return the authenticated user.
-    return userWithOrigin(req, auth);
+export const authenticateUserFromRequest = async (context, req) => {
+  const sessionUser = req.session?.user;
+  // region If user already have a session
+  if (sessionUser) {
+    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    const logged = platformUsers.get(sessionUser.id);
+    const authUser = { ...sessionUser, ...logged };
+    return userWithOrigin(req, authUser);
   }
-  // If user not identified, try to extract token from bearer
-  let loginProvider = AUTH_BEARER;
-  let tokenUUID = extractTokenFromBearer(req.headers.authorization);
-  // If no bearer specified, try with basic auth
-  if (!tokenUUID) {
-    loginProvider = AUTH_BASIC;
-    tokenUUID = await extractTokenFromBasicAuth(req.headers.authorization);
-  }
-  // Get user from the token if found
-  if (tokenUUID) {
-    try {
-      const user = await resolveUserByToken(context, tokenUUID);
-      if (user) {
-        const opts = { token: tokenUUID, isSessionRefresh };
-        return await authenticateUser(context, req, user, loginProvider, opts);
-      }
-    } catch (err) {
-      logApp.error('Error resolving user by token', { cause: err });
-    }
-  }
-  // If user still not identified, try headers authentication
+  // endregion
+  // region Direct authentication
+  // If user not identified, try headers authentication
   if (HEADERS_AUTHENTICATORS.length > 0) {
     for (let i = 0; i < HEADERS_AUTHENTICATORS.length; i += 1) {
       const headProvider = HEADERS_AUTHENTICATORS[i];
       const user = await headProvider.reqLoginHandler(req);
       if (user) {
-        return await authenticateUser(context, req, user, headProvider.provider);
+        return await authenticateUserByTokenOrUserId(context, req, user.id);
       }
     }
   }
+  // If user not identified, try to extract token from bearer
+  let tokenUUID = extractTokenFromBearer(req.headers.authorization);
+  // If no bearer specified, try with basic auth
+  if (!tokenUUID) {
+    tokenUUID = await extractTokenFromBasicAuth(req.headers.authorization);
+  }
+  // Get user from the token if found
+  if (tokenUUID) {
+    try {
+      return await authenticateUserByTokenOrUserId(context, req, tokenUUID);
+    } catch (err) {
+      logApp.error('Error resolving user by token', { cause: err });
+    }
+  }
+  // endregion
   // No auth, return undefined
   return undefined;
 };
@@ -1650,7 +1527,6 @@ export const initAdmin = async (context, email, password, tokenValue) => {
       },
     };
     await addUser(context, SYSTEM_USER, userToCreate);
-    await userSessionRefresh(OPENCTI_ADMIN_UUID);
   }
 };
 

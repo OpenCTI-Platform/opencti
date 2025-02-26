@@ -5,7 +5,13 @@ import { ADMIN_USER } from '../../utils/testQuery';
 import { MARKING_TLP_CLEAR } from '../../../src/schema/identifier';
 import { findById as findDocumentById, SUPPORT_STORAGE_PATH } from '../../../src/modules/internal/document/document-domain';
 
-const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'file-storage-helper-test', otp_mandatory: false };
+const adminContext: AuthContext = {
+  user: ADMIN_USER,
+  tracing: undefined,
+  source: 'file-storage-helper-test',
+  otp_mandatory: false,
+  user_inside_platform_organization: false,
+};
 
 describe('File storage upload with marking', () => {
   it('should file upload succeed to S3 and data in elastic have marking stored.', async () => {

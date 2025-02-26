@@ -2,7 +2,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { BasicStoreEntity, StoreEntityReport } from '../../../src/types/store';
 import { addIndicator, promoteIndicatorToObservables } from '../../../src/modules/indicator/indicator-domain';
 import { addStixCyberObservable, promoteObservableToIndicator, stixCyberObservableDelete } from '../../../src/domain/stixCyberObservable';
-import { computeQueryTaskElements, executePromoteIndicatorToObservables, executePromoteObservableToIndicator, executeReplace, executeRemoveAuthMembers } from '../../../src/manager/taskManager';
+import {
+  computeQueryTaskElements,
+  executePromoteIndicatorToObservables,
+  executePromoteObservableToIndicator,
+  executeReplace,
+  executeRemoveAuthMembers
+} from '../../../src/manager/taskManager';
 import type { AuthContext } from '../../../src/types/user';
 import { ADMIN_USER, getUserIdByEmail, TEST_ORGANIZATION, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR } from '../../../src/schema/identifier';
@@ -19,7 +25,7 @@ import { editAuthorizedMembers } from '../../../src/utils/authorizedMembers';
 import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../src/utils/access';
 
 describe('TaskManager executeReplace tests ', () => {
-  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false };
+  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false, user_inside_platform_organization: false };
   const reportsId: string[] = [];
   afterAll(async () => {
     expect(reportsId.length).toBe(9);
@@ -378,7 +384,7 @@ describe('TaskManager executePromote tests', () => {
 });
 
 describe('TaskManager executeRemoveAuthMembers tests', () => {
-  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false };
+  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false, user_inside_platform_organization: false };
   let reportId: string;
   afterAll(async () => {
     await stixDomainObjectDelete(adminContext, adminContext.user, reportId); // + 1 delete

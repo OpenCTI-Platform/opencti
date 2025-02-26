@@ -16,9 +16,12 @@ import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
-import { executionContext } from '../utils/access';
+import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ForbiddenAccess } from '../config/errors';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { isNotEmptyField } from '../database/utils';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -87,7 +90,9 @@ const createHttpServer = async () => {
           group_ids: wsSession.user?.group_ids,
           organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
         };
-        context.user = { ...wsSession.user, origin };
+        const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+        const logged = platformUsers.get(wsSession?.user.id);
+        context.user = { ...wsSession?.user, ...logged, origin };
         return context;
       }
       throw ForbiddenAccess('User must be authenticated');
@@ -131,6 +136,8 @@ const createHttpServer = async () => {
         const executeContext = executionContext('api');
         executeContext.req = req;
         executeContext.res = res;
+        const settings = await getEntityFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+        executeContext.otp_mandatory = settings.otp_mandatory ?? false;
         executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
         if (isFeatureEnabled('DRAFT_WORKSPACE')) {
           executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
@@ -139,12 +146,24 @@ const createHttpServer = async () => {
         executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
         executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
         try {
-          const user = await authenticateUserFromRequest(executeContext, req, res);
+          const user = await authenticateUserFromRequest(executeContext, req);
           if (user) {
             if (isFeatureEnabled('DRAFT_WORKSPACE') && !Object.keys(req.headers).some((k) => k === 'opencti-draft-id')) {
               executeContext.draft_context = user.draft_context;
             }
             executeContext.user = userWithOrigin(req, user);
+            executeContext.user_otp_validated = true;
+            executeContext.user_with_session = isNotEmptyField(req.session?.user);
+            if (executeContext.user_with_session) {
+              executeContext.user_otp_validated = req.session?.user.otp_validated ?? false;
+            }
+            if (isBypassUser(executeContext.user)) {
+              executeContext.user_inside_platform_organization = true;
+            } else {
+              const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
+              executeContext.user_inside_platform_organization = settings.platform_organization
+                ? userOrganizationIds.includes(settings.platform_organization) : true;
+            }
           }
         } catch (error) {
           logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });

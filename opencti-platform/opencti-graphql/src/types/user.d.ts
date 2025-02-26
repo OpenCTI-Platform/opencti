@@ -30,7 +30,6 @@ interface AuthUser extends BasicStoreIdentifier {
   name: string
   user_email: string
   account_lock_after_date: Date | undefined
-  inside_platform_organization: boolean
   origin: Partial<UserOrigin>
   roles: Array<UserRole>
   groups: Array<Group>
@@ -40,7 +39,6 @@ interface AuthUser extends BasicStoreIdentifier {
   allowed_marking: Array<StoreMarkingDefinition>
   default_marking?: Array<{ entity_type: string, values: Array<StoreMarkingDefinition> }>
   max_shareable_marking: Array<StoreMarkingDefinition>
-  all_marking: Array<StoreMarkingDefinition>
   api_token: string
   account_status: string
   effective_confidence_level: ConfidenceLevel | null
@@ -58,4 +56,7 @@ interface AuthContext {
   user: AuthUser | undefined
   draft_context?: string | undefined
   eventId?: string | undefined
+  user_inside_platform_organization: boolean
+  user_otp_validated?: boolean
+  user_with_session?: boolean
 }

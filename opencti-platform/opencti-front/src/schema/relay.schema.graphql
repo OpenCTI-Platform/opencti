@@ -1675,7 +1675,6 @@ type User implements BasicObject & InternalObject {
   description: String
   firstname: String
   otp_activated: Boolean
-  stateless_session: Boolean
   otp_qr: String
   otp_mandatory: Boolean
   lastname: String
