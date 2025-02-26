@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-const getTrackConfig = ({ error, source, target, disabled }) => {
+const getTrackConfig = ({ error, source, target, disabled = false }) => {
   const basicStyle = {
     left: `${source.percent}%`,
     width: `calc(${target.percent - source.percent}% - 1px)`,
@@ -46,7 +46,5 @@ Track.propTypes = {
   getTrackProps: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
 };
-
-Track.defaultProps = { disabled: false };
 
 export default Track;

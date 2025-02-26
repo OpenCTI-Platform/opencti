@@ -691,7 +691,7 @@ StixCoreRelationshipCreation.propTypes = {
   startTime: PropTypes.string,
   stopTime: PropTypes.string,
   confidence: PropTypes.number,
-  defaultCreatedBy: PropTypes.object,
+  defaultCreatedBy: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   defaultMarkingDefinitions: PropTypes.array,
   handleClose: PropTypes.func,
   handleReverseRelation: PropTypes.func,

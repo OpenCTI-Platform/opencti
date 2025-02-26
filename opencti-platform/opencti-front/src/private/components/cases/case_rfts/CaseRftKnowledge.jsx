@@ -337,7 +337,7 @@ class CaseRftKnowledgeComponent extends Component {
                   if (props && props.caseRft) {
                     return (
                       <CaseRftKnowledgeGraph
-                        caseData={props.caseRft}
+                        data={props.caseRft}
                         mode={mode}
                         enableReferences={enableReferences}
                       />

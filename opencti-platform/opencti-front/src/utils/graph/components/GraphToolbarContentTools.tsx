@@ -62,12 +62,14 @@ const GraphToolbarContentTools = ({
 
   if (!container) return null;
 
-  const selectedEntityTypes = Array.from(new Set(selectedNodes.map((n) => n.entity_type)));
-  const [entityType1, entityType2] = selectedEntityTypes;
-  const nodesEntityType1 = selectedNodes.filter((n) => n.entity_type === entityType1);
-  const nodesEntityType2 = selectedNodes.filter((n) => n.entity_type === entityType2);
+  const head = selectedNodes.slice(0, 1);
+  const tail = selectedNodes.slice(-1);
+  const mid = selectedNodes.slice(1, -1);
 
-  const relBetweenNodes = selectedEntityTypes.length === 2 && selectedLinks.length === 0;
+  const fromEntityTypes = Array.from(new Set([...head, ...mid].map((n) => n.entity_type)));
+  const toEntityTypes = Array.from(new Set([...mid, ...tail].map((n) => n.entity_type)));
+
+  const relBetweenNodes = selectedNodes.length >= 2 && selectedLinks.length === 0;
   const relBetweenNodeAndLink = selectedNodes.length === 1 && selectedLinks.length === 1;
   const canAddRelation = relBetweenNodes || relBetweenNodeAndLink;
 
@@ -75,14 +77,19 @@ const GraphToolbarContentTools = ({
     || selectedLinks.some((n) => n.inferred || n.isNestedInferred);
   const canDelete = !selectionContainsInferred && (selectedNodes.length > 0 || selectedLinks.length > 0);
 
+  const isReversed = relationReversed || sightingReversed || nestedReversed;
+
   let objectsFrom: (GraphNode | GraphLink)[] = [];
   let objectsTo: (GraphNode | GraphLink)[] = [];
-  if (relBetweenNodes) {
-    objectsFrom = relationReversed || sightingReversed || nestedReversed ? nodesEntityType2 : nodesEntityType1;
-    objectsTo = relationReversed || sightingReversed || nestedReversed ? nodesEntityType1 : nodesEntityType2;
+  if (relBetweenNodes && fromEntityTypes.length === 1) {
+    objectsFrom = isReversed ? tail : [...head, ...mid];
+    objectsTo = isReversed ? [...head, ...mid] : tail;
+  } else if (relBetweenNodes && toEntityTypes.length === 1) {
+    objectsFrom = isReversed ? [...mid, ...tail] : head;
+    objectsTo = isReversed ? head : [...mid, ...tail];
   } else if (relBetweenNodeAndLink) {
-    objectsFrom = relationReversed || sightingReversed || nestedReversed ? [selectedNodes[0]] : [selectedLinks[0]];
-    objectsTo = relationReversed || sightingReversed || nestedReversed ? [selectedLinks[0]] : [selectedNodes[0]];
+    objectsFrom = isReversed ? [selectedNodes[0]] : [selectedLinks[0]];
+    objectsTo = isReversed ? [selectedLinks[0]] : [selectedNodes[0]];
   }
 
   const removeFromAddPanel = (node: { id: string }) => {

@@ -9,7 +9,6 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
-import _ReportKnowledgeGraph from './_ReportKnowledgeGraph';
 import ReportKnowledgeCorrelation, { reportKnowledgeCorrelationQuery } from './ReportKnowledgeCorrelation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ReportPopover from './ReportPopover';
@@ -337,8 +336,7 @@ class ReportKnowledgeComponent extends Component {
                 render={({ props }) => {
                   if (props && props.report) {
                     return (
-                      // <ReportKnowledgeGraph report={props.report} mode={mode} enableReferences={enableReferences}/>
-                      <_ReportKnowledgeGraph mode={mode} data={props.report} enableReferences={enableReferences} />
+                      <ReportKnowledgeGraph mode={mode} data={props.report} enableReferences={enableReferences} />
                     );
                   }
                   return (
