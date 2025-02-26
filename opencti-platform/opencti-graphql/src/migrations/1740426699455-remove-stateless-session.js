@@ -1,4 +1,4 @@
-import { READ_DATA_INDICES } from '../database/utils';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { logApp } from '../config/conf';
 import { elUpdateByQueryForMigration } from '../database/engine';
 
@@ -21,7 +21,7 @@ export const up = async (next) => {
   };
   await elUpdateByQueryForMigration(
     message,
-    READ_DATA_INDICES,
+    READ_INDEX_INTERNAL_OBJECTS,
     updateQuery
   );
   logApp.info(`${message} > done`);
