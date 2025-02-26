@@ -22,7 +22,15 @@ import {
 } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { killUserSessions } from '../database/session';
-import { buildPagination, isEmptyField, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
+import {
+  buildPagination,
+  isEmptyField,
+  isNotEmptyField,
+  MAX_EVENT_LOOP_PROCESSING_TIME,
+  READ_INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_RELATIONSHIPS_INDICES
+} from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../schema/general';
@@ -1223,13 +1231,14 @@ export const buildCompleteUsers = async (context, clients) => {
   const groupsRoles = new Map();
   const groupsMarkings = new Map();
   const rolesCapabilities = new Map();
+  let startProcessingTime = new Date().getTime();
   for (let index = 0; index < relations.length; index += 1) {
     const { fromId, entity_type, toId } = relations[index];
     // group <- RELATION_ACCESSES_TO -> marking
     if (entity_type === RELATION_ACCESSES_TO) {
       if (groupsMarkings.has(fromId)) {
         const markings = groupsMarkings.get(fromId);
-        groupsMarkings.set(toId, [...(markings ?? []), toId]);
+        groupsMarkings.set(fromId, [...(markings ?? []), toId]);
       } else {
         groupsMarkings.set(fromId, [toId]);
       }
@@ -1281,10 +1290,17 @@ export const buildCompleteUsers = async (context, clients) => {
       roleIds.add(toId);
       if (groupsRoles.has(fromId)) {
         const roles = groupsRoles.get(fromId);
-        groupsRoles.set(toId, [...(roles ?? []), toId]);
+        groupsRoles.set(fromId, [...(roles ?? []), toId]);
       } else {
         groupsRoles.set(fromId, [toId]);
       }
+    }
+    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
+    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
+      startProcessingTime = new Date().getTime();
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
     }
   }
   const ids = [...Array.from(groupIds), ...Array.from(roleIds), ...Array.from(organizationIds), ...Array.from(capabilityIds)];
