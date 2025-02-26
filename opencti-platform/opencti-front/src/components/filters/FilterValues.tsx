@@ -113,9 +113,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     return (
       <Fragment key={id}>
         {filterOperator === 'within' && filterValues[0] === id
-          && <div>
-            [
-          </div>
+          && <span>[</span>
         }
         <FilterValuesContent
           redirection={tooltip ? false : redirection}
@@ -135,9 +133,9 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           </div>
         )}
         {filterOperator === 'within'
-          && <div>
-            {last(filterValues) === id ? ']' : ','}
-          </div>
+          && <span>
+            {last(filterValues) === id ? ']' : ', '}
+          </span>
         }
       </Fragment>
     );
