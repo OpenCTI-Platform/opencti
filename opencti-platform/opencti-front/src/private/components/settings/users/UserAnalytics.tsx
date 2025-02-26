@@ -66,6 +66,9 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
       >
         <Grid item xs={6}>
           <AuditsMultiVerticalBars
+            variant={undefined}
+            startDate={undefined}
+            endDate={undefined}
             height={300}
             parameters={{
               title: t_i18n('Login to the platform'),
@@ -93,6 +96,9 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         </Grid>
         <Grid item xs={6}>
           <AuditsMultiLineChart
+            variant={undefined}
+            startDate={undefined}
+            endDate={undefined}
             height={300}
             parameters={{
               title: t_i18n('Knowledge generation'),
@@ -157,6 +163,9 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         </Grid>
         <Grid item xs={4}>
           <AuditsHorizontalBars
+            variant={undefined}
+            startDate={undefined}
+            endDate={undefined}
             height={350}
             parameters={{
               title: t_i18n('Top global search keywords'),
@@ -211,6 +220,9 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         </Grid>
         <Grid item xs={4}>
           <AuditsRadar
+            variant={undefined}
+            startDate={undefined}
+            endDate={undefined}
             height={350}
             parameters={{
               title: t_i18n('Top authors of read and exported entities'),
@@ -241,6 +253,9 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         </Grid>
         <Grid item xs={8}>
           <AuditsList
+            variant={undefined}
+            startDate={undefined}
+            endDate={undefined}
             height={350}
             parameters={{
               title: t_i18n('Latest exports'),
@@ -268,6 +283,9 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         </Grid>
         <Grid item xs={4}>
           <AuditsHorizontalBars
+            variant={undefined}
+            startDate={undefined}
+            endDate={undefined}
             height={350}
             parameters={{
               title: t_i18n('Top read or exported entities'),
