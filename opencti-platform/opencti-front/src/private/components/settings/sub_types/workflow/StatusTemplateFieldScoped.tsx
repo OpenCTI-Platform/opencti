@@ -48,8 +48,8 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
       .toPromise()
       .then((data) => {
         const queryData: StatusTemplateFieldScopedSearchQuery$data = data as unknown as StatusTemplateFieldScopedSearchQuery$data;
-        const fieldData: Option[] = queryData?.statusTemplatesByStatusScope?.map((statusData: Option) => {
-          return { label: statusData?.name, value: statusData?.id, color: statusData?.color };
+        const fieldData = queryData?.statusTemplatesByStatusScope?.map((statusData) => {
+          return { label: statusData?.name, value: statusData?.id, color: statusData?.color } as Option;
         }) || [];
         setStatusTemplates(fieldData);
       });
