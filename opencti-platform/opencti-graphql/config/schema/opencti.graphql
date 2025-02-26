@@ -12833,6 +12833,7 @@ type Query {
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   connector(id: String!): Connector @auth(for: [MODULES])
   connectors: [Connector!] @auth(for: [MODULES])
+  connectorsForManager(managerId: ID!): [Connector!] @auth(for: [MODULES])
   connectorsForWorker: [Connector] @auth(for: [MODULES])
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
