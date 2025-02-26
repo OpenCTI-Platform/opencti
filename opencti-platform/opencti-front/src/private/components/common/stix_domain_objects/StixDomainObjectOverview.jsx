@@ -19,7 +19,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Formik } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
-import ProcessingStatusOverview from '@components/cases/case_rfis/ProcessingStatusOverview';
+import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOverview';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
