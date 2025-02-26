@@ -235,9 +235,9 @@ For some keys, negative equality filtering is not supported yet (`not_eq` operat
 
 #### The `regardingOf` filter key
 
-The ``regardingOf`` filter key has a special format and enables to target the entities having a relationship of a certain type with certain entities.
+The ``regardingOf`` filter key, displayed as "in regards of" in the UI, has a special format and enables to target the entities having a relationship of a certain type with certain entities.
 
-Here is an example of filter to fetch the entities related to the entity X:
+Here is an example of filter to fetch the entities related to the entity X, regardless of the side of the relationship:
 
 ```ts
 filters = {
@@ -254,6 +254,52 @@ filters = {
   filterGroups: [],
 };
 ```
+
+![RegardingOf filter](./assets/filters-regardingOf.png)
+
+!!! warning "This filter may exclude some results for technical reasons"
+
+    This filter is based on denormalized information for relationships.
+    In a given entity, we directly store the id of the entities with which the entity has a relationship. 
+    This significatively improves query speed.
+    
+    However, this approach might lead to ever-growing entities in database, with hundreds of thousands of ids stored in a given entity. 
+    Take for example a very active Intrusion Set, related to thousands of observables. 
+    The corresponding denormalization data in the Intrusion Set would represent a significant overhead, leading to dramatical performance drop when manipulating this object.
+    For performance reasons, the denormalized information is thus not stored in the source entity for some relationships involving high data volumes.
+    
+    This impacts the ``regardingOf`` filter, that will only look at the denormalized data in search of exiting relationships. 
+    The following relationships will not be detected: 
+ 
+    - the relationships of type ``related_to`` with an ``Observable`` as source type,
+
+        Example: given the relationship "Winscp.rnd (file observable) related to APT41 (intrusion set)" present in the platform
+
+        APT41 would not be returned when using filter "In regards of" related to Winscp.rnd
+
+        Winscp.rnd would be returned when using filter "In regards of" related to APT41
+
+    - the relationships of type ``located_at`` with an ``Ipv4/Ipv6 Address`` or a ``City`` as source type, and a ``Region`` or ``Country`` as target type,
+
+        Example: given the relationship "IP 1.1.1.1 (observable) located in France (Country)" present in the platform
+
+        France would not be returned when using filter "In regard of" located at 1.1.1.1
+
+        1.1.1.1 would be returned when using filter "In regard of" located at France
+
+    - the relationships of type ``targets`` with a ``Region``, ``Country`` or ``Sector`` as target type.
+
+        Example: given the relationship "0mega (Malware) targets Energy (Sector)" present in the platform
+
+        Energy would not be returned when using filter "In regards of" targets 0mega
+
+        0mega will be returned when using filter "In regards of" targets Energy
+
+If a values combination may not return all the results because one of the above relationships is involved, a warning icon is displayed before the filter icon :
+
+![RegardingOf filter with warning](./assets/filters-regardingOf-warning.png)
+
+
 
 #### Limited support in stream events filtering
 
