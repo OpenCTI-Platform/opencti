@@ -53,7 +53,6 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
         <ItemStatusTemplate
           statuses={statusList}
           disabled={false}
-          scope={StatusScopeEnum.REQUEST_ACCESS}
         />
       </div>
       <div style={{ marginTop: 20 }}>
