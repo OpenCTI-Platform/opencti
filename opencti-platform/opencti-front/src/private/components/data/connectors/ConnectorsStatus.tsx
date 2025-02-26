@@ -8,8 +8,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import Form from '@rjsf/core';
+import validator from '@rjsf/validator-ajv8';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
-import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
+import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, PlaylistRemoveOutlined, SettingsOutlined, HubOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -21,6 +23,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
 import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -34,6 +39,7 @@ import type { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import SortConnectorsHeader from './SortConnectorsHeader';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -121,11 +127,19 @@ export const connectorsStatusQuery = graphql`
 
 const connectorsStatusFragment = graphql`
       fragment ConnectorsStatus_data on Query {
+        connectorManagers {
+          id
+          name
+          active
+          last_sync_execution
+          connector_manager_contracts
+        }
         connectors {
           id
           name
           active
           auto
+          is_managed
           connector_trigger_filters
           connector_type
           connector_scope
@@ -240,6 +254,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   };
 
   const queues = data.rabbitMQMetrics?.queues ?? [];
+  const connectorManagers = data.connectorManagers ?? [];
   const connectorsWithMessages = data.connectors?.map((connector) => {
     const queueName = connector.connector_type === 'INTERNAL_ENRICHMENT'
       ? `listen_${connector.id}`
@@ -317,6 +332,97 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
         </DialogActions>
       </Dialog>
       <Card variant="outlined">
+        <CardHeader
+          avatar={<ExtensionOutlined className={classes.icon} />}
+          title={t_i18n('Registered manager (Enterprise edition)')}
+          style={{ paddingBottom: 0 }}
+        />
+        <CardContent style={{ paddingTop: 0 }}>
+          <List classes={{ root: classes.linesContainer }}>
+            <ListItem
+              classes={{ root: classes.itemHead }}
+              divider={false}
+              style={{ paddingTop: 0 }}
+            >
+              <ListItemIcon>
+                <span style={{ padding: '0 8px 0 8px', fontWeight: 700, fontSize: 12 }}>#</span>
+              </ListItemIcon>
+              <ListItemText primary={
+                <div style={{ display: 'flex', width: '100%' }}>
+                  <div style={{ width: '25%' }}>
+                    <SortConnectorsHeader field="name" label="Name" isSortable={false} sortBy={''} reverseBy={() => {}} orderAsc={false} />
+                  </div>
+                  <div style={{ width: '10%' }}>
+                    <SortConnectorsHeader field="messages" label="Contracts" isSortable={false} sortBy={''} reverseBy={() => {}} orderAsc={false} />
+                  </div>
+                  <div style={{ width: '15%' }}>
+                    <SortConnectorsHeader field="active" label="Status" isSortable={false} sortBy={''} reverseBy={() => {}} orderAsc={false} />
+                  </div>
+                  <div style={{ width: '35%' }}>
+                    <SortConnectorsHeader field="updated_at" label="Modified" isSortable={false} sortBy={''} reverseBy={() => {}} orderAsc={false} />
+                  </div>
+                </div>}
+              />
+              <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+            </ListItem>
+            {connectorManagers.map((manager) => {
+              const contracts = manager.connector_manager_contracts.map((contract) => JSON.parse(contract));
+              const contractNames = contracts.map((contract) => contract.title);
+              return <span key={manager.id}>
+                <ListItem
+                  key={manager.id}
+                  classes={{ root: classes.item }}
+                  divider={true}
+                >
+                  <ListItemIcon>
+                    <HubOutlined />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <div>
+                        <div className={classes.bodyItem} style={inlineStyles.name}>
+                          {manager.name}
+                        </div>
+                        <div className={classes.bodyItem} style={inlineStyles.connector_type}>
+                          {manager.connector_manager_contracts.length}
+                        </div>
+                        <div className={classes.bodyItem} style={inlineStyles.active}>
+                          <ItemBoolean
+                            status={manager.active}
+                            label={manager.active ? t_i18n('Active') : t_i18n('Inactive')}
+                            variant="inList"
+                          />
+                        </div>
+                        <div className={classes.bodyItem} style={inlineStyles.updated_at}>
+                          {nsdt(manager.last_sync_execution)}
+                        </div>
+                      </div>
+                      }
+                  />
+                </ListItem>
+                <ListItemSecondaryAction>
+                  <Drawer
+                    title={t_i18n('Create a connector')}
+                    controlledDial={(props: DrawerControlledDialProps) => (<CreateEntityControlledDial entityType='Connector' {...props} />)}
+                  >
+                    <>
+                      <Select variant="standard" labelId="type" value={contractNames[0]}>
+                        {contractNames.map((name: string) => (
+                          <MenuItem key={name} value={name}>
+                            {name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      <Form schema={contracts[0]} validator={validator} />
+                    </>
+                  </Drawer>
+                </ListItemSecondaryAction>
+              </span>;
+            })}
+          </List>
+        </CardContent>
+      </Card>
+      <Card variant="outlined" style={{ marginTop: 24 }}>
         <CardHeader
           avatar={<ExtensionOutlined className={classes.icon} />}
           title={t_i18n('Registered connectors')}
@@ -436,7 +542,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                 <ListItemSecondaryAction>
                   <Security needs={[MODULES_MODMANAGE]}>
                     <>
-                      <Tooltip title={t_i18n('Reset the connector state')}>
+                      {connector.is_managed && <Tooltip title={t_i18n('Reset the connector state')}>
                         <IconButton
                           onClick={() => {
                             setConnectorIdToReset(connector.id);
@@ -446,6 +552,20 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                           color="primary"
                           size="large"
                           disabled={!!connector.built_in}
+                        >
+                          <SettingsOutlined />
+                        </IconButton>
+                      </Tooltip>}
+                      <Tooltip title={t_i18n('Reset the connector state')}>
+                        <IconButton
+                          onClick={() => {
+                            setConnectorIdToReset(connector.id);
+                            setConnectorMessages(connector.messages);
+                          }}
+                          aria-haspopup="true"
+                          color="primary"
+                          size="large"
+                          disabled={!connector.is_managed && (!!connector.active || !!connector.built_in)}
                         >
                           <PlaylistRemoveOutlined />
                         </IconButton>
@@ -457,7 +577,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                           }}
                           aria-haspopup="true"
                           color="primary"
-                          disabled={!!connector.active || !!connector.built_in}
+                          disabled={!connector.is_managed && (!!connector.active || !!connector.built_in)}
                           size="large"
                         >
                           <DeleteOutlined />
