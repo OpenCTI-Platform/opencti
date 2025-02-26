@@ -12685,6 +12685,7 @@ input DisseminationListSendInput {
   email_body: String!
   email_attachment_ids: [ID!]!
   html_to_body_file_id: ID
+}
 
 enum RequestAccessType {
   organization_sharing
