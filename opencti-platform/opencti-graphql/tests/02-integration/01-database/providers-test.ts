@@ -4,6 +4,7 @@ import conf from '../../../src/config/conf';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { findById } from '../../../src/domain/user';
+import type { AuthUser } from '../../../src/types/user';
 
 describe('initializeAdminUser configurations verifications', () => {
   let initialEmail: string;
@@ -16,12 +17,12 @@ describe('initializeAdminUser configurations verifications', () => {
     initialToken = conf.get('app:admin:token');
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     // reset to value that were set before running this test.
     conf.set('app:admin:email', initialEmail);
     conf.set('app:admin:password', initialPassword);
     conf.set('app:admin:token', initialToken);
-    initializeAdminUser({});
+    await initializeAdminUser({});
   });
 
   it('should well configured admin be initialized', async () => {
@@ -32,7 +33,7 @@ describe('initializeAdminUser configurations verifications', () => {
 
     await initializeAdminUser({});
 
-    const existingAdmin = await findById({}, SYSTEM_USER, OPENCTI_ADMIN_UUID);
+    const existingAdmin = await findById({}, SYSTEM_USER, OPENCTI_ADMIN_UUID) as AuthUser;
     expect(existingAdmin.user_email).toBe('cecilia.payne@filigran.io');
   });
 

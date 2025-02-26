@@ -157,9 +157,12 @@ export const findById = async (context, user, userId) => {
   if (INTERNAL_USERS[userId]) {
     return INTERNAL_USERS[userId];
   }
-  const data = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
-  const withoutPassword = data ? R.dissoc('password', data) : data;
-  return buildCompleteUser(context, withoutPassword);
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUser = platformUsers.get(userId);
+  if (platformUser) {
+    return R.dissoc('password', platformUser);
+  }
+  return undefined;
 };
 
 export const findAll = async (context, user, args) => {

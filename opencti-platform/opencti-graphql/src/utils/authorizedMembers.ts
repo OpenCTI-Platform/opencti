@@ -96,7 +96,7 @@ export const containsValidAdmin = async (
       && !organizations.map((o) => o.id).includes(id))
     .concat(groupsMembersIds, organizationsMembersIds);
   // resolve the users
-  const users: (AuthUser | undefined)[] = await Promise.all(userIds.map((userId) => findUser(context, SYSTEM_USER, userId)));
+  const users: (AuthUser | undefined)[] = await Promise.all(userIds.map((userId) => findUser(context, SYSTEM_USER, userId))) as (AuthUser | undefined)[];
   // restrict to the users that exist and have admin exploration capability
   const authorizedUsers = users.filter((u) => u && isUserHasCapabilities(u, requiredCapabilities));
 
