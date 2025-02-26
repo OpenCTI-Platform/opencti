@@ -19,7 +19,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/ingestion-rss-domain';
-import type { AuthContext } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import type {
   BasicStoreEntityIngestionCsv,
   BasicStoreEntityIngestionJson,
@@ -529,7 +529,7 @@ export const processCsvLines = async (
     const work = await createWorkForIngestion(context, ingestion);
     const bundlerOpts : CsvBundlerIngestionOpts = {
       workId: work.id,
-      applicantUser: ingestionUser,
+      applicantUser: ingestionUser as AuthUser,
       entity: undefined, // TODO is it possible to ingest in entity context ?
       csvMapper: csvMapperParsed,
       connectorId: connectorIdFromIngestId(ingestion.id),
