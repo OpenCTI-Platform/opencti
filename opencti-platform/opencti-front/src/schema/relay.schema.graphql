@@ -7904,6 +7904,7 @@ type Query {
   capabilities(first: Int): CapabilityConnection
   connector(id: String!): Connector
   connectors: [Connector!]
+  connectorsForManager(managerId: ID!): [Connector!]
   connectorsForWorker: [Connector]
   connectorsForExport: [Connector]
   connectorsForImport: [Connector]
