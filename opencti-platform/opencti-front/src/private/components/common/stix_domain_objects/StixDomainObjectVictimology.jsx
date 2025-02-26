@@ -13,7 +13,7 @@ import StixDomainObjectVictimologyMap from './StixDomainObjectVictimologyMap';
 
 const styles = (theme) => ({
   container: {
-    marginTop: 25,
+    marginTop: theme.spacing(3),
   },
   bottomNav: {
     zIndex: 1,
