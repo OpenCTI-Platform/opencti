@@ -11,7 +11,7 @@ export const handleSearchByFilter = (
   stringFilters?: string | null,
 ) => {
   const filtersURI = stringFilters ? `?filters=${encodeURIComponent(stringFilters)}` : '';
-  const link = `/dashboard/search/${searchScope}/?sortBy=_score&orderAsc=false${filtersURI}`;
+  const link = `/dashboard/search/${searchScope}/${filtersURI}`;
   navigate(link);
 };
 

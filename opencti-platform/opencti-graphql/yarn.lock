@@ -2376,7 +2376,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/merge@npm:^9.0.0, @graphql-tools/merge@npm:^9.0.17, @graphql-tools/merge@npm:^9.0.20":
+"@graphql-tools/merge@npm:^9.0.0, @graphql-tools/merge@npm:^9.0.20":
   version: 9.0.20
   resolution: "@graphql-tools/merge@npm:9.0.20"
   dependencies:
@@ -2499,7 +2499,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/utils@npm:10.8.1, @graphql-tools/utils@npm:^10.8.1":
+"@graphql-tools/utils@npm:10.8.1":
   version: 10.8.1
   resolution: "@graphql-tools/utils@npm:10.8.1"
   dependencies:
@@ -2513,7 +2513,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/utils@npm:^10.0.0, @graphql-tools/utils@npm:^10.5.6, @graphql-tools/utils@npm:^10.7.2, @graphql-tools/utils@npm:^10.8.1, @graphql-tools/utils@npm:^10.8.2":
+"@graphql-tools/utils@npm:^10.0.0, @graphql-tools/utils@npm:^10.5.6, @graphql-tools/utils@npm:^10.8.1, @graphql-tools/utils@npm:^10.8.2":
   version: 10.8.2
   resolution: "@graphql-tools/utils@npm:10.8.2"
   dependencies:

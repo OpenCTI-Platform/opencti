@@ -277,6 +277,36 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
 };
 
 /**
+ * Check the filter keys exist in the schema
+ */
+const checkFilterKeys = (filterGroup: FilterGroup) => {
+  // TODO improvement: check filters keys correspond to the entity types if types is given
+  const keys = extractFilterKeys(filterGroup)
+    .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
+  if (keys.length > 0) {
+    let incorrectKeys = keys;
+    const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
+    const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
+    const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
+    const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
+    const availableKeys = availableAttributes
+      .concat(availableRefRelations)
+      .concat(availableConvertedRefRelations)
+      .concat(STIX_CORE_RELATIONSHIPS)
+      .concat(availableConvertedStixCoreRelationships)
+      .concat(specialFilterKeys);
+    keys.forEach((k) => {
+      if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
+        incorrectKeys = incorrectKeys.filter((n) => n !== k);
+      }
+    });
+    if (incorrectKeys.length > 0) {
+      throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
+    }
+  }
+};
+
+/**
  * Go through all keys in a filter group to:
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
@@ -289,33 +319,11 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
   checkFilterGroupSyntax(filterGroup);
   const { noFiltersChecking = false } = opts;
   // 01. check filters keys exist in schema
-  // TODO improvement: check filters keys correspond to the entity types if types is given
   if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
-    const keys = extractFilterKeys(filterGroup)
-      .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
-    if (keys.length > 0) {
-      let incorrectKeys = keys;
-      const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
-      const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
-      const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
-      const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
-      const availableKeys = availableAttributes
-        .concat(availableRefRelations)
-        .concat(availableConvertedRefRelations)
-        .concat(STIX_CORE_RELATIONSHIPS)
-        .concat(availableConvertedStixCoreRelationships)
-        .concat(specialFilterKeys);
-      keys.forEach((k) => {
-        if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
-          incorrectKeys = incorrectKeys.filter((n) => n !== k);
-        }
-      });
-      if (incorrectKeys.length > 0) {
-        throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
-      }
-    }
-
-    // 02. translate the filter keys on relation refs and return the converted filters
+    checkFilterKeys(filterGroup);
+  }
+  // 02. translate the filter keys on relation refs and return the converted filters
+  if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
     return convertRelationRefsFilterKeys(filterGroup);
   }
 

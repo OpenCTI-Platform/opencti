@@ -303,6 +303,8 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   await checkEnterpriseEdition(context);
   const { search } = args;
   const promptValue = await NLQPromptTemplate.formatPromptValue({ text: search });
+
+  // query the model
   const rawResponse = await queryNLQAi(promptValue);
   let parsedResponse;
   try {
@@ -312,5 +314,10 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
     return JSON.stringify(emptyFilterGroup);
   }
 
+  // check the filters are in a correct format
+
+  // map entities ids
+
+  // return the stringified filters
   return JSON.stringify(parsedResponse);
 };
