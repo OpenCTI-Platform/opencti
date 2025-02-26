@@ -28,6 +28,7 @@ import ItemOperations from '../ItemOperations';
 import ItemDueDate from '../ItemDueDate';
 import { APP_BASE_PATH } from '../../relay/environment';
 import FieldOrEmpty from '../FieldOrEmpty';
+import ItemIcon from '../ItemIcon';
 
 const chipStyle = {
   fontSize: '12px',
