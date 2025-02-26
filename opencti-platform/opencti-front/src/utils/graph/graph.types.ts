@@ -63,7 +63,7 @@ export interface GraphContainer {
   id: string
   confidence: unknown
   createdBy: unknown
-  published: unknown
+  published?: unknown
   objects: readonly unknown[]
   objectMarking: readonly unknown[]
 }

@@ -3,28 +3,28 @@ import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { graphql, useFragment } from 'react-relay';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
-import ReportPopover from '@components/analyses/reports/ReportPopover';
 import ContainerHeader from '@components/common/containers/ContainerHeader';
-import useReportKnowledgeGraphDeleteRelation from './useReportKnowledgeGraphDeleteRelation';
-import { ReportKnowledgeGraph_fragment$data, ReportKnowledgeGraph_fragment$key } from './__generated__/ReportKnowledgeGraph_fragment.graphql';
+import { GroupingKnowledgeGraph_fragment$data, GroupingKnowledgeGraph_fragment$key } from '@components/analyses/groupings/__generated__/GroupingKnowledgeGraph_fragment.graphql';
+import useGroupingKnowledgeGraphEdit from '@components/analyses/groupings/useGroupingKnowledgeGraphEdit';
+import useGroupingKnowledgeGraphAddRelation from '@components/analyses/groupings/useGroupingKnowledgeGraphAddRelation';
+import useGroupingKnowledgeGraphDeleteRelation from '@components/analyses/groupings/useGroupingKnowledgeGraphDeleteRelation';
+import GroupingPopover from '@components/analyses/groupings/GroupingPopover';
 import type { Theme } from '../../../../components/Theme';
 import Graph, { GraphProps } from '../../../../utils/graph/Graph';
-import { deserializeObject } from '../../../../utils/object';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
 import { encodeGraphData } from '../../../../utils/Graph';
-import useReportKnowledgeGraphAddRelation from './useReportKnowledgeGraphAddRelation';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
 import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteractions';
-import useReportKnowledgeGraphEdit from './useReportKnowledgeGraphEdit';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
+import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
 
-const reportGraphFragment = graphql`
-  fragment ReportKnowledgeGraph_fragment on Report {
+const groupingGraphFragment = graphql`
+  fragment GroupingKnowledgeGraph_fragment on Grouping {
     id
     name
     x_opencti_graph_data
-    published
+    context
     confidence
     createdBy {
       ... on Identity {
@@ -148,7 +148,6 @@ const reportGraphFragment = graphql`
           }
           ... on ThreatActor {
             name
-            entity_type
             first_seen
             last_seen
           }
@@ -284,6 +283,7 @@ const reportGraphFragment = graphql`
             start_time
             stop_time
             confidence
+            created
             is_inferred
             from {
               ... on BasicObject {
@@ -385,25 +385,33 @@ const reportGraphFragment = graphql`
   }
 `;
 
-interface ReportKnowledgeGraphComponentProps {
+export const groupingKnowledgeGraphQuery = graphql`
+  query GroupingKnowledgeGraphQuery($id: String!) {
+    grouping(id: $id) {
+      ...GroupingKnowledgeGraph_fragment
+    }
+  }
+`;
+
+interface GroupingKnowledgeGraphComponentProps {
   mode: string
   enableReferences: boolean
-  report: ReportKnowledgeGraph_fragment$data
+  grouping: GroupingKnowledgeGraph_fragment$data
 }
 
-const ReportKnowledgeGraphComponent = ({
+const GroupingKnowledgeGraphComponent = ({
   enableReferences,
-  report,
+  grouping,
   mode,
-}: ReportKnowledgeGraphComponentProps) => {
+}: GroupingKnowledgeGraphComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
   const { addLink } = useGraphInteractions();
 
-  const [commitEditPositions] = useReportKnowledgeGraphEdit();
-  const [commitAddRelation] = useReportKnowledgeGraphAddRelation();
-  const [commitDeleteRelation] = useReportKnowledgeGraphDeleteRelation();
+  const [commitEditPositions] = useGroupingKnowledgeGraphEdit();
+  const [commitAddRelation] = useGroupingKnowledgeGraphAddRelation();
+  const [commitDeleteRelation] = useGroupingKnowledgeGraphDeleteRelation();
 
   const headerHeight = 64;
   const paddingHeight = 25;
@@ -419,7 +427,7 @@ const ReportKnowledgeGraphComponent = ({
   const savePositions = (positions: OctiGraphPositions) => {
     commitEditPositions({
       variables: {
-        id: report.id,
+        id: grouping.id,
         input: [{
           key: 'x_opencti_graph_data',
           value: [encodeGraphData(positions)],
@@ -431,7 +439,7 @@ const ReportKnowledgeGraphComponent = ({
   const addRelationInGraph: GraphProps['onAddRelation'] = (rel) => {
     commitAddRelation({
       variables: {
-        id: report.id,
+        id: grouping.id,
         input: {
           toId: rel.id,
           relationship_type: 'object',
@@ -446,16 +454,12 @@ const ReportKnowledgeGraphComponent = ({
   const deleteRelationInGraph: GraphProps['onContainerDeleteRelation'] = (
     relId,
     onCompleted,
-    commitMessage,
-    references,
   ) => {
     commitDeleteRelation({
       variables: {
-        id: report.id,
+        id: grouping.id,
         toId: relId,
         relationship_type: 'object',
-        commitMessage,
-        references,
       },
       onCompleted,
     });
@@ -466,11 +470,11 @@ const ReportKnowledgeGraphComponent = ({
       <ContainerHeader
         knowledge
         enableSuggestions
-        container={report}
+        container={grouping}
         currentMode={mode}
-        PopoverComponent={<ReportPopover id={report.id} />}
-        link={`/dashboard/analyses/reports/${report.id}/knowledge`}
-        modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
+        PopoverComponent={<GroupingPopover id={grouping.id} />}
+        link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
+        modes={['graph', 'content', 'correlation', 'matrix']}
         onApplied={(suggestions: ObjectToParse[]) => {
           suggestions.forEach((suggestion) => addLink(suggestion));
         }}
@@ -485,49 +489,34 @@ const ReportKnowledgeGraphComponent = ({
         onAddRelation={addRelationInGraph}
         onContainerDeleteRelation={deleteRelationInGraph}
         container={{
-          id: report.id,
-          confidence: report.confidence,
-          published: report.published,
-          objects: report.objects?.edges ?? [],
-          createdBy: report.createdBy,
-          objectMarking: report.objectMarking ?? [],
+          id: grouping.id,
+          confidence: grouping.confidence,
+          objects: grouping.objects?.edges ?? [],
+          createdBy: grouping.createdBy,
+          objectMarking: grouping.objectMarking ?? [],
         }}
       />
     </div>
   );
 };
 
-interface ReportKnowledgeGraphtProps extends Omit<ReportKnowledgeGraphComponentProps, 'report'> {
-  data: ReportKnowledgeGraph_fragment$key
+interface ReportKnowledgeGraphtProps extends Omit<GroupingKnowledgeGraphComponentProps, 'grouping'> {
+  data: GroupingKnowledgeGraph_fragment$key
 }
 
-const ReportKnowledgeGraph = ({
+const GroupingKnowledgeGraph = ({
   data,
   ...otherProps
 }: ReportKnowledgeGraphtProps) => {
-  const report = useFragment(reportGraphFragment, data);
-  const localStorageKey = `report-${report.id}-knowledge-graph`;
-
-  const reportData = useMemo(() => {
-    const objects = (report.objects?.edges ?? []).flatMap((n) => {
-      if (!n) return []; // filter empty nodes.
-      return { ...n.node, types: n.types };
-    }) as unknown as ObjectToParse[];
-    const positions = deserializeObject(report.x_opencti_graph_data);
-    return { objects, positions };
-  }, [report]);
+  const grouping = useFragment(groupingGraphFragment, data);
+  const groupingData = useMemo(() => getObjectsToParse(grouping), [grouping]);
+  const localStorageKey = `grouping-${grouping.id}-knowledge-graph`;
 
   return (
-    <GraphProvider
-      localStorageKey={localStorageKey}
-      data={reportData}
-    >
-      <ReportKnowledgeGraphComponent
-        report={report}
-        {...otherProps}
-      />
+    <GraphProvider localStorageKey={localStorageKey} data={groupingData}>
+      <GroupingKnowledgeGraphComponent grouping={grouping}{...otherProps} />
     </GraphProvider>
   );
 };
 
-export default ReportKnowledgeGraph;
+export default GroupingKnowledgeGraph;

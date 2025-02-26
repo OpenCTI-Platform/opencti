@@ -87,21 +87,24 @@ class TimeRange extends React.Component {
   };
 
   getDateTicks = () => {
-    const { timelineInterval, ticksNumber } = this.props;
+    const { timelineInterval = [startOfToday(), endOfToday()], ticksNumber = 48 } = this.props;
     return scaleTime().domain(timelineInterval).ticks(ticksNumber).map((t) => +t);
   };
 
   render() {
     const {
       sliderRailClassName,
-      timelineInterval,
-      selectedInterval,
+      timelineInterval = [startOfToday(), endOfToday()],
+      selectedInterval = [
+        set(new Date(), { minutes: 0, seconds: 0, milliseconds: 0 }),
+        set(addHours(new Date(), 1), { minutes: 0, seconds: 0, milliseconds: 0 }),
+      ],
       containerClassName,
-      error,
-      step,
+      error = false,
+      step = 1000 * 60 * 30,
       showNow,
-      formatTick,
-      mode,
+      formatTick = (ms) => format(new Date(ms), 'HH:mm'),
+      mode = 3,
     } = this.props;
 
     const domain = timelineInterval.map((t) => Number(t));
@@ -216,17 +219,8 @@ TimeRange.propTypes = {
 };
 
 TimeRange.defaultProps = {
-  selectedInterval: [
-    set(new Date(), { minutes: 0, seconds: 0, milliseconds: 0 }),
-    set(addHours(new Date(), 1), { minutes: 0, seconds: 0, milliseconds: 0 }),
-  ],
-  timelineInterval: [startOfToday(), endOfToday()],
-  formatTick: (ms) => format(new Date(ms), 'HH:mm'),
   disabledIntervals: [],
-  step: 1000 * 60 * 30,
   ticksNumber: 48,
-  error: false,
-  mode: 3,
 };
 
 export default TimeRange;
