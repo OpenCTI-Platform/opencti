@@ -19,6 +19,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import { Truncate } from '../../../components/dataGrid/dataTableUtils';
 import type { DataTableColumn } from '../../../components/dataGrid/dataTableTypes';
+import ItemIcon from '../../../components/ItemIcon';
 
 const LOCAL_STORAGE_KEY = 'MarkingDefinitions';
 
@@ -118,11 +119,15 @@ const MarkingDefinitions = () => {
   const definitionTypeRender: DataTableColumn['render'] = (
     data: MarkingDefinitionsLine_node$data,
   ) => {
-    const { standard_id, definition_type } = data;
+    const { standard_id, definition_type, x_opencti_color } = data;
     const { isSensitive } = useSensitiveModifications('markings', standard_id);
     return (
       <Tooltip title={definition_type}>
-        <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <ItemIcon
+            type="Marking-Definition"
+            color={x_opencti_color ?? undefined}
+          />
           <Truncate>{definition_type}</Truncate>
           {isSensitive && <DangerZoneChip />}
         </div>
