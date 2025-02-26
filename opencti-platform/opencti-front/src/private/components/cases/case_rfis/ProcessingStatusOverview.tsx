@@ -15,6 +15,22 @@ interface CaseRfiRequestAccessOverviewProps {
   data: CaseRfi_caseRfi$data;
 }
 
+// see requestAccess-domain.ts in backend.
+export interface RequestAccessActionStatus {
+  rfiStatusId: string,
+  actionStatus: string,
+}
+
+interface RequestAccessAction {
+  reason?: string
+  entities?: string[]
+  members?: string[]
+  type?: string,
+  status: string,
+  executionDate?: Date,
+  workflowMapping: RequestAccessActionStatus[],
+}
+
 const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
   const { t_i18n } = useFormatter();
   let requestAccessData = null;
@@ -23,11 +39,13 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
   const declineButtonColor = data.requestAccessConfiguration?.declined_status?.template?.color;
 
   if (data.x_opencti_request_access) {
-    requestAccessData = JSON.parse(data.x_opencti_request_access);
+    requestAccessData = JSON.parse(data.x_opencti_request_access) as RequestAccessAction;
     // see RequestAccessAction interface in backend
     // Find action status that correspond to current RFI status.
-    const currentActionStatus = requestAccessData.workflowMapping.find((status: any) => status.rfiStatusId === data.status?.id);
-    isRequestAccessNew = currentActionStatus && currentActionStatus.actionStatus === 'NEW';
+    const currentActionStatus = requestAccessData.workflowMapping.find((status: RequestAccessActionStatus) => status.rfiStatusId === data.status?.id);
+    if (currentActionStatus) {
+      isRequestAccessNew = currentActionStatus.actionStatus === 'NEW';
+    }
   }
 
   const onSubmitValidateRequestAccess = () => {
