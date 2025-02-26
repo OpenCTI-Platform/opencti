@@ -574,6 +574,11 @@ const StixCyberObservableCreation = ({
                       is: (a, b, c, d) => !a && !b && !c && !d,
                       then: () => Yup.string().required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
                     }),
+                  file: Yup.mixed().when([], {
+                    is: () => status.type === 'Artifact',
+                    then: () => Yup.mixed().required(t_i18n('This field is required')),
+                    otherwise: () => Yup.mixed().nullable(),
+                  }),
                 };
 
                 requiredOneOfFields = [
@@ -628,6 +633,7 @@ const StixCyberObservableCreation = ({
                   setFieldValue,
                   values,
                   resetForm,
+                  errors,
                 }) => (
                   <>
                     {bulkConf && (
@@ -848,10 +854,9 @@ const StixCyberObservableCreation = ({
                         setFieldValue={setFieldValue}
                         values={values.externalReferences}
                       />
-                      <Field
-                        component={CustomFileUploader}
-                        name="file"
+                      <CustomFileUploader
                         setFieldValue={setFieldValue}
+                        formikErrors={errors}
                         disabled={bulkConf && bulkSelectedKey && splitMultilines(values[bulkSelectedKey]).length > 1}
                         noFileSelectedLabel={bulkConf && bulkSelectedKey && splitMultilines(values[bulkSelectedKey]).length > 1
                           ? t_i18n('File upload not allowed in bulk creation')
