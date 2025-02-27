@@ -2973,7 +2973,7 @@
   "The value is too short": "文字数が不足しています",
   "The value must be a date (yyyy-MM-dd)": "日付(yyyy-MM-dd)を入力してください",
   "The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)": "日時(yyyy-MM-dd hh:mm (a|p)m)を入力してください",
-  "The value must be a datetime or a relative date in correct elastic format.": "値は、正しい伸縮書式による日付または相対日付でなければならない。",
+  "The value must be a datetime or a relative date expressed in date math. See our documentation for more information.": "値はdatetimeか、日付計算で表現された相対日付でなければならない。詳細は{link}を参照してください。",
   "The value must be a datetime with seconds (yyyy-MM-dd hh:mm:ss (a|p)m)": "日時(yyyy-MM-dd hh:mm:ss (a|p)m)を入力してください",
   "The value must be a number": "数値を入力してください",
   "The value must be a string": "値は文字列である必要があります",

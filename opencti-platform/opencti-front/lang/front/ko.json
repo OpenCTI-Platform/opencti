@@ -2973,7 +2973,7 @@
   "The value is too short": "값이 너무 짧습니다",
   "The value must be a date (yyyy-MM-dd)": "값은 날짜여야 합니다 (yyyy-MM-dd)",
   "The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)": "값은 날짜 시간이어야 합니다 (yyyy-MM-dd hh:mm (a|p)m)",
-  "The value must be a datetime or a relative date in correct elastic format.": "값은 올바른 Elastic 형식의 날짜/시간 또는 상대 날짜여야 합니다.",
+  "The value must be a datetime or a relative date expressed in date math. See our documentation for more information.": "값은 날짜/시간 또는 날짜 연산으로 표현된 상대 날짜여야 합니다. 자세한 내용은 {link}을 참조하세요.",
   "The value must be a datetime with seconds (yyyy-MM-dd hh:mm:ss (a|p)m)": "값은 초가 포함된 날짜 시간이어야 합니다 (yyyy-MM-dd hh:mm:ss (a|p)m)",
   "The value must be a number": "값은 숫자여야 합니다",
   "The value must be a string": "값은 문자열이어야 합니다",

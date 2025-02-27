@@ -2973,7 +2973,7 @@
   "The value is too short": "该值太短",
   "The value must be a date (yyyy-MM-dd)": "该值必须是一个日期(yyyy-MM-dd)",
   "The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)": "该值必须是一个日期(yyyy-MM-dd hh:mm a)",
-  "The value must be a datetime or a relative date in correct elastic format.": "值必须是日期时间或弹性格式正确的相对日期。",
+  "The value must be a datetime or a relative date expressed in date math. See our documentation for more information.": "值必须是日期时间或用日期数学表示的相对日期。更多信息，请参见 {link}。",
   "The value must be a datetime with seconds (yyyy-MM-dd hh:mm:ss (a|p)m)": "该值必须是一个日期(yyyy-MM-dd hh:mm:ss a)",
   "The value must be a number": "该值必须是一个数字",
   "The value must be a string": "该值必须是字符串",

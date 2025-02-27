@@ -2973,7 +2973,7 @@
   "The value is too short": "La valeur est trop courte",
   "The value must be a date (yyyy-MM-dd)": "La valeur doit être une date (dd/mm/aaaaa)",
   "The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)": "La valeur doit être une date et un temps (dd/mm/aaaaa HH:mm)",
-  "The value must be a datetime or a relative date in correct elastic format.": "La valeur doit être une date ou une date relative dans un format élastique correct.",
+  "The value must be a datetime or a relative date expressed in date math. See our documentation for more information.": "La valeur doit être une date temporelle ou une date relative exprimée en date mathématique. Voir {link} pour plus d'informations.",
   "The value must be a datetime with seconds (yyyy-MM-dd hh:mm:ss (a|p)m)": "La valeur doit être une date et un temps avec des secondes (dd/mm/aaaaa HH:mm:ss)",
   "The value must be a number": "La valeur doit être un nombre",
   "The value must be a string": "La valeur doit être une chaîne",

@@ -4,6 +4,7 @@ import { DateRangeOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { Link } from 'react-router-dom';
 import { useFormatter } from '../i18n';
 import { BasicFilterInputProps } from './BasicFilterInput';
 import { RELATIVE_DATE_REGEX } from '../../utils/filters/filtersUtils';
@@ -39,7 +40,14 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     }
     const newValue = values[valueOrder];
     if (!newValue.match(RELATIVE_DATE_REGEX) && !isValidDate(newValue)) {
-      return t_i18n('The value must be a datetime or a relative date in correct elastic format.');
+      return t_i18n('', {
+        id: 'The value must be a datetime or a relative date expressed in date math. See our documentation for more information.',
+        values: {
+          link: <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?H=filters#operators">
+            {t_i18n('our documentation')}
+          </Link>,
+        },
+      });
     }
     return undefined;
   };
