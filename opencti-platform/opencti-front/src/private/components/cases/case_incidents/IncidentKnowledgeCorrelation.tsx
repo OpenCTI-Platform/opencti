@@ -3,21 +3,20 @@ import React, { CSSProperties, useMemo, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { knowledgeCorrelationStixCoreObjectQuery, knowledgeCorrelationStixCoreRelationshipQuery } from '@components/common/containers/KnowledgeCorrelationQuery';
-import useReportKnowledgeCorrelationEdit from './useReportKnowledgeCorrelationEdit';
+import useIncidentKnowledgeCorrelationEdit from './useIncidentKnowledgeCorrelationEdit';
 import type { Theme } from '../../../../components/Theme';
-import { ReportKnowledgeCorrelation_fragment$data, ReportKnowledgeCorrelation_fragment$key } from './__generated__/ReportKnowledgeCorrelation_fragment.graphql';
+import { IncidentKnowledgeCorrelation_fragment$data, IncidentKnowledgeCorrelation_fragment$key } from './__generated__/IncidentKnowledgeCorrelation_fragment.graphql';
 import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
 import { encodeGraphData } from '../../../../utils/Graph';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
 
-const reportCorrelationFragment = graphql`
-  fragment ReportKnowledgeCorrelation_fragment on Report {
+const incidentCorrelationFragment = graphql`
+  fragment IncidentKnowledgeCorrelation_fragment on CaseIncident {
     id
     name
     x_opencti_graph_data
-    published
     confidence
     createdBy {
       ... on Identity {
@@ -33,9 +32,8 @@ const reportCorrelationFragment = graphql`
       x_opencti_order
       x_opencti_color
     }
-    objects(first: 500) {
+    objects {
       edges {
-        types
         node {
           ... on BasicObject {
             id
@@ -58,12 +56,12 @@ const reportCorrelationFragment = graphql`
               x_opencti_order
               x_opencti_color
             }
-            groupings(first: 20) {
+            reports(first: 20) {
               edges {
                 node {
                   id
                   name
-                  context
+                  published
                   confidence
                   entity_type
                   parent_types
@@ -85,12 +83,12 @@ const reportCorrelationFragment = graphql`
                 }
               }
             }
-            reports(first: 20) {
+            groupings(first: 20) {
               edges {
                 node {
                   id
                   name
-                  published
+                  context
                   confidence
                   entity_type
                   parent_types
@@ -216,12 +214,12 @@ const reportCorrelationFragment = graphql`
           }
           ... on StixCyberObservable {
             observable_value
-            groupings(first: 20) {
+            reports(first: 20) {
               edges {
                 node {
                   id
                   name
-                  context
+                  published
                   confidence
                   entity_type
                   parent_types
@@ -243,12 +241,12 @@ const reportCorrelationFragment = graphql`
                 }
               }
             }
-            reports(first: 20) {
+            groupings(first: 20) {
               edges {
                 node {
                   id
                   name
-                  published
+                  context
                   confidence
                   entity_type
                   parent_types
@@ -306,26 +304,26 @@ const reportCorrelationFragment = graphql`
   }
 `;
 
-export const reportKnowledgeCorrelationQuery = graphql`
-  query ReportKnowledgeCorrelationQuery($id: String) {
-    report(id: $id) {
-      ...ReportKnowledgeCorrelation_fragment
+export const incidentKnowledgeCorrelationQuery = graphql`
+  query IncidentKnowledgeCorrelationQuery($id: String!) {
+    caseIncident(id: $id) {
+      ...IncidentKnowledgeCorrelation_fragment
     }
   }
 `;
 
-interface ReportKnowledgeCorrelationComponentProps {
-  report: ReportKnowledgeCorrelation_fragment$data
+interface IncidentKnowledgeCorrelationComponentProps {
+  incident: IncidentKnowledgeCorrelation_fragment$data
 }
 
-const ReportKnowledgeCorrelationComponent = ({
-  report,
-}: ReportKnowledgeCorrelationComponentProps) => {
+const IncidentKnowledgeCorrelationComponent = ({
+  incident,
+}: IncidentKnowledgeCorrelationComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
 
-  const [commitEditPositions] = useReportKnowledgeCorrelationEdit();
+  const [commitEditPositions] = useIncidentKnowledgeCorrelationEdit();
 
   const headerHeight = 64;
   const paddingHeight = 25;
@@ -341,7 +339,7 @@ const ReportKnowledgeCorrelationComponent = ({
   const savePositions = (positions: OctiGraphPositions) => {
     commitEditPositions({
       variables: {
-        id: report.id,
+        id: incident.id,
         input: [{
           key: 'x_opencti_graph_data',
           value: [encodeGraphData(positions)],
@@ -362,26 +360,26 @@ const ReportKnowledgeCorrelationComponent = ({
   );
 };
 
-interface ReportKnowledgeCorrelationProps {
-  data: ReportKnowledgeCorrelation_fragment$key
+interface IncidentKnowledgeCorrelationProps {
+  data: IncidentKnowledgeCorrelation_fragment$key
 }
 
-const ReportKnowledgeCorrelation = ({
+const IncidentKnowledgeCorrelation = ({
   data,
-}: ReportKnowledgeCorrelationProps) => {
-  const report = useFragment(reportCorrelationFragment, data);
-  const reportData = useMemo(() => getObjectsToParse(report), [report]);
-  const localStorageKey = `report-knowledge-correlation-${report.id}`;
+}: IncidentKnowledgeCorrelationProps) => {
+  const incident = useFragment(incidentCorrelationFragment, data);
+  const incidentData = useMemo(() => getObjectsToParse(incident), [incident]);
+  const localStorageKey = `incident-knowledge-correlation-${incident.id}`;
 
   return (
     <GraphProvider
       localStorageKey={localStorageKey}
-      data={reportData}
+      data={incidentData}
       context='correlation'
     >
-      <ReportKnowledgeCorrelationComponent report={report} />
+      <IncidentKnowledgeCorrelationComponent incident={incident} />
     </GraphProvider>
   );
 };
 
-export default ReportKnowledgeCorrelation;
+export default IncidentKnowledgeCorrelation;
