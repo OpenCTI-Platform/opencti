@@ -5,7 +5,7 @@ import { createdAt, creators } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_DRAFT_WORKSPACE, type StixDraftWorkspace, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
 import convertDraftWorkspaceToStix from './draftWorkspace-converter';
 import { getDraftStatuses } from './draftStatuses';
-import {ENTITY_TYPE_WORK} from "../../schema/internalObject";
+import { ENTITY_TYPE_WORK } from '../../schema/internalObject';
 
 const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, StixDraftWorkspace> = {
   type: {

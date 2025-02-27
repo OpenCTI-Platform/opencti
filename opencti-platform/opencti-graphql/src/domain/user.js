@@ -4,14 +4,7 @@ import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
-import {
-  AuthenticationFailure,
-  DatabaseError,
-  DraftLockedError,
-  ForbiddenAccess,
-  FunctionalError,
-  UnsupportedError
-} from '../config/errors';
+import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, refreshCacheForEntity } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
@@ -80,7 +73,7 @@ import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/n
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
-import {ENTITY_TYPE_DRAFT_WORKSPACE} from "../modules/draftWorkspace/draftWorkspace-types";
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';

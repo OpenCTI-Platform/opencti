@@ -18,12 +18,12 @@ import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
 import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
-import {DraftLockedError, ForbiddenAccess, FunctionalError} from '../config/errors';
+import { DraftLockedError, ForbiddenAccess } from '../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isNotEmptyField } from '../database/utils';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
-import {ENTITY_TYPE_DRAFT_WORKSPACE} from "../modules/draftWorkspace/draftWorkspace-types";
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
