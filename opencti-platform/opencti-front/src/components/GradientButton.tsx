@@ -1,26 +1,32 @@
 import React from 'react';
 import Button, { ButtonProps } from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
+import type { Theme } from './Theme';
+
+// Only 'xtmhub' is supported for now
+type GradientVariant = 'xtmhub';
 
 interface GradientButtonProps extends ButtonProps {
-  lightModeStartColor?: string;
-  lightModeEndColor?: string;
-  darkModeStartColor?: string;
-  darkModeEndColor?: string;
+  gradientVariant?: GradientVariant;
 }
 
 const GradientButton: React.FunctionComponent<GradientButtonProps> = ({
-  lightModeStartColor = '#001BDA',
-  lightModeEndColor = '#0FBCFF',
-  darkModeStartColor = '#0FBCFF',
-  darkModeEndColor = '#00F1BD',
+  gradientVariant = 'xtmhub',
   sx,
   ...props
 }) => {
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const isDarkMode = theme.palette.mode === 'dark';
-  const startColor = isDarkMode ? darkModeStartColor : lightModeStartColor;
-  const endColor = isDarkMode ? darkModeEndColor : lightModeEndColor;
+
+  let startColor;
+  let endColor;
+  switch (gradientVariant) {
+    case 'xtmhub':
+    default:
+      startColor = isDarkMode ? theme.palette.xtmhub.dark : theme.palette.xtmhub.light;
+      endColor = isDarkMode ? theme.palette.xtmhub.background : theme.palette.xtmhub.lightBackground;
+      break;
+  }
 
   return (
     <Button
