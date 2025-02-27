@@ -1,4 +1,3 @@
-import React from 'react';
 import { styled } from '@mui/material/styles';
 import Button, { ButtonProps } from '@mui/material/Button';
 
@@ -42,7 +41,7 @@ const GradientButton = styled(Button, {
     '&:active': {
       border: '2px solid transparent',
       boxShadow: withShadow ? `1px 0px 4px -1px ${startColor}, -1px 0px 4px -1px ${endColor}` : 'none',
-    }
+    },
   };
 });
 
