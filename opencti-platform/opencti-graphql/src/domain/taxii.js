@@ -16,6 +16,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
+import { authorizedMembers } from '../schema/attribute-definition';
 
 const MAX_TAXII_PAGINATION = conf.get('app:data_sharing:taxii:max_pagination_result') || 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
@@ -58,7 +59,7 @@ export const findAll = (context, user, args) => {
 export const taxiiCollectionEditField = async (context, user, collectionId, input) => {
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
-    if (key === 'authorized_members') {
+    if (key === authorizedMembers.name) {
       item.value = value.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
     }
     return item;
