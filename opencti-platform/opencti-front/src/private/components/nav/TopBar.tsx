@@ -146,7 +146,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
-    settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee },
+    settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee, platform_xtmhub_url: xtmhubUrl },
   } = useAuth();
   const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
@@ -337,7 +337,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 <Grid container={true} spacing={3}>
                   <Grid item xs={12}>
                     <Tooltip title="XTM Hub">
-                      <a className={classes.xtmItem} href="https://xtmhub.filigran.io" target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
+                      <a className={classes.xtmItem} href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://xtmhub.filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
                         <Badge variant="dot" color="success">
                           <img style={{ width: '100%' }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
                         </Badge>
