@@ -13,6 +13,7 @@ import {
   getProcessingCount
 } from './draftWorkspace-domain';
 import { batchCreators } from '../../domain/user';
+import { findById as findWorkById } from '../../domain/work';
 
 const creatorsLoader = batchLoader(batchCreators);
 
@@ -28,6 +29,7 @@ const draftWorkspaceResolvers: Resolvers = {
     creators: (draft, _, context) => creatorsLoader.load(draft.creator_id, context, context.user),
     objectsCount: (draft, _, context) => getObjectsCount(context, context.user, draft),
     processingCount: (draft, _, context) => getProcessingCount(context, context.user, draft),
+    validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) : null),
   },
   Mutation: {
     draftWorkspaceAdd: (_, { input }, context) => {

@@ -5,6 +5,7 @@ export const ENTITY_TYPE_DRAFT_WORKSPACE = 'DraftWorkspace';
 
 export interface BasicStoreEntityDraftWorkspace extends BasicStoreEntity {
   name: string
+  draft_status: string
 }
 
 export interface StoreEntityDraftWorkspace extends BasicStoreEntityDraftWorkspace, StoreEntity {
@@ -12,4 +13,5 @@ export interface StoreEntityDraftWorkspace extends BasicStoreEntityDraftWorkspac
 
 export interface StixDraftWorkspace extends StixObject {
   name: string
+  draft_status: string
 }

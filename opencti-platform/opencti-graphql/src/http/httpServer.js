@@ -18,10 +18,12 @@ import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
 import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
-import { ForbiddenAccess } from '../config/errors';
+import {DraftLockedError, ForbiddenAccess, FunctionalError} from '../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isNotEmptyField } from '../database/utils';
+import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
+import {ENTITY_TYPE_DRAFT_WORKSPACE} from "../modules/draftWorkspace/draftWorkspace-types";
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -167,6 +169,14 @@ const createHttpServer = async () => {
           }
         } catch (error) {
           logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });
+        }
+
+        // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
+        if (isFeatureEnabled('DRAFT_WORKSPACE') && !!executeContext.draft_context) {
+          const draftWorkspaces = await getEntitiesMapFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
+          const draftWorkspace = draftWorkspaces.get(executeContext.draft_context);
+          if (!draftWorkspace) throw DraftLockedError('Could not find draft workspace');
+          if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) throw DraftLockedError('Can not execute request in a draft not in an open state');
         }
         return executeContext;
       }

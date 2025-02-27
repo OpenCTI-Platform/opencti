@@ -12533,6 +12533,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
   objectsCount: DraftObjectsCount!
   draft_status: DraftStatus!
   processingCount: Int!
+  validationWork: Work
 }
 
 type DraftObjectsCount {
@@ -12548,6 +12549,7 @@ enum DraftWorkspacesOrdering {
   name
   created_at
   creator
+  draft_status
 }
 
 type DraftWorkspaceConnection {

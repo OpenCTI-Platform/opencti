@@ -2,8 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { DraftWorksQuery, DraftWorksQuery$variables } from '@components/drafts/__generated__/DraftWorksQuery.graphql';
 import { DraftWorksLines_data$data } from '@components/drafts/__generated__/DraftWorksLines_data.graphql';
-import { CsvMapperLine_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
-import { DraftWorksLine_work$data } from '@components/drafts/__generated__/DraftWorksLine_work.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';

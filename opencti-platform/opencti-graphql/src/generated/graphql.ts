@@ -6600,6 +6600,7 @@ export type DraftWorkspace = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   processingCount: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
+  validationWork?: Maybe<Work>;
 };
 
 export type DraftWorkspaceAddInput = {
@@ -6622,6 +6623,7 @@ export type DraftWorkspaceEdge = {
 export enum DraftWorkspacesOrdering {
   CreatedAt = 'created_at',
   Creator = 'creator',
+  DraftStatus = 'draft_status',
   Name = 'name'
 }
 
@@ -35066,6 +35068,7 @@ export type DraftWorkspaceResolvers<ContextType = any, ParentType extends Resolv
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   processingCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  validationWork?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

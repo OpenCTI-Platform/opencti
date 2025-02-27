@@ -4,7 +4,14 @@ import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
-import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
+import {
+  AuthenticationFailure,
+  DatabaseError,
+  DraftLockedError,
+  ForbiddenAccess,
+  FunctionalError,
+  UnsupportedError
+} from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, refreshCacheForEntity } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
@@ -72,6 +79,8 @@ import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
 import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
+import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
+import {ENTITY_TYPE_DRAFT_WORKSPACE} from "../modules/draftWorkspace/draftWorkspace-types";
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -699,8 +708,10 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       // draft context might have changed, we need to check draft context exists and refresh session info
       const draftContext = R.head(input.value).toString();
       if (draftContext !== '') {
-        const draftWorkspace = await internalLoadById(context, user, draftContext);
-        if (!draftWorkspace) throw Error('Could not find draft workspace');
+        const draftWorkspaces = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
+        const draftWorkspace = draftWorkspaces.get(draftContext);
+        if (!draftWorkspace) throw DraftLockedError('Could not find draft workspace');
+        if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) throw DraftLockedError('Can not move to a draft not in an open state');
       }
       refreshUserNeeded = true;
     }

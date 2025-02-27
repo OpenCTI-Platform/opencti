@@ -16,15 +16,16 @@ const DraftProcessingStatus = () => {
   const [tabValue, setTabValue] = useState<string>('Works');
   const draftContext = useDraftContext();
   const currentDraftId = draftContext ? draftContext.id : '';
-  const currentDraftProcessingStatus = draftContext?.processingCount > 0 ? t_i18n('Processing') : t_i18n('Ready');
-  const currentDraftProcessingStatusColor = draftContext?.processingCount > 0 ? '#ff9800' : '#2e7d32';
+  const currentDraftProcessingCount = draftContext?.processingCount ?? 0;
+  const currentDraftProcessingStatus = currentDraftProcessingCount > 0 ? t_i18n('Processing') : t_i18n('Ready');
+  const currentDraftProcessingStatusColor = currentDraftProcessingCount > 0 ? '#ff9800' : '#2e7d32';
 
   return (
     <>
       <Chip
         onClick={() => { setDisplayProcesses(true); }}
         variant="outlined"
-        label={currentDraftProcessingStatus}
+        label={`${currentDraftProcessingStatus} (${currentDraftProcessingCount})`}
         style={{
           color: currentDraftProcessingStatusColor,
           borderColor: currentDraftProcessingStatusColor,

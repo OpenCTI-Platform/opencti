@@ -8,13 +8,12 @@ import {
   type QueryDraftWorkspacesArgs,
   type QueryDraftWorkspaceSightingRelationshipsArgs
 } from '../../generated/graphql';
-import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
-import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
+import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from './draftWorkspace-types';
 import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
 import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
-import { deleteElementById, stixLoadByIds } from '../../database/middleware';
+import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../../database/middleware';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
@@ -37,7 +36,9 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { deleteAllDraftFiles } from '../../database/file-storage-helper';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
 import { notify } from '../../database/redis';
+import { publishUserAction } from '../../listener/UserActionListener';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -199,10 +200,24 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
   }
   const defaultOps = {
     created_at: now(),
-    draft_status: 'open',
+    draft_status: DRAFT_STATUS_OPEN,
   };
   const draftWorkspaceInput = { ...input, ...defaultOps };
-  return createInternalObject<StoreEntityDraftWorkspace>(context, user, draftWorkspaceInput, ENTITY_TYPE_DRAFT_WORKSPACE);
+  const createdDraftWorkspace = await createEntity(context, user, draftWorkspaceInput, ENTITY_TYPE_DRAFT_WORKSPACE);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `creates draft workspace \`${createdDraftWorkspace.name}\``,
+    context_data: {
+      id: createdDraftWorkspace.id,
+      entity_type: ENTITY_TYPE_DRAFT_WORKSPACE,
+      input,
+    },
+  });
+
+  return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].ADDED_TOPIC, createdDraftWorkspace, user);
 };
 
 const findAllUsersWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {
@@ -250,9 +265,22 @@ export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser,
   await elDeleteDraftElements(context, user, id); // delete all draft elements from draft index
   await deleteDraftContextFromUsers(context, user, id);
   await deleteDraftContextFromWorks(context, user, id);
-  await deleteElementById(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
+  const deleted = await deleteElementById(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
 
-  return id;
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'extended',
+    message: `deletes draft workspace \`${deleted.name}\``,
+    context_data: {
+      id: deleted.id,
+      entity_type: ENTITY_TYPE_DRAFT_WORKSPACE,
+      input: deleted,
+    },
+  });
+
+  return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].DELETE_TOPIC, deleted, user).then(() => id);
 };
 
 export const buildDraftVersion = (object: BasicStoreCommon) => {
@@ -313,6 +341,9 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
   if (!draftWorkspace) {
     throw FunctionalError(`Draft workspace ${draft_id} cannot be found`, draft_id);
   }
+  if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
+    throw FunctionalError('Draft workspace cannot be validated in this state', { draftId: draft_id, status: draftWorkspace.draft_status });
+  }
   const stixBundle = await buildDraftValidationBundle(context, user, draft_id);
   const jsonBundle = JSON.stringify(stixBundle);
   const content = Buffer.from(jsonBundle, 'utf-8').toString('base64');
@@ -324,7 +355,10 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
     await updateExpectationsNumber(contextOutOfDraft, context.user, work.id, stixBundle.objects.length);
   }
   await pushToWorkerForConnector(DRAFT_VALIDATION_CONNECTOR.id, { type: 'bundle', applicant_id: user.internal_id, content, update: true, work_id: work.id, draft_id: '' });
-  await deleteDraftWorkspace(contextOutOfDraft, user, draft_id);
+  const draftValidationInput = [{ key: 'draft_status', value: [DRAFT_STATUS_VALIDATED] }, { key: 'validation_work_id', value: [work.id] }];
+  const { element } = await updateAttribute(context, user, draft_id, ENTITY_TYPE_DRAFT_WORKSPACE, draftValidationInput);
+  await notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].EDIT_TOPIC, element, user);
+  await deleteDraftContextFromUsers(context, user, draft_id);
 
   return work;
 };

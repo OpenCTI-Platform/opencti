@@ -3,6 +3,7 @@ import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from
 import DraftCreation from '@components/drafts/DraftCreation';
 import { graphql } from 'react-relay';
 import { DraftsLines_data$data } from '@components/drafts/__generated__/DraftsLines_data.graphql';
+import { Drafts_node$data } from '@components/drafts/__generated__/Drafts_node.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -15,6 +16,7 @@ import useHelper from '../../../utils/hooks/useHelper';
 import DraftPopover from './DraftPopover';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -26,6 +28,17 @@ const DraftLineFragment = graphql`
           name
         }
         created_at
+        draft_status
+        processingCount
+        validationWork {
+            received_time
+            processed_time
+            completed_time
+            tracking {
+                import_expected_number
+                import_processed_number
+            }
+        }
     }
 `;
 export const draftsLinesQuery = graphql`
@@ -85,6 +98,17 @@ export const draftsLinesFragment = graphql`
 
 const LOCAL_STORAGE_KEY = 'draftWorkspaces';
 
+const computeValidationProgress = (validationWork: Drafts_node$data['validationWork']) => {
+  if (!validationWork) {
+    return '';
+  }
+  if (!validationWork.tracking?.import_expected_number || !validationWork.tracking?.import_processed_number) {
+    return '0';
+  }
+
+  return 100 * (validationWork.tracking.import_processed_number / validationWork.tracking.import_expected_number);
+};
+
 const Drafts: React.FC = () => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
@@ -130,16 +154,34 @@ const Drafts: React.FC = () => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 50,
+      percentWidth: 40,
       isSortable: true,
     },
     creator: {
-      percentWidth: 25,
+      percentWidth: 15,
       isSortable: true,
     },
     created_at: {
-      percentWidth: 25,
+      percentWidth: 15,
       isSortable: true,
+    },
+    draft_status: {
+      label: 'Status',
+      percentWidth: 10,
+      isSortable: true,
+      render: ({ draft_status }) => defaultRender(draft_status),
+    },
+    processingCount: {
+      label: 'Ongoing processes',
+      percentWidth: 10,
+      isSortable: false,
+      render: ({ processingCount }) => defaultRender(processingCount),
+    },
+    draft_validation_progress: {
+      label: 'Validation progress',
+      percentWidth: 10,
+      isSortable: false,
+      render: ({ validationWork }) => defaultRender(computeValidationProgress(validationWork)),
     },
   };
 

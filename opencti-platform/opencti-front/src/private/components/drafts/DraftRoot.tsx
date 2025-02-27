@@ -13,6 +13,8 @@ import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
 import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.graphql';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -23,6 +25,8 @@ import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
 import Import from '../data/import/Import';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import { truncate } from '../../../utils/String';
 
 const draftRootQuery = graphql`
   query DraftRootQuery($id: String!) {
@@ -45,6 +49,17 @@ const draftRootFragment = graphql`
       sightingsCount
       totalCount
     }
+    draft_status
+    validationWork {
+      received_time
+      processed_time
+      completed_time
+      status
+      tracking {
+        import_expected_number
+        import_processed_number
+      }
+    }
   }
 `;
 
@@ -58,13 +73,17 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
     return (<ErrorNotFound />);
   }
 
-  const { id, objectsCount } = useFragment(draftRootFragment, draftWorkspace);
+  const { name, objectsCount, draft_status, validationWork } = useFragment(draftRootFragment, draftWorkspace);
+  const isDraftReadOnly = draft_status !== 'open';
+  const currentProgress = validationWork?.tracking?.import_processed_number ?? '0';
+  const requiredProgress = validationWork?.tracking?.import_expected_number ?? '0';
+  const currentProgressMessage = validationWork?.status === 'wait' || validationWork?.status === 'progress' ? `Validating: ${currentProgress}/${requiredProgress}` : 'Validated';
 
   // switch to draft
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
 
   useEffect(() => {
-    if (!draftContext || id !== draftId) {
+    if (!isDraftReadOnly && (!draftContext || draftContext.id !== draftId)) {
       commitSwitchToDraft({
         variables: {
           input: [{ key: 'draft_context', value: [draftId] }],
@@ -82,6 +101,31 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
 
   return (
     <>
+      {isDraftReadOnly && (
+      <>
+        <Breadcrumbs elements={[
+          { label: t_i18n('Drafts'), link: '/dashboard/drafts' },
+          { label: name, current: true },
+        ]}
+        />
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <Tooltip title={name}>
+            <Typography
+              variant="h1"
+              sx={{
+                margin: 0,
+                lineHeight: 'unset',
+              }}
+            >
+              {truncate(name, 80)}
+            </Typography>
+          </Tooltip>
+          <div>
+            {currentProgressMessage}
+          </div>
+        </div>
+      </>
+      )}
       <Box
         sx={{
           borderBottom: 1,
@@ -133,12 +177,13 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
           />
+          {!isDraftReadOnly && (
           <Tab
             component={Link}
             to={`/dashboard/drafts/${draftId}/files`}
             value={`/dashboard/drafts/${draftId}/files`}
             label={t_i18n('Files')}
-          />
+          />)}
         </Tabs>
       </Box>
       <Routes>
