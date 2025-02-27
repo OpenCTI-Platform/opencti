@@ -51,7 +51,7 @@ export const isFilterFormatCorrect = (filter: Filter) => {
  * Note that it's a shallow check; it does not recurse into the nested groups.
  * @param filterGroup
  */
-export const isFilterGroupFormatCorrect = (filterGroup: FilterGroup): boolean => {
+const isFilterGroupFormatCorrect = (filterGroup: FilterGroup): boolean => {
   return (filterGroup.mode
     && ['and', 'or'].includes(filterGroup.mode)
     && filterGroup.filters && Array.isArray(filterGroup.filters)
@@ -292,7 +292,7 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
 /**
  * Check the filter keys exist in the schema
  */
-export const checkFilterKeys = (filterGroup: FilterGroup) => {
+const checkFilterKeys = (filterGroup: FilterGroup) => {
   // TODO improvement: check filters keys correspond to the entity types if types is given
   const keys = extractFilterKeys(filterGroup)
     .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
@@ -319,6 +319,16 @@ export const checkFilterKeys = (filterGroup: FilterGroup) => {
   }
 };
 
+export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersKeysChecking = false) => {
+  if (!isFilterGroupFormatCorrect(filterGroup)) { // detect filters in the old format or in a bad format
+    throw UnsupportedError('Incorrect filters format', { filter: JSON.stringify(filterGroup) });
+  }
+  // 01. check filters keys exist in schema
+  if (!noFiltersKeysChecking && isFilterGroupNotEmpty(filterGroup)) {
+    checkFilterKeys(filterGroup);
+  }
+};
+
 /**
  * Go through all keys in a filter group to:
  * - check that the key is available with respect to the schema, throws an Error if not
@@ -328,13 +338,9 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
   if (!filterGroup) {
     return undefined;
   }
-  // 00. detect filters in the old format or in a bad format
-  checkFilterGroupSyntax(filterGroup);
+  // 01. check filters validity
   const { noFiltersKeysChecking = false } = opts;
-  // 01. check filters keys exist in schema
-  if (!noFiltersKeysChecking && isFilterGroupNotEmpty(filterGroup)) {
-    checkFilterKeys(filterGroup);
-  }
+  checkFiltersValidity(filterGroup, noFiltersKeysChecking);
   // 02. translate the filter keys on relation refs and return the converted filters
   if (!noFiltersKeysChecking && isFilterGroupNotEmpty(filterGroup)) {
     return convertRelationRefsFilterKeys(filterGroup);

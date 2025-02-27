@@ -30,7 +30,7 @@ import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
-import { checkFilterKeys, emptyFilterGroup, filtersEntityIdsMapping, isFilterGroupFormatCorrect } from '../../utils/filtering/filtering-utils';
+import { checkFiltersValidity, emptyFilterGroup, filtersEntityIdsMapping } from '../../utils/filtering/filtering-utils';
 import { logApp } from '../../config/conf';
 import { NLQPromptTemplate } from './ai-nlq-utils';
 
@@ -314,15 +314,11 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
     return JSON.stringify(emptyFilterGroup);
   }
 
-  // 02. check the filters are in a correct format
-  if (!isFilterGroupFormatCorrect(parsedResponse)) {
-    logApp.error('[AI NLQ] Result filters are not in a correct format', { data: parsedResponse });
-    return JSON.stringify(emptyFilterGroup);
-  }
+  // 02. check the filters validity
   try {
-    checkFilterKeys(parsedResponse);
+    checkFiltersValidity(parsedResponse);
   } catch (error) {
-    logApp.error('[AI NLQ] Some result filters keys are not correct', { error, data: parsedResponse });
+    logApp.error('[AI NLQ] The NLQ filters response format is not correct', { error, data: parsedResponse });
     return JSON.stringify(emptyFilterGroup);
   }
 
