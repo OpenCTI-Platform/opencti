@@ -1,9 +1,10 @@
 import React from 'react';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { parse } from 'src/utils/Time';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
@@ -28,6 +29,16 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
   const { t_i18n } = useFormatter();
   const { canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
 
+  const handleChangeRelativeDate = (event: SelectChangeEvent) => {
+    const { value } = event.target;
+    handleDateChange('relativeDate', value);
+  };
+
+  const handleChangeDate = (type: 'startDate' | 'endDate', value: Date) => {
+    const formattedDate = value ? parse(value).format() : null;
+    handleDateChange(type, formattedDate);
+  };
+
   return (
     <Security
       needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
@@ -45,7 +56,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           <Select
             labelId="relative"
             value={config.relativeDate ?? ''}
-            onChange={(value) => handleDateChange('relativeDate', value)}
+            onChange={(value) => handleChangeRelativeDate('relativeDate', value)}
             label={t_i18n('Relative time')}
             variant="outlined"
           >
@@ -63,7 +74,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           label={t_i18n('Start date')}
           disableFuture={true}
           disabled={!!config.relativeDate}
-          onChange={(value, context) => !context.validationError && handleDateChange('startDate', value)}
+          onChange={(value: Date, context) => !context.validationError && handleChangeDate('startDate', value)}
           slotProps={{
             textField: {
               style: { marginRight: 8 },
@@ -77,7 +88,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           label={t_i18n('End date')}
           disabled={!!config.relativeDate}
           disableFuture={true}
-          onChange={(value, context) => !context.validationError && handleDateChange('endDate', value)}
+          onChange={(value: Date, context) => !context.validationError && handleChangeDate('endDate', value)}
           slotProps={{
             textField: {
               variant: 'outlined',
