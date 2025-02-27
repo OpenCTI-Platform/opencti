@@ -33,6 +33,7 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../modules/threatActorIndividual/threatActorIndividual-types';
+import { INSTANCE_REGARDING_OF } from '../filtering/filtering-constants';
 
 export const RESOLUTION_LIMIT = 200;
 export const systemPrompt = `
@@ -62,7 +63,7 @@ export const getIndicatorsStats = async (context, user, id, startDate, endDate) 
   const filters = { mode: 'and',
     filters: [
       { key: 'entity_type', values: [ENTITY_TYPE_INDICATOR] },
-      { key: 'regardingOf',
+      { key: INSTANCE_REGARDING_OF,
         values: [
           { key: 'relationship_type', values: [RELATION_INDICATES] },
           { key: 'id', values: [id] }

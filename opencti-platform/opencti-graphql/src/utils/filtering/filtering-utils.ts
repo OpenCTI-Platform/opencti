@@ -349,17 +349,32 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
   return filterGroup;
 };
 
-const filtersEntityIdsMappingResult = (filters: FilterGroup, idsFilterKeys: string[]) => {
+/**
+ * Go through all keys in a filter group to:
+ * - if the key is in keysToReplace: replace the values of the filter by the associated id in the map
+ */
+const filtersEntityIdsMappingResult = (filters: FilterGroup, keysToReplace: string[], valuesIdsMap: Map<string, string>) => {
   const filtersResult = filters;
   if (isFilterGroupNotEmpty(filtersResult)) {
+    // replace the values by their ids
     filtersResult.filters.forEach((f) => {
       const key = Array.isArray(f.key) ? f.key[0] : f.key;
-      if (idsFilterKeys.includes(key)) {
-        // eslint-disable-next-line no-param-reassign
-        f.values = ['to resolve']; // TODO
+      if (keysToReplace.includes(key)) {
+        if (key === INSTANCE_REGARDING_OF) {
+          const valuesIds = f.values.filter((v) => v.key === 'id').map((v) => v.values).flat();
+          const resolvedValuesIds = valuesIds.map((v) => valuesIdsMap.get(v));
+          // eslint-disable-next-line no-param-reassign
+          f.values = [
+            ...f.values.filter((v) => v.key !== 'id'),
+            { key: 'id', values: resolvedValuesIds },
+          ];
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          f.values = f.values.map((v) => valuesIdsMap.get(v));
+        }
       }
     });
-    filtersResult.filterGroups.forEach((fg) => filtersEntityIdsMappingResult(fg, idsFilterKeys));
+    filtersResult.filterGroups.forEach((fg) => filtersEntityIdsMappingResult(fg, keysToReplace, valuesIdsMap));
   }
   return filtersResult;
 };
@@ -367,6 +382,10 @@ const filtersEntityIdsMappingResult = (filters: FilterGroup, idsFilterKeys: stri
 export const filtersEntityIdsMapping = async (filters: FilterGroup) => {
   const filterDefinitions = await generateFilterKeysSchema();
   const stixCoreObjectsFilterDefinitions = filterDefinitions.find((f) => f.entity_type === ABSTRACT_STIX_CORE_OBJECT)?.filters_schema.map((f) => f.filterDefinition) ?? [];
-  const idsFilterKeys = stixCoreObjectsFilterDefinitions.filter((f) => f.type === 'id').map((f) => f.filterKey);
-  return filtersEntityIdsMappingResult(filters, idsFilterKeys);
+  const idsFilterKeys = stixCoreObjectsFilterDefinitions.filter((f) => f.type === 'id')
+    .map((f) => f.filterKey)
+    .concat([INSTANCE_REGARDING_OF]);
+  const valuesIdsToResolve = extractFilterGroupValues(filters, idsFilterKeys);
+  const valuesIdsMap = new Map(valuesIdsToResolve.map((value) => [value, 'to resolve'])); // TODO resolve the values in ids
+  return filtersEntityIdsMappingResult(filters, idsFilterKeys, valuesIdsMap);
 };

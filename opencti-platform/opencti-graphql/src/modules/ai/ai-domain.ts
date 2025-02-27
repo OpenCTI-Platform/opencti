@@ -305,12 +305,13 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   const promptValue = await NLQPromptTemplate.formatPromptValue({ text: search });
 
   // 01. query the model
+  logApp.debug('[AI] Querying NLQ with prompt', { questionStart: search.substring(0, 100) });
   const rawResponse = await queryNLQAi(promptValue);
   let parsedResponse;
   try {
     parsedResponse = JSON.parse(rawResponse.content.toString().replace(/'/g, '"'));
   } catch (error) {
-    logApp.error('[AI NLQ] JSON parsing error at NLQ response generation', { error, data: rawResponse.content });
+    logApp.error('[AI] JSON parsing error at NLQ response generation', { error, data: rawResponse.content });
     return JSON.stringify(emptyFilterGroup);
   }
 
@@ -318,7 +319,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   try {
     checkFiltersValidity(parsedResponse);
   } catch (error) {
-    logApp.error('[AI NLQ] The NLQ filters response format is not correct', { error, data: parsedResponse });
+    logApp.error('[AI] The NLQ filters response format is not correct', { error, data: parsedResponse });
     return JSON.stringify(emptyFilterGroup);
   }
 
