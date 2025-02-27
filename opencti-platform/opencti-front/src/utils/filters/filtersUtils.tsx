@@ -96,6 +96,11 @@ export const stixFilters = [
   'x_opencti_cvss_base_score',
   'x_opencti_cvss_base_severity',
   'report_types',
+  'response_types',
+  'information_types',
+  'takedown_types',
+  'note_types',
+  'incident_type',
 ];
 
 //----------------------------------------------------------------------------------------------------------------------

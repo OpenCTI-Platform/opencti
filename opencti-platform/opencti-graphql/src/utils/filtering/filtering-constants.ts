@@ -50,6 +50,12 @@ export const EPSS_SCORE_FILTER = 'x_opencti_epss_score';
 export const CVSS_BASE_SCORE_FILTER = 'x_opencti_cvss_base_score';
 export const CVSS_BASE_SEVERITY_FILTER = 'x_opencti_cvss_base_severity';
 export const REPORT_TYPES_FILTER = 'report_types';
+export const INCIDENT_RESPONSE_TYPES_FILTER = 'response_types';
+export const REQUEST_FOR_INFORMATION_TYPES_FILTER = 'information_types';
+export const REQUEST_FOR_TAKEDOWN_TYPES_FILTER = 'takedown_types';
+export const NOTE_TYPES_FILTER = 'note_types';
+export const INCIDENT_TYPE_FILTER = 'incident_type';
+
 // special cases
 export const IDS_FILTER = 'ids';
 export const SIGHTED_BY_FILTER = 'sightedBy';
