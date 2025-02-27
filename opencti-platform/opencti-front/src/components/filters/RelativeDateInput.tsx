@@ -38,7 +38,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       return t_i18n('The values must be different.');
     }
     const newValue = values[valueOrder];
-    if (!newValue.match(RELATIVE_DATE_REGEX) && newValue !== 'now' && !isValidDate(newValue)) {
+    if (!newValue.match(RELATIVE_DATE_REGEX) && !isValidDate(newValue)) {
       return t_i18n('The value must be a datetime or a relative date in correct elastic format.');
     }
     return undefined;

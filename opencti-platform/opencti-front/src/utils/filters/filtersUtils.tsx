@@ -39,7 +39,9 @@ export const SELF_ID_VALUE = 'CURRENT ENTITY';
 
 // 'within' operator filter constants
 export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
-export const RELATIVE_DATE_REGEX = /^now[-+]\d+[smhHdwMy]$/; // the value must be: 'now', then a -/+, then a number, then a letter among: [smhHdwMy]
+
+// the relative date values must be: 'now' OR 'now' followed by -/+ then a number then a letter among [smhHdwMy] and eventually a / followed by a letter among [smhHdwMy]
+export const RELATIVE_DATE_REGEX = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
 
 export const FiltersVariant = {
   list: 'list',

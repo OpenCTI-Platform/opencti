@@ -78,6 +78,30 @@ describe('Filtering utils', () => {
       filterGroups: [],
     } as FilterGroup;
     expect(() => checkFilterGroupSyntax(filterGroup6)).not.toThrowError();
+    const filterGroup7 = {
+      mode: 'or',
+      filters: [
+        { key: ['published'], values: ['now-1d/d', 'now'], operator: 'within' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(() => checkFilterGroupSyntax(filterGroup7)).not.toThrowError();
+    const filterGroup8 = {
+      mode: 'or',
+      filters: [
+        { key: ['published'], values: ['now-1d/', 'now'], operator: 'within' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(() => checkFilterGroupSyntax(filterGroup8)).toThrowError();
+    const filterGroup9 = {
+      mode: 'or',
+      filters: [
+        { key: ['published'], values: ['10y/y', 'now'], operator: 'within' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(() => checkFilterGroupSyntax(filterGroup9)).toThrowError();
   });
   it('should add a filter to a filter group and separate them with the AND mode', async () => {
     const filterGroup = {

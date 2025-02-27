@@ -67,8 +67,8 @@ export const checkFilterGroupSyntax = (filterGroup: FilterGroup) => {
     if (values.some((v) => v === null || v === '')) {
       throw UnsupportedError('A filter with "within" operator must have 2 values', { filter: f });
     }
-    const regex = /^now[-+]\d+[smhHdwMy]$/;
-    if (values.some((v) => !v.match(regex) && v !== 'now' && !isValidDate(v))) {
+    const relative_date_regex = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
+    if (values.some((v) => !v.match(relative_date_regex) && v !== 'now' && !isValidDate(v))) {
       throw UnsupportedError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.', { filter: f });
     }
   });
