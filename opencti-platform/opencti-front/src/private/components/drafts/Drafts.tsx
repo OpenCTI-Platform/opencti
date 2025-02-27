@@ -29,7 +29,6 @@ const DraftLineFragment = graphql`
         }
         created_at
         draft_status
-        processingCount
         validationWork {
             received_time
             processed_time
@@ -103,10 +102,10 @@ const computeValidationProgress = (validationWork: Drafts_node$data['validationW
     return '';
   }
   if (!validationWork.tracking?.import_expected_number || !validationWork.tracking?.import_processed_number) {
-    return '0';
+    return '0%';
   }
 
-  return 100 * (validationWork.tracking.import_processed_number / validationWork.tracking.import_expected_number);
+  return Math.floor(100 * (validationWork.tracking.import_processed_number / validationWork.tracking.import_expected_number)) + '%';
 };
 
 const Drafts: React.FC = () => {
@@ -154,7 +153,7 @@ const Drafts: React.FC = () => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 40,
+      percentWidth: 50,
       isSortable: true,
     },
     creator: {
@@ -170,12 +169,6 @@ const Drafts: React.FC = () => {
       percentWidth: 10,
       isSortable: true,
       render: ({ draft_status }) => defaultRender(draft_status),
-    },
-    processingCount: {
-      label: 'Ongoing processes',
-      percentWidth: 10,
-      isSortable: false,
-      render: ({ processingCount }) => defaultRender(processingCount),
     },
     draft_validation_progress: {
       label: 'Validation progress',

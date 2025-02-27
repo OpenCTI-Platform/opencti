@@ -6,6 +6,7 @@ export const ENTITY_TYPE_DRAFT_WORKSPACE = 'DraftWorkspace';
 export interface BasicStoreEntityDraftWorkspace extends BasicStoreEntity {
   name: string
   draft_status: string
+  validation_work_id: string
 }
 
 export interface StoreEntityDraftWorkspace extends BasicStoreEntityDraftWorkspace, StoreEntity {

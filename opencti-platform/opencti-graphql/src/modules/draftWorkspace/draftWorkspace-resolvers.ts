@@ -29,7 +29,7 @@ const draftWorkspaceResolvers: Resolvers = {
     creators: (draft, _, context) => creatorsLoader.load(draft.creator_id, context, context.user),
     objectsCount: (draft, _, context) => getObjectsCount(context, context.user, draft),
     processingCount: (draft, _, context) => getProcessingCount(context, context.user, draft),
-    validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) : null),
+    validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) as any : null),
   },
   Mutation: {
     draftWorkspaceAdd: (_, { input }, context) => {
