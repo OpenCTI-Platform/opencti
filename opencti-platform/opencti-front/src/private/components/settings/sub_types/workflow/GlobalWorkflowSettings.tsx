@@ -44,7 +44,7 @@ const GlobalWorkflowSettings = ({ subTypeId, data, workflowEnabled }: GlobalWork
     <>
       <div style={{ marginTop: 10 }}>
         <Typography variant="h3" gutterBottom={true}>
-          {t_i18n('Workflow')}
+          {t_i18n('Global Workflow')}
           <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.GLOBAL} />
         </Typography>
       </div>
