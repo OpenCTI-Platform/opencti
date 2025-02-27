@@ -163,6 +163,7 @@ import {
 } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
 import {
+  authorizedMembers,
   booleanMapping,
   dateMapping,
   iAliasedIds,
@@ -577,9 +578,9 @@ const buildUserMemberAccessFilter = (user, opts) => {
   }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
-  const emptyAuthorizedMembers = { bool: { must_not: { exists: { field: 'authorized_members' } } } };
+  const emptyAuthorizedMembers = { bool: { must_not: { exists: { field: authorizedMembers.name } } } };
   const authorizedFilters = [
-    { terms: { 'authorized_members.id.keyword': [MEMBER_ACCESS_ALL, ...userAccessIds] } },
+    { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } },
   ];
   if (!excludeEmptyAuthorizedMembers) {
     authorizedFilters.push(emptyAuthorizedMembers);

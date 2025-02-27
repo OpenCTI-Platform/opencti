@@ -48,6 +48,7 @@ import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { validateFilterGroupForActivityEventMatch } from '../../utils/filtering/filtering-activity-event/activity-event-filtering';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { authorizedMembers } from '../../schema/attribute-definition';
 
 // Triggers
 // Due to engine limitation we restrict the recipient to only one user for now
@@ -88,13 +89,13 @@ export const addTrigger = async (
     validateFilterGroupForStixMatch(filters);
   }
 
-  let authorizedMembers;
+  let members;
   const recipient = await extractUniqRecipient(context, user, triggerInput, type);
   const isSelfTrigger = recipient.id === user.id;
   if (recipient.entity_type === ENTITY_TYPE_USER) {
-    authorizedMembers = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
+    members = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
   } else if (recipient.entity_type === ENTITY_TYPE_GROUP || recipient.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
-    authorizedMembers = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }];
+    members = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }];
   } else {
     throw UnsupportedError(`Cannot add a recipient with type ${type}`);
   }
@@ -106,7 +107,7 @@ export const addTrigger = async (
     updated_at: now(),
     trigger_scope: 'knowledge',
     instance_trigger: type === TriggerTypeValue.Digest ? false : (triggerInput as TriggerLiveAddInput).instance_trigger,
-    authorized_members: authorizedMembers,
+    authorized_members: members,
     authorized_authorities: [SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN] // Add extra capabilities
   };
   const trigger = { ...triggerInput, ...defaultOpts };
@@ -218,7 +219,7 @@ export const triggerActivityEdit = async (context: AuthContext, user: AuthUser, 
     const inputElement = input[index];
     if (inputElement.key === 'recipients') {
       const value = (inputElement.value ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
-      finalInput.push({ key: 'authorized_members', value });
+      finalInput.push({ key: authorizedMembers.name, value });
     } else {
       finalInput.push(inputElement);
     }
