@@ -11,7 +11,7 @@ import DashboardAuditsViz from './DashboardAuditsViz';
 import DashboardEntitiesViz from './DashboardEntitiesViz';
 import DashboardTimeFilters from './DashboardTimeFilters';
 import { parse } from '../../../../utils/Time';
-import WorkspaceHeader from '../WorkspaceHeader';
+import WorkspaceHeader from '../workspaceHeader/WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
@@ -89,18 +89,12 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
   };
 
   const handleDateChange = (type, value) => {
-    // eslint-disable-next-line no-nested-ternary
-    const newValue = value && value.target
-      ? value.target.value
-      : value
-        ? parse(value).format()
-        : null;
     let newManifest = R.assoc(
       'config',
-      R.assoc(type, newValue === 'none' ? null : newValue, manifest.config),
+      R.assoc(type, value === 'none' ? null : value, manifest.config),
       manifest,
     );
-    if (type === 'relativeDate' && newValue !== 'none') {
+    if (type === 'relativeDate' && value !== 'none') {
       newManifest = R.assoc(
         'config',
         R.assoc('startDate', null, newManifest.config),
