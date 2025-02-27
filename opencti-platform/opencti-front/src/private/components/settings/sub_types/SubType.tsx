@@ -9,6 +9,7 @@ import { SubTypeQuery, SubTypeQuery$variables } from '@components/settings/sub_t
 import { useParams } from 'react-router-dom';
 import GlobalWorkflowSettings from '@components/settings/sub_types/workflow/GlobalWorkflowSettings';
 import RequestAccessSettings from '@components/settings/sub_types/workflow/RequestAccessSettings';
+import Divider from '@mui/material/Divider';
 import { useFormatter } from '../../../../components/i18n';
 import EntitySettingSettings from './entity_setting/EntitySettingSettings';
 import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
@@ -22,6 +23,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
@@ -64,6 +66,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
   if (!subType) return <ErrorNotFound/>;
@@ -89,7 +92,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
   const hasTemplates = subType.settings?.availableSettings.includes('templates');
 
-  const hasRequestAccessConfig = subType.settings?.requestAccessConfiguration && isRequestAccessFeatureEnabled && subType.settings?.availableSettings.includes('request_access_workflow');
+  const hasRequestAccessConfig = subType.settings?.requestAccessConfiguration && isRequestAccessFeatureEnabled && isEnterpriseEdition && subType.settings?.availableSettings.includes('request_access_workflow');
 
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),
@@ -130,7 +133,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
         {hasTemplates && <FintelTemplatesGrid data={subType.settings} />}
 
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Worflow')}
           </Typography>
@@ -139,17 +142,30 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
             variant="outlined"
             className={'paper-for-grid'}
           >
-            {subType.settings?.availableSettings.includes('workflow_configuration')
-              && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false}/>
-            }
-            {hasRequestAccessConfig
-              && <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={subType.settings.requestAccessConfiguration}/>
-            }
+            <div style={{ display: 'flex' }}>
+              <Grid item xs={6}>
+                {subType.settings?.availableSettings.includes('workflow_configuration')
+                  && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false}/>
+                }
+              </Grid>
+              <Divider orientation="vertical" style={{
+                display: 'inline-block',
+                verticalAlign: 'middle',
+                height: '100%',
+                margin: '0 5px 0 5px',
+              }}
+              />
+              <Grid item xs={6}>
+                {hasRequestAccessConfig
+                  && <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={subType.settings.requestAccessConfiguration}/>
+                }
+              </Grid>
+            </div>
           </Paper>
         </Grid>
 
         {subType.settings?.availableSettings.includes('attributes_configuration') && (
-          <Grid item xs={6}>
+          <Grid item xs={12}>
             <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
               {t_i18n('Attributes')}
             </Typography>
