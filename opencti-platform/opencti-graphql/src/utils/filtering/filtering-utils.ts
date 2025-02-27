@@ -38,10 +38,9 @@ export const emptyFilterGroup: FilterGroup = {
 // Basic utility functions
 
 export const isFilterFormatCorrect = (filter: Filter) => {
+  // TODO complete (regardingOf checks, nested filters checks, within/nil operators checks, etc)
   return (
     filter.key
-    && filter.values
-    && Array.isArray(filter.values)
   );
 };
 
