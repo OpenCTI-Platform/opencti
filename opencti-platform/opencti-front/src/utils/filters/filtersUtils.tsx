@@ -344,7 +344,7 @@ export const useBuildFiltersForTemplateWidgets = () => {
   return { buildFiltersForTemplateWidgets };
 };
 
-// return the i18n label corresponding to a value
+// return the i18n label corresponding to a filter value
 export const filterValue = (filterKey: string, value?: string | null, filterType?: string, filterOperator?: string) => {
   const { t_i18n, nsd, smhd } = useFormatter();
   if (filterKey === 'regardingOf') {
