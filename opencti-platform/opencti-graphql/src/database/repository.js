@@ -49,28 +49,7 @@ export const connectorsForManager = async (context, user, managerId) => {
     connectionFormat: false
   };
   const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], args);
-  const connectorElements = elements.map((conn) => completeConnector(conn));
-  connectorElements.push({
-    id: '51f4ba89-d9b3-483f-ad62-4d1a326ea25a',
-    name: 'Hardcoded connector for manager',
-    connector_scope: [],
-    config: connectorConfig('51f4ba89-d9b3-483f-ad62-4d1a326ea25a'),
-    active: true,
-    // manager part
-    manager_id: '8215614c-7139-422e-b825-b20fd2a13a23',
-    manager_status: 'provisioning',
-    manager_contract_configuration: [
-      { key: 'CONNECTOR_ID', value: '51f4ba89-d9b3-483f-ad62-4d1a326ea25a' },
-      { key: 'CONNECTOR_TYPE', value: 'INTERNAL_ENRICHMENT' },
-      { key: 'CONNECTOR_NAME', value: 'IpInfo' },
-      { key: 'CONNECTOR_SCOPE', value: 'IPv4-Addr' },
-      { key: 'CONNECTOR_AUTO', value: 'true' },
-      { key: 'IPINFO_TOKEN', value: '4f0b8a3ffc13d8' },
-      { key: 'IPINFO_MAX_TLP', value: 'TLP:AMBER' },
-      { key: 'IPINFO_USE_ASN_NAME', value: 'false' },
-    ]
-  });
-  return connectorElements;
+  return elements.map((conn) => completeConnector(conn));
 };
 
 export const connectorsForWorker = async (context, user) => {

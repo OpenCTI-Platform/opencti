@@ -9,7 +9,7 @@ import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-st
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
-import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
@@ -24,7 +24,9 @@ import {
   type SynchronizerFetchInput,
   type EditContext,
   type MutationSynchronizerTestArgs,
-  ConnectorType
+  ConnectorType,
+  type RequestConnectorStatusInput,
+  type CurrentConnectorStatusInput
 } from '../generated/graphql';
 import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
@@ -130,8 +132,12 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
       only_contextual,
       playbook_compatible,
       connector_user_id: opts.connector_user_id ?? user.id,
-      built_in: opts.built_in ?? false
+      built_in: opts.built_in ?? false,
     };
+    // manager patch
+    if (connectorData.manager_contract_configuration) {
+      patch.manager_contract_configuration = connectorData.manager_contract_configuration;
+    }
     if (opts.active !== undefined) {
       patch.active = opts.active;
     }
@@ -151,6 +157,11 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
     playbook_compatible,
     connector_user_id: opts.connector_user_id ?? user.id,
     built_in: opts.built_in ?? false,
+    // manager
+    manager_id: connectorData.manager_id,
+    manager_contract_image: connectorData.manager_contract_image,
+    manager_contract_configuration: connectorData.manager_contract_configuration,
+    manager_requested_status: isNotEmptyField(connectorData.manager_id) ? 'creating' : null
   };
   if (opts.active !== undefined) {
     connectorToCreate.active = opts.active;
@@ -186,6 +197,30 @@ export const connectorDelete = async (context: AuthContext, user:AuthUser, conne
   return element.internal_id;
 };
 
+const updateConnector = async (context: AuthContext, user: AuthUser, connectorId: string, input: EditInput[]) => {
+  const { element } = await updateAttribute(context, user, connectorId, ENTITY_TYPE_CONNECTOR, input);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for connector \`${element.name}\``,
+    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input }
+  });
+  // Notify configuration change for caching system
+  return notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
+};
+
+export const updateConnectorRequestedStatus = async (context: AuthContext, user: AuthUser, input: RequestConnectorStatusInput) => {
+  const ediInput: EditInput[] = [{ key: 'manager_requested_status', value: [input.status] }];
+  return updateConnector(context, user, input.id, ediInput);
+};
+
+export const updateConnectorCurrentStatus = async (context: AuthContext, user: AuthUser, input: CurrentConnectorStatusInput) => {
+  const ediInput: EditInput[] = [{ key: 'manager_current_status', value: [input.status] }];
+  return updateConnector(context, user, input.id, ediInput);
+};
+
 export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUser, connectorId: string, input: EditInput[]) => {
   const conn = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR) as unknown as BasicStoreEntityConnector;
   if (!conn) {
@@ -208,17 +243,7 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
       filtersItem.value[0] = ''; // empty filter
     }
   }
-  const { element } = await updateAttribute(context, user, connectorId, ENTITY_TYPE_CONNECTOR, input);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for connector \`${element.name}\``,
-    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input }
-  });
-  // Notify configuration change for caching system
-  return notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
+  return updateConnector(context, user, connectorId, input);
 };
 // endregion
 

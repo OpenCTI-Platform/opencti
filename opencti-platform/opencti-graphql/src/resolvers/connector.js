@@ -18,7 +18,9 @@ import {
   syncDelete,
   syncEditContext,
   syncEditField,
-  testSync
+  testSync,
+  updateConnectorCurrentStatus,
+  updateConnectorRequestedStatus
 } from '../domain/connector';
 import {
   addDraftContext,
@@ -39,6 +41,8 @@ import { now } from '../utils/format';
 import { connector, connectors, connectorsForAnalysis, connectorsForImport, connectorsForManager, connectorsForNotification, connectorsForWorker } from '../database/repository';
 import { batchLoader } from '../database/middleware';
 import { getConnectorQueueSize } from '../database/rabbitmq';
+import { PLATFORM_VERSION } from '../config/conf';
+import { isNotEmptyField } from '../database/utils';
 
 const creatorLoader = batchLoader(batchCreator);
 
@@ -61,6 +65,7 @@ const connectorResolvers = {
   Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
     connector_queue_details: (cn) => queueDetails(cn.id),
+    manager_contract_image: (cn) => (isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${PLATFORM_VERSION}` : null),
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
   },
   Work: {
@@ -78,6 +83,8 @@ const connectorResolvers = {
     resetStateConnector: (_, { id }, context) => resetStateConnector(context, context.user, id),
     pingConnector: (_, { id, state, connectorInfo }, context) => pingConnector(context, context.user, id, state, connectorInfo),
     updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
+    updateConnectorRequestedStatus: (_, { input }, context) => updateConnectorRequestedStatus(context, context.user, input),
+    updateConnectorCurrentStatus: (_, { input }, context) => updateConnectorCurrentStatus(context, context.user, input),
     // Work part
     workAdd: async (_, { connectorId, friendlyName }, context) => {
       const connectorEntity = await connector(context, context.user, connectorId);

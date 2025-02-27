@@ -3752,8 +3752,10 @@ export type Connector = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   manager_contract_configuration?: Maybe<Array<ConnectorContractConfiguration>>;
+  manager_contract_image?: Maybe<Scalars['String']['output']>;
+  manager_current_status?: Maybe<Scalars['String']['output']>;
   manager_id?: Maybe<Scalars['String']['output']>;
-  manager_status?: Maybe<Scalars['String']['output']>;
+  manager_requested_status?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   only_contextual?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -3792,6 +3794,12 @@ export type ConnectorContractConfiguration = {
   value: Scalars['String']['output'];
 };
 
+export enum ConnectorCurrentStatus {
+  Created = 'created',
+  Started = 'started',
+  Stopped = 'stopped'
+}
+
 export type ConnectorInfo = {
   __typename?: 'ConnectorInfo';
   buffering: Scalars['Boolean']['output'];
@@ -3821,6 +3829,11 @@ export type ConnectorQueueDetails = {
   messages_number: Scalars['Float']['output'];
   messages_size: Scalars['Float']['output'];
 };
+
+export enum ConnectorRequestStatus {
+  Starting = 'starting',
+  Stopping = 'stopping'
+}
 
 export enum ConnectorType {
   ExternalImport = 'EXTERNAL_IMPORT',
@@ -4107,6 +4120,11 @@ export type ContextData = {
   from_id?: Maybe<Scalars['String']['output']>;
   message: Scalars['String']['output'];
   to_id?: Maybe<Scalars['String']['output']>;
+};
+
+export type ContractConfigInput = {
+  key: Scalars['String']['input'];
+  value: Scalars['String']['input'];
 };
 
 export enum CountriesOrdering {
@@ -5425,6 +5443,11 @@ export type CsvMapperTestResult = {
   nbEntities: Scalars['Int']['output'];
   nbRelationships: Scalars['Int']['output'];
   objects: Scalars['String']['output'];
+};
+
+export type CurrentConnectorStatusInput = {
+  id: Scalars['ID']['input'];
+  status: ConnectorCurrentStatus;
 };
 
 export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -13969,6 +13992,8 @@ export type Mutation = {
   triggerKnowledgeDigestAdd?: Maybe<Trigger>;
   triggerKnowledgeFieldPatch?: Maybe<Trigger>;
   triggerKnowledgeLiveAdd?: Maybe<Trigger>;
+  updateConnectorCurrentStatus?: Maybe<Connector>;
+  updateConnectorRequestedStatus?: Maybe<Connector>;
   updateConnectorTrigger?: Maybe<Connector>;
   uploadImport?: Maybe<File>;
   uploadPending?: Maybe<File>;
@@ -15931,6 +15956,16 @@ export type MutationTriggerKnowledgeFieldPatchArgs = {
 
 export type MutationTriggerKnowledgeLiveAddArgs = {
   input: TriggerLiveAddInput;
+};
+
+
+export type MutationUpdateConnectorCurrentStatusArgs = {
+  input: CurrentConnectorStatusInput;
+};
+
+
+export type MutationUpdateConnectorRequestedStatusArgs = {
+  input: RequestConnectorStatusInput;
 };
 
 
@@ -22951,6 +22986,9 @@ export enum RegionsOrdering {
 export type RegisterConnectorInput = {
   auto?: InputMaybe<Scalars['Boolean']['input']>;
   id: Scalars['ID']['input'];
+  manager_contract_configuration?: InputMaybe<Array<ContractConfigInput>>;
+  manager_contract_image?: InputMaybe<Scalars['String']['input']>;
+  manager_id?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   only_contextual?: InputMaybe<Scalars['Boolean']['input']>;
   playbook_compatible?: InputMaybe<Scalars['Boolean']['input']>;
@@ -23320,6 +23358,11 @@ export type RepresentativeWithId = {
   entity_type?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   value?: Maybe<Scalars['String']['output']>;
+};
+
+export type RequestConnectorStatusInput = {
+  id: Scalars['ID']['input'];
+  status: ConnectorRequestStatus;
 };
 
 export type ResolvedInstanceFilter = {
@@ -31326,10 +31369,12 @@ export type ResolversTypes = ResolversObject<{
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
   ConnectorConfiguration: ResolverTypeWrapper<ConnectorConfiguration>;
   ConnectorContractConfiguration: ResolverTypeWrapper<ConnectorContractConfiguration>;
+  ConnectorCurrentStatus: ConnectorCurrentStatus;
   ConnectorInfo: ResolverTypeWrapper<ConnectorInfo>;
   ConnectorInfoInput: ConnectorInfoInput;
   ConnectorMetadata: ResolverTypeWrapper<ConnectorMetadata>;
   ConnectorQueueDetails: ResolverTypeWrapper<ConnectorQueueDetails>;
+  ConnectorRequestStatus: ConnectorRequestStatus;
   ConnectorType: ConnectorType;
   ConstraintNumber: ResolverTypeWrapper<Scalars['ConstraintNumber']['output']>;
   ConstraintString: ResolverTypeWrapper<Scalars['ConstraintString']['output']>;
@@ -31339,6 +31384,7 @@ export type ResolversTypes = ResolversObject<{
   ContainerEditMutations: ResolverTypeWrapper<Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'editAuthorizedMembers' | 'fieldPatch' | 'investigationAdd' | 'knowledgeAddFromInvestigation' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Container']>, contextPatch?: Maybe<ResolversTypes['Container']>, editAuthorizedMembers?: Maybe<ResolversTypes['Container']>, fieldPatch?: Maybe<ResolversTypes['Container']>, investigationAdd?: Maybe<ResolversTypes['Workspace']>, knowledgeAddFromInvestigation?: Maybe<ResolversTypes['Container']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Container']> }>;
   ContainersOrdering: ContainersOrdering;
   ContextData: ResolverTypeWrapper<Omit<ContextData, 'external_references'> & { external_references?: Maybe<Array<ResolversTypes['ExternalReference']>> }>;
+  ContractConfigInput: ContractConfigInput;
   CountriesOrdering: CountriesOrdering;
   Country: ResolverTypeWrapper<Omit<Country, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'region' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, region?: Maybe<ResolversTypes['Region']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   CountryAddInput: CountryAddInput;
@@ -31379,6 +31425,7 @@ export type ResolversTypes = ResolversObject<{
   CsvMapperSchemaAttribute: ResolverTypeWrapper<CsvMapperSchemaAttribute>;
   CsvMapperSchemaAttributes: ResolverTypeWrapper<CsvMapperSchemaAttributes>;
   CsvMapperTestResult: ResolverTypeWrapper<CsvMapperTestResult>;
+  CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   DataComponent: ResolverTypeWrapper<BasicStoreEntityDataComponent>;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: ResolverTypeWrapper<Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>> }>;
@@ -31809,6 +31856,7 @@ export type ResolversTypes = ResolversObject<{
   ReportsOrdering: ReportsOrdering;
   Representative: ResolverTypeWrapper<Representative>;
   RepresentativeWithId: ResolverTypeWrapper<RepresentativeWithId>;
+  RequestConnectorStatusInput: RequestConnectorStatusInput;
   ResolvedInstanceFilter: ResolverTypeWrapper<ResolvedInstanceFilter>;
   RetentionRule: ResolverTypeWrapper<RetentionRule>;
   RetentionRuleAddInput: RetentionRuleAddInput;
@@ -32201,6 +32249,7 @@ export type ResolversParentTypes = ResolversObject<{
   ContainerEdge: Omit<ContainerEdge, 'node'> & { node: ResolversParentTypes['Container'] };
   ContainerEditMutations: Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'editAuthorizedMembers' | 'fieldPatch' | 'investigationAdd' | 'knowledgeAddFromInvestigation' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Container']>, contextPatch?: Maybe<ResolversParentTypes['Container']>, editAuthorizedMembers?: Maybe<ResolversParentTypes['Container']>, fieldPatch?: Maybe<ResolversParentTypes['Container']>, investigationAdd?: Maybe<ResolversParentTypes['Workspace']>, knowledgeAddFromInvestigation?: Maybe<ResolversParentTypes['Container']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Container']> };
   ContextData: Omit<ContextData, 'external_references'> & { external_references?: Maybe<Array<ResolversParentTypes['ExternalReference']>> };
+  ContractConfigInput: ContractConfigInput;
   Country: Omit<Country, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'region' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, region?: Maybe<ResolversParentTypes['Region']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   CountryAddInput: CountryAddInput;
   CountryConnection: Omit<CountryConnection, 'edges'> & { edges: Array<ResolversParentTypes['CountryEdge']> };
@@ -32236,6 +32285,7 @@ export type ResolversParentTypes = ResolversObject<{
   CsvMapperSchemaAttribute: CsvMapperSchemaAttribute;
   CsvMapperSchemaAttributes: CsvMapperSchemaAttributes;
   CsvMapperTestResult: CsvMapperTestResult;
+  CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   DataComponent: BasicStoreEntityDataComponent;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataComponentEdge']>>> };
@@ -32605,6 +32655,7 @@ export type ResolversParentTypes = ResolversObject<{
   ReportEditMutations: Omit<ReportEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Report']>, contextPatch?: Maybe<ResolversParentTypes['Report']>, fieldPatch?: Maybe<ResolversParentTypes['Report']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Report']> };
   Representative: Representative;
   RepresentativeWithId: RepresentativeWithId;
+  RequestConnectorStatusInput: RequestConnectorStatusInput;
   ResolvedInstanceFilter: ResolvedInstanceFilter;
   RetentionRule: RetentionRule;
   RetentionRuleAddInput: RetentionRuleAddInput;
@@ -34058,8 +34109,10 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ConnectorContractConfiguration']>>, ParentType, ContextType>;
+  manager_contract_image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  manager_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  manager_requested_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   only_contextual?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -37864,6 +37917,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   triggerKnowledgeDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeDigestAddArgs, 'input'>>;
   triggerKnowledgeFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeFieldPatchArgs, 'id' | 'input'>>;
   triggerKnowledgeLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeLiveAddArgs, 'input'>>;
+  updateConnectorCurrentStatus?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorCurrentStatusArgs, 'input'>>;
+  updateConnectorRequestedStatus?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorRequestedStatusArgs, 'input'>>;
   updateConnectorTrigger?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorTriggerArgs, 'id' | 'input'>>;
   uploadImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadImportArgs, 'file'>>;
   uploadPending?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadPendingArgs, 'file'>>;
