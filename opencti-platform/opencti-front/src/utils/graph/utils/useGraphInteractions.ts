@@ -119,9 +119,8 @@ const useGraphInteractions = () => {
     else if (selectRelationshipMode === null) setGraphStateProp('selectRelationshipMode', 'children');
   };
 
-  const switchCorrelationMode = () => {
-    if (correlationMode !== 'all') setGraphStateProp('correlationMode', 'all');
-    else setGraphStateProp('correlationMode', 'observables');
+  const setCorrelationMode = (mode: GraphState['correlationMode']) => {
+    setGraphStateProp('correlationMode', mode);
   };
 
   const toggleTimeRange = () => {
@@ -377,7 +376,7 @@ const useGraphInteractions = () => {
     toggleSelectFreeRectangle,
     toggleSelectFree,
     switchSelectRelationshipMode,
-    switchCorrelationMode,
+    setCorrelationMode,
     toggleTimeRange,
     saveZoom,
     setSelectedLinks,

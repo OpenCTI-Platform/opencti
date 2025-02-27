@@ -7,7 +7,7 @@ import useGraphInteractions from '../utils/useGraphInteractions';
 
 const GraphToolbarCorrelationTools = () => {
   const { t_i18n } = useFormatter();
-  const { switchCorrelationMode } = useGraphInteractions();
+  const { setCorrelationMode } = useGraphInteractions();
 
   const {
     graphState: {
@@ -15,22 +15,21 @@ const GraphToolbarCorrelationTools = () => {
     },
   } = useGraphContext();
 
-  const titleCorrelationMode = () => {
-    if (correlationMode === 'all') return t_i18n('Show all correlated entities');
-    return t_i18n('Show only correlated observables and indicators');
-  };
-  const iconCorrelationMode = () => {
-    if (correlationMode === 'all') return <HubOutlined />;
-    return <PolylineOutlined />;
-  };
-
   return (
-    <GraphToolbarItem
-      Icon={iconCorrelationMode()}
-      color="primary"
-      onClick={() => switchCorrelationMode()}
-      title={titleCorrelationMode()}
-    />
+    <>
+      <GraphToolbarItem
+        Icon={<HubOutlined />}
+        color={correlationMode === 'all' ? 'secondary' : 'primary'}
+        onClick={() => setCorrelationMode('all')}
+        title={t_i18n('Show all correlated entities')}
+      />
+      <GraphToolbarItem
+        Icon={<PolylineOutlined />}
+        color={correlationMode === 'observables' ? 'secondary' : 'primary'}
+        onClick={() => setCorrelationMode('observables')}
+        title={t_i18n('Show only correlated observables and indicators')}
+      />
+    </>
   );
 };
 
