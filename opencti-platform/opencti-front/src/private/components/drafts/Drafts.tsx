@@ -105,7 +105,7 @@ const computeValidationProgress = (validationWork: Drafts_node$data['validationW
     return '0%';
   }
 
-  return Math.floor(100 * (validationWork.tracking.import_processed_number / validationWork.tracking.import_expected_number)) + '%';
+  return `${Math.floor(100 * (validationWork.tracking.import_processed_number / validationWork.tracking.import_expected_number))}%`;
 };
 
 const Drafts: React.FC = () => {

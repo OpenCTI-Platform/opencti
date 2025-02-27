@@ -5,6 +5,7 @@ import React, { Suspense, useEffect } from 'react';
 import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
+import { useTheme } from '@mui/styles';
 import Tab from '@mui/material/Tab';
 import DraftEntities from '@components/drafts/DraftEntities';
 import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
@@ -15,6 +16,8 @@ import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
+import Chip from '@mui/material/Chip';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -27,6 +30,7 @@ import { RelayError } from '../../../relay/relayTypes';
 import Import from '../data/import/Import';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { truncate } from '../../../utils/String';
+import { hexToRGB } from '../../../utils/Colors';
 
 const draftRootQuery = graphql`
   query DraftRootQuery($id: String!) {
@@ -66,6 +70,8 @@ const draftRootFragment = graphql`
 const RootDraftComponent = ({ draftId, queryRef }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const draftColor = getDraftModeColor(theme);
   const draftContext = useDraftContext();
 
   const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
@@ -77,7 +83,8 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
   const isDraftReadOnly = draft_status !== 'open';
   const currentProgress = validationWork?.tracking?.import_processed_number ?? '0';
   const requiredProgress = validationWork?.tracking?.import_expected_number ?? '0';
-  const currentProgressMessage = validationWork?.status === 'wait' || validationWork?.status === 'progress' ? `Validating: ${currentProgress}/${requiredProgress}` : 'Validated';
+  const isValidating = validationWork?.status === 'wait' || validationWork?.status === 'progress';
+  const validationLabel = isValidating ? `${t_i18n('Ingesting')}: ${currentProgress}/${requiredProgress}` : t_i18n('Validated');
 
   // switch to draft
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
@@ -108,7 +115,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
           { label: name, current: true },
         ]}
         />
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 10 }}>
           <Tooltip title={name}>
             <Typography
               variant="h1"
@@ -120,9 +127,16 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
               {truncate(name, 80)}
             </Typography>
           </Tooltip>
-          <div>
-            {currentProgressMessage}
-          </div>
+          <Chip
+            variant="outlined"
+            label={validationLabel}
+            style={{
+              marginBottom: 10,
+              color: isValidating ? draftColor : '#4caf50',
+              borderColor: isValidating ? draftColor : '#4caf50',
+              backgroundColor: hexToRGB(isValidating ? draftColor : '#4caf50'),
+            }}
+          />
         </div>
       </>
       )}
