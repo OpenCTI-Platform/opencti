@@ -1,4 +1,4 @@
-import React, { useContext, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
@@ -14,12 +14,10 @@ import Drawer, { DrawerVariant } from '../common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
 import { handleError } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
-import GradientButton from '../../../components/GradientButton';
 import MarkdownField from '../../../components/fields/MarkdownField';
 import { resolveLink } from '../../../utils/Entity';
 import { insertNode } from '../../../utils/store';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { UserContext } from '../../../utils/hooks/useAuth';
 import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -77,8 +75,6 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   const [commitImportMutation] = useApiMutation(importMutation);
   const [commitCreationMutation] = useApiMutation(workspaceMutation);
   const navigate = useNavigate();
-  const { settings } = useContext(UserContext);
-  const importFromHubUrl = `${settings.platform_xtmhub_url}/redirect/custom_dashboard?octi_instance_id=${settings.id}`.replaceAll('//', '/');
 
   const handleImport = (event) => {
     const importedFile = event.target.files[0];
@@ -127,17 +123,6 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
 
   const createDashboardButton = FAB_REPLACED ? (props) => (
     <>
-      <GradientButton
-        color='primary'
-        variant='outlined'
-        size="small"
-        disableElevation
-        sx={{ marginLeft: theme.spacing(1) }}
-        href={importFromHubUrl}
-        target="_blank"
-      >
-        {t_i18n('Import from Hub')}
-      </GradientButton>
       <Button
         color='primary'
         variant='outlined'
@@ -168,17 +153,9 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       />
       <SpeedDialAction
         title={t_i18n('Import dashboard')}
-        icon={<FileUploadOutlined />}
+        icon={<CloudUploadOutlined />}
         tooltipTitle={t_i18n('Import dashboard')}
         onClick={() => inputRef.current?.click()}
-        FabProps={{ classes: { root: classes.speedDialButton } }}
-      />
-      <SpeedDialAction
-        title={t_i18n('Import from Hub')}
-        icon={<CloudUploadOutlined />}
-        tooltipTitle={t_i18n('Import from Hub')}
-        href={importFromHubUrl}
-        target="_blank"
         FabProps={{ classes: { root: classes.speedDialButton } }}
       />
     </SpeedDial>);
