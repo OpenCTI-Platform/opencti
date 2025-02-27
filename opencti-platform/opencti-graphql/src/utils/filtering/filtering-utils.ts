@@ -1,5 +1,5 @@
 import { uniq } from 'ramda';
-import { buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { FilterMode, type Filter, type FilterGroup, FilterOperator } from '../../generated/graphql';
@@ -26,6 +26,7 @@ import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
 import { isEmptyField } from '../../database/utils';
 import { isValidDate } from '../../schema/schemaUtils';
+import { generateFilterKeysSchema } from '../../domain/filterKeysSchema';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -36,16 +37,28 @@ export const emptyFilterGroup: FilterGroup = {
 //----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
 
+export const isFilterFormatCorrect = (filter: Filter) => {
+  return (
+    filter.key
+    && filter.values
+    && Array.isArray(filter.values)
+  );
+};
+
 /**
  * Tells if a filter group is in the correct format
  * (Enables to check filters are not in the old format)
  * Note that it's a shallow check; it does not recurse into the nested groups.
  * @param filterGroup
  */
-export const isFilterGroupFormatCorrect = (filterGroup: FilterGroup) => {
+export const isFilterGroupFormatCorrect = (filterGroup: FilterGroup): boolean => {
   return (filterGroup.mode
+    && ['and', 'or'].includes(filterGroup.mode)
     && filterGroup.filters && Array.isArray(filterGroup.filters)
-    && filterGroup.filterGroups && Array.isArray(filterGroup.filters));
+    && filterGroup.filters.every((f) => isFilterFormatCorrect(f))
+    && filterGroup.filterGroups && Array.isArray(filterGroup.filterGroups)
+    && filterGroup.filterGroups.every((fg) => isFilterGroupFormatCorrect(fg))
+  );
 };
 
 /**
@@ -329,4 +342,26 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
 
   // nothing to convert
   return filterGroup;
+};
+
+const filtersEntityIdsMappingResult = (filters: FilterGroup, idsFilterKeys: string[]) => {
+  const filtersResult = filters;
+  if (isFilterGroupNotEmpty(filtersResult)) {
+    filtersResult.filters.forEach((f) => {
+      const key = Array.isArray(f.key) ? f.key[0] : f.key;
+      if (idsFilterKeys.includes(key)) {
+        // eslint-disable-next-line no-param-reassign
+        f.values = ['to resolve']; // TODO
+      }
+    });
+    filtersResult.filterGroups.forEach((fg) => filtersEntityIdsMappingResult(fg, idsFilterKeys));
+  }
+  return filtersResult;
+};
+
+export const filtersEntityIdsMapping = async (filters: FilterGroup) => {
+  const filterDefinitions = await generateFilterKeysSchema();
+  const stixCoreObjectsFilterDefinitions = filterDefinitions.find((f) => f.entity_type === ABSTRACT_STIX_CORE_OBJECT)?.filters_schema.map((f) => f.filterDefinition) ?? [];
+  const idsFilterKeys = stixCoreObjectsFilterDefinitions.filter((f) => f.type === 'id').map((f) => f.filterKey);
+  return filtersEntityIdsMappingResult(filters, idsFilterKeys);
 };

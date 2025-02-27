@@ -30,7 +30,7 @@ import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
-import { checkFilterKeys, emptyFilterGroup, isFilterGroupFormatCorrect } from '../../utils/filtering/filtering-utils';
+import { checkFilterKeys, emptyFilterGroup, filtersEntityIdsMapping, isFilterGroupFormatCorrect } from '../../utils/filtering/filtering-utils';
 import { logApp } from '../../config/conf';
 import { NLQPromptTemplate } from './ai-nlq-utils';
 
@@ -327,7 +327,8 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   }
 
   // 03. map entities ids
+  const filtersResult = await filtersEntityIdsMapping(parsedResponse);
 
   // return the stringified filters
-  return JSON.stringify(parsedResponse);
+  return JSON.stringify(filtersResult);
 };
