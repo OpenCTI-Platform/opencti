@@ -152,7 +152,8 @@ const StixCoreObjectKnowledgeBar = ({
     return Object.keys(source).reduce((sum, key) => sum + (!keys.includes(key) ? source[key] : 0), 0);
   };
 
-  const allEntitiesCount = sumEntitiesExcludingKeys(distributions.coreObjects, [...containerTypes]);
+  const allEntitiesCount = sumEntitiesExcludingKeys({ ...distributions.related, ...distributions.withoutRelated }, [...containerTypes]);
+
   const sectionsConfig: SectionConfig[] = [
     {
       title: 'All entities',
