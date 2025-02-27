@@ -102,7 +102,14 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.worker_logger = self.api.logger_class("worker")
 
         # Start ping
-        self.ping = PingAlive(self.worker_logger, self.api)
+        self.ping_api = OpenCTIApiClient(
+            url=self.opencti_url,
+            token=self.opencti_token,
+            log_level=self.log_level,
+            ssl_verify=self.ssl_verify,
+            json_logging=self.json_logging,
+        )
+        self.ping = PingAlive(self.worker_logger, self.ping_api)
         self.ping.start()
 
         self.queue_name = self.connector["config"]["push"]
