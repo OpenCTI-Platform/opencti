@@ -325,6 +325,11 @@ For filters used in this context, only some keys are supported for the moment:
 - ``indicator_types``
 - ``pattern_type``
 - ``report_types``
+- ``response_types``
+- ``information_types``
+- ``takedown_types``
+- ``note_types``
+- ``incident_type``
 - ``x_opencti_score``
 - ``x_opencti_detection``
 - ``x_opencti_main_observable_type``
