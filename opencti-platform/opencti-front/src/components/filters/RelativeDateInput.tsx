@@ -7,8 +7,7 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../i18n';
 import { BasicFilterInputProps } from './BasicFilterInput';
-import { RELATIVE_DATE_REGEX } from '../../utils/filters/filtersUtils';
-import { isValidDate } from '../../utils/String';
+import { isValidDate, RELATIVE_DATE_REGEX } from '../../utils/String';
 
 interface RelativeDateInputProps extends BasicFilterInputProps {
   valueOrder: number;
