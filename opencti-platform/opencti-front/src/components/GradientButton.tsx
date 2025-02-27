@@ -6,7 +6,6 @@ interface GradientButtonProps extends ButtonProps {
   lightModeEndColor?: string;
   darkModeStartColor?: string;
   darkModeEndColor?: string;
-  withShadow?: boolean;
 }
 
 const GradientButton = styled(Button, {
@@ -17,7 +16,6 @@ const GradientButton = styled(Button, {
   lightModeEndColor = '#0FBCFF',
   darkModeStartColor = '#0FBCFF',
   darkModeEndColor = '#00F1BD',
-  withShadow = true,
 }) => {
   const isDarkMode = theme.palette.mode === 'dark';
   const startColor = isDarkMode ? darkModeStartColor : lightModeStartColor;
@@ -28,11 +26,11 @@ const GradientButton = styled(Button, {
     linear-gradient(99.95deg, ${startColor} 0%, ${endColor} 100%) border-box
   `,
     border: '2px solid transparent',
-    boxShadow: withShadow ? `1px 0px 4px -1px ${startColor}, -1px 0px 4px -1px ${endColor}` : 'none',
+    boxShadow: `1px 0px 4px -1px ${startColor}, -1px 0px 4px -1px ${endColor}`,
     transition: 'all 0.3s ease-in-out',
     '&:hover': {
       border: '2px solid transparent',
-      boxShadow: withShadow ? `2px 0px 8px -1px ${startColor}, -2px 0px 8px -1px ${endColor}` : 'none',
+      boxShadow: `2px 0px 8px -1px ${startColor}, -2px 0px 8px -1px ${endColor}`,
       background: `
       linear-gradient(${theme.palette.background.paper}, ${theme.palette.background.paper}) padding-box,
       linear-gradient(99.95deg, ${endColor} 0%, ${startColor} 100%) border-box
@@ -40,7 +38,7 @@ const GradientButton = styled(Button, {
     },
     '&:active': {
       border: '2px solid transparent',
-      boxShadow: withShadow ? `1px 0px 4px -1px ${startColor}, -1px 0px 4px -1px ${endColor}` : 'none',
+      boxShadow: `1px 0px 4px -1px ${startColor}, -1px 0px 4px -1px ${endColor}`,
     },
   };
 });
