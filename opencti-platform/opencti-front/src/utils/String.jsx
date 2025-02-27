@@ -189,7 +189,8 @@ export const isDateIntervalTranslatable = (filterValues) => {
   return filterValues.length === 2
     && filterValues[1] === 'now'
     && filterValues[0].match(RELATIVE_DATE_REGEX)
-    && filterValues[0].includes('-');
+    && filterValues[0].includes('-')
+    && !filterValues[0].includes('/');
 };
 
 /**
