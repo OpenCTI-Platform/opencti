@@ -52,7 +52,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
         {
           id: platformOrganizationEntity.id,
           access_right: 'admin',
-
+          groups_restriction_ids: [greenGroup.id]
         },
         {
           id: USER_EDITOR.id,
