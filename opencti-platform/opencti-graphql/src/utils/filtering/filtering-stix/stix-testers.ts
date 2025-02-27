@@ -36,7 +36,12 @@ import {
   EPSS_SCORE_FILTER,
   CVSS_BASE_SCORE_FILTER,
   CVSS_BASE_SEVERITY_FILTER,
-  REPORT_TYPES_FILTER
+  REPORT_TYPES_FILTER,
+  INCIDENT_RESPONSE_TYPES_FILTER,
+  REQUEST_FOR_INFORMATION_TYPES_FILTER,
+  REQUEST_FOR_TAKEDOWN_TYPES_FILTER,
+  INCIDENT_TYPE_FILTER,
+  NOTE_TYPES_FILTER
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -84,6 +89,51 @@ export const testIndicatorTypes = (stix: any, filter: Filter) => {
 export const testReportTypes = (stix: any, filter: Filter) => {
   const stixValue: string[] = stix.report_types ?? [];
   return testStringFilter(filter, stixValue);
+};
+
+/**
+ * IR
+ * - incident response types is response_types in stix
+ */
+export const testResponseTypes = (stix: any, filter: Filter) => {
+  const stixValue: string[] = stix.response_types ?? [];
+  return testStringFilter(filter, stixValue);
+};
+
+/**
+ * RFI
+ * - RFI types is information_types in stix
+ */
+export const testRFITypes = (stix: any, filter: Filter) => {
+  const stixValue: string[] = stix.information_types ?? [];
+  return testStringFilter(filter, stixValue);
+};
+
+/**
+ * RFT
+ * - RFT types is takedown_types in stix
+ */
+export const testRFTTypes = (stix: any, filter: Filter) => {
+  const stixValue: string[] = stix.takedown_types ?? [];
+  return testStringFilter(filter, stixValue);
+};
+
+/**
+ * NOTE
+ * - note types is note_types in stix
+ */
+export const testNoteTypes = (stix: any, filter: Filter) => {
+  const stixValue: string[] = stix.note_types ?? [];
+  return testStringFilter(filter, stixValue);
+};
+
+/**
+ * INCIDENT
+ * - incident type is incident_type in stix
+ */
+export const testIncidentType = (stix: any, filter: Filter) => {
+  const stixValue: string | null = stix.incident_type;
+  return testStringFilter(filter, toValidArray(stixValue));
 };
 
 /**
@@ -381,6 +431,11 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [DETECTION_FILTER]: testDetection,
   [INDICATOR_FILTER]: testIndicatorTypes,
   [REPORT_TYPES_FILTER]: testReportTypes,
+  [INCIDENT_RESPONSE_TYPES_FILTER]: testResponseTypes,
+  [REQUEST_FOR_INFORMATION_TYPES_FILTER]: testRFITypes,
+  [REQUEST_FOR_TAKEDOWN_TYPES_FILTER]: testRFTTypes,
+  [NOTE_TYPES_FILTER]: testNoteTypes,
+  [INCIDENT_TYPE_FILTER]: testIncidentType,
   [LABEL_FILTER]: testLabel,
   [MAIN_OBSERVABLE_TYPE_FILTER]: testMainObservableType,
   [MARKING_FILTER]: testMarkingFilter,
