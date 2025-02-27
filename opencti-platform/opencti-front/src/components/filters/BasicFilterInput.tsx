@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import TextField from '@mui/material/TextField';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
-export interface BasicFilterInputProps {
+interface BasicFilterInputProps {
   filter?: Filter;
   filterKey: string;
   helpers?: handleFilterHelpers;

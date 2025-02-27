@@ -31,9 +31,9 @@ import { FilterRepresentative } from './FiltersModel';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import useAttributes from '../../utils/hooks/useAttributes';
-import RelativeDateInput from './RelativeDateInput';
 import BasicFilterInput from './BasicFilterInput';
 import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
+import DateRangeFilter from './DateRangeFilter';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -325,26 +325,12 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       if (filterOperator === 'within') {
         const values = filterValues.length > 0 ? filterValues : DEFAULT_WITHIN_FILTER_VALUES;
         return (
-          <>
-            <div style={{ marginTop: 10 }} />
-            <RelativeDateInput
-              filter={filter}
-              filterKey={filterKey}
-              filterValues={values}
-              helpers={helpers}
-              label={t_i18n('From')}
-              valueOrder={0}
-            />
-            <div style={{ marginTop: 25 }} />
-            <RelativeDateInput
-              filter={filter}
-              filterKey={filterKey}
-              filterValues={values}
-              helpers={helpers}
-              label={t_i18n('To')}
-              valueOrder={1}
-            />
-          </>
+          <DateRangeFilter
+            filter={filter}
+            filterKey={filterKey}
+            filterValues={values}
+            helpers={helpers}
+          />
         );
       }
       return <BasicFilterDate value={filterValues.length > 0 ? filterValues[0] : undefined} />;

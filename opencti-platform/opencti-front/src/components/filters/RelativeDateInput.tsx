@@ -6,25 +6,30 @@ import { useTheme } from '@mui/material/styles';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../i18n';
-import { BasicFilterInputProps } from './BasicFilterInput';
 import { isValidDate, RELATIVE_DATE_REGEX } from '../../utils/String';
+import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
-interface RelativeDateInputProps extends BasicFilterInputProps {
+interface RelativeDateInputProps {
+  filter?: Filter;
+  filterKey: string;
+  helpers?: handleFilterHelpers;
+  label: string;
   valueOrder: number;
+  dateInput: string[];
+  setDateInput: (value: string[]) => void;
 }
 
 const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   filter,
   filterKey,
   helpers,
-  filterValues,
   label,
-  type,
   valueOrder,
+  dateInput,
+  setDateInput,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const [dateInput, setDateInput] = useState(filterValues);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const generateErrorMessage = (values: string[]) => {
@@ -87,7 +92,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         fullWidth={true}
         id={filter?.id ?? `${filterKey}-id`}
         label={label}
-        type={type}
         value={dateInput[valueOrder]}
         onChange={(event) => handleChangeValue(event.target.value)}
         autoFocus={true}
