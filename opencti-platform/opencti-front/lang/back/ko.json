@@ -786,6 +786,7 @@
   "Username": "사용자 이름",
   "Valid from": "유효 시작 날짜",
   "Valid until": "유효 종료 날짜",
+  "Validation work": "유효성 검사 작업",
   "Validity not after": "유효 기간 이후",
   "Validity not before": "유효 기간 이전",
   "Value": "값",
