@@ -1509,6 +1509,7 @@
   "Import a widget": "ウィジェットをインポートする",
   "Import a Widget": "ウィジェットのインポート",
   "Import dashboard": "ダッシュボードのインポート",
+  "Import from Hub": "Hubからインポート",
   "Import data": "インポート対象データ",
   "Import from date (empty = all Csv possible items)": "日付からインポート (空 = すべてのCsv可能項目)",
   "Import knowledge": "知識をインポート",

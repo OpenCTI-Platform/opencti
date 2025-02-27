@@ -1509,6 +1509,7 @@
   "Import a widget": "导入小部件",
   "Import a Widget": "导入小工具",
   "Import dashboard": "导入仪表板",
+  "Import from Hub": "从 Hub 导入",
   "Import data": "导入数据",
   "Import from date (empty = all Csv possible items)": "从日期导入（空 = 所有可能的 Csv 项目）",
   "Import knowledge": "导入知识",
