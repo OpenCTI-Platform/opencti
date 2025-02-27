@@ -23,7 +23,7 @@ export const isIndividualAssociatedToUser = async (context: AuthContext, individ
       filters: [{ key: ['user_email'], values: [individualContactInformation] }],
       filterGroups: [],
     },
-    noFiltersChecking: true,
+    noFiltersKeysChecking: true,
     indices: [READ_INDEX_INTERNAL_OBJECTS],
   };
   const usersCount = await countAllThings(context, SYSTEM_USER, args);

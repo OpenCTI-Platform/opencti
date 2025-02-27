@@ -117,7 +117,7 @@ const findTaskToExecute = async (context) => {
       filters: [{ key: 'completed', values: [false] }],
       filterGroups: [],
     },
-    noFiltersChecking: true
+    noFiltersKeysChecking: true
   });
   if (tasks.length === 0) {
     return null;
@@ -445,7 +445,7 @@ const executeUnshare = async (context, user, actionContext, element) => {
         filters: [{ key: buildRefRelationKey(RELATION_OBJECT), values: [element.id] }],
         filterGroups: []
       },
-      noFiltersChecking: true
+      noFiltersKeysChecking: true
     };
     const containers = await listAllThings(context, user, [ENTITY_TYPE_CONTAINER], args);
     const grantedTo = containers.map((n) => n[buildRefRelationKey(RELATION_GRANTED_TO)]).flat();

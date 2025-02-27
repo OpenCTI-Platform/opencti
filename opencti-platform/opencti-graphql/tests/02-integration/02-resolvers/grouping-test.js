@@ -290,7 +290,7 @@ describe('Grouping resolver standard behavior', () => {
             }],
             filterGroups: [],
           },
-          noFiltersChecking: true
+          noFiltersKeysChecking: true
         }
       );
       await Promise.all(investigations.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_WORKSPACE)));

@@ -324,19 +324,19 @@ export const checkFilterKeys = (filterGroup: FilterGroup) => {
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
  */
-export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean } = {}) => {
+export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersKeysChecking?: boolean } = {}) => {
   if (!filterGroup) {
     return undefined;
   }
   // 00. detect filters in the old format or in a bad format
   checkFilterGroupSyntax(filterGroup);
-  const { noFiltersChecking = false } = opts;
+  const { noFiltersKeysChecking = false } = opts;
   // 01. check filters keys exist in schema
-  if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
+  if (!noFiltersKeysChecking && isFilterGroupNotEmpty(filterGroup)) {
     checkFilterKeys(filterGroup);
   }
   // 02. translate the filter keys on relation refs and return the converted filters
-  if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
+  if (!noFiltersKeysChecking && isFilterGroupNotEmpty(filterGroup)) {
     return convertRelationRefsFilterKeys(filterGroup);
   }
 
