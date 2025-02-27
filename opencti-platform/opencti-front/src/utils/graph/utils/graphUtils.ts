@@ -1,5 +1,6 @@
 import { deserializeObject } from '../../object';
 import { ObjectToParse } from './useGraphParser';
+import { GraphState } from '../graph.types';
 
 /**
  * Determines if a point is inside a polygon.
@@ -74,4 +75,31 @@ export const getObjectsToParse = (data: GraphQueryData) => {
   }) as unknown as ObjectToParse[];
   const positions = deserializeObject(data.x_opencti_graph_data);
   return { objects, positions };
+};
+
+/**
+ * Helper function to keep only a subset of graph state properties
+ * that need to be saved in local storage and URL params.
+ *
+ * @param state The state of the graph.
+ * @returns Subset of graph state that need to be saved.
+ */
+export const graphStateToLocalStorage = (state: GraphState) => {
+  const {
+    disabledCreators,
+    disabledEntityTypes,
+    disabledMarkings,
+    mode3D,
+    modeTree,
+    withForces,
+  } = state;
+
+  return {
+    disabledCreators,
+    disabledEntityTypes,
+    disabledMarkings,
+    mode3D,
+    modeTree,
+    withForces,
+  };
 };

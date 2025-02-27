@@ -82,9 +82,14 @@ export interface GraphState {
   disabledCreators: string[]
   disabledMarkings: string[]
   selectedTimeRangeInterval?: [Date, Date]
+  selectedNodes: GraphNode[]
+  selectedLinks: GraphLink[]
   zoom?: {
     k: number
     x: number
     y: number
   }
+  // Put inside context because the dialog to create relationship can be
+  // opened by other source than click in toolbar (cf <RelationSelection />).
+  isAddRelationOpen: boolean
 }

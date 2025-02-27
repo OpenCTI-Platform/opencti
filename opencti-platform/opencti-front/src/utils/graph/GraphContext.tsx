@@ -7,6 +7,7 @@ import { GraphNode, GraphLink, LibGraphProps, GraphState, OctiGraphPositions } f
 import { useFormatter } from '../../components/i18n';
 import useGraphParser, { ObjectToParse } from './utils/useGraphParser';
 import { computeTimeRangeInterval, computeTimeRangeValues, GraphTimeRange } from './utils/graphTimeRange';
+import { graphStateToLocalStorage } from './utils/graphUtils';
 
 type Setter<T> = Dispatch<SetStateAction<T>>;
 
@@ -17,18 +18,12 @@ interface GraphContextValue {
   // --- DOM references
   graphRef2D: MutableRefObject<GraphRef2D | undefined>
   graphRef3D: MutableRefObject<GraphRef3D | undefined>
-  // --- data of the graph
+  // --- data of the graph pass as props
   graphData: LibGraphProps['graphData']
   setGraphData: Setter<LibGraphProps['graphData']>
   // --- graph state (config saved in URL and local storage)
   graphState: GraphState
   setGraphState: Setter<GraphState>
-  // --- selected nodes
-  selectedNodes: GraphNode[]
-  setSelectedNodes: Setter<GraphNode[]>
-  // --- selected links
-  selectedLinks: GraphLink[]
-  setSelectedLinks: Setter<GraphLink[]>
   // --- utils data derived from input data.
   stixCoreObjectTypes: string[]
   markingDefinitions: { id: string, definition: string }[]
@@ -38,8 +33,6 @@ interface GraphContextValue {
   timeRange: GraphTimeRange
   // --- misc
   context?: string
-  isAddRelationOpen: boolean
-  setIsAddRelationOpen: Setter<boolean>
 }
 
 const GraphContext = createContext<GraphContextValue | undefined>(undefined);
@@ -80,6 +73,9 @@ export const GraphProvider = ({
     disabledEntityTypes: [],
     disabledCreators: [],
     disabledMarkings: [],
+    selectedLinks: [],
+    selectedNodes: [],
+    isAddRelationOpen: false,
   };
 
   const [graphState, setGraphState] = useState<GraphState>(() => {
@@ -87,6 +83,20 @@ export const GraphProvider = ({
     const params = buildViewParamsFromUrlAndStorage(navigate, location, localStorageKey);
     return { ...DEFAULT_STATE, ...params };
   });
+
+  useEffect(() => {
+    // On state change, update URL and local storage.
+    const stateToSave = graphStateToLocalStorage(graphState);
+    saveViewParameters(navigate, location, localStorageKey, stateToSave);
+  }, [graphState]);
+
+  useEffect(() => {
+    // On selection change, reset relationship select mode.
+    setGraphState((oldState) => ({
+      ...oldState,
+      selectRelationshipMode: null,
+    }));
+  }, [graphState.selectedNodes]);
 
   const [graphData, setGraphData] = useState<LibGraphProps['graphData']>();
   useEffect(() => {
@@ -139,26 +149,6 @@ export const GraphProvider = ({
       .filter((v, i, a) => a.findIndex((item) => JSON.stringify(item) === JSON.stringify(v)) === i);
   }, [graphData]);
 
-  useEffect(() => {
-    // On state change, update URL and local storage.
-    saveViewParameters(navigate, location, localStorageKey, graphState);
-  }, [graphState]);
-
-  const [selectedNodes, setSelectedNodes] = useState<GraphNode[]>([]);
-  const [selectedLinks, setSelectedLinks] = useState<GraphLink[]>([]);
-
-  useEffect(() => {
-    // On selection change, reset relationship select mode.
-    setGraphState((oldState) => ({
-      ...oldState,
-      selectRelationshipMode: null,
-    }));
-  }, [selectedNodes]);
-
-  // Put inside context because the dialog to create relationship can be
-  // opened by other source than click in toolbar (cf <RelationSelection />).
-  const [isAddRelationOpen, setIsAddRelationOpen] = useState(false);
-
   const value = useMemo<GraphContextValue>(() => ({
     graphRef2D,
     graphRef3D,
@@ -167,25 +157,16 @@ export const GraphProvider = ({
     markingDefinitions,
     creators,
     graphState,
-    selectedLinks,
-    selectedNodes,
-    isAddRelationOpen,
     timeRange,
     context,
     objects: data.objects,
     positions: data.positions,
     setGraphData,
     setGraphState,
-    setSelectedLinks,
-    setSelectedNodes,
-    setIsAddRelationOpen,
   }), [
     graphData,
     graphState,
-    selectedLinks,
-    selectedNodes,
     data,
-    isAddRelationOpen,
   ]);
 
   return (

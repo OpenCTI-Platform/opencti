@@ -11,7 +11,12 @@ interface PaintOptions {
 
 const useGraphPainter = () => {
   const theme = useTheme<Theme>();
-  const { selectedLinks, selectedNodes } = useGraphContext();
+  const {
+    graphState: {
+      selectedLinks,
+      selectedNodes,
+    },
+  } = useGraphContext();
 
   const DEFAULT_COLOR = '#0fbcff'; // Normally never used (all colors are defined).
   const colors = {

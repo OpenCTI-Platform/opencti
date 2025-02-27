@@ -36,7 +36,6 @@ const GraphToolbarContentTools = ({
 }: GraphToolbarContentToolsProps) => {
   const { t_i18n } = useFormatter();
 
-  const { isAddRelationOpen, setIsAddRelationOpen } = useGraphContext();
   const [relationReversed, setRelationReversed] = useState(false);
 
   const [addNestedOpen, setAddNestedOpen] = useState(false);
@@ -48,10 +47,16 @@ const GraphToolbarContentTools = ({
 
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
 
+  const { setIsAddRelationOpen } = useGraphInteractions();
+
   const {
-    selectedNodes,
-    selectedLinks,
     graphData,
+    context,
+    graphState: {
+      selectedNodes,
+      selectedLinks,
+      isAddRelationOpen,
+    },
   } = useGraphContext();
 
   const {
@@ -102,7 +107,7 @@ const GraphToolbarContentTools = ({
     <>
       {container && (
         <ContainerAddStixCoreObjectsInGraph
-          knowledgeGraph={true} // TODO change for correlation?
+          knowledgeGraph={context !== 'correlation'}
           containerId={container.id}
           containerStixCoreObjects={container.objects}
           defaultCreatedBy={container.createdBy ?? null}

@@ -27,8 +27,14 @@ const GraphToolbarEditObject = ({
   relationshipRefetchQuery,
 }: GraphToolbarEditObjectProps) => {
   const { t_i18n } = useFormatter();
-  const { selectedNodes, selectedLinks } = useGraphContext();
   const { addNode, addLink } = useGraphInteractions();
+
+  const {
+    graphState: {
+      selectedNodes,
+      selectedLinks,
+    },
+  } = useGraphContext();
 
   const [category, setCategory] = useState<EditionCategory>();
 
