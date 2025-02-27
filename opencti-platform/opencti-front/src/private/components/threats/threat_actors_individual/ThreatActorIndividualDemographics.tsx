@@ -184,27 +184,33 @@ const ThreatActorIndividualDemographics = ({
             <CardLabel >
               {t_i18n('Gender')}
             </CardLabel>
-            <ItemOpenVocab
-              type="gender-ov"
-              value={threatActorIndividual.gender}
-              small
-            />
+            <FieldOrEmpty source={threatActorIndividual.gender}>
+              <ItemOpenVocab
+                type="gender-ov"
+                value={threatActorIndividual.gender}
+                small
+              />
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
             <CardLabel >
               {t_i18n('Marital Status')}
             </CardLabel>
-            <ItemOpenVocab
-              type="marital-status-ov"
-              value={threatActorIndividual.marital_status}
-              small
-            />
+            <FieldOrEmpty source={threatActorIndividual.marital_status}>
+              <ItemOpenVocab
+                type="marital-status-ov"
+                value={threatActorIndividual.marital_status}
+                small
+              />
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
             <CardLabel >
               {t_i18n('Job Title')}
             </CardLabel>
-            <div id="job_title">{threatActorIndividual.job_title ?? '-'}</div>
+            <FieldOrEmpty source={threatActorIndividual.job_title}>
+              <div id="job_title">{threatActorIndividual.job_title}</div>
+            </FieldOrEmpty>
           </Grid>
         </Grid>
       </Paper>

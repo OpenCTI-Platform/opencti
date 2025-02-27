@@ -192,11 +192,13 @@ ThreatActorIndividualDetailsProps
             >
               {t_i18n('Sophistication')}
             </Typography>
-            <ItemOpenVocab
-              type="threat-actor-individual-sophistication-ov"
-              value={data.sophistication}
-              small
-            />
+            <FieldOrEmpty source={data.sophistication}>
+              <ItemOpenVocab
+                type="threat-actor-individual-sophistication-ov"
+                value={data.sophistication}
+                small
+              />
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
             <Typography
@@ -206,11 +208,13 @@ ThreatActorIndividualDetailsProps
             >
               {t_i18n('Resource level')}
             </Typography>
-            <ItemOpenVocab
-              type="attack-resource-level-ov"
-              value={data.resource_level}
-              small
-            />
+            <FieldOrEmpty source={data.resource_level}>
+              <ItemOpenVocab
+                type="attack-resource-level-ov"
+                value={data.resource_level}
+                small
+              />
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
             <Typography
@@ -220,11 +224,13 @@ ThreatActorIndividualDetailsProps
             >
               {t_i18n('Primary motivation')}
             </Typography>
-            <ItemOpenVocab
-              type="attack-motivation-ov"
-              value={data.primary_motivation}
-              small
-            />
+            <FieldOrEmpty source={data.primary_motivation}>
+              <ItemOpenVocab
+                type="attack-motivation-ov"
+                value={data.primary_motivation}
+                small
+              />
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={4}>
             <CardLabel style={{ marginTop: 20 }}>
