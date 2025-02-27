@@ -12,8 +12,8 @@ import { elLoadById } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
-import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { delEditContext, notify, redisGetWork, redisSetConnectorLogs, setEditContext } from '../database/redis';
+import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { publishUserAction } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
@@ -26,7 +26,8 @@ import {
   type MutationSynchronizerTestArgs,
   ConnectorType,
   type RequestConnectorStatusInput,
-  type CurrentConnectorStatusInput
+  type CurrentConnectorStatusInput,
+  type LogsConnectorStatusInput
 } from '../generated/graphql';
 import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
@@ -209,6 +210,11 @@ const updateConnector = async (context: AuthContext, user: AuthUser, connectorId
   });
   // Notify configuration change for caching system
   return notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
+};
+
+export const connectorUpdateLogs = async (context: AuthContext, user: AuthUser, input: LogsConnectorStatusInput) => {
+  await redisSetConnectorLogs(input.id, input.logs);
+  return internalLoadById(context, user, input.id, { type: ENTITY_TYPE_CONNECTOR });
 };
 
 export const updateConnectorRequestedStatus = async (context: AuthContext, user: AuthUser, input: RequestConnectorStatusInput) => {

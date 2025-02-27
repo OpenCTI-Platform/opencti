@@ -1958,6 +1958,11 @@ input CurrentConnectorStatusInput {
   status: ConnectorCurrentStatus!
 }
 
+input LogsConnectorStatusInput {
+  id: ID!
+  logs: [String!]!
+}
+
 type RabbitMQConnection {
   host: String!
   vhost: String!
@@ -2058,6 +2063,7 @@ type Connector implements BasicObject & InternalObject {
   manager_current_status: String
   manager_requested_status: String
   manager_contract_configuration: [ConnectorContractConfiguration!]
+  manager_connector_logs: [String!]
 }
 
 type RuleExecutionError {
@@ -8783,6 +8789,7 @@ type Mutation {
   deleteConnector(id: ID!): ID!
   updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): Connector
   updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): Connector
+  updateConnectorLogs(input: LogsConnectorStatusInput!): Connector
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!

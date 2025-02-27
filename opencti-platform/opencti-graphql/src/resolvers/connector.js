@@ -4,6 +4,7 @@ import {
   connectorForWork,
   connectorsForExport,
   connectorTriggerUpdate,
+  connectorUpdateLogs,
   connectorUser,
   fetchRemoteStreams,
   findAllSync,
@@ -43,6 +44,7 @@ import { batchLoader } from '../database/middleware';
 import { getConnectorQueueSize } from '../database/rabbitmq';
 import { PLATFORM_VERSION } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
+import { redisGetConnectorLogs } from '../database/redis';
 
 const creatorLoader = batchLoader(batchCreator);
 
@@ -67,6 +69,7 @@ const connectorResolvers = {
     connector_queue_details: (cn) => queueDetails(cn.id),
     manager_contract_image: (cn) => (isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${PLATFORM_VERSION}` : null),
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
+    manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id)
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
@@ -83,6 +86,7 @@ const connectorResolvers = {
     resetStateConnector: (_, { id }, context) => resetStateConnector(context, context.user, id),
     pingConnector: (_, { id, state, connectorInfo }, context) => pingConnector(context, context.user, id, state, connectorInfo),
     updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
+    updateConnectorLogs: (_, { input }, context) => connectorUpdateLogs(context, context.user, input),
     updateConnectorRequestedStatus: (_, { input }, context) => updateConnectorRequestedStatus(context, context.user, input),
     updateConnectorCurrentStatus: (_, { input }, context) => updateConnectorCurrentStatus(context, context.user, input),
     // Work part

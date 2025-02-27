@@ -3751,6 +3751,7 @@ export type Connector = BasicObject & InternalObject & {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  manager_connector_logs?: Maybe<Array<Scalars['String']['output']>>;
   manager_contract_configuration?: Maybe<Array<ConnectorContractConfiguration>>;
   manager_contract_image?: Maybe<Scalars['String']['output']>;
   manager_current_status?: Maybe<Scalars['String']['output']>;
@@ -12382,6 +12383,11 @@ export type LogEdge = {
   node: Log;
 };
 
+export type LogsConnectorStatusInput = {
+  id: Scalars['ID']['input'];
+  logs: Array<Scalars['String']['input']>;
+};
+
 export enum LogsOrdering {
   Score = '_score',
   CreatedAt = 'created_at',
@@ -13993,6 +13999,7 @@ export type Mutation = {
   triggerKnowledgeFieldPatch?: Maybe<Trigger>;
   triggerKnowledgeLiveAdd?: Maybe<Trigger>;
   updateConnectorCurrentStatus?: Maybe<Connector>;
+  updateConnectorLogs?: Maybe<Connector>;
   updateConnectorRequestedStatus?: Maybe<Connector>;
   updateConnectorTrigger?: Maybe<Connector>;
   uploadImport?: Maybe<File>;
@@ -15961,6 +15968,11 @@ export type MutationTriggerKnowledgeLiveAddArgs = {
 
 export type MutationUpdateConnectorCurrentStatusArgs = {
   input: CurrentConnectorStatusInput;
+};
+
+
+export type MutationUpdateConnectorLogsArgs = {
+  input: LogsConnectorStatusInput;
 };
 
 
@@ -31680,6 +31692,7 @@ export type ResolversTypes = ResolversObject<{
   Log: ResolverTypeWrapper<Omit<Log, 'context_data'> & { context_data?: Maybe<ResolversTypes['ContextData']> }>;
   LogConnection: ResolverTypeWrapper<Omit<LogConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['LogEdge']>>> }>;
   LogEdge: ResolverTypeWrapper<Omit<LogEdge, 'node'> & { node: ResolversTypes['Log'] }>;
+  LogsConnectorStatusInput: LogsConnectorStatusInput;
   LogsOrdering: LogsOrdering;
   LogsWorkerConfig: ResolverTypeWrapper<LogsWorkerConfig>;
   MacAddr: ResolverTypeWrapper<Omit<MacAddr, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -32500,6 +32513,7 @@ export type ResolversParentTypes = ResolversObject<{
   Log: Omit<Log, 'context_data'> & { context_data?: Maybe<ResolversParentTypes['ContextData']> };
   LogConnection: Omit<LogConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['LogEdge']>>> };
   LogEdge: Omit<LogEdge, 'node'> & { node: ResolversParentTypes['Log'] };
+  LogsConnectorStatusInput: LogsConnectorStatusInput;
   LogsWorkerConfig: LogsWorkerConfig;
   MacAddr: Omit<MacAddr, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   MacAddrAddInput: MacAddrAddInput;
@@ -34108,6 +34122,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  manager_connector_logs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ConnectorContractConfiguration']>>, ParentType, ContextType>;
   manager_contract_image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -37918,6 +37933,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   triggerKnowledgeFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeFieldPatchArgs, 'id' | 'input'>>;
   triggerKnowledgeLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeLiveAddArgs, 'input'>>;
   updateConnectorCurrentStatus?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorCurrentStatusArgs, 'input'>>;
+  updateConnectorLogs?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorLogsArgs, 'input'>>;
   updateConnectorRequestedStatus?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorRequestedStatusArgs, 'input'>>;
   updateConnectorTrigger?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorTriggerArgs, 'id' | 'input'>>;
   uploadImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadImportArgs, 'file'>>;

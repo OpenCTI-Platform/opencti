@@ -915,11 +915,9 @@ export const redisDeleteSupportPackageNodeStatus = (supportPackageId: string) =>
   const setKeyId = `support:${supportPackageId}`;
   return getClientBase().del(setKeyId);
 };
-
 // endregion - support package handling
 
 // region - exclusion list cache handling
-
 const EXCLUSION_LIST_STATUS_KEY = 'exclusion_list_status';
 const EXCLUSION_LIST_CACHE_KEY = 'exclusion_list_cache';
 export const redisUpdateExclusionListStatus = async (exclusionListStatus: object) => {
@@ -946,5 +944,15 @@ export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]
   const stringifiedCache = JSON.stringify(cache);
   await getClientBase().set(EXCLUSION_LIST_CACHE_KEY, stringifiedCache);
 };
-
 // endregion - exclusion list cache handling
+
+// region connector logs
+export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
+  const data = JSON.stringify(logs);
+  await getClientBase().set(`connector-${connectorId}-logs`, data);
+};
+export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
+  const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
+  return rawLogs ? JSON.parse(rawLogs) : [];
+};
+// endregion
