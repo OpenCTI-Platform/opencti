@@ -1,7 +1,6 @@
-import { defaultDate } from '../../defaultRepresentatives';
 import { isDateStringNone } from '../../../components/i18n';
 import { dayEndDate, daysAfter, daysAgo, jsDate, minutesBefore, minutesBetweenDates, timestamp } from '../../Time';
-import { ObjectToParse } from './useGraphParser';
+import { GraphLink } from '../graph.types';
 
 export interface GraphTimeRange {
   interval: [Date, Date]
@@ -20,14 +19,14 @@ export interface GraphTimeRange {
  * @returns [start, end] both date objects.
  */
 export const computeTimeRangeInterval = (
-  objects: ObjectToParse[],
+  objects: GraphLink[],
 ): GraphTimeRange['interval'] => {
   let startDate = jsDate(daysAgo(1));
   let endDate = jsDate(dayEndDate());
 
   const filteredDates = objects.flatMap((o) => {
     const isRelationship = o.parent_types && o.parent_types.includes('basic-relationship');
-    const date = defaultDate(o);
+    const date = o.defaultDate.toISOString();
     if (!isRelationship || date === null || isDateStringNone(date)) return [];
     return jsDate(date);
   }).sort((a, b) => a.getTime() - b.getTime());
@@ -51,7 +50,7 @@ export const computeTimeRangeInterval = (
  */
 export const computeTimeRangeValues = (
   interval: GraphTimeRange['interval'],
-  objects: ObjectToParse[],
+  objects: GraphLink[],
 ): GraphTimeRange['values'] => {
   const minutes = minutesBetweenDates(interval[0], interval[1]);
   const intervalInMinutes = Math.ceil(minutes / 100);
@@ -59,7 +58,7 @@ export const computeTimeRangeValues = (
 
   const elementsDates = objects.flatMap((o) => {
     const isRelationship = o.parent_types && o.parent_types.includes('basic-relationship');
-    const date = defaultDate(o);
+    const date = o.defaultDate.toISOString();
     if (!isRelationship || date === null || isDateStringNone(date)) return [];
     return timestamp(date);
   });

@@ -113,12 +113,13 @@ export const GraphProvider = ({
 
   // Dynamically compute time range values
   const timeRange = useMemo(() => {
-    const interval = computeTimeRangeInterval(data.objects);
+    const objects = graphData?.links ?? [];
+    const interval = computeTimeRangeInterval(objects);
     return {
       interval,
-      values: computeTimeRangeValues(interval, data.objects),
+      values: computeTimeRangeValues(interval, objects),
     };
-  }, [data.objects]);
+  }, [graphData?.links]);
 
   // Dynamically compute all entity types in graphData.
   const stixCoreObjectTypes = useMemo(() => {
