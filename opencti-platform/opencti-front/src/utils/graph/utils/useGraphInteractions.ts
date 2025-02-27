@@ -29,7 +29,6 @@ const useGraphInteractions = () => {
     disabledEntityTypes,
     disabledMarkings,
     disabledCreators,
-    correlationMode,
     selectedLinks,
     selectedNodes,
   } = graphState;
