@@ -322,7 +322,7 @@ export const TELEMETRY_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
-export interface AuthorizedMember { id: string, access_right: string, groups_restriction?: string[] }
+export interface AuthorizedMember { id: string, access_right: string, groups_restriction_ids?: string[] | null }
 
 class TracingContext {
   ctx: Context | undefined;
