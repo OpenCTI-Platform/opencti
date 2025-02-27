@@ -12,7 +12,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import Select from '@mui/material/Select';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Slide from '@mui/material/Slide';
@@ -29,23 +29,24 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
-import WorkspaceShareButton from './WorkspaceShareButton';
-import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
-import handleExportJson from './workspaceExportHandler';
-import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
-import Security from '../../../utils/Security';
-import { nowUTC } from '../../../utils/Time';
-import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
-import WorkspacePopover from './WorkspacePopover';
-import ExportButtons from '../../../components/ExportButtons';
-import { useFormatter } from '../../../components/i18n';
-import WorkspaceManageAccessDialog from './WorkspaceManageAccessDialog';
-import Transition from '../../../components/Transition';
-import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
-import { truncate } from '../../../utils/String';
-import useHelper from '../../../utils/hooks/useHelper';
-import WorkspaceWidgetConfig from './dashboards/WorkspaceWidgetConfig';
+import { Dashboard_workspace$data } from '@components/workspaces/dashboards/__generated__/Dashboard_workspace.graphql';
+import WorkspaceShareButton from 'src/private/components/workspaces/WorkspaceShareButton';
+import WorkspaceDuplicationDialog from 'src/private/components/workspaces/WorkspaceDuplicationDialog';
+import handleExportJson from 'src/private/components/workspaces/workspaceExportHandler';
+import WorkspaceTurnToContainerDialog from 'src/private/components/workspaces/WorkspaceTurnToContainerDialog';
+import { commitMutation, fetchQuery, MESSAGING$ } from 'src/relay/environment';
+import Security from 'src/utils/Security';
+import { nowUTC, parse } from 'src/utils/Time';
+import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from 'src/utils/hooks/useGranted';
+import WorkspacePopover from 'src/private/components/workspaces/WorkspacePopover';
+import ExportButtons from 'src/components/ExportButtons';
+import { useFormatter } from 'src/components/i18n';
+import WorkspaceManageAccessDialog from 'src/private/components/workspaces/WorkspaceManageAccessDialog';
+import Transition from 'src/components/Transition';
+import { useGetCurrentUserAccessRight } from 'src/utils/authorizedMembers';
+import { truncate } from 'src/utils/String';
+import useHelper from 'src/utils/hooks/useHelper';
+import WorkspaceWidgetConfig from 'src/private/components/workspaces/dashboards/WorkspaceWidgetConfig';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -55,7 +56,7 @@ const useStyles = makeStyles(() => ({
   },
   popover: {
     float: 'left',
-    marginTop: '-13px',
+    marginTop: '-10px',
   },
   manageAccess: {
     margin: '-5px 4px 0 0',
@@ -105,6 +106,13 @@ const workspaceHeaderToStixReportBundleQuery = graphql`
   }
 `;
 
+type WorkspaceHeaderProps = {
+  workspace: Dashboard_workspace$data;
+  variant: 'dashboard' | 'investigation';
+  adjust: () => void;
+  handleDateChange: (type: string, value: string) => void;
+};
+
 const WorkspaceHeader = ({
   workspace,
   config,
@@ -113,20 +121,23 @@ const WorkspaceHeader = ({
   handleDateChange,
   widgetActions,
   handleAddWidget,
-}) => {
+}: WorkspaceHeaderProps) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const openTagsCreate = false;
-  const [openTag, setOpenTag] = useState(false);
-  const [newTag, setNewTag] = useState('');
-  const [openTags, setOpenTags] = useState(false);
+
+  const [openTag, setOpenTag] = useState<boolean>(false);
+  const [newTag, setNewTag] = useState<string>('');
+  const [openTags, setOpenTags] = useState<boolean>(false);
+  const [displayDuplicate, setDisplayDuplicate] = useState<boolean>(false);
+  const [duplicating, setDuplicating] = useState<boolean>(false);
+  const [displayManageAccess, setDisplayManageAccess] = useState<boolean>(false);
+
   const { canManage, canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
-  const [displayDuplicate, setDisplayDuplicate] = useState(false);
+  const tags: string[] = workspace.tags ?? [];
+
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
-  const [duplicating, setDuplicating] = useState(false);
-  const tags = workspace.tags ? workspace.tags : [];
 
   const handleOpenTag = () => {
     setOpenTag(!openTag);
@@ -135,15 +146,20 @@ const WorkspaceHeader = ({
   const handleToggleOpenTags = () => {
     setOpenTags(!openTags);
   };
-  const handleChangeNewTags = (event) => {
+
+  const handleChangeRelativeDate = (event: SelectChangeEvent) => {
     const { value } = event.target;
-    setNewTag(value);
+    handleDateChange('relativeDate', value);
   };
+
+  const handleChangeDate = (type: 'startDate' | 'endDate', value: Date) => {
+    const formattedDate = value ? parse(value).format() : null;
+    handleDateChange(type, formattedDate);
+  };
+  const handleChangeNewTags = (event: SelectChangeEvent) => setNewTag(event.target.value);
+
   const onSubmitCreateTag = (data, { resetForm, setSubmitting }) => {
-    if (
-      (tags === null || !tags.includes(newTag))
-      && newTag !== ''
-    ) {
+    if (!tags.includes(newTag) && newTag !== '') {
       commitMutation({
         mutation: workspaceMutation,
         variables: {
@@ -155,14 +171,19 @@ const WorkspaceHeader = ({
         },
         setSubmitting,
         onCompleted: () => MESSAGING$.notifySuccess(t_i18n('The tag has been added')),
+        onError: undefined,
+        optimisticResponse: undefined,
+        optimisticUpdater: undefined,
+        updater: undefined,
       });
     }
     setOpenTag(false);
     setNewTag('');
     resetForm();
   };
-  const deleteTag = (tag) => {
-    const filteredTags = tags.filter((a) => a !== tag);
+  const deleteTag = (tagToDelete: string) => {
+    const filteredTags = tags.filter((tag) => tag !== tagToDelete);
+
     commitMutation({
       mutation: workspaceMutation,
       variables: {
@@ -173,10 +194,14 @@ const WorkspaceHeader = ({
         },
       },
       onCompleted: () => MESSAGING$.notifySuccess(t_i18n('The tag has been removed')),
+      onError: undefined,
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
+      setSubmitting: undefined,
+      updater: undefined,
     });
   };
-  const { relativeDate } = config ?? {};
-  const [displayManageAccess, setDisplayManageAccess] = useState(false);
+
   const handleOpenManageAccess = () => setDisplayManageAccess(true);
   const handleCloseManageAccess = () => setDisplayManageAccess(false);
   const handleDownloadAsStixReport = () => {
@@ -240,8 +265,8 @@ const WorkspaceHeader = ({
                 </InputLabel>
                 <Select
                   labelId="relative"
-                  value={relativeDate ?? ''}
-                  onChange={(value) => handleDateChange('relativeDate', value)}
+                  value={config?.relativeDate ?? ''}
+                  onChange={handleChangeRelativeDate}
                   label={t_i18n('Relative time')}
                   variant="outlined"
                 >
@@ -261,8 +286,8 @@ const WorkspaceHeader = ({
                 label={t_i18n('Start date')}
                 clearable={true}
                 disableFuture={true}
-                disabled={!!relativeDate}
-                onChange={(value, context) => !context.validationError && handleDateChange('startDate', value)}
+                disabled={!!config?.relativeDate}
+                onChange={(value: Date, context) => !context.validationError && handleChangeDate('startDate', value)}
                 slotProps={{
                   textField: {
                     style: { marginRight: 20 },
@@ -276,9 +301,9 @@ const WorkspaceHeader = ({
                 autoOk={true}
                 label={t_i18n('End date')}
                 clearable={true}
-                disabled={!!relativeDate}
+                disabled={!!config?.relativeDate}
                 disableFuture={true}
-                onChange={(value, context) => !context.validationError && handleDateChange('endDate', value)}
+                onChange={(value: Date, context) => !context.validationError && handleChangeDate('endDate', value)}
                 slotProps={{
                   textField: {
                     style: { marginRight: 20 },
@@ -331,7 +356,7 @@ const WorkspaceHeader = ({
           <Security needs={[INVESTIGATION_INUPDATE]}>
             <div className={classes.turnToReportOrCase}>
               <Tooltip title={t_i18n('Add to a container')}>
-                <ToggleButtonGroup size="small" color="primary" exclusive={true}>
+                <ToggleButtonGroup size="small" color="primary" exclusive>
                   <ToggleButton
                     aria-label="Label"
                     onClick={handleOpenTurnToReportOrCaseContainer}
@@ -348,7 +373,7 @@ const WorkspaceHeader = ({
         <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canManage}>
           <div className={classes.manageAccess}>
             <Tooltip title={t_i18n('Manage access restriction')}>
-              <ToggleButtonGroup size="small" color="warning" exclusive={true}>
+              <ToggleButtonGroup size="small" color="warning" exclusive>
                 <ToggleButton
                   aria-label={t_i18n('Manage access restriction')}
                   onClick={handleOpenManageAccess}
@@ -439,7 +464,7 @@ const WorkspaceHeader = ({
               open={openTags}
               TransitionComponent={Transition}
               onClose={handleToggleOpenTags}
-              fullWidth={true}
+              fullWidth
             >
               <DialogTitle>
                 {t_i18n('Entity tags')}
@@ -469,14 +494,14 @@ const WorkspaceHeader = ({
                   )}
                 </Formik>
               </DialogTitle>
-              <DialogContent dividers={true}>
+              <DialogContent dividers>
                 <List>
                   {tags.map(
                     (label) => label.length > 0 && (
                     <ListItem
                       key={label}
-                      disableGutters={true}
-                      dense={true}
+                      disableGutters
+                      dense
                     >
                       <ListItemText primary={label} />
                       <ListItemSecondaryAction>
@@ -493,38 +518,6 @@ const WorkspaceHeader = ({
                     ),
                   )}
                 </List>
-                <div
-                  style={{
-                    display: openTagsCreate ? 'block' : 'none',
-                  }}
-                >
-                  <Formik
-                    initialValues={{ new_tag: '' }}
-                    onSubmit={onSubmitCreateTag}
-                  >
-                    {({ submitForm }) => (
-                      <Form>
-                        <Field
-                          component={TextField}
-                          variant="standard"
-                          name="new_tag"
-                          autoFocus={true}
-                          fullWidth={true}
-                          placeholder={t_i18n('New tags')}
-                          className={classes.tagsInput}
-                          onChange={handleChangeNewTags}
-                          value={newTag}
-                          onKeyDown={(e) => {
-                            if (e.keyCode === 13) {
-                              return submitForm();
-                            }
-                            return true;
-                          }}
-                        />
-                      </Form>
-                    )}
-                  </Formik>
-                </div>
               </DialogContent>
               <DialogActions>
                 <Button onClick={handleToggleOpenTags} color="primary">
