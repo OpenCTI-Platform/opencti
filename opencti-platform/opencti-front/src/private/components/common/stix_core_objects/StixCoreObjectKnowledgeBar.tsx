@@ -18,7 +18,6 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
-import { containerTypes } from '../../../../utils/hooks/useAttributes';
 
 const stixCoreObjectKnowledgeBarFragment = graphql`
   fragment StixCoreObjectKnowledgeBar_stixCoreObject on StixCoreObject
@@ -148,11 +147,12 @@ const StixCoreObjectKnowledgeBar = ({
     }
     return Object.values(source).reduce((sum: number, val) => sum + val, 0);
   };
-  const sumEntitiesExcludingKeys = (source: Record<string, number>, keys: string[]) => {
-    return Object.keys(source).reduce((sum, key) => sum + (!keys.includes(key) ? source[key] : 0), 0);
+  const sumEntitiesExcludingKeys = (source: Record<string, number>) => {
+    return Object.values(source).reduce((acc, cur) => (acc + cur), 0);
   };
 
-  const allEntitiesCount = sumEntitiesExcludingKeys({ ...distributions.related, ...distributions.withoutRelated }, [...containerTypes]);
+  const relatedCount = sumEntitiesExcludingKeys(distributions.related);
+  const withoutRelatedCount = sumEntitiesExcludingKeys(distributions.withoutRelated);
 
   const sectionsConfig: SectionConfig[] = [
     {
@@ -162,7 +162,7 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'All',
           iconType: 'All',
           path: 'all',
-          count: allEntitiesCount,
+          count: relatedCount + withoutRelatedCount,
         },
       ],
     },
