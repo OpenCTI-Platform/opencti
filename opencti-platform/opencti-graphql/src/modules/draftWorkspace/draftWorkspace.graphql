@@ -17,6 +17,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
     objectsCount: DraftObjectsCount!
     draft_status: DraftStatus!
     processingCount: Int!
+    works(first: Int, after: ID): WorkConnection!
     validationWork: Work
 }
 

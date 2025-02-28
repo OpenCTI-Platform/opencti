@@ -6601,6 +6601,13 @@ export type DraftWorkspace = BasicObject & InternalObject & {
   processingCount: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   validationWork?: Maybe<Work>;
+  works: WorkConnection;
+};
+
+
+export type DraftWorkspaceWorksArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type DraftWorkspaceAddInput = {
@@ -35069,6 +35076,7 @@ export type DraftWorkspaceResolvers<ContextType = any, ParentType extends Resolv
   processingCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   validationWork?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType>;
+  works?: Resolver<ResolversTypes['WorkConnection'], ParentType, ContextType, Partial<DraftWorkspaceWorksArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

@@ -84,7 +84,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
   const currentProgress = validationWork?.tracking?.import_processed_number ?? '0';
   const requiredProgress = validationWork?.tracking?.import_expected_number ?? '0';
   const isValidating = validationWork?.status === 'wait' || validationWork?.status === 'progress';
-  const validationLabel = isValidating ? `${t_i18n('Ingesting')}: ${currentProgress}/${requiredProgress}` : t_i18n('Validated');
+  const validationLabel = isValidating ? `${t_i18n('Ingesting')}: ${currentProgress}/${requiredProgress}` : t_i18n('Completed');
   const validationColor = isValidating ? draftColor : theme.palette.success.main;
 
   // switch to draft
