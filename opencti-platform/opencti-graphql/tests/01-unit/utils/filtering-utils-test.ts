@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { addFilter, convertRelationRefsFilterKeys, checkFilterGroupSyntax, replaceFilterKey } from '../../../src/utils/filtering/filtering-utils';
+import { describe, it, expect } from 'vitest';
+import { addFilter, convertRelationRefsFilterKeys, extractFilterGroupValues, replaceFilterKey } from '../../../src/utils/filtering/filtering-utils';
 import type { FilterGroup } from '../../../src/generated/graphql';
 
 describe('Filtering utils', () => {
@@ -219,5 +221,75 @@ describe('Filtering utils', () => {
     };
     const newFilter = convertRelationRefsFilterKeys(filterGroup);
     expect(newFilter).toEqual(expectedFilter);
+  });
+  it('should extract the filter values corresponding to a given array of filter keys', async () => {
+    const filterGroup1 = {
+      mode: 'or',
+      filters: [
+        { key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' },
+        { key: ['publication_date'], values: ['YYY'] },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(extractFilterGroupValues(filterGroup1, 'entity_type')).toStrictEqual(['Report']);
+    const filterGroup2 = {
+      mode: 'or',
+      filters: [
+        { key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' },
+        { key: ['publication_date'], values: ['YYY'], operator: 'gt' },
+      ],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [
+            { key: ['entity_type', 'parent_types'], values: ['City', 'Region'], operator: 'not_eq', mode: 'and' },
+            { key: 'objectLabel', values: ['label1'] },
+            { key: 'objectMarking', values: ['marking1'] },
+          ]
+        }
+      ],
+    } as FilterGroup;
+    expect(extractFilterGroupValues(filterGroup2, ['entity_type', 'objectMarking'])).toStrictEqual(['Report', 'City', 'Region', 'marking1']);
+    const filterGroup3 = {
+      mode: 'or',
+      filters: [
+        { key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' },
+        { key: ['publication_date'], values: ['YYY'], operator: 'gt' },
+      ],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [
+            { key: ['entity_type'], values: ['City', 'Region'], operator: 'not_eq', mode: 'and' },
+            { key: ['objectLabel'], values: ['label1'] },
+            { key: 'objectMarking', values: ['marking1'] },
+          ]
+        }
+      ],
+    } as FilterGroup;
+    expect(extractFilterGroupValues(filterGroup3, ['entity_type'], true)).toStrictEqual(['YYY', 'label1', 'marking1']);
+    const filterGroup4 = {
+      mode: 'or',
+      filters: [
+        { key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' },
+        { key: ['publication_date'], values: ['YYY'], operator: 'gt' },
+      ],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [
+            { key: 'entity_type', values: ['City', 'Region'], operator: 'not_eq', mode: 'and' },
+            { key: ['objectLabel'], values: ['label1'] },
+            { key: 'regardingOf',
+              values: [
+                { key: 'relationship_type', values: ['related-to'] },
+                { key: 'id', values: ['id1', 'id2'] },
+              ],
+            },
+          ]
+        }
+      ],
+    } as FilterGroup;
+    expect(extractFilterGroupValues(filterGroup4, ['objectLabel', 'regardingOf'])).toStrictEqual(['label1', 'id1', 'id2']);
   });
 });

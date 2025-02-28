@@ -1,5 +1,5 @@
 import { uniq } from 'ramda';
-import { ABSTRACT_STIX_CORE_OBJECT, buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
+import { buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { FilterMode, type Filter, type FilterGroup, FilterOperator } from '../../generated/graphql';
@@ -26,7 +26,6 @@ import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
 import { isEmptyField } from '../../database/utils';
 import { isValidDate } from '../../schema/schemaUtils';
-import { generateFilterKeysSchema } from '../../domain/filterKeysSchema';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -151,8 +150,8 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
   if (key) {
     filteredFilters = reverse
       // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
-      ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : f.key !== key))
-      : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : f.key === key));
+      ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : !keysToKeep.includes(f.key)))
+      : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : keysToKeep.includes(f.key)));
   } else {
     filteredFilters = filters;
   }
@@ -353,7 +352,7 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
  * Go through all keys in a filter group to:
  * - if the key is in keysToReplace: replace the values of the filter by the associated id in the map
  */
-const filtersEntityIdsMappingResult = (filters: FilterGroup, keysToReplace: string[], valuesIdsMap: Map<string, string>) => {
+export const filtersEntityIdsMappingResult = (filters: FilterGroup, keysToReplace: string[], valuesIdsMap: Map<string, string>) => {
   const filtersResult = filters;
   if (isFilterGroupNotEmpty(filtersResult)) {
     // replace the values by their ids
@@ -377,15 +376,4 @@ const filtersEntityIdsMappingResult = (filters: FilterGroup, keysToReplace: stri
     filtersResult.filterGroups.forEach((fg) => filtersEntityIdsMappingResult(fg, keysToReplace, valuesIdsMap));
   }
   return filtersResult;
-};
-
-export const filtersEntityIdsMapping = async (filters: FilterGroup) => {
-  const filterDefinitions = await generateFilterKeysSchema();
-  const stixCoreObjectsFilterDefinitions = filterDefinitions.find((f) => f.entity_type === ABSTRACT_STIX_CORE_OBJECT)?.filters_schema.map((f) => f.filterDefinition) ?? [];
-  const idsFilterKeys = stixCoreObjectsFilterDefinitions.filter((f) => f.type === 'id')
-    .map((f) => f.filterKey)
-    .concat([INSTANCE_REGARDING_OF]);
-  const valuesIdsToResolve = extractFilterGroupValues(filters, idsFilterKeys);
-  const valuesIdsMap = new Map(valuesIdsToResolve.map((value) => [value, 'to resolve'])); // TODO resolve the values in ids
-  return filtersEntityIdsMappingResult(filters, idsFilterKeys, valuesIdsMap);
 };

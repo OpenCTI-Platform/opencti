@@ -19,7 +19,7 @@ import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
 import { isEmptyField } from '../../database/utils';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
-import type { InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiNlqArgs, MutationAiSummarizeFilesArgs } from '../../generated/graphql';
+import type { FilterGroup, InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiNlqArgs, MutationAiSummarizeFilesArgs } from '../../generated/graphql';
 import { Format, Tone } from '../../generated/graphql';
 import { ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
@@ -30,9 +30,12 @@ import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
-import { checkFiltersValidity, emptyFilterGroup, filtersEntityIdsMapping } from '../../utils/filtering/filtering-utils';
+import { addFilter, checkFiltersValidity, emptyFilterGroup, extractFilterGroupValues, filtersEntityIdsMappingResult } from '../../utils/filtering/filtering-utils';
 import { logApp } from '../../config/conf';
 import { NLQPromptTemplate } from './ai-nlq-utils';
+import { generateFilterKeysSchema } from '../../domain/filterKeysSchema';
+import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
+import { findAll } from '../../domain/stixCoreObject';
 
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
@@ -299,6 +302,33 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
   return response;
 };
 
+export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUser, filters: FilterGroup) => {
+  // 01. fetch the filter keys corresponding to an id
+  const filterDefinitions = await generateFilterKeysSchema();
+  const stixCoreObjectsFilterDefinitions = filterDefinitions.find((f) => f.entity_type === ABSTRACT_STIX_CORE_OBJECT)?.filters_schema.map((f) => f.filterDefinition) ?? [];
+  const idsFilterKeys = stixCoreObjectsFilterDefinitions.filter((f) => f.type === 'id')
+    .map((f) => f.filterKey)
+    .concat([INSTANCE_REGARDING_OF]);
+  // 02. fetch the values to resolve in the filter group
+  const valuesIdsToResolve = extractFilterGroupValues(filters, idsFilterKeys);
+  console.log('valuesIdsToResolve', valuesIdsToResolve);
+  // 03. resolve the values and deduce potential corresponding ids
+  const mapContent = await Promise.all(valuesIdsToResolve.map(async (value) => {
+    const stixCoreObjectsFilter = addFilter(undefined, 'entity_type', ['Stix-Core-Object']);
+    const result = await findAll(context, user, {
+      filters: stixCoreObjectsFilter,
+      search: value,
+      orderBy: '_score',
+      orderMode: 'desc',
+    });
+    console.log('result', result);
+    return [value, 'to resolve'] as [string, string]; // TODO
+  }));
+  const valuesIdsMap = new Map(mapContent);
+  // 04. replace the values with their corresponding ids
+  return filtersEntityIdsMappingResult(filters, idsFilterKeys, valuesIdsMap);
+};
+
 export const generateNLQresponse = async (context: AuthContext, user: AuthUser, args: MutationAiNlqArgs) => {
   await checkEnterpriseEdition(context);
   const { search } = args;
@@ -324,7 +354,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   }
 
   // 03. map entities ids
-  const filtersResult = await filtersEntityIdsMapping(parsedResponse);
+  const filtersResult = await filtersEntityIdsMapping(context, user, parsedResponse);
 
   // return the stringified filters
   return JSON.stringify(filtersResult);
