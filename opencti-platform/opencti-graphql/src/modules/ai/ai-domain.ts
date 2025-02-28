@@ -311,9 +311,8 @@ export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUs
     .concat([INSTANCE_REGARDING_OF]);
   // 02. fetch the values to resolve in the filter group
   const valuesIdsToResolve = extractFilterGroupValues(filters, idsFilterKeys);
-  console.log('valuesIdsToResolve', valuesIdsToResolve);
   // 03. resolve the values and deduce potential corresponding ids
-  const mapContent = await Promise.all(valuesIdsToResolve.map(async (value) => {
+  const mapContent = await Promise.all(valuesIdsToResolve.map(async (value): Promise<[string, string]> => {
     const stixCoreObjectsFilter = addFilter(undefined, 'entity_type', ['Stix-Core-Object']);
     const result = await findAll(context, user, {
       filters: stixCoreObjectsFilter,
@@ -321,8 +320,11 @@ export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUs
       orderBy: '_score',
       orderMode: 'desc',
     });
-    console.log('result', result);
-    return [value, 'to resolve'] as [string, string]; // TODO
+    const resultIds = result.edges.map((n) => n.node.id);
+    if (resultIds.length > 0) {
+      return [value, resultIds[0]];
+    }
+    return [value, 'not resolved'];
   }));
   const valuesIdsMap = new Map(mapContent);
   // 04. replace the values with their corresponding ids
