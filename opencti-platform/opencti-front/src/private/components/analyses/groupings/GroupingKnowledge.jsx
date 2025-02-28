@@ -258,7 +258,7 @@ class GroupingKnowledgeComponent extends Component {
                 render={({ props }) => {
                   if (props && props.grouping) {
                     return (
-                      <GroupingKnowledgeCorrelation grouping={props.grouping} />
+                      <GroupingKnowledgeCorrelation data={props.grouping} />
                     );
                   }
                   return (

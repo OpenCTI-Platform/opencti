@@ -38,6 +38,8 @@ const Graph = ({
     moveSelection,
     fixPositionsOnDragEnd,
     selectFromFreeRectangle,
+    setSelectedNodes,
+    setIsAddRelationOpen,
   } = useGraphInteractions();
 
   const {
@@ -54,16 +56,14 @@ const Graph = ({
     graphRef2D,
     graphRef3D,
     graphData,
-    setSelectedNodes,
-    setIsAddRelationOpen,
-    selectedLinks,
-    selectedNodes,
     graphState: {
       mode3D,
       modeTree,
       selectFree,
       selectFreeRectangle,
       withForces,
+      selectedNodes,
+      selectedLinks,
     },
   } = useGraphContext();
 

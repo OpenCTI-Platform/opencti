@@ -43,7 +43,13 @@ const useGraphFilter = () => {
   useEffect(() => {
     const disabledTargets = filterLinks();
     filterNodes(disabledTargets);
-  }, [disabledEntityTypes, disabledCreators, disabledMarkings, selectedTimeRangeInterval]);
+  }, [
+    disabledEntityTypes,
+    disabledCreators,
+    disabledMarkings,
+    selectedTimeRangeInterval,
+    graphData,
+  ]);
 };
 
 export default useGraphFilter;

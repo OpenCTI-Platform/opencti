@@ -13,12 +13,12 @@ const GraphToolbarSelectTools = () => {
 
   const {
     stixCoreObjectTypes,
-    selectedNodes,
     graphState: {
       mode3D,
       selectFreeRectangle,
       selectFree,
       selectRelationshipMode,
+      selectedNodes,
     },
   } = useGraphContext();
 

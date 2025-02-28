@@ -14,12 +14,8 @@ const useGraphInteractions = () => {
     graphData,
     graphState,
     positions,
-    selectedLinks,
-    selectedNodes,
     setGraphData,
     setGraphState,
-    setSelectedLinks,
-    setSelectedNodes,
   } = useGraphContext();
 
   const {
@@ -33,6 +29,8 @@ const useGraphInteractions = () => {
     disabledEntityTypes,
     disabledMarkings,
     disabledCreators,
+    selectedLinks,
+    selectedNodes,
   } = graphState;
 
   /**
@@ -97,6 +95,14 @@ const useGraphInteractions = () => {
     setGraphStateProp('selectFree', !selectFree);
   };
 
+  const setSelectedLinks = (links: GraphLink[]) => {
+    setGraphStateProp('selectedLinks', links);
+  };
+
+  const setSelectedNodes = (nodes: GraphNode[]) => {
+    setGraphStateProp('selectedNodes', nodes);
+  };
+
   const switchSelectRelationshipMode = () => {
     const selectedNodesIds = selectedNodes.map((n) => n.id);
     setSelectedLinks((graphData?.links ?? []).filter((l) => {
@@ -112,6 +118,10 @@ const useGraphInteractions = () => {
     else if (selectRelationshipMode === null) setGraphStateProp('selectRelationshipMode', 'children');
   };
 
+  const setCorrelationMode = (mode: GraphState['correlationMode']) => {
+    setGraphStateProp('correlationMode', mode);
+  };
+
   const toggleTimeRange = () => {
     setGraphStateProp('showTimeRange', !showTimeRange);
   };
@@ -124,20 +134,20 @@ const useGraphInteractions = () => {
 
   const addSelectedLink = (link: GraphLink) => {
     const existing = selectedLinks.find((l) => l.id === link.id);
-    if (!existing) setSelectedLinks((old) => [...old, link]);
+    if (!existing) setSelectedLinks([...selectedLinks, link]);
   };
 
   const removeSelectedLink = (link: GraphLink) => {
-    setSelectedLinks((old) => old.filter((l) => l.id !== link.id));
+    setSelectedLinks(selectedLinks.filter((l) => l.id !== link.id));
   };
 
   const addSelectedNode = (node: GraphNode) => {
     const existing = selectedNodes.find((n) => n.id === node.id);
-    if (!existing) setSelectedNodes((old) => [...old, node]);
+    if (!existing) setSelectedNodes([...selectedNodes, node]);
   };
 
   const removeSelectedNode = (node: GraphNode) => {
-    setSelectedNodes((old) => old.filter((n) => n.id !== node.id));
+    setSelectedNodes(selectedNodes.filter((n) => n.id !== node.id));
   };
 
   /**
@@ -251,7 +261,7 @@ const useGraphInteractions = () => {
         );
       });
       if (!hasSpecialKey) setSelectedNodes(selected);
-      else setSelectedNodes((old) => [...old, ...selected]);
+      else setSelectedNodes([...selectedNodes, ...selected]);
     }
   };
 
@@ -353,6 +363,10 @@ const useGraphInteractions = () => {
     });
   };
 
+  const setIsAddRelationOpen = (val: boolean) => {
+    setGraphStateProp('isAddRelationOpen', val);
+  };
+
   return {
     toggleMode3D,
     toggleVerticalTree,
@@ -361,8 +375,11 @@ const useGraphInteractions = () => {
     toggleSelectFreeRectangle,
     toggleSelectFree,
     switchSelectRelationshipMode,
+    setCorrelationMode,
     toggleTimeRange,
     saveZoom,
+    setSelectedLinks,
+    setSelectedNodes,
     toggleLink,
     toggleNode,
     clearSelection,
@@ -383,6 +400,7 @@ const useGraphInteractions = () => {
     addLink,
     removeLink,
     setSelectedTimeRange,
+    setIsAddRelationOpen,
   };
 };
 

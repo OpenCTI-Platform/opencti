@@ -11,7 +11,12 @@ interface PaintOptions {
 
 const useGraphPainter = () => {
   const theme = useTheme<Theme>();
-  const { selectedLinks, selectedNodes } = useGraphContext();
+  const {
+    graphState: {
+      selectedLinks,
+      selectedNodes,
+    },
+  } = useGraphContext();
 
   const DEFAULT_COLOR = '#0fbcff'; // Normally never used (all colors are defined).
   const colors = {
@@ -20,8 +25,7 @@ const useGraphPainter = () => {
     // @ts-ignore
     inferred: theme.palette.warning?.main ?? DEFAULT_COLOR,
     numbersBackground: theme.palette.background.default ?? DEFAULT_COLOR,
-    numberText: theme.palette.text?.secondary ?? DEFAULT_COLOR,
-    linkText: theme.palette.text?.primary ?? DEFAULT_COLOR,
+    text: theme.palette.text?.secondary ?? DEFAULT_COLOR,
     disabled: theme.palette.background.paper ?? DEFAULT_COLOR,
   };
 
@@ -61,7 +65,9 @@ const useGraphPainter = () => {
     ctx.font = '4px IBM Plex Sans';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    ctx.fillStyle = disabled ? colors.disabled : colors.text;
     ctx.fillText(label, x, y + 9);
+    ctx.fillStyle = disabled ? colors.disabled : color;
 
     const validConnectedElements = numberOfConnectedElement === undefined || numberOfConnectedElement > 0;
     if (showNbConnectedElements && validConnectedElements) {
@@ -72,7 +78,7 @@ const useGraphPainter = () => {
       ctx.stroke();
       ctx.fillStyle = colors.numbersBackground;
       ctx.fill();
-      ctx.fillStyle = colors.numberText;
+      ctx.fillStyle = colors.text;
       let numberLabel = '?';
       if (numberOfConnectedElement !== undefined) {
         numberLabel = `${numberOfConnectedElement}`;
@@ -166,7 +172,7 @@ const useGraphPainter = () => {
     ctx.rotate(textAngle);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = colors.linkText;
+    ctx.fillStyle = colors.text;
     ctx.fillText(link.label, 0, 0);
     ctx.restore();
   };
@@ -178,7 +184,7 @@ const useGraphPainter = () => {
    */
   const nodeThreePaint = (node: GraphNode) => {
     const sprite = new SpriteText(node.label);
-    sprite.color = colors.linkText;
+    sprite.color = colors.text;
     sprite.textHeight = 1.5;
     return sprite;
   };

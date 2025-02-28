@@ -27,8 +27,14 @@ const GraphToolbarEditObject = ({
   relationshipRefetchQuery,
 }: GraphToolbarEditObjectProps) => {
   const { t_i18n } = useFormatter();
-  const { selectedNodes, selectedLinks } = useGraphContext();
-  const { addNode } = useGraphInteractions();
+  const { addNode, addLink } = useGraphInteractions();
+
+  const {
+    graphState: {
+      selectedNodes,
+      selectedLinks,
+    },
+  } = useGraphContext();
 
   const [category, setCategory] = useState<EditionCategory>();
 
@@ -65,7 +71,7 @@ const GraphToolbarEditObject = ({
       } else {
         const data = await fetchQuery(relationshipRefetchQuery, { id: objectToEdit.id })
           .toPromise() as { stixRelationship: ObjectToParse };
-        addNode(data.stixRelationship);
+        addLink(data.stixRelationship);
       }
     }
     setCategory(undefined);
