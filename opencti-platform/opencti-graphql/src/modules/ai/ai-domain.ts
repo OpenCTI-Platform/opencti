@@ -339,7 +339,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   // 01. query the model
   logApp.debug('[AI] Querying NLQ with prompt', { questionStart: search.substring(0, 100) });
   const rawResponse = await queryNLQAi(promptValue);
-  const parsedResponse = rawResponse;
+  const parsedResponse = rawResponse as unknown as FilterGroup;
 
   // 02. check the filters validity
   try {
