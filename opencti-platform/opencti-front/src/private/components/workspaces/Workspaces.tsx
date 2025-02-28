@@ -17,6 +17,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import GradientButton from '../../../components/GradientButton';
+import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { isNotEmptyField } from '../../../utils/utils';
@@ -106,7 +107,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
 
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const { settings } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings) ? `${settings.platform_xtmhub_url}/redirect/custom_dashboard?octi_instance_id=${settings.id}`.replaceAll('//', '/') : '';
 
