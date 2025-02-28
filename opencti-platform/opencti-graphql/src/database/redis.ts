@@ -16,7 +16,7 @@ import { convertStoreToStix } from './stix-converter-2-1';
 import type { StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BaseEvent, CreateEventOpts, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';
-import type { StixCoreObject } from '../types/stix-common';
+import type { StixCoreObject } from '../types/stix-2-1/stix-2-1-common';
 import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';

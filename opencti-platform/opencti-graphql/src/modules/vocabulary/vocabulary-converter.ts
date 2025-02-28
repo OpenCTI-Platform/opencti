@@ -1,6 +1,6 @@
 import { buildStixObject, cleanObject } from '../../database/stix-converter-2-1';
 import type { StixVocabulary, StoreEntityVocabulary } from './vocabulary-types';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1/stix-extensions';
 
 const convertVocabularyToStix = (instance: StoreEntityVocabulary): StixVocabulary => {
   const stixObject = buildStixObject(instance);

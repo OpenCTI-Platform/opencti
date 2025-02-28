@@ -1,4 +1,4 @@
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1/stix-extensions';
 import { buildStixDomain, cleanObject, convertObjectReferences } from '../../database/stix-converter-2-1';
 import type { StixWorkspace, StoreEntityWorkspace } from './workspace-types';
 
