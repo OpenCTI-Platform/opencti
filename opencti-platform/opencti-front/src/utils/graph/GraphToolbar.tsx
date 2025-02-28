@@ -12,6 +12,7 @@ import GraphToolbarContentTools, { GraphToolbarContentToolsProps } from './compo
 import GraphToolbarTimeRange from './components/GraphToolbarTimeRange';
 import { useGraphContext } from './GraphContext';
 import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
+import GraphToolbarExpandTools from './components/GraphToolbarExpandTools';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps;
 
@@ -66,6 +67,14 @@ const GraphToolbar = (props: GraphToolbarProps) => {
         <div style={{ flex: 1 }}>
           <SearchInput variant="thin" onSubmit={selectBySearch} />
         </div>
+
+        {context === 'investigation' && (
+          <>
+            <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
+            <GraphToolbarExpandTools />
+            <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
+          </>
+        )}
 
         <GraphToolbarContentTools {...props} />
       </div>

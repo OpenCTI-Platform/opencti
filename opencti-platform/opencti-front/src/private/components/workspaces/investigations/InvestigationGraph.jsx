@@ -50,6 +50,8 @@ export const investigationGraphQuery = graphql`
   query InvestigationGraphQuery($id: String!) {
     workspace(id: $id) {
       ...InvestigationGraph_workspace
+      ...InvestigationGraph_fragment
+      ...InvestigationGraphData_fragment
     }
   }
 `;
@@ -871,6 +873,7 @@ const investigationGraphRelationsAddMutation = graphql`
     }
   }
 `;
+
 class InvestigationGraphComponent extends Component {
   constructor(props) {
     const LOCAL_STORAGE_KEY = `workspace-${props.workspace.id}-investigation`;

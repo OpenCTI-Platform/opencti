@@ -6,6 +6,7 @@ import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import InvestigationKnowledgeGraph, { investigationGraphQuery } from './InvestigationGraph';
+import InvestigationGraph from './_InvestigationGraph';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
@@ -30,7 +31,8 @@ class InvestigationComponent extends Component {
             if (props) {
               if (props.workspace) {
                 return (
-                  <InvestigationKnowledgeGraph workspace={props.workspace} />
+                  // <InvestigationKnowledgeGraph workspace={props.workspace} />
+                  <InvestigationGraph data={props.workspace} graphData={props.workspace} />
                 );
               }
               return <ErrorNotFound />;

@@ -57,6 +57,7 @@ const Graph = ({
     graphRef2D,
     graphRef3D,
     graphData,
+    context,
     graphState: {
       mode3D,
       modeTree,
@@ -159,7 +160,9 @@ const Graph = ({
               linkLineDash={(link) => (link.inferred || link.isNestedInferred ? [2, 1] : null)}
               linkColor={linkColorPaint}
               nodePointerAreaPaint={nodePointerAreaPaint} // What's for?
-              nodeCanvasObject={(node, ctx) => nodePaint(node, ctx)}
+              nodeCanvasObject={(node, ctx) => nodePaint(node, ctx, {
+                showNbConnectedElements: context === 'investigation',
+              })}
               onZoomEnd={saveZoom}
               onLinkClick={toggleLink}
               onBackgroundClick={clearSelection}
