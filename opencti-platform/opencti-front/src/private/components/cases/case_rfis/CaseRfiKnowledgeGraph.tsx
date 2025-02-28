@@ -4,6 +4,7 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { graphql, useFragment } from 'react-relay';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import ContainerHeader from '@components/common/containers/ContainerHeader';
+import { CaseRfiKnowledgeGraphData_fragment$key } from './__generated__/CaseRfiKnowledgeGraphData_fragment.graphql';
 import { CaseRfiKnowledgeGraph_fragment$data, CaseRfiKnowledgeGraph_fragment$key } from './__generated__/CaseRfiKnowledgeGraph_fragment.graphql';
 import useCaseRfiKnowledgeGraphEdit from './useCaseRfiKnowledgeGraphEdit';
 import useCaseRfiKnowledgeGraphAddRelation from './useCaseRfiKnowledgeGraphAddRelation';
@@ -12,19 +13,24 @@ import CaseRfiPopover from './CaseRfiPopover';
 import type { Theme } from '../../../../components/Theme';
 import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
-import { encodeGraphData } from '../../../../utils/Graph';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
 import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteractions';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
 import GraphToolbar, { GraphToolbarProps } from '../../../../utils/graph/GraphToolbar';
+import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
+
+const caseRfiGraphDataFragment = graphql`
+  fragment CaseRfiKnowledgeGraphData_fragment on CaseRfi {
+    x_opencti_graph_data
+  }
+`;
 
 const caseRfiGraphFragment = graphql`
   fragment CaseRfiKnowledgeGraph_fragment on CaseRfi {
     id
     name
-    x_opencti_graph_data
     confidence
     createdBy {
       ... on Identity {
@@ -402,6 +408,7 @@ export const caseRfiKnowledgeGraphQuery = graphql`
   query CaseRfiKnowledgeGraphQuery($id: String!) {
     caseRfi(id: $id) {
       ...CaseRfiKnowledgeGraph_fragment
+      ...CaseRfiKnowledgeGraphData_fragment
     }
   }
 `;
@@ -443,7 +450,7 @@ const CaseRfiKnowledgeGraphComponent = ({
         id: caseRfi.id,
         input: [{
           key: 'x_opencti_graph_data',
-          value: [encodeGraphData(positions)],
+          value: [serializeObjectB64(positions)],
         }],
       },
     });
@@ -509,18 +516,27 @@ const CaseRfiKnowledgeGraphComponent = ({
 
 interface ReportKnowledgeGraphtProps extends Omit<CaseRfiKnowledgeGraphComponentProps, 'caseRfi'> {
   data: CaseRfiKnowledgeGraph_fragment$key
+  graphData: CaseRfiKnowledgeGraphData_fragment$key
 }
 
 const CaseRfiKnowledgeGraph = ({
   data,
+  graphData,
   ...otherProps
 }: ReportKnowledgeGraphtProps) => {
   const caseRfi = useFragment(caseRfiGraphFragment, data);
-  const caseRfiData = useMemo(() => getObjectsToParse(caseRfi), [caseRfi]);
-  const localStorageKey = `caseRfi-${caseRfi.id}-knowledge-graph`;
+  const { x_opencti_graph_data } = useFragment(caseRfiGraphDataFragment, graphData);
+  const localStorageKey = `caseRfi-knowledge-graph-${caseRfi.id}`;
+
+  const objects = useMemo(() => getObjectsToParse(caseRfi), [caseRfi]);
+  const positions = useMemo(() => deserializeObjectB64(x_opencti_graph_data), [x_opencti_graph_data]);
 
   return (
-    <GraphProvider localStorageKey={localStorageKey} data={caseRfiData}>
+    <GraphProvider
+      localStorageKey={localStorageKey}
+      objects={objects}
+      positions={positions}
+    >
       <CaseRfiKnowledgeGraphComponent caseRfi={caseRfi} {...otherProps} />
     </GraphProvider>
   );

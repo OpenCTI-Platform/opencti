@@ -40,6 +40,7 @@ const Graph = ({
     selectFromFreeRectangle,
     setSelectedNodes,
     setIsAddRelationOpen,
+    setRawPositions,
   } = useGraphInteractions();
 
   const {
@@ -72,6 +73,16 @@ const Graph = ({
   const shouldDisplayLinks = graphData?.links.length ?? 0 < 200;
   const selectedEntities = [...selectedLinks, ...selectedNodes];
 
+  const onNodeDragEnd = (node: GraphNode) => {
+    fixPositionsOnDragEnd(node);
+    const newPositions = (graphData?.nodes ?? []).reduce((acc, { id, x, y }) => ({
+      ...acc,
+      [id]: { id, x, y },
+    }), {});
+    setRawPositions(newPositions);
+    onPositionsChanged(newPositions);
+  };
+
   return (
     <div id={graphId}>
       {selectedEntities.length > 0 && (
@@ -102,13 +113,7 @@ const Graph = ({
           onBackgroundClick={clearSelection}
           onNodeClick={toggleNode}
           onNodeDrag={moveSelection}
-          onNodeDragEnd={(node) => {
-            fixPositionsOnDragEnd(node);
-            onPositionsChanged((graphData?.nodes ?? []).reduce((acc, { id, x, y }) => ({
-              ...acc,
-              [id]: { id, x, y },
-            }), {}));
-          }}
+          onNodeDragEnd={onNodeDragEnd}
         />
       ) : (
         <>
@@ -160,13 +165,7 @@ const Graph = ({
               onBackgroundClick={clearSelection}
               onNodeClick={toggleNode}
               onNodeDrag={moveSelection}
-              onNodeDragEnd={(node) => {
-                fixPositionsOnDragEnd(node);
-                onPositionsChanged((graphData?.nodes ?? []).reduce((acc, { id, x, y }) => ({
-                  ...acc,
-                  [id]: { id, x, y },
-                }), {}));
-              }}
+              onNodeDragEnd={onNodeDragEnd}
             />
           </RectangleSelection>
         </>

@@ -13,9 +13,10 @@ const useGraphInteractions = () => {
     graphRef3D,
     graphData,
     graphState,
-    positions,
+    rawPositions,
     setGraphData,
     setGraphState,
+    setRawPositions,
   } = useGraphContext();
 
   const {
@@ -324,7 +325,7 @@ const useGraphInteractions = () => {
   };
 
   const addNode = (data: ObjectToParse) => {
-    const node = buildNode(data, positions);
+    const node = buildNode(data, rawPositions);
     setGraphData((oldData) => {
       const withoutExisting = (oldData?.nodes ?? []).filter((n) => n.id !== node.id);
       return {
@@ -401,6 +402,7 @@ const useGraphInteractions = () => {
     removeLink,
     setSelectedTimeRange,
     setIsAddRelationOpen,
+    setRawPositions,
   };
 };
 

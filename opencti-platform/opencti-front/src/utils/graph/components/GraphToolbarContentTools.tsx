@@ -6,6 +6,7 @@ import StixCoreRelationshipCreation from '@components/common/stix_core_relations
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import StixNestedRefRelationshipCreation from '@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
 import StixSightingRelationshipCreation from '@components/events/stix_sighting_relationships/StixSightingRelationshipCreation';
+import InvestigationAddStixCoreObjects from '@components/workspaces/investigations/InvestigationAddStixCoreObjects';
 import GraphToolbarEditObject from './GraphToolbarEditObject';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../../components/i18n';
@@ -52,7 +53,7 @@ const GraphToolbarContentTools = ({
   const {
     graphData,
     context,
-    objects,
+    rawObjects,
     graphState: {
       selectedNodes,
       selectedLinks,
@@ -106,11 +107,11 @@ const GraphToolbarContentTools = ({
 
   return (
     <>
-      {entity && (
+      {entity && context !== 'investigation' && (
         <ContainerAddStixCoreObjectsInGraph
           knowledgeGraph={context !== 'correlation'}
           containerId={entity.id}
-          containerStixCoreObjects={objects.map((o) => ({ node: o }))}
+          containerStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
           defaultCreatedBy={entity.createdBy ?? null}
           defaultMarkingDefinitions={entity.objectMarking ?? []}
           targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
@@ -118,6 +119,15 @@ const GraphToolbarContentTools = ({
           onDelete={removeFromAddPanel}
           confidence={entity.confidence}
           enableReferences={enableReferences}
+        />
+      )}
+      {entity && context === 'investigation' && (
+        <InvestigationAddStixCoreObjects
+          workspaceId={entity.id}
+          workspaceStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
+          targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+          onAdd={addNode}
+          onDelete={removeFromAddPanel}
         />
       )}
 

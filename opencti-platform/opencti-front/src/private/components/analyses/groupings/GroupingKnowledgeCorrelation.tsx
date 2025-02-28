@@ -4,20 +4,26 @@ import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import useGroupingKnowledgeCorrelationEdit from '@components/analyses/groupings/useGroupingKnowledgeCorrelationEdit';
 import { knowledgeCorrelationStixCoreObjectQuery, knowledgeCorrelationStixCoreRelationshipQuery } from '@components/common/containers/KnowledgeCorrelationQuery';
+import { GroupingKnowledgeCorrelationData_fragment$key } from './__generated__/GroupingKnowledgeCorrelationData_fragment.graphql';
 import type { Theme } from '../../../../components/Theme';
 import { GroupingKnowledgeCorrelation_fragment$data, GroupingKnowledgeCorrelation_fragment$key } from './__generated__/GroupingKnowledgeCorrelation_fragment.graphql';
 import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
-import { encodeGraphData } from '../../../../utils/Graph';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
 import GraphToolbar from '../../../../utils/graph/GraphToolbar';
+import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
+
+const groupingCorrelationDataFragment = graphql`
+  fragment GroupingKnowledgeCorrelationData_fragment on Grouping {
+    x_opencti_graph_data
+  }
+`;
 
 const groupingCorrelationFragment = graphql`
   fragment GroupingKnowledgeCorrelation_fragment on Grouping {
     id
     name
-    x_opencti_graph_data
     context
     confidence
     createdBy {
@@ -313,6 +319,7 @@ export const groupingKnowledgeCorrelationQuery = graphql`
   query GroupingKnowledgeCorrelationQuery($id: String!) {
     grouping(id: $id) {
       ...GroupingKnowledgeCorrelation_fragment
+      ...GroupingKnowledgeCorrelationData_fragment
     }
   }
 `;
@@ -347,7 +354,7 @@ const GroupingKnowledgeCorrelationComponent = ({
         id: grouping.id,
         input: [{
           key: 'x_opencti_graph_data',
-          value: [encodeGraphData(positions)],
+          value: [serializeObjectB64(positions)],
         }],
       },
     });
@@ -367,19 +374,25 @@ const GroupingKnowledgeCorrelationComponent = ({
 
 interface GroupingKnowledgeCorrelationProps {
   data: GroupingKnowledgeCorrelation_fragment$key
+  graphData: GroupingKnowledgeCorrelationData_fragment$key
 }
 
 const GroupingKnowledgeCorrelation = ({
   data,
+  graphData,
 }: GroupingKnowledgeCorrelationProps) => {
   const grouping = useFragment(groupingCorrelationFragment, data);
-  const groupingData = useMemo(() => getObjectsToParse(grouping), [grouping]);
+  const { x_opencti_graph_data } = useFragment(groupingCorrelationDataFragment, graphData);
   const localStorageKey = `grouping-knowledge-correlation-${grouping.id}`;
+
+  const objects = useMemo(() => getObjectsToParse(grouping), [grouping]);
+  const positions = useMemo(() => deserializeObjectB64(x_opencti_graph_data), [x_opencti_graph_data]);
 
   return (
     <GraphProvider
       localStorageKey={localStorageKey}
-      data={groupingData}
+      objects={objects}
+      positions={positions}
       context='correlation'
     >
       <GroupingKnowledgeCorrelationComponent grouping={grouping} />

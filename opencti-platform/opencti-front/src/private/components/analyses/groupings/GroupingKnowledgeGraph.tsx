@@ -9,22 +9,28 @@ import useGroupingKnowledgeGraphEdit from '@components/analyses/groupings/useGro
 import useGroupingKnowledgeGraphAddRelation from '@components/analyses/groupings/useGroupingKnowledgeGraphAddRelation';
 import useGroupingKnowledgeGraphDeleteRelation from '@components/analyses/groupings/useGroupingKnowledgeGraphDeleteRelation';
 import GroupingPopover from '@components/analyses/groupings/GroupingPopover';
+import { GroupingKnowledgeGraphData_fragment$key } from './__generated__/GroupingKnowledgeGraphData_fragment.graphql';
 import type { Theme } from '../../../../components/Theme';
 import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
-import { encodeGraphData } from '../../../../utils/Graph';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
 import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteractions';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
 import GraphToolbar, { GraphToolbarProps } from '../../../../utils/graph/GraphToolbar';
+import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
+
+const groupingGraphDataFragment = graphql`
+  fragment GroupingKnowledgeGraphData_fragment on Grouping {
+    x_opencti_graph_data
+  }
+`;
 
 const groupingGraphFragment = graphql`
   fragment GroupingKnowledgeGraph_fragment on Grouping {
     id
     name
-    x_opencti_graph_data
     context
     confidence
     createdBy {
@@ -390,6 +396,7 @@ export const groupingKnowledgeGraphQuery = graphql`
   query GroupingKnowledgeGraphQuery($id: String!) {
     grouping(id: $id) {
       ...GroupingKnowledgeGraph_fragment
+      ...GroupingKnowledgeGraphData_fragment
     }
   }
 `;
@@ -431,7 +438,7 @@ const GroupingKnowledgeGraphComponent = ({
         id: grouping.id,
         input: [{
           key: 'x_opencti_graph_data',
-          value: [encodeGraphData(positions)],
+          value: [serializeObjectB64(positions)],
         }],
       },
     });
@@ -497,18 +504,27 @@ const GroupingKnowledgeGraphComponent = ({
 
 interface ReportKnowledgeGraphtProps extends Omit<GroupingKnowledgeGraphComponentProps, 'grouping'> {
   data: GroupingKnowledgeGraph_fragment$key
+  graphData: GroupingKnowledgeGraphData_fragment$key
 }
 
 const GroupingKnowledgeGraph = ({
   data,
+  graphData,
   ...otherProps
 }: ReportKnowledgeGraphtProps) => {
   const grouping = useFragment(groupingGraphFragment, data);
-  const groupingData = useMemo(() => getObjectsToParse(grouping), [grouping]);
-  const localStorageKey = `grouping-${grouping.id}-knowledge-graph`;
+  const { x_opencti_graph_data } = useFragment(groupingGraphDataFragment, graphData);
+  const localStorageKey = `grouping-knowledge-graph-${grouping.id}`;
+
+  const objects = useMemo(() => getObjectsToParse(grouping), [grouping]);
+  const positions = useMemo(() => deserializeObjectB64(x_opencti_graph_data), [x_opencti_graph_data]);
 
   return (
-    <GraphProvider localStorageKey={localStorageKey} data={groupingData}>
+    <GraphProvider
+      localStorageKey={localStorageKey}
+      objects={objects}
+      positions={positions}
+    >
       <GroupingKnowledgeGraphComponent grouping={grouping}{...otherProps} />
     </GraphProvider>
   );

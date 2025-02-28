@@ -3,21 +3,27 @@ import React, { CSSProperties, useMemo, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { knowledgeCorrelationStixCoreObjectQuery, knowledgeCorrelationStixCoreRelationshipQuery } from '@components/common/containers/KnowledgeCorrelationQuery';
+import { CaseRftKnowledgeCorrelationData_fragment$key } from './__generated__/CaseRftKnowledgeCorrelationData_fragment.graphql';
 import useCaseRftKnowledgeCorrelationEdit from './useCaseRftKnowledgeCorrelationEdit';
 import type { Theme } from '../../../../components/Theme';
 import { CaseRftKnowledgeCorrelation_fragment$data, CaseRftKnowledgeCorrelation_fragment$key } from './__generated__/CaseRftKnowledgeCorrelation_fragment.graphql';
 import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
-import { encodeGraphData } from '../../../../utils/Graph';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
 import GraphToolbar from '../../../../utils/graph/GraphToolbar';
+import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
+
+const caseRftCorrelationDataFragment = graphql`
+  fragment CaseRftKnowledgeCorrelationData_fragment on CaseRft {
+    x_opencti_graph_data
+  }
+`;
 
 const caseRftCorrelationFragment = graphql`
   fragment CaseRftKnowledgeCorrelation_fragment on CaseRft {
     id
     name
-    x_opencti_graph_data
     confidence
     createdBy {
       ... on Identity {
@@ -309,6 +315,7 @@ export const caseRftKnowledgeCorrelationQuery = graphql`
   query CaseRftKnowledgeCorrelationQuery($id: String!) {
     caseRft(id: $id) {
       ...CaseRftKnowledgeCorrelation_fragment
+      ...CaseRftKnowledgeCorrelationData_fragment
     }
   }
 `;
@@ -343,7 +350,7 @@ const CaseRftKnowledgeCorrelationComponent = ({
         id: caseRft.id,
         input: [{
           key: 'x_opencti_graph_data',
-          value: [encodeGraphData(positions)],
+          value: [serializeObjectB64(positions)],
         }],
       },
     });
@@ -363,19 +370,25 @@ const CaseRftKnowledgeCorrelationComponent = ({
 
 interface CaseRftKnowledgeCorrelationProps {
   data: CaseRftKnowledgeCorrelation_fragment$key
+  graphData: CaseRftKnowledgeCorrelationData_fragment$key
 }
 
 const CaseRftKnowledgeCorrelation = ({
   data,
+  graphData,
 }: CaseRftKnowledgeCorrelationProps) => {
   const caseRft = useFragment(caseRftCorrelationFragment, data);
-  const caseRftData = useMemo(() => getObjectsToParse(caseRft), [caseRft]);
+  const { x_opencti_graph_data } = useFragment(caseRftCorrelationDataFragment, graphData);
   const localStorageKey = `caseRft-knowledge-correlation-${caseRft.id}`;
+
+  const objects = useMemo(() => getObjectsToParse(caseRft), [caseRft]);
+  const positions = useMemo(() => deserializeObjectB64(x_opencti_graph_data), [x_opencti_graph_data]);
 
   return (
     <GraphProvider
       localStorageKey={localStorageKey}
-      data={caseRftData}
+      objects={objects}
+      positions={positions}
       context='correlation'
     >
       <CaseRftKnowledgeCorrelationComponent caseRft={caseRft} />
