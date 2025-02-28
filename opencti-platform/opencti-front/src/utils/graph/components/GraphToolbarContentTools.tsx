@@ -12,7 +12,7 @@ import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../../components/i18n';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import { GraphEntity, GraphLink, GraphNode } from '../graph.types';
-import { dateFormat, minutesBefore, now } from '../../Time';
+import { dateFormat, dayStartDate, minutesBefore, now } from '../../Time';
 import { convertCreatedBy, convertMarkings } from '../../edition';
 import { useGraphContext } from '../GraphContext';
 import { ObjectToParse } from '../utils/useGraphParser';
@@ -24,7 +24,8 @@ export interface GraphToolbarContentToolsProps {
   onAddRelation?: (rel: ObjectToParse) => void
   entity?: GraphEntity
   enableReferences?: boolean
-  onContainerDeleteRelation?: GraphToolbarDeleteConfirmProps['onContainerDeleteRelation']
+  onDeleteRelation?: GraphToolbarDeleteConfirmProps['onDeleteRelation']
+  onRemove?: GraphToolbarDeleteConfirmProps['onRemove']
 }
 
 const GraphToolbarContentTools = ({
@@ -33,7 +34,8 @@ const GraphToolbarContentTools = ({
   entity,
   enableReferences,
   onAddRelation,
-  onContainerDeleteRelation,
+  onDeleteRelation,
+  onRemove,
 }: GraphToolbarContentToolsProps) => {
   const { t_i18n } = useFormatter();
 
@@ -202,8 +204,8 @@ const GraphToolbarContentTools = ({
             fromObjects={objectsFrom}
             toObjects={objectsTo}
             confidence={entity.confidence}
-            firstSeen={dateFormat(entity.published)}
-            lastSeen={dateFormat(entity.published)}
+            firstSeen={dateFormat(entity.published) ?? dayStartDate()}
+            lastSeen={dateFormat(entity.published) ?? dayStartDate()}
             defaultCreatedBy={convertCreatedBy(entity)}
             defaultMarkingDefinitions={convertMarkings(entity)}
             handleResult={onAddRelation}
@@ -216,7 +218,7 @@ const GraphToolbarContentTools = ({
         </>
       )}
 
-      {onContainerDeleteRelation && entity && (
+      {(onDeleteRelation || onRemove) && entity && (
         <>
           <GraphToolbarItem
             Icon={<DeleteOutlined />}
@@ -230,7 +232,8 @@ const GraphToolbarContentTools = ({
             entityId={entity.id}
             enableReferences={enableReferences}
             onClose={() => setRemoveDialogOpen(false)}
-            onContainerDeleteRelation={onContainerDeleteRelation}
+            onDeleteRelation={onDeleteRelation}
+            onRemove={onRemove}
           />
         </>
       )}

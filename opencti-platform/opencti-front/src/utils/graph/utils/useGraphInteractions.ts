@@ -344,6 +344,15 @@ const useGraphInteractions = () => {
     });
   };
 
+  const removeNodes = (nodeIds: string[]) => {
+    setGraphData((oldData) => {
+      return {
+        nodes: (oldData?.nodes ?? []).filter((node) => !nodeIds.includes(node.id)),
+        links: oldData?.links ?? [],
+      };
+    });
+  };
+
   const addLink = (data: ObjectToParse) => {
     const link = buildLink(data); // TODO does it work with nested?
     setGraphData((oldData) => {
@@ -359,6 +368,15 @@ const useGraphInteractions = () => {
     setGraphData((oldData) => {
       return {
         links: (oldData?.links ?? []).filter((link) => link.id !== linkId),
+        nodes: oldData?.nodes ?? [],
+      };
+    });
+  };
+
+  const removeLinks = (linkIds: string[]) => {
+    setGraphData((oldData) => {
+      return {
+        links: (oldData?.links ?? []).filter((link) => !linkIds.includes(link.id)),
         nodes: oldData?.nodes ?? [],
       };
     });
@@ -398,8 +416,10 @@ const useGraphInteractions = () => {
     selectBySearch,
     addNode,
     removeNode,
+    removeNodes,
     addLink,
     removeLink,
+    removeLinks,
     setSelectedTimeRange,
     setIsAddRelationOpen,
     setRawPositions,

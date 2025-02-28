@@ -459,7 +459,7 @@ const GroupingKnowledgeGraphComponent = ({
     });
   };
 
-  const deleteRelationInGraph: GraphToolbarProps['onContainerDeleteRelation'] = (
+  const deleteRelationInGraph: GraphToolbarProps['onDeleteRelation'] = (
     relId,
     onCompleted,
   ) => {
@@ -494,7 +494,7 @@ const GroupingKnowledgeGraphComponent = ({
           stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
           relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
           onAddRelation={addRelationInGraph}
-          onContainerDeleteRelation={deleteRelationInGraph}
+          onDeleteRelation={deleteRelationInGraph}
           entity={grouping}
         />
       </Graph>

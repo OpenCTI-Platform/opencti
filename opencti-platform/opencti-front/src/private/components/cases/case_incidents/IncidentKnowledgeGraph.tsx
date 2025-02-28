@@ -458,7 +458,7 @@ const IncidentKnowledgeGraphComponent = ({
     });
   };
 
-  const deleteRelationInGraph: GraphToolbarProps['onContainerDeleteRelation'] = (
+  const deleteRelationInGraph: GraphToolbarProps['onDeleteRelation'] = (
     relId,
     onCompleted,
   ) => {
@@ -493,7 +493,7 @@ const IncidentKnowledgeGraphComponent = ({
           stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
           relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
           onAddRelation={addRelationInGraph}
-          onContainerDeleteRelation={deleteRelationInGraph}
+          onDeleteRelation={deleteRelationInGraph}
           entity={incident}
         />
       </Graph>

@@ -471,7 +471,7 @@ const CaseRfiKnowledgeGraphComponent = ({
     });
   };
 
-  const deleteRelationInGraph: GraphToolbarProps['onContainerDeleteRelation'] = (
+  const deleteRelationInGraph: GraphToolbarProps['onDeleteRelation'] = (
     relId,
     onCompleted,
   ) => {
@@ -506,7 +506,7 @@ const CaseRfiKnowledgeGraphComponent = ({
           stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
           relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
           onAddRelation={addRelationInGraph}
-          onContainerDeleteRelation={deleteRelationInGraph}
+          onDeleteRelation={deleteRelationInGraph}
           entity={caseRfi}
         />
       </Graph>
