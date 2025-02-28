@@ -161,6 +161,7 @@ const DraftTasks : FunctionComponent<DraftTasksProps> = ({ draftId }) => {
         initialValues={initialValues}
         preloadedPaginationProps={preloadedPaginationProps}
         variant={DataTableVariant.inline}
+        hideSearch
         disableNavigation
         disableLineSelection
         lineFragment={draftTaskLineFragment}

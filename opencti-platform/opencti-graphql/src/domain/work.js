@@ -63,7 +63,7 @@ export const worksForConnector = async (context, user, connectorId, args = {}) =
 };
 
 export const worksForDraft = async (context, user, draftId, args = {}) => {
-  const { first = ES_MINIMUM_FIXED_PAGINATION, after = undefined } = args;
+  const { first = ES_MINIMUM_FIXED_PAGINATION } = args;
   const worksForDraftFilter = {
     mode: 'and',
     filters: [
@@ -78,10 +78,10 @@ export const worksForDraft = async (context, user, draftId, args = {}) => {
   };
   return elPaginate(context, user, READ_INDEX_HISTORY, {
     type: ENTITY_TYPE_WORK,
+    connectionFormat: false,
     orderBy: 'timestamp',
     orderMode: 'desc',
     first,
-    after,
     filters: worksForDraftFilter,
   });
 };
