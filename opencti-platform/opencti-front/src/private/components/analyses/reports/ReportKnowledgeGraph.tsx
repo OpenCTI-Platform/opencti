@@ -8,7 +8,7 @@ import ContainerHeader from '@components/common/containers/ContainerHeader';
 import useReportKnowledgeGraphDeleteRelation from './useReportKnowledgeGraphDeleteRelation';
 import { ReportKnowledgeGraph_fragment$data, ReportKnowledgeGraph_fragment$key } from './__generated__/ReportKnowledgeGraph_fragment.graphql';
 import type { Theme } from '../../../../components/Theme';
-import Graph, { GraphProps } from '../../../../utils/graph/Graph';
+import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
 import { encodeGraphData } from '../../../../utils/Graph';
 import useReportKnowledgeGraphAddRelation from './useReportKnowledgeGraphAddRelation';
@@ -18,6 +18,7 @@ import useReportKnowledgeGraphEdit from './useReportKnowledgeGraphEdit';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
+import GraphToolbar, { GraphToolbarProps } from '../../../../utils/graph/GraphToolbar';
 
 const reportGraphFragment = graphql`
   fragment ReportKnowledgeGraph_fragment on Report {
@@ -436,7 +437,7 @@ const ReportKnowledgeGraphComponent = ({
     });
   };
 
-  const addRelationInGraph: GraphProps['onAddRelation'] = (rel) => {
+  const addRelationInGraph: GraphToolbarProps['onAddRelation'] = (rel) => {
     commitAddRelation({
       variables: {
         id: report.id,
@@ -451,7 +452,7 @@ const ReportKnowledgeGraphComponent = ({
     });
   };
 
-  const deleteRelationInGraph: GraphProps['onContainerDeleteRelation'] = (
+  const deleteRelationInGraph: GraphToolbarProps['onContainerDeleteRelation'] = (
     relId,
     onCompleted,
     commitMessage,
@@ -484,23 +485,16 @@ const ReportKnowledgeGraphComponent = ({
         }}
         investigationAddFromContainer={investigationAddFromContainer}
       />
-      <Graph
-        parentRef={ref}
-        onPositionsChanged={savePositions}
-        enableReferences={enableReferences}
-        stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
-        relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
-        onAddRelation={addRelationInGraph}
-        onContainerDeleteRelation={deleteRelationInGraph}
-        container={{
-          id: report.id,
-          confidence: report.confidence,
-          published: report.published,
-          objects: report.objects?.edges ?? [],
-          createdBy: report.createdBy,
-          objectMarking: report.objectMarking ?? [],
-        }}
-      />
+      <Graph parentRef={ref} onPositionsChanged={savePositions}>
+        <GraphToolbar
+          enableReferences={enableReferences}
+          stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
+          relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
+          onAddRelation={addRelationInGraph}
+          onContainerDeleteRelation={deleteRelationInGraph}
+          entity={report}
+        />
+      </Graph>
     </div>
   );
 };

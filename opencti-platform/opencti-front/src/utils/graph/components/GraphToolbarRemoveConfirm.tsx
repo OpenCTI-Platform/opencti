@@ -17,7 +17,6 @@ import { knowledgeGraphQueryCheckObjectQuery } from '@components/common/containe
 import { KnowledgeGraphQueryCheckObjectQuery$data } from '@components/common/containers/__generated__/KnowledgeGraphQueryCheckObjectQuery.graphql';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
-import { GraphContainer } from '../graph.types';
 import { containerTypes } from '../../hooks/useAttributes';
 import { useGraphContext } from '../GraphContext';
 import { fetchQuery } from '../../../relay/environment';
@@ -34,7 +33,7 @@ export interface GraphToolbarDeleteConfirmProps {
   open: boolean
   onClose: () => void
   enableReferences?: boolean
-  container: GraphContainer
+  entityId: string
   onContainerDeleteRelation: (relId: string, onCompleted: () => void, message?: string, references?: string[]) => void
 }
 
@@ -42,7 +41,7 @@ const GraphToolbarRemoveConfirm = ({
   open,
   onClose,
   enableReferences,
-  container,
+  entityId,
   onContainerDeleteRelation,
 }: GraphToolbarDeleteConfirmProps) => {
   const { t_i18n } = useFormatter();
@@ -197,7 +196,7 @@ const GraphToolbarRemoveConfirm = ({
                 disabled={isSubmitting}
                 setFieldValue={setFieldValue}
                 values={values.references}
-                id={container.id}
+                id={entityId}
                 noStoreUpdate={true}
               />
             </Form>

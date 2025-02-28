@@ -10,7 +10,7 @@ import useGroupingKnowledgeGraphAddRelation from '@components/analyses/groupings
 import useGroupingKnowledgeGraphDeleteRelation from '@components/analyses/groupings/useGroupingKnowledgeGraphDeleteRelation';
 import GroupingPopover from '@components/analyses/groupings/GroupingPopover';
 import type { Theme } from '../../../../components/Theme';
-import Graph, { GraphProps } from '../../../../utils/graph/Graph';
+import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
 import { encodeGraphData } from '../../../../utils/Graph';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
@@ -18,6 +18,7 @@ import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteract
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
+import GraphToolbar, { GraphToolbarProps } from '../../../../utils/graph/GraphToolbar';
 
 const groupingGraphFragment = graphql`
   fragment GroupingKnowledgeGraph_fragment on Grouping {
@@ -436,7 +437,7 @@ const GroupingKnowledgeGraphComponent = ({
     });
   };
 
-  const addRelationInGraph: GraphProps['onAddRelation'] = (rel) => {
+  const addRelationInGraph: GraphToolbarProps['onAddRelation'] = (rel) => {
     commitAddRelation({
       variables: {
         id: grouping.id,
@@ -451,7 +452,7 @@ const GroupingKnowledgeGraphComponent = ({
     });
   };
 
-  const deleteRelationInGraph: GraphProps['onContainerDeleteRelation'] = (
+  const deleteRelationInGraph: GraphToolbarProps['onContainerDeleteRelation'] = (
     relId,
     onCompleted,
   ) => {
@@ -480,22 +481,16 @@ const GroupingKnowledgeGraphComponent = ({
         }}
         investigationAddFromContainer={investigationAddFromContainer}
       />
-      <Graph
-        parentRef={ref}
-        onPositionsChanged={savePositions}
-        enableReferences={enableReferences}
-        stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
-        relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
-        onAddRelation={addRelationInGraph}
-        onContainerDeleteRelation={deleteRelationInGraph}
-        container={{
-          id: grouping.id,
-          confidence: grouping.confidence,
-          objects: grouping.objects?.edges ?? [],
-          createdBy: grouping.createdBy,
-          objectMarking: grouping.objectMarking ?? [],
-        }}
-      />
+      <Graph parentRef={ref} onPositionsChanged={savePositions}>
+        <GraphToolbar
+          enableReferences={enableReferences}
+          stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
+          relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
+          onAddRelation={addRelationInGraph}
+          onContainerDeleteRelation={deleteRelationInGraph}
+          entity={grouping}
+        />
+      </Graph>
     </div>
   );
 };

@@ -2,16 +2,16 @@ import Drawer from '@mui/material/Drawer';
 import React from 'react';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
-import useGraphInteractions from '../utils/useGraphInteractions';
-import SearchInput from '../../../components/SearchInput';
-import type { Theme } from '../../../components/Theme';
-import GraphToolbarDisplayTools from './GraphToolbarDisplayTools';
-import GraphToolbarSelectTools from './GraphToolbarSelectTools';
-import GraphToolbarFilterTools from './GraphToolbarFilterTools';
-import GraphToolbarContentTools, { GraphToolbarContentToolsProps } from './GraphToolbarContentTools';
-import GraphToolbarTimeRange from './GraphToolbarTimeRange';
-import { useGraphContext } from '../GraphContext';
-import GraphToolbarCorrelationTools from './GraphToolbarCorrelationTools';
+import useGraphInteractions from './utils/useGraphInteractions';
+import SearchInput from '../../components/SearchInput';
+import type { Theme } from '../../components/Theme';
+import GraphToolbarDisplayTools from './components/GraphToolbarDisplayTools';
+import GraphToolbarSelectTools from './components/GraphToolbarSelectTools';
+import GraphToolbarFilterTools from './components/GraphToolbarFilterTools';
+import GraphToolbarContentTools, { GraphToolbarContentToolsProps } from './components/GraphToolbarContentTools';
+import GraphToolbarTimeRange from './components/GraphToolbarTimeRange';
+import { useGraphContext } from './GraphContext';
+import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps;
 

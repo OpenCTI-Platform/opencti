@@ -11,6 +11,7 @@ import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
 import { encodeGraphData } from '../../../../utils/Graph';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
+import GraphToolbar from '../../../../utils/graph/GraphToolbar';
 
 const caseRftCorrelationFragment = graphql`
   fragment CaseRftKnowledgeCorrelation_fragment on CaseRft {
@@ -350,12 +351,12 @@ const CaseRftKnowledgeCorrelationComponent = ({
 
   return (
     <div style={graphContainerStyle} ref={ref}>
-      <Graph
-        parentRef={ref}
-        onPositionsChanged={savePositions}
-        stixCoreObjectRefetchQuery={knowledgeCorrelationStixCoreObjectQuery}
-        relationshipRefetchQuery={knowledgeCorrelationStixCoreRelationshipQuery}
-      />
+      <Graph parentRef={ref} onPositionsChanged={savePositions}>
+        <GraphToolbar
+          stixCoreObjectRefetchQuery={knowledgeCorrelationStixCoreObjectQuery}
+          relationshipRefetchQuery={knowledgeCorrelationStixCoreRelationshipQuery}
+        />
+      </Graph>
     </div>
   );
 };

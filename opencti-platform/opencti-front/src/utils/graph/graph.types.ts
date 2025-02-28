@@ -59,13 +59,12 @@ export interface OctiGraphPositions {
   }
 }
 
-export interface GraphContainer {
+export interface GraphEntity {
   id: string
-  confidence: unknown
-  createdBy: unknown
-  published?: unknown
-  objects: readonly unknown[]
-  objectMarking: readonly unknown[]
+  confidence?: number | null | undefined
+  createdBy?: unknown | null | undefined
+  published?: unknown | null | undefined
+  objectMarking?: readonly unknown[] | null | undefined
 }
 
 // Stuff kept in URL and local storage.

@@ -10,7 +10,7 @@ import GraphToolbarEditObject from './GraphToolbarEditObject';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../../components/i18n';
 import useGraphInteractions from '../utils/useGraphInteractions';
-import { GraphContainer, GraphLink, GraphNode } from '../graph.types';
+import { GraphEntity, GraphLink, GraphNode } from '../graph.types';
 import { dateFormat, minutesBefore, now } from '../../Time';
 import { convertCreatedBy, convertMarkings } from '../../edition';
 import { useGraphContext } from '../GraphContext';
@@ -21,7 +21,7 @@ export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery: GraphQLTaggedNode
   relationshipRefetchQuery: GraphQLTaggedNode
   onAddRelation?: (rel: ObjectToParse) => void
-  container?: GraphContainer
+  entity?: GraphEntity
   enableReferences?: boolean
   onContainerDeleteRelation?: GraphToolbarDeleteConfirmProps['onContainerDeleteRelation']
 }
@@ -29,7 +29,7 @@ export interface GraphToolbarContentToolsProps {
 const GraphToolbarContentTools = ({
   stixCoreObjectRefetchQuery,
   relationshipRefetchQuery,
-  container,
+  entity,
   enableReferences,
   onAddRelation,
   onContainerDeleteRelation,
@@ -52,6 +52,7 @@ const GraphToolbarContentTools = ({
   const {
     graphData,
     context,
+    objects,
     graphState: {
       selectedNodes,
       selectedLinks,
@@ -105,17 +106,17 @@ const GraphToolbarContentTools = ({
 
   return (
     <>
-      {container && (
+      {entity && (
         <ContainerAddStixCoreObjectsInGraph
           knowledgeGraph={context !== 'correlation'}
-          containerId={container.id}
-          containerStixCoreObjects={container.objects}
-          defaultCreatedBy={container.createdBy ?? null}
-          defaultMarkingDefinitions={container.objectMarking ?? []}
+          containerId={entity.id}
+          containerStixCoreObjects={objects.map((o) => ({ node: o }))}
+          defaultCreatedBy={entity.createdBy ?? null}
+          defaultMarkingDefinitions={entity.objectMarking ?? []}
           targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
           onAdd={addNode}
           onDelete={removeFromAddPanel}
-          confidence={container.confidence}
+          confidence={entity.confidence}
           enableReferences={enableReferences}
         />
       )}
@@ -125,7 +126,7 @@ const GraphToolbarContentTools = ({
         relationshipRefetchQuery={relationshipRefetchQuery}
       />
 
-      {onAddRelation && container && (
+      {onAddRelation && entity && (
         <>
           <GraphToolbarItem
             Icon={<LinkOutlined />}
@@ -136,9 +137,9 @@ const GraphToolbarContentTools = ({
           />
           <StixCoreRelationshipCreation
             open={isAddRelationOpen}
-            confidence={container.confidence}
-            defaultCreatedBy={convertCreatedBy(container)}
-            defaultMarkingDefinitions={convertMarkings(container)}
+            confidence={entity.confidence}
+            defaultCreatedBy={convertCreatedBy(entity)}
+            defaultMarkingDefinitions={convertMarkings(entity)}
             fromObjects={objectsFrom}
             toObjects={objectsTo}
             startTime={minutesBefore(1, now())}
@@ -163,12 +164,12 @@ const GraphToolbarContentTools = ({
             open={addNestedOpen}
             fromObjects={objectsFrom}
             toObjects={objectsTo}
-            startTime={dateFormat(container.published)}
-            stopTime={dateFormat(container.published)}
-            confidence={container.confidence}
+            startTime={dateFormat(entity.published)}
+            stopTime={dateFormat(entity.published)}
+            confidence={entity.confidence}
             handleResult={onAddRelation}
             handleReverseRelation={() => setNestedReversed((r) => !r)}
-            defaultMarkingDefinitions={container.objectMarking ?? []}
+            defaultMarkingDefinitions={entity.objectMarking ?? []}
             handleClose={() => {
               setNestedReversed(false);
               setAddNestedOpen(false);
@@ -177,7 +178,7 @@ const GraphToolbarContentTools = ({
         </>
       )}
 
-      {container && (
+      {entity && (
         <>
           <GraphToolbarItem
             Icon={<VisibilityOutlined />}
@@ -190,11 +191,11 @@ const GraphToolbarContentTools = ({
             open={addSightingOpen}
             fromObjects={objectsFrom}
             toObjects={objectsTo}
-            confidence={container.confidence}
-            firstSeen={dateFormat(container.published)}
-            lastSeen={dateFormat(container.published)}
-            defaultCreatedBy={convertCreatedBy(container)}
-            defaultMarkingDefinitions={convertMarkings(container)}
+            confidence={entity.confidence}
+            firstSeen={dateFormat(entity.published)}
+            lastSeen={dateFormat(entity.published)}
+            defaultCreatedBy={convertCreatedBy(entity)}
+            defaultMarkingDefinitions={convertMarkings(entity)}
             handleResult={onAddRelation}
             handleReverseSighting={() => setSightingReversed((r) => !r)}
             handleClose={() => {
@@ -205,7 +206,7 @@ const GraphToolbarContentTools = ({
         </>
       )}
 
-      {onContainerDeleteRelation && container && (
+      {onContainerDeleteRelation && entity && (
         <>
           <GraphToolbarItem
             Icon={<DeleteOutlined />}
@@ -216,7 +217,7 @@ const GraphToolbarContentTools = ({
           />
           <GraphToolbarRemoveConfirm
             open={removeDialogOpen}
-            container={container}
+            entityId={entity.id}
             enableReferences={enableReferences}
             onClose={() => setRemoveDialogOpen(false)}
             onContainerDeleteRelation={onContainerDeleteRelation}

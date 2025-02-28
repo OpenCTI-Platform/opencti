@@ -1,12 +1,11 @@
 import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
-import React, { type MutableRefObject } from 'react';
+import React, { type MutableRefObject, ReactNode } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useTheme } from '@mui/material/styles';
 import RectangleSelection from './components/RectangleSelection';
 import { useGraphContext } from './GraphContext';
 import useResizeObserver from '../hooks/useResizeObserver';
-import GraphToolbar, { GraphToolbarProps } from './components/GraphToolbar';
 import { GraphLink, GraphNode, OctiGraphPositions } from './graph.types';
 import useGraphPainter from './utils/useGraphPainter';
 import useGraphInteractions from './utils/useGraphInteractions';
@@ -16,15 +15,16 @@ import EntitiesDetailsRightsBar from './components/EntitiesDetailsRightBar';
 import type { Theme } from '../../components/Theme';
 import RelationSelection from './components/RelationSelection';
 
-export interface GraphProps extends GraphToolbarProps {
+export interface GraphProps {
   parentRef: MutableRefObject<HTMLDivElement | null>
   onPositionsChanged: (positions: OctiGraphPositions) => void
+  children?: ReactNode
 }
 
 const Graph = ({
   parentRef,
   onPositionsChanged,
-  ...toolbarProps
+  children,
 }: GraphProps) => {
   const graphId = `graph-${uuid()}`;
   const theme = useTheme<Theme>();
@@ -172,7 +172,7 @@ const Graph = ({
         </>
       )}
 
-      <GraphToolbar {...toolbarProps} />
+      {children}
     </div>
   );
 };
