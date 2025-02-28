@@ -44,6 +44,7 @@ export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleAddProperty: (field: string, value: unknown) => void;
   handleChangeView: (value: string) => void;
   handleClearAllFilters: () => void;
+  handleSetFilters: (filters: FilterGroup) => void;
 }
 
 const localStorageToPaginationOptions = (
@@ -686,6 +687,15 @@ export const usePaginationLocalStorage = <U>(
         filters: initialValue.filters ?? emptyFilterGroup,
         searchTerm: initialValue.searchTerm ?? '',
         numberOfElements: viewStorage.numberOfElements,
+      };
+      setValue(newValue);
+      dispatch(`${key}_paginationStorage`, newValue);
+    },
+    handleSetFilters: (filters: FilterGroup) => {
+      const newValue = {
+        ...viewStorage,
+        filters,
+        latestAddFilterId: undefined,
       };
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);

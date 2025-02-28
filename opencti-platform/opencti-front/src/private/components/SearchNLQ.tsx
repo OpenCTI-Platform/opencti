@@ -1,11 +1,11 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { graphql } from 'react-relay';
 import {
   SearchStixCoreObjectsLinesPaginationQuery,
   SearchStixCoreObjectsLinesPaginationQuery$variables,
 } from '@components/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
 import { SearchStixCoreObjectsLines_data$data } from '@components/__generated__/SearchStixCoreObjectsLines_data.graphql';
+import { searchLineFragment, searchStixCoreObjectsLinesFragment, searchStixCoreObjectsLinesQuery } from '@components/Search';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
@@ -16,180 +16,15 @@ import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPa
 import { useFormatter } from '../../components/i18n';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 
-const LOCAL_STORAGE_KEY = 'search';
+export const NLQ_LOCAL_STORAGE_KEY = 'search';
 
-export const searchLineFragment = graphql`
-  fragment SearchStixCoreObjectLine_node on StixCoreObject {
-    id
-    parent_types
-    entity_type
-    created_at
-    ... on StixObject {
-      representative {
-        main
-        secondary
-      }
-    }
-    createdBy {
-      ... on Identity {
-        name
-      }
-    }
-    objectMarking {
-      id
-      definition_type
-      definition
-      x_opencti_order
-      x_opencti_color
-    }
-    objectLabel {
-      id
-      value
-      color
-    }
-    creators {
-      id
-      name
-    }
-    containersNumber {
-      total
-    }
-  }
-`;
-
-export const searchStixCoreObjectsLinesQuery = graphql`
-  query SearchStixCoreObjectsLinesPaginationQuery(
-    $types: [String]
-    $search: String
-    $count: Int!
-    $cursor: ID
-    $orderBy: StixCoreObjectsOrdering
-    $orderMode: OrderingMode
-    $filters: FilterGroup
-  ) {
-    ...SearchStixCoreObjectsLines_data
-    @arguments(
-      types: $types
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
-  }
-`;
-
-export const searchStixCoreObjectsLinesSearchQuery = graphql`
-  query SearchStixCoreObjectsLinesSearchQuery(
-    $types: [String]
-    $filters: FilterGroup
-    $search: String
-  ) {
-    stixCoreObjects(types: $types, search: $search, filters: $filters) {
-      edges {
-        node {
-          id
-          entity_type
-          created_at
-          updated_at
-          ... on StixObject {
-            representative {
-              main
-              secondary
-            }
-          }
-          createdBy {
-            ... on Identity {
-              name
-            }
-          }
-          objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-          objectLabel {
-            id
-            value
-            color
-          }
-          creators {
-            id
-            name
-          }
-          containersNumber {
-            total
-          }
-        }
-      }
-    }
-  }
-`;
-
-export const searchStixCoreObjectsLinesFragment = graphql`
-  fragment SearchStixCoreObjectsLines_data on Query
-  @argumentDefinitions(
-    types: { type: "[String]" }
-    search: { type: "String" }
-    count: { type: "Int", defaultValue: 25 }
-    cursor: { type: "ID" }
-    orderBy: { type: "StixCoreObjectsOrdering", defaultValue: name }
-    orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters: { type: "FilterGroup" }
-  )
-  @refetchable(queryName: "SearchStixCoreObjectsLinesRefetchQuery") {
-    globalSearch(
-      types: $types
-      search: $search
-      first: $count
-      after: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    ) @connection(key: "Pagination_globalSearch") {
-      edges {
-        node {
-          id
-          entity_type
-          created_at
-          createdBy {
-            ... on Identity {
-              name
-            }
-          }
-          creators {
-            id
-            name
-          }
-          objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-          ...SearchStixCoreObjectLine_node
-        }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-        globalCount
-      }
-    }
-  }
-`;
-
-const Search = () => {
+const SearchNLQ = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Knowledge Search | Advanced Search'));
+  setTitle(t_i18n('NLQ Results | Advanced Search'));
   const { keyword } = useParams() as { keyword: string };
 
   const searchTerm = decodeSearchKeyword(keyword);
@@ -204,7 +39,7 @@ const Search = () => {
     },
   };
   const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
+    NLQ_LOCAL_STORAGE_KEY,
     initialValues,
   );
   const {
@@ -280,7 +115,7 @@ const Search = () => {
         <DataTable
           dataColumns={dataColumns}
           resolvePath={(data: SearchStixCoreObjectsLines_data$data) => data.globalSearch?.edges?.map((n) => n?.node)}
-          storageKey={LOCAL_STORAGE_KEY}
+          storageKey={NLQ_LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
           globalSearch={searchTerm}
@@ -296,4 +131,4 @@ const Search = () => {
   );
 };
 
-export default Search;
+export default SearchNLQ;
