@@ -40,6 +40,7 @@ SPEC_VERSION = "2.1"
 ERROR_TYPE_LOCK = "LOCK_ERROR"
 ERROR_TYPE_MISSING_REFERENCE = "MISSING_REFERENCE_ERROR"
 ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
+ERROR_TYPE_DRAFT_LOCK = "DRAFT_LOCKED"
 ERROR_TYPE_TIMEOUT = "Request timed out"
 
 # Extensions
@@ -2408,7 +2409,11 @@ class OpenCTIStix2:
         return bundle
 
     def apply_patch_files(self, item):
-        field_patch = item["opencti_field_patch"]
+        field_patch = self.opencti.get_attribute_in_extension(
+            "opencti_field_patch", item
+        )
+        if field_patch is None:
+            field_patch = item["opencti_field_patch"]
         field_patch_files = next(
             (op for op in field_patch if op["key"] == "x_opencti_files"), None
         )
@@ -2671,6 +2676,19 @@ class OpenCTIStix2:
                 return self.import_item(
                     item, update, types, processing_count + 1, work_id
                 )
+            # A draft lock error occurs
+            elif ERROR_TYPE_DRAFT_LOCK in error_msg:
+                bundles_technical_error_counter.add(1)
+                if work_id is not None:
+                    self.opencti.work.api.set_draft_id("")
+                    self.opencti.work.report_expectation(
+                        work_id,
+                        {
+                            "error": error,
+                            "source": "Draft in read only",
+                        },
+                    )
+                return False
             # Platform does not know what to do and raises an error:
             # That also works for missing reference with too much execution
             else:
