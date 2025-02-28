@@ -85,6 +85,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
   const requiredProgress = validationWork?.tracking?.import_expected_number ?? '0';
   const isValidating = validationWork?.status === 'wait' || validationWork?.status === 'progress';
   const validationLabel = isValidating ? `${t_i18n('Ingesting')}: ${currentProgress}/${requiredProgress}` : t_i18n('Validated');
+  const validationColor = isValidating ? draftColor : theme.palette.success.main;
 
   // switch to draft
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
@@ -132,9 +133,9 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
             label={validationLabel}
             style={{
               marginBottom: 10,
-              color: isValidating ? draftColor : '#4caf50',
-              borderColor: isValidating ? draftColor : '#4caf50',
-              backgroundColor: hexToRGB(isValidating ? draftColor : '#4caf50'),
+              color: validationColor,
+              borderColor: validationColor,
+              backgroundColor: hexToRGB(validationColor),
             }}
           />
         </div>
@@ -207,23 +208,23 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
         />
         <Route
           path="/entities"
-          element={<DraftEntities entitiesType={'Stix-Domain-Object'} excludedEntitiesType={'Container'}/>}
+          element={<DraftEntities entitiesType={'Stix-Domain-Object'} excludedEntitiesType={'Container'} isReadOnly={isDraftReadOnly}/>}
         />
         <Route
           path="/observables"
-          element={<DraftEntities entitiesType={'Stix-Cyber-Observable'}/>}
+          element={<DraftEntities entitiesType={'Stix-Cyber-Observable'} isReadOnly={isDraftReadOnly}/>}
         />
         <Route
           path="/relationships"
-          element={<DraftRelationships/>}
+          element={<DraftRelationships isReadOnly={isDraftReadOnly}/>}
         />
         <Route
           path="/sightings"
-          element={<DraftSightings/>}
+          element={<DraftSightings isReadOnly={isDraftReadOnly}/>}
         />
         <Route
           path="/containers"
-          element={<DraftEntities entitiesType={'Container'}/>}
+          element={<DraftEntities entitiesType={'Container'} isReadOnly={isDraftReadOnly}/>}
         />
         <Route
           path="/files"

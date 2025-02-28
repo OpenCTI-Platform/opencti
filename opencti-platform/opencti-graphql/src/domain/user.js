@@ -699,8 +699,8 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     }
     if (input.key === 'draft_context') {
       // draft context might have changed, we need to check draft context exists and refresh session info
-      const draftContext = R.head(input.value).toString();
-      if (draftContext !== '') {
+      const draftContext = R.head(input.value)?.toString();
+      if (draftContext?.length > 0) {
         const draftWorkspaces = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
         const draftWorkspace = draftWorkspaces.get(draftContext);
         if (!draftWorkspace) throw DraftLockedError('Could not find draft workspace');
