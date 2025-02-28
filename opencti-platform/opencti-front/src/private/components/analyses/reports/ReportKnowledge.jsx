@@ -403,7 +403,7 @@ class ReportKnowledgeComponent extends Component {
                 variables={{ id: report.id }}
                 render={({ props }) => {
                   if (props && props.report) {
-                    return <ReportKnowledgeCorrelation report={props.report} />;
+                    return <ReportKnowledgeCorrelation data={props.report} />;
                   }
                   return (
                     <Loader

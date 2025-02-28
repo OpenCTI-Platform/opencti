@@ -6,6 +6,7 @@ import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../../components/i18n';
 import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
+import { minutesBetweenDates } from '../../Time';
 
 const GraphToolbarFilterTools = () => {
   const { t_i18n } = useFormatter();
@@ -17,11 +18,13 @@ const GraphToolbarFilterTools = () => {
     stixCoreObjectTypes,
     markingDefinitions,
     creators,
+    timeRange,
     graphState: {
       showTimeRange,
       disabledEntityTypes,
       disabledMarkings,
       disabledCreators,
+      selectedTimeRangeInterval,
     },
   } = useGraphContext();
 
@@ -33,10 +36,26 @@ const GraphToolbarFilterTools = () => {
     resetFilters,
   } = useGraphInteractions();
 
+  const [start, end] = timeRange.interval;
+  const [selectedStart, selectedEnd] = selectedTimeRangeInterval ?? [];
+  const diffStart = minutesBetweenDates(start, selectedStart);
+  const diffEnd = minutesBetweenDates(selectedEnd, end);
+  let timeRangeFilters = 0;
+  if (selectedTimeRangeInterval) {
+    // Using 20 and not 0 because there is a small diff depending of the
+    // time range scale. 20 has been chosen arbitrary.
+    if (diffStart > 20) timeRangeFilters += 1;
+    if (diffEnd > 20) timeRangeFilters += 1;
+  }
+
   return (
     <>
       <GraphToolbarItem
-        Icon={<DateRangeOutlined />}
+        Icon={(
+          <Badge badgeContent={timeRangeFilters} color="secondary">
+            <DateRangeOutlined />
+          </Badge>
+        )}
         color={showTimeRange ? 'secondary' : 'primary'}
         onClick={toggleTimeRange}
         title={t_i18n('Display time range selector')}

@@ -76,14 +76,20 @@ export interface GraphState {
   selectFreeRectangle: boolean
   selectFree: boolean
   selectRelationshipMode: 'children' | 'parent' | 'deselect' | null
+  correlationMode: 'all' | 'observables' | null
   showTimeRange: boolean
   disabledEntityTypes: string[]
   disabledCreators: string[]
   disabledMarkings: string[]
   selectedTimeRangeInterval?: [Date, Date]
+  selectedNodes: GraphNode[]
+  selectedLinks: GraphLink[]
   zoom?: {
     k: number
     x: number
     y: number
   }
+  // Put inside context because the dialog to create relationship can be
+  // opened by other source than click in toolbar (cf <RelationSelection />).
+  isAddRelationOpen: boolean
 }

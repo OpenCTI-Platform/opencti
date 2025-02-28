@@ -11,6 +11,7 @@ import GraphToolbarFilterTools from './GraphToolbarFilterTools';
 import GraphToolbarContentTools, { GraphToolbarContentToolsProps } from './GraphToolbarContentTools';
 import GraphToolbarTimeRange from './GraphToolbarTimeRange';
 import { useGraphContext } from '../GraphContext';
+import GraphToolbarCorrelationTools from './GraphToolbarCorrelationTools';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps;
 
@@ -18,7 +19,7 @@ const GraphToolbar = (props: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
   const navOpen = localStorage.getItem('navOpen') === 'true';
 
-  const { graphState } = useGraphContext();
+  const { graphState, context } = useGraphContext();
   const { showTimeRange } = graphState;
   const { selectBySearch } = useGraphInteractions();
 
@@ -39,10 +40,11 @@ const GraphToolbar = (props: GraphToolbarProps) => {
     >
       <div style={{
         height: 54,
+        flex: '0 0 auto',
         display: 'flex',
         alignItems: 'center',
         gap: theme.spacing(0.5),
-        padding: `0 ${theme.spacing(0.5)}`,
+        padding: `0 ${theme.spacing(1)}`,
       }}
       >
         <GraphToolbarDisplayTools />
@@ -52,7 +54,14 @@ const GraphToolbar = (props: GraphToolbarProps) => {
         <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
 
         <GraphToolbarFilterTools />
-        <Divider sx={{ margin: 1, marginRight: 3, height: '80%' }} orientation="vertical" />
+        <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
+
+        {context === 'correlation' && (
+          <>
+            <GraphToolbarCorrelationTools />
+            <Divider sx={{ margin: 1, marginRight: 2, height: '80%' }} orientation="vertical" />
+          </>
+        )}
 
         <div style={{ flex: 1 }}>
           <SearchInput variant="thin" onSubmit={selectBySearch} />

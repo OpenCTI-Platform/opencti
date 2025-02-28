@@ -7,6 +7,7 @@ import { GraphNode, GraphLink, LibGraphProps, GraphState, OctiGraphPositions } f
 import { useFormatter } from '../../components/i18n';
 import useGraphParser, { ObjectToParse } from './utils/useGraphParser';
 import { computeTimeRangeInterval, computeTimeRangeValues, GraphTimeRange } from './utils/graphTimeRange';
+import { graphStateToLocalStorage } from './utils/graphUtils';
 
 type Setter<T> = Dispatch<SetStateAction<T>>;
 
@@ -17,47 +18,29 @@ interface GraphContextValue {
   // --- DOM references
   graphRef2D: MutableRefObject<GraphRef2D | undefined>
   graphRef3D: MutableRefObject<GraphRef3D | undefined>
-  // --- data of the graph
+  // --- data of the graph pass as props
   graphData: LibGraphProps['graphData']
   setGraphData: Setter<LibGraphProps['graphData']>
   // --- graph state (config saved in URL and local storage)
   graphState: GraphState
   setGraphState: Setter<GraphState>
-  // --- selected nodes
-  selectedNodes: GraphNode[]
-  setSelectedNodes: Setter<GraphNode[]>
-  // --- selected links
-  selectedLinks: GraphLink[]
-  setSelectedLinks: Setter<GraphLink[]>
   // --- utils data derived from input data.
   stixCoreObjectTypes: string[]
   markingDefinitions: { id: string, definition: string }[]
   creators: { id: string, name: string }[]
+  objects: ObjectToParse[]
   positions: OctiGraphPositions
   timeRange: GraphTimeRange
   // --- misc
-  isAddRelationOpen: boolean
-  setIsAddRelationOpen: Setter<boolean>
+  context?: string
 }
 
 const GraphContext = createContext<GraphContextValue | undefined>(undefined);
 
-const DEFAULT_STATE: GraphState = {
-  mode3D: false,
-  modeTree: null,
-  withForces: true,
-  selectFreeRectangle: false,
-  selectFree: false,
-  selectRelationshipMode: null,
-  showTimeRange: false,
-  disabledEntityTypes: [],
-  disabledCreators: [],
-  disabledMarkings: [],
-};
-
 interface GraphProviderProps {
   children: ReactNode
   localStorageKey: string
+  context?: string
   data: {
     objects: ObjectToParse[]
     positions: OctiGraphPositions
@@ -66,31 +49,77 @@ interface GraphProviderProps {
 
 export const GraphProvider = ({
   children,
+  context,
   localStorageKey,
   data,
 }: GraphProviderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const { buildGraphData } = useGraphParser();
+  const { buildGraphData, buildCorrelationData } = useGraphParser();
 
   const graphRef2D = useRef<GraphRef2D | undefined>();
   const graphRef3D = useRef<GraphRef3D | undefined>();
 
+  const DEFAULT_STATE: GraphState = {
+    mode3D: false,
+    modeTree: null,
+    withForces: true,
+    selectFreeRectangle: false,
+    selectFree: false,
+    selectRelationshipMode: null,
+    correlationMode: context === 'correlation' ? 'observables' : null,
+    showTimeRange: false,
+    disabledEntityTypes: [],
+    disabledCreators: [],
+    disabledMarkings: [],
+    selectedLinks: [],
+    selectedNodes: [],
+    isAddRelationOpen: false,
+  };
+
+  const [graphState, setGraphState] = useState<GraphState>(() => {
+    // Load initial state for URL and local storage.
+    const params = buildViewParamsFromUrlAndStorage(navigate, location, localStorageKey);
+    return { ...DEFAULT_STATE, ...params };
+  });
+
+  useEffect(() => {
+    // On state change, update URL and local storage.
+    const stateToSave = graphStateToLocalStorage(graphState);
+    saveViewParameters(navigate, location, localStorageKey, stateToSave);
+  }, [graphState]);
+
+  useEffect(() => {
+    // On selection change, reset relationship select mode.
+    setGraphState((oldState) => ({
+      ...oldState,
+      selectRelationshipMode: null,
+    }));
+  }, [graphState.selectedNodes]);
+
   const [graphData, setGraphData] = useState<LibGraphProps['graphData']>();
   useEffect(() => {
+    const objects = context === 'correlation' && graphState.correlationMode === 'observables'
+      ? data.objects.filter((o) => (
+        o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
+      ))
+      : data.objects;
     // Rebuild graph data when input data has changed.
-    setGraphData(buildGraphData(data.objects, data.positions));
-  }, [data]);
+    setGraphData(context === 'correlation'
+      ? buildCorrelationData(objects, data.positions)
+      : buildGraphData(objects, data.positions));
+  }, [data, graphState.correlationMode]);
 
   // Dynamically compute time range values
   const timeRange = useMemo(() => {
-    const interval = computeTimeRangeInterval(data.objects);
+    const objects = graphData?.links ?? [];
+    const interval = computeTimeRangeInterval(objects);
     return {
       interval,
-      values: computeTimeRangeValues(interval, data.objects),
+      values: computeTimeRangeValues(interval, objects),
     };
-  }, [data.objects]);
+  }, [graphData?.links]);
 
   // Dynamically compute all entity types in graphData.
   const stixCoreObjectTypes = useMemo(() => {
@@ -121,32 +150,6 @@ export const GraphProvider = ({
       .filter((v, i, a) => a.findIndex((item) => JSON.stringify(item) === JSON.stringify(v)) === i);
   }, [graphData]);
 
-  const [graphState, setGraphState] = useState<GraphState>(() => {
-    // Load initial state for URL and local storage.
-    const params = buildViewParamsFromUrlAndStorage(navigate, location, localStorageKey);
-    return { ...DEFAULT_STATE, ...params };
-  });
-
-  useEffect(() => {
-    // On state change, update URL and local storage.
-    saveViewParameters(navigate, location, localStorageKey, graphState);
-  }, [graphState]);
-
-  const [selectedNodes, setSelectedNodes] = useState<GraphNode[]>([]);
-  const [selectedLinks, setSelectedLinks] = useState<GraphLink[]>([]);
-
-  useEffect(() => {
-    // On selection change, reset relationship select mode.
-    setGraphState((oldState) => ({
-      ...oldState,
-      selectRelationshipMode: null,
-    }));
-  }, [selectedNodes]);
-
-  // Put inside context because the dialog to create relationship can be
-  // opened by other source than click in toolbar (cf <RelationSelection />).
-  const [isAddRelationOpen, setIsAddRelationOpen] = useState(false);
-
   const value = useMemo<GraphContextValue>(() => ({
     graphRef2D,
     graphRef3D,
@@ -155,23 +158,16 @@ export const GraphProvider = ({
     markingDefinitions,
     creators,
     graphState,
-    selectedLinks,
-    selectedNodes,
-    isAddRelationOpen,
     timeRange,
+    context,
+    objects: data.objects,
     positions: data.positions,
     setGraphData,
     setGraphState,
-    setSelectedLinks,
-    setSelectedNodes,
-    setIsAddRelationOpen,
   }), [
     graphData,
     graphState,
-    selectedLinks,
-    selectedNodes,
     data,
-    isAddRelationOpen,
   ]);
 
   return (
