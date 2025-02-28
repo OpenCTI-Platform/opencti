@@ -147,12 +147,9 @@ const StixCoreObjectKnowledgeBar = ({
     }
     return Object.values(source).reduce((sum: number, val) => sum + val, 0);
   };
-  const sumEntitiesExcludingKeys = (source: Record<string, number>) => {
-    return Object.values(source).reduce((acc, cur) => (acc + cur), 0);
-  };
 
-  const relatedCount = sumEntitiesExcludingKeys(distributions.related);
-  const withoutRelatedCount = sumEntitiesExcludingKeys(distributions.withoutRelated);
+  const relatedCount = sumEntitiesByKeys(distributions.related);
+  const withoutRelatedCount = sumEntitiesByKeys(distributions.withoutRelated);
 
   const sectionsConfig: SectionConfig[] = [
     {
