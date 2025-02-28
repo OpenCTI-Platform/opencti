@@ -937,7 +937,38 @@ const jsonFewShotExamples: Example[] = [
           ], 
           "filterGroups": []
       }
-  }
+  },
+  {
+    "_comment": "Prevent other key values.",
+    "input": "What are the vulnerabilities related with paradise?",
+    "output": {
+        "mode": "and",
+        "filters": [
+            {
+                "key": "regardingOf",
+                "operator": "eq",
+                "values": [
+                    {
+                        "key": "id",
+                        "values": [
+                            "paradise"
+                        ]
+                    }
+                ],
+                "mode": "or"
+            },
+            {
+                "key": "entity_type",
+                "operator": "eq",
+                "values": [
+                    "Vulnerability"
+                ],
+                "mode": "or"
+            }
+        ],
+        "filterGroups": []
+    }
+}
 ];
 
 
