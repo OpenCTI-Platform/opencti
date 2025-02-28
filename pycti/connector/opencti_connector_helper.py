@@ -247,6 +247,11 @@ class ListenQueue(threading.Thread):
             {"tag": method.delivery_tag},
         )
 
+    def _set_draft_id(self, draft_id):
+        self.helper.draft_id = draft_id
+        self.helper.api.set_draft_id(draft_id)
+        self.helper.api_impersonate.set_draft_id(draft_id)
+
     def _data_handler(self, json_data) -> None:
         # Execute the callback
         try:
@@ -261,9 +266,7 @@ class ListenQueue(threading.Thread):
             self.helper.work_id = work_id
 
             self.helper.validation_mode = validation_mode
-            self.helper.draft_id = draft_id
-            self.helper.api.set_draft_id(draft_id)
-            self.helper.api_impersonate.set_draft_id(draft_id)
+            self._set_draft_id(draft_id)
 
             self.helper.playbook = None
             self.helper.enrichment_shared_organizations = None
@@ -360,12 +363,14 @@ class ListenQueue(threading.Thread):
             message = self.callback(event_data)
             if work_id:
                 self.helper.api.work.to_processed(work_id, message)
+            self._set_draft_id("")
 
         except Exception as e:  # pylint: disable=broad-except
             self.helper.metric.inc("error_count")
             self.helper.connector_logger.error(
                 "Error in message processing, reporting error to API"
             )
+            self._set_draft_id("")
             if work_id:
                 try:
                     self.helper.api.work.to_processed(work_id, str(e), True)
