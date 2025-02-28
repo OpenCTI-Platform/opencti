@@ -23,9 +23,10 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
-import { userAddIndividual } from '../domain/user';
+import { resolveUserIndividual } from '../domain/user';
 import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
+import { isEmptyField } from '../database/utils';
 
 // Needs to have edit rights or needs to be creator of the opinion
 const checkUserAccess = async (context, user, id) => {
@@ -106,11 +107,10 @@ const opinionResolvers = {
     // For collaborative creation
     userOpinionAdd: async (_, { input }, context) => {
       const { user } = context;
-      const opinionToCreate = { ...input };
-      opinionToCreate.createdBy = user.individual_id;
-      if (opinionToCreate.createdBy === undefined) {
-        const individual = await userAddIndividual(context, user);
-        opinionToCreate.createdBy = individual.id;
+      let opinionToCreate = { ...input };
+      if (isEmptyField(opinionToCreate.createdBy)) {
+        const individualId = await resolveUserIndividual(context, user);
+        opinionToCreate = { ...opinionToCreate, createdBy: individualId };
       }
       const opinion = await addOpinion(context, user, opinionToCreate);
       await updateOpinionsMetrics(context, user, opinion.id);
@@ -119,13 +119,10 @@ const opinionResolvers = {
     // For knowledge
     opinionAdd: async (_, { input }, context) => {
       const { user } = context;
-      const opinionToCreate = { ...input };
-      if (!opinionToCreate.createdBy) {
-        opinionToCreate.createdBy = user.individual_id;
-        if (opinionToCreate.createdBy === undefined) {
-          const individual = await userAddIndividual(context, user);
-          opinionToCreate.createdBy = individual.id;
-        }
+      let opinionToCreate = { ...input };
+      if (isEmptyField(opinionToCreate.createdBy)) {
+        const individualId = await resolveUserIndividual(context, user);
+        opinionToCreate = { ...opinionToCreate, createdBy: individualId };
       }
       const opinion = await addOpinion(context, context.user, opinionToCreate);
       await updateOpinionsMetrics(context, user, opinion.id);

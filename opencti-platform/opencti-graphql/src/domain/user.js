@@ -1161,6 +1161,17 @@ export const userAddIndividual = async (context, user) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user).then(() => individual);
 };
 
+export const resolveUserIndividual = async (context, user) => {
+  if (INTERNAL_USERS[user.id]) {
+    return undefined;
+  }
+  if (user.individual_id === undefined) {
+    const individual = await userAddIndividual(context, user);
+    return individual.id;
+  }
+  return user.individual_id;
+};
+
 export const otpUserActivation = async (context, user, { secret, code }) => {
   // User activation can only be done if otp is not already activated
   if (user.otp_activated) {
