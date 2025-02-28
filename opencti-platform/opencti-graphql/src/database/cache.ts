@@ -8,7 +8,7 @@ import type { StixId, StixObject } from '../types/stix-common';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
-import { convertStoreToStix } from './stix-converter';
+import { convertStoreToStix } from './stix-converter-2-1';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { wait } from './utils';

@@ -3,7 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityWorkspace } from './workspace-types';
 import { FunctionalError } from '../../config/errors';
 import { storeLoadByIdsWithRefs } from '../../database/middleware';
-import { buildStixBundle, convertStoreToStix } from '../../database/stix-converter';
+import { buildStixBundle, convertStoreToStix } from '../../database/stix-converter-2-1';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { generateStandardId } from '../../schema/identifier';
 import type { StixId, StixObject } from '../../types/stix-common';

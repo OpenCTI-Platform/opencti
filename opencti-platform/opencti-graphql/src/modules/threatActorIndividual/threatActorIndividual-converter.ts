@@ -1,4 +1,4 @@
-import { buildStixDomain, cleanObject, convertObjectReferences, convertToStixDate } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject, convertObjectReferences, convertToStixDate } from '../../database/stix-converter-2-1';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
 import { INPUT_BORN_IN, INPUT_ETHNICITY, INPUT_OBJECTS } from '../../schema/general';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';

@@ -1,4 +1,4 @@
-import { convertIdentityToStix } from '../../database/stix-converter';
+import { convertIdentityToStix } from '../../database/stix-converter-2-1';
 import type { StixOrganization, StoreEntityOrganization } from './organization-types';
 
 const convertOrganizationToStix = (instance: StoreEntityOrganization): StixOrganization => {

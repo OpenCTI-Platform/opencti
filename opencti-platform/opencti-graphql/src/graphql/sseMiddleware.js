@@ -37,7 +37,7 @@ import {
 import { streamEventId, FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
-import { convertStoreToStix } from '../database/stix-converter';
+import { convertStoreToStix } from '../database/stix-converter-2-1';
 import { UnsupportedError } from '../config/errors';
 import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
 import { findFiltersFromKey } from '../utils/filtering/filtering-utils';

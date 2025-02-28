@@ -5,7 +5,7 @@ import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-ty
 import { sanitized, validateCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { BundleBuilder } from './bundle-creator';
 import { handleRefEntities, mappingProcess } from './csv-mapper';
-import { convertStoreToStix } from '../database/stix-converter';
+import { convertStoreToStix } from '../database/stix-converter-2-1';
 import type { BasicStoreBase, StoreCommon } from '../types/store';
 import { parseReadableToLines, parsingProcess } from './csv-parser';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';

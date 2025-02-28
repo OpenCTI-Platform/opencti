@@ -1,5 +1,5 @@
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { getStixRepresentativeConverters } from './stix-converter';
+import { getStixRepresentativeConverters } from './stix-converter-2-1';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import type * as SRO from '../types/stix-sro';
 import type * as S from '../types/stix-common';

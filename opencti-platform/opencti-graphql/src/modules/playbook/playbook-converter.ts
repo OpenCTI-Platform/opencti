@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import { buildStixObject, cleanObject } from '../../database/stix-converter';
+import { buildStixObject, cleanObject } from '../../database/stix-converter-2-1';
 import type { StixPlaybook, StoreEntityPlaybook } from './playbook-types';
 
 const convertEntityPlaybookToStix = (instance: StoreEntityPlaybook): StixPlaybook => {

@@ -1,5 +1,5 @@
 import type { StixDataSource, StoreEntityDataSource } from './dataSource-types';
-import { buildStixDomain, cleanObject } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject } from '../../database/stix-converter-2-1';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';
 
 const convertDataSourceToStix = (instance: StoreEntityDataSource): StixDataSource => {

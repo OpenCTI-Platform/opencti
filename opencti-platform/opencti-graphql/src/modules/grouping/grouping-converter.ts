@@ -1,5 +1,5 @@
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import { buildStixDomain, cleanObject, convertObjectReferences } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject, convertObjectReferences } from '../../database/stix-converter-2-1';
 import type { StixGrouping, StoreEntityGrouping } from './grouping-types';
 import { INPUT_OBJECTS } from '../../schema/general';
 

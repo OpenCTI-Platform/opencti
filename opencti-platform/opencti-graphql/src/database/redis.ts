@@ -12,7 +12,7 @@ import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TY
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
-import { convertStoreToStix } from './stix-converter';
+import { convertStoreToStix } from './stix-converter-2-1';
 import type { StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BaseEvent, CreateEventOpts, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';

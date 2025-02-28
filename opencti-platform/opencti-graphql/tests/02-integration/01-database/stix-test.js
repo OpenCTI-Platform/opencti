@@ -13,7 +13,7 @@ import {
 } from '../../../src/schema/stixDomainObject';
 import { isStixRelationship } from '../../../src/schema/stixRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
-import { convertTypeToStixType } from '../../../src/database/stix-converter';
+import { convertTypeToStixType } from '../../../src/database/stix-converter-2-1';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
 
 describe('Stix opencti converter', () => {

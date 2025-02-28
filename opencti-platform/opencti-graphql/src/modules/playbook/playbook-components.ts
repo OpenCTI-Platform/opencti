@@ -32,7 +32,7 @@ import {
   INPUT_MARKINGS,
   INPUT_PARTICIPANT
 } from '../../schema/general';
-import { convertStoreToStix } from '../../database/stix-converter';
+import { convertStoreToStix } from '../../database/stix-converter-2-1';
 import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';

@@ -1,4 +1,4 @@
-import { buildStixDomain, cleanObject } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject } from '../../database/stix-converter-2-1';
 import type { StixDataComponent, StoreEntityDataComponent } from './dataComponent-types';
 import { INPUT_DATA_SOURCE } from './dataComponent-types';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';

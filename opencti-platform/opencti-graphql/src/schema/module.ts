@@ -1,8 +1,8 @@
 import type { StoreEntity } from '../types/store';
 import type { RelationDefinition } from '../database/stix';
 import { stixCoreRelationshipsMapping as coreRels } from '../database/stix';
-import type { ConvertFn, RepresentativeFn } from '../database/stix-converter';
-import { registerStixDomainConverter, registerStixMetaConverter, registerStixRepresentativeConverter } from '../database/stix-converter';
+import type { ConvertFn, RepresentativeFn } from '../database/stix-converter-2-1';
+import { registerStixDomainConverter, registerStixMetaConverter, registerStixRepresentativeConverter } from '../database/stix-converter-2-1';
 // import { registerGraphqlSchema } from '../graphql/schema';
 import {
   ABSTRACT_INTERNAL_OBJECT,
