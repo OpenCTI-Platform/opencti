@@ -519,7 +519,7 @@ const ReportKnowledgeGraph = ({
 
   return (
     <GraphProvider localStorageKey={localStorageKey} data={reportData}>
-      <ReportKnowledgeGraphComponent report={report}{...otherProps} />
+      <ReportKnowledgeGraphComponent report={report} {...otherProps} />
     </GraphProvider>
   );
 };

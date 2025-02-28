@@ -409,9 +409,7 @@ class IncidentKnowledgeComponent extends Component {
                 render={({ props }) => {
                   if (props && props.caseIncident) {
                     return (
-                      <IncidentKnowledgeCorrelation
-                        caseData={props.caseIncident}
-                      />
+                      <IncidentKnowledgeCorrelation data={props.caseIncident} />
                     );
                   }
                   return (

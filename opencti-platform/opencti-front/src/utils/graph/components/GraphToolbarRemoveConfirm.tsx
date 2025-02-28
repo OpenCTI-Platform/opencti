@@ -52,7 +52,14 @@ const GraphToolbarRemoveConfirm = ({
   const [commitDeleteRelKnowledgeGraph] = useKnowledgeGraphDeleteRelation();
   const [commitDeleteObjectKnowledgeGraph] = useKnowledgeGraphDeleteObject();
 
-  const { selectedLinks, selectedNodes, graphData } = useGraphContext();
+  const {
+    graphData,
+    graphState: {
+      selectedLinks,
+      selectedNodes,
+    },
+  } = useGraphContext();
+
   const { clearSelection, removeLink, removeNode } = useGraphInteractions();
 
   const remove = (referencesValues?: ReferenceFormData) => {

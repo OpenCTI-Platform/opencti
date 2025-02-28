@@ -48,6 +48,9 @@ export interface ObjectToParse {
     id: string
     definition: string
   }[]
+  // Other containers associated to this object.
+  // Used for correlation graphs.
+  linkedContainers?: ObjectToParse[]
 }
 
 const useGraphParser = () => {
@@ -272,7 +275,40 @@ const useGraphParser = () => {
     };
   };
 
-  return { buildGraphData, buildNode, buildLink };
+  const buildCorrelationData = (objects: ObjectToParse[], graphPositions: OctiGraphPositions) => {
+    // Need to be > 1 because 1 means self container.
+    const correlatedObjects = objects.filter((o) => (o.linkedContainers?.length ?? 0) > 1);
+    const uniqCorrelatedObjects = R.uniqBy(R.prop('id'), correlatedObjects);
+
+    const correlatedContainers = uniqCorrelatedObjects.flatMap((o) => o.linkedContainers ?? []);
+    const uniqCorrelatedContainers = R.uniqBy(R.prop('id'), correlatedContainers);
+
+    const links = uniqCorrelatedObjects.flatMap((object) => {
+      const objectCorrelatedContainers = R.uniqBy(R.prop('id'), (object.linkedContainers ?? []));
+      return objectCorrelatedContainers.map((container) => {
+        return buildLink(container, {
+          id: `${object.id}-${container.id}`,
+          target: container.id,
+          target_id: container.id,
+          source: object.id,
+          source_id: object.id,
+          parent_types: ['basic-relationship', 'stix-meta-relationship'],
+          entity_type: 'basic-relationship',
+          relationship_type: 'reported-in',
+          label: '',
+          name: '',
+        });
+      });
+    });
+
+    const nodes = [...uniqCorrelatedObjects, ...uniqCorrelatedContainers].map((object) => {
+      return buildNode(object, graphPositions);
+    });
+
+    return { links, nodes };
+  };
+
+  return { buildGraphData, buildCorrelationData, buildNode, buildLink };
 };
 
 export default useGraphParser;

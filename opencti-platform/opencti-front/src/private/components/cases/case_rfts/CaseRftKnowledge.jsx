@@ -411,7 +411,7 @@ class CaseRftKnowledgeComponent extends Component {
                 render={({ props }) => {
                   if (props && props.caseRft) {
                     return (
-                      <CaseRftKnowledgeCorrelation caseData={props.caseRft} />
+                      <CaseRftKnowledgeCorrelation data={props.caseRft} />
                     );
                   }
                   return (
