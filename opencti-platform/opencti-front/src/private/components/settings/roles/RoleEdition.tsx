@@ -4,8 +4,6 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import RoleEditionOverview from './RoleEditionOverview';
 import RoleEditionCapabilities, { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -15,17 +13,7 @@ import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEdi
 import { RoleEdition_role$key } from './__generated__/RoleEdition_role.graphql';
 import { RolePopoverEditionQuery$data } from './__generated__/RolePopoverEditionQuery.graphql';
 import useHelper from '../../../../utils/hooks/useHelper';
-import Transition from '../../../../components/Transition';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import UpdateRoleControlledDial from '../../../../components/UpdateEntityControlledDial';
-
-export const roleDeletionMutation = graphql`
-  mutation RoleEditionDeletionMutation($id: ID!) {
-    roleEdit(id: $id) {
-      delete
-    }
-  }
-`;
 
 const RoleEditionFragment = graphql`
   fragment RoleEdition_role on Role {
@@ -53,37 +41,11 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const [currentTab, setCurrentTab] = useState(0);
-  const [deleting, setDeleting] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(roleEditionCapabilitiesLinesSearch);
   const role = useFragment<RoleEdition_role$key>(RoleEditionFragment, roleRef);
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
-    values: { entity_type: t_i18n('Role') },
-  });
-  const [commit] = useApiMutation(
-    roleDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
-
-  const handleOpenDelete = () => setDisplayDelete(true);
-  const handleCloseDelete = () => setDisplayDelete(false);
-  const submitDelete = (roleId: string) => {
-    setDeleting(true);
-    commit({
-      variables: { id: roleId },
-      onCompleted: () => {
-        setDeleting(false);
-        handleClose();
-        navigate('/dashboard/settings/accesses/roles');
-      },
-    });
-  };
 
   return (
     <Drawer
@@ -115,43 +77,6 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
             <RoleEditionCapabilities role={role} queryRef={queryRef} />
           </React.Suspense>
         )}
-        <Button
-          onClick={handleOpenDelete}
-          variant='contained'
-          color='error'
-          disabled={deleting}
-          sx={{ marginTop: 2 }}
-        >
-          {t_i18n('Delete')}
-        </Button>
-        <Dialog
-          open={displayDelete}
-          PaperProps={{ elevation: 1 }}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={handleCloseDelete}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to delete this role?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleCloseDelete}
-              disabled={deleting}
-            >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={() => submitDelete(role.id)}
-              disabled={deleting}
-            >
-              {t_i18n('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
       </>)
         : (<Loader />)}
     </Drawer>

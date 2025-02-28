@@ -8,8 +8,6 @@ import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
 import { UsersLinesSearchQuery, UsersLinesSearchQuery$variables } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
 import { initialStaticPaginationForGroupUsers } from '@components/settings/users/GroupUsers';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import GroupEditionConfidence from './GroupEditionConfidence';
 import GroupEditionOverview from './GroupEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -28,8 +26,6 @@ import SearchInput from '../../../../components/SearchInput';
 import { useDataTablePaginationLocalStorage } from '../../../../components/dataGrid/dataTableHooks';
 import useHelper from '../../../../utils/hooks/useHelper';
 import UpdateGroupControlledDial from '../../../../components/UpdateEntityControlledDial';
-import Transition from '../../../../components/Transition';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const groupEditionContainerQuery = graphql`
   query GroupEditionContainerQuery($id: String!) {
@@ -68,85 +64,6 @@ const GroupEditionContainerFragment = graphql`
     }
   }
 `;
-
-const groupDeletionMutation = graphql`
-  mutation GroupEditionContainerDeletionMutation($id: ID!) {
-    groupEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
-interface GroupDeletionDialogProps {
-  groupId: string,
-}
-
-const GroupDeletionDialog: FunctionComponent<GroupDeletionDialogProps> = ({
-  groupId,
-}) => {
-  const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
-  const [deleting, setDeleting] = useState<boolean>(false);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully delete',
-    values: { entity_type: t_i18n('Group') },
-  });
-  const [commitDeleteMutation] = useApiMutation(
-    groupDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
-
-  const handleOpenDelete = () => setDisplayDelete(true);
-  const handleCloseDelete = () => setDisplayDelete(false);
-  const submitDelete = () => {
-    setDeleting(true);
-    commitDeleteMutation({
-      variables: { id: groupId },
-      onCompleted: () => {
-        setDeleting(false);
-        handleCloseDelete();
-        navigate('/dashboard/settings/accesses/groups');
-      },
-    });
-  };
-
-  return (
-    <div>
-      <Button
-        onClick={handleOpenDelete}
-        variant='contained'
-        color='error'
-        disabled={deleting}
-        sx={{ marginTop: 2 }}
-      >
-        {t_i18n('Delete')}
-      </Button>
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this group?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
-  );
-};
 
 interface GroupEditionContainerProps {
   groupQueryRef: PreloadedQuery<GroupEditionContainerQuery>
@@ -258,7 +175,6 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
         {hasSetAccess && currentTab === 4 && (
           <GroupEditionConfidence group={group} context={editContext} />
         )}
-        <GroupDeletionDialog groupId={group.id} />
       </>
     </Drawer>
   );

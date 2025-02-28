@@ -149,7 +149,14 @@ const SettingsOrganizationUserCreation = ({
       <Add />
     </Fab>
   );
-  if (isFABReplaced) { createButton = CreateOrgUserControlledDial; }
+  if (isFABReplaced) {
+    createButton = (
+      <CreateOrgUserControlledDial
+        onOpen={() => setOpenAddUser(true)}
+        onClose={() => setOpenAddUser(false)}
+      />
+    );
+  }
 
   return (
     <>

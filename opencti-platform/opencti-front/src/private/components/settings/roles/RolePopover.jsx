@@ -15,8 +15,9 @@ import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import RoleEdition, { roleDeletionMutation } from './RoleEdition';
+import RoleEdition from './RoleEdition';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import { roleDeletionMutation } from './RoleEditionOverview';
 
 const styles = () => ({
   container: {
