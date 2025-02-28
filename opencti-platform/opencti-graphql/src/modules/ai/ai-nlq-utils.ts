@@ -1,8 +1,7 @@
-import { z } from 'zod';
 import { ChatPromptTemplate, type Example, FewShotChatMessagePromptTemplate } from '@langchain/core/prompts';
-import { FilterMode, FilterOperator } from '../../generated/graphql';
-import { emptyFilterGroup } from '../../utils/filtering/filtering-utils';
+import { z } from 'zod';
 
+// TODO Cathia (pas duppliquer les keys des autres fitres indiques)
 const FilterTypeEnum = z.enum([
   'created_at',
   'updated_at',
@@ -391,523 +390,562 @@ const GenericFilterItem = z.object({
     .describe("The combination mode between the filter values, always 'or'."),
 });
 
-// TODO not used?
-// export const OpenCTIFiltersOutput = z.object({
-//   filters: z.array(z.union([EntityTypeFilterItem, ObjectAssigneeFilterItem, RegardingOfFilterItem, GenericFilterItem]))
-//     .describe('The list of filters'),
-//   mode: z.literal('and')
-//     .describe("The combination mode between the filters, always 'and'."),
-//   filterGroups: z.array(z.any()).default([]),
-// });
 
-// zod enums
-const FilterModeEnum = z.nativeEnum(FilterMode);
-const FilterOperatorEnum = z.nativeEnum(FilterOperator);
-
-const FilterSchema = z.object({
-  key: FilterTypeEnum
-    .describe('The key of the filter.'), // z.array(z.string()), // TODO how to validate key (generateFilterKeysSchema)
-  mode: FilterModeEnum.optional(),
-  operator: FilterOperatorEnum.optional(),
-  values: z.array(z.any()),
+export const OpenCTIFiltersOutput = z.object({
+  filters: z.array(z.union([EntityTypeFilterItem, ObjectAssigneeFilterItem, RegardingOfFilterItem, GenericFilterItem]))
+    .describe('The list of filters'),
+  mode: z.literal('and')
+    .describe("The combination mode between the filters, always 'and'."),
+  filterGroups: z.array(z.any()).default([]),
 });
 
-const FilterGroupSchema: z.ZodType<any> = z.lazy(() => z.object({
-  filterGroups: z.array(FilterGroupSchema),
-  filters: z.array(z.union([EntityTypeFilterItem, ObjectAssigneeFilterItem, RegardingOfFilterItem, FilterSchema])),
-  mode: FilterModeEnum,
-}));
+// // zod enums
+// const FilterModeEnum = z.nativeEnum(FilterMode);
+// const FilterOperatorEnum = z.nativeEnum(FilterOperator);
+
+// TODO: To be used later
+// const FilterSchema = z.object({
+//   key: FilterTypeEnum
+//     .describe('The key of the filter.'), // z.array(z.string()), // TODO how to validate key (generateFilterKeysSchema)
+//   mode: FilterModeEnum.optional(),
+//   operator: FilterOperatorEnum.optional(),
+//   values: z.array(z.any()),
+// });
+
+// const FilterGroupSchema: z.ZodType<any> = z.lazy(() => z.object({
+//   filterGroups: z.array(FilterGroupSchema),
+//   filters: z.array(z.union([EntityTypeFilterItem, ObjectAssigneeFilterItem, RegardingOfFilterItem, FilterSchema])),
+//   mode: FilterModeEnum,
+// }));
 
 // examples
 
-const examples: Example[] = [
+const jsonFewShotExamples: Example[] = [
   {
-    input: "Who's is behind this T1497?",
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'id',
-              values: [
-                'T1497'
-              ]
-            }
+      "_comment": "I/ Identification of threat actors by TTP ID (T1082 technique)",
+      "input": "Who's is behind this T1082?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq",
+                  "values": [
+                      {
+                          "key": "id",
+                          "values": [
+                              "T1082"
+                          ]
+                      }
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Threat-Actor-Group",
+                      "Threat-Actor-Individual",
+                      "Intrusion-Set"
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'Which threats actors are invovled with T1497?',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'id',
-              values: [
-                'T1497'
-              ]
-            }
+      "_comment": "I/ Identification of threat actors by report or incident",
+      "input": "Who are the threats in the PolarEdge ORB report?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq",
+                  "values": [
+                      {
+                          "key": "id",
+                          "values": [
+                              "PolarEdge ORB report"
+                          ]
+                      }
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Intrusion-Set",
+                      "Threat-Actor-Group",
+                      "Threat-Actor-Individual"
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'T1497に関与している脅威アクターは誰ですか？',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'id',
-              values: [
-                'T1497'
-              ]
-            }
+      "_comment": "II/ Targeting and Potential Victims by Relationship (targets)",
+      "input": "Which risks are most likely to affect me?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq",
+                  "values": [
+                      {
+                          "key": "relationship_type",
+                          "values": [
+                              "targets"
+                          ]
+                      }
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Threat-Actor-Group",
+                      "Threat-Actor-Individual",
+                      "Intrusion-Set"
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'Google TAG COLDRIVER 2024年1月のレポートに含まれている脅威アクターは誰ですか？',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'id',
-              values: [
-                'Google TAG COLDRIVER January 2024'
-              ]
-            }
+      "_comment": "II/ Targeting and Potential Victims by ID (e.g., Malicious IP)",
+      "input": "Which victims and industry sectors are being affected by 134.175.104.84?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq",
+                  "values": [
+                      {
+                          "key": "relationship_type",
+                          "values": [
+                              "targets"
+                          ]
+                      },
+                      {
+                          "key": "id",
+                          "values": [
+                              "134.175.104.84"
+                          ]
+                      }
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Intrusion-Set',
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'Who are the actors responsible for T1497 attack?',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'id',
-              values: [
-                'T1497'
-              ]
-            }
+      "_comment": "III/ Relations and Behaviors - Tactics (uses)",
+      "input": "How would Cyber Av3ngers carry out an attack on me?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq",
+                  "values": [
+                      {
+                          "key": "id",
+                          "values": [
+                              "Cyber Av3ngers"
+                          ]
+                      },
+                      {
+                          "key": "relationship_type",
+                          "values": [
+                              "uses"
+                          ]
+                      }
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Attack-Pattern"
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'Which threats are most likely to target me?',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'relationship_type',
-              values: [
-                'targets'
-              ]
-            }
+      "_comment": "IV/ Malware and IOCs Linked to an Actor (uses)",
+      "input": "Can you list the malware used by MustardMan?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq",
+                  "values": [
+                      {
+                          "key": "id",
+                          "values": [
+                              "MustardMan"
+                          ]
+                      },
+                      {
+                          "key": "relationship_type",
+                          "values": [
+                              "uses"
+                          ]
+                      }
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Malware"
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'Agendaによって標的にされた被害者とその業界セクターは何ですか？',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'relationship_type',
-              values: [
-                'targets'
-              ]
-            },
-            {
-              key: 'id',
-              values: [
-                'Agenda'
-              ]
-            }
+      "_comment": "IV/ Malware and IOCs Linked to an Actor (without relationship)",
+      "input": "Can you list the IOCs linked to APT-C-00 Ocean Lotus?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq",
+                  "values": [
+                      {
+                          "key": "id",
+                          "values": [
+                              "APT-C-00  Ocean Lotus"
+                          ]
+                      }
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Indicator"
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'If Russian cybercrime group attacks me, how will they do?',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'id',
-              values: [
-                'Russian cybercrime group'
-              ]
-            },
-            {
-              key: 'relationship_type',
-              values: [
-                'uses'
-              ]
-            }
+      "_comment": "IV/ Malware and IOCs Linked to an Actor (related-to)",
+      "input": "Does the file named 'example_file' have any associations with known threat actors or cyber threats?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Threat-Actor-Group",
+                      "Threat-Actor-Individual",
+                      "Intrusion-Set"
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "regardingOf",
+                  "operator": "eq",
+                  "values": [
+                      {
+                          "key": "relationship_type",
+                          "values": [
+                              "related-to"
+                          ]
+                      },
+                      {
+                          "key": "id",
+                          "values": [
+                              "example_file"
+                          ]
+                      }
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Attack-Pattern'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'ロシアのサイバー犯罪グループが私を攻撃する場合、どのように行いますか？',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'id',
-              values: [
-                'Russian cybercrime group'
-              ]
-            },
-            {
-              key: 'relationship_type',
-              values: [
-                'uses'
-              ]
-            }
+      "_comment": "V/ Intelligence Reports and Incidents - Creators or Assignees (creator_id)",
+      "input": "What intelligence reports have been released by the Cambridge Group of Clubs?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "creator_id",
+                  "operator": "eq",
+                  "values": [
+                      "Cambridge Group of Clubs"
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Report"
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Attack-Pattern'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'APT28が使用したマルウェアのリストを教えてください。',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'id',
-              values: [
-                'APT28'
-              ]
-            },
-            {
-              key: 'relationship_type',
-              values: [
-                'uses'
-              ]
-            }
+      "_comment": "V/ Intelligence Reports and Incidents - Creators or Assignees (objectAssignee)",
+      "input": "Can you list all cybersecurity incidents assigned to John Doe?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Incident"
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "objectAssignee",
+                  "operator": "eq",
+                  "values": [
+                      "John Doe"
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Malware'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'APT-C-01 (Poison Ivy)に関連するIOCのリストを教えてください。',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'id',
-              values: [
-                'APT-C-01 (Poison Ivy)'
-              ]
-            }
+      "_comment": "VI/ Diversification of Entities (here Vulnerabilities related to a TTP) (Attack-Pattern, Intrusion-Set, Malware, Indicator, Incident, Threat-Actor, Campaign (ny), Course-of-Action (ny), Tool (ny), Vulnerability, Report)",
+      "input": "What vulnerabilities are associated with T1497?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq",
+                  "values": [
+                      {"key": "id", "values": ["T1497"]}
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": ["Vulnerability"],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Indicator'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: "Does the file named 'example_file' have any associations with known threat actors or cyber threats?",
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set'
+      "_comment": "VII/ Diversity of Relationships (targets - Victims or industry sectors targeted by an IP) (uses, targets, related-to, located-at)",
+      "input": "Which victims and industry sectors are targeted by 134.175.104.84?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq",
+                  "values": [
+                      {"key": "relationship_type", "values": ["targets"]},
+                      {"key": "id", "values": ["134.175.104.84"]}
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'relationship_type',
-              values: [
-                'related-to'
-              ]
-            },
-            {
-              key: 'id',
-              values: [
-                'example_file'
-              ]
-            }
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'Has there been any historical involvement of XYZ in known cybersecurity incidents?',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Incident'
+      "_comment": "VII/ Diversity of Relationships (located-at - Geolocation of threat actors) (uses, targets, related-to, located-at, mitigates(ny), indicates(ny), compromises(ny))",
+      "input": "Which actors are located in Russia?",
+      "output": {
+          "mode": "and",
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq",
+                  "values": [
+                      {"key": "relationship_type", "values": ["located-at"]},
+                      {"key": "id", "values": ["Russia"]}
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Threat-Actor-Group",
+                      "Threat-Actor-Individual",
+                      "Intrusion-Set"
+                  ],
+                  "mode": "or"
+              }
           ],
-          mode: 'or'
-        },
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'relationship_type',
-              values: [
-                'related-to'
-              ]
-            },
-            {
-              key: 'id',
-              values: [
-                'XYZ'
-              ]
-            }
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+          "filterGroups": []
+      }
   },
   {
-    input: 'List all intelligence reports released by Recorded Future.',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'creator_id',
-          operator: 'eq',
-          values: [
-            'Recorded Future'
-          ],
-          mode: 'or'
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Report'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+      "_comment": "VIII/ General and Non-CTI Questions (returns empty filters)",
+      "input": "What is the impact of quantum computing on encryption?",
+      "output": {"mode": "and", "filters": [], "filterGroups": []}
   },
   {
-    input: 'List all cybersecurity incidents assigned to John Doe.',
-    output: JSON.stringify({
-      mode: 'and',
-      filters: [
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Incident'
-          ],
-          mode: 'or'
-        },
-        {
-          key: 'objectAssignee',
-          operator: 'eq',
-          values: [
-            'John Doe'
-          ],
-          mode: 'or'
-        }
-      ],
-      filterGroups: []
-    })
+      "_comment": "VIII/ Grammatical and Linguistic Complexity (should return nothing as it's non-CTI)",
+      "input": "The sun, a radiant beacon in the sky, spread its golden warmth across the horizon, igniting the dawn with an explosion of brilliant color.",
+      "output": {"mode": "and", "filters": [], "filterGroups": []}
   },
   {
-    input: 'The sun, a radiant beacon in the sky, spread its golden warmth across the horizon, igniting the dawn with an explosion of brilliant color.',
-    output: JSON.stringify(emptyFilterGroup),
+      "_comment": "IX/ Complex Questions and Linguistic Complexity: Passive Voice - Conditional Statements - TODO: Support conditional logic",
+      "input": "If T1497 was involved, who would be responsible?",
+      "output": {
+          "mode": "and", 
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq", 
+                  "values": [
+                      {
+                          "key": "id",
+                          "values": [
+                              "T1497"
+                          ]
+                      }
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Threat-Actor-Group",
+                      "Threat-Actor-Individual",
+                      "Intrusion-Set"
+                  ],
+                  "mode": "or"
+              }
+          ], 
+          "filterGroups": []
+      }
+  },
+  {
+      "_comment": "IX/ Complex Questions and Linguistic Complexity: Indirect Questions - TODO: Interpret indirect questions",
+      "input": "I wonder who is behind T1497.",
+      "output": {
+          "mode": "and", 
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq", 
+                  "values": [
+                      {
+                          "key": "id",
+                          "values": [
+                              "T1497"
+                          ]
+                      }
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Threat-Actor-Group",
+                      "Threat-Actor-Individual",
+                      "Intrusion-Set"
+                  ],
+                  "mode": "or"
+              }
+          ], 
+          "filterGroups": []
+      }
+  },
+  {
+      "_comment": "IX/ Complex Questions and Linguistic Complexity: Logical Operators - TODO: Improve handling of logical operators (AND, OR)",
+      "input": "Who uses either T1497 or T1082?",
+      "output": {
+          "mode": "and", 
+          "filters": [
+              {
+                  "key": "regardingOf",
+                  "operator": "eq", 
+                  "values": [
+                      {
+                          "key": "id",
+                          "values": [
+                              "T1497"
+                          ]
+                      },
+                      {
+                          "key": "id",
+                          "values": [
+                              "T1082"
+                          ]
+                      },
+                      {
+                          "key": "relationship_type",
+                          "values": [
+                              "uses"
+                          ]
+                      }
+                  ],
+                  "mode": "or"
+              },
+              {
+                  "key": "entity_type",
+                  "operator": "eq",
+                  "values": [
+                      "Threat-Actor-Group",
+                      "Threat-Actor-Individual",
+                      "Intrusion-Set"
+                  ],
+                  "mode": "or"
+              }
+          ], 
+          "filterGroups": []
+      }
   }
 ];
+
+
+const examples = jsonFewShotExamples.map(item => ({
+  input: item["input"],
+  output: JSON.stringify(OpenCTIFiltersOutput.safeParse(item["output"])).replace(/"/g, "'")
+}));
+
 
 const examplePrompt = ChatPromptTemplate.fromMessages([
   ['human', '{input}'],

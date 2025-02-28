@@ -1,15 +1,16 @@
-import { Mistral } from '@mistralai/mistralai';
-import OpenAI from 'openai';
-import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
-import { ChatOpenAI } from '@langchain/openai';
 import type { ChatPromptValueInterface } from '@langchain/core/prompt_values';
+import { ChatOpenAI } from '@langchain/openai';
+import { Mistral } from '@mistralai/mistralai';
+import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
+import OpenAI from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
-import { isEmptyField } from './utils';
-import { notify } from './redis';
+import { UnsupportedError } from '../config/errors';
+import { OpenCTIFiltersOutput } from '../modules/ai/ai-nlq-utils';
 import { AI_BUS } from '../modules/ai/ai-types';
 import type { AuthUser } from '../types/user';
-import { UnsupportedError } from '../config/errors';
 import { truncate } from '../utils/format';
+import { notify } from './redis';
+import { isEmptyField } from './utils';
 
 const AI_ENABLED = conf.get('ai:enabled');
 const AI_TYPE = conf.get('ai:type');
@@ -33,7 +34,7 @@ if (AI_ENABLED && AI_TOKEN) {
           groupEnd: () => logApp.info('[AI] group end.'),
         } */
       });
-      llm = new ChatOpenAI({
+      const rawllm = new ChatOpenAI({
         modelName: 'mistral',
         apiKey: AI_TOKEN,
         temperature: 0,
@@ -41,6 +42,7 @@ if (AI_ENABLED && AI_TOKEN) {
           baseURL: 'https://ai.filigran.io/v1',
         },
       });
+      llm = rawllm.withStructuredOutput(OpenCTIFiltersOutput)
       break;
     case 'openai':
       client = new OpenAI({

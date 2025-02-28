@@ -14,10 +14,13 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import { logApp } from '../../config/conf';
 import { queryAi, queryNLQAi } from '../../database/ai-llm';
 import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
 import { isEmptyField } from '../../database/utils';
+import { generateFilterKeysSchema } from '../../domain/filterKeysSchema';
+import { findAll } from '../../domain/stixCoreObject';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { FilterGroup, InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiNlqArgs, MutationAiSummarizeFilesArgs } from '../../generated/graphql';
 import { Format, Tone } from '../../generated/graphql';
@@ -27,15 +30,12 @@ import { RELATION_EXTERNAL_REFERENCE } from '../../schema/stixRefRelationship';
 import type { BasicStoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
+import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
+import { addFilter, checkFiltersValidity, emptyFilterGroup, extractFilterGroupValues, filtersEntityIdsMappingResult } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
-import { addFilter, checkFiltersValidity, emptyFilterGroup, extractFilterGroupValues, filtersEntityIdsMappingResult } from '../../utils/filtering/filtering-utils';
-import { logApp } from '../../config/conf';
 import { NLQPromptTemplate } from './ai-nlq-utils';
-import { generateFilterKeysSchema } from '../../domain/filterKeysSchema';
-import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
-import { findAll } from '../../domain/stixCoreObject';
 
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
@@ -339,13 +339,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   // 01. query the model
   logApp.debug('[AI] Querying NLQ with prompt', { questionStart: search.substring(0, 100) });
   const rawResponse = await queryNLQAi(promptValue);
-  let parsedResponse;
-  try {
-    parsedResponse = JSON.parse(rawResponse.content.toString().replace(/'/g, '"'));
-  } catch (error) {
-    logApp.error('[AI] JSON parsing error at NLQ response generation', { error, data: rawResponse.content });
-    return JSON.stringify(emptyFilterGroup);
-  }
+  const parsedResponse = rawResponse;
 
   // 02. check the filters validity
   try {
