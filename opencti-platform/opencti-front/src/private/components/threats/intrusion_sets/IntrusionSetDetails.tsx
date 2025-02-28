@@ -97,10 +97,12 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             >
               {t_i18n('Resource level')}
             </Typography>
-            <ItemOpenVocab
-              type="attack-resource-level-ov"
-              value={intrusionSet.resource_level}
-            />
+            <FieldOrEmpty source={intrusionSet.resource_level}>
+              <ItemOpenVocab
+                type="attack-resource-level-ov"
+                value={intrusionSet.resource_level}
+              />
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Typography
@@ -110,10 +112,12 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             >
               {t_i18n('Primary motivation')}
             </Typography>
-            <ItemOpenVocab
-              type="attack-motivation-ov"
-              value={intrusionSet.primary_motivation}
-            />
+            <FieldOrEmpty source={intrusionSet.primary_motivation}>
+              <ItemOpenVocab
+                type="attack-motivation-ov"
+                value={intrusionSet.primary_motivation}
+              />
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Typography
