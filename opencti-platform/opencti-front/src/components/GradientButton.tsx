@@ -16,15 +16,14 @@ const GradientButton: React.FunctionComponent<GradientButtonProps> = ({
   ...props
 }) => {
   const theme = useTheme<Theme>();
-  const isDarkMode = theme.palette.mode === 'dark';
 
   let startColor;
   let endColor;
   switch (gradientVariant) {
     case 'xtmhub':
     default:
-      startColor = isDarkMode ? theme.palette.xtmhub.dark : theme.palette.xtmhub.light;
-      endColor = isDarkMode ? theme.palette.xtmhub.background : theme.palette.xtmhub.lightBackground;
+      startColor = theme.palette.xtmhub.main;
+      endColor = theme.palette.xtmhub.light;
       break;
   }
 

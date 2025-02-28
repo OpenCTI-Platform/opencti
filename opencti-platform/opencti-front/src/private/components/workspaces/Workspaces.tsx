@@ -214,17 +214,19 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           createButton={
             <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
               <>
-                <GradientButton
-                  color='primary'
-                  variant='outlined'
-                  size="small"
-                  disableElevation
-                  sx={{ marginLeft: theme.spacing(1) }}
-                  href={importFromHubUrl}
-                  target="_blank"
-                >
-                  {t_i18n('Import from Hub')}
-                </GradientButton>
+                {isNotEmptyField(importFromHubUrl) && (
+                  <GradientButton
+                    color='primary'
+                    variant='outlined'
+                    size="small"
+                    disableElevation
+                    sx={{ marginLeft: theme.spacing(1) }}
+                    href={importFromHubUrl}
+                    target="_blank"
+                  >
+                    {t_i18n('Import from Hub')}
+                  </GradientButton>
+                )}
                 {isFeatureEnable('FAB_REPLACEMENT') && (
                   <WorkspaceCreation
                     paginationOptions={workspacePaginationOptions}

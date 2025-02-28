@@ -52,6 +52,7 @@ const ThemeLight = (
     },
     chip: { main: '#000000' },
     ai: { main: '#9c27b0', light: '#ba68c8', dark: '#7b1fa2', contrastText: 'black', text: { primary: '#673ab7' } },
+    xtmhub: { main: '#001BDA', light: '#0FBCFF' },
     ee: {
       main: EE_COLOR,
       background: hexToRGB(EE_COLOR, 0.2),

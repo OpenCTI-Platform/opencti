@@ -51,7 +51,7 @@ const ThemeDark = (
     },
     chip: { main: '#ffffff' },
     ai: { main: '#9575cd', light: '#d1c4e9', dark: '#673ab7', contrastText: 'black', text: { primary: '#9575cd' } },
-    xtmhub: { light: '#001BDA', lightBackground: '#0FBCFF', dark: '#0FBCFF', background: '#00F1BD' },
+    xtmhub: { main: '#001BDA', light: '#0FBCFF' },
     ee: {
       main: EE_COLOR,
       contrastText: '#ffffff',
