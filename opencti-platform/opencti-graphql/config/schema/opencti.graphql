@@ -1856,7 +1856,7 @@ input StixCyberObservablesExportAskInput {
 
 input ContractConfigInput {
   key: String!
-  value: String!
+  value: [String!]
 }
 
 input RegisterConnectorInput {

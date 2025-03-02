@@ -12,7 +12,7 @@ import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-st
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
-import { isEmptyField, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
+import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, redisSetConnectorLogs, setEditContext } from '../database/redis';
@@ -40,7 +40,7 @@ import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
 import { findById } from './user';
 
-const ajv = new Ajv();
+const ajv = new Ajv({ coerceTypes: true });
 addFormats(ajv, ['password']);
 
 // region connectors
@@ -170,16 +170,22 @@ const computeConnectorTargetContract = (manager: any, input: any) => {
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
   }
-  // Add default values
-  const inputConfigurations = input.manager_contract_configuration;
-  for (let index = 0; index < inputConfigurations.length; index += 1) {
-    const inputConfiguration = inputConfigurations[index];
-    if (isNotEmptyField(targetContract.default[inputConfiguration.key]) && !isEmptyField(inputConfiguration.value)) {
-      inputConfiguration.value = targetContract.default[inputConfiguration.key];
+  // Rework configuration for default an array support
+  const contractConfigurations = [];
+  const keys = Object.keys(targetContract.properties);
+  for (let i = 0; i < keys.length; i += 1) {
+    const propKey = keys[i];
+    const currentConfig: any = input.manager_contract_configuration.find((conf: any) => conf.key === propKey);
+    if (!currentConfig) {
+      contractConfigurations.push(({ key: propKey, value: targetContract.default[propKey] }));
+    } else if (targetContract.properties[propKey].type !== 'array') {
+      contractConfigurations.push(({ key: propKey, value: currentConfig.value[0] }));
+    } else {
+      contractConfigurations.push(currentConfig);
     }
   }
   // Build the json contract
-  const contractObject: any = R.mergeAll(inputConfigurations.map((conf: any) => ({ [conf.key]: conf.value })));
+  const contractObject: any = R.mergeAll(contractConfigurations.map((conf: any) => ({ [conf.key]: conf.value })));
   // Validate the contract
   const jsonValidation = {
     type: targetContract.type,
@@ -192,7 +198,7 @@ const computeConnectorTargetContract = (manager: any, input: any) => {
   if (!validContractObject) {
     throw UnsupportedError('Invalid contract definition');
   }
-  return targetContract;
+  return { contractConfigurations, targetContract };
 };
 
 export const managedConnectorEdit = async (
@@ -208,12 +214,12 @@ export const managedConnectorEdit = async (
   if (isEmptyField(manager)) {
     throw UnsupportedError('Manager not found');
   }
-  const targetContract = computeConnectorTargetContract(manager, input);
+  const { contractConfigurations, targetContract } = computeConnectorTargetContract(manager, input);
   const patch: any = {
     name: input.name,
     connector_type: targetContract.container_type,
     connector_user_id: input.connector_user_id,
-    manager_contract_configuration: input.manager_contract_configuration,
+    manager_contract_configuration: contractConfigurations,
   };
   const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
   return element;
@@ -228,14 +234,14 @@ export const managedConnectorAdd = async (
   if (isEmptyField(manager)) {
     throw UnsupportedError('Manager not found');
   }
-  const targetContract = computeConnectorTargetContract(manager, input);
+  const { contractConfigurations, targetContract } = computeConnectorTargetContract(manager, input);
   const connectorToCreate: any = {
     name: input.name,
     connector_type: targetContract.container_type,
     manager_id: input.manager_id,
     connector_user_id: input.connector_user_id,
     manager_contract_image: input.manager_contract_image,
-    manager_contract_configuration: input.manager_contract_configuration,
+    manager_contract_configuration: contractConfigurations,
     manager_requested_status: 'creating',
     built_in: false
   };
