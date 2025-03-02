@@ -37,13 +37,13 @@ export const connector = async (context, user, id) => {
 };
 
 export const computeManagerConnectorConfiguration = async (context, user, cn) => {
-  const config = cn.manager_contract_configuration ?? [];
+  const config = [...cn.manager_contract_configuration ?? []];
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   config.push({ key: 'CONNECTOR_ID', value: cn.internal_id });
   config.push({ key: 'CONNECTOR_NAME', value: cn.name });
   config.push({ key: 'CONNECTOR_TYPE', value: cn.connector_type });
   config.push({ key: 'OPENCTI_TOKEN', value: platformUsers.get(cn.connector_user_id)?.api_token });
-  return config;
+  return config.sort();
 };
 
 export const computeManagerConnectorImage = (cn) => {
@@ -53,7 +53,8 @@ export const computeManagerConnectorImage = (cn) => {
 export const computeManagerContractHash = async (context, user, cn) => {
   const image = computeManagerConnectorImage(cn);
   const config = await computeManagerConnectorConfiguration(context, user, cn);
-  return shortHash({ image, ...config });
+  const subHash = config.map((c) => `${c.key}|${c.value}`);
+  return shortHash({ image, subHash });
 };
 
 export const connectors = async (context, user) => {

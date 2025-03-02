@@ -161,21 +161,13 @@ export const registerConnectorsManager = async (context: AuthContext, user: Auth
   return createEntity(context, user, managerToCreate, ENTITY_TYPE_CONNECTOR_MANAGER);
 };
 
-const computeConnectorTargetContract = (manager: any, input: any) => {
-  const contractsMap = new Map(manager.connector_manager_contracts.map((rawContract: any) => {
-    const contrat = JSON.parse(rawContract);
-    return [contrat.container_image, contrat];
-  }));
-  const targetContract: any = contractsMap.get(input.manager_contract_image);
-  if (isEmptyField(targetContract)) {
-    throw UnsupportedError('Target contract not found');
-  }
+const computeConnectorTargetContract = (configurations: any, targetContract: any) => {
   // Rework configuration for default an array support
   const contractConfigurations = [];
   const keys = Object.keys(targetContract.properties);
   for (let i = 0; i < keys.length; i += 1) {
     const propKey = keys[i];
-    const currentConfig: any = input.manager_contract_configuration.find((conf: any) => conf.key === propKey);
+    const currentConfig: any = configurations.find((conf: any) => conf.key === propKey);
     if (!currentConfig) {
       contractConfigurations.push(({ key: propKey, value: targetContract.default[propKey] }));
     } else if (targetContract.properties[propKey].type !== 'array') {
@@ -198,7 +190,7 @@ const computeConnectorTargetContract = (manager: any, input: any) => {
   if (!validContractObject) {
     throw UnsupportedError('Invalid contract definition');
   }
-  return { contractConfigurations, targetContract };
+  return contractConfigurations;
 };
 
 export const managedConnectorEdit = async (
@@ -214,7 +206,15 @@ export const managedConnectorEdit = async (
   if (isEmptyField(manager)) {
     throw UnsupportedError('Manager not found');
   }
-  const { contractConfigurations, targetContract } = computeConnectorTargetContract(manager, input);
+  const contractsMap = new Map(manager.connector_manager_contracts.map((rawContract: any) => {
+    const contrat = JSON.parse(rawContract);
+    return [contrat.container_image, contrat];
+  }));
+  const targetContract: any = contractsMap.get(conn.manager_contract_image);
+  if (isEmptyField(targetContract)) {
+    throw UnsupportedError('Target contract not found');
+  }
+  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract);
   const patch: any = {
     name: input.name,
     connector_type: targetContract.container_type,
@@ -234,7 +234,15 @@ export const managedConnectorAdd = async (
   if (isEmptyField(manager)) {
     throw UnsupportedError('Manager not found');
   }
-  const { contractConfigurations, targetContract } = computeConnectorTargetContract(manager, input);
+  const contractsMap = new Map(manager.connector_manager_contracts.map((rawContract: any) => {
+    const contrat = JSON.parse(rawContract);
+    return [contrat.container_image, contrat];
+  }));
+  const targetContract: any = contractsMap.get(input.manager_contract_image);
+  if (isEmptyField(targetContract)) {
+    throw UnsupportedError('Target contract not found');
+  }
+  const contractConfigurations = computeConnectorTargetContract(input.manager_contract_configuration, targetContract);
   const connectorToCreate: any = {
     name: input.name,
     connector_type: targetContract.container_type,
