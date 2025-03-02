@@ -9,10 +9,13 @@ import {
   fetchRemoteStreams,
   findAllSync,
   findSyncById,
+  managedConnectorAdd,
+  managedConnectorEdit,
   patchSync,
   pingConnector,
   queueDetails,
   registerConnector,
+  registerConnectorsManager,
   registerSync,
   resetStateConnector,
   syncCleanContext,
@@ -39,11 +42,22 @@ import {
 } from '../domain/work';
 import { batchCreator } from '../domain/user';
 import { now } from '../utils/format';
-import { connector, connectors, connectorsForAnalysis, connectorsForImport, connectorsForManager, connectorsForNotification, connectorsForWorker } from '../database/repository';
+import {
+  computeManagerConnectorConfiguration,
+  computeManagerConnectorImage,
+  computeManagerContractHash,
+  connector,
+  connectorManager,
+  connectorManagers,
+  connectors,
+  connectorsForAnalysis,
+  connectorsForImport,
+  connectorsForManager,
+  connectorsForNotification,
+  connectorsForWorker
+} from '../database/repository';
 import { batchLoader } from '../database/middleware';
 import { getConnectorQueueSize } from '../database/rabbitmq';
-import { PLATFORM_VERSION } from '../config/conf';
-import { isNotEmptyField } from '../database/utils';
 import { redisGetConnectorLogs } from '../database/redis';
 
 const creatorLoader = batchLoader(batchCreator);
@@ -63,13 +77,22 @@ const connectorResolvers = {
     synchronizer: (_, { id }, context) => findSyncById(context, context.user, id),
     synchronizers: (_, args, context) => findAllSync(context, context.user, args),
     synchronizerFetch: (_, { input }, context) => fetchRemoteStreams(context, context.user, input),
+    // region new managed connectors
+    connectorManager: (_, { managerId }, context) => connectorManager(context, context.user, managerId),
+    connectorManagers: (_, __, context) => connectorManagers(context, context.user),
+    // endregion
   },
   Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
     connector_queue_details: (cn) => queueDetails(cn.id),
-    manager_contract_image: (cn) => (isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${PLATFORM_VERSION}` : null),
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
-    manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id)
+  },
+  ManagedConnector: {
+    manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
+    manager_contract_hash: async (cn, _, context) => computeManagerContractHash(context, context.user, cn),
+    manager_contract_configuration: async (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
+    manager_contract_image: (cn) => computeManagerConnectorImage(cn),
+    connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
@@ -87,8 +110,13 @@ const connectorResolvers = {
     pingConnector: (_, { id, state, connectorInfo }, context) => pingConnector(context, context.user, id, state, connectorInfo),
     updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
     updateConnectorLogs: (_, { input }, context) => connectorUpdateLogs(context, context.user, input),
+    // region new managed connectors
+    managedConnectorAdd: (_, { input }, context) => managedConnectorAdd(context, context.user, input),
+    managedConnectorEdit: (_, { input }, context) => managedConnectorEdit(context, context.user, input),
+    registerConnectorsManager: (_, { input }, context) => registerConnectorsManager(context, context.user, input),
     updateConnectorRequestedStatus: (_, { input }, context) => updateConnectorRequestedStatus(context, context.user, input),
     updateConnectorCurrentStatus: (_, { input }, context) => updateConnectorCurrentStatus(context, context.user, input),
+    // endregion
     // Work part
     workAdd: async (_, { connectorId, friendlyName }, context) => {
       const connectorEntity = await connector(context, context.user, connectorId);

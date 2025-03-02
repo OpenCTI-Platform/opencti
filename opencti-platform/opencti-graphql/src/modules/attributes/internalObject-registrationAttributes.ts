@@ -6,6 +6,7 @@ import {
   ENTITY_TYPE_BACKGROUND_TASK,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_CONNECTOR_MANAGER,
   ENTITY_TYPE_FEED,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_HISTORY,
@@ -384,6 +385,11 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'manager_requested_status', label: 'Connector manager requested status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'manager_contract_image', label: 'Connector manager image', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'manager_contract_configuration', label: 'Connector manager', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
+  ],
+  [ENTITY_TYPE_CONNECTOR_MANAGER]: [
+    { ...updatedAt, update: true }, // Allow change of updated_at for connector ping
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'connector_manager_contracts', label: 'Manager contracts', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },

@@ -1,10 +1,13 @@
 import { v5 as uuidv5 } from 'uuid';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import * as R from 'ramda';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
 import { getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
-import { FunctionalError, ValidationError } from '../config/errors';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { now } from '../utils/format';
@@ -18,21 +21,27 @@ import { publishUserAction } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
 import {
-  type EditInput,
-  type RegisterConnectorInput,
-  type SynchronizerAddInput,
-  type SynchronizerFetchInput,
-  type EditContext,
-  type MutationSynchronizerTestArgs,
+  type AddManagedConnectorInput,
   ConnectorType,
-  type RequestConnectorStatusInput,
   type CurrentConnectorStatusInput,
-  type LogsConnectorStatusInput
+  type EditContext,
+  type EditInput,
+  type EditManagedConnectorInput,
+  type LogsConnectorStatusInput,
+  type MutationSynchronizerTestArgs,
+  type RegisterConnectorInput,
+  type RegisterConnectorsManagerInput,
+  type RequestConnectorStatusInput,
+  type SynchronizerAddInput,
+  type SynchronizerFetchInput
 } from '../generated/graphql';
 import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
 import { findById } from './user';
+
+const ajv = new Ajv();
+addFormats(ajv, ['password']);
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -116,7 +125,141 @@ interface RegisterOptions {
   active?: boolean
   connector_user_id?: string | null
 }
-export const registerConnector = async (context: AuthContext, user:AuthUser, connectorData:RegisterConnectorInput, opts: RegisterOptions = {}) => {
+
+export const registerConnectorsManager = async (context: AuthContext, user: AuthUser, input: RegisterConnectorsManagerInput) => {
+  // Validate the contract
+  const validatedContracts = new Map();
+  for (let i = 0; i < input.contracts.length; i += 1) {
+    const contract = input.contracts[i];
+    const jsonContract = JSON.parse(contract);
+    if (isEmptyField(jsonContract.container_image)) {
+      throw UnsupportedError('Contract must defined container_image field');
+    }
+    if (isEmptyField(jsonContract.container_type)) {
+      throw UnsupportedError('Contract must defined container_type field');
+    }
+    const jsonValidation = {
+      type: jsonContract.type,
+      properties: jsonContract.properties,
+      required: jsonContract.required,
+      additionalProperties: jsonContract.additionalProperties
+    };
+    try {
+      ajv.compile(jsonValidation);
+    } catch (err) {
+      throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
+    }
+    validatedContracts.set(jsonContract.container_image, JSON.stringify(jsonContract));
+  }
+  const manager = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER);
+  const patch = { name: input.name, connector_manager_contracts: Array.from(validatedContracts.values()) };
+  if (manager) {
+    const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
+    return element;
+  }
+  const managerToCreate = { internal_id: input.id, ...patch };
+  return createEntity(context, user, managerToCreate, ENTITY_TYPE_CONNECTOR_MANAGER);
+};
+
+const computeConnectorTargetContract = (manager: any, input: any) => {
+  const contractsMap = new Map(manager.connector_manager_contracts.map((rawContract: any) => {
+    const contrat = JSON.parse(rawContract);
+    return [contrat.container_image, contrat];
+  }));
+  const targetContract: any = contractsMap.get(input.manager_contract_image);
+  if (isEmptyField(targetContract)) {
+    throw UnsupportedError('Target contract not found');
+  }
+  // Add default values
+  const inputConfigurations = input.manager_contract_configuration;
+  for (let index = 0; index < inputConfigurations.length; index += 1) {
+    const inputConfiguration = inputConfigurations[index];
+    if (isNotEmptyField(targetContract.default[inputConfiguration.key]) && !isEmptyField(inputConfiguration.value)) {
+      inputConfiguration.value = targetContract.default[inputConfiguration.key];
+    }
+  }
+  // Build the json contract
+  const contractObject: any = R.mergeAll(inputConfigurations.map((conf: any) => ({ [conf.key]: conf.value })));
+  // Validate the contract
+  const jsonValidation = {
+    type: targetContract.type,
+    properties: targetContract.properties,
+    required: targetContract.required,
+    additionalProperties: targetContract.additionalProperties
+  };
+  const validate = ajv.compile(jsonValidation);
+  const validContractObject = validate(contractObject);
+  if (!validContractObject) {
+    throw UnsupportedError('Invalid contract definition');
+  }
+  return targetContract;
+};
+
+export const managedConnectorEdit = async (
+  context: AuthContext,
+  user:AuthUser,
+  input: EditManagedConnectorInput
+) => {
+  const conn: any = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR);
+  if (isEmptyField(conn)) {
+    throw UnsupportedError('Connector not found');
+  }
+  const manager: any = await storeLoadById(context, user, conn.manager_id, ENTITY_TYPE_CONNECTOR_MANAGER);
+  if (isEmptyField(manager)) {
+    throw UnsupportedError('Manager not found');
+  }
+  const targetContract = computeConnectorTargetContract(manager, input);
+  const patch: any = {
+    name: input.name,
+    connector_type: targetContract.container_type,
+    connector_user_id: input.connector_user_id,
+    manager_contract_configuration: input.manager_contract_configuration,
+  };
+  const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
+  return element;
+};
+
+export const managedConnectorAdd = async (
+  context: AuthContext,
+  user:AuthUser,
+  input: AddManagedConnectorInput
+) => {
+  const manager: any = await storeLoadById(context, user, input.manager_id, ENTITY_TYPE_CONNECTOR_MANAGER);
+  if (isEmptyField(manager)) {
+    throw UnsupportedError('Manager not found');
+  }
+  const targetContract = computeConnectorTargetContract(manager, input);
+  const connectorToCreate: any = {
+    name: input.name,
+    connector_type: targetContract.container_type,
+    manager_id: input.manager_id,
+    connector_user_id: input.connector_user_id,
+    manager_contract_image: input.manager_contract_image,
+    manager_contract_configuration: input.manager_contract_configuration,
+    manager_requested_status: 'creating',
+    built_in: false
+  };
+  const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'administration',
+    message: `creates ${ENTITY_TYPE_CONNECTOR} \`${createdConnector.name}\``,
+    context_data: { id: createdConnector.internal_id, entity_type: ENTITY_TYPE_CONNECTOR, input }
+  });
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
+  // Return the connector
+  return completeConnector(createdConnector);
+};
+
+export const registerConnector = async (
+  context: AuthContext,
+  user:AuthUser,
+  connectorData: RegisterConnectorInput,
+  opts: RegisterOptions = {}
+) => {
   // eslint-disable-next-line camelcase
   const { id, name, type, scope, auto = null, only_contextual = null, playbook_compatible = false } = connectorData;
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
@@ -135,10 +278,6 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
       connector_user_id: opts.connector_user_id ?? user.id,
       built_in: opts.built_in ?? false,
     };
-    // manager patch
-    if (connectorData.manager_contract_configuration) {
-      patch.manager_contract_configuration = connectorData.manager_contract_configuration;
-    }
     if (opts.active !== undefined) {
       patch.active = opts.active;
     }
@@ -158,11 +297,6 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
     playbook_compatible,
     connector_user_id: opts.connector_user_id ?? user.id,
     built_in: opts.built_in ?? false,
-    // manager
-    manager_id: connectorData.manager_id,
-    manager_contract_image: connectorData.manager_contract_image,
-    manager_contract_configuration: connectorData.manager_contract_configuration,
-    manager_requested_status: isNotEmptyField(connectorData.manager_id) ? 'creating' : null
   };
   if (opts.active !== undefined) {
     connectorToCreate.active = opts.active;
@@ -181,6 +315,7 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
   // Return the connector
   return completeConnector(createdConnector);
 };
+
 export const connectorDelete = async (context: AuthContext, user:AuthUser, connectorId: string) => {
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);

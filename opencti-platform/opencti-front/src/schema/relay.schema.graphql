@@ -1943,9 +1943,27 @@ input RegisterConnectorInput {
   auto: Boolean
   only_contextual: Boolean
   playbook_compatible: Boolean
-  manager_id: String
-  manager_contract_image: String
-  manager_contract_configuration: [ContractConfigInput!]
+}
+
+input EditManagedConnectorInput {
+  id: ID!
+  name: String!
+  connector_user_id: ID!
+  manager_contract_configuration: [ContractConfigInput!]!
+}
+
+input AddManagedConnectorInput {
+  name: String!
+  manager_id: ID!
+  connector_user_id: ID!
+  manager_contract_image: String!
+  manager_contract_configuration: [ContractConfigInput!]!
+}
+
+input RegisterConnectorsManagerInput {
+  id: ID!
+  name: String!
+  contracts: [String!]!
 }
 
 input RequestConnectorStatusInput {
@@ -2058,12 +2076,32 @@ type Connector implements BasicObject & InternalObject {
   works(status: String): [Work]
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
-  manager_id: String
-  manager_contract_image: String
+}
+
+type ManagedConnector implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  connector_user_id: ID
+  connector_user: User
+  manager_id: String!
+  manager_contract_image: String!
   manager_current_status: String
-  manager_requested_status: String
-  manager_contract_configuration: [ConnectorContractConfiguration!]
-  manager_connector_logs: [String!]
+  manager_requested_status: String!
+  manager_contract_configuration: [ConnectorContractConfiguration!]!
+  manager_contract_hash: String!
+  manager_connector_logs: [String!]!
+}
+
+type ConnectorManager implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  connector_manager_contracts: [String!]!
 }
 
 type RuleExecutionError {
@@ -7949,7 +7987,9 @@ type Query {
   capabilities(first: Int): CapabilityConnection
   connector(id: String!): Connector
   connectors: [Connector!]
-  connectorsForManager(managerId: ID!): [Connector!]
+  connectorManager(managerId: ID!): ConnectorManager!
+  connectorManagers: [ConnectorManager!]
+  connectorsForManager(managerId: ID!): [ManagedConnector!]
   connectorsForWorker: [Connector]
   connectorsForExport: [Connector]
   connectorsForImport: [Connector]
@@ -8785,11 +8825,14 @@ type Mutation {
   roleEdit(id: ID!): RoleEditMutations
   pingConnector(id: ID!, state: String, connectorInfo: ConnectorInfoInput): Connector
   registerConnector(input: RegisterConnectorInput): Connector
+  managedConnectorEdit(input: EditManagedConnectorInput): ManagedConnector
+  managedConnectorAdd(input: AddManagedConnectorInput): ManagedConnector
+  registerConnectorsManager(input: RegisterConnectorsManagerInput): ConnectorManager
   resetStateConnector(id: ID!): Connector
   deleteConnector(id: ID!): ID!
-  updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): Connector
-  updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): Connector
-  updateConnectorLogs(input: LogsConnectorStatusInput!): Connector
+  updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): ManagedConnector
+  updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): ManagedConnector
+  updateConnectorLogs(input: LogsConnectorStatusInput!): ManagedConnector
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!
