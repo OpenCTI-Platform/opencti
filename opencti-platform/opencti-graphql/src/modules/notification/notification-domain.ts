@@ -176,7 +176,7 @@ export const triggersGet = (context: AuthContext, user: AuthUser, triggerIds: st
 export const getTriggerRecipients = async (context: AuthContext, user: AuthUser, element: BasicStoreEntityTrigger) => {
   const access = getUserAccessRight(user, element);
   if (access === MEMBER_ACCESS_RIGHT_ADMIN) {
-    const ids = element.authorized_members.map((a) => a.id);
+    const ids = element.restricted_members.map((a) => a.id);
     return internalFindByIds<BasicStoreEntity>(context, user, ids);
   }
   return [];
@@ -235,18 +235,18 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
   }
   // If user is only organization admin, check if he has access on all targets
   if (isOnlyOrgaAdmin(user)) {
-    const memberIds = (trigger.authorized_members ?? []).map((a: AuthorizedMember) => a.id);
+    const memberIds = (trigger.restricted_members ?? []).map((a: AuthorizedMember) => a.id);
     const adminOrganizationIds = (user.administrated_organizations ?? []).map((o) => o.internal_id);
     if (!adminOrganizationIds.every((v) => memberIds.includes(v))) {
       throw ForbiddenAccess();
     }
   }
-  const adminIds = (trigger.authorized_members ?? [])
+  const adminIds = (trigger.restricted_members ?? [])
     .filter((a: AuthorizedMember) => a.access_right === 'admin')
     .map((a: AuthorizedMember) => a.id);
   const isSelfTrigger = adminIds.length === 1;
   const deleted = await deleteElementById(context, user, triggerId, ENTITY_TYPE_TRIGGER);
-  const memberIds = (trigger.authorized_members ?? []).map((a: AuthorizedMember) => a.id);
+  const memberIds = (trigger.restricted_members ?? []).map((a: AuthorizedMember) => a.id);
   const recipients = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, memberIds);
   const recipientNames = recipients.map((r) => r.name);
   await notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].DELETE_TOPIC, deleted, user);

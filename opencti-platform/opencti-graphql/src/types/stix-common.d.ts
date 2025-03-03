@@ -53,7 +53,7 @@ interface StixOpenctiExtension {
   assignee_ids: string[]
   participant_ids: string[]
   creator_ids: string[]
-  authorized_members: Array<AuthorizedMember> | undefined
+  restricted_members: Array<AuthorizedMember> | undefined
   labels_ids: string[]
   created_by_ref_id: string
   converter_csv?: string | undefined
