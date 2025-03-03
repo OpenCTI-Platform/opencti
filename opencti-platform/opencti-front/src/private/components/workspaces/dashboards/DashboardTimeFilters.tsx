@@ -56,7 +56,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           <Select
             labelId="relative"
             value={config.relativeDate ?? ''}
-            onChange={(value) => handleChangeRelativeDate('relativeDate', value)}
+            onChange={handleChangeRelativeDate}
             label={t_i18n('Relative time')}
             variant="outlined"
           >
