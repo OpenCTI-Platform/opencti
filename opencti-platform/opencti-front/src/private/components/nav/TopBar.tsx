@@ -255,7 +255,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           search: searchKeyword,
         },
         onCompleted: (response: TopBarAskAINLQMutation$data) => {
-          console.log('response.aiNLQ', response.aiNLQ); // TODO remove
           handleSearchByFilter(searchKeyword, 'knowledge', navigate, response.aiNLQ, helpers);
         },
         onError: (error: Error) => {
