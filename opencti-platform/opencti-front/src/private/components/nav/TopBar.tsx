@@ -20,7 +20,6 @@ import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
-import { SearchStixCoreObjectsLinesPaginationQuery$variables } from '@components/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
@@ -47,8 +46,6 @@ import ItemBoolean from '../../../components/ItemBoolean';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { RelayError } from '../../../relay/relayTypes';
-import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -171,20 +168,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [askAI, setAskAI] = useState(false);
   const [commitMutationNLQ] = useApiMutation<TopBarAskAINLQMutation>(topBarAskAINLQMutation);
 
-  const initialSearchValues = {
-    sortBy: '_score',
-    orderAsc: false,
-    openExports: false,
-    filters: {
-      ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['entity_type'], ['Stix-Core-Object']),
-    },
-  };
-  const { helpers } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
-    'nlq',
-    initialSearchValues,
-  );
-
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
   const handleNewNotificationsNumber = (
@@ -255,7 +238,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           search: searchKeyword,
         },
         onCompleted: (response: TopBarAskAINLQMutation$data) => {
-          handleSearchByFilter(searchKeyword, 'knowledge', navigate, response.aiNLQ, helpers);
+          handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ);
         },
         onError: (error: Error) => {
           const { errors } = (error as unknown as RelayError).res;

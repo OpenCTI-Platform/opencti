@@ -1,5 +1,4 @@
 import { NavigateFunction } from 'react-router/dist/lib/hooks';
-import { UseLocalStorageHelpers } from './hooks/useLocalStorage';
 import { emptyFilterGroup } from './filters/filtersUtils';
 
 export const handleSearchByKeyword = (searchKeyword: string, searchScope: string, navigate: NavigateFunction) => {
@@ -12,12 +11,8 @@ export const handleSearchByFilter = (
   searchScope: string,
   navigate: NavigateFunction,
   stringFilters?: string | null,
-  helpers?: UseLocalStorageHelpers,
 ) => {
-  helpers?.handleClearAllFilters();
-  helpers?.handleSetFilters(stringFilters ? JSON.parse(stringFilters) : emptyFilterGroup);
-  const filtersURI = stringFilters ? `?filters=${encodeURIComponent(stringFilters)}` : '';
-  const link = `/dashboard/search/${searchScope}/${searchKeyword}${filtersURI}`;
+  const link = `/dashboard/search/${searchScope}/${encodeURIComponent(stringFilters ?? JSON.stringify(emptyFilterGroup))}/${searchKeyword}`;
   navigate(link);
 };
 
