@@ -109,7 +109,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
 
   const theme = useTheme<Theme>();
   const { settings } = useContext(UserContext);
-  const importFromHubUrl = isNotEmptyField(settings) ? `${settings.platform_xtmhub_url}/redirect/custom_dashboard?octi_instance_id=${settings.id}`.replaceAll('//', '/') : '';
+  const importFromHubUrl = isNotEmptyField(settings) ? `${settings.platform_xtmhub_url}/redirect/custom_dashboards?octi_instance_id=${settings.id}`.replaceAll('//', '/') : '';
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(type === 'dashboard' ? t_i18n('Custom dashboards | Dashboards') : t_i18n('Investigations'));
