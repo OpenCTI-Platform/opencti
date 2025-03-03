@@ -21,7 +21,6 @@ import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
 import { SearchStixCoreObjectsLinesPaginationQuery$variables } from '@components/__generated__/SearchStixCoreObjectsLinesPaginationQuery.graphql';
-import { NLQ_LOCAL_STORAGE_KEY } from '@components/SearchNLQ';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
@@ -182,7 +181,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     },
   };
   const { helpers } = usePaginationLocalStorage<SearchStixCoreObjectsLinesPaginationQuery$variables>(
-    NLQ_LOCAL_STORAGE_KEY,
+    'nlq',
     initialSearchValues,
   );
 
@@ -257,7 +256,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         },
         onCompleted: (response: TopBarAskAINLQMutation$data) => {
           console.log('response.aiNLQ', response.aiNLQ); // TODO remove
-          handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ, helpers);
+          handleSearchByFilter(searchKeyword, 'knowledge', navigate, response.aiNLQ, helpers);
         },
         onError: (error: Error) => {
           const { errors } = (error as unknown as RelayError).res;

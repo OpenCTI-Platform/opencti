@@ -35,8 +35,6 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
   let searchType = 'knowledge';
   if (location.pathname.includes('/files')) {
     searchType = 'files';
-  } else if (location.pathname.includes('/nlq')) {
-    searchType = 'nlq';
   }
   return (
     <ExportContextProvider>
@@ -65,12 +63,6 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
                 <div style={{ padding: '0px 12px', display: 'flex' }}>{t_i18n('Files search')}<EEChip /></div>
               </Badge>
             }
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/search/nlq/${keyword ?? ''}`}
-            value="nlq"
-            label={t_i18n('NLQ results')}
           />
         </Tabs>
       </Box>

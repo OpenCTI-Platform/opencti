@@ -18,7 +18,7 @@ import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocument
 
 const LOCAL_STORAGE_KEY = 'search';
 
-export const searchLineFragment = graphql`
+const searchLineFragment = graphql`
   fragment SearchStixCoreObjectLine_node on StixCoreObject {
     id
     parent_types
@@ -57,7 +57,7 @@ export const searchLineFragment = graphql`
   }
 `;
 
-export const searchStixCoreObjectsLinesQuery = graphql`
+const searchStixCoreObjectsLinesQuery = graphql`
   query SearchStixCoreObjectsLinesPaginationQuery(
     $types: [String]
     $search: String
