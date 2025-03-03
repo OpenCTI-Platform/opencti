@@ -173,8 +173,7 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
-        size="medium"
-        style={{ marginTop: 3 }}
+        size="small"
         color="primary"
         aria-label={t_i18n('Workspace popover of actions')}
       >
