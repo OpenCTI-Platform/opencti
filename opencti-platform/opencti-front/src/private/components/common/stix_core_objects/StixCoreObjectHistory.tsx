@@ -88,15 +88,15 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           />
         </Grid>
         {!withoutRelations && (
-          <Grid item xs={6} style={{ paddingTop: 0 }}>
+          <Grid item xs={6}>
             <Typography
               variant="h4"
               gutterBottom
-              style={{ float: 'left', marginTop: 10 }}
+              style={{ float: 'left' }}
             >
               {t_i18n('Relations of the entity')}
             </Typography>
-            <div style={{ float: 'right' }}>
+            <div style={{ float: 'right', marginTop: -15 }}>
               <SearchInput
                 variant="thin"
                 onSubmit={handleSearchRelations}
