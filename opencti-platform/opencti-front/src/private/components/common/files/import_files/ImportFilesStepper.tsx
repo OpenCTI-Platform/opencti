@@ -5,9 +5,10 @@ import { useFormatter } from '../../../../../components/i18n';
 interface ImportFilesStepperProps {
   activeStep: number;
   setActiveStep: (step: number) => void;
+  hasSelectedFiles: boolean;
 }
 
-const ImportFilesStepper = ({ activeStep, setActiveStep }: ImportFilesStepperProps) => {
+const ImportFilesStepper = ({ activeStep, setActiveStep, hasSelectedFiles }: ImportFilesStepperProps) => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -17,7 +18,7 @@ const ImportFilesStepper = ({ activeStep, setActiveStep }: ImportFilesStepperPro
           { t_i18n('Select files') }
         </StepButton>
       </Step>
-      <Step key={'import_options'}>
+      <Step key={'import_options'} disabled={!hasSelectedFiles}>
         <StepButton color="inherit" onClick={() => setActiveStep(1)}>
           { t_i18n('Import options') }
         </StepButton>

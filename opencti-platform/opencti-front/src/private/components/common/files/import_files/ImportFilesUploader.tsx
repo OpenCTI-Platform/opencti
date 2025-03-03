@@ -48,7 +48,7 @@ const ImportFilesUploader = ({ files = [], onChange }: ImportFilesUploaderProps)
             {files.length > 0 && (
               <Collapse key="header" >
                 <ListItem divider sx={{ paddingLeft: 7 }}>
-                  {t_i18n('File')}
+                  {t_i18n('Files')}
                 </ListItem>
               </Collapse>
             )}

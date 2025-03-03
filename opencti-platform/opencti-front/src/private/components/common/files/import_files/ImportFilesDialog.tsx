@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography, Box } from '@mui/material';
 import { FormikConfig, useFormik } from 'formik';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
@@ -67,16 +67,17 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
   const [uploadStatus, setUploadStatus] = useState<undefined | 'uploading' | 'success'>();
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; status?: 'success' | 'error' }[]>([]);
 
+  const successMessage = t_i18n('Files successfully uploaded');
   const [commitGlobal] = useApiMutation<ImportFilesDialogGlobalMutation>(
     importFilesDialogGlobalMutation,
     undefined,
-    { successMessage: t_i18n('files successfully uploaded') },
+    { successMessage },
   );
 
   const [commitEntity] = useApiMutation<ImportFilesDialogEntityMutation>(
     importFilesDialogEntityMutation,
     undefined,
-    { successMessage: t_i18n('files successfully uploaded') },
+    { successMessage },
   );
 
   const {
@@ -92,6 +93,10 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     ),
     type: 'files',
   });
+
+  const isValid = useMemo(() => {
+    return files.length > 0;
+  }, [files]);
 
   const onSubmit: FormikConfig<OptionsFormValues>['onSubmit'] = (values, { setErrors }) => {
     setUploadStatus('uploading');
@@ -161,7 +166,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
       <DialogContent sx={{ paddingInline: 20, marginBlock: 10 }}>
         {!uploadStatus ? (
           <>
-            <ImportFilesStepper activeStep={activeStep} setActiveStep={setActiveStep} />
+            <ImportFilesStepper activeStep={activeStep} setActiveStep={setActiveStep} hasSelectedFiles={files.length > 0} />
             <Box sx={{ paddingBlock: 10 }}>
               {activeStep === 0 && <ImportFilesUploader files={files} onChange={(newFiles) => setFiles(newFiles)}/>}
               {activeStep === 1 && <ImportFilesOptions optionsFormikContext={optionsContext} entityId={entityId} />}
@@ -184,7 +189,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
               {t_i18n('Cancel')}
             </Button>
             {activeStep < 1 ? (
-              <Button onClick={() => setActiveStep(activeStep + 1)} color="secondary">
+              <Button onClick={() => setActiveStep(activeStep + 1)} color="secondary" disabled={!isValid}>
                 {t_i18n('Next')}
               </Button>
             ) : (
@@ -193,20 +198,23 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
               </Button>
             )}
           </>
-        ) : uploadStatus === 'success'
-              && (
-                (optionsContext.values.associatedEntity?.value || undefined) ? (
-                  <Button
-                    onClick={() => handleClose()}
-                    component={Link}
-                    to={`${resolveLink(optionsContext.values.associatedEntity.type)}/${optionsContext.values.associatedEntity.value}/files`}
-                  >
-                    {t_i18n('Navigate to entity')}
-                  </Button>)
-                  : (<Button onClick={() => handleClose()}>
-                    {t_i18n('Close')}
-                  </Button>)
-              )
+        ) : uploadStatus === 'success' && (
+          <>
+            <Button onClick={() => handleClose()}>
+              {t_i18n('Close')}
+            </Button>
+            {optionsContext.values.associatedEntity?.value && (
+              <Button
+                color="secondary"
+                onClick={() => handleClose()}
+                component={Link}
+                to={`${resolveLink(optionsContext.values.associatedEntity.type)}/${optionsContext.values.associatedEntity.value}/files`}
+              >
+                {t_i18n('Navigate to entity')}
+              </Button>
+            )}
+          </>
+        )
             }
       </DialogActions>
     </Dialog>
