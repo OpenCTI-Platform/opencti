@@ -1953,7 +1953,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   if (updates.some((e) => e.key === authorizedMembers.name)) {
     accessOperation = 'manage-access';
     if (schemaAttributesDefinition.getAttribute(initial.entity_type, authorizedMembersActivationDate.name)
-      && (!initial.authorized_members || initial.authorized_members.length === 0)
+      && (!initial.restricted_members || initial.restricted_members.length === 0)
       && updates.some((e) => e.key === authorizedMembers.name && e.value?.length > 0)) {
       updates.push({
         key: authorizedMembersActivationDate.name,
@@ -3042,7 +3042,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // endregion
   // validate authorized members access (when creating a new entity with authorized members)
-  if (input.authorized_members?.length > 0) {
+  if (input.restricted_members?.length > 0) {
     if (!validateUserAccessOperation(user, input, 'manage-access')) {
       throw ForbiddenAccess();
     }
