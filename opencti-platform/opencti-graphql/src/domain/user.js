@@ -854,7 +854,7 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
   const workspacesToDelete = await listAllEntities(context, userToDeleteAuth, [ENTITY_TYPE_WORKSPACE], { connectionFormat: false });
 
   const workspaceToDeleteIds = workspacesToDelete
-    .filter((workspaceEntity) => isUserTheLastAdmin(userId, workspaceEntity.authorized_members))
+    .filter((workspaceEntity) => isUserTheLastAdmin(userId, workspaceEntity.restricted_members))
     .map((workspaceEntity) => workspaceEntity.internal_id);
 
   if (workspaceToDeleteIds.length > 0) {
