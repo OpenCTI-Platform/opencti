@@ -4,10 +4,9 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { useTheme } from '@mui/material/styles';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import WorkspaceHeader from '@components/workspaces/WorkspaceHeader';
-import useInvestigationGraphEdit from '@components/workspaces/investigations/useInvestigationGraphEdit';
-import { InvestigationGraphData_fragment$key } from '@components/workspaces/investigations/__generated__/InvestigationGraphData_fragment.graphql';
-import useInvestigationGraphAddRelation from '@components/workspaces/investigations/useInvestigationGraphAddRelation';
-import useInvestigationGraphDeleteRelation from '@components/workspaces/investigations/useInvestigationGraphDeleteRelation';
+import useInvestigationGraphEdit from './useInvestigationGraphEdit';
+import { InvestigationGraphData_fragment$key } from './__generated__/InvestigationGraphData_fragment.graphql';
+import useInvestigationGraphUpdateEntities from './useInvestigationGraphUpdateEntities';
 import { InvestigationGraph_fragment$data, InvestigationGraph_fragment$key } from './__generated__/InvestigationGraph_fragment.graphql';
 import type { Theme } from '../../../../components/Theme';
 import Graph from '../../../../utils/graph/Graph';
@@ -67,6 +66,7 @@ const investigationGraphFragment = graphql`
           }
           ... on StixDomainObject {
             created
+            numberOfConnectedElement
           }
           ... on AttackPattern {
             name
@@ -361,8 +361,7 @@ const InvestigationGraphComponent = ({
   const { addLink } = useGraphInteractions();
 
   const [commitEditPositions] = useInvestigationGraphEdit();
-  const [commitAddRelation] = useInvestigationGraphAddRelation();
-  const [commitDeleteRelation] = useInvestigationGraphDeleteRelation();
+  const [commitUpdateEntities] = useInvestigationGraphUpdateEntities();
 
   const headerHeight = 64;
   const paddingHeight = 25;
@@ -385,37 +384,38 @@ const InvestigationGraphComponent = ({
     });
   };
 
-  const addRelationInGraph: GraphToolbarProps['onAddRelation'] = (rel) => {
-    commitAddRelation({
-      variables: {
-        id: investigation.id,
-        input: [{
-          key: 'investigated_entities_ids',
-          operation: 'add',
-          value: [rel.id],
-        }],
-      },
-      onCompleted: () => {
-        addLink(rel);
-      },
-    });
-  };
-
-  const removeInGraph: GraphToolbarProps['onRemove'] = (
-    ids,
-    onCompleted,
+  const updateInvestigationEntitiesGraph = (
+    ids: string[],
+    operation: 'add' | 'remove' | 'replace',
+    onCompleted?: () => void,
   ) => {
-    commitDeleteRelation({
+    commitUpdateEntities({
       variables: {
         id: investigation.id,
         input: [{
           key: 'investigated_entities_ids',
-          operation: 'remove',
+          operation,
           value: ids,
         }],
       },
       onCompleted,
     });
+  };
+
+  const addRelationInGraph: GraphToolbarProps['onAddRelation'] = (rel) => {
+    updateInvestigationEntitiesGraph([rel.id], 'add', () => addLink(rel));
+  };
+
+  const addInGraph: GraphToolbarProps['onInvestigationExpand'] = (ids) => {
+    updateInvestigationEntitiesGraph(ids, 'add');
+  };
+
+  const removeInGraph: GraphToolbarProps['onRemove'] = (ids, onCompleted) => {
+    updateInvestigationEntitiesGraph(ids, 'remove', onCompleted);
+  };
+
+  const replaceInGraph: GraphToolbarProps['onInvestigationRollback'] = (ids, onCompleted) => {
+    updateInvestigationEntitiesGraph(ids, 'replace', onCompleted);
   };
 
   return (
@@ -433,6 +433,8 @@ const InvestigationGraphComponent = ({
           entity={investigation}
           onAddRelation={addRelationInGraph}
           onRemove={removeInGraph}
+          onInvestigationExpand={addInGraph}
+          onInvestigationRollback={replaceInGraph}
         />
       </Graph>
     </div>

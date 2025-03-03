@@ -77,6 +77,7 @@ export interface GraphState {
   selectRelationshipMode: 'children' | 'parent' | 'deselect' | null
   correlationMode: 'all' | 'observables' | null
   showTimeRange: boolean
+  showLinearProgress: boolean
   disabledEntityTypes: string[]
   disabledCreators: string[]
   disabledMarkings: string[]

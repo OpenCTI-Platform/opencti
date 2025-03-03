@@ -6,7 +6,12 @@ import { getMainRepresentative, getSecondaryRepresentative } from '../../default
 import useGraphParser, { ObjectToParse } from './useGraphParser';
 
 const useGraphInteractions = () => {
-  const { buildNode, buildLink } = useGraphParser();
+  const {
+    buildNode,
+    buildLink,
+    buildCorrelationData,
+    buildGraphData,
+  } = useGraphParser();
 
   const {
     graphRef2D,
@@ -17,6 +22,7 @@ const useGraphInteractions = () => {
     setGraphData,
     setGraphState,
     setRawPositions,
+    context,
   } = useGraphContext();
 
   const {
@@ -102,6 +108,10 @@ const useGraphInteractions = () => {
 
   const setSelectedNodes = (nodes: GraphNode[]) => {
     setGraphStateProp('selectedNodes', nodes);
+  };
+
+  const setLinearProgress = (val: boolean) => {
+    setGraphStateProp('showLinearProgress', val);
   };
 
   const switchSelectRelationshipMode = () => {
@@ -324,6 +334,17 @@ const useGraphInteractions = () => {
     setGraphStateProp('selectedTimeRangeInterval', undefined);
   };
 
+  const rebuildGraphData = (objects: ObjectToParse[]) => {
+    const filteredObjects = context === 'correlation' && graphState.correlationMode === 'observables'
+      ? objects.filter((o) => (
+        o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
+      ))
+      : objects;
+    setGraphData(context === 'correlation'
+      ? buildCorrelationData(filteredObjects, rawPositions)
+      : buildGraphData(filteredObjects, rawPositions));
+  };
+
   const addNode = (data: ObjectToParse) => {
     const node = buildNode(data, rawPositions);
     setGraphData((oldData) => {
@@ -423,6 +444,8 @@ const useGraphInteractions = () => {
     setSelectedTimeRange,
     setIsAddRelationOpen,
     setRawPositions,
+    setLinearProgress,
+    rebuildGraphData,
   };
 };
 

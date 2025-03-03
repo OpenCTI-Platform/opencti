@@ -2,6 +2,7 @@ import Drawer from '@mui/material/Drawer';
 import React from 'react';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
+import LinearProgress from '@mui/material/LinearProgress';
 import useGraphInteractions from './utils/useGraphInteractions';
 import SearchInput from '../../components/SearchInput';
 import type { Theme } from '../../components/Theme';
@@ -12,16 +13,20 @@ import GraphToolbarContentTools, { GraphToolbarContentToolsProps } from './compo
 import GraphToolbarTimeRange from './components/GraphToolbarTimeRange';
 import { useGraphContext } from './GraphContext';
 import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
-import GraphToolbarExpandTools from './components/GraphToolbarExpandTools';
+import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './components/GraphToolbarExpandTools';
 
-export type GraphToolbarProps = GraphToolbarContentToolsProps;
+export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps;
 
-const GraphToolbar = (props: GraphToolbarProps) => {
+const GraphToolbar = ({
+  onInvestigationExpand,
+  onInvestigationRollback,
+  ...props
+}: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
   const navOpen = localStorage.getItem('navOpen') === 'true';
 
   const { graphState, context } = useGraphContext();
-  const { showTimeRange } = graphState;
+  const { showTimeRange, showLinearProgress } = graphState;
   const { selectBySearch } = useGraphInteractions();
 
   return (
@@ -39,6 +44,15 @@ const GraphToolbar = (props: GraphToolbarProps) => {
         },
       }}
     >
+      <LinearProgress
+        style={{
+          width: '100%',
+          height: 2,
+          position: 'absolute',
+          top: -1,
+          visibility: showLinearProgress ? 'visible' : 'hidden',
+        }}
+      />
       <div style={{
         height: 54,
         flex: '0 0 auto',
@@ -71,7 +85,10 @@ const GraphToolbar = (props: GraphToolbarProps) => {
         {context === 'investigation' && (
           <>
             <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
-            <GraphToolbarExpandTools />
+            <GraphToolbarExpandTools
+              onInvestigationExpand={onInvestigationExpand}
+              onInvestigationRollback={onInvestigationRollback}
+            />
             <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
           </>
         )}
