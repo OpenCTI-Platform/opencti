@@ -47,7 +47,7 @@ export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDo
   };
 };
 
-const convertMalwareToStix2 = (instance: StoreEntity, type: string): SDO.StixMalware2 => {
+export const convertMalwareToStix2 = (instance: StoreEntity, type: string): SDO.StixMalware2 => {
   // TODO should we  assertType(ENTITY_TYPE_MALWARE, type); as it is done in convertMalwareToStix
   return {
     ...buildStixDomain(instance),
