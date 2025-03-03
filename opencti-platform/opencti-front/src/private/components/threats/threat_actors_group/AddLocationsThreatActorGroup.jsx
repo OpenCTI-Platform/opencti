@@ -15,7 +15,7 @@ import { insertNode } from '../../../../utils/store';
 const styles = () => ({
   createButton: {
     float: 'left',
-    marginTop: -15,
+    marginTop: '-10px',
   },
   search: {
     marginLeft: 'auto',
@@ -59,7 +59,6 @@ class AddLocationsThreatActorGroup extends Component {
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
-          size="large"
         >
           <Add fontSize="small" />
         </IconButton>

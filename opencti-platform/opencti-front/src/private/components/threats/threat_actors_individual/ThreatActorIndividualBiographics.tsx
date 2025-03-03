@@ -12,6 +12,7 @@ import { isEmptyField } from '../../../../utils/utils';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import type { Theme } from '../../../../components/Theme';
 import CardLabel from '../../../../components/CardLabel';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -116,22 +117,26 @@ const ThreatActorIndividualBiographicsComponent = ({
             title={t_i18n('Eye Color')}
             tooltip={t_i18n('Known observed eye color(s) for the Identity.')}
           >
-            <ItemOpenVocab
-              type="eye-color-ov"
-              value={threatActorIndividual.eye_color}
-              small
-            />
+            <FieldOrEmpty source={threatActorIndividual.eye_color}>
+              <ItemOpenVocab
+                type="eye-color-ov"
+                value={threatActorIndividual.eye_color}
+                small
+              />
+            </FieldOrEmpty>
           </DetailGrid>
 
           <DetailGrid
             title={t_i18n('Hair Color')}
             tooltip={t_i18n('Known observed hair color(s) for the Identity.')}
           >
-            <ItemOpenVocab
-              type="hair-color-ov"
-              value={threatActorIndividual.hair_color}
-              small
-            />
+            <FieldOrEmpty source={threatActorIndividual.hair_color}>
+              <ItemOpenVocab
+                type="hair-color-ov"
+                value={threatActorIndividual.hair_color}
+                small
+              />
+            </FieldOrEmpty>
           </DetailGrid>
 
           <DetailGrid
