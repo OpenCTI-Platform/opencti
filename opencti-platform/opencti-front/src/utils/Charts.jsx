@@ -910,7 +910,7 @@ export const treeMapOptions = (
     },
     colors: [
       theme.palette.primary.main,
-      ...colors(theme.palette.mode === 'dark' ? 400 : 600),
+      ...colors(theme.palette.mode === 'dark' ? 400 : 600).filter((n) => n !== '#ffffff'),
     ],
     fill: {
       opacity: 1,
