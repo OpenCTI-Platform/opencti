@@ -910,7 +910,7 @@ export const treeMapOptions = (
     },
     colors: [
       theme.palette.primary.main,
-      ...colors(theme.palette.mode === 'dark' ? 400 : 600).filter((n) => n !== '#ffffff'),
+      ...colors(theme.palette.mode === 'dark' ? 400 : 600),
     ],
     fill: {
       opacity: 1,
@@ -945,7 +945,7 @@ export const treeMapOptions = (
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
         fontWeight: 600,
-        colors: [theme.palette.text.primary],
+        colors: [theme.palette.text.primary, theme.palette.text.secondary],
       },
       background: {
         enabled: false,
