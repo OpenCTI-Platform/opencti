@@ -32,6 +32,7 @@ import { entitySettingEditField, findByType as findEntitySettingsByType } from '
 import { findById as findStatusById } from '../../domain/status';
 import { type BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 import { findById as findGroupById } from '../../domain/group';
+import { getDraftContext } from '../../utils/draftContext';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -337,6 +338,10 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.info('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
   await checkRequestAccessEnabled(context, user);
+  const draftContext = getDraftContext(context, user);
+  if (draftContext) {
+    throw ValidationError('You cannot request access to an entity when in draft mode');
+  }
 
   const requestedEntities = input.request_access_entities;
   const organizationId = input.request_access_members[0];
