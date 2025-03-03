@@ -419,7 +419,7 @@ describe('TaskManager executeRemoveAuthMembers tests', () => {
 
     // Verify authorized members
     const reportWithAuthorizedMembers = await findReportById(adminContext, adminContext.user, reportId);
-    expect(reportWithAuthorizedMembers.authorized_members).toEqual([
+    expect(reportWithAuthorizedMembers.restricted_members).toEqual([
       {
         id: userEditorId,
         access_right: 'admin'
@@ -431,7 +431,7 @@ describe('TaskManager executeRemoveAuthMembers tests', () => {
 
     // Verify there are no authorized
     const reportAfterRemove = await findReportById(adminContext, adminContext.user, reportId);
-    expect(reportAfterRemove.authorized_members).toBeUndefined();
+    expect(reportAfterRemove.restricted_members).toBeUndefined();
   });
 });
 
