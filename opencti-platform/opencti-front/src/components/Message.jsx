@@ -58,7 +58,7 @@ const Message = () => {
 
   const handleDialogOpen = () => {
     if (!isEnterpriseEdition) {
-      setText('You need to enable EE License to use this feature');
+      setText(t_i18n('You need to enable EE License to use this feature'));
       return;
     }
     setDialogOpen(true);
