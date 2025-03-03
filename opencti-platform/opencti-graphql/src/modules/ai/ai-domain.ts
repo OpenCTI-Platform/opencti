@@ -14,6 +14,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import { callWithTimeout } from '@opentelemetry/sdk-metrics/build/esnext/utils';
 import { logApp } from '../../config/conf';
 import { queryAi, queryNLQAi } from '../../database/ai-llm';
 import { elSearchFiles } from '../../database/file-search';
@@ -31,11 +32,12 @@ import type { BasicStoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
 import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
-import { addFilter, checkFiltersValidity, emptyFilterGroup, extractFilterGroupValues, filtersEntityIdsMappingResult } from '../../utils/filtering/filtering-utils';
+import { addFilter, checkFiltersValidity, extractFilterGroupValues, filtersEntityIdsMappingResult } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
 import { NLQPromptTemplate } from './ai-nlq-utils';
+import { FunctionalError, UnknownError } from '../../config/errors';
 
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
@@ -338,15 +340,20 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
 
   // 01. query the model
   logApp.debug('[AI] Querying NLQ with prompt', { questionStart: search.substring(0, 100) });
-  const rawResponse = await queryNLQAi(promptValue);
+  const NLQ_TIMEOUT = 30 * 1000; // timeout: 30s
+  let rawResponse;
+  try {
+    rawResponse = await callWithTimeout(queryNLQAi(promptValue), NLQ_TIMEOUT);
+  } catch (e) {
+    throw UnknownError('The NLQ model takes too long to response', { promptValue });
+  }
   const parsedResponse = rawResponse as unknown as FilterGroup;
 
   // 02. check the filters validity
   try {
     checkFiltersValidity(parsedResponse);
   } catch (error) {
-    logApp.error('[AI] The NLQ filters response format is not correct', { error, data: parsedResponse });
-    return JSON.stringify(emptyFilterGroup);
+    throw FunctionalError('The NLQ filters response format is not correct', { error, data: parsedResponse });
   }
 
   // 03. map entities ids
