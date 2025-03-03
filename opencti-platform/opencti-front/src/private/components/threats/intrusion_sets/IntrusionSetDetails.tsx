@@ -162,7 +162,8 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             >
               {t_i18n('Secondary motivations')}
             </Typography>
-            {intrusionSet.secondary_motivations && (
+            <FieldOrEmpty source={intrusionSet.secondary_motivations}>
+              {intrusionSet.secondary_motivations && (
               <List>
                 {intrusionSet.secondary_motivations.map(
                   (secondaryMotivation) => (
@@ -186,7 +187,8 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
                   ),
                 )}
               </List>
-            )}
+              )}
+            </FieldOrEmpty>
           </Grid>
         </Grid>
       </Paper>
