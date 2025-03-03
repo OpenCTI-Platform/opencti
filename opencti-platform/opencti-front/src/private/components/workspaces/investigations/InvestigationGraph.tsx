@@ -339,14 +339,14 @@ const investigationGraphFragment = graphql`
   }
 `;
 
-// export const investigationGraphQuery = graphql`
-//   query InvestigationGraphQuery($id: String!) {
-//     workspace(id: $id) {
-//       ...InvestigationGraph_fragment
-//       ...InvestigationGraphData_fragment
-//     }
-//   }
-// `;
+export const investigationGraphQuery = graphql`
+  query InvestigationGraphQuery($id: String!) {
+    workspace(id: $id) {
+      ...InvestigationGraph_fragment
+      ...InvestigationGraphData_fragment
+    }
+  }
+`;
 
 interface InvestigationGraphComponentProps {
   investigation: InvestigationGraph_fragment$data
