@@ -7,6 +7,7 @@ import { MESSAGING$ } from '../relay/environment';
 import { useFormatter } from './i18n';
 import RequestAccessDialog from './RequestAccessDialog';
 import useHelper from '../utils/hooks/useHelper';
+import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 
 const Message = () => {
   const { t_i18n } = useFormatter();
@@ -15,11 +16,12 @@ const Message = () => {
   const [fullError, setFullError] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [text, setText] = useState('');
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   let isRequestAccessFeatureEnabled = false;
   try {
     const { isRequestAccessEnabled, isFeatureEnable } = useHelper();
-    isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF') && isRequestAccessEnabled();
+    isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF') && isRequestAccessEnabled() && isEnterpriseEdition;
   } catch (e) {
     // When called being unauthenticated there is no useAuth()
   }
@@ -55,11 +57,14 @@ const Message = () => {
   };
 
   const handleDialogOpen = () => {
+    if (!isEnterpriseEdition) {
+      setText('You need to enable EE License to use this feature');
+      return;
+    }
     setDialogOpen(true);
     setOpen(false);
   };
   const entityIds = fullError?.extensions?.data?.entityIds || [];
-
   return (
     <>
       <Snackbar
