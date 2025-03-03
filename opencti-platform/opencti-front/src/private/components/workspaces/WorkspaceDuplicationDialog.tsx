@@ -12,6 +12,7 @@ import {
   WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation$data,
 } from '@components/workspaces/__generated__/WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation.graphql';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { Dashboard_workspace$data } from '@components/workspaces/dashboards/__generated__/Dashboard_workspace.graphql';
 import { useFormatter } from '../../../components/i18n';
 import Transition from '../../../components/Transition';
 import { handleError, MESSAGING$ } from '../../../relay/environment';
@@ -19,12 +20,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import stopEvent from '../../../utils/domEvent';
 
 interface WorkspaceDuplicationDialogProps {
-  workspace: {
-    name: string;
-    type: string;
-    description: string;
-    manifest: string;
-  };
+  workspace: Dashboard_workspace$data
   displayDuplicate: boolean;
   duplicating: boolean;
   handleCloseDuplicate: (event: UIEvent) => void;
