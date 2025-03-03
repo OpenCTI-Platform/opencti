@@ -25,6 +25,7 @@ import useHelper from 'src/utils/hooks/useHelper';
 import WorkspaceWidgetConfig from 'src/private/components/workspaces/dashboards/WorkspaceWidgetConfig';
 import WorkspaceHeaderTagManager from '@components/workspaces/workspaceHeader/WorkspaceHeaderTagManager';
 import DashboardTimeFilters from '@components/workspaces/dashboards/DashboardTimeFilters';
+import { InvestigationGraph_workspace$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_workspace.graphql';
 
 const workspaceHeaderToStixReportBundleQuery = graphql`
   query WorkspaceHeaderToStixReportBundleQuery($id: String!) {
@@ -35,7 +36,7 @@ const workspaceHeaderToStixReportBundleQuery = graphql`
 `;
 
 type WorkspaceHeaderProps = {
-  workspace: Dashboard_workspace$data;
+  workspace: Dashboard_workspace$data | InvestigationGraph_workspace$data;
   variant: 'dashboard' | 'investigation';
   adjust: () => void;
   handleDateChange: (type: string, value: string) => void;
