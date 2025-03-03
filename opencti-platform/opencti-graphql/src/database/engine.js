@@ -582,15 +582,25 @@ const buildUserMemberAccessFilter = (user, opts) => {
   const authorizedFilters = [
     { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } },
   ];
-  if (!excludeEmptyAuthorizedMembers) {
-    authorizedFilters.push(emptyAuthorizedMembers);
-  }
+  const shouldConditions = [];
   if (includeAuthorities) {
     const roleIds = user.roles.map((r) => r.id);
     const owners = [...userAccessIds, ...capabilities, ...roleIds];
-    authorizedFilters.push({ terms: { 'authorized_authorities.keyword': owners } });
+    shouldConditions.push({ terms: { 'authorized_authorities.keyword': owners } });
   }
-  return [{ bool: { should: authorizedFilters } }];
+  if (!excludeEmptyAuthorizedMembers) {
+    shouldConditions.push(emptyAuthorizedMembers);
+  }
+  const nestedQuery = {
+    nested: {
+      path: authorizedMembers.name,
+      query: {
+        bool: { should: authorizedFilters }
+      }
+    }
+  };
+  shouldConditions.push(nestedQuery);
+  return [{ bool: { should: shouldConditions } }];
 };
 
 export const elIndexExists = async (indexName) => {
