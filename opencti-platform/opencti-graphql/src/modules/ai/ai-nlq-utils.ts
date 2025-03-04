@@ -1,4 +1,4 @@
-import { ChatPromptTemplate, type Example, FewShotChatMessagePromptTemplate } from '@langchain/core/prompts';
+import { ChatPromptTemplate, FewShotChatMessagePromptTemplate } from '@langchain/core/prompts';
 import { z } from 'zod';
 
 // TODO Cathia (pas duppliquer les keys des autres fitres indiques)
@@ -419,7 +419,7 @@ export const OpenCTIFiltersOutput = z.object({
 
 // examples
 
-const jsonFewShotExamples: Example[] = [
+const jsonFewShotExamples: { _comment: string, input: string, output: unknown }[] = [
   {
     _comment: 'I/ Identification of threat actors by TTP ID (T1082 technique)',
     input: "Who's is behind this T1082?",
@@ -1001,6 +1001,6 @@ const systemPrompt = `You are an expert in cybersecurity and OpenCTI query filte
 
 export const NLQPromptTemplate = ChatPromptTemplate.fromMessages([
   ['system', systemPrompt],
-  fewShotPrompt,
+  fewShotPrompt as unknown as ChatPromptTemplate,
   ['human', '{text}'],
 ]);
