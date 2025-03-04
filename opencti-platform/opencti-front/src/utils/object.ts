@@ -41,9 +41,9 @@ export function getObjectPropertyWithoutEmptyValues<T extends object>(object: T,
 
 export const isEmptyObject = (o: object) => Object.keys(o).length === 0;
 
-export const serializeObject = (o: object) => toB64(JSON.stringify(o));
+export const serializeObjectB64 = (o: object) => toB64(JSON.stringify(o));
 
-export const deserializeObject = (data: string | null | undefined) => {
+export const deserializeObjectB64 = (data: string | null | undefined) => {
   if (data) {
     const decodedData = JSON.parse(fromB64(data));
     if (typeof decodedData === 'object') {

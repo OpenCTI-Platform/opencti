@@ -3,20 +3,27 @@ import React, { CSSProperties, useMemo, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { knowledgeCorrelationStixCoreObjectQuery, knowledgeCorrelationStixCoreRelationshipQuery } from '@components/common/containers/KnowledgeCorrelationQuery';
+import { IncidentKnowledgeCorrelationData_fragment$key } from './__generated__/IncidentKnowledgeCorrelationData_fragment.graphql';
 import useIncidentKnowledgeCorrelationEdit from './useIncidentKnowledgeCorrelationEdit';
 import type { Theme } from '../../../../components/Theme';
 import { IncidentKnowledgeCorrelation_fragment$data, IncidentKnowledgeCorrelation_fragment$key } from './__generated__/IncidentKnowledgeCorrelation_fragment.graphql';
 import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
-import { encodeGraphData } from '../../../../utils/Graph';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
+import GraphToolbar from '../../../../utils/graph/GraphToolbar';
+import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
+
+const incidentCorrelationDataFragment = graphql`
+  fragment IncidentKnowledgeCorrelationData_fragment on CaseIncident {
+    x_opencti_graph_data
+  }
+`;
 
 const incidentCorrelationFragment = graphql`
   fragment IncidentKnowledgeCorrelation_fragment on CaseIncident {
     id
     name
-    x_opencti_graph_data
     confidence
     createdBy {
       ... on Identity {
@@ -308,6 +315,7 @@ export const incidentKnowledgeCorrelationQuery = graphql`
   query IncidentKnowledgeCorrelationQuery($id: String!) {
     caseIncident(id: $id) {
       ...IncidentKnowledgeCorrelation_fragment
+      ...IncidentKnowledgeCorrelationData_fragment
     }
   }
 `;
@@ -342,7 +350,7 @@ const IncidentKnowledgeCorrelationComponent = ({
         id: incident.id,
         input: [{
           key: 'x_opencti_graph_data',
-          value: [encodeGraphData(positions)],
+          value: [serializeObjectB64(positions)],
         }],
       },
     });
@@ -350,31 +358,37 @@ const IncidentKnowledgeCorrelationComponent = ({
 
   return (
     <div style={graphContainerStyle} ref={ref}>
-      <Graph
-        parentRef={ref}
-        onPositionsChanged={savePositions}
-        stixCoreObjectRefetchQuery={knowledgeCorrelationStixCoreObjectQuery}
-        relationshipRefetchQuery={knowledgeCorrelationStixCoreRelationshipQuery}
-      />
+      <Graph parentRef={ref} onPositionsChanged={savePositions}>
+        <GraphToolbar
+          stixCoreObjectRefetchQuery={knowledgeCorrelationStixCoreObjectQuery}
+          relationshipRefetchQuery={knowledgeCorrelationStixCoreRelationshipQuery}
+        />
+      </Graph>
     </div>
   );
 };
 
 interface IncidentKnowledgeCorrelationProps {
   data: IncidentKnowledgeCorrelation_fragment$key
+  graphData: IncidentKnowledgeCorrelationData_fragment$key
 }
 
 const IncidentKnowledgeCorrelation = ({
   data,
+  graphData,
 }: IncidentKnowledgeCorrelationProps) => {
   const incident = useFragment(incidentCorrelationFragment, data);
-  const incidentData = useMemo(() => getObjectsToParse(incident), [incident]);
+  const { x_opencti_graph_data } = useFragment(incidentCorrelationDataFragment, graphData);
   const localStorageKey = `incident-knowledge-correlation-${incident.id}`;
+
+  const objects = useMemo(() => getObjectsToParse(incident), [incident]);
+  const positions = useMemo(() => deserializeObjectB64(x_opencti_graph_data), [x_opencti_graph_data]);
 
   return (
     <GraphProvider
       localStorageKey={localStorageKey}
-      data={incidentData}
+      objects={objects}
+      positions={positions}
       context='correlation'
     >
       <IncidentKnowledgeCorrelationComponent incident={incident} />

@@ -21,15 +21,17 @@ interface GraphContextValue {
   // --- data of the graph pass as props
   graphData: LibGraphProps['graphData']
   setGraphData: Setter<LibGraphProps['graphData']>
+  // --- data of the graph pass as props
+  rawObjects: ObjectToParse[]
+  rawPositions: OctiGraphPositions
+  setRawPositions: Setter<OctiGraphPositions>
   // --- graph state (config saved in URL and local storage)
   graphState: GraphState
   setGraphState: Setter<GraphState>
-  // --- utils data derived from input data.
+  // --- utils data derived from raw data.
   stixCoreObjectTypes: string[]
   markingDefinitions: { id: string, definition: string }[]
   creators: { id: string, name: string }[]
-  objects: ObjectToParse[]
-  positions: OctiGraphPositions
   timeRange: GraphTimeRange
   // --- misc
   context?: string
@@ -41,17 +43,16 @@ interface GraphProviderProps {
   children: ReactNode
   localStorageKey: string
   context?: string
-  data: {
-    objects: ObjectToParse[]
-    positions: OctiGraphPositions
-  }
+  objects: ObjectToParse[]
+  positions: OctiGraphPositions
 }
 
 export const GraphProvider = ({
   children,
   context,
   localStorageKey,
-  data,
+  objects,
+  positions,
 }: GraphProviderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,6 +71,7 @@ export const GraphProvider = ({
     selectRelationshipMode: null,
     correlationMode: context === 'correlation' ? 'observables' : null,
     showTimeRange: false,
+    showLinearProgress: false,
     disabledEntityTypes: [],
     disabledCreators: [],
     disabledMarkings: [],
@@ -98,26 +100,31 @@ export const GraphProvider = ({
     }));
   }, [graphState.selectedNodes]);
 
+  const [rawPositions, setRawPositions] = useState(positions);
+  useEffect(() => {
+    setRawPositions(positions);
+  }, [positions]);
+
   const [graphData, setGraphData] = useState<LibGraphProps['graphData']>();
   useEffect(() => {
-    const objects = context === 'correlation' && graphState.correlationMode === 'observables'
-      ? data.objects.filter((o) => (
+    const filteredObjects = context === 'correlation' && graphState.correlationMode === 'observables'
+      ? objects.filter((o) => (
         o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
       ))
-      : data.objects;
+      : objects;
     // Rebuild graph data when input data has changed.
     setGraphData(context === 'correlation'
-      ? buildCorrelationData(objects, data.positions)
-      : buildGraphData(objects, data.positions));
-  }, [data, graphState.correlationMode]);
+      ? buildCorrelationData(filteredObjects, rawPositions)
+      : buildGraphData(filteredObjects, rawPositions));
+  }, [objects, graphState.correlationMode]);
 
   // Dynamically compute time range values
   const timeRange = useMemo(() => {
-    const objects = graphData?.links ?? [];
-    const interval = computeTimeRangeInterval(objects);
+    const links = graphData?.links ?? [];
+    const interval = computeTimeRangeInterval(links);
     return {
       interval,
-      values: computeTimeRangeValues(interval, objects),
+      values: computeTimeRangeValues(interval, links),
     };
   }, [graphData?.links]);
 
@@ -132,7 +139,7 @@ export const GraphProvider = ({
       .map((node) => node.entity_type)
       .filter((v, i, a) => a.indexOf(v) === i)
       .filter((v) => !['Note', 'Opinion'].includes(v));
-  }, [graphData]);
+  }, [graphData?.nodes]);
 
   // Dynamically compute all marking definitions in graphData.
   const markingDefinitions = useMemo(() => {
@@ -160,14 +167,15 @@ export const GraphProvider = ({
     graphState,
     timeRange,
     context,
-    objects: data.objects,
-    positions: data.positions,
+    rawPositions,
+    rawObjects: objects,
+    setRawPositions,
     setGraphData,
     setGraphState,
   }), [
     graphData,
     graphState,
-    data,
+    rawPositions,
   ]);
 
   return (

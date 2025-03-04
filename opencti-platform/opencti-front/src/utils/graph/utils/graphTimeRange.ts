@@ -26,7 +26,7 @@ export const computeTimeRangeInterval = (
 
   const filteredDates = objects.flatMap((o) => {
     const isRelationship = o.parent_types && o.parent_types.includes('basic-relationship');
-    const date = o.defaultDate.toISOString();
+    const date = !Number.isNaN(o.defaultDate.getTime()) ? o.defaultDate.toISOString() : null;
     if (!isRelationship || date === null || isDateStringNone(date)) return [];
     return jsDate(date);
   }).sort((a, b) => a.getTime() - b.getTime());
@@ -58,7 +58,7 @@ export const computeTimeRangeValues = (
 
   const elementsDates = objects.flatMap((o) => {
     const isRelationship = o.parent_types && o.parent_types.includes('basic-relationship');
-    const date = o.defaultDate.toISOString();
+    const date = !Number.isNaN(o.defaultDate.getTime()) ? o.defaultDate.toISOString() : null;
     if (!isRelationship || date === null || isDateStringNone(date)) return [];
     return timestamp(date);
   });
