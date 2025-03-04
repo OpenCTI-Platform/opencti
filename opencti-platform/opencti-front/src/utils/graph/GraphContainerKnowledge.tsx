@@ -56,6 +56,9 @@ const graphContainerKnowledgeDataFragment = graphql`
     ... on CaseRfi {
       name
     }
+    ... on CaseRft {
+      name
+    }
   }
 `;
 
