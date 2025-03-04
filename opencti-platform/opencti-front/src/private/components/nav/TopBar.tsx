@@ -302,7 +302,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               variant="topBar"
               placeholder={`${t_i18n('Search the platform')}...`}
               fullWidth={true}
-              isNLQLoading={isNLQLoading}
+              isNLQLoading={askAI && isNLQLoading}
             />
           </div>
         )}
