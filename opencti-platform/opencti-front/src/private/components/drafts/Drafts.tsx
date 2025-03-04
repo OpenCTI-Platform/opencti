@@ -4,6 +4,9 @@ import DraftCreation from '@components/drafts/DraftCreation';
 import { graphql } from 'react-relay';
 import { DraftsLines_data$data } from '@components/drafts/__generated__/DraftsLines_data.graphql';
 import { Drafts_node$data } from '@components/drafts/__generated__/Drafts_node.graphql';
+import Chip from '@mui/material/Chip';
+import { useTheme } from '@mui/styles';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -17,6 +20,8 @@ import DraftPopover from './DraftPopover';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import { hexToRGB } from '../../../utils/Colors';
+import type { Theme } from '../../../components/Theme';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -110,6 +115,9 @@ const computeValidationProgress = (validationWork: Drafts_node$data['validationW
 
 const Drafts: React.FC = () => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const draftColor = getDraftModeColor(theme);
+  const validatedDraftColor = theme.palette.success.main;
   const draftContext = useDraftContext();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
@@ -168,7 +176,24 @@ const Drafts: React.FC = () => {
       label: 'Status',
       percentWidth: 10,
       isSortable: true,
-      render: ({ draft_status }) => defaultRender(draft_status),
+      render: ({ draft_status }) => (
+        <Chip
+          variant="outlined"
+          label={draft_status}
+          style={{
+            fontSize: 12,
+            lineHeight: '12px',
+            height: 20,
+            float: 'left',
+            textTransform: 'uppercase',
+            borderRadius: 4,
+            width: 80,
+            color: draft_status === 'open' ? draftColor : validatedDraftColor,
+            borderColor: draft_status === 'open' ? draftColor : validatedDraftColor,
+            backgroundColor: hexToRGB(draft_status === 'open' ? draftColor : validatedDraftColor),
+          }}
+        />
+      ),
     },
     draft_validation_progress: {
       label: 'Validation progress',
