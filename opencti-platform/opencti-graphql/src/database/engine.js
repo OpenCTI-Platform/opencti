@@ -3159,7 +3159,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
     });
 };
 
-const extractNestedQueriesFromBool = (boolQueryArray) => {
+const extractNestedQueriesFromBool = (boolQueryArray, nestedPath = 'connections') => {
   let result = [];
   for (let i = 0; i < boolQueryArray.length; i += 1) {
     const boolQuery = boolQueryArray[i];
@@ -3167,7 +3167,7 @@ const extractNestedQueriesFromBool = (boolQueryArray) => {
     const nestedQueries = [];
     for (let j = 0; j < shouldArray.length; j += 1) {
       const queryElement = shouldArray[j];
-      if (queryElement.nested) nestedQueries.push(queryElement.nested.query);
+      if (queryElement.nested && queryElement.nested.path === nestedPath) nestedQueries.push(queryElement.nested.query);
       if (queryElement.bool?.should) { // case nested is in an imbricated filterGroup (not possible for the moment)
         const nestedBoolResult = extractNestedQueriesFromBool([queryElement]);
         if (nestedBoolResult.length > 0) {
