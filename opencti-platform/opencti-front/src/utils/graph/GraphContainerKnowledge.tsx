@@ -46,6 +46,13 @@ const graphContainerKnowledgeDataFragment = graphql`
       name
       published
     }
+    ... on Grouping {
+      name
+      context
+    }
+    ... on CaseIncident {
+      name
+    }
   }
 `;
 
