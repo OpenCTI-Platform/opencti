@@ -4,26 +4,33 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { graphql, useFragment } from 'react-relay';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import ContainerHeader from '@components/common/containers/ContainerHeader';
+import { CaseRftKnowledgeGraphData_fragment$key } from './__generated__/CaseRftKnowledgeGraphData_fragment.graphql';
 import { CaseRftKnowledgeGraph_fragment$data, CaseRftKnowledgeGraph_fragment$key } from './__generated__/CaseRftKnowledgeGraph_fragment.graphql';
 import useCaseRftKnowledgeGraphEdit from './useCaseRftKnowledgeGraphEdit';
 import useCaseRftKnowledgeGraphAddRelation from './useCaseRftKnowledgeGraphAddRelation';
 import useCaseRftKnowledgeGraphDeleteRelation from './useCaseRftKnowledgeGraphDeleteRelation';
 import CaseRftPopover from './CaseRftPopover';
 import type { Theme } from '../../../../components/Theme';
-import Graph, { GraphProps } from '../../../../utils/graph/Graph';
+import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
-import { encodeGraphData } from '../../../../utils/Graph';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
 import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteractions';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
+import GraphToolbar, { GraphToolbarProps } from '../../../../utils/graph/GraphToolbar';
+import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
+
+const caseRftGraphDataFragment = graphql`
+  fragment CaseRftKnowledgeGraphData_fragment on CaseRft {
+    x_opencti_graph_data
+  }
+`;
 
 const caseRftGraphFragment = graphql`
   fragment CaseRftKnowledgeGraph_fragment on CaseRft {
     id
     name
-    x_opencti_graph_data
     confidence
     createdBy {
       ... on Identity {
@@ -401,6 +408,7 @@ export const caseRftKnowledgeGraphQuery = graphql`
   query CaseRftKnowledgeGraphQuery($id: String!) {
     caseRft(id: $id) {
       ...CaseRftKnowledgeGraph_fragment
+      ...CaseRftKnowledgeGraphData_fragment
     }
   }
 `;
@@ -442,13 +450,13 @@ const CaseRftKnowledgeGraphComponent = ({
         id: caseRft.id,
         input: [{
           key: 'x_opencti_graph_data',
-          value: [encodeGraphData(positions)],
+          value: [serializeObjectB64(positions)],
         }],
       },
     });
   };
 
-  const addRelationInGraph: GraphProps['onAddRelation'] = (rel) => {
+  const addRelationInGraph: GraphToolbarProps['onAddRelation'] = (rel) => {
     commitAddRelation({
       variables: {
         id: caseRft.id,
@@ -463,7 +471,7 @@ const CaseRftKnowledgeGraphComponent = ({
     });
   };
 
-  const deleteRelationInGraph: GraphProps['onContainerDeleteRelation'] = (
+  const deleteRelationInGraph: GraphToolbarProps['onDeleteRelation'] = (
     relId,
     onCompleted,
   ) => {
@@ -492,40 +500,43 @@ const CaseRftKnowledgeGraphComponent = ({
         }}
         investigationAddFromContainer={investigationAddFromContainer}
       />
-      <Graph
-        parentRef={ref}
-        onPositionsChanged={savePositions}
-        enableReferences={enableReferences}
-        stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
-        relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
-        onAddRelation={addRelationInGraph}
-        onContainerDeleteRelation={deleteRelationInGraph}
-        container={{
-          id: caseRft.id,
-          confidence: caseRft.confidence,
-          objects: caseRft.objects?.edges ?? [],
-          createdBy: caseRft.createdBy,
-          objectMarking: caseRft.objectMarking ?? [],
-        }}
-      />
+      <Graph parentRef={ref} onPositionsChanged={savePositions}>
+        <GraphToolbar
+          enableReferences={enableReferences}
+          stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
+          relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
+          onAddRelation={addRelationInGraph}
+          onDeleteRelation={deleteRelationInGraph}
+          entity={caseRft}
+        />
+      </Graph>
     </div>
   );
 };
 
 interface ReportKnowledgeGraphtProps extends Omit<CaseRftKnowledgeGraphComponentProps, 'caseRft'> {
   data: CaseRftKnowledgeGraph_fragment$key
+  graphData: CaseRftKnowledgeGraphData_fragment$key
 }
 
 const CaseRftKnowledgeGraph = ({
   data,
+  graphData,
   ...otherProps
 }: ReportKnowledgeGraphtProps) => {
   const caseRft = useFragment(caseRftGraphFragment, data);
-  const caseRftData = useMemo(() => getObjectsToParse(caseRft), [caseRft]);
-  const localStorageKey = `caseRft-${caseRft.id}-knowledge-graph`;
+  const { x_opencti_graph_data } = useFragment(caseRftGraphDataFragment, graphData);
+  const localStorageKey = `caseRft-knowledge-graph-${caseRft.id}`;
+
+  const objects = useMemo(() => getObjectsToParse(caseRft), [caseRft]);
+  const positions = useMemo(() => deserializeObjectB64(x_opencti_graph_data), [x_opencti_graph_data]);
 
   return (
-    <GraphProvider localStorageKey={localStorageKey} data={caseRftData}>
+    <GraphProvider
+      localStorageKey={localStorageKey}
+      objects={objects}
+      positions={positions}
+    >
       <CaseRftKnowledgeGraphComponent caseRft={caseRft} {...otherProps} />
     </GraphProvider>
   );

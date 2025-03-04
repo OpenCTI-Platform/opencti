@@ -16,6 +16,7 @@ import { InvestigationExpandFormRelDistributionQuery } from './__generated__/Inv
 import CheckboxesField from '../../../../components/CheckboxesField';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { GraphLink, GraphNode } from '../../../../utils/graph/graph.types';
 
 // The number of elements targeted by the given
 // entities ids, sorted by type of entity.
@@ -90,26 +91,9 @@ type FormData = {
   reset_filters: boolean;
 };
 
-type InvestigationExpandFormProps = {
-  links: {
-    source: {
-      id: string;
-      entity_type: string;
-      [key: string]: unknown;
-    };
-    target: {
-      id: string;
-      entity_type: string;
-      [key: string]: unknown;
-    };
-    id: string;
-    entity_type: string;
-    [key: string]: unknown;
-  }[];
-  selectedNodes: {
-    id: string;
-    [key: string]: unknown;
-  }[];
+export type InvestigationExpandFormProps = {
+  links: GraphLink[];
+  selectedNodes: GraphNode[];
   onSubmit: (data: FormData, helpers: FormikHelpers<FormData>) => void;
   onReset: () => void;
 };
@@ -167,6 +151,9 @@ const InvestigationExpandFormContent = ({
     const countRels = new Map<string, Map<string, string[]>>();
 
     links.forEach((link) => {
+      if (typeof link.source === 'string' || typeof link.target === 'string') {
+        return;
+      }
       // toLowerCase() because relationship names are pascalized
       const relType = link.entity_type.toLowerCase();
 

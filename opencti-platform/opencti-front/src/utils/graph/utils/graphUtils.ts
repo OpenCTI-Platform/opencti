@@ -1,4 +1,3 @@
-import { deserializeObject } from '../../object';
 import { ObjectToParse } from './useGraphParser';
 import { GraphState } from '../graph.types';
 
@@ -52,7 +51,6 @@ interface GraphQueryData {
       }
     } | null | undefined)[] | undefined | null
   } | undefined | null
-  x_opencti_graph_data: string | undefined | null
 }
 
 /**
@@ -63,7 +61,7 @@ interface GraphQueryData {
  * @returns Comprehensive data for Graph.
  */
 export const getObjectsToParse = (data: GraphQueryData) => {
-  const objects = (data.objects?.edges ?? []).flatMap((n) => {
+  return (data.objects?.edges ?? []).flatMap((n) => {
     if (!n) return []; // filter empty nodes.
     // For correlation.
     const linkedContainers = [
@@ -73,8 +71,6 @@ export const getObjectsToParse = (data: GraphQueryData) => {
     ].flatMap((e) => (e ? e.node : []));
     return { ...n.node, types: n.types, linkedContainers };
   }) as unknown as ObjectToParse[];
-  const positions = deserializeObject(data.x_opencti_graph_data);
-  return { objects, positions };
 };
 
 /**

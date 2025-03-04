@@ -13,7 +13,7 @@ export interface ObjectToParse {
   entity_type: string
   relationship_type: string
   parent_types: string[]
-  types: string[]
+  types?: string[] | null | undefined
   is_inferred: boolean
   observable_value?: string
   observableName?: string
