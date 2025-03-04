@@ -10,7 +10,6 @@ import DashboardRelationshipsViz from './DashboardRelationshipsViz';
 import DashboardAuditsViz from './DashboardAuditsViz';
 import DashboardEntitiesViz from './DashboardEntitiesViz';
 import DashboardTimeFilters from './DashboardTimeFilters';
-import { parse } from '../../../../utils/Time';
 import WorkspaceHeader from '../workspaceHeader/WorkspaceHeader';
 import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
