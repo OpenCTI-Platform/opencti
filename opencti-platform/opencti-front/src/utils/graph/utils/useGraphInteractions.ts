@@ -114,6 +114,10 @@ const useGraphInteractions = () => {
     setGraphStateProp('showLinearProgress', val);
   };
 
+  const setShowLoadingMessage = (val: boolean) => {
+    setGraphStateProp('showLoadingMessage', val);
+  };
+
   const switchSelectRelationshipMode = () => {
     const selectedNodesIds = selectedNodes.map((n) => n.id);
     setSelectedLinks((graphData?.links ?? []).filter((l) => {
@@ -446,6 +450,7 @@ const useGraphInteractions = () => {
     setRawPositions,
     setLinearProgress,
     rebuildGraphData,
+    setShowLoadingMessage,
   };
 };
 

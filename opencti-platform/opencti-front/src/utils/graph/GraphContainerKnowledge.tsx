@@ -442,6 +442,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
 // endregion
 
 interface GraphContainerKnowledgeComponentProps {
+  loadingData: boolean
   dataHeader: ContainerHeader_container$key
   dataContainer: GraphContainerKnowledgeData_fragment$key
   enableReferences: boolean
@@ -457,6 +458,7 @@ interface GraphContainerKnowledgeComponentProps {
 }
 
 const GraphContainerKnowledgeComponent = ({
+  loadingData,
   dataHeader,
   dataContainer,
   enableReferences,
@@ -473,9 +475,13 @@ const GraphContainerKnowledgeComponent = ({
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
-  const { addLink } = useGraphInteractions();
+  const { addLink, setShowLoadingMessage } = useGraphInteractions();
 
   const container = useFragment(graphContainerKnowledgeDataFragment, dataContainer);
+
+  useEffect(() => {
+    setShowLoadingMessage(loadingData);
+  }, [loadingData]);
 
   const headerHeight = 64;
   const paddingHeight = 25;
@@ -519,7 +525,8 @@ const GraphContainerKnowledgeComponent = ({
 
 const REFETCH_DEBOUNCE_MS = 300;
 
-interface GraphContainerKnowledgeProps extends Omit<GraphContainerKnowledgeComponentProps, 'data'> {
+interface GraphContainerKnowledgeProps
+  extends Omit<GraphContainerKnowledgeComponentProps, 'data' | 'loadingData'> {
   containerId: string
   containerType: string
   dataPositions: GraphContainerKnowledgePositions_fragment$key
@@ -575,7 +582,10 @@ const GraphContainerKnowledge = ({
       objects={objects}
       positions={positions}
     >
-      <GraphContainerKnowledgeComponent {...otherProps} />
+      <GraphContainerKnowledgeComponent
+        loadingData={hasMore()}
+        {...otherProps}
+      />
     </GraphProvider>
   );
 };

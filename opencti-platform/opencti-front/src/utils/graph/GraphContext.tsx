@@ -72,6 +72,7 @@ export const GraphProvider = ({
     correlationMode: context === 'correlation' ? 'observables' : null,
     showTimeRange: false,
     showLinearProgress: false,
+    showLoadingMessage: false,
     disabledEntityTypes: [],
     disabledCreators: [],
     disabledMarkings: [],

@@ -2940,6 +2940,7 @@
   "The evaluation of the threat activity cannot be provided (lack of data).": "Die Bewertung der Bedrohungsaktivität kann nicht geliefert werden (Datenmangel).",
   "The following groups require your attention:": "Die folgenden Gruppen erfordern Ihre Aufmerksamkeit:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "Die folgenden TTPs sind in Ihrem OpenBAS-Katalog nicht enthalten:",
+  "The graph is currently loading data.": "Das Diagramm lädt gerade Daten.",
   "The importation of the file has been started": "Das Importieren der Datei wurde gestartet",
   "The main object and the ... relationships/references linked to it will be deleted permanently.": "Das Hauptobjekt und die mit ihm verknüpften {count} Beziehungen/Referenzen werden dauerhaft gelöscht.",
   "The main object and the ... relationships/references linked to it will be restored.": "Das Hauptobjekt und die mit ihm verknüpften {count} Beziehungen/Referenzen werden wiederhergestellt.",
