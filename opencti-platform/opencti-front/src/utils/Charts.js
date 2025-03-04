@@ -776,6 +776,8 @@ export const polarAreaChartOptions = (
  * @param {boolean} displayValue
  * @param {boolean} displayTooltip
  * @param {number} size
+ * @param {boolean} withBackground
+ * @returns ApexOptions
  */
 export const donutChartOptions = (
   theme,

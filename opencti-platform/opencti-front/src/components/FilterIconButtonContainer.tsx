@@ -1,6 +1,6 @@
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
-import React, { Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
+import React, { Fragment, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
@@ -169,7 +169,7 @@ FilterIconButtonContainerProps
   const filtersRepresentativesMap = new Map<string, FilterRepresentative>(
     filtersRepresentatives.map((n: FilterRepresentative) => [n.id, n]),
   );
-  const [filterChipsParams, setFilterChipsParams] = React.useState<FilterChipsParameter>({
+  const [filterChipsParams, setFilterChipsParams] = useState<FilterChipsParameter>({
     filter: undefined,
     anchorEl: undefined,
   } as FilterChipsParameter);
@@ -295,16 +295,18 @@ FilterIconButtonContainerProps
           <Fragment key={currentFilter.id ?? `filter-${index}`}>
             <Tooltip
               title={
-                <FilterValues
-                  label={keyLabel}
-                  tooltip={true}
-                  currentFilter={currentFilter}
-                  handleSwitchLocalMode={handleSwitchLocalMode}
-                  filtersRepresentativesMap={filtersRepresentativesMap}
-                  redirection={redirection}
-                  entityTypes={entityTypes}
-                  filtersRestrictions={filtersRestrictions}
-                />
+                filterKey === 'regardingOf'
+                  ? undefined
+                  : <FilterValues
+                      label={keyLabel}
+                      tooltip={true}
+                      currentFilter={currentFilter}
+                      handleSwitchLocalMode={handleSwitchLocalMode}
+                      filtersRepresentativesMap={filtersRepresentativesMap}
+                      redirection={redirection}
+                      entityTypes={entityTypes}
+                      filtersRestrictions={filtersRestrictions}
+                    />
               }
             >
               <Box

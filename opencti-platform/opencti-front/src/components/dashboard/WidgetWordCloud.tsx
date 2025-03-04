@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
-import ReactWordcloud from 'react-wordcloud';
+import ReactWordcloud, { Props } from 'react-wordcloud';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import 'tippy.js/dist/tippy.css';
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -18,21 +18,30 @@ interface WidgetWordCloudProps {
 const WidgetWordCloud = ({ data, groupBy }: WidgetWordCloudProps) => {
   const theme = useTheme<Theme>();
   const { buildWidgetWordCloudOption } = useDistributionGraphData();
-  const wordCloudColors = colors(theme.palette.mode === 'dark' ? 400 : 600);
-  const wordCloudData = buildWidgetWordCloudOption(data, groupBy);
+
+  const wordCloudData = useMemo(
+    () => buildWidgetWordCloudOption(data, groupBy),
+    [data, groupBy],
+  );
+
+  const options: Props['options'] = useMemo(() => {
+    const wordCloudColors = colors(theme.palette.mode === 'dark' ? 400 : 600);
+    return {
+      colors: wordCloudColors,
+      fontFamily: 'IBM Plex Sans',
+      spiral: 'rectangular',
+      rotations: 1,
+      rotationAngles: [0, 0],
+      deterministic: true,
+      fontSizes: [20, 50],
+      scale: 'log',
+    };
+  }, []);
+
   return (
     <ReactWordcloud
       words={wordCloudData}
-      options={{
-        colors: wordCloudColors,
-        fontFamily: 'IBM Plex Sans',
-        spiral: 'rectangular',
-        rotations: 1,
-        rotationAngles: [0, 0],
-        deterministic: true,
-        fontSizes: [20, 50],
-        scale: 'log',
-      }}
+      options={options}
     />
   );
 };

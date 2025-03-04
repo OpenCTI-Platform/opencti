@@ -1,5 +1,5 @@
 import Chart from '@components/common/charts/Chart';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { radarChartOptions } from '../../utils/Charts';
@@ -28,15 +28,25 @@ const WidgetRadar = ({
   const { t_i18n } = useFormatter();
   const { buildWidgetLabelsOption } = useDistributionGraphData();
 
-  const chartData = [{
+  const chartData = useMemo(() => [{
     name: label || t_i18n('Number of relationships'),
     data: data.map((n) => n.value),
-  }];
+  }], [data, label]);
 
-  const labels = buildWidgetLabelsOption(data, groupBy);
+  const options: ApexOptions = useMemo(() => {
+    const labels = buildWidgetLabelsOption(data, groupBy);
+    return radarChartOptions(
+      theme,
+      labels,
+      simpleNumberFormat,
+      [],
+      true,
+    ) as ApexOptions;
+  }, [data, groupBy]);
+
   return (
     <Chart
-      options={radarChartOptions(theme, labels, simpleNumberFormat, [], true) as ApexOptions}
+      options={options}
       series={chartData}
       type="radar"
       width="100%"

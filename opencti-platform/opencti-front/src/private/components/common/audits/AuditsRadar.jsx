@@ -87,10 +87,10 @@ const auditsRadarDistributionQuery = graphql`
 `;
 
 const AuditsRadar = ({
-  variant = null,
+  variant,
   height,
-  startDate = null,
-  endDate = null,
+  startDate,
+  endDate,
   dataSelection,
   parameters = {},
   withExportPopover = false,

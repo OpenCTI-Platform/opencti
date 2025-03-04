@@ -46,6 +46,7 @@ const rootSettingsFragment = graphql`
     platform_openbas_disable_display
     platform_openerm_url
     platform_openmtd_url
+    platform_xtmhub_url
     platform_theme
     platform_whitemark
     platform_organization {

@@ -37,10 +37,8 @@ import octiDark from '../../../static/images/xtm/octi_dark.png';
 import octiLight from '../../../static/images/xtm/octi_light.png';
 import obasDark from '../../../static/images/xtm/obas_dark.png';
 import obasLight from '../../../static/images/xtm/obas_light.png';
-import oermDark from '../../../static/images/xtm/oerm_dark.png';
-import oermLight from '../../../static/images/xtm/oerm_light.png';
-import omtdDark from '../../../static/images/xtm/omtd_dark.png';
-import omtdLight from '../../../static/images/xtm/omtd_light.png';
+import xtmhubDark from '../../../static/images/xtm/xtm_hub_dark.png';
+import xtmhubLight from '../../../static/images/xtm/xtm_hub_light.png';
 import { isNotEmptyField } from '../../../utils/utils';
 import useHelper from '../../../utils/hooks/useHelper';
 import ItemBoolean from '../../../components/ItemBoolean';
@@ -143,6 +141,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { isFeatureEnable } = useHelper();
   const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const isImportWorkflowEnabled = isFeatureEnable('IMPORT_WORKFLOW');
+  const isXTMHubFeatureEnabled = isFeatureEnable('XTM_HUB_INTEGRATION');
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -150,7 +149,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
-    settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee },
+    settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee, platform_xtmhub_url: xtmhubUrl },
   } = useAuth();
   const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
@@ -354,6 +353,17 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               <Box sx={{ width: '300px', padding: '15px', textAlign: 'center' }}>
                 <div className={classes.subtitle}>{t_i18n('Filigran eXtended Threat Management')}</div>
                 <Grid container={true} spacing={3}>
+                  {isXTMHubFeatureEnabled && (
+                    <Grid item xs={12}>
+                      <Tooltip title="XTM Hub">
+                        <a className={classes.xtmItem} href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://xtmhub.filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
+                          <Badge variant="dot" color="success">
+                            <img style={{ width: '100%', paddingRight: 8, paddingLeft: 8 }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
+                          </Badge>
+                        </a>
+                      </Tooltip>
+                    </Grid>
+                  )}
                   <Grid item xs={6}>
                     <Tooltip title={t_i18n('Current platform')}>
                       <a className={classes.xtmItemCurrent}>
@@ -371,26 +381,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                           <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
                         </Badge>
                         <div className={classes.product}>OpenBAS</div>
-                      </a>
-                    </Tooltip>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Tooltip title={t_i18n('Platform under construction, subscribe to update!')}>
-                      <a className={classes.xtmItem} href="https://filigran.io" target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
-                        <Badge variant="dot" color="info">
-                          <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? oermDark : oermLight)} alt="OERM" />
-                        </Badge>
-                        <div className={classes.product}>OpenERM</div>
-                      </a>
-                    </Tooltip>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Tooltip title={t_i18n('Platform under construction, subscribe to update!')}>
-                      <a className={classes.xtmItem} href="https://filigran.io" target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
-                        <Badge variant="dot" color="info">
-                          <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? omtdDark : omtdLight)} alt="OMTD" />
-                        </Badge>
-                        <div className={classes.product}>OpenMTD</div>
                       </a>
                     </Tooltip>
                   </Grid>

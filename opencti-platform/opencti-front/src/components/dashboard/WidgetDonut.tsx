@@ -1,5 +1,5 @@
 import Chart from '@components/common/charts/Chart';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import type { ApexOptions } from 'apexcharts';
 import { donutChartOptions } from '../../utils/Charts';
@@ -23,34 +23,39 @@ const WidgetDonut = ({
   const theme = useTheme<Theme>();
   const { buildWidgetLabelsOption } = useDistributionGraphData();
 
-  const chartData = data.map((n) => n.value);
-  const labels = buildWidgetLabelsOption(data, groupBy);
-  let chartColors = [];
-  if (data.at(0)?.entity?.color) {
-    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.color === '#ffffff'
-      ? '#000000'
-      : n.entity?.color));
-  }
-  if (data.at(0)?.entity?.x_opencti_color) {
-    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.x_opencti_color === '#ffffff'
-      ? '#000000'
-      : n.entity?.x_opencti_color));
-  }
-  if (data.at(0)?.entity?.template?.color) {
-    chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.template.color === '#ffffff'
-      ? '#000000'
-      : n.entity?.template.color));
-  }
+  const chartData = useMemo(() => data.map((n) => n.value), [data]);
+
+  const options: ApexOptions = useMemo(() => {
+    const labels = buildWidgetLabelsOption(data, groupBy);
+    let chartColors = [];
+    if (data.at(0)?.entity?.color) {
+      chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.color === '#ffffff'
+        ? '#000000'
+        : n.entity?.color));
+    }
+    if (data.at(0)?.entity?.x_opencti_color) {
+      chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.x_opencti_color === '#ffffff'
+        ? '#000000'
+        : n.entity?.x_opencti_color));
+    }
+    if (data.at(0)?.entity?.template?.color) {
+      chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.template.color === '#ffffff'
+        ? '#000000'
+        : n.entity?.template.color));
+    }
+
+    return donutChartOptions(
+      theme,
+      labels,
+      'bottom',
+      false,
+      chartColors,
+    ) as ApexOptions;
+  }, [data, groupBy]);
 
   return (
     <Chart
-      options={donutChartOptions(
-        theme,
-        labels,
-        'bottom',
-        false,
-        chartColors,
-      ) as ApexOptions}
+      options={options}
       series={chartData}
       type="donut"
       width="100%"

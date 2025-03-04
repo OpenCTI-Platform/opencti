@@ -5,13 +5,16 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import { WarningOutlined } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import { FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { FiltersRestrictions, isFilterEditable, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
 import { Filter } from '../../utils/filters/filtersHelpers-types';
+import useSchema from '../../utils/hooks/useSchema';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -78,6 +81,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const { schema: { scos } } = useSchema();
 
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
@@ -178,8 +182,29 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   if (filterKey === 'regardingOf') {
     const sortedFilterValues = [...filterValues].sort((a, b) => -a.key.localeCompare(b.key)); // display type first, then id
 
+    // add warning for (relationship type / ids) combinations that may not display all the results because of denormalization
+    const isWarning = isRegardingOfFilterWarning(currentFilter, scos.map((n) => n.id), filtersRepresentativesMap);
+
     return (
       <>
+        {isWarning && (
+          <Tooltip title={
+            t_i18n('', {
+              id: 'All the results may not be displayed for these filter values, read documentation for more information.',
+              values: {
+                link: <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?h=regarding#the-regardingof-filter-key">
+                  {t_i18n('read documentation')}
+                </Link>,
+              },
+            })
+          }
+          >
+            <WarningOutlined
+              color={'inherit'}
+              style={{ fontSize: 20, color: '#f44336', marginRight: 4 }}
+            />
+          </Tooltip>
+        )}
         <strong
           className={menuClassName}
           onClick={onCLick}

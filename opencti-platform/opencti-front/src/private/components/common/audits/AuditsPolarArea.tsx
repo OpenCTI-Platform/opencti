@@ -116,8 +116,8 @@ const AuditsPolarAreaComponent = ({
 };
 
 interface AuditsPolarAreaProps {
-  startDate: string
-  endDate: string
+  startDate?: string | null
+  endDate?: string | null
   dataSelection: WidgetDataSelection[]
   parameters: WidgetParameters
   variant: string

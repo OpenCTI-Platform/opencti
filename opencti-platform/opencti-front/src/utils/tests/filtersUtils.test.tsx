@@ -5,6 +5,7 @@ import {
   emptyFilterGroup,
   findFiltersFromKeys,
   serializeFilterGroupForBackend,
+  isRegardingOfFilterWarning,
 } from '../filters/filtersUtils';
 import { createMockUserContext, testRenderHook } from './test-render';
 import filterKeysSchema from './FilterUtilsConstants';
@@ -415,5 +416,89 @@ describe('Function serializeFilterGroupForBackend', () => {
     };
     const result = serializeFilterGroupForBackend(inputFilters as FilterGroup);
     expect(result).toEqual(JSON.stringify(resultFilters));
+  });
+});
+
+describe('isRegardingOfFilterWarning', () => {
+  it('should return if the filter combination is a warning one', () => {
+    const filtersRepresentativesMap = new Map([
+      ['reportId', { id: 'reportId', value: 'MyReport', entity_type: 'Report', color: 'red' }],
+      ['malwareId', { id: 'malwareId', value: 'MyMalware', entity_type: 'Malware', color: 'red' }],
+      ['observableId', { id: 'observableId', value: 'MyObservable', entity_type: 'Software', color: 'red' }],
+      ['indicatorId', { id: 'indicatorId', value: 'MyIndicator', entity_type: 'Indicator', color: 'red' }],
+    ]);
+    const filter1 = { key: 'objectMarking', values: ['marking1'], operator: 'eq' };
+    const isWarning1 = isRegardingOfFilterWarning(filter1, [], filtersRepresentativesMap);
+    expect(isWarning1).toEqual(false);
+    const filter2 = {
+      key: 'regardingOf',
+      values: [
+        { key: 'relationship_type', values: ['targets'] },
+      ],
+    };
+    const isWarning2 = isRegardingOfFilterWarning(filter2, [], filtersRepresentativesMap);
+    expect(isWarning2).toEqual(false);
+    const filter3 = {
+      key: 'regardingOf',
+      values: [
+        { key: 'id', values: ['malwareId'] },
+      ],
+    };
+    const isWarning3 = isRegardingOfFilterWarning(filter3, [], filtersRepresentativesMap);
+    expect(isWarning3).toEqual(false);
+    const filter4 = {
+      key: 'regardingOf',
+      values: [
+        { key: 'relationship_type', values: ['targets'] },
+        { key: 'id', values: ['malwareId'] },
+      ],
+    };
+    const isWarning4 = isRegardingOfFilterWarning(filter4, [], filtersRepresentativesMap);
+    expect(isWarning4).toEqual(true);
+    const filter5 = {
+      key: 'regardingOf',
+      values: [
+        { key: 'relationship_type', values: ['targets'] },
+        { key: 'id', values: ['reportId'] },
+      ],
+    };
+    const isWarning5 = isRegardingOfFilterWarning(filter5, [], filtersRepresentativesMap);
+    expect(isWarning5).toEqual(false);
+    const filter6 = {
+      key: 'regardingOf',
+      values: [
+        { key: 'relationship_type', values: ['related-to'] },
+        { key: 'id', values: ['observableId'] },
+      ],
+    };
+    const isWarning6 = isRegardingOfFilterWarning(filter6, ['Software', 'Domain-Name'], filtersRepresentativesMap);
+    expect(isWarning6).toEqual(true);
+    const filter7 = {
+      key: 'regardingOf',
+      values: [
+        { key: 'relationship_type', values: ['uses', 'related-to'] },
+        { key: 'id', values: ['reportId', 'observableId'] },
+      ],
+    };
+    const isWarning7 = isRegardingOfFilterWarning(filter7, ['Software', 'Domain-Name'], filtersRepresentativesMap);
+    expect(isWarning7).toEqual(true);
+    const filter8 = {
+      key: 'regardingOf',
+      values: [
+        { key: 'relationship_type', values: ['indicates', 'related-to'] },
+        { key: 'id', values: ['reportId'] },
+      ],
+    };
+    const isWarning8 = isRegardingOfFilterWarning(filter8, ['Software', 'Domain-Name'], filtersRepresentativesMap);
+    expect(isWarning8).toEqual(false);
+    const filter9 = {
+      key: 'regardingOf',
+      values: [
+        { key: 'relationship_type', values: ['indicates', 'related-to'] },
+        { key: 'id', values: ['indicatorId'] },
+      ],
+    };
+    const isWarning9 = isRegardingOfFilterWarning(filter9, ['Software', 'Domain-Name'], filtersRepresentativesMap);
+    expect(isWarning9).toEqual(true);
   });
 });

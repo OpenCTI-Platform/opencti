@@ -1412,6 +1412,7 @@ type Settings implements InternalObject & BasicObject {
   platform_openbas_disable_display: Boolean
   platform_openerm_url: String
   platform_openmtd_url: String
+  platform_xtmhub_url: String
   platform_ai_enabled: Boolean!
   platform_ai_type: String
   platform_ai_model: String
