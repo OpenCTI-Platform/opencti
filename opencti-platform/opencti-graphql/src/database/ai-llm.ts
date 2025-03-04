@@ -34,7 +34,7 @@ if (AI_ENABLED && AI_TOKEN) {
           groupEnd: () => logApp.info('[AI] group end.'),
         } */
       });
-      const rawllm = new ChatOpenAI({
+      llm = new ChatOpenAI({
         modelName: 'mistral',
         apiKey: AI_TOKEN,
         temperature: 0,
@@ -42,7 +42,6 @@ if (AI_ENABLED && AI_TOKEN) {
           baseURL: 'https://ai.filigran.io/v1',
         },
       });
-      llm = rawllm.withStructuredOutput(OpenCTIFiltersOutput)
       break;
     case 'openai':
       client = new OpenAI({
@@ -148,5 +147,5 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
   if (!llm) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
-  return llm.invoke(promptValue);
+  return llm.withStructuredOutput(OpenCTIFiltersOutput).invoke(promptValue);
 };
