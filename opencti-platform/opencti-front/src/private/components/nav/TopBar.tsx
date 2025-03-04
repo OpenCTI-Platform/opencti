@@ -244,6 +244,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ);
         },
         onError: (error: Error) => {
+          setIsNLQLoading(false);
           const { errors } = (error as unknown as RelayError).res;
           MESSAGING$.notifyError(errors.at(0)?.message);
         },
