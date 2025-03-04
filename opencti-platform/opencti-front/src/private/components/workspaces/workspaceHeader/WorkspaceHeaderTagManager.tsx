@@ -27,7 +27,7 @@ import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from 'src/utils/hooks/useGra
 import Security from 'src/utils/Security';
 
 const workspaceMutation = graphql`
-  mutation WorkspaceHeaderFieldMutation($id: ID!, $input: [EditInput!]!) {
+  mutation WorkspaceHeaderTagManagerFieldMutation($id: ID!, $input: [EditInput!]!) {
     workspaceFieldPatch(id: $id, input: $input) {
       tags
     }
