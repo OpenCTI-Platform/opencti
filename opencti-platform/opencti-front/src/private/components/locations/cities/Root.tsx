@@ -141,6 +141,8 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                   <CityEdition cityId={city.id} />
                 </Security>
               )}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               enableQuickSubscription={true}
               isOpenctiAlias={true}
             />

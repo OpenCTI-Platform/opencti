@@ -130,7 +130,8 @@ class RootObservedData extends Component {
                     )}
                     redirectToContent = {false}
                     disableAuthorizedMembers={true}
-                    enableEnricher={false}
+                    enableEnricher={true}
+                    enableEnrollPlaybook={true}
                   />
                   <Box
                     sx={{
