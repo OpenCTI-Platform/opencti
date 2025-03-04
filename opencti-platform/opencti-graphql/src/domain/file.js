@@ -176,6 +176,24 @@ export const uploadPending = async (context, user, args) => {
   return up;
 };
 
+export const uploadAndAskJobImport = async (context, user, args = {}) => {
+  const {
+    file,
+    fileMarkings,
+    connectors,
+    validationMode = defaultValidationMode,
+  } = args;
+  const uploadedFile = await uploadImport(context, user, { file, fileMarkings });
+
+  if (connectors) {
+    await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
+      askJobImport(context, user, { fileName: uploadedFile.id, connectorId, configuration, validationMode })
+    )));
+  }
+
+  return uploadedFile;
+};
+
 export const deleteImport = async (context, user, fileName) => {
   const draftContext = getDraftContext(context, user);
   if (draftContext && !isDraftFile(fileName, draftContext)) {
