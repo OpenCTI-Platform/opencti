@@ -34,6 +34,9 @@ export const useComputeDefaultValues = () => {
 
     // Handle object marking specific case : activate or deactivate default values (handle in access)
     if (attributeName === 'objectMarking') {
+      if (defaultValues[0]?.id === 'false') {
+        return false;
+      }
       return defaultValues[0]?.id ?? false;
     }
 
