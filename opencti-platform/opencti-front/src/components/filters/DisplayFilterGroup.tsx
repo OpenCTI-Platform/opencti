@@ -124,9 +124,9 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
               {key === 'regardingOf'
                 ? <>
                   {values.filter((v) => v.key === 'relationship_type').flat().map((value) => {
-                    return (<>
+                    return (<span key={'relationship_type'}>
                       {displayValues(value.values)}
-                    </>);
+                    </span>);
                   })}
                   <Box
                     sx={{
@@ -143,9 +143,9 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
                     {t_i18n('WITH')}
                   </Box>
                   {values.filter((v) => v.key === 'id').flat().map((value) => {
-                    return (<>
+                    return (<span key={'id'}>
                       {displayValues(value.values)}
-                    </>);
+                    </span>);
                   })}
                 </>
                 : displayValues(values, mode ?? 'or')
