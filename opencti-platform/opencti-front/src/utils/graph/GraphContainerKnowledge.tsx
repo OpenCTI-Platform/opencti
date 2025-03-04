@@ -53,6 +53,9 @@ const graphContainerKnowledgeDataFragment = graphql`
     ... on CaseIncident {
       name
     }
+    ... on CaseRfi {
+      name
+    }
   }
 `;
 
