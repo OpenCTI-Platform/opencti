@@ -212,31 +212,29 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           lineFragment={workspaceLineFragment}
           entityTypes={['Workspace']}
           searchContextFinal={{ entityTypes: ['Workspace'] }}
-          createButton={
+          createButton={isFeatureEnable('FAB_REPLACEMENT') ? (
             <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
-              <>
-                {isNotEmptyField(importFromHubUrl) && (
-                  <GradientButton
-                    color='primary'
-                    variant='outlined'
-                    size="small"
-                    disableElevation
-                    sx={{ marginLeft: theme.spacing(1) }}
-                    href={importFromHubUrl}
-                    target="_blank"
-                  >
-                    {t_i18n('Import from Hub')}
-                  </GradientButton>
-                )}
-                {isFeatureEnable('FAB_REPLACEMENT') && (
-                  <WorkspaceCreation
-                    paginationOptions={workspacePaginationOptions}
-                    type={type}
-                  />
-                )}
-              </>
+              <WorkspaceCreation
+                paginationOptions={workspacePaginationOptions}
+                type={type}
+              />
             </Security>
-          }
+          ) : isNotEmptyField(importFromHubUrl) && (
+            <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
+              <GradientButton
+                color='primary'
+                variant='outlined'
+                size="small"
+                disableElevation
+                sx={{ marginLeft: theme.spacing(1) }}
+                href={importFromHubUrl}
+                target="_blank"
+                title={t_i18n('Import from Hub')}
+              >
+                {t_i18n('Import from Hub')}
+              </GradientButton>
+            </Security>
+          )}
           taskScope={type === 'dashboard' ? 'DASHBOARD' : 'INVESTIGATION'}
           actions={(row) => (
             <Security needs={row.type === 'dashboard' ? [EXPLORE] : [INVESTIGATION_INUPDATE]}>
@@ -249,14 +247,14 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
         />
       )}
 
-      {!FAB_REPLACED
-        && (<Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
+      {!FAB_REPLACED && (
+        <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
           <WorkspaceCreation
             paginationOptions={workspacePaginationOptions}
             type={type}
           />
-          </Security>
-        )}
+        </Security>
+      )}
     </>
   );
 };

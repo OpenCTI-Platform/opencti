@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useContext, useRef } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
@@ -8,6 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import ToggleButton from '@mui/material/ToggleButton';
 import useHelper from '../../../utils/hooks/useHelper';
 import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
 import Drawer, { DrawerVariant } from '../common/drawer/Drawer';
@@ -19,6 +20,9 @@ import { resolveLink } from '../../../utils/Entity';
 import { insertNode } from '../../../utils/store';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
+import { isNotEmptyField } from '../../../utils/utils';
+import GradientButton from '../../../components/GradientButton';
+import { UserContext } from '../../../utils/hooks/useAuth';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -72,6 +76,9 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   const inputRef = useRef();
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
+  const { settings } = useContext(UserContext);
+  const importFromHubUrl = isNotEmptyField(settings) ? `${settings.platform_xtmhub_url}/redirect/custom_dashboards?octi_instance_id=${settings.id}`.replaceAll('//', '/') : '';
+
   const [commitImportMutation] = useApiMutation(importMutation);
   const [commitCreationMutation] = useApiMutation(workspaceMutation);
   const navigate = useNavigate();
@@ -123,18 +130,30 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
 
   const createDashboardButton = FAB_REPLACED ? (props) => (
     <>
-      <Button
-        color='primary'
-        variant='outlined'
+      <ToggleButton
+        value="import"
         size="small"
-        disableElevation
         onClick={() => inputRef.current?.click()}
         sx={{ marginLeft: theme.spacing(1) }}
         data-testid='ImportDashboard'
         title={t_i18n('Import dashboard')}
       >
-        <FileUploadOutlined />
-      </Button>
+        <FileUploadOutlined fontSize="small" color={'primary'}/>
+      </ToggleButton>
+      {isNotEmptyField(importFromHubUrl) && (
+        <GradientButton
+          color='primary'
+          variant='outlined'
+          size="small"
+          disableElevation
+          sx={{ marginLeft: theme.spacing(1) }}
+          href={importFromHubUrl}
+          target="_blank"
+          title={t_i18n('Import from Hub')}
+        >
+          {t_i18n('Import from Hub')}
+        </GradientButton>
+      )}
       <CreateEntityControlledDial entityType='Dashboard' {...props} />
     </>
   ) : ({ onOpen }) => (
@@ -158,7 +177,8 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
         onClick={() => inputRef.current?.click()}
         FabProps={{ classes: { root: classes.speedDialButton } }}
       />
-    </SpeedDial>);
+    </SpeedDial>
+  );
 
   return (
     <>
