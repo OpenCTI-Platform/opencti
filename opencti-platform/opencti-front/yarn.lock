@@ -16904,7 +16904,7 @@ __metadata:
     react-grid-layout: "npm:1.5.0"
     react-intl: "npm:6.8.9"
     react-leaflet: "npm:4.2.1"
-    react-markdown: "npm:9.1.0"
+    react-markdown: "npm:10.0.1"
     react-material-ui-carousel: "npm:3.4.2"
     react-mde: "npm:11.5.0"
     react-otp-input: "npm:3.1.1"
@@ -17927,9 +17927,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-markdown@npm:9.1.0":
-  version: 9.1.0
-  resolution: "react-markdown@npm:9.1.0"
+"react-markdown@npm:10.0.1":
+  version: 10.0.1
+  resolution: "react-markdown@npm:10.0.1"
   dependencies:
     "@types/hast": "npm:^3.0.0"
     "@types/mdast": "npm:^4.0.0"
@@ -17945,7 +17945,7 @@ __metadata:
   peerDependencies:
     "@types/react": ">=18"
     react: ">=18"
-  checksum: 10/07045797b926afafc6aff692c9ee7d1cb9b12bc0e2d2b9f22ab17f2d1036dd807034a58565d67cfcfe94fe43961452a977496a175cbc9028ed51f2eec823c2f4
+  checksum: 10/a5f6ac169c7034231c01e3e31abeed2c8ca714c4d4fd38faf6ff7bea7d868d42aadb904031f3cc0d7c16bf5e6377b689ab93bbf6e39c35224502003b76696a4d
   languageName: node
   linkType: hard
 
