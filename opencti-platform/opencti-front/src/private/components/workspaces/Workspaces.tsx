@@ -106,6 +106,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
+  const isXTMHubFeatureEnabled = isFeatureEnable('XTM_HUB_INTEGRATION');
 
   const theme = useTheme<Theme>();
   const { settings } = useContext(UserContext);
@@ -219,7 +220,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
                 type={type}
               />
             </Security>
-          ) : isNotEmptyField(importFromHubUrl) && (
+          ) : isXTMHubFeatureEnabled && isNotEmptyField(importFromHubUrl) && (
             <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
               <GradientButton
                 color='primary'
