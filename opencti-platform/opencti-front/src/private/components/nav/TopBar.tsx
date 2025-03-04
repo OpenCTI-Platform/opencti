@@ -339,7 +339,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     <Tooltip title="XTM Hub">
                       <a className={classes.xtmItem} href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://xtmhub.filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
                         <Badge variant="dot" color="success">
-                          <img style={{ width: '100%' }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
+                          <img style={{ width: '100%', paddingRight: 8, paddingLeft: 8 }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
                         </Badge>
                       </a>
                     </Tooltip>
