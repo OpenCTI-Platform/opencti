@@ -166,6 +166,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     null,
   );
   const [askAI, setAskAI] = useState(false);
+  const [isNLQLoading, setIsNLQLoading] = useState(false);
   const [commitMutationNLQ] = useApiMutation<TopBarAskAINLQMutation>(topBarAskAINLQMutation);
 
   const data = usePreloadedQuery(topBarQuery, queryRef);
@@ -232,12 +233,14 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setXtmOpen({ open: false, anchorEl: null });
   };
   const handleSearch = (searchKeyword: string) => {
+    setIsNLQLoading(true);
     if (askAI && isEnterpriseEdition) {
       commitMutationNLQ({
         variables: {
           search: searchKeyword,
         },
         onCompleted: (response: TopBarAskAINLQMutation$data) => {
+          setIsNLQLoading(false);
           handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ);
         },
         onError: (error: Error) => {
@@ -299,6 +302,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               variant="topBar"
               placeholder={`${t_i18n('Search the platform')}...`}
               fullWidth={true}
+              isNLQLoading={isNLQLoading}
             />
           </div>
         )}

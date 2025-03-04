@@ -14,6 +14,7 @@ import useAuth from '../utils/hooks/useAuth';
 import EnterpriseEditionAgreement from '../private/components/common/entreprise_edition/EnterpriseEditionAgreement';
 import FeedbackCreation from '../private/components/cases/feedbacks/FeedbackCreation';
 import useHelper from '../utils/hooks/useHelper';
+import Loader from './Loader';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -79,6 +80,7 @@ const SearchInput = (props) => {
     placeholder = `${t_i18n('Search these results')}...`,
     setAskAI,
     askAI,
+    isNLQLoading,
     ...otherProps
   } = props;
   const { isFeatureEnable } = useHelper();
@@ -161,6 +163,11 @@ const SearchInput = (props) => {
           ),
           endAdornment: variant === 'topBar' && (
           <InputAdornment position="end">
+            {isNLQLoading
+              && <div>
+                <Loader variant="inline" />
+              </div>
+            }
             <Tooltip title={t_i18n('Advanced search')}>
               <IconButton
                 component={Link}
