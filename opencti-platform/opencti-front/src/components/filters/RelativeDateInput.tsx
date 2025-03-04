@@ -108,7 +108,14 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         InputProps={{
           endAdornment: <Button
             size="small"
-            sx={{ marginLeft: -1, marginRight: -3, color: theme.palette.text.primary }}
+            sx={{
+              marginLeft: -1,
+              marginRight: -3,
+              color: theme.palette.text.primary,
+              ':hover': {
+                backgroundColor: 'transparent',
+              },
+            }}
             onClick={() => setIsDatePickerOpen(true)}
                         >
             <DateRangeOutlined/>
