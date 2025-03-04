@@ -78,6 +78,11 @@ The `Filter` has 4 properties:
 - an `operator` representing the operation we want to apply between the `key` and the `values`,
 - a `mode` (`and` or `or`) to apply between the values if there are several ones.
 
+!!! note "Always use single-key filters"
+
+    Multi-key filters are not supported across the platform and are reserved to specific, internal cases.
+
+
 #### Operators
 
 The available operators are:
@@ -86,32 +91,129 @@ The available operators are:
 |-----------------|-----------------------|-----------------------|
 | eq              | equal                 |                       |
 | not_eq          | different             |                       |
-| gt              | greater than          | numbers               |
-| gte             | greater than or equal | numbers               |
-| lt              | lower than            | numbers               |
-| lte             | lower than or equal   | numbers               |
 | nil             | empty / no value      |                       |
 | not_nil         | non-empty / any value |                       |
+| gt              | greater than          | numbers and dates     |
+| gte             | greater than or equal | numbers and dates     |
+| lt              | lower than            | numbers and dates     |
+| lte             | lower than or equal   | numbers and dates     |
+| within          | in a datetime range   | dates                 |
 | starts_with     | starts with           | short string          |
 | not_starts_with | doesn't start with    | short string          |
 | ends_with       | ends with             | short string          |
 | not_ends_with   | doesn't end with      | short string          |
-| contains        | contains              | short string          |
+| contains        | contains exactly      | short string          |
 | not_contains    | doesn't contain       | short string          |
 | search          | have occurences       | short and long string |
 
 Precisions:
+
 - The operators `nil` and `not_nil` don't require anything inside `values` (you should provide an empty array).
-- There is a small difference between `search` and `contains`. `search` finds any occurrence of specified words, regardless of order, while "contains" specifically looks for the exact sequence of words you provide.
 
-!!! note "Always use single-key filters"
+```ts
+// Example: label is empty
+filters = {
+    mode: 'and',
+    filters: [{
+        key: 'objectLabel',
+        values: [],
+        operator: 'nil',
+    }],
+    filterGroups: [],
+};
+```
 
-    Multi-key filters are not supported across the platform and are reserved to specific, internal cases.
+- There is a small difference between `search` and `contains`. `search` finds any occurrence of specified words regardless of their order, while `contains` specifically looks for the exact sequence of words you provide.
 
+```ts
+// Example: contains 'my test'
+filters = {
+    mode: 'and',
+    filters: [{
+        key: 'contains',
+        values: ['my test'],
+        operator: 'eq',
+        mode: 'or',
+    }],
+    filterGroups: [],
+};
+```
+
+- With the `within` operator you should provide exactly 2 strings in `values`: the 'from' and 'to' of the datetime range. The values can be either a datetime in the ISO 8601 format (and UTC timezone), either a relative date expression in date math format.
+
+```ts
+// Example: Reports with publication date within the last year
+filters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'entity_type',
+        values: ['Report'],
+        operator: 'eq',
+      },
+      {
+        key: 'published',
+        values: ['now-1y', 'now'],
+        operator: 'within',
+      }
+    ],
+    filterGroups: [],
+};
+```
+
+- If you use operators of comparisons (`gt`, `gte`, `lt`, `lte`), the values should be strings representing
+
+  - a number for filters of type number,
+  - a date in the ISO 8601 format (and UTC timezone) or a relative date expression in date math format for date filters.
+
+```ts
+// Example: confidence > 50
+filters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'confidence',
+        values: ['50'],
+        operator: 'gt',
+      },
+    ],
+    filterGroups: [],
+};
+```
+
+```ts
+// Example: publication date after January 1st 2020
+filters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'published',
+        values: ['2020-01-01T00:00:00Z'],
+        operator: 'gt',
+      },
+    ],
+    filterGroups: [],
+};
+```
+
+```ts
+// Example: platform creation date in the last 24 hours
+filters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'created_at',
+        values: ['now-24h'],
+        operator: 'gt',
+      },
+    ],
+    filterGroups: [],
+};
+```
 
 #### Examples
 
-**entity_type = 'Report'**
+**entity type = 'Report'**
 
 ```ts
 filters = {
@@ -126,7 +228,7 @@ filters = {
 };
 ```
 
-**(entity_type = 'Report') AND (label = 'label1' OR 'label2')**
+**(entity type = 'Report') AND (label = 'label1' OR 'label2')**
 
 ```ts
 filters = {
@@ -149,7 +251,7 @@ filters = {
 };
 ```
 
-**(entity_type = 'Report') AND (confidence > 50 OR marking is empty)**
+**(entity type = 'Report') AND (confidence > 50 OR marking is empty)**
 
 ```ts
 filters = {
@@ -235,11 +337,12 @@ For some keys, negative equality filtering is not supported yet (`not_eq` operat
 
 #### The `regardingOf` filter key
 
-The ``regardingOf`` filter key, displayed as "in regards of" in the UI, has a special format and enables to target the entities having a relationship of a certain type with certain entities.
+The ``regardingOf`` filter key, displayed as `in regards of` in the UI, has a special format and enables to target the entities having a relationship of a certain type with certain entities.
 
 Here is an example of filter to fetch the entities related to the entity X, regardless of the side of the relationship:
 
 ```ts
+// Example: entities having a relationship of type 'related-to' with the entity X
 filters = {
   mode: 'and',
   filters: [
