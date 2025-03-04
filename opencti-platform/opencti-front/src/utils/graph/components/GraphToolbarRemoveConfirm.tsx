@@ -17,7 +17,6 @@ import { knowledgeGraphQueryCheckObjectQuery } from '@components/common/containe
 import { KnowledgeGraphQueryCheckObjectQuery$data } from '@components/common/containers/__generated__/KnowledgeGraphQueryCheckObjectQuery.graphql';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
-import { GraphContainer } from '../graph.types';
 import { containerTypes } from '../../hooks/useAttributes';
 import { useGraphContext } from '../GraphContext';
 import { fetchQuery } from '../../../relay/environment';
@@ -34,16 +33,18 @@ export interface GraphToolbarDeleteConfirmProps {
   open: boolean
   onClose: () => void
   enableReferences?: boolean
-  container: GraphContainer
-  onContainerDeleteRelation: (relId: string, onCompleted: () => void, message?: string, references?: string[]) => void
+  entityId: string
+  onDeleteRelation?: (relId: string, onCompleted: () => void, message?: string, references?: string[]) => void
+  onRemove?: (ids: string[], onCompleted: () => void) => void
 }
 
 const GraphToolbarRemoveConfirm = ({
   open,
   onClose,
   enableReferences,
-  container,
-  onContainerDeleteRelation,
+  entityId,
+  onDeleteRelation,
+  onRemove,
 }: GraphToolbarDeleteConfirmProps) => {
   const { t_i18n } = useFormatter();
   const [andDelete, setAndDelete] = useState(false);
@@ -60,9 +61,15 @@ const GraphToolbarRemoveConfirm = ({
     },
   } = useGraphContext();
 
-  const { clearSelection, removeLink, removeNode } = useGraphInteractions();
+  const {
+    clearSelection,
+    removeLink,
+    removeNode,
+    removeLinks,
+    removeNodes,
+  } = useGraphInteractions();
 
-  const remove = (referencesValues?: ReferenceFormData) => {
+  const removeKnowledge = (referencesValues?: ReferenceFormData) => {
     const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
     // Containers checked when cascade delete.
     const checkedContainerTypes = containerTypes.filter((type) => {
@@ -74,7 +81,7 @@ const GraphToolbarRemoveConfirm = ({
     (graphData?.links ?? []).filter(({ source_id, target_id }) => {
       return selectedNodeIds.includes(source_id) || selectedNodeIds.includes(target_id);
     }).forEach(({ id }) => {
-      onContainerDeleteRelation(
+      onDeleteRelation?.(
         id,
         () => removeLink(id),
         referencesValues?.message,
@@ -111,7 +118,7 @@ const GraphToolbarRemoveConfirm = ({
             });
           }
         } else {
-          onContainerDeleteRelation(
+          onDeleteRelation?.(
             id,
             () => {
               if (isNode) removeNode(id);
@@ -126,6 +133,27 @@ const GraphToolbarRemoveConfirm = ({
 
     clearSelection();
     onClose();
+  };
+
+  const remove = (referencesValues?: ReferenceFormData) => {
+    if (!onRemove) {
+      removeKnowledge(referencesValues);
+    } else {
+      const nodesIds = selectedNodes.map((s) => s.id);
+      const linksIds = selectedLinks.map((s) => s.id);
+      const correlatedLinksIds = (graphData?.links ?? []).filter((l) => {
+        return nodesIds.includes(l.source_id) || nodesIds.includes(l.target_id);
+      }).map((l) => l.id);
+      onRemove(
+        [...nodesIds, ...linksIds, ...correlatedLinksIds],
+        () => {
+          removeNodes(nodesIds);
+          removeLinks([...linksIds, ...correlatedLinksIds]);
+        },
+      );
+      clearSelection();
+      onClose();
+    }
   };
 
   const confirm = () => {
@@ -197,7 +225,7 @@ const GraphToolbarRemoveConfirm = ({
                 disabled={isSubmitting}
                 setFieldValue={setFieldValue}
                 values={values.references}
-                id={container.id}
+                id={entityId}
                 noStoreUpdate={true}
               />
             </Form>

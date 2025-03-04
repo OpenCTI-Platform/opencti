@@ -234,6 +234,7 @@ class GroupingKnowledgeComponent extends Component {
                     return (
                       <GroupingKnowledgeGraph
                         data={props.grouping}
+                        graphData={props.grouping}
                         mode={mode}
                         enableReferences={enableReferences}
                       />
@@ -258,7 +259,10 @@ class GroupingKnowledgeComponent extends Component {
                 render={({ props }) => {
                   if (props && props.grouping) {
                     return (
-                      <GroupingKnowledgeCorrelation data={props.grouping} />
+                      <GroupingKnowledgeCorrelation
+                        data={props.grouping}
+                        graphData={props.grouping}
+                      />
                     );
                   }
                   return (

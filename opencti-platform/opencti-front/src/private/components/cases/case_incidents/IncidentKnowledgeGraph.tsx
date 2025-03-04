@@ -4,26 +4,33 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { graphql, useFragment } from 'react-relay';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import ContainerHeader from '@components/common/containers/ContainerHeader';
+import { IncidentKnowledgeGraphData_fragment$key } from './__generated__/IncidentKnowledgeGraphData_fragment.graphql';
 import { IncidentKnowledgeGraph_fragment$data, IncidentKnowledgeGraph_fragment$key } from './__generated__/IncidentKnowledgeGraph_fragment.graphql';
 import useIncidentKnowledgeGraphEdit from './useIncidentKnowledgeGraphEdit';
 import useIncidentKnowledgeGraphAddRelation from './useIncidentKnowledgeGraphAddRelation';
 import useIncidentKnowledgeGraphDeleteRelation from './useIncidentKnowledgeGraphDeleteRelation';
 import IncidentPopover from './CaseIncidentPopover';
 import type { Theme } from '../../../../components/Theme';
-import Graph, { GraphProps } from '../../../../utils/graph/Graph';
+import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
-import { encodeGraphData } from '../../../../utils/Graph';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
 import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteractions';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
+import GraphToolbar, { GraphToolbarProps } from '../../../../utils/graph/GraphToolbar';
+import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
+
+const incidentGraphDataFragment = graphql`
+  fragment IncidentKnowledgeGraphData_fragment on CaseIncident {
+    x_opencti_graph_data
+  }
+`;
 
 const incidentGraphFragment = graphql`
   fragment IncidentKnowledgeGraph_fragment on CaseIncident {
     id
     name
-    x_opencti_graph_data
     confidence
     createdBy {
       ... on Identity {
@@ -388,6 +395,7 @@ export const incidentKnowledgeGraphQuery = graphql`
   query IncidentKnowledgeGraphQuery($id: String!) {
     caseIncident(id: $id) {
       ...IncidentKnowledgeGraph_fragment
+      ...IncidentKnowledgeGraphData_fragment
     }
   }
 `;
@@ -429,13 +437,13 @@ const IncidentKnowledgeGraphComponent = ({
         id: incident.id,
         input: [{
           key: 'x_opencti_graph_data',
-          value: [encodeGraphData(positions)],
+          value: [serializeObjectB64(positions)],
         }],
       },
     });
   };
 
-  const addRelationInGraph: GraphProps['onAddRelation'] = (rel) => {
+  const addRelationInGraph: GraphToolbarProps['onAddRelation'] = (rel) => {
     commitAddRelation({
       variables: {
         id: incident.id,
@@ -450,7 +458,7 @@ const IncidentKnowledgeGraphComponent = ({
     });
   };
 
-  const deleteRelationInGraph: GraphProps['onContainerDeleteRelation'] = (
+  const deleteRelationInGraph: GraphToolbarProps['onDeleteRelation'] = (
     relId,
     onCompleted,
   ) => {
@@ -479,40 +487,43 @@ const IncidentKnowledgeGraphComponent = ({
         }}
         investigationAddFromContainer={investigationAddFromContainer}
       />
-      <Graph
-        parentRef={ref}
-        onPositionsChanged={savePositions}
-        enableReferences={enableReferences}
-        stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
-        relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
-        onAddRelation={addRelationInGraph}
-        onContainerDeleteRelation={deleteRelationInGraph}
-        container={{
-          id: incident.id,
-          confidence: incident.confidence,
-          objects: incident.objects?.edges ?? [],
-          createdBy: incident.createdBy,
-          objectMarking: incident.objectMarking ?? [],
-        }}
-      />
+      <Graph parentRef={ref} onPositionsChanged={savePositions}>
+        <GraphToolbar
+          enableReferences={enableReferences}
+          stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
+          relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
+          onAddRelation={addRelationInGraph}
+          onDeleteRelation={deleteRelationInGraph}
+          entity={incident}
+        />
+      </Graph>
     </div>
   );
 };
 
 interface ReportKnowledgeGraphtProps extends Omit<IncidentKnowledgeGraphComponentProps, 'incident'> {
   data: IncidentKnowledgeGraph_fragment$key
+  graphData: IncidentKnowledgeGraphData_fragment$key
 }
 
 const IncidentKnowledgeGraph = ({
   data,
+  graphData,
   ...otherProps
 }: ReportKnowledgeGraphtProps) => {
   const incident = useFragment(incidentGraphFragment, data);
-  const incidentData = useMemo(() => getObjectsToParse(incident), [incident]);
-  const localStorageKey = `incident-${incident.id}-knowledge-graph`;
+  const { x_opencti_graph_data } = useFragment(incidentGraphDataFragment, graphData);
+  const localStorageKey = `incident-knowledge-graph-${incident.id}`;
+
+  const objects = useMemo(() => getObjectsToParse(incident), [incident]);
+  const positions = useMemo(() => deserializeObjectB64(x_opencti_graph_data), [x_opencti_graph_data]);
 
   return (
-    <GraphProvider localStorageKey={localStorageKey} data={incidentData}>
+    <GraphProvider
+      localStorageKey={localStorageKey}
+      objects={objects}
+      positions={positions}
+    >
       <IncidentKnowledgeGraphComponent incident={incident} {...otherProps} />
     </GraphProvider>
   );

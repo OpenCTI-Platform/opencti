@@ -3,20 +3,27 @@ import React, { CSSProperties, useMemo, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { knowledgeCorrelationStixCoreObjectQuery, knowledgeCorrelationStixCoreRelationshipQuery } from '@components/common/containers/KnowledgeCorrelationQuery';
+import { ReportKnowledgeCorrelationData_fragment$key } from './__generated__/ReportKnowledgeCorrelationData_fragment.graphql';
 import useReportKnowledgeCorrelationEdit from './useReportKnowledgeCorrelationEdit';
 import type { Theme } from '../../../../components/Theme';
 import { ReportKnowledgeCorrelation_fragment$data, ReportKnowledgeCorrelation_fragment$key } from './__generated__/ReportKnowledgeCorrelation_fragment.graphql';
 import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
-import { encodeGraphData } from '../../../../utils/Graph';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
 import { GraphProvider } from '../../../../utils/graph/GraphContext';
+import GraphToolbar from '../../../../utils/graph/GraphToolbar';
+import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
+
+const reportCorrelationDataFragment = graphql`
+  fragment ReportKnowledgeCorrelationData_fragment on Report {
+    x_opencti_graph_data
+  }
+`;
 
 const reportCorrelationFragment = graphql`
   fragment ReportKnowledgeCorrelation_fragment on Report {
     id
     name
-    x_opencti_graph_data
     published
     confidence
     createdBy {
@@ -310,6 +317,7 @@ export const reportKnowledgeCorrelationQuery = graphql`
   query ReportKnowledgeCorrelationQuery($id: String) {
     report(id: $id) {
       ...ReportKnowledgeCorrelation_fragment
+      ...ReportKnowledgeCorrelationData_fragment
     }
   }
 `;
@@ -344,7 +352,7 @@ const ReportKnowledgeCorrelationComponent = ({
         id: report.id,
         input: [{
           key: 'x_opencti_graph_data',
-          value: [encodeGraphData(positions)],
+          value: [serializeObjectB64(positions)],
         }],
       },
     });
@@ -352,31 +360,37 @@ const ReportKnowledgeCorrelationComponent = ({
 
   return (
     <div style={graphContainerStyle} ref={ref}>
-      <Graph
-        parentRef={ref}
-        onPositionsChanged={savePositions}
-        stixCoreObjectRefetchQuery={knowledgeCorrelationStixCoreObjectQuery}
-        relationshipRefetchQuery={knowledgeCorrelationStixCoreRelationshipQuery}
-      />
+      <Graph parentRef={ref} onPositionsChanged={savePositions}>
+        <GraphToolbar
+          stixCoreObjectRefetchQuery={knowledgeCorrelationStixCoreObjectQuery}
+          relationshipRefetchQuery={knowledgeCorrelationStixCoreRelationshipQuery}
+        />
+      </Graph>
     </div>
   );
 };
 
 interface ReportKnowledgeCorrelationProps {
   data: ReportKnowledgeCorrelation_fragment$key
+  graphData: ReportKnowledgeCorrelationData_fragment$key
 }
 
 const ReportKnowledgeCorrelation = ({
   data,
+  graphData,
 }: ReportKnowledgeCorrelationProps) => {
   const report = useFragment(reportCorrelationFragment, data);
-  const reportData = useMemo(() => getObjectsToParse(report), [report]);
+  const { x_opencti_graph_data } = useFragment(reportCorrelationDataFragment, graphData);
   const localStorageKey = `report-knowledge-correlation-${report.id}`;
+
+  const objects = useMemo(() => getObjectsToParse(report), [report]);
+  const positions = useMemo(() => deserializeObjectB64(x_opencti_graph_data), [x_opencti_graph_data]);
 
   return (
     <GraphProvider
       localStorageKey={localStorageKey}
-      data={reportData}
+      objects={objects}
+      positions={positions}
       context='correlation'
     >
       <ReportKnowledgeCorrelationComponent report={report} />
