@@ -44,7 +44,8 @@ type WorkspaceHeaderProps = {
     startDate: object
     endDate: object
     relativeDate: string
-  }
+  },
+  handleAddWidget: () => void;
 };
 
 const WorkspaceHeader = ({
@@ -53,7 +54,6 @@ const WorkspaceHeader = ({
   variant,
   adjust,
   handleDateChange,
-  widgetActions,
   handleAddWidget,
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
@@ -67,7 +67,6 @@ const WorkspaceHeader = ({
 
   const { canManage, canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
   const isGrantedToUpdateDashboard = useGranted([EXPLORE_EXUPDATE]);
-  const tags: string[] = workspace.tags ?? [];
 
   const handleDashboardDuplication = () => setDisplayDuplicate(true);
   const handleCloseDuplicate = () => setDisplayDuplicate(false);
@@ -118,7 +117,7 @@ const WorkspaceHeader = ({
       <div style={{ display: 'flex' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginRight: 7 }}>
           <WorkspaceHeaderTagManager
-            tags={tags}
+            tags={workspace.tags ?? []}
             workspaceId={workspace.id}
             canEdit={canEdit}
           />
@@ -177,7 +176,6 @@ const WorkspaceHeader = ({
           handleDashboardDuplication={isGrantedToUpdateDashboard && handleDashboardDuplication}
           variant={variant}
         />
-        {widgetActions}
         {variant === 'dashboard' && (
           <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
             <WorkspaceShareButton workspaceId={workspace.id} />

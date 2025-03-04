@@ -134,14 +134,14 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
         >
           <div>
             <Formik
-              initialValues={{ new_tag: '' }}
+              initialValues={{ newTag: '' }}
               onSubmit={onSubmitCreateTag}
             >
               <Form>
                 <Field
                   component={TextField}
                   variant="standard"
-                  name="new_tag"
+                  name="newTag"
                   aria-label="tag field"
                   autoFocus
                   placeholder={t_i18n('New tag')}
@@ -163,7 +163,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
           <DialogTitle>
             {t_i18n('Entity tags')}
             <Formik
-              initialValues={{ new_tag: '' }}
+              initialValues={{ newTag: '' }}
               onSubmit={onSubmitCreateTag}
             >
               {({ submitForm }) => (
@@ -171,7 +171,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                   <Field
                     component={TextField}
                     variant="standard"
-                    name="new_tag"
+                    name="newTag"
                     autoFocus={true}
                     placeholder={t_i18n('New tag')}
                     onChange={handleChangeNewTag}
