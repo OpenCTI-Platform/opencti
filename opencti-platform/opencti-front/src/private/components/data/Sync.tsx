@@ -93,7 +93,6 @@ const Sync = () => {
       <PageContainer withRightMenu>
         <Breadcrumbs
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]}
-          noMargin
         />
         <AlertInfo content={
           <>
@@ -109,6 +108,7 @@ const Sync = () => {
             .
           </>
         }
+          style={{ marginBottom: theme.spacing(2) }}
         />
         <ListLines
           sortBy={viewStorage.sortBy}
