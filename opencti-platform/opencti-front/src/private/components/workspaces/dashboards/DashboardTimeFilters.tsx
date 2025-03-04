@@ -5,6 +5,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { parse } from 'src/utils/Time';
+import { InvestigationGraph_workspace$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_workspace.graphql';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
@@ -12,7 +13,7 @@ import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMember
 import { Dashboard_workspace$data } from './__generated__/Dashboard_workspace.graphql';
 
 interface DashboardTimeFiltersProps {
-  workspace: Dashboard_workspace$data
+  workspace: Dashboard_workspace$data | InvestigationGraph_workspace$data;
   config?: {
     startDate: object
     endDate: object
