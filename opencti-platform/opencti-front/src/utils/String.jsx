@@ -2,8 +2,12 @@ import * as R from 'ramda';
 import React from 'react';
 import { Base64 } from 'js-base64';
 import Tooltip from '@mui/material/Tooltip';
+import { last } from 'ramda';
 import { APP_BASE_PATH } from '../relay/environment';
 import { isNotEmptyField } from './utils';
+
+// the relative date values must be: 'now' OR 'now' followed by -/+ then a number then a letter among [smhHdwMy] and eventually a / followed by a letter among [smhHdwMy]
+export const RELATIVE_DATE_REGEX = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
 
 export const truncate = (str, limit, truncateSpaces = true) => {
   if (str === undefined || str === null || str.length <= limit) {
@@ -158,4 +162,75 @@ export const maskString = (value) => (value ? '•'.repeat(value.length) : '');
  */
 export const stringWithZeroWidthSpace = (value) => {
   return (value.match(/.{1,10}/g) ?? []).join('​');
+};
+
+/**
+ * Check if a string is in a correct date format
+ * (usefull to check if a value in a filter of type date is correct)
+ *
+ * @param stringDate String
+ * @returns {boolean} If the string is in a correct date format.
+ */
+export const isValidDate = (stringDate) => {
+  const dateParsed = Date.parse(stringDate);
+  if (!dateParsed) return false;
+  const dateInstance = new Date(dateParsed);
+  return dateInstance.toISOString() === stringDate;
+};
+
+/**
+ * Check if an array of string is translatable in a comprehensible date interval phrase
+ * ie if the array is composed of 2 strings
+ * and the first in a relative date math format before now,
+ * and the second is 'now'
+ *
+ * @param {string[]}
+ * @returns {boolean} If the array is translatable in a relative date interval phrase
+ */
+export const isDateIntervalTranslatable = (filterValues) => {
+  return filterValues.length === 2
+    && filterValues[1] === 'now'
+    && filterValues[0].match(RELATIVE_DATE_REGEX)
+    && filterValues[0].includes('-')
+    && !filterValues[0].includes('/');
+};
+
+/**
+ * Translatable an array in a comprehensible date interval phrase
+ *
+ * @param {string[]}
+ * @returns {string} Translation in a relative date interval phrase
+ */
+export const translateDateInterval = (filterValues, t_i18n) => {
+  if (!isDateIntervalTranslatable(filterValues)) {
+    throw Error('The interval of value is not translatable in a relative date interval phrase.');
+  }
+  const relativeUnitMapInPlural = {
+    s: t_i18n('seconds'),
+    m: t_i18n('minutes'),
+    H: t_i18n('hours'),
+    h: t_i18n('hours'),
+    w: t_i18n('weeks'),
+    d: t_i18n('days'),
+    M: t_i18n('months'),
+    y: t_i18n('years'),
+  };
+  const relativeUnitMapInSingular = {
+    s: t_i18n('second'),
+    m: t_i18n('minute'),
+    H: t_i18n('hour'),
+    h: t_i18n('hour'),
+    w: t_i18n('week'),
+    d: t_i18n('day'),
+    M: t_i18n('month'),
+    y: t_i18n('year'),
+  };
+  const relativeExtraction = last(filterValues[0].split('now-')) ?? '';
+  const relativeUnitLetter = last(relativeExtraction) ?? '';
+  const relativeNumber = relativeExtraction.split(relativeUnitLetter)[0];
+  const relativeUnit = relativeNumber === '1'
+    ? relativeUnitMapInSingular[relativeUnitLetter]
+    : relativeUnitMapInPlural[relativeUnitLetter];
+
+  return `${t_i18n('Last')} ${relativeNumber} ${t_i18n(relativeUnit)}`;
 };

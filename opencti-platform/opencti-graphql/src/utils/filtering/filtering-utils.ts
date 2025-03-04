@@ -2,8 +2,7 @@ import { uniq } from 'ramda';
 import { buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import type { Filter, FilterGroup } from '../../generated/graphql';
-import { FilterOperator } from '../../generated/graphql';
+import { type Filter, type FilterGroup, FilterOperator } from '../../generated/graphql';
 import {
   CONTEXT_CREATED_BY_FILTER,
   CONTEXT_CREATOR_FILTER,
@@ -25,6 +24,8 @@ import {
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
+import { isEmptyField } from '../../database/utils';
+import { isValidDate } from '../../schema/schemaUtils';
 
 //----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
@@ -39,6 +40,40 @@ export const isFilterGroupFormatCorrect = (filterGroup: FilterGroup) => {
   return (filterGroup.mode
     && filterGroup.filters && Array.isArray(filterGroup.filters)
     && filterGroup.filterGroups && Array.isArray(filterGroup.filters));
+};
+
+/**
+ * Tells if a filter group content is valid
+ * (Enables to check filters won't raise an error at the query resolution)
+ * @param filterGroup
+ */
+export const checkFilterGroupSyntax = (filterGroup: FilterGroup) => {
+  const args = { filters: JSON.stringify(filterGroup) };
+  // check the format is correct
+  if (!isFilterGroupFormatCorrect(filterGroup)) {
+    throw UnsupportedError('Incorrect filters format', args);
+  }
+  // check filter keys are defined
+  if (filterGroup.filters.some((f) => isEmptyField(f.key))) {
+    throw UnsupportedError('A filter key must be defined for every filter', args);
+  }
+  // check syntax for filters with 'within' operator
+  const withinFilters = filterGroup.filters.filter((f) => f.operator === FilterOperator.Within);
+  withinFilters.forEach((f) => {
+    const { values } = f;
+    if (values.length !== 2) {
+      throw UnsupportedError('A filter with "within" operator must have 2 values', { filter: f });
+    }
+    if (values.some((v) => v === null || v === '')) {
+      throw UnsupportedError('A filter with "within" operator must have 2 values', { filter: f });
+    }
+    const relative_date_regex = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
+    if (values.some((v) => !v.match(relative_date_regex) && v !== 'now' && !isValidDate(v))) {
+      throw UnsupportedError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.', { filter: f });
+    }
+  });
+  // recursively check the syntax of sub filter groups
+  filterGroup.filterGroups.forEach((fg) => checkFilterGroupSyntax(fg));
 };
 
 /**
@@ -244,9 +279,8 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
   if (!filterGroup) {
     return undefined;
   }
-  if (!isFilterGroupFormatCorrect(filterGroup)) { // detect filters in the old format or in a bad format
-    throw UnsupportedError('Incorrect filters format', { filter: JSON.stringify(filterGroup) });
-  }
+  // 00. detect filters in the old format or in a bad format
+  checkFilterGroupSyntax(filterGroup);
   const { noFiltersChecking = false } = opts;
   // 01. check filters keys exist in schema
   // TODO improvement: check filters keys correspond to the entity types if types is given

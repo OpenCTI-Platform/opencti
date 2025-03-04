@@ -10,7 +10,9 @@ import SearchScopeElement from '@components/common/lists/SearchScopeElement';
 import Chip from '@mui/material/Chip';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
 import { addDays, subDays } from 'date-fns';
+import { useTheme } from '@mui/material/styles';
 import {
+  DEFAULT_WITHIN_FILTER_VALUES,
   FilterSearchContext,
   getAvailableOperatorForFilter,
   getSelectedOptions,
@@ -29,6 +31,9 @@ import { FilterRepresentative } from './FiltersModel';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import useAttributes from '../../utils/hooks/useAttributes';
+import BasicFilterInput from './BasicFilterInput';
+import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
+import DateRangeFilter from './DateRangeFilter';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -68,83 +73,9 @@ const OperatorKeyValues: {
   ends_with: 'Ends with',
   not_ends_with: 'Not ends with',
   search: 'Search',
+  within: 'Within',
 };
 
-interface BasicNumberInputProps {
-  filter?: Filter;
-  filterKey: string;
-  helpers?: handleFilterHelpers;
-  filterValues: string[];
-  label: string;
-}
-
-const BasicNumberInput: FunctionComponent<BasicNumberInputProps> = ({
-  filter,
-  filterKey,
-  helpers,
-  filterValues,
-  label,
-}) => {
-  return (
-    <TextField
-      variant="outlined"
-      size="small"
-      fullWidth={true}
-      id={filter?.id ?? `${filterKey}-id`}
-      label={label}
-      type="number"
-      defaultValue={filterValues[0]}
-      autoFocus={true}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') {
-          helpers?.handleAddSingleValueFilter(
-            filter?.id ?? '',
-            (event.target as HTMLInputElement).value,
-          );
-        }
-      }}
-      onBlur={(event) => {
-        helpers?.handleAddSingleValueFilter(
-          filter?.id ?? '',
-          event.target.value,
-        );
-      }}
-    />
-  );
-};
-const BasicTextInput: FunctionComponent<BasicNumberInputProps> = ({
-  filter,
-  filterKey,
-  helpers,
-  filterValues,
-  label,
-}) => {
-  return (
-    <TextField
-      variant="outlined"
-      size="small"
-      fullWidth={true}
-      id={filter?.id ?? `${filterKey}-id`}
-      label={label}
-      defaultValue={filterValues[0]}
-      autoFocus={true}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') {
-          helpers?.handleAddSingleValueFilter(
-            filter?.id ?? '',
-            (event.target as HTMLInputElement).value,
-          );
-        }
-      }}
-      onBlur={(event) => {
-        helpers?.handleAddSingleValueFilter(
-          filter?.id ?? '',
-          event.target.value,
-        );
-      }}
-    />
-  );
-};
 export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   params,
   handleClose,
@@ -160,6 +91,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   fintelTemplatesContext,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const filter = filters.find((f) => f.id === params.filterId);
   const filterKey = filter?.key ?? '';
   const filterOperator = filter?.operator ?? '';
@@ -268,7 +200,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     );
   };
 
-  const BasicFilterDate = () => (
+  const BasicFilterDate = ({ value }: { value?: string }) => (
     <FilterDate
       defaultHandleAddFilter={handleDateChange}
       filterKey={filterKey}
@@ -276,6 +208,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       inputValues={inputValues}
       setInputValues={setInputValues}
       filterLabel={filterLabel}
+      filterValue={value}
     />
   );
 
@@ -389,22 +322,34 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   };
   const getSpecificFilter = (fDefinition?: FilterDefinition): ReactNode => {
     if (fDefinition?.type === 'date') {
-      return <BasicFilterDate />;
+      if (filterOperator === 'within') {
+        const values = filterValues.length > 0 ? filterValues : DEFAULT_WITHIN_FILTER_VALUES;
+        return (
+          <DateRangeFilter
+            filter={filter}
+            filterKey={filterKey}
+            filterValues={values}
+            helpers={helpers}
+          />
+        );
+      }
+      return <BasicFilterDate value={filterValues.length > 0 ? filterValues[0] : undefined} />;
     }
     if (isNumericFilter(fDefinition?.type)) {
       return (
-        <BasicNumberInput
+        <BasicFilterInput
           filter={filter}
           filterKey={filterKey}
           filterValues={filterValues}
           helpers={helpers}
           label={filterLabel}
+          type={'number'}
         />
       );
     }
     if (isBasicTextFilter(filterDefinition)) {
       return (
-        <BasicTextInput
+        <BasicFilterInput
           filter={filter}
           filterKey={filterKey}
           filterValues={filterValues}
@@ -474,13 +419,28 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           />
           {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey)}
         </div>
-        : <div
+        : <div style={{ display: 'inline-flex' }}>
+          <div
             style={{
               width: 250,
               padding: 8,
             }}
           >
-          {displayOperatorAndFilter(filterKey)}
+            {displayOperatorAndFilter(filterKey)}
+          </div>
+          {filterOperator === 'within'
+            && <div style={{ width: 150, display: 'inline-flex' }}>
+              <div style={{
+                color: theme.palette.text.disabled,
+                borderLeft: '0.5px solid',
+                marginLeft: '10px',
+                marginTop: '10px',
+                marginBottom: '10px',
+              }}
+              />
+              <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
+            </div>
+          }
         </div>
       }
     </Popover>

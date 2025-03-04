@@ -13,6 +13,7 @@ interface FilterDateProps {
   inputValues: { key: string, values: string[], operator?: string }[];
   setInputValues: (value: { key: string, values: string[], operator?: string }[]) => void;
   filterLabel: string;
+  filterValue?: string;
 }
 
 const FilterDate: FunctionComponent<FilterDateProps> = ({
@@ -22,8 +23,9 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   inputValues,
   setInputValues,
   filterLabel,
+  filterValue,
 }) => {
-  const [dateState, setDateState] = useState<Date | null>(null);
+  const [dateState, setDateState] = useState<Date | null>(filterValue ? new Date(filterValue) : null);
 
   const findFilterFromKey = (filters: {
     key: string,

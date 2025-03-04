@@ -1,4 +1,5 @@
 import { Filter, FilterGroup, FilterValue } from './filtersHelpers-types';
+import { DEFAULT_WITHIN_FILTER_VALUES } from './filtersUtils';
 
 type FiltersLocalStorageUtilProps<U> = {
   filters: FilterGroup,
@@ -28,13 +29,24 @@ export const handleChangeOperatorFiltersUtil = ({ filters, id, operator }: Filte
   id: string,
   operator: string
 }>): FilterGroup => {
-  return updateFilters(filters, (f) => (f.id === id
-    ? {
-      ...f,
-      operator,
-      values: ['nil', 'not_nil'].includes(operator) ? [] : f.values,
+  return updateFilters(filters, (f) => {
+    if (f.id === id) {
+      let values = [...f.values];
+      if (['nil', 'not_nil'].includes(operator)) {
+        values = [];
+      } else if (operator === 'within' && f.operator !== 'within') {
+        values = DEFAULT_WITHIN_FILTER_VALUES;
+      } else if (f.operator === 'within' && operator !== 'within') {
+        values = [];
+      }
+      return {
+        ...f,
+        operator,
+        values,
+      };
     }
-    : f));
+    return f;
+  });
 };
 
 export const handleSwitchLocalModeUtil = ({ filters, filter }: FiltersLocalStorageUtilProps<{
@@ -60,6 +72,13 @@ export const handleAddSingleValueFilterUtil = ({ filters, id, valueId }: Filters
     return updateFilters(filters, (f) => (f.id === id ? { ...f, values: [valueId] } : f));
   }
   return updateFilters(filters, (f) => (f.id === id ? { ...f, values: [] } : f));
+};
+
+export const handleReplaceFilterValuesUtil = ({ filters, id, values }: FiltersLocalStorageUtilProps<{
+  id: string,
+  values: string[],
+}>): FilterGroup => {
+  return updateFilters(filters, (f) => (f.id === id ? { ...f, values } : f));
 };
 
 export const handleRemoveRepresentationFilterUtil = ({ filters, id, value }: FiltersLocalStorageUtilProps<{

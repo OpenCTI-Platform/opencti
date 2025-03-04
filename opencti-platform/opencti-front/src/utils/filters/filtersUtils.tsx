@@ -6,7 +6,7 @@ import { subDays } from 'date-fns';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
-import { capitalizeFirstLetter } from '../String';
+import { capitalizeFirstLetter, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { generateUniqueItemsArray, isEmptyField } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
@@ -36,6 +36,9 @@ export const emptyFilterGroup = {
 
 export const SELF_ID = 'SELF_ID';
 export const SELF_ID_VALUE = 'CURRENT ENTITY';
+
+// 'within' operator filter constants
+export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
 
 export const FiltersVariant = {
   list: 'list',
@@ -343,9 +346,9 @@ export const useBuildFiltersForTemplateWidgets = () => {
   return { buildFiltersForTemplateWidgets };
 };
 
-// return the i18n label corresponding to a value
+// return the i18n label corresponding to a filter value
 export const filterValue = (filterKey: string, value?: string | null, filterType?: string, filterOperator?: string) => {
-  const { t_i18n, nsd } = useFormatter();
+  const { t_i18n, nsd, smhd } = useFormatter();
   if (filterKey === 'regardingOf') {
     return JSON.stringify(value);
   }
@@ -368,10 +371,14 @@ export const filterValue = (filterKey: string, value?: string | null, filterType
       );
   }
   if (filterType === 'date') {
-    if (filterOperator && value && ['lte', 'gt'].includes(filterOperator)) {
-      return nsd(subDays(value, 1));
+    if (filterOperator === 'within' && !isValidDate(value)) {
+      return value;
     }
-    return nsd(value);
+    const dateConvertor = filterOperator === 'within' ? smhd : nsd;
+    if (filterOperator && value && ['lte', 'gt'].includes(filterOperator)) {
+      return dateConvertor(subDays(value, 1));
+    }
+    return dateConvertor(value);
   }
   if (filterKey === 'relationship_type' || filterKey === 'type') {
     return t_i18n(`relationship_${value}`);
@@ -635,7 +642,7 @@ export const getDefaultOperatorFilter = (
   }
   const { type } = filterDefinition;
   if (type === 'date') {
-    return 'gte';
+    return 'within';
   }
   if (isNumericFilter(type)) {
     return 'gt';
@@ -686,7 +693,7 @@ export const getAvailableOperatorForFilterKey = (
   }
   const { type: filterType } = filterDefinition;
   if (filterType === 'date') {
-    return ['gt', 'gte', 'lt', 'lte', 'nil', 'not_nil'];
+    return ['gt', 'gte', 'lt', 'lte', 'nil', 'not_nil', 'within'];
   }
   if (isNumericFilter(filterType)) {
     return ['gt', 'gte', 'lt', 'lte'];
