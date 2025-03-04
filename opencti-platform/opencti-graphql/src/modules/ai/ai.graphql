@@ -22,6 +22,11 @@ type AIBus {
     content: String!
 }
 
+type NLQResponse {
+    filters: String!
+    valuesIdsAllResolved: Boolean!
+}
+
 type Mutation {
     # Based on knowledge
     aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format, language: String): String @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -41,7 +46,7 @@ type Mutation {
     aiChangeTone(id: ID!, content: String!, format: Format, tone: Tone): String @auth(for: [KNOWLEDGE_KNUPDATE])
     aiSummarize(id: ID!, content: String!, format: Format): String @auth(for: [KNOWLEDGE_KNUPDATE])
     aiExplain(id: ID!, content: String!): String @auth(for: [KNOWLEDGE])
-    aiNLQ(search: String!): String @auth(for: [KNOWLEDGE])
+    aiNLQ(search: String!): NLQResponse @auth(for: [KNOWLEDGE])
 }
 
 type Subscription {

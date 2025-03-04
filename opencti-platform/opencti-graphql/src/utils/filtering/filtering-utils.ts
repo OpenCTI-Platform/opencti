@@ -349,31 +349,51 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
 };
 
 /**
- * Go through all keys in a filter group to:
- * - if the key is in keysToReplace: replace the values of the filter by the associated id in the map
+ * Go through all keys in a filter group and foreach keys is in keysToReplace:
+ * - replace the values of the filter by the associated id in the map
+ * - if no id has been found in the map for the filter values, remove the filter
  */
-export const filtersEntityIdsMappingResult = (filters: FilterGroup, keysToReplace: string[], valuesIdsMap: Map<string, string>) => {
-  const filtersResult = filters;
-  if (isFilterGroupNotEmpty(filtersResult)) {
+export const filtersEntityIdsMappingResult = (inputFilters: FilterGroup, keysToReplace: string[], valuesIdsMap: Map<string, string | null>) => {
+  let newFilters = inputFilters.filters;
+  let newFilterGroups = inputFilters.filterGroups;
+  if (isFilterGroupNotEmpty(inputFilters)) {
     // replace the values by their ids
-    filtersResult.filters.forEach((f) => {
+    newFilters = inputFilters.filters.map((f) => {
       const key = Array.isArray(f.key) ? f.key[0] : f.key;
       if (keysToReplace.includes(key)) {
         if (key === INSTANCE_REGARDING_OF) {
           const valuesIds = f.values.filter((v) => v.key === 'id').map((v) => v.values).flat();
-          const resolvedValuesIds = valuesIds.map((v) => valuesIdsMap.get(v));
-          // eslint-disable-next-line no-param-reassign
-          f.values = [
-            ...f.values.filter((v) => v.key !== 'id'),
-            { key: 'id', values: resolvedValuesIds },
-          ];
+          const resolvedValuesIds = valuesIds.map((v) => valuesIdsMap.get(v)).filter((v) => !!v);
+          if (resolvedValuesIds.length > 0) {
+            // eslint-disable-next-line no-param-reassign
+            f.values = [
+              ...f.values.filter((v) => v.key !== 'id'),
+              { key: 'id', values: resolvedValuesIds },
+            ];
+          } else {
+            // eslint-disable-next-line no-param-reassign
+            f.values = [
+              ...f.values.filter((v) => v.key !== 'id'),
+            ];
+          }
         } else {
           // eslint-disable-next-line no-param-reassign
-          f.values = f.values.map((v) => valuesIdsMap.get(v));
+          f.values = f.values
+            .map((v) => valuesIdsMap.get(v))
+            .filter((v) => !!v);
         }
       }
-    });
-    filtersResult.filterGroups.forEach((fg) => filtersEntityIdsMappingResult(fg, keysToReplace, valuesIdsMap));
+      const shouldRemoveFilter = f.values.length === 0 && f.operator && !['nil', 'not_nil'].includes(f.operator);
+      if (shouldRemoveFilter) { // remove filters of keysToReplace with values not resolved
+        return null;
+      }
+      return f;
+    }).filter((f) => !!f);
+    newFilterGroups = inputFilters.filterGroups.map((fg) => filtersEntityIdsMappingResult(fg, keysToReplace, valuesIdsMap));
   }
-  return filtersResult;
+  return {
+    ...inputFilters,
+    filters: newFilters,
+    filterGroups: newFilterGroups,
+  };
 };
