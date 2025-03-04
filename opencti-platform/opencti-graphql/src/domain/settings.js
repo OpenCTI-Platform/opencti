@@ -136,6 +136,7 @@ export const getSettings = async (context) => {
     platform_openbas_disable_display: nconf.get('xtm:openbas_disable_display'),
     platform_openerm_url: nconf.get('xtm:openerm_url'),
     platform_openmtd_url: nconf.get('xtm:openmtd_url'),
+    platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
     platform_ai_enabled: nconf.get('ai:enabled') ?? false,
     platform_ai_type: `${getAIEndpointType()} ${nconf.get('ai:type')}`,
     platform_ai_model: nconf.get('ai:model'),

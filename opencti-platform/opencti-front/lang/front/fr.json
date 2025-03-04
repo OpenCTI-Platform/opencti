@@ -1510,6 +1510,7 @@
   "Import a widget": "Importer un widget",
   "Import a Widget": "Importer un widget",
   "Import dashboard": "Importer un tableau de bord personnalisé",
+  "Import from Hub": "Importer depuis le Hub",
   "Import data": "Importer des données",
   "Import from date (empty = all Csv possible items)": "Importer à partir de la date (vide = tous les éléments Csv possibles)",
   "Import knowledge": "Importer des connaissances",

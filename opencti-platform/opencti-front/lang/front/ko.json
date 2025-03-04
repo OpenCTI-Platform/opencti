@@ -1510,6 +1510,7 @@
   "Import a widget": "위젯 가져오기",
   "Import a Widget": "위젯 가져오기",
   "Import dashboard": "대시보드 가져오기",
+  "Import from Hub": "허브에서 가져오기",
   "Import data": "데이터 가져오기",
   "Import from date (empty = all Csv possible items)": "날짜 기준으로 가져오기 (비어 있음 = 모든 CSV 가능한 항목)",
   "Import knowledge": "지식 가져오기",

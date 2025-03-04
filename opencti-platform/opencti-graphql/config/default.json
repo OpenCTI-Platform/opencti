@@ -5,7 +5,18 @@
     "base_url": "http://localhost:4000/",
     "enterprise_edition_license": "",
     "public_dashboard_authorized_domains": "",
-    "notifier_authorized_functions": ["if", "for", "forEach", "while", "stringify", "Date", "toLocaleString", "isArray", "keys", "function"],
+    "notifier_authorized_functions": [
+      "if",
+      "for",
+      "forEach",
+      "while",
+      "stringify",
+      "Date",
+      "toLocaleString",
+      "isArray",
+      "keys",
+      "function"
+    ],
     "enabled": true,
     "enabled_ui": true,
     "enabled_dev_features": [],
@@ -22,7 +33,12 @@
       "logs_console": true,
       "logs_max_files": 7,
       "logs_directory": "./logs",
-      "logs_redacted_inputs": ["password", "secret", "token", "enterprise_license"],
+      "logs_redacted_inputs": [
+        "password",
+        "secret",
+        "token",
+        "enterprise_license"
+      ],
       "extended_error_message": false
     },
     "filename_to_mimes": {
@@ -147,7 +163,17 @@
     "enabled": true,
     "markings": {
       "enabled": true,
-      "protected_definitions": ["TLP:CLEAR", "TLP:GREEN", "TLP:AMBER", "TLP:AMBER+STRICT", "TLP:RED", "PAP:CLEAR", "PAP:GREEN", "PAP:AMBER", "PAP:RED"]
+      "protected_definitions": [
+        "TLP:CLEAR",
+        "TLP:GREEN",
+        "TLP:AMBER",
+        "TLP:AMBER+STRICT",
+        "TLP:RED",
+        "PAP:CLEAR",
+        "PAP:GREEN",
+        "PAP:AMBER",
+        "PAP:RED"
+      ]
     },
     "groups": {
       "enabled": true,
@@ -188,7 +214,8 @@
     "openerm_url": "",
     "openrm_token": "",
     "openmtd_url": "",
-    "openmtd_token": ""
+    "openmtd_token": "",
+    "xtmhub_url": "https://xtmhub.filigran.io"
   },
   "data_sharing": {
     "max_csv_feed_result": 5000
