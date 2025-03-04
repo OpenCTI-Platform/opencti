@@ -337,9 +337,9 @@ class ReportKnowledgeComponent extends Component {
                   if (props && props.report) {
                     return (
                       <ReportKnowledgeGraph
+                        id={report.id}
                         mode={mode}
                         data={props.report}
-                        graphData={props.report}
                         enableReferences={enableReferences}
                       />
                     );
