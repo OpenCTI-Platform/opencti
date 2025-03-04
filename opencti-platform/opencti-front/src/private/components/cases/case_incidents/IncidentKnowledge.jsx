@@ -337,7 +337,8 @@ class IncidentKnowledgeComponent extends Component {
                   if (props && props.caseIncident) {
                     return (
                       <IncidentKnowledgeGraph
-                        caseData={props.caseIncident}
+                        data={props.caseIncident}
+                        graphData={props.caseIncident}
                         mode={mode}
                         enableReferences={enableReferences}
                       />
@@ -410,7 +411,8 @@ class IncidentKnowledgeComponent extends Component {
                   if (props && props.caseIncident) {
                     return (
                       <IncidentKnowledgeCorrelation
-                        caseData={props.caseIncident}
+                        data={props.caseIncident}
+                        graphData={props.caseIncident}
                       />
                     );
                   }
