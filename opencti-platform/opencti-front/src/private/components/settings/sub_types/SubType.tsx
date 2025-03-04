@@ -143,23 +143,27 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
             className={'paper-for-grid'}
           >
             <div style={{ display: 'flex' }}>
-              <Grid item xs={6}>
+              <Grid item xs={hasRequestAccessConfig ? 6 : 12}>
                 {subType.settings?.availableSettings.includes('workflow_configuration')
                   && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false}/>
                 }
               </Grid>
-              <Divider orientation="vertical" style={{
-                display: 'inline-block',
-                verticalAlign: 'middle',
-                height: '100%',
-                margin: '0 5px 0 5px',
-              }}
-              />
-              <Grid item xs={6}>
-                {hasRequestAccessConfig
-                  && <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={subType.settings.requestAccessConfiguration}/>
-                }
-              </Grid>
+              {hasRequestAccessConfig && (
+                <>
+                  <Grid item>
+                    <Divider orientation="vertical" style={{
+                      display: 'inline-block',
+                      verticalAlign: 'middle',
+                      height: '100%',
+                      margin: '0 20px',
+                    }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={subType.settings.requestAccessConfiguration}/>
+                  </Grid>
+                </>
+              )}
             </div>
           </Paper>
         </Grid>
