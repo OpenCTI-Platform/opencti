@@ -53,7 +53,6 @@ const graphContainerCorrelationObjectsFragment = graphql`
           globalCount
         }
         edges {
-          types
           node {
             ... on BasicObject {
               id
@@ -76,12 +75,12 @@ const graphContainerCorrelationObjectsFragment = graphql`
                 x_opencti_order
                 x_opencti_color
               }
-              groupings(first: 20) {
+              reports(first: 20) {
                 edges {
                   node {
                     id
                     name
-                    context
+                    published
                     confidence
                     entity_type
                     parent_types
@@ -103,12 +102,12 @@ const graphContainerCorrelationObjectsFragment = graphql`
                   }
                 }
               }
-              reports(first: 20) {
+              groupings(first: 20) {
                 edges {
                   node {
                     id
                     name
-                    published
+                    context
                     confidence
                     entity_type
                     parent_types
@@ -227,6 +226,9 @@ const graphContainerCorrelationObjectsFragment = graphql`
             ... on Vulnerability {
               name
             }
+            ... on Case {
+              name
+            }
             ... on Incident {
               name
               first_seen
@@ -234,12 +236,12 @@ const graphContainerCorrelationObjectsFragment = graphql`
             }
             ... on StixCyberObservable {
               observable_value
-              groupings(first: 20) {
+              reports(first: 20) {
                 edges {
                   node {
                     id
                     name
-                    context
+                    published
                     confidence
                     entity_type
                     parent_types
@@ -261,12 +263,12 @@ const graphContainerCorrelationObjectsFragment = graphql`
                   }
                 }
               }
-              reports(first: 20) {
+              groupings(first: 20) {
                 edges {
                   node {
                     id
                     name
-                    published
+                    context
                     confidence
                     entity_type
                     parent_types
