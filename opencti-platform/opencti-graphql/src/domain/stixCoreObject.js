@@ -133,11 +133,19 @@ export const findAllAuthMemberRestricted = async (context, user, args) => {
     throw ForbiddenAccess();
   }
   const types = extractStixCoreObjectTypesFromArgs(args);
-  const filters = addFilter(args.filters, `${authorizedMembers.name}.id`, [], FilterOperator.NotNil);
+  const nested = [
+    { key: 'id', operator: FilterOperator.NotNil, values: [] },
+  ];
+  const authorizedExistsFilter = { key: authorizedMembers.name, nested, mode: 'or' };
+  const filterWithAuthorizedMembers = {
+    mode: 'and',
+    filters: [authorizedExistsFilter],
+    filterGroups: args.filters ? [args.filters] : [],
+  };
   const finalArgs = {
     ...args,
     includeAuthorities: true,
-    filters
+    filterWithAuthorizedMembers
   };
 
   return listEntitiesPaginated(context, user, types, finalArgs);
