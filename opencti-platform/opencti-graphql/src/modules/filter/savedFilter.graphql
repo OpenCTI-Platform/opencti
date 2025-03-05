@@ -1,0 +1,43 @@
+type SavedFilter implements InternalObject & BasicObject {
+    id: ID!
+    name: String!
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    filters: String!
+    created_at: DateTime!
+    scope: [String]
+}
+
+type SavedFilterEdge {
+    cursor: String!
+    node: SavedFilter!
+}
+
+type SavedFilterConnection {
+    pageInfo: PageInfo!
+    edges: [SavedFilterEdge!]
+}
+
+input SavedFilterAddInput {
+    name: String!
+    filters: FilterGroup!
+    scope: [String]
+}
+
+type Query {
+    savedFilters(
+        first: Int
+        after: ID
+        orderBy: ExclusionListOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): SavedFilterConnection @auth
+}
+
+type Mutation {
+    savedFilterAdd(input: SavedFilterAddInput): SavedFilter @auth
+    savedFilterDelete(id: ID!): ID @auth
+#    savedFiltersDelete(): ID @auth
+}
