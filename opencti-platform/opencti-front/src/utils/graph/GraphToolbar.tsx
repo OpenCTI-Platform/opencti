@@ -26,7 +26,7 @@ const GraphToolbar = ({
   const navOpen = localStorage.getItem('navOpen') === 'true';
 
   const { graphState, context } = useGraphContext();
-  const { showTimeRange, showLinearProgress, showLoadingMessage } = graphState;
+  const { showTimeRange, showLinearProgress, isLoadingData } = graphState;
   const { selectBySearch } = useGraphInteractions();
 
   return (
@@ -50,7 +50,7 @@ const GraphToolbar = ({
           height: 2,
           position: 'absolute',
           top: -1,
-          visibility: showLinearProgress || showLoadingMessage ? 'visible' : 'hidden',
+          visibility: showLinearProgress || isLoadingData ? 'visible' : 'hidden',
         }}
       />
       <div style={{

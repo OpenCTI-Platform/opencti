@@ -69,7 +69,7 @@ const Graph = ({
       withForces,
       selectedNodes,
       selectedLinks,
-      showLoadingMessage,
+      isLoadingData,
     },
   } = useGraphContext();
 
@@ -90,7 +90,7 @@ const Graph = ({
 
   return (
     <div id={graphId} style={{ position: 'relative' }}>
-      {showLoadingMessage && (
+      {isLoadingData && (
         <Alert
           severity="info"
           variant='outlined'
@@ -116,7 +116,7 @@ const Graph = ({
           backgroundColor={theme.palette.background.default}
           graphData={graphData}
           dagMode={modeTree ?? undefined}
-          cooldownTicks={!withForces ? 0 : 100}
+          cooldownTicks={(!withForces || isLoadingData) ? 0 : 100}
           linkDirectionalArrowLength={3}
           linkDirectionalArrowRelPos={0.99}
           linkWidth={0.5}
@@ -169,7 +169,7 @@ const Graph = ({
               graphData={graphData}
               dagMode={modeTree ?? undefined}
               dagLevelDistance={50}
-              cooldownTicks={!withForces ? 0 : 100}
+              cooldownTicks={(!withForces || isLoadingData) ? 0 : 100}
               enablePanInteraction={!selectFree && !selectFreeRectangle}
               linkDirectionalArrowLength={3}
               linkDirectionalArrowRelPos={0.99}

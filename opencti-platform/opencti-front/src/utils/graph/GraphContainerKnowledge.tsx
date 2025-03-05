@@ -475,12 +475,12 @@ const GraphContainerKnowledgeComponent = ({
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
-  const { addLink, setShowLoadingMessage } = useGraphInteractions();
+  const { addLink, setIsLoadingData } = useGraphInteractions();
 
   const container = useFragment(graphContainerKnowledgeDataFragment, dataContainer);
 
   useEffect(() => {
-    setShowLoadingMessage(loadingData);
+    setIsLoadingData(loadingData);
   }, [loadingData]);
 
   const headerHeight = 64;
