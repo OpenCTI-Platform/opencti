@@ -107,7 +107,7 @@ export const addTrigger = async (
     updated_at: now(),
     trigger_scope: 'knowledge',
     instance_trigger: type === TriggerTypeValue.Digest ? false : (triggerInput as TriggerLiveAddInput).instance_trigger,
-    authorized_members: members,
+    restricted_members: members,
     authorized_authorities: [SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN] // Add extra capabilities
   };
   const trigger = { ...triggerInput, ...defaultOpts };
