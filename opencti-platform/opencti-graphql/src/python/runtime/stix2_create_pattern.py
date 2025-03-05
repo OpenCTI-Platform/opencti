@@ -47,6 +47,12 @@ PATTERN_MAPPING = {
     "Payment-Card": ["card_number"],
     "Media-Content": ["url"],
     "Persona": ["persona_name", "persona_type"],
+    "X509-Certificate_md5": ["hashes", "MD5"],
+    "X509-Certificate_sha1": ["hashes", "SHA-1"],
+    "X509-Certificate_sha256": ["hashes", "SHA-256"],
+    "X509-Certificate_sha512": ["hashes", "SHA-512"],
+    "X509-Certificate_subject": ["subject"],
+    "X509-Certificate_issuer": ["issuer"],
 }
 
 
