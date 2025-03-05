@@ -24,13 +24,14 @@ const DraftProcessingStatus = () => {
   const currentDraftProcessingStatus = currentDraftProcessingCount > 0 ? t_i18n('Processing') : t_i18n('Ready');
   const draftColor = getDraftModeColor(theme);
   const currentDraftProcessingStatusColor = currentDraftProcessingCount > 0 ? draftColor : theme.palette.success.main;
+  const currentProgressLabel = currentDraftProcessingCount > 0 ? `${currentDraftProcessingStatus} (${currentDraftProcessingCount})` : currentDraftProcessingStatus;
 
   return (
     <>
       <Chip
         onClick={() => { setDisplayProcesses(true); }}
         variant="outlined"
-        label={`${currentDraftProcessingStatus} (${currentDraftProcessingCount})`}
+        label={currentProgressLabel}
         style={{
           color: currentDraftProcessingStatusColor,
           borderColor: currentDraftProcessingStatusColor,

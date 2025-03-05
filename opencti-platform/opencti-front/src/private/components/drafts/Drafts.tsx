@@ -187,7 +187,7 @@ const Drafts: React.FC = () => {
             float: 'left',
             textTransform: 'uppercase',
             borderRadius: 4,
-            width: 80,
+            width: 90,
             color: draft_status === 'open' ? draftColor : validatedDraftColor,
             borderColor: draft_status === 'open' ? draftColor : validatedDraftColor,
             backgroundColor: hexToRGB(draft_status === 'open' ? draftColor : validatedDraftColor),
@@ -223,6 +223,7 @@ const Drafts: React.FC = () => {
         actions={(row) => (
           <DraftPopover
             draftId={row.id}
+            draftLocked={row.draft_status !== 'open'}
             paginationOptions={queryPaginationOptions}
           />
         )}

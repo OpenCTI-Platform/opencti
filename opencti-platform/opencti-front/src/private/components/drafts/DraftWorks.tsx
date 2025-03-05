@@ -2,11 +2,15 @@ import React, { FunctionComponent, Suspense } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { DraftWorksQuery } from '@components/drafts/__generated__/DraftWorksQuery.graphql';
 import { DraftWorksFragment$data } from '@components/drafts/__generated__/DraftWorksFragment.graphql';
+import Chip from '@mui/material/Chip';
+import { useTheme } from '@mui/styles';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DataTableProps, DataTableVariant } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import DataTableWithoutFragment from '../../../components/dataGrid/DataTableWithoutFragment';
+import { hexToRGB } from '../../../utils/Colors';
+import type { Theme } from '../../../components/Theme';
 
 export const draftWorksFragment = graphql`
     fragment DraftWorksFragment on DraftWorkspace {
@@ -42,6 +46,7 @@ interface DraftWorksComponentProps {
 const DraftWorksComponent: FunctionComponent<
 DraftWorksComponentProps
 > = ({ queryRef }) => {
+  const theme = useTheme<Theme>();
   const { draftWorkspace } = usePreloadedQuery<DraftWorksQuery>(draftWorksQuery, queryRef);
   const { id, works } = useFragment(draftWorksFragment, draftWorkspace) as DraftWorksFragment$data;
 
@@ -58,9 +63,26 @@ DraftWorksComponentProps
     },
     status: {
       label: 'Status',
-      percentWidth: 25,
+      percentWidth: 35,
       isSortable: false,
-      render: ({ status }) => defaultRender(status),
+      render: ({ status }) => (
+        <Chip
+          variant="outlined"
+          label={status}
+          style={{
+            fontSize: 12,
+            lineHeight: '12px',
+            height: 20,
+            float: 'left',
+            textTransform: 'uppercase',
+            borderRadius: 4,
+            width: 90,
+            color: status === 'progress' || status === 'wait' ? theme.palette.warn.main : theme.palette.success.main,
+            borderColor: status === 'progress' || status === 'wait' ? theme.palette.warn.main : theme.palette.success.main,
+            backgroundColor: hexToRGB(status === 'progress' || status === 'wait' ? theme.palette.warn.main : theme.palette.success.main),
+          }}
+        />)
+      ,
     },
   };
 

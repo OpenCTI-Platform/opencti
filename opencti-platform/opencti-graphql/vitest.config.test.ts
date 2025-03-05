@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies */
+ /* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
