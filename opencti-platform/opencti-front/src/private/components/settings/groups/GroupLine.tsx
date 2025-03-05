@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Box from '@mui/material/Box';
 import { CheckCircleOutlined, DoNotDisturbOnOutlined, KeyboardArrowRightOutlined, ReportGmailerrorred } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
@@ -11,6 +11,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { GroupLine_node$data } from '@components/settings/groups/__generated__/GroupLine_node.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
@@ -55,10 +56,9 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
   const { isSensitive } = useSensitiveModifications('groups', node.standard_id);
 
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/settings/accesses/groups/${node.id}`}
     >
@@ -134,7 +134,7 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined/>
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 
@@ -160,7 +160,15 @@ export const GroupLineDummy: React.FC<Pick<GroupLineProps, 'dataColumns'>> = ({ 
   const classes = useStyles();
 
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <Box sx={{ root: classes.itemIconDisabled }}>
+          <KeyboardArrowRightOutlined/>
+        </Box>
+      }
+    >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton
           animation="wave"
@@ -241,9 +249,6 @@ export const GroupLineDummy: React.FC<Pick<GroupLineProps, 'dataColumns'>> = ({ 
           </div>
         }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <KeyboardArrowRightOutlined/>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

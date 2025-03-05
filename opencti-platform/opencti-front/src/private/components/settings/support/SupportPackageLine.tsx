@@ -5,7 +5,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { FileOutline } from 'mdi-material-ui';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { DeleteOutlined, DownloadingOutlined, GetAppOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
@@ -174,7 +173,45 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
 
   return (
     <>
-      <ListItem divider={true} style={{ ...styles.item }}>
+      <ListItem
+        divider={true}
+        style={{ ...styles.item }}
+        secondaryAction={
+          <>
+            {!isReady && <Tooltip title={t_i18n('Force download on this support package')}>
+              <span>
+                <IconButton disabled={!isTooLong} onClick={handleForceZip}>
+                  <DownloadingOutlined fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>}
+            {isReady && <Tooltip title={t_i18n('Download this support package')}>
+              <span>
+                <IconButton
+                  disabled={!data.package_url}
+                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                    data.package_url || '',
+                  )}`}
+                >
+                  <GetAppOutlined fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>}
+            <Tooltip title={t_i18n('Delete this support package')}>
+              <span>
+                <IconButton
+                  disabled={!isReady && !isTooLong}
+                  color='inherit'
+                  onClick={handleOpenDelete}
+                  size="small"
+                >
+                  <DeleteOutlined fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </>
+        }
+      >
         <ListItemIcon>
           {isProgress && !isTimeout && (
             <CircularProgress
@@ -219,44 +256,11 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
             </>
           }
         />
-        <ListItemSecondaryAction>
-          {!isReady && <Tooltip title={t_i18n('Force download on this support package')}>
-            <span>
-              <IconButton disabled={!isTooLong} onClick={handleForceZip}>
-                <DownloadingOutlined fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>}
-          {isReady && <Tooltip title={t_i18n('Download this support package')}>
-            <span>
-              <IconButton
-                disabled={!data.package_url}
-                href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                  data.package_url || '',
-                )}`}
-              >
-                <GetAppOutlined fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>}
-          <Tooltip title={t_i18n('Delete this support package')}>
-            <span>
-              <IconButton
-                disabled={!isReady && !isTooLong}
-                color='inherit'
-                onClick={handleOpenDelete}
-                size="small"
-              >
-                <DeleteOutlined fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </ListItemSecondaryAction>
       </ListItem>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayDelete}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>

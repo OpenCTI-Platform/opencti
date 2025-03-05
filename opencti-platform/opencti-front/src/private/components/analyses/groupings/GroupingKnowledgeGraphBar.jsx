@@ -23,7 +23,6 @@ import {
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
@@ -43,7 +42,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import { ToggleButtonGroup } from '@mui/material';
+import { ListItemButton, ToggleButtonGroup } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
 import CommitMessage from '../../common/form/CommitMessage';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
@@ -472,10 +471,12 @@ class GroupingKnowledgeGraphBar extends Component {
             anchor="bottom"
             variant="permanent"
             classes={{ paper: classes.bottomNav }}
-            PaperProps={{
-              variant: 'elevation',
-              elevation: 1,
-              style: { bottom: bannerSettings.bannerHeightNumber },
+            slotProps={{
+              desktopPaper: {
+                variant: 'elevation',
+                elevation: 1,
+                style: { bottom: bannerSettings.bannerHeightNumber },
+              },
             }}
           >
             <div
@@ -654,11 +655,10 @@ class GroupingKnowledgeGraphBar extends Component {
                   >
                     <List>
                       {stixCoreObjectsTypes.map((stixCoreObjectType) => (
-                        <ListItem
+                        <ListItemButton
                           key={stixCoreObjectType}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={this.handleSelectByType.bind(
                             this,
                             stixCoreObjectType,
@@ -667,7 +667,7 @@ class GroupingKnowledgeGraphBar extends Component {
                           <ListItemText
                             primary={t(`entity_${stixCoreObjectType}`)}
                           />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -726,11 +726,10 @@ class GroupingKnowledgeGraphBar extends Component {
                   >
                     <List>
                       {stixCoreObjectsTypes.map((stixCoreObjectType) => (
-                        <ListItem
+                        <ListItemButton
                           key={stixCoreObjectType}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={handleToggleStixCoreObjectType.bind(
                             this,
                             stixCoreObjectType,
@@ -750,7 +749,7 @@ class GroupingKnowledgeGraphBar extends Component {
                           <ListItemText
                             primary={t(`entity_${stixCoreObjectType}`)}
                           />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -786,11 +785,10 @@ class GroupingKnowledgeGraphBar extends Component {
                   >
                     <List>
                       {markedBy.map((markingDefinition) => (
-                        <ListItem
+                        <ListItemButton
                           key={markingDefinition.id}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={handleToggleMarkedBy.bind(
                             this,
                             markingDefinition.id,
@@ -808,7 +806,7 @@ class GroupingKnowledgeGraphBar extends Component {
                           <ListItemText
                             primary={truncate(markingDefinition.definition, 20)}
                           />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -844,11 +842,10 @@ class GroupingKnowledgeGraphBar extends Component {
                   >
                     <List>
                       {createdBy.map((createdByRef) => (
-                        <ListItem
+                        <ListItemButton
                           key={createdBy.id}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={handleToggleCreatedBy.bind(
                             this,
                             createdByRef.id,
@@ -864,7 +861,7 @@ class GroupingKnowledgeGraphBar extends Component {
                             />
                           </ListItemIcon>
                           <ListItemText primary={createdByRef.name} />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -1133,8 +1130,8 @@ class GroupingKnowledgeGraphBar extends Component {
                     <Dialog
                       open={this.state.displayRemove}
                       keepMounted={true}
-                      PaperProps={{ elevation: 1 }}
-                      TransitionComponent={Transition}
+                      slotProps={{ paper: { elevation: 1 } }}
+                      slots={{ transition: Transition }}
                       onClose={this.handleCloseRemove.bind(this)}
                     >
                       <DialogContent>

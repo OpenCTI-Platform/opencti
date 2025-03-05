@@ -186,7 +186,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
       {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
         <Form>
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ paper: { elevation: 1 } }}
             open={openCreate}
             onClose={handleCloseCreate}
             fullWidth

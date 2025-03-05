@@ -71,7 +71,6 @@ const depsToOptimize = [
   "@mui/material/ListItemAvatar",
   "@mui/material/ListItemButton",
   "@mui/material/ListItemIcon",
-  "@mui/material/ListItemSecondaryAction",
   "@mui/material/ListItemText",
   "@mui/material/ListSubheader",
   "@mui/material/Menu",

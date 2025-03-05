@@ -13,9 +13,9 @@ import * as R from 'ramda';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import GroupConfidenceLevel from '@components/settings/groups/GroupConfidenceLevel';
 import { uniq } from 'ramda';
+import { ListItemButton } from '@mui/material';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -219,11 +219,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 </Typography>
                 <List>
                   {group.roles?.edges?.map(({ node: role }) => (
-                    <ListItem
+                    <ListItemButton
                       key={role?.id}
                       dense={true}
                       divider={true}
-                      button={true}
                       component={Link}
                       to={`/dashboard/settings/accesses/roles/${role?.id}`}
                     >
@@ -231,7 +230,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         <ItemIcon type="Role" />
                       </ListItemIcon>
                       <ListItemText primary={role?.name} />
-                    </ListItem>
+                    </ListItemButton>
                   ))}
                 </List>
               </Grid>
@@ -244,27 +243,27 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     <ListItem
                       dense={true}
                       divider={true}
-                      button={true}
-                      component={Link}
-                      to={`/dashboard/workspaces/dashboards/${group.default_dashboard?.id}`}
-                    >
-                      <ListItemIcon>
-                        <ItemIcon type="Dashboard" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={truncate(group.default_dashboard?.name, 40)}
-                      />
-                      {!canAccessDashboard && (
-                        <ListItemSecondaryAction>
-                          <Tooltip
-                            title={t_i18n(
-                              'You need to authorize this group to access this dashboard in the permissions of the workspace.',
-                            )}
-                          >
-                            <WarningOutlined color="warning" />
-                          </Tooltip>
-                        </ListItemSecondaryAction>
+                      secondaryAction={!canAccessDashboard && (
+                      <Tooltip
+                        title={t_i18n(
+                          'You need to authorize this group to access this dashboard in the permissions of the workspace.',
+                        )}
+                      >
+                        <WarningOutlined color="warning" />
+                      </Tooltip>
                       )}
+                    >
+                      <ListItemButton
+                        component={Link}
+                        to={`/dashboard/workspaces/dashboards/${group.default_dashboard?.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="Dashboard" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={truncate(group.default_dashboard?.name, 40)}
+                        />
+                      </ListItemButton>
                     </ListItem>
                   </List>
                 </FieldOrEmpty>
@@ -332,7 +331,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         key={marking?.id}
                         dense={true}
                         divider={true}
-                        button={false}
+
                       >
                         <ListItemIcon>
                           <ItemIcon
@@ -359,7 +358,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         key={marking?.id}
                         dense={true}
                         divider={true}
-                        button={false}
+
                       >
                         <ListItemIcon>
                           <ItemIcon
@@ -390,9 +389,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             key={marking.id}
                             dense={true}
                             divider={true}
-                            button={false}
+
                           >
-                            <Typography variant="h3" gutterBottom={true} width={100}>
+                            <Typography variant="h3" gutterBottom={true} sx={{
+                              width: 100,
+                            }}
+                            >
                               {truncate(type, 40)}
                             </Typography>
                             {isMarkingAllowed
@@ -429,9 +431,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             key={type}
                             dense={true}
                             divider={true}
-                            button={false}
+
                           >
-                            <Typography variant="h3" gutterBottom={true} width={100}>
+                            <Typography variant="h3" gutterBottom={true} sx={{
+                              width: 100,
+                            }}
+                            >
                               {truncate(type, 40)}
                             </Typography>
                             <ListItemText
@@ -445,9 +450,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                           key={type}
                           dense={true}
                           divider={true}
-                          button={false}
+
                         >
-                          <Typography variant="h3" gutterBottom={true} width={100}>
+                          <Typography variant="h3" gutterBottom={true} sx={{
+                            width: 100,
+                          }}
+                          >
                             {truncate(type, 40)}
                           </Typography>
                           <ListItemText

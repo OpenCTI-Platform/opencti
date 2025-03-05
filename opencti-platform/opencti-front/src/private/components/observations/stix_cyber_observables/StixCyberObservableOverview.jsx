@@ -15,7 +15,6 @@ import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { BrushOutlined, Delete } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
@@ -242,9 +241,9 @@ class StixCyberObservableOverview extends Component {
           </Grid>
         </Paper>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.openStixIds}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleToggleOpenStixIds.bind(this)}
           fullWidth={true}
         >
@@ -253,9 +252,11 @@ class StixCyberObservableOverview extends Component {
             <List>
               {stixIds.map(
                 (stixId) => stixId.length > 0 && (
-                <ListItem key={stixId} disableGutters={true} dense={true}>
-                  <ListItemText primary={stixId} />
-                  <ListItemSecondaryAction>
+                <ListItem
+                  key={stixId}
+                  disableGutters={true}
+                  dense={true}
+                  secondaryAction={
                     <IconButton
                       edge="end"
                       aria-label="delete"
@@ -264,7 +265,9 @@ class StixCyberObservableOverview extends Component {
                     >
                       <Delete />
                     </IconButton>
-                  </ListItemSecondaryAction>
+                  }
+                >
+                  <ListItemText primary={stixId} />
                 </ListItem>
                 ),
               )}

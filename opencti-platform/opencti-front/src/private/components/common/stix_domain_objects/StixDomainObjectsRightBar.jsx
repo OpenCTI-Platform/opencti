@@ -4,13 +4,13 @@ import { compose, pipe, sortBy, prop, toLower, map, assoc } from 'ramda';
 import List from '@mui/material/List';
 import makeStyles from '@mui/styles/makeStyles';
 import ListSubheader from '@mui/material/ListSubheader';
-import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
 import Drawer from '@mui/material/Drawer';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { FilterOffOutline } from 'mdi-material-ui';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixDomainObjectsLinesSubTypesQuery } from './StixDomainObjectsLines';
@@ -80,9 +80,8 @@ const StixDomainObjectsRightBar = ({ types, handleToggle, handleClear }) => {
                   }
               >
                 {translatedOrderedList.map((subType) => (
-                  <ListItem key={subType.id}
+                  <ListItemButton key={subType.id}
                     dense={true}
-                    button={true}
                     onClick={() => handleToggle(subType.label)}
                     classes={{ root: classes.item }}
                   >
@@ -92,7 +91,7 @@ const StixDomainObjectsRightBar = ({ types, handleToggle, handleClear }) => {
                       size="small"
                     />
                     <ListItemText primary={subType.tlabel} />
-                  </ListItem>
+                  </ListItemButton>
                 ))}
               </List>
             );

@@ -7,12 +7,12 @@ import IconButton from '@mui/material/IconButton';
 import { CheckCircle, Delete, Extension, Refresh, Warning } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import withStyles from '@mui/styles/withStyles';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import List from '@mui/material/List';
 import { v4 as uuid } from 'uuid';
+import { ListItemButton } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -156,43 +156,47 @@ const ExternalReferenceEnrichment = (props) => {
             <div key={connector.id}>
               <ListItem
                 divider={true}
-                classes={{ root: classes.item }}
-                button={true}
+                secondaryAction={
+                  <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                    <div style={{ right: 0 }}>
+                      <Tooltip
+                        title={t('Refresh the knowledge using this connector')}
+                      >
+                        <IconButton
+                          disabled={!connector.active || isRefreshing}
+                          onClick={() => (connector.connector_type === 'INTERNAL_IMPORT_FILE'
+                            ? askJob(connector.id)
+                            : askEnrich(connector.id))
+                              }
+                          size="large"
+                        >
+                          <Refresh />
+                        </IconButton>
+                      </Tooltip>
+                    </div>
+                  </Security>
+                  }
               >
-                <Tooltip
-                  title={
+                <ListItemButton
+                  classes={{ root: classes.item }}
+                >
+                  <Tooltip
+                    title={
                     connector.active
                       ? t('This connector is active')
                       : t('This connector is disconnected')
                   }
-                >
-                  <ListItemIcon
-                    style={{
-                      color: connector.active ? '#4caf50' : '#f44336',
-                    }}
                   >
-                    <Extension />
-                  </ListItemIcon>
-                </Tooltip>
-                <ListItemText primary={connector.name} />
-                <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                  <ListItemSecondaryAction style={{ right: 0 }}>
-                    <Tooltip
-                      title={t('Refresh the knowledge using this connector')}
+                    <ListItemIcon
+                      style={{
+                        color: connector.active ? '#4caf50' : '#f44336',
+                      }}
                     >
-                      <IconButton
-                        disabled={!connector.active || isRefreshing}
-                        onClick={() => (connector.connector_type === 'INTERNAL_IMPORT_FILE'
-                          ? askJob(connector.id)
-                          : askEnrich(connector.id))
-                        }
-                        size="large"
-                      >
-                        <Refresh />
-                      </IconButton>
-                    </Tooltip>
-                  </ListItemSecondaryAction>
-                </Security>
+                      <Extension />
+                    </ListItemIcon>
+                  </Tooltip>
+                  <ListItemText primary={connector.name} />
+                </ListItemButton>
               </ListItem>
               <List component="div" disablePadding={true}>
                 {jobs.map((work) => {
@@ -223,45 +227,49 @@ const ExternalReferenceEnrichment = (props) => {
                     >
                       <ListItem
                         dense={true}
-                        button={true}
                         divider={true}
-                        classes={{ root: classes.nested }}
+                        secondaryAction={
+                          <div style={{ right: 0 }}>
+                            <IconButton
+                              onClick={() => deleteWork(work.id)}
+                              size="large"
+                            >
+                              <Delete/>
+                            </IconButton>
+                          </div>
+                      }
                       >
-                        <ListItemIcon>
-                          {isFail && (
+                        <ListItemButton
+                          classes={{ root: classes.nested }}
+                        >
+                          <ListItemIcon>
+                            {isFail && (
                             <Warning
                               style={{
                                 fontSize: 15,
                                 color: '#f44336',
                               }}
                             />
-                          )}
-                          {!isFail && work.status === 'complete' && (
+                            )}
+                            {!isFail && work.status === 'complete' && (
                             <CheckCircle
                               style={{
                                 fontSize: 15,
                                 color: '#4caf50',
                               }}
                             />
-                          )}
-                          {((!isFail && work.status === 'wait')
+                            )}
+                            {((!isFail && work.status === 'wait')
                             || work.status === 'progress') && (
                             <CircularProgress
                               size={20}
                               thickness={2}
                               style={{ marginRight: 10 }}
                             />
-                          )}
-                        </ListItemIcon>
-                        <ListItemText primary={nsdt(work.timestamp)} />
-                        <ListItemSecondaryAction style={{ right: 0 }}>
-                          <IconButton
-                            onClick={() => deleteWork(work.id)}
-                            size="large"
-                          >
-                            <Delete />
-                          </IconButton>
-                        </ListItemSecondaryAction>
+                            )}
+                          </ListItemIcon>
+                          <ListItemText primary={nsdt(work.timestamp)} />
+                        </ListItemButton>
                       </ListItem>
                     </Tooltip>
                   );

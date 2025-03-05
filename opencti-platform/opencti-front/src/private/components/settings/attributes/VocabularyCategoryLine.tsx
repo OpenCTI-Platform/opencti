@@ -3,7 +3,7 @@ import { KeyboardArrowRightOutlined, ShortTextOutlined } from '@mui/icons-materi
 import ListItemText from '@mui/material/ListItemText';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { ListItem } from '@mui/material';
+import { ListItem, ListItemButton } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
 import type { Theme } from '../../../../components/Theme';
@@ -46,10 +46,9 @@ VocabularyCategoryLineProps
 > = ({ dataColumns, node }) => {
   const classes = useStyles();
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/settings/vocabularies/fields/${node.key}`}
     >
@@ -74,7 +73,7 @@ VocabularyCategoryLineProps
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 
