@@ -163,6 +163,7 @@ import {
 } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
 import {
+  authorizedMembers,
   booleanMapping,
   dateMapping,
   iAliasedIds,
@@ -577,19 +578,29 @@ const buildUserMemberAccessFilter = (user, opts) => {
   }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
-  const emptyAuthorizedMembers = { bool: { must_not: { exists: { field: 'authorized_members' } } } };
+  const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: { } } } } } };
   const authorizedFilters = [
-    { terms: { 'authorized_members.id.keyword': [MEMBER_ACCESS_ALL, ...userAccessIds] } },
+    { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } },
   ];
-  if (!excludeEmptyAuthorizedMembers) {
-    authorizedFilters.push(emptyAuthorizedMembers);
-  }
+  const shouldConditions = [];
   if (includeAuthorities) {
     const roleIds = user.roles.map((r) => r.id);
     const owners = [...userAccessIds, ...capabilities, ...roleIds];
-    authorizedFilters.push({ terms: { 'authorized_authorities.keyword': owners } });
+    shouldConditions.push({ terms: { 'authorized_authorities.keyword': owners } });
   }
-  return [{ bool: { should: authorizedFilters } }];
+  if (!excludeEmptyAuthorizedMembers) {
+    shouldConditions.push(emptyAuthorizedMembers);
+  }
+  const nestedQuery = {
+    nested: {
+      path: authorizedMembers.name,
+      query: {
+        bool: { should: authorizedFilters }
+      }
+    }
+  };
+  shouldConditions.push(nestedQuery);
+  return [{ bool: { should: shouldConditions } }];
 };
 
 export const elIndexExists = async (indexName) => {
@@ -3158,7 +3169,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
     });
 };
 
-const extractNestedQueriesFromBool = (boolQueryArray) => {
+const extractNestedQueriesFromBool = (boolQueryArray, nestedPath = 'connections') => {
   let result = [];
   for (let i = 0; i < boolQueryArray.length; i += 1) {
     const boolQuery = boolQueryArray[i];
@@ -3166,7 +3177,7 @@ const extractNestedQueriesFromBool = (boolQueryArray) => {
     const nestedQueries = [];
     for (let j = 0; j < shouldArray.length; j += 1) {
       const queryElement = shouldArray[j];
-      if (queryElement.nested) nestedQueries.push(queryElement.nested.query);
+      if (queryElement.nested && queryElement.nested.path === nestedPath) nestedQueries.push(queryElement.nested.query);
       if (queryElement.bool?.should) { // case nested is in an imbricated filterGroup (not possible for the moment)
         const nestedBoolResult = extractNestedQueriesFromBool([queryElement]);
         if (nestedBoolResult.length > 0) {

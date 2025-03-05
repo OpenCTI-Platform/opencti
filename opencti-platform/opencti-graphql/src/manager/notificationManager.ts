@@ -165,7 +165,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     notifiers: user.personal_notifiers,
     filters: JSON.stringify(filters),
     instance_trigger: false,
-    authorized_members: [],
+    restricted_members: [],
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 
@@ -174,7 +174,7 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const nativeTriggers = platformUsers.map((user) => ({ users: [user], trigger: generateAssigneeTrigger(user) }));
   const definedTriggers = triggers.map((trigger) => {
-    const triggerAuthorizedMembersIds = trigger.authorized_members?.map((member) => member.id) ?? [];
+    const triggerAuthorizedMembersIds = trigger.restricted_members?.map((member) => member.id) ?? [];
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
     const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
@@ -536,7 +536,7 @@ export const generateDefaultTrigger = (notifiers: string[], type: string) => {
     notifiers,
     filters: '',
     instance_trigger: false,
-    authorized_members: [],
+    restricted_members: [],
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 
