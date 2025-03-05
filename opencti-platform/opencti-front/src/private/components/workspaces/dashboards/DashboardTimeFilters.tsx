@@ -15,11 +15,11 @@ import { Dashboard_workspace$data } from './__generated__/Dashboard_workspace.gr
 interface DashboardTimeFiltersProps {
   workspace: Dashboard_workspace$data | InvestigationGraph_workspace$data;
   config?: {
-    startDate: object
-    endDate: object
-    relativeDate: string
+    startDate: string | null
+    endDate: string | null
+    relativeDate: string | null
   }
-  handleDateChange: (bound: 'startDate' | 'endDate' | 'relativeDate', value: object | string | null) => unknown
+  handleDateChange: (bound: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => unknown
 }
 
 const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
@@ -35,7 +35,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
     handleDateChange('relativeDate', value);
   };
 
-  const handleChangeDate = (type: 'startDate' | 'endDate', value: Date) => {
+  const handleChangeDate = (type: 'startDate' | 'endDate', value: Date | null) => {
     const formattedDate = value ? parse(value).format() : null;
     handleDateChange(type, formattedDate);
   };
@@ -71,11 +71,11 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           </Select>
         </FormControl>
         <DatePicker
-          value={config.startDate ?? null}
+          value={config.startDate ? new Date(config.startDate) : new Date()}
           label={t_i18n('Start date')}
           disableFuture={true}
           disabled={!!config.relativeDate}
-          onChange={(value: Date, context) => !context.validationError && handleChangeDate('startDate', value)}
+          onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('startDate', value)}
           slotProps={{
             textField: {
               style: { marginRight: 8 },
@@ -85,11 +85,11 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           }}
         />
         <DatePicker
-          value={config.endDate ?? null}
+          value={config.startDate}
           label={t_i18n('End date')}
           disabled={!!config.relativeDate}
           disableFuture={true}
-          onChange={(value: Date, context) => !context.validationError && handleChangeDate('endDate', value)}
+          onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('endDate', value)}
           slotProps={{
             textField: {
               variant: 'outlined',
