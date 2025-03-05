@@ -408,11 +408,12 @@ class IncidentKnowledgeComponent extends Component {
                 query={incidentKnowledgeCorrelationQuery}
                 variables={{ id: caseData.id }}
                 render={({ props }) => {
+                  console.log('pouet');
                   if (props && props.caseIncident) {
                     return (
                       <IncidentKnowledgeCorrelation
                         data={props.caseIncident}
-                        graphData={props.caseIncident}
+                        id={caseData.id}
                       />
                     );
                   }

@@ -101,7 +101,7 @@ const IncidentKnowledgeGraph = ({
         containerHeaderProps={{
           modes: ['graph', 'content', 'timeline', 'correlation', 'matrix'],
           mode,
-          link: `/dashboard/analyses/incidents/${id}/knowledge`,
+          link: `/dashboard/cases/incidents/${id}/knowledge`,
           PopoverComponent: <IncidentPopover id={id} />,
         }}
         onAddRelation={addRelationInGraph}
