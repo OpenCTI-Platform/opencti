@@ -1,56 +1,76 @@
+import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef } from 'react';
 import { graphql, PreloadedQuery, useFragment } from 'react-relay';
-import React, { CSSProperties, Suspense, useEffect, useMemo, useRef } from 'react';
-import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/material/styles';
+import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
+import ContainerHeader from '@components/common/containers/ContainerHeader';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
-import WorkspaceHeader from '@components/workspaces/WorkspaceHeader';
-import { InvestigationGraphObjectsQuery } from './__generated__/InvestigationGraphObjectsQuery.graphql';
-import { InvestigationGraphObjects_fragment$key } from './__generated__/InvestigationGraphObjects_fragment.graphql';
-import { InvestigationGraphQuery$data } from './__generated__/InvestigationGraphQuery.graphql';
-import useInvestigationGraphEdit from './useInvestigationGraphEdit';
-import { InvestigationGraphData_fragment$key } from './__generated__/InvestigationGraphData_fragment.graphql';
-import useInvestigationGraphUpdateEntities from './useInvestigationGraphUpdateEntities';
-import { InvestigationGraph_fragment$key } from './__generated__/InvestigationGraph_fragment.graphql';
-import type { Theme } from '../../../../components/Theme';
-import Graph from '../../../../utils/graph/Graph';
-import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
-import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
-import { GraphProvider } from '../../../../utils/graph/GraphContext';
-import GraphToolbar, { GraphToolbarProps } from '../../../../utils/graph/GraphToolbar';
-import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
-import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteractions';
-import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader from '../../../../components/Loader';
+import { ContainerHeader_container$key } from '@components/common/containers/__generated__/ContainerHeader_container.graphql';
+import { deserializeObjectB64 } from '../object';
+import { getObjectsToParse } from './utils/graphUtils';
+import useDebounceCallback from '../hooks/useDebounceCallback';
+import usePreloadedPaginationFragment from '../hooks/usePreloadedPaginationFragment';
+import { GraphContainerKnowledgeObjectsQuery } from './__generated__/GraphContainerKnowledgeObjectsQuery.graphql';
+import { GraphContainerKnowledgeObjects_fragment$key } from './__generated__/GraphContainerKnowledgeObjects_fragment.graphql';
+import { GraphContainerKnowledgePositions_fragment$key } from './__generated__/GraphContainerKnowledgePositions_fragment.graphql';
+import { GraphContainerKnowledgeData_fragment$key } from './__generated__/GraphContainerKnowledgeData_fragment.graphql';
+import { GraphProvider } from './GraphContext';
+import type { Theme } from '../../components/Theme';
+import GraphToolbar, { GraphToolbarProps } from './GraphToolbar';
+import { ObjectToParse } from './utils/useGraphParser';
+import investigationAddFromContainer from '../InvestigationUtils';
+import useGraphInteractions from './utils/useGraphInteractions';
+import Graph from './Graph';
+import { OctiGraphPositions } from './graph.types';
 
-const investigationGraphDataFragment = graphql`
-  fragment InvestigationGraphData_fragment on Workspace {
-    graph_data
-  }
-`;
+// region Relay queries and fragments
 
-const investigationGraphFragment = graphql`
-  fragment InvestigationGraph_fragment on Workspace {
+const graphContainerKnowledgeDataFragment = graphql`
+  fragment GraphContainerKnowledgeData_fragment on Container {
     id
-    name
-    description
-    manifest
-    tags
-    type
-    owner {
-      id
-      name
-      entity_type
+    confidence
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
     }
-    currentUserAccessRight
-    ...WorkspaceManageAccessDialog_authorizedMembers
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    ... on Report {
+      name
+      published
+    }
+    ... on Grouping {
+      name
+      context
+    }
+    ... on CaseIncident {
+      name
+    }
+    ... on CaseRfi {
+      name
+    }
+    ... on CaseRft {
+      name
+    }
   }
 `;
 
-const investigationGraphObjectsQuery = graphql`
-  query InvestigationGraphObjectsQuery($id: String!, $count: Int!, $cursor: ID) {
-    ...InvestigationGraphObjects_fragment
+const graphContainerKnowledgePositionsFragment = graphql`
+  fragment GraphContainerKnowledgePositions_fragment on StixDomainObject {
+    x_opencti_graph_data
+  }
+`;
+
+export const graphContainerKnowledgeObjectsQuery = graphql`
+  query GraphContainerKnowledgeObjectsQuery($id: String!, $count: Int!, $cursor: ID) {
+    ...GraphContainerKnowledgeObjects_fragment
     @arguments(
       id: $id
       count: $count
@@ -59,23 +79,24 @@ const investigationGraphObjectsQuery = graphql`
   }
 `;
 
-const investigationGraphObjectsFragment = graphql`
-  fragment InvestigationGraphObjects_fragment on Query
-  @refetchable(queryName: "InvestigationGraphObjectsRefetchQuery")
+const graphContainerKnowledgeObjectsFragment = graphql`
+  fragment GraphContainerKnowledgeObjects_fragment on Query
+  @refetchable(queryName: "GraphContainerKnowledgeObjectsRefetchQuery")
   @argumentDefinitions(
-    id: { type: "String!" }
+    id: { type: "String" }
     cursor: { type: "ID" }
     count: { type: "Int", defaultValue: 15 }
   ) {
-    workspace(id: $id) {
+    container(id: $id) {
       objects(first: $count, after: $cursor)
-      @connection(key: "Pagination_investigationGraph_objects") {
+      @connection(key: "Pagination_graphContainerKnowledge_objects") {
         pageInfo {
           endCursor
           hasNextPage
           globalCount
         }
         edges {
+          types
           node {
             ... on BasicObject {
               id
@@ -84,7 +105,6 @@ const investigationGraphObjectsFragment = graphql`
             }
             ... on StixCoreObject {
               created_at
-              numberOfConnectedElement
               createdBy {
                 ... on Identity {
                   id
@@ -101,8 +121,8 @@ const investigationGraphObjectsFragment = graphql`
               }
             }
             ... on StixDomainObject {
+              is_inferred
               created
-              numberOfConnectedElement
             }
             ... on AttackPattern {
               name
@@ -111,6 +131,10 @@ const investigationGraphObjectsFragment = graphql`
             ... on Campaign {
               name
               first_seen
+              last_seen
+            }
+            ... on ObservedData {
+              name
             }
             ... on CourseOfAction {
               name
@@ -118,11 +142,6 @@ const investigationGraphObjectsFragment = graphql`
             ... on Note {
               attribute_abstract
               content
-            }
-            ... on ObservedData {
-              name
-              first_observed
-              last_observed
             }
             ... on Opinion {
               opinion
@@ -133,7 +152,6 @@ const investigationGraphObjectsFragment = graphql`
             }
             ... on Grouping {
               name
-              description
             }
             ... on Individual {
               name
@@ -156,6 +174,8 @@ const investigationGraphObjectsFragment = graphql`
             }
             ... on IntrusionSet {
               name
+              first_seen
+              last_seen
             }
             ... on Position {
               name
@@ -182,6 +202,7 @@ const investigationGraphObjectsFragment = graphql`
             }
             ... on ThreatActor {
               name
+              entity_type
               first_seen
               last_seen
             }
@@ -233,20 +254,17 @@ const investigationGraphObjectsFragment = graphql`
                 hash
               }
             }
-            ... on StixMetaObject {
-              created
-            }
             ... on Label {
               value
               color
             }
-            ... on KillChainPhase {
-              kill_chain_name
-              phase_name
-            }
             ... on MarkingDefinition {
               definition
               x_opencti_color
+            }
+            ... on KillChainPhase {
+              kill_chain_name
+              phase_name
             }
             ... on ExternalReference {
               url
@@ -257,7 +275,18 @@ const investigationGraphObjectsFragment = graphql`
               entity_type
               parent_types
             }
-            ... on StixRelationship {
+            ... on BasicRelationship {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixCoreRelationship {
+              relationship_type
+              start_time
+              stop_time
+              confidence
+              created
+              is_inferred
               from {
                 ... on BasicObject {
                   id
@@ -271,8 +300,6 @@ const investigationGraphObjectsFragment = graphql`
                 }
                 ... on StixCoreRelationship {
                   relationship_type
-                  start_time
-                  stop_time
                 }
               }
               to {
@@ -290,16 +317,6 @@ const investigationGraphObjectsFragment = graphql`
                   relationship_type
                 }
               }
-            }
-            ... on StixRefRelationship {
-              created_at
-            }
-            ... on StixCoreRelationship {
-              relationship_type
-              start_time
-              stop_time
-              confidence
-              created
               created_at
               createdBy {
                 ... on Identity {
@@ -308,6 +325,52 @@ const investigationGraphObjectsFragment = graphql`
                   entity_type
                 }
               }
+              objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+            ... on StixRefRelationship {
+              relationship_type
+              start_time
+              stop_time
+              confidence
+              is_inferred
+              from {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              to {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              created_at
+              datable
               objectMarking {
                 id
                 definition_type
@@ -376,110 +439,84 @@ const investigationGraphObjectsFragment = graphql`
   }
 `;
 
-export const investigationGraphQuery = graphql`
-  query InvestigationGraphQuery($id: String!) {
-    workspace(id: $id) {
-      ...InvestigationGraph_fragment
-      ...InvestigationGraphData_fragment
-    }
-  }
-`;
+// endregion
 
-interface InvestigationGraphComponentProps {
+interface GraphContainerKnowledgeComponentProps {
   loadingData: boolean
-  dataInvestigation: InvestigationGraph_fragment$key
+  dataHeader: ContainerHeader_container$key
+  dataContainer: GraphContainerKnowledgeData_fragment$key
+  enableReferences: boolean
+  onAddRelation: GraphToolbarProps['onAddRelation']
+  onDeleteRelation: GraphToolbarProps['onDeleteRelation']
+  onPositionsChanged: (positions: OctiGraphPositions) => void
+  containerHeaderProps: {
+    mode: string
+    PopoverComponent: ReactNode
+    link: string
+    modes: string[]
+  }
 }
 
-const InvestigationGraphComponent = ({
+const GraphContainerKnowledgeComponent = ({
   loadingData,
-  dataInvestigation,
-}: InvestigationGraphComponentProps) => {
+  dataHeader,
+  dataContainer,
+  enableReferences,
+  onAddRelation,
+  onDeleteRelation,
+  onPositionsChanged,
+  containerHeaderProps: {
+    link,
+    mode,
+    modes,
+    PopoverComponent,
+  },
+}: GraphContainerKnowledgeComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
   const { addLink, setIsLoadingData } = useGraphInteractions();
 
-  const investigation = useFragment(investigationGraphFragment, dataInvestigation);
+  const container = useFragment(graphContainerKnowledgeDataFragment, dataContainer);
 
   useEffect(() => {
     setIsLoadingData(loadingData);
   }, [loadingData]);
 
-  const [commitEditPositions] = useInvestigationGraphEdit();
-  const [commitUpdateEntities] = useInvestigationGraphUpdateEntities();
-
   const headerHeight = 64;
   const paddingHeight = 25;
+  const breadcrumbHeight = 38;
   const titleHeight = 44;
-  const totalHeight = bannerHeight + headerHeight + paddingHeight + titleHeight;
+  const tabsHeight = 72;
+  const totalHeight = bannerHeight + headerHeight + paddingHeight + breadcrumbHeight + titleHeight + tabsHeight;
   const graphContainerStyle: CSSProperties = {
     margin: `-${theme.spacing(3)}`,
     height: `calc(100vh - ${totalHeight}px)`,
   };
 
-  const savePositions = (positions: OctiGraphPositions) => {
-    commitEditPositions({
-      variables: {
-        id: investigation.id,
-        input: [{
-          key: 'graph_data',
-          value: [serializeObjectB64(positions)],
-        }],
-      },
-    });
-  };
-
-  const updateInvestigationEntitiesGraph = (
-    ids: string[],
-    operation: 'add' | 'remove' | 'replace',
-    onCompleted?: () => void,
-  ) => {
-    commitUpdateEntities({
-      variables: {
-        id: investigation.id,
-        input: [{
-          key: 'investigated_entities_ids',
-          operation,
-          value: ids,
-        }],
-      },
-      onCompleted,
-    });
-  };
-
-  const addRelationInGraph: GraphToolbarProps['onAddRelation'] = (rel) => {
-    updateInvestigationEntitiesGraph([rel.id], 'add', () => addLink(rel));
-  };
-
-  const addInGraph: GraphToolbarProps['onInvestigationExpand'] = (ids) => {
-    updateInvestigationEntitiesGraph(ids, 'add');
-  };
-
-  const removeInGraph: GraphToolbarProps['onRemove'] = (ids, onCompleted) => {
-    updateInvestigationEntitiesGraph(ids, 'remove', onCompleted);
-  };
-
-  const replaceInGraph: GraphToolbarProps['onInvestigationRollback'] = (ids, onCompleted) => {
-    updateInvestigationEntitiesGraph(ids, 'replace', onCompleted);
-  };
-
   return (
     <div style={graphContainerStyle} ref={ref}>
-      <WorkspaceHeader
-        workspace={investigation}
-        variant="investigation"
-        widgetActions={undefined}
-        handleAddWidget={undefined}
+      <ContainerHeader
+        knowledge
+        enableSuggestions
+        container={dataHeader}
+        currentMode={mode}
+        PopoverComponent={PopoverComponent}
+        link={link}
+        modes={modes}
+        onApplied={(suggestions: ObjectToParse[]) => {
+          suggestions.forEach((suggestion) => addLink(suggestion));
+        }}
+        investigationAddFromContainer={investigationAddFromContainer}
       />
-      <Graph parentRef={ref} onPositionsChanged={savePositions}>
+      <Graph parentRef={ref} onPositionsChanged={onPositionsChanged}>
         <GraphToolbar
+          enableReferences={enableReferences}
           stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
           relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
-          entity={investigation}
-          onAddRelation={addRelationInGraph}
-          onRemove={removeInGraph}
-          onInvestigationExpand={addInGraph}
-          onInvestigationRollback={replaceInGraph}
+          onAddRelation={onAddRelation}
+          onDeleteRelation={onDeleteRelation}
+          entity={container}
         />
       </Graph>
     </div>
@@ -488,34 +525,36 @@ const InvestigationGraphComponent = ({
 
 const REFETCH_DEBOUNCE_MS = 300;
 
-interface InvestigationGraphLoaderProps
-  extends Omit<InvestigationGraphComponentProps, 'loadingData'> {
-  investigationId: string
-  dataPositions: InvestigationGraphData_fragment$key
-  queryObjectsRef: PreloadedQuery<InvestigationGraphObjectsQuery>
+interface GraphContainerKnowledgeProps
+  extends Omit<GraphContainerKnowledgeComponentProps, 'data' | 'loadingData'> {
+  containerId: string
+  containerType: string
+  dataPositions: GraphContainerKnowledgePositions_fragment$key
+  queryObjectsRef: PreloadedQuery<GraphContainerKnowledgeObjectsQuery>
   pageSize: number
 }
 
-const InvestigationGraphLoader = ({
-  investigationId,
+const GraphContainerKnowledge = ({
+  containerId,
+  containerType,
   dataPositions,
   queryObjectsRef,
   pageSize,
   ...otherProps
-}: InvestigationGraphLoaderProps) => {
-  const localStorageKey = `investigation-graph-${investigationId}`;
+}: GraphContainerKnowledgeProps) => {
+  const localStorageKey = `${containerType}-knowledge-graph-${containerId}`;
 
   const {
-    data: { workspace },
+    data: { container },
     hasMore,
     loadMore,
     isLoadingMore,
   } = usePreloadedPaginationFragment<
-  InvestigationGraphObjectsQuery,
-  InvestigationGraphObjects_fragment$key
+  GraphContainerKnowledgeObjectsQuery,
+  GraphContainerKnowledgeObjects_fragment$key
   >({
-    linesQuery: investigationGraphObjectsQuery,
-    linesFragment: investigationGraphObjectsFragment,
+    linesQuery: graphContainerKnowledgeObjectsQuery,
+    linesFragment: graphContainerKnowledgeObjectsFragment,
     queryRef: queryObjectsRef,
   });
 
@@ -529,19 +568,21 @@ const InvestigationGraphLoader = ({
     if (!isLoadingMore() && hasMore()) debounceFetchMore();
   }, [isLoadingMore, hasMore]);
 
-  const { graph_data } = useFragment(investigationGraphDataFragment, dataPositions);
+  const { x_opencti_graph_data } = useFragment(
+    graphContainerKnowledgePositionsFragment,
+    dataPositions,
+  );
 
-  const objects = useMemo(() => (workspace ? getObjectsToParse(workspace) : []), [workspace]);
-  const positions = useMemo(() => deserializeObjectB64(graph_data), [graph_data]);
+  const objects = useMemo(() => (container ? getObjectsToParse(container) : []), [container]);
+  const positions = useMemo(() => deserializeObjectB64(x_opencti_graph_data), [x_opencti_graph_data]);
 
   return (
     <GraphProvider
       localStorageKey={localStorageKey}
       objects={objects}
       positions={positions}
-      context='investigation'
     >
-      <InvestigationGraphComponent
+      <GraphContainerKnowledgeComponent
         loadingData={hasMore()}
         {...otherProps}
       />
@@ -549,34 +590,4 @@ const InvestigationGraphLoader = ({
   );
 };
 
-interface InvestigationGraphProps {
-  id: string
-  data: NonNullable<InvestigationGraphQuery$data['workspace']>
-}
-
-const InvestigationGraph = ({
-  id,
-  data,
-}: InvestigationGraphProps) => {
-  const PAGE_SIZE = 500;
-  const queryObjectsRef = useQueryLoading<InvestigationGraphObjectsQuery>(
-    investigationGraphObjectsQuery,
-    { id, count: PAGE_SIZE },
-  );
-
-  if (!queryObjectsRef) return null;
-
-  return (
-    <Suspense fallback={<Loader />}>
-      <InvestigationGraphLoader
-        pageSize={PAGE_SIZE}
-        queryObjectsRef={queryObjectsRef}
-        investigationId={id}
-        dataPositions={data}
-        dataInvestigation={data}
-      />
-    </Suspense>
-  );
-};
-
-export default InvestigationGraph;
+export default GraphContainerKnowledge;

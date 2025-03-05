@@ -3,6 +3,7 @@ import ForceGraph3D from 'react-force-graph-3d';
 import React, { type MutableRefObject, ReactNode } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useTheme } from '@mui/material/styles';
+import Alert from '@mui/material/Alert';
 import RectangleSelection from './components/RectangleSelection';
 import { useGraphContext } from './GraphContext';
 import useResizeObserver from '../hooks/useResizeObserver';
@@ -14,6 +15,7 @@ import useGraphFilter from './utils/useGraphFilter';
 import EntitiesDetailsRightsBar from './components/EntitiesDetailsRightBar';
 import type { Theme } from '../../components/Theme';
 import RelationSelection from './components/RelationSelection';
+import { useFormatter } from '../../components/i18n';
 
 export interface GraphProps {
   parentRef: MutableRefObject<HTMLDivElement | null>
@@ -28,6 +30,7 @@ const Graph = ({
 }: GraphProps) => {
   const graphId = `graph-${uuid()}`;
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const { width, height } = useResizeObserver(parentRef);
 
   const {
@@ -66,6 +69,7 @@ const Graph = ({
       withForces,
       selectedNodes,
       selectedLinks,
+      isLoadingData,
     },
   } = useGraphContext();
 
@@ -85,7 +89,21 @@ const Graph = ({
   };
 
   return (
-    <div id={graphId}>
+    <div id={graphId} style={{ position: 'relative' }}>
+      {isLoadingData && (
+        <Alert
+          severity="info"
+          variant='outlined'
+          sx={{
+            position: 'absolute',
+            top: theme.spacing(4),
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}
+        >
+          {t_i18n('The graph is currently loading data.')}
+        </Alert>
+      )}
       {selectedEntities.length > 0 && (
         // TODO update EntitiesDetailsRightsBar component when every refacto done
         <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
@@ -98,7 +116,7 @@ const Graph = ({
           backgroundColor={theme.palette.background.default}
           graphData={graphData}
           dagMode={modeTree ?? undefined}
-          cooldownTicks={!withForces ? 0 : 100}
+          cooldownTicks={(!withForces || isLoadingData) ? 0 : 100}
           linkDirectionalArrowLength={3}
           linkDirectionalArrowRelPos={0.99}
           linkWidth={0.5}
@@ -151,7 +169,7 @@ const Graph = ({
               graphData={graphData}
               dagMode={modeTree ?? undefined}
               dagLevelDistance={50}
-              cooldownTicks={!withForces ? 0 : 100}
+              cooldownTicks={(!withForces || isLoadingData) ? 0 : 100}
               enablePanInteraction={!selectFree && !selectFreeRectangle}
               linkDirectionalArrowLength={3}
               linkDirectionalArrowRelPos={0.99}
