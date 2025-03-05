@@ -153,7 +153,7 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>, rules: Ar
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     await rulesCleanHandler(context, RULE_MANAGER_USER, elements, rules, deletionIds);
   };
-  const opts = { filters, noFiltersChecking: true, callback };
+  const opts = { filters, noFiltersKeysChecking: true, callback };
   await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, opts);
 };
 

@@ -19,6 +19,7 @@ export const MESSAGING$ = {
     MESSENGER$.next([{ type: 'error', text: message }]);
   },
   notifySuccess: (text) => MESSENGER$.next([{ type: 'message', text }]),
+  notifyNLQ: (text) => MESSENGER$.next([{ type: 'nlq', text }]),
   toggleNav: new Subject(),
   redirect: new Subject(),
 };

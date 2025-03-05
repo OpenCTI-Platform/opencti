@@ -15,7 +15,7 @@ export const up = async (next) => {
     filters: [{ key: iAliasedIds.name, values: [], operator: FilterOperator.NotNil }],
     filterGroups: [],
   };
-  const total = await elCount(context, SYSTEM_USER, READ_DATA_INDICES, { filters, noFiltersChecking: true });
+  const total = await elCount(context, SYSTEM_USER, READ_DATA_INDICES, { filters, noFiltersKeysChecking: true });
   logApp.info(`${message} > started, ${total} elements to modify`);
   let totalIndex = 0;
   const callback = async (entities) => {
@@ -31,7 +31,7 @@ export const up = async (next) => {
     logApp.info(`${message} > progress, ${totalIndex}/${total}`);
   };
 
-  await elList(context, SYSTEM_USER, READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED, { filters, noFiltersChecking: true, callback });
+  await elList(context, SYSTEM_USER, READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED, { filters, noFiltersKeysChecking: true, callback });
   logApp.info(`${message} > done`);
   next();
 };

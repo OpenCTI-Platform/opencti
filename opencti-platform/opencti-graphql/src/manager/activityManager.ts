@@ -195,7 +195,7 @@ const initActivityManager = () => {
           filters: [{ key: ['event_access'], values: ['EXISTS'] }],
           filterGroups: [],
         },
-        noFiltersChecking: true
+        noFiltersKeysChecking: true
       });
       let lastEventId = '0-0';
       if (histoElements.length > 0) {

@@ -13643,6 +13643,7 @@ export type Mutation = {
   aiImproveWriting?: Maybe<Scalars['String']['output']>;
   aiMakeLonger?: Maybe<Scalars['String']['output']>;
   aiMakeShorter?: Maybe<Scalars['String']['output']>;
+  aiNLQ?: Maybe<NlqResponse>;
   aiSummarize?: Maybe<Scalars['String']['output']>;
   aiSummarizeFiles?: Maybe<Scalars['String']['output']>;
   aiThreatGenerateReport?: Maybe<Scalars['String']['output']>;
@@ -14094,6 +14095,11 @@ export type MutationAiMakeShorterArgs = {
   content: Scalars['String']['input'];
   format?: InputMaybe<Format>;
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationAiNlqArgs = {
+  search: Scalars['String']['input'];
 };
 
 
@@ -16258,6 +16264,12 @@ export type MutexStixCoreRelationshipsDistributionArgs = {
 export type MutexAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type NlqResponse = {
+  __typename?: 'NLQResponse';
+  filters: Scalars['String']['output'];
+  notResolvedValues: Array<Scalars['String']['output']>;
 };
 
 export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -31668,6 +31680,7 @@ export type ResolversTypes = ResolversObject<{
   Mutation: ResolverTypeWrapper<{}>;
   Mutex: ResolverTypeWrapper<Omit<Mutex, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   MutexAddInput: MutexAddInput;
+  NLQResponse: ResolverTypeWrapper<NlqResponse>;
   Narrative: ResolverTypeWrapper<BasicStoreEntityNarrative>;
   NarrativeAddInput: NarrativeAddInput;
   NarrativeConnection: ResolverTypeWrapper<Omit<NarrativeConnection, 'edges'> & { edges: Array<ResolversTypes['NarrativeEdge']> }>;
@@ -32479,6 +32492,7 @@ export type ResolversParentTypes = ResolversObject<{
   Mutation: {};
   Mutex: Omit<Mutex, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   MutexAddInput: MutexAddInput;
+  NLQResponse: NlqResponse;
   Narrative: BasicStoreEntityNarrative;
   NarrativeAddInput: NarrativeAddInput;
   NarrativeConnection: Omit<NarrativeConnection, 'edges'> & { edges: Array<ResolversParentTypes['NarrativeEdge']> };
@@ -37525,6 +37539,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   aiImproveWriting?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiImproveWritingArgs, 'content' | 'id'>>;
   aiMakeLonger?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiMakeLongerArgs, 'content' | 'id'>>;
   aiMakeShorter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiMakeShorterArgs, 'content' | 'id'>>;
+  aiNLQ?: Resolver<Maybe<ResolversTypes['NLQResponse']>, ParentType, ContextType, RequireFields<MutationAiNlqArgs, 'search'>>;
   aiSummarize?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiSummarizeArgs, 'content' | 'id'>>;
   aiSummarizeFiles?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiSummarizeFilesArgs, 'elementId' | 'id'>>;
   aiThreatGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiThreatGenerateReportArgs, 'id' | 'threatId'>>;
@@ -37911,6 +37926,12 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NlqResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['NLQResponse'] = ResolversParentTypes['NLQResponse']> = ResolversObject<{
+  filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  notResolvedValues?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -42604,6 +42625,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MultiTimeSeries?: MultiTimeSeriesResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Mutex?: MutexResolvers<ContextType>;
+  NLQResponse?: NlqResponseResolvers<ContextType>;
   Narrative?: NarrativeResolvers<ContextType>;
   NarrativeConnection?: NarrativeConnectionResolvers<ContextType>;
   NarrativeEdge?: NarrativeEdgeResolvers<ContextType>;

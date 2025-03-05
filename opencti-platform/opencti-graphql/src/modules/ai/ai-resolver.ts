@@ -14,7 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { Resolvers } from '../../generated/graphql';
-import { changeTone, convertFilesToStix, explain, fixSpelling, generateContainerReport, makeLonger, makeShorter, summarize, summarizeFiles } from './ai-domain';
+import {
+  changeTone,
+  convertFilesToStix,
+  explain,
+  fixSpelling,
+  generateContainerReport,
+  generateNLQresponse,
+  makeLonger,
+  makeShorter,
+  summarize,
+  summarizeFiles
+} from './ai-domain';
 import { BUS_TOPICS } from '../../config/conf';
 import { AI_BUS } from './ai-types';
 import { subscribeToAiEvents } from '../../graphql/subscriptionWrapper';
@@ -30,6 +41,7 @@ const aiResolvers: Resolvers = {
     aiChangeTone: (_, { id, content, format, tone }, context) => changeTone(context, context.user, id, content, format, tone),
     aiSummarize: (_, { id, content, format }, context) => summarize(context, context.user, id, content, format),
     aiExplain: (_, { id, content }, context) => explain(context, context.user, id, content),
+    aiNLQ: (_, args, context) => generateNLQresponse(context, context.user, args),
   },
   Subscription: {
     aiBus: {
