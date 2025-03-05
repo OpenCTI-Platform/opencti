@@ -428,6 +428,7 @@ const GraphContainerCorrelation = ({
       localStorageKey={localStorageKey}
       objects={objects}
       positions={positions}
+      context='correlation'
     >
       <GraphContainerCorrelationComponent
         loadingData={hasMore()}

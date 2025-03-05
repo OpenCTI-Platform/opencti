@@ -261,7 +261,7 @@ class GroupingKnowledgeComponent extends Component {
                     return (
                       <GroupingKnowledgeCorrelation
                         data={props.grouping}
-                        graphData={props.grouping}
+                        id={grouping.id}
                       />
                     );
                   }
