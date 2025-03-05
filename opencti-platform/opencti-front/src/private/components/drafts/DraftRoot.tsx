@@ -5,6 +5,7 @@ import React, { Suspense, useEffect } from 'react';
 import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
+import { useTheme } from '@mui/styles';
 import Tab from '@mui/material/Tab';
 import DraftEntities from '@components/drafts/DraftEntities';
 import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
@@ -13,6 +14,10 @@ import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
 import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.graphql';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
+import Chip from '@mui/material/Chip';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -23,6 +28,9 @@ import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
 import Import from '../data/import/Import';
+import Breadcrumbs from '../../../components/Breadcrumbs';
+import { truncate } from '../../../utils/String';
+import { hexToRGB } from '../../../utils/Colors';
 
 const draftRootQuery = graphql`
   query DraftRootQuery($id: String!) {
@@ -45,12 +53,25 @@ const draftRootFragment = graphql`
       sightingsCount
       totalCount
     }
+    draft_status
+    validationWork {
+      received_time
+      processed_time
+      completed_time
+      status
+      tracking {
+        import_expected_number
+        import_processed_number
+      }
+    }
   }
 `;
 
 const RootDraftComponent = ({ draftId, queryRef }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const draftColor = getDraftModeColor(theme);
   const draftContext = useDraftContext();
 
   const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
@@ -58,13 +79,19 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
     return (<ErrorNotFound />);
   }
 
-  const { id, objectsCount } = useFragment(draftRootFragment, draftWorkspace);
+  const { name, objectsCount, draft_status, validationWork } = useFragment(draftRootFragment, draftWorkspace);
+  const isDraftReadOnly = draft_status !== 'open';
+  const currentProgress = validationWork?.tracking?.import_processed_number ?? '0';
+  const requiredProgress = validationWork?.tracking?.import_expected_number ?? '0';
+  const isValidating = validationWork?.status === 'wait' || validationWork?.status === 'progress';
+  const validationLabel = isValidating ? `${t_i18n('Ingesting')}: ${currentProgress}/${requiredProgress}` : t_i18n('Completed');
+  const validationColor = isValidating ? draftColor : theme.palette.success.main;
 
   // switch to draft
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
 
   useEffect(() => {
-    if (!draftContext || id !== draftId) {
+    if (!isDraftReadOnly && (!draftContext || draftContext.id !== draftId)) {
       commitSwitchToDraft({
         variables: {
           input: [{ key: 'draft_context', value: [draftId] }],
@@ -82,6 +109,38 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
 
   return (
     <>
+      {isDraftReadOnly && (
+      <>
+        <Breadcrumbs elements={[
+          { label: t_i18n('Drafts'), link: '/dashboard/drafts' },
+          { label: name, current: true },
+        ]}
+        />
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Tooltip title={name}>
+            <Typography
+              variant="h1"
+              sx={{
+                margin: 0,
+                lineHeight: 'unset',
+              }}
+            >
+              {truncate(name, 80)}
+            </Typography>
+          </Tooltip>
+          <Chip
+            variant="outlined"
+            label={validationLabel}
+            style={{
+              marginBottom: 10,
+              color: validationColor,
+              borderColor: validationColor,
+              backgroundColor: hexToRGB(validationColor),
+            }}
+          />
+        </div>
+      </>
+      )}
       <Box
         sx={{
           borderBottom: 1,
@@ -133,12 +192,13 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
           />
+          {!isDraftReadOnly && (
           <Tab
             component={Link}
             to={`/dashboard/drafts/${draftId}/files`}
             value={`/dashboard/drafts/${draftId}/files`}
             label={t_i18n('Files')}
-          />
+          />)}
         </Tabs>
       </Box>
       <Routes>
@@ -148,23 +208,23 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
         />
         <Route
           path="/entities"
-          element={<DraftEntities entitiesType={'Stix-Domain-Object'} excludedEntitiesType={'Container'}/>}
+          element={<DraftEntities entitiesType={'Stix-Domain-Object'} excludedEntitiesType={'Container'} isReadOnly={isDraftReadOnly}/>}
         />
         <Route
           path="/observables"
-          element={<DraftEntities entitiesType={'Stix-Cyber-Observable'}/>}
+          element={<DraftEntities entitiesType={'Stix-Cyber-Observable'} isReadOnly={isDraftReadOnly}/>}
         />
         <Route
           path="/relationships"
-          element={<DraftRelationships/>}
+          element={<DraftRelationships isReadOnly={isDraftReadOnly}/>}
         />
         <Route
           path="/sightings"
-          element={<DraftSightings/>}
+          element={<DraftSightings isReadOnly={isDraftReadOnly}/>}
         />
         <Route
           path="/containers"
-          element={<DraftEntities entitiesType={'Container'}/>}
+          element={<DraftEntities entitiesType={'Container'} isReadOnly={isDraftReadOnly}/>}
         />
         <Route
           path="/files"

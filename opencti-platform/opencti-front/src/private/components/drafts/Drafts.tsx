@@ -3,6 +3,10 @@ import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from
 import DraftCreation from '@components/drafts/DraftCreation';
 import { graphql } from 'react-relay';
 import { DraftsLines_data$data } from '@components/drafts/__generated__/DraftsLines_data.graphql';
+import { Drafts_node$data } from '@components/drafts/__generated__/Drafts_node.graphql';
+import Chip from '@mui/material/Chip';
+import { useTheme } from '@mui/styles';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -15,6 +19,9 @@ import useHelper from '../../../utils/hooks/useHelper';
 import DraftPopover from './DraftPopover';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import { hexToRGB } from '../../../utils/Colors';
+import type { Theme } from '../../../components/Theme';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -26,6 +33,16 @@ const DraftLineFragment = graphql`
           name
         }
         created_at
+        draft_status
+        validationWork {
+            received_time
+            processed_time
+            completed_time
+            tracking {
+                import_expected_number
+                import_processed_number
+            }
+        }
     }
 `;
 export const draftsLinesQuery = graphql`
@@ -85,8 +102,22 @@ export const draftsLinesFragment = graphql`
 
 const LOCAL_STORAGE_KEY = 'draftWorkspaces';
 
+const computeValidationProgress = (validationWork: Drafts_node$data['validationWork']) => {
+  if (!validationWork) {
+    return '';
+  }
+  if (!validationWork.tracking?.import_expected_number || !validationWork.tracking?.import_processed_number) {
+    return '0%';
+  }
+
+  return `${Math.floor(100 * (validationWork.tracking.import_processed_number / validationWork.tracking.import_expected_number))}%`;
+};
+
 const Drafts: React.FC = () => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const draftColor = getDraftModeColor(theme);
+  const validatedDraftColor = theme.palette.success.main;
   const draftContext = useDraftContext();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
@@ -134,12 +165,41 @@ const Drafts: React.FC = () => {
       isSortable: true,
     },
     creator: {
-      percentWidth: 25,
+      percentWidth: 15,
       isSortable: true,
     },
     created_at: {
-      percentWidth: 25,
+      percentWidth: 15,
       isSortable: true,
+    },
+    draft_status: {
+      label: 'Status',
+      percentWidth: 10,
+      isSortable: true,
+      render: ({ draft_status }) => (
+        <Chip
+          variant="outlined"
+          label={draft_status}
+          style={{
+            fontSize: 12,
+            lineHeight: '12px',
+            height: 20,
+            float: 'left',
+            textTransform: 'uppercase',
+            borderRadius: 4,
+            width: 90,
+            color: draft_status === 'open' ? draftColor : validatedDraftColor,
+            borderColor: draft_status === 'open' ? draftColor : validatedDraftColor,
+            backgroundColor: hexToRGB(draft_status === 'open' ? draftColor : validatedDraftColor),
+          }}
+        />
+      ),
+    },
+    draft_validation_progress: {
+      label: 'Validation progress',
+      percentWidth: 10,
+      isSortable: false,
+      render: ({ validationWork }) => defaultRender(computeValidationProgress(validationWork)),
     },
   };
 
@@ -163,6 +223,7 @@ const Drafts: React.FC = () => {
         actions={(row) => (
           <DraftPopover
             draftId={row.id}
+            draftLocked={row.draft_status !== 'open'}
             paginationOptions={queryPaginationOptions}
           />
         )}

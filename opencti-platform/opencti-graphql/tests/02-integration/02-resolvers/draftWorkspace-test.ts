@@ -7,6 +7,7 @@ import { buildDraftValidationBundle } from '../../../src/modules/draftWorkspace/
 import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
 import { fileToReadStream } from '../../../src/database/file-storage-helper';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
+import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from '../../../src/modules/draftWorkspace/draftStatuses';
 
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
     mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
@@ -15,6 +16,11 @@ const CREATE_DRAFT_WORKSPACE_QUERY = gql`
             standard_id
             entity_id
             name
+            draft_status
+            created_at
+            validationWork {
+                id
+            }
         }
     }
 `;
@@ -43,6 +49,11 @@ const READ_DRAFT_WORKSPACE_QUERY = gql`
             id
             name
             entity_id
+            draft_status
+            created_at
+            validationWork {
+                id
+            }
         }
     }
 `;
@@ -68,7 +79,23 @@ const LIST_DRAFT_WORKSPACES_QUERY = gql`
                     id
                     name
                     entity_id
+                    draft_status
+                    created_at
+                    validationWork {
+                        id
+                    }
                 }
+            }
+        }
+    }
+`;
+
+const READ_ME_USER_DRAFT_WORKSPACE_QUERY = gql`
+    query MeUserRead {
+        me {
+            draftContext{
+                id
+                name
             }
         }
     }
@@ -183,6 +210,7 @@ describe('Drafts workspace resolver testing', () => {
     expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
     expect(createdDraft.data?.draftWorkspaceAdd.name).toEqual(draftName);
     expect(createdDraft.data?.draftWorkspaceAdd.entity_id).toEqual(draftEntityId);
+    expect(createdDraft.data?.draftWorkspaceAdd.draft_status).toEqual(DRAFT_STATUS_OPEN);
     addedDraftId = createdDraft.data?.draftWorkspaceAdd.id;
     addedDraftName = createdDraft.data?.draftWorkspaceAdd.name;
     addedDraftEntityId = createdDraft.data?.draftWorkspaceAdd.entity_id;
@@ -416,12 +444,26 @@ describe('Drafts workspace resolver testing', () => {
     expect(validateResult.data?.draftWorkspaceValidate).toBeDefined();
     expect(validateResult.data?.draftWorkspaceValidate.name).toEqual(`Draft validation ${addedDraftName} (${addedDraftId})`);
     expect(validateResult.data?.draftWorkspaceValidate.connector.id).toEqual(DRAFT_VALIDATION_CONNECTOR_ID);
-    const { data } = await queryAsAdmin({
-      query: LIST_DRAFT_WORKSPACES_QUERY,
+
+    // Verify that draft still exists, but that the draft is in validated state.
+    const draftWorkspaceResult = await queryAsAdmin({
+      query: READ_DRAFT_WORKSPACE_QUERY,
+      variables: { id: addedDraftId }
     });
-    const drafts = data?.draftWorkspaces.edges;
-    expect(drafts.length).toEqual(0);
+
+    expect(draftWorkspaceResult.data?.draftWorkspace).toBeDefined();
+    expect(draftWorkspaceResult.data?.draftWorkspace.draft_status).toEqual(DRAFT_STATUS_VALIDATED);
+
+    // Verify that me user has been moved outside of draft, and that me user can't move back into a draft in a validated state
+    const meUserResult = await adminQuery({ query: READ_ME_USER_DRAFT_WORKSPACE_QUERY });
+    expect(meUserResult.data?.me.draftContext).toBeNull();
+    const meUserModifyResult = await adminQuery({
+      query: MODIFY_USER_DRAFT_WORKSPACE_QUERY,
+      variables: { input: { key: 'draft_context', value: addedDraftId } },
+    });
+    expect(meUserModifyResult.errors).toBeDefined();
   });
+
   it('should be able to remove created entities from draft', async () => {
     // Create a draft
     const draftName = 'entityRemovalTestDraft';

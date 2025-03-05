@@ -117,11 +117,13 @@ const LOCAL_STORAGE_KEY = 'draft_entities';
 interface DraftEntitiesProps {
   entitiesType?: string;
   excludedEntitiesType?: string;
+  isReadOnly: boolean;
 }
 
 const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   entitiesType = 'Stix-Core-Object',
   excludedEntitiesType,
+  isReadOnly,
 }) => {
   const { draftId } = useParams() as { draftId: string };
   const { isFeatureEnable } = useHelper();
@@ -232,6 +234,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           lineFragment={draftEntitiesLineFragment}
           entityTypes={[entitiesType]}
           removeFromDraftEnabled
+          disableLineSelection={isReadOnly}
           createButton={
             entitiesType === 'Stix-Cyber-Observable' ? (
               <>

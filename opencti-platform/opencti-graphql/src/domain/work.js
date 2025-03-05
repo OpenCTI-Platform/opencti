@@ -62,6 +62,30 @@ export const worksForConnector = async (context, user, connectorId, args = {}) =
   });
 };
 
+export const worksForDraft = async (context, user, draftId, args = {}) => {
+  const { first = ES_MINIMUM_FIXED_PAGINATION } = args;
+  const worksForDraftFilter = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'draft_context',
+        values: [draftId],
+        operator: 'eq',
+        mode: 'or'
+      },
+    ],
+    filterGroups: [],
+  };
+  return elPaginate(context, user, READ_INDEX_HISTORY, {
+    type: ENTITY_TYPE_WORK,
+    connectionFormat: false,
+    orderBy: 'timestamp',
+    orderMode: 'desc',
+    first,
+    filters: worksForDraftFilter,
+  });
+};
+
 export const worksForSource = async (context, user, sourceId, args = {}) => {
   const { first = ES_MINIMUM_FIXED_PAGINATION, filters = null, type } = args;
   let finalFilters = addFilter(filters, 'event_source_id', sourceId);

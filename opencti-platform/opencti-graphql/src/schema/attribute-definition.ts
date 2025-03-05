@@ -120,7 +120,7 @@ export const draftContext: AttributeDefinition = {
   multiple: false,
   editDefault: false,
   upsert: false,
-  isFilterable: false,
+  isFilterable: true,
   featureFlag: 'DRAFT_WORKSPACE'
 };
 
