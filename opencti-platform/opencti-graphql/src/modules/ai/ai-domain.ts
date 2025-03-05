@@ -350,7 +350,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   try {
     rawResponse = await callWithTimeout(queryNLQAi(promptValue), NLQ_TIMEOUT);
   } catch (e) {
-    throw UnknownError('The NLQ model takes too long to response', { promptValue });
+    throw UnknownError('The NLQ model takes too long to respond', { promptValue });
   }
   const parsedResponse = rawResponse as unknown as FilterGroup;
 
@@ -358,7 +358,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   try {
     checkFiltersValidity(parsedResponse);
   } catch (error) {
-    throw FunctionalError('The NLQ filters response format is not correct', { error, data: parsedResponse });
+    throw FunctionalError(`The NLQ filters response format is not correct: ${JSON.stringify(parsedResponse)}`, { error, data: parsedResponse });
   }
 
   // 03. map entities ids
