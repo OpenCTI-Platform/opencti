@@ -101,7 +101,7 @@ const CaseRfiKnowledgeGraph = ({
         containerHeaderProps={{
           modes: ['graph', 'content', 'timeline', 'correlation', 'matrix'],
           mode,
-          link: `/dashboard/analyses/caseRfis/${id}/knowledge`,
+          link: `/dashboard/cases/rfis/${id}/knowledge`,
           PopoverComponent: <CaseRfiPopover id={id} />,
         }}
         onAddRelation={addRelationInGraph}
