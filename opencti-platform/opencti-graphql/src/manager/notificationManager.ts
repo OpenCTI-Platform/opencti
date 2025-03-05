@@ -165,7 +165,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     notifiers: user.personal_notifiers,
     filters: JSON.stringify(filters),
     instance_trigger: false,
-    authorized_members: [],
+    restricted_members: [],
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 
@@ -536,7 +536,7 @@ export const generateDefaultTrigger = (notifiers: string[], type: string) => {
     notifiers,
     filters: '',
     instance_trigger: false,
-    authorized_members: [],
+    restricted_members: [],
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 

@@ -1,6 +1,6 @@
 import { Option } from '@components/common/form/ReferenceField';
 
-export const INPUT_AUTHORIZED_MEMBERS = 'authorized_members';
+export const INPUT_AUTHORIZED_MEMBERS = 'restricted_members';
 
 export type AccessRight = 'none' | 'view' | 'edit' | 'admin';
 
