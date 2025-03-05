@@ -266,7 +266,7 @@ export const createDefaultTask = (user, input, taskType, taskExpectedNumber, sco
     task = {
       ...task,
       scope,
-      authorized_members: authorizedMembersForTask(user, scope),
+      restricted_members: authorizedMembersForTask(user, scope),
       authorized_authorities: authorizedAuthoritiesForTask(scope),
     };
   }

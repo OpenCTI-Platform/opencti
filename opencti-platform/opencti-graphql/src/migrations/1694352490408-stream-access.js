@@ -6,7 +6,7 @@ import { elDeleteElements, elLoadById, elReplace } from '../database/engine';
 import { createRelationRaw } from '../database/middleware';
 
 export const up = async (next) => {
-  // 01. Stream accesses-to migration to use authorized_members and authorized_authorities
+  // 01. Stream accesses-to migration to use restricted_members and authorized_authorities
   const context = executionContext('migration');
   const streams = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION]);
   for (let index = 0; index < streams.length; index += 1) {
@@ -14,8 +14,8 @@ export const up = async (next) => {
     const args = { toId: stream.internal_id, fromTypes: [ENTITY_TYPE_GROUP], toTypes: [ENTITY_TYPE_STREAM_COLLECTION] };
     const relations = await listAllRelations(context, SYSTEM_USER, RELATION_ACCESSES_TO, args);
     if (relations.length > 0) {
-      const authorized_members = relations.map((r) => ({ id: r.fromId, access_right: 'view' }));
-      const patch = { authorized_members, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
+      const restricted_members = relations.map((r) => ({ id: r.fromId, access_right: 'view' }));
+      const patch = { restricted_members, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
       await elReplace(stream._index, stream.internal_id, { doc: patch });
       await elDeleteElements(context, SYSTEM_USER, relations);
     }
