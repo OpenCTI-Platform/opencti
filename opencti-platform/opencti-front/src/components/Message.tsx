@@ -1,22 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import Snackbar from '@mui/material/Snackbar';
+import React, { ReactElement, useEffect, useState } from 'react';
+import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-import { head } from 'ramda';
+import { AutoAwesomeOutlined } from '@mui/icons-material';
+import { useTheme } from '@mui/styles';
 import { MESSAGING$ } from '../relay/environment';
 import { useFormatter } from './i18n';
+import type { Theme } from './Theme';
 
 const Message = () => {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState('message');
-  const [text, setText] = useState('');
+  const [text, setText] = useState<string | ReactElement>('');
 
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   useEffect(() => {
     const subscription = MESSAGING$.messages.subscribe({
       next: (messages) => {
-        const firstMessage = head(messages);
-        if (firstMessage) {
+        if (messages && messages.length > 0 && messages[0]) {
+          const firstMessage = messages[0] as { text: string | ReactElement, type: string };
           const translatedText = firstMessage.text instanceof String
             ? t_i18n(firstMessage.text)
             : firstMessage.text;
@@ -29,9 +32,9 @@ const Message = () => {
     return () => {
       subscription.unsubscribe();
     };
-  });
+  }, []);
 
-  const handleCloseMessage = (reason) => {
+  const handleCloseMessage = (reason?: SnackbarCloseReason) => {
     if (reason === 'clickaway') return;
     setOpen(false);
   };
@@ -39,18 +42,23 @@ const Message = () => {
   const displayAlert = () => {
     switch (type) {
       case 'error':
-        return <Alert severity="error" onClose={handleCloseMessage}>
+        return <Alert severity="error" onClose={() => handleCloseMessage()}>
           {text}
         </Alert>;
       case 'nlq':
-        return <Alert severity="info" onClose={handleCloseMessage}>
+        return <Alert
+          icon={<AutoAwesomeOutlined fontSize="small" style={{ color: theme.palette.ai.main }} />}
+          style={{ backgroundColor: theme.palette.ai.background, color: theme.palette.ai.light }}
+          onClose={() => handleCloseMessage()}
+               >
+          {text}
+        </Alert>;
+      case 'message':
+        return <Alert severity="success" onClose={() => handleCloseMessage()}>
           {text}
         </Alert>;
       default:
-        return <Alert
-          severity="success"
-          onClose={handleCloseMessage}
-               >
+        return <Alert severity="success" onClose={() => handleCloseMessage()}>
           {text}
         </Alert>;
     }
