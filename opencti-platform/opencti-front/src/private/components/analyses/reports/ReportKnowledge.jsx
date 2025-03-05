@@ -410,8 +410,8 @@ class ReportKnowledgeComponent extends Component {
                   if (props && props.report) {
                     return (
                       <ReportKnowledgeCorrelation
+                        id={report.id}
                         data={props.report}
-                        graphData={props.report}
                       />
                     );
                   }
