@@ -185,9 +185,9 @@ const DisseminationLists = () => {
                 disableNavigation
                 preloadedPaginationProps={preloadedPaginationProps}
                 actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
+                createButton={<DisseminationListCreation paginationOptions={queryPaginationOptions} />}
               />
             )}
-            <DisseminationListCreation paginationOptions={queryPaginationOptions} />
           </>
         )}
       </PageContainer>
