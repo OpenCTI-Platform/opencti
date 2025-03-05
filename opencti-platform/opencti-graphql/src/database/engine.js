@@ -578,7 +578,7 @@ const buildUserMemberAccessFilter = (user, opts) => {
   }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
-  const emptyAuthorizedMembers = { bool: { must_not: { exists: { field: authorizedMembers.name } } } };
+  const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: { } } } } } };
   const authorizedFilters = [
     { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } },
   ];
