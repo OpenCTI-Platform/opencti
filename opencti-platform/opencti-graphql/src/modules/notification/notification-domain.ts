@@ -148,7 +148,7 @@ export const addTriggerActivity = async (
     updated_at: now(),
     trigger_scope: 'activity',
     trigger_type: type,
-    authorized_members: [...(triggerInput.recipients ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }))],
+    restricted_members: [...(triggerInput.recipients ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }))],
     authorized_authorities: [SETTINGS_SECURITYACTIVITY] // Add extra capabilities
   };
   const trigger = { ...triggerInput, ...defaultOpts };
