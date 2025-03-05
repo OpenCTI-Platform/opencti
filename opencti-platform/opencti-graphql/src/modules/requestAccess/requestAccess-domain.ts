@@ -15,7 +15,7 @@ import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-d
 import { SYSTEM_USER } from '../../utils/access';
 import { listAllEntities } from '../../database/middleware-loader';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS } from '../../schema/internalObject';
-import { isFeatureEnabled, logApp } from '../../config/conf';
+import { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
 import { updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
@@ -33,6 +33,8 @@ import { findById as findStatusById } from '../../domain/status';
 import { type BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 import { findById as findGroupById } from '../../domain/group';
 import { getDraftContext } from '../../utils/draftContext';
+import { notify } from '../../database/redis';
+import { publishUserAction } from '../../listener/UserActionListener';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -421,13 +423,23 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
         RFIFieldPatch.push({ key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] });
       }
       await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
-      // TODO in chunk 2 => await publishUserAction(
+      const elementData = await elLoadById(context, SYSTEM_USER, action.entities[0]) as unknown as BasicStoreBase;
+      const mainRepresentative = extractEntityRepresentativeName(elementData);
+      await publishUserAction({
+        user,
+        event_type: 'mutation',
+        event_scope: 'update',
+        event_access: 'administration',
+        message: `approved demand of request access for entity ${mainRepresentative}`,
+        context_data: { id: user.id, entity_type: ENTITY_TYPE_CONTAINER_CASE_RFI, input: requestAccessAction }
+      });
     }
     logApp.error('Request Access is missing entities or members', { action, RFIId: id });
   }
   logApp.error('RFI not found for Request Access', { RFIId: id });
   const rfiApproved = await findRFIById(context, user, id);
   logApp.info('[OPENCTI-MODULE][Request Access] rfiApproved:', { rfiApproved });
+  await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, rfiApproved, user);
   return rfiApproved;
 };
 
@@ -456,11 +468,21 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
       RFIFieldPatch.push({ key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] });
     }
     await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
-    // TODO in chunk 2 => await publishUserAction(
+    const elementData = await elLoadById(context, SYSTEM_USER, action.entities[0]) as unknown as BasicStoreBase;
+    const mainRepresentative = extractEntityRepresentativeName(elementData);
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'update',
+      event_access: 'administration',
+      message: `declined demand of request access for entity ${mainRepresentative}`,
+      context_data: { id: user.id, entity_type: ENTITY_TYPE_CONTAINER_CASE_RFI, input: requestAccessAction }
+    });
   }
   logApp.error('[OPENCTI-MODULE][Request Access] Missing entities or members', { action, RFIId: id });
 
   const rfiDeclined = await findRFIById(context, user, id);
   logApp.info('[OPENCTI-MODULE][Request Access] rfiDeclined:', { rfiDeclined });
+  await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, rfiDeclined, user);
   return rfiDeclined;
 };
