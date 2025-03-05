@@ -36,7 +36,7 @@ const ReportKnowledgeGraph = ({
   mode,
   enableReferences,
 }: ReportKnowledgeGraphProps) => {
-  const PAGE_SIZE = 100;
+  const PAGE_SIZE = 500;
   const queryObjectsRef = useQueryLoading<GraphContainerKnowledgeObjectsQuery>(
     graphContainerKnowledgeObjectsQuery,
     { id, count: PAGE_SIZE },

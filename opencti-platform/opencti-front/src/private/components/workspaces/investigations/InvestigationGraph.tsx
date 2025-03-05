@@ -1,13 +1,16 @@
-import { graphql, useFragment } from 'react-relay';
-import React, { CSSProperties, useMemo, useRef } from 'react';
+import { graphql, PreloadedQuery, useFragment } from 'react-relay';
+import React, { CSSProperties, Suspense, useEffect, useMemo, useRef } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/material/styles';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import WorkspaceHeader from '@components/workspaces/WorkspaceHeader';
+import { InvestigationGraphObjectsQuery } from './__generated__/InvestigationGraphObjectsQuery.graphql';
+import { InvestigationGraphObjects_fragment$key } from './__generated__/InvestigationGraphObjects_fragment.graphql';
+import { InvestigationGraphQuery$data } from './__generated__/InvestigationGraphQuery.graphql';
 import useInvestigationGraphEdit from './useInvestigationGraphEdit';
 import { InvestigationGraphData_fragment$key } from './__generated__/InvestigationGraphData_fragment.graphql';
 import useInvestigationGraphUpdateEntities from './useInvestigationGraphUpdateEntities';
-import { InvestigationGraph_fragment$data, InvestigationGraph_fragment$key } from './__generated__/InvestigationGraph_fragment.graphql';
+import { InvestigationGraph_fragment$key } from './__generated__/InvestigationGraph_fragment.graphql';
 import type { Theme } from '../../../../components/Theme';
 import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
@@ -16,6 +19,10 @@ import { GraphProvider } from '../../../../utils/graph/GraphContext';
 import GraphToolbar, { GraphToolbarProps } from '../../../../utils/graph/GraphToolbar';
 import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
 import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteractions';
+import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader from '../../../../components/Loader';
 
 const investigationGraphDataFragment = graphql`
   fragment InvestigationGraphData_fragment on Workspace {
@@ -38,299 +45,329 @@ const investigationGraphFragment = graphql`
     }
     currentUserAccessRight
     ...WorkspaceManageAccessDialog_authorizedMembers
-    objects(all: true) {
-      edges {
-        node {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreObject {
-            created_at
-            numberOfConnectedElement
-            createdBy {
-              ... on Identity {
+  }
+`;
+
+const investigationGraphObjectsQuery = graphql`
+  query InvestigationGraphObjectsQuery($id: String!, $count: Int!, $cursor: ID) {
+    ...InvestigationGraphObjects_fragment
+    @arguments(
+      id: $id
+      count: $count
+      cursor: $cursor
+    )
+  }
+`;
+
+const investigationGraphObjectsFragment = graphql`
+  fragment InvestigationGraphObjects_fragment on Query
+  @refetchable(queryName: "InvestigationGraphObjectsRefetchQuery")
+  @argumentDefinitions(
+    id: { type: "String!" }
+    cursor: { type: "ID" }
+    count: { type: "Int", defaultValue: 15 }
+  ) {
+    workspace(id: $id) {
+      objects(first: $count, after: $cursor)
+      @connection(key: "Pagination_investigationGraph_objects") {
+        pageInfo {
+          endCursor
+          hasNextPage
+          globalCount
+        }
+        edges {
+          node {
+            ... on BasicObject {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixCoreObject {
+              created_at
+              numberOfConnectedElement
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
                 id
-                name
-                entity_type
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
-            objectMarking {
-              id
-              definition_type
+            ... on StixDomainObject {
+              created
+              numberOfConnectedElement
+            }
+            ... on AttackPattern {
+              name
+              x_mitre_id
+            }
+            ... on Campaign {
+              name
+              first_seen
+            }
+            ... on CourseOfAction {
+              name
+            }
+            ... on Note {
+              attribute_abstract
+              content
+            }
+            ... on ObservedData {
+              name
+              first_observed
+              last_observed
+            }
+            ... on Opinion {
+              opinion
+            }
+            ... on Report {
+              name
+              published
+            }
+            ... on Grouping {
+              name
+              description
+            }
+            ... on Individual {
+              name
+            }
+            ... on Organization {
+              name
+            }
+            ... on Sector {
+              name
+            }
+            ... on System {
+              name
+            }
+            ... on Indicator {
+              name
+              valid_from
+            }
+            ... on Infrastructure {
+              name
+            }
+            ... on IntrusionSet {
+              name
+            }
+            ... on Position {
+              name
+            }
+            ... on City {
+              name
+            }
+            ... on AdministrativeArea {
+              name
+            }
+            ... on Country {
+              name
+            }
+            ... on Region {
+              name
+            }
+            ... on Malware {
+              name
+              first_seen
+              last_seen
+            }
+            ... on MalwareAnalysis {
+              result_name
+            }
+            ... on ThreatActor {
+              name
+              first_seen
+              last_seen
+            }
+            ... on Tool {
+              name
+            }
+            ... on Vulnerability {
+              name
+            }
+            ... on Incident {
+              name
+              first_seen
+              last_seen
+            }
+            ... on Event {
+              name
+              description
+              start_time
+              stop_time
+            }
+            ... on Channel {
+              name
+              description
+            }
+            ... on Narrative {
+              name
+              description
+            }
+            ... on Language {
+              name
+            }
+            ... on DataComponent {
+              name
+            }
+            ... on DataSource {
+              name
+            }
+            ... on Case {
+              name
+            }
+            ... on StixCyberObservable {
+              observable_value
+            }
+            ... on StixFile {
+              observableName: name
+              x_opencti_additional_names
+              hashes {
+                algorithm
+                hash
+              }
+            }
+            ... on StixMetaObject {
+              created
+            }
+            ... on Label {
+              value
+              color
+            }
+            ... on KillChainPhase {
+              kill_chain_name
+              phase_name
+            }
+            ... on MarkingDefinition {
               definition
-              x_opencti_order
               x_opencti_color
             }
-          }
-          ... on StixDomainObject {
-            created
-            numberOfConnectedElement
-          }
-          ... on AttackPattern {
-            name
-            x_mitre_id
-          }
-          ... on Campaign {
-            name
-            first_seen
-          }
-          ... on CourseOfAction {
-            name
-          }
-          ... on Note {
-            attribute_abstract
-            content
-          }
-          ... on ObservedData {
-            name
-            first_observed
-            last_observed
-          }
-          ... on Opinion {
-            opinion
-          }
-          ... on Report {
-            name
-            published
-          }
-          ... on Grouping {
-            name
-            description
-          }
-          ... on Individual {
-            name
-          }
-          ... on Organization {
-            name
-          }
-          ... on Sector {
-            name
-          }
-          ... on System {
-            name
-          }
-          ... on Indicator {
-            name
-            valid_from
-          }
-          ... on Infrastructure {
-            name
-          }
-          ... on IntrusionSet {
-            name
-          }
-          ... on Position {
-            name
-          }
-          ... on City {
-            name
-          }
-          ... on AdministrativeArea {
-            name
-          }
-          ... on Country {
-            name
-          }
-          ... on Region {
-            name
-          }
-          ... on Malware {
-            name
-            first_seen
-            last_seen
-          }
-          ... on MalwareAnalysis {
-            result_name
-          }
-          ... on ThreatActor {
-            name
-            first_seen
-            last_seen
-          }
-          ... on Tool {
-            name
-          }
-          ... on Vulnerability {
-            name
-          }
-          ... on Incident {
-            name
-            first_seen
-            last_seen
-          }
-          ... on Event {
-            name
-            description
-            start_time
-            stop_time
-          }
-          ... on Channel {
-            name
-            description
-          }
-          ... on Narrative {
-            name
-            description
-          }
-          ... on Language {
-            name
-          }
-          ... on DataComponent {
-            name
-          }
-          ... on DataSource {
-            name
-          }
-          ... on Case {
-            name
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-          ... on StixFile {
-            observableName: name
-            x_opencti_additional_names
-            hashes {
-              algorithm
-              hash
+            ... on ExternalReference {
+              url
+              source_name
             }
-          }
-          ... on StixMetaObject {
-            created
-          }
-          ... on Label {
-            value
-            color
-          }
-          ... on KillChainPhase {
-            kill_chain_name
-            phase_name
-          }
-          ... on MarkingDefinition {
-            definition
-            x_opencti_color
-          }
-          ... on ExternalReference {
-            url
-            source_name
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixRelationship {
-            from {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixCoreRelationship {
-                relationship_type
-                start_time
-                stop_time
-              }
-            }
-            to {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixCoreRelationship {
-                relationship_type
-              }
-            }
-          }
-          ... on StixRefRelationship {
-            created_at
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-            start_time
-            stop_time
-            confidence
-            created
-            created_at
-            createdBy {
-              ... on Identity {
-                id
-                name
-                entity_type
-              }
-            }
-            objectMarking {
+            ... on BasicRelationship {
               id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
+              entity_type
+              parent_types
             }
-          }
-          ... on StixSightingRelationship {
-            relationship_type
-            first_seen
-            last_seen
-            confidence
-            created
-            is_inferred
-            from {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
+            ... on StixRelationship {
+              from {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                  start_time
+                  stop_time
+                }
               }
-              ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixCoreRelationship {
-                relationship_type
-              }
-            }
-            to {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixCoreRelationship {
-                relationship_type
+              to {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
               }
             }
-            created_at
-            createdBy {
-              ... on Identity {
+            ... on StixRefRelationship {
+              created_at
+            }
+            ... on StixCoreRelationship {
+              relationship_type
+              start_time
+              stop_time
+              confidence
+              created
+              created_at
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
                 id
-                name
-                entity_type
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
               }
             }
-            objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
+            ... on StixSightingRelationship {
+              relationship_type
+              first_seen
+              last_seen
+              confidence
+              created
+              is_inferred
+              from {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              to {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              created_at
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
             }
           }
         }
@@ -349,16 +386,24 @@ export const investigationGraphQuery = graphql`
 `;
 
 interface InvestigationGraphComponentProps {
-  investigation: InvestigationGraph_fragment$data
+  loadingData: boolean
+  dataInvestigation: InvestigationGraph_fragment$key
 }
 
 const InvestigationGraphComponent = ({
-  investigation,
+  loadingData,
+  dataInvestigation,
 }: InvestigationGraphComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
-  const { addLink } = useGraphInteractions();
+  const { addLink, setIsLoadingData } = useGraphInteractions();
+
+  const investigation = useFragment(investigationGraphFragment, dataInvestigation);
+
+  useEffect(() => {
+    setIsLoadingData(loadingData);
+  }, [loadingData]);
 
   const [commitEditPositions] = useInvestigationGraphEdit();
   const [commitUpdateEntities] = useInvestigationGraphUpdateEntities();
@@ -441,20 +486,52 @@ const InvestigationGraphComponent = ({
   );
 };
 
-interface InvestigationGraphProps {
-  data: InvestigationGraph_fragment$key
-  graphData: InvestigationGraphData_fragment$key
+const REFETCH_DEBOUNCE_MS = 300;
+
+interface InvestigationGraphLoaderProps
+  extends Omit<InvestigationGraphComponentProps, 'loadingData'> {
+  investigationId: string
+  dataPositions: InvestigationGraphData_fragment$key
+  queryObjectsRef: PreloadedQuery<InvestigationGraphObjectsQuery>
+  pageSize: number
 }
 
-const InvestigationGraph = ({
-  data,
-  graphData,
-}: InvestigationGraphProps) => {
-  const investigation = useFragment(investigationGraphFragment, data);
-  const { graph_data } = useFragment(investigationGraphDataFragment, graphData);
-  const localStorageKey = `investigation-graph-${investigation.id}`;
+const InvestigationGraphLoader = ({
+  investigationId,
+  dataPositions,
+  queryObjectsRef,
+  pageSize,
+  ...otherProps
+}: InvestigationGraphLoaderProps) => {
+  const localStorageKey = `investigation-graph-${investigationId}`;
 
-  const objects = useMemo(() => getObjectsToParse(investigation), [investigation]);
+  const {
+    data: { workspace },
+    hasMore,
+    loadMore,
+    isLoadingMore,
+  } = usePreloadedPaginationFragment<
+  InvestigationGraphObjectsQuery,
+  InvestigationGraphObjects_fragment$key
+  >({
+    linesQuery: investigationGraphObjectsQuery,
+    linesFragment: investigationGraphObjectsFragment,
+    queryRef: queryObjectsRef,
+  });
+
+  // Use a debounce to avoid spamming too quickly the backend.
+  const debounceFetchMore = useDebounceCallback(
+    () => loadMore(pageSize),
+    REFETCH_DEBOUNCE_MS,
+  );
+  // When finishing fetching a page, get the next if any.
+  useEffect(() => {
+    if (!isLoadingMore() && hasMore()) debounceFetchMore();
+  }, [isLoadingMore, hasMore]);
+
+  const { graph_data } = useFragment(investigationGraphDataFragment, dataPositions);
+
+  const objects = useMemo(() => (workspace ? getObjectsToParse(workspace) : []), [workspace]);
   const positions = useMemo(() => deserializeObjectB64(graph_data), [graph_data]);
 
   return (
@@ -464,8 +541,41 @@ const InvestigationGraph = ({
       positions={positions}
       context='investigation'
     >
-      <InvestigationGraphComponent investigation={investigation} />
+      <InvestigationGraphComponent
+        loadingData={hasMore()}
+        {...otherProps}
+      />
     </GraphProvider>
+  );
+};
+
+interface InvestigationGraphProps {
+  id: string
+  data: NonNullable<InvestigationGraphQuery$data['workspace']>
+}
+
+const InvestigationGraph = ({
+  id,
+  data,
+}: InvestigationGraphProps) => {
+  const PAGE_SIZE = 500;
+  const queryObjectsRef = useQueryLoading<InvestigationGraphObjectsQuery>(
+    investigationGraphObjectsQuery,
+    { id, count: PAGE_SIZE },
+  );
+
+  if (!queryObjectsRef) return null;
+
+  return (
+    <Suspense fallback={<Loader />}>
+      <InvestigationGraphLoader
+        pageSize={PAGE_SIZE}
+        queryObjectsRef={queryObjectsRef}
+        investigationId={id}
+        dataPositions={data}
+        dataInvestigation={data}
+      />
+    </Suspense>
   );
 };
 

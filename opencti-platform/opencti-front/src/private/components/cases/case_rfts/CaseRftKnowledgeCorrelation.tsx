@@ -26,7 +26,7 @@ const CaseRftKnowledgeCorrelation = ({
   data,
   id,
 }: CaseRftKnowledgeCorrelationProps) => {
-  const PAGE_SIZE = 100;
+  const PAGE_SIZE = 500;
   const queryObjectsRef = useQueryLoading<GraphContainerCorrelationObjectsQuery>(
     graphContainerCorrelationObjectsQuery,
     { id, count: PAGE_SIZE },
