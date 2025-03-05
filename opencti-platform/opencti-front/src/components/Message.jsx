@@ -1,72 +1,71 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import { head } from 'ramda';
 import { MESSAGING$ } from '../relay/environment';
-import inject18n from './i18n';
+import { useFormatter } from './i18n';
 
-class Message extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false, error: false, text: '' };
-  }
+const Message = () => {
+  const [open, setOpen] = useState(false);
+  const [type, setType] = useState('message');
+  const [text, setText] = useState('');
 
-  componentDidMount() {
-    this.subscription = MESSAGING$.messages.subscribe({
+  const { t_i18n } = useFormatter();
+
+  useEffect(() => {
+    const subscription = MESSAGING$.messages.subscribe({
       next: (messages) => {
         const firstMessage = head(messages);
         if (firstMessage) {
-          const text = firstMessage.text instanceof String
-            ? this.props.t(firstMessage.text)
+          const translatedText = firstMessage.text instanceof String
+            ? t_i18n(firstMessage.text)
             : firstMessage.text;
-          const error = firstMessage.type === 'error';
-          this.setState({ open: true, error, text });
+          setOpen(true);
+          setType(firstMessage.type);
+          setText(translatedText);
         }
       },
     });
-  }
+    return () => {
+      subscription.unsubscribe();
+    };
+  });
 
-  // eslint-disable-next-line
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
-
-  handleCloseMessage(event, reason) {
+  const handleCloseMessage = (reason) => {
     if (reason === 'clickaway') return;
-    this.setState({ open: false });
-  }
+    setOpen(false);
+  };
 
-  render() {
-    return (
-      <Snackbar
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        open={this.state.open}
-        onClose={this.handleCloseMessage.bind(this)}
-        autoHideDuration={this.state.error ? 8000 : 4000}
-      >
-        {this.state.error ? (
-          <Alert severity="error" onClose={this.handleCloseMessage.bind(this)}>
-            {this.state.text}
-          </Alert>
-        ) : (
-          <Alert
-            severity="success"
-            onClose={this.handleCloseMessage.bind(this)}
-          >
-            {this.state.text}
-          </Alert>
-        )}
-      </Snackbar>
-    );
-  }
-}
+  const displayAlert = () => {
+    switch (type) {
+      case 'error':
+        return <Alert severity="error" onClose={handleCloseMessage}>
+          {text}
+        </Alert>;
+      case 'nlq':
+        return <Alert severity="info" onClose={handleCloseMessage}>
+          {text}
+        </Alert>;
+      default:
+        return <Alert
+          severity="success"
+          onClose={handleCloseMessage}
+               >
+          {text}
+        </Alert>;
+    }
+  };
 
-Message.propTypes = {
-  open: PropTypes.bool,
-  t: PropTypes.func,
-  handleClose: PropTypes.func,
-  message: PropTypes.string,
+  return (
+    <Snackbar
+      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      open={open}
+      onClose={(_, reason) => handleCloseMessage(reason)}
+      autoHideDuration={type === 'message' ? 4000 : 8000}
+    >
+      {displayAlert()}
+    </Snackbar>
+  );
 };
 
-export default inject18n(Message);
+export default Message;
