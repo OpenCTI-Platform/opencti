@@ -37,8 +37,7 @@ const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ su
       </IconButton>
       {requestAccessScope && (
         <Tooltip
-          title={t_i18n('RFI of type "request access" are subject to a specific workflow, that you can configure here.\n'
-            + 'Request Access cases have 2 actions, Validate and Decline, that change the status automatically according to your configuration. Only specific groups of users are authorized to validate and decline Request Access cases.')}
+          title={t_i18n('RFI of type "request access" are subject to a specific workflow, that you can configure here. Request Access cases have 2 actions, Validate and Decline, that change the status automatically according to your configuration. Only specific groups of users are authorized to validate and decline Request Access cases.')}
         >
           <InformationOutline
             fontSize="small"

@@ -2658,6 +2658,7 @@
   "Revoke token": "Token widerrufen",
   "Revoked": "Widerrufen",
   "revoked": "Widerrufen",
+  "RFI of type \"request access\" are subject to a specific workflow, that you can configure here. Request Access cases have 2 actions, Validate and Decline, that change the status automatically according to your configuration. Only specific groups of users are authorized to validate and decline Request Access cases.": "RFI des Typs \"Zugang beantragen\" unterliegen einem speziellen Workflow, den Sie hier konfigurieren können. Zugangsgesuche haben 2 Aktionen, Validieren und Ablehnen, die den Status automatisch entsprechend Ihrer Konfiguration ändern. Nur bestimmte Benutzergruppen sind berechtigt, Anträge auf Zugang zu validieren und abzulehnen.",
   "Rich editor": "Reichhaltiger Editor",
   "Role": "Rolle",
   "Roles": "Rollen",
