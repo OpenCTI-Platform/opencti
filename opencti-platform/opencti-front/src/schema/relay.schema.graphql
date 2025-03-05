@@ -12338,7 +12338,7 @@ type AIBus {
 
 type NLQResponse {
   filters: String!
-  valuesIdsAllResolved: Boolean!
+  notResolvedValues: [String!]!
 }
 
 enum ScenarioType {

@@ -16269,7 +16269,7 @@ export type MutexAddInput = {
 export type NlqResponse = {
   __typename?: 'NLQResponse';
   filters: Scalars['String']['output'];
-  valuesIdsAllResolved: Scalars['Boolean']['output'];
+  notResolvedValues: Array<Scalars['String']['output']>;
 };
 
 export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -37931,7 +37931,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type NlqResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['NLQResponse'] = ResolversParentTypes['NLQResponse']> = ResolversObject<{
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  valuesIdsAllResolved?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  notResolvedValues?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

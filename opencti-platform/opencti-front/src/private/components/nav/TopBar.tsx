@@ -140,7 +140,7 @@ const topBarAskAINLQMutation = graphql`
   mutation TopBarAskAINLQMutation($search: String!) {
     aiNLQ(search: $search) {
       filters
-      valuesIdsAllResolved
+      notResolvedValues
     }
   }
 `;
@@ -244,8 +244,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         },
         onCompleted: (response: TopBarAskAINLQMutation$data) => {
           setIsNLQLoading(false);
-          if (!response.aiNLQ?.valuesIdsAllResolved) {
-            MESSAGING$.notifyError(t_i18n('Some entities you mentioned have not been found in the platform.'));
+          const notResolvedValues = response.aiNLQ?.notResolvedValues ?? [];
+          if (notResolvedValues.length > 0) {
+            MESSAGING$.notifyError(t_i18n(`Some entities you mentioned have not been found in the platform: ${notResolvedValues}`));
           }
           handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ?.filters);
         },

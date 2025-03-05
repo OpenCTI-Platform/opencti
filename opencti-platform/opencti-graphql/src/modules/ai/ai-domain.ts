@@ -314,7 +314,7 @@ export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUs
   // 02. fetch the values to resolve in the filter group
   const valuesIdsToResolve = extractFilterGroupValues(filters, idsFilterKeys);
   // 03. resolve the values and deduce potential corresponding ids
-  let valuesIdsAllResolved = true;
+  const notResolvedValues: string[] = [];
   const mapContent = await Promise.all(valuesIdsToResolve.map(async (value): Promise<[string, string | null]> => {
     const stixCoreObjectsFilter = addFilter(undefined, 'entity_type', ['Stix-Core-Object']);
     const result = await findAll(context, user, {
@@ -327,14 +327,14 @@ export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUs
     if (resultIds.length > 0) {
       return [value, resultIds[0]];
     }
-    valuesIdsAllResolved = false;
+    notResolvedValues.push(value);
     return [value, null];
   }));
   const valuesIdsMap = new Map(mapContent);
   // 04. replace the values with their corresponding ids
   return {
     filters: filtersEntityIdsMappingResult(filters, idsFilterKeys, valuesIdsMap),
-    valuesIdsAllResolved
+    notResolvedValues
   };
 };
 
@@ -362,8 +362,8 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   }
 
   // 03. map entities ids
-  const { filters: filtersResult, valuesIdsAllResolved } = await filtersEntityIdsMapping(context, user, parsedResponse);
+  const { filters: filtersResult, notResolvedValues } = await filtersEntityIdsMapping(context, user, parsedResponse);
 
   // return the stringified filters
-  return { filters: JSON.stringify(filtersResult), valuesIdsAllResolved };
+  return { filters: JSON.stringify(filtersResult), notResolvedValues };
 };

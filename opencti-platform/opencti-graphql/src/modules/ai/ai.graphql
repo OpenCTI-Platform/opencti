@@ -24,7 +24,7 @@ type AIBus {
 
 type NLQResponse {
     filters: String!
-    valuesIdsAllResolved: Boolean!
+    notResolvedValues: [String!]!
 }
 
 type Mutation {
