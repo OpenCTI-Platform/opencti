@@ -32,7 +32,7 @@
     "d3-scale": "4.0.2",
     "d3-timer": "3.0.1",
     "dagre": "0.8.5",
-    "date-fns": "3.6.0",
+    "date-fns": "4.1.0",
     "dompurify": "3.2.4",
     "extract-files": "13.0.0",
     "filigran-icon": "0.14.0",
