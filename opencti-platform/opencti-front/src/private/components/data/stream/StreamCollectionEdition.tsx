@@ -36,7 +36,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface StreamCollectionCreationForm {
-  authorized_members: Option[]
+  restricted_members: Option[]
   stream_public: boolean | null
   name: string | null
   description: string | null
@@ -56,14 +56,14 @@ const streamCollectionValidation = (requiredSentence: string) => Yup.object().sh
   name: Yup.string().required(requiredSentence),
   description: Yup.string().nullable(),
   stream_public: Yup.bool().nullable(),
-  authorized_members: Yup.array().nullable(),
+  restricted_members: Yup.array().nullable(),
 });
 
 const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: StreamCollectionEdition_streamCollection$data }> = ({ streamCollection }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const initialValues = { ...streamCollection,
-    authorized_members: convertAuthorizedMembers(streamCollection),
+    restricted_members: convertAuthorizedMembers(streamCollection),
     stream_public: streamCollection.stream_public ?? null,
     name: streamCollection.name ?? '',
     description: streamCollection.description ?? '',
@@ -176,7 +176,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 onChange={handleSubmitFieldOptions}
                 multiple={true}
                 helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
-                name="authorized_members"
+                name="restricted_members"
               />
             )}
           </Alert>
