@@ -1,19 +1,35 @@
-import { Option } from '@components/common/form/ReferenceField';
-import AssociatedEntityField, { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
+import React from 'react';
+import AssociatedEntityField from '@components/common/form/AssociatedEntityField';
 import { Box } from '@mui/material';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import React from 'react';
-import { FormikContextType, FormikProvider } from 'formik';
+import { OptionsFormValues } from '@components/common/files/import_files/ImportFilesDialog';
+import { Field, FormikContextType, FormikProvider } from 'formik';
+import MenuItem from '@mui/material/MenuItem';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { useFormatter } from '../../../../../components/i18n';
+import TextField from '../../../../../components/TextField';
+import SelectField from '../../../../../components/fields/SelectField';
+import { DraftContext } from '../../../../../utils/hooks/useDraftContext';
+import useHelper from '../../../../../utils/hooks/useHelper';
 
 interface ImportFilesOptionsProps {
-  optionsFormikContext: FormikContextType<{ fileMarkings: Option[]; associatedEntity: AssociatedEntityOption }>;
+  optionsFormikContext: FormikContextType<OptionsFormValues>;
   entityId?: string;
+  draftContext?: DraftContext | null;
+  isWorkbenchEnabled: boolean;
 }
 
-const ImportFilesOptions = ({ optionsFormikContext, entityId }: ImportFilesOptionsProps) => {
+const ImportFilesOptions = ({
+  optionsFormikContext,
+  entityId,
+  draftContext,
+  isWorkbenchEnabled,
+}: ImportFilesOptionsProps) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
+
   return (
     <FormikProvider value={optionsFormikContext}>
       <Box sx={{
@@ -40,6 +56,40 @@ const ImportFilesOptions = ({ optionsFormikContext, entityId }: ImportFilesOptio
               onChange={optionsFormikContext.setFieldValue}
             />
           </div>
+        )}
+        {!draftContext && isDraftFeatureEnabled && (
+          <Field
+            component={SelectField}
+            variant="standard"
+            name="validationMode"
+            label={t_i18n('Validation mode')}
+            fullWidth={true}
+            containerstyle={{ marginTop: 20, width: '100%' }}
+            setFieldValue={optionsFormikContext.setFieldValue}
+          >
+            <MenuItem
+              key={'workbench'}
+              value={'workbench'}
+              disabled={!isWorkbenchEnabled}
+            >
+              {'Workbench'}
+            </MenuItem>
+            <MenuItem
+              key={'draft'}
+              value={'draft'}
+            >
+              {'Draft'}
+            </MenuItem>
+          </Field>
+        )}
+        {optionsFormikContext.values.validationMode === 'draft' && (
+          <Field
+            name="draftName"
+            label={t_i18n('Draft name')}
+            component={TextField}
+            variant="standard"
+            fullWidth={true}
+          />
         )}
       </Box>
     </FormikProvider>

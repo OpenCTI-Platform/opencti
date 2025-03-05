@@ -24,6 +24,7 @@ import { handleErrorInForm } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../../utils/hooks/useBulkCommit';
 import { resolveLink } from '../../../../../utils/Entity';
+import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -103,14 +104,17 @@ interface ImportFilesDialogProps {
   entityId?: string;
 }
 
-type OptionsFormValues = {
+export type OptionsFormValues = {
   fileMarkings: Option[];
   associatedEntity: AssociatedEntityOption;
+  validationMode: 'draft' | 'workbench';
+  draftName: string;
 };
 
 const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
 
+  const draftContext = useDraftContext();
   const [activeStep, setActiveStep] = useState(0);
   const [files, setFiles] = useState<FileWithConnectors[]>([]);
   const [uploadStatus, setUploadStatus] = useState<undefined | 'uploading' | 'success'>();
@@ -151,7 +155,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     type: 'files',
   });
 
-  // Check if CSV connector have a configuration mapper selected
+  // Check if a file is selected and CSV connector have a configuration mapper selected
   const isValid = useMemo(() => {
     return files.length > 0 && files.every((file) => {
       const hasCsvMapperConnector = file.connectors?.some((connector) => connector.name === CSV_MAPPER_NAME);
@@ -164,7 +168,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     const selectedEntityId = entityId ?? (values.associatedEntity?.value || undefined);
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
 
-    const validationMode = 'draft';
+    const { validationMode } = values;
 
     const variables = files.map(({ file, connectors, configuration }) => (selectedEntityId
       ? (
@@ -221,6 +225,8 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     initialValues: {
       fileMarkings: [] as Option[],
       associatedEntity: { label: '', value: '', type: '' } as AssociatedEntityOption,
+      validationMode: draftContext || files.length > 1 ? 'draft' : 'workbench',
+      draftName: '',
     },
     onSubmit,
   });
@@ -253,7 +259,14 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
                   queryRef={queryRef}
                 />
               )}
-              {activeStep === 1 && <ImportFilesOptions optionsFormikContext={optionsContext} entityId={entityId} />}
+              {activeStep === 1 && (
+                <ImportFilesOptions
+                  optionsFormikContext={optionsContext}
+                  entityId={entityId}
+                  draftContext={draftContext}
+                  isWorkbenchEnabled={files.length === 1}
+                />
+              )}
             </Box>
           </>
         ) : (
