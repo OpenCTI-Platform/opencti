@@ -34,19 +34,13 @@ interface RequestAccessAction {
 const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
   const { t_i18n } = useFormatter();
   let requestAccessData = null;
-  let isRequestAccessNew = false;
   const approvedButtonColor = data.requestAccessConfiguration?.approved_status?.template?.color;
   const declineButtonColor = data.requestAccessConfiguration?.declined_status?.template?.color;
-
-  if (data.x_opencti_request_access) {
-    requestAccessData = JSON.parse(data.x_opencti_request_access) as RequestAccessAction;
-    // see RequestAccessAction interface in backend
-    // Find action status that correspond to current RFI status.
-    const currentActionStatus = requestAccessData.workflowMapping.find((status: RequestAccessActionStatus) => status.rfiStatusId === data.status?.id);
-    if (currentActionStatus) {
-      isRequestAccessNew = currentActionStatus.actionStatus === 'NEW';
-    }
+  const requestAccess = data.x_opencti_request_access;
+  if (requestAccess) {
+    requestAccessData = JSON.parse(requestAccess) as RequestAccessAction;
   }
+  const isButtonsHidden = requestAccessData?.status === 'NEW';
 
   const onSubmitValidateRequestAccess = () => {
     commitMutation({
@@ -102,7 +96,7 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
             status={data.status}
             disabled={!data.workflowEnabled && !requestAccessData}
           />
-          {isRequestAccessNew && (
+          {isButtonsHidden && (
           <div>
             <Button
               color="primary"
