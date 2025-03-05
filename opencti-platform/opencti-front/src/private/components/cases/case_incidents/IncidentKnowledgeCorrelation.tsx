@@ -46,7 +46,6 @@ const IncidentKnowledgeCorrelation = ({
     });
   };
 
-  console.log(queryObjectsRef);
   if (!queryObjectsRef) return null;
 
   return (

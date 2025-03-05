@@ -408,7 +408,6 @@ class IncidentKnowledgeComponent extends Component {
                 query={incidentKnowledgeCorrelationQuery}
                 variables={{ id: caseData.id }}
                 render={({ props }) => {
-                  console.log('pouet');
                   if (props && props.caseIncident) {
                     return (
                       <IncidentKnowledgeCorrelation
