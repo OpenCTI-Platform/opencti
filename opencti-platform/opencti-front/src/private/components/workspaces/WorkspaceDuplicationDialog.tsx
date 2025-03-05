@@ -69,21 +69,16 @@ WorkspaceDuplicationDialogProps
   );
   const submitDashboardDuplication = (
     e: UIEvent,
-    submittedWorkspace: {
-      name: string;
-      type: string;
-      description: string;
-      manifest: string;
-    },
+    submittedWorkspace: Dashboard_workspace$data | InvestigationGraph_workspace$data,
   ) => {
     stopEvent(e);
     commitDuplicatedWorkspaceCreation({
       variables: {
         input: {
           name: submittedWorkspace.name,
-          type: submittedWorkspace.type,
-          description: submittedWorkspace.description,
-          manifest: submittedWorkspace.manifest,
+          type: submittedWorkspace.type ?? '',
+          description: submittedWorkspace.description ?? '',
+          manifest: submittedWorkspace.manifest ?? '',
         },
       },
       updater: (store) => updater && updater(store),
