@@ -125,7 +125,7 @@ const LOCAL_STORAGE_KEY = 'importFiles';
 const ImportFilesContent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Import: Upload Files | Data'));
+  setTitle(t_i18n('Upload Files | Import | Data'));
   const [displayDelete, setDisplayDelete] = useState<string>('');
 
   const initialValues = {

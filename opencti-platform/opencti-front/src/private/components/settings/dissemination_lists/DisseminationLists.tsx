@@ -91,7 +91,7 @@ const DisseminationLists = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security: Dissemination lists | Settings'));
+  setTitle(t_i18n('Dissemination lists | Security | Settings'));
 
   const initialValues = {
     searchTerm: '',

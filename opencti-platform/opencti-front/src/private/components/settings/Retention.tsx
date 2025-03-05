@@ -31,7 +31,7 @@ const Retention = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Customization: Retention | Settings'));
+  setTitle(t_i18n('Retention | Customization | Settings'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,

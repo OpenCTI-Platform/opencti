@@ -30,7 +30,7 @@ const CsvMappers = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Processing: CSV Mappers | Data'));
+  setTitle(t_i18n('CSV Mappers | Processing | Data'));
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<csvMappers_MappersQuery$variables>(
     LOCAL_STORAGE_KEY_CSV_MAPPERS,
     {

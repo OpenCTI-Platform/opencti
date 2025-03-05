@@ -26,7 +26,7 @@ const LOCAL_STORAGE_KEY = 'status-templates';
 const StatusTemplates = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Taxonomies: Status Templates | Settings'));
+  setTitle(t_i18n('Status Templates | Taxonomies | Settings'));
   const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<StatusTemplatesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,

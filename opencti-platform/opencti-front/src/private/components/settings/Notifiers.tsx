@@ -31,7 +31,7 @@ const Notifiers = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Customization: Notifiers | Settings'));
+  setTitle(t_i18n('Notifiers | Customization | Settings'));
   const {
     viewStorage,
     paginationOptions,

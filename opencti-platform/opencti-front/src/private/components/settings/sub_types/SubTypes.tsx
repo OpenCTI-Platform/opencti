@@ -28,7 +28,7 @@ const SubTypes = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Customization: Entity Types | Settings'));
+  setTitle(t_i18n('Entity Types | Customization | Settings'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SubTypesLinesQuery$variables>(
     LOCAL_STORAGE_KEY_SUB_TYPES,
     { searchTerm: '' },

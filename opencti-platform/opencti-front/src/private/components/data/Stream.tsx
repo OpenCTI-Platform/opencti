@@ -28,7 +28,7 @@ const Stream = () => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Data Sharing: Live Streams | Data'));
+  setTitle(t_i18n('Live Streams | Data Sharing | Data'));
   const navigate = useNavigate();
   const location = useLocation();
   const params = buildViewParamsFromUrlAndStorage(

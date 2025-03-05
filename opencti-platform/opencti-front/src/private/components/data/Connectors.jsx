@@ -20,7 +20,7 @@ const Connectors = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Ingestion: Connectors | Data'));
+  setTitle(t_i18n('Connectors | Ingestion | Data'));
   return (
     <div className={classes.container}>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connectors'), current: true }]} />

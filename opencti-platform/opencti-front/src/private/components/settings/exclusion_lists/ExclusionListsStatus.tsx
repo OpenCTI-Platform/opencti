@@ -41,7 +41,7 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
   );
   const { setTitle } = useConnectedDocumentModifier();
 
-  setTitle(t_i18n('Customization: Exclusion lists | Settings'));
+  setTitle(t_i18n('Exclusion lists | Customization | Settings'));
 
   const isInProgress = exclusionListCacheStatus?.isCacheRebuildInProgress;
   const cacheDate = exclusionListCacheStatus?.cacheVersion;

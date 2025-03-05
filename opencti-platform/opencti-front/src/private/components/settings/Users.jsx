@@ -22,7 +22,7 @@ const LOCAL_STORAGE_KEY = 'users';
 const Users = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security: Users | Settings'));
+  setTitle(t_i18n('Users | Security | Settings'));
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {

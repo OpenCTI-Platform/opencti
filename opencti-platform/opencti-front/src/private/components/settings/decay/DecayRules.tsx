@@ -33,7 +33,7 @@ const DecayRules = () => {
   const classes = useStyles();
   const { fd, t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Customization: Decay Rules | Settings'));
+  setTitle(t_i18n('Decay Rules | Customization | Settings'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DecayRulesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {

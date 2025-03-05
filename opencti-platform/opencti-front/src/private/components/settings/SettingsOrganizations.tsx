@@ -50,7 +50,7 @@ const SettingsOrganizations = () => {
   const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(settingsOrganizationsLinesQuery, paginationOptions);
   const { fd, t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security: Organizations | Settings'));
+  setTitle(t_i18n('Organizations | Security | Settings'));
 
   const dataColumns = {
     name: {

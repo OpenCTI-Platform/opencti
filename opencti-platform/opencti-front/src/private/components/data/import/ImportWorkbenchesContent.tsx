@@ -123,7 +123,7 @@ const LOCAL_STORAGE_KEY = 'importWorkbenches';
 const ImportWorkbenchesContent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Import: Analyst Workbench | Data'));
+  setTitle(t_i18n('Analyst Workbench | Import | Data'));
   const [displayDelete, setDisplayDelete] = useState<string>('');
 
   const initialValues = {

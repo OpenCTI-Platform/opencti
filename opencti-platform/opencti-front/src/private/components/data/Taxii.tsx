@@ -18,7 +18,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 const Taxii = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Data sharing: TAXII Collections | Data'));
+  setTitle(t_i18n('TAXII Collections | Data sharing | Data'));
   const LOCAL_STORAGE_KEY = 'taxii';
   const navigate = useNavigate();
   const location = useLocation();
