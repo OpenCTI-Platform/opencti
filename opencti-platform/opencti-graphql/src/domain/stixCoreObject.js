@@ -136,7 +136,7 @@ export const findAllAuthMemberRestricted = async (context, user, args) => {
   const nested = [
     { key: 'id', operator: FilterOperator.NotNil, values: [] },
   ];
-  const authorizedExistsFilter = { key: authorizedMembers.name, nested, mode: 'or' };
+  const authorizedExistsFilter = { key: authorizedMembers.name, operator: FilterOperator.NotNil, values: nested, mode: 'or' };
   const filterWithAuthorizedMembers = {
     mode: 'and',
     filters: [authorizedExistsFilter],
@@ -145,7 +145,7 @@ export const findAllAuthMemberRestricted = async (context, user, args) => {
   const finalArgs = {
     ...args,
     includeAuthorities: true,
-    filterWithAuthorizedMembers
+    filters: filterWithAuthorizedMembers
   };
 
   return listEntitiesPaginated(context, user, types, finalArgs);
