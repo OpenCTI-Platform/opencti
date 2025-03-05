@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { map, pathOr, pipe } from 'ramda';
+import { ascend, map, path, pathOr, pipe, sortWith, union } from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import withTheme from '@mui/styles/withTheme';
@@ -95,6 +95,7 @@ import ItemMarkings from '../../../components/ItemMarkings';
 import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import EETooltip from '../common/entreprise_edition/EETooltip';
+import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -243,6 +244,9 @@ const typesWithParticipant = ['Case-Incident', 'Case-Rft', 'Case-Rfi', 'Report']
 const typesWithIncidentResponseType = ['Case-Incident'];
 const typesWithRfiTypes = ['Case-Rfi'];
 const typesWithRftTypes = ['Case-Rft'];
+const typesWithDetection = ['Indicator'];
+const typesWithKillChains = ['Indicator'];
+const typesWithIndicatorTypes = ['Indicator'];
 
 const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
 const notShareableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
@@ -360,10 +364,12 @@ class DataTableToolBar extends Component {
         incident_response_types_ov: [],
         request_for_information_types_ov: [],
         request_for_takedown_types_ov: [],
+        indicator_type_ov: [],
       },
       navOpen: localStorage.getItem('navOpen') === 'true',
       assignees: [],
       participants: [],
+      killChains: [],
     };
   }
 
@@ -491,6 +497,7 @@ class DataTableToolBar extends Component {
       incident_response_types_ov: 'response_types',
       request_for_information_types_ov: 'information_types',
       request_for_takedown_types_ov: 'takedown_types',
+      indicator_type_ov: 'indicator_type',
     };
 
     const actions = actionsInputs.map((n) => {
@@ -536,6 +543,7 @@ class DataTableToolBar extends Component {
         || value === 'external-reference'
         || value === 'object-assignee'
         || value === 'object-participant'
+        || value === 'killChains'
       ) {
         actionsInputs[i] = R.assoc(
           'fieldType',
@@ -820,6 +828,8 @@ class DataTableToolBar extends Component {
       actionsInputs[i]?.type === 'ADD' && { label: t('In containers'), value: 'container-object' },
       ((actionsInputs[i]?.type === 'ADD' && isAdmin) || (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && { label: t('Creator'), value: 'creator_id' },
       (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
+      checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Kill chains'), value: 'killChains' },
+      checkTypes(typesWithIndicatorTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Indicator Types'), value: 'indicator_type_ov' },
       ...(actionsInputs[i]?.type === 'REPLACE' ? [
         { label: t('Author'), value: 'created-by' },
         { label: t('Confidence'), value: 'confidence' },
@@ -830,6 +840,7 @@ class DataTableToolBar extends Component {
         checkTypes(typesWithRfiTypes) && { label: t('Request for information type'), value: 'request_for_information_types_ov' },
         checkTypes(typesWithRftTypes) && { label: t('Request for takedown type'), value: 'request_for_takedown_types_ov' },
         checkTypes(typesWithScore) && { label: t('Score'), value: 'x_opencti_score' },
+        checkTypes(typesWithDetection) && { label: t('Detection'), value: 'x_opencti_detection' },
         selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]) && { label: t('Status'), value: 'x_opencti_workflow_id' },
       ] : []),
     ].filter(Boolean);
@@ -1174,6 +1185,33 @@ class DataTableToolBar extends Component {
       });
   }
 
+  searchKillChains(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = {
+      ...actionsInputs[i],
+      inputValue: newValue && newValue.length > 0 ? newValue : '',
+    };
+    this.setState({ actionsInputs });
+    fetchQuery(killChainPhasesSearchQuery, {
+      search: newValue && newValue.length > 0 ? newValue : '',
+    })
+      .toPromise()
+      .then((data) => {
+        const killChains = pipe(
+          pathOr([], ['killChainPhases', 'edges']),
+          sortWith([ascend(path(['node', 'x_opencti_order']))]),
+          map((n) => ({
+            label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+            value: n.node.id,
+          })),
+        )(data);
+        this.setState({
+          killChains: union(this.state.killChains, killChains),
+        });
+      });
+  }
+
   renderValuesOptions(i, selectedTypes) {
     const { t, classes } = this.props;
     const { actionsInputs } = this.state;
@@ -1513,6 +1551,7 @@ class DataTableToolBar extends Component {
       case 'incident_response_types_ov':
       case 'request_for_information_types_ov':
       case 'request_for_takedown_types_ov':
+      case 'indicator_type_ov':
         return (
           <Autocomplete
             disabled={disabled}
@@ -1589,6 +1628,42 @@ class DataTableToolBar extends Component {
             fullWidth={true}
             type="number"
             onChange={this.handleChangeActionInputValuesReplace.bind(this, i)}
+          />
+        );
+      case 'killChains':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            multiple={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchKillChains.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.killChains}
+            onInputChange={this.searchKillChains.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon} style={{ color: option.color }}>
+                  <ItemIcon type="Kill-Chain-Phase" />
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
           />
         );
       default:
