@@ -147,7 +147,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
 
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security: Policies | Settings'));
+  setTitle(t_i18n('Policies | Security | Settings'));
   const handleSubmitField = (name: string, value: string | string[] | Option | null) => {
     policiesValidation()
       .validateAt(name, { [name]: value })
