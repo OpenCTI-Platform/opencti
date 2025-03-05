@@ -414,7 +414,7 @@ class CaseRftKnowledgeComponent extends Component {
                     return (
                       <CaseRftKnowledgeCorrelation
                         data={props.caseRft}
-                        graphData={props.caseRft}
+                        id={caseData.id}
                       />
                     );
                   }
