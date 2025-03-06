@@ -1,6 +1,9 @@
 import { INPUT_LABELS } from '../../schema/general';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 
+// special filter values
+export const ME_FILTER_VALUE = '@me';
+
 // Resolved-Filters
 // These require special handling when comparing to a stix object as they need to be resolved before comparison
 // for instance, a filter on label would be { key: 'objectLabel', values: ["some-internal_id-for-a-label"], ... }

@@ -11,6 +11,7 @@ import {
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
   INSTANCE_REGARDING_OF,
+  ME_FILTER_VALUE,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
@@ -26,6 +27,7 @@ import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
 import { isEmptyField } from '../../database/utils';
 import { isValidDate } from '../../schema/schemaUtils';
+import type { AuthUser } from '../../types/user';
 
 //----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
@@ -315,4 +317,22 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
 
   // nothing to convert
   return filterGroup;
+};
+
+export const replaceMeValuesInFilters = (user: AuthUser, filterGroup: FilterGroup) => {
+  const filtersResult = { ...filterGroup };
+  const filterKeysWithMeValue = ['objectAssignee', 'objectParticipant', 'creator_id'];
+  filtersResult.filters.forEach((filter) => {
+    const { key } = filter;
+    const arrayKeys = Array.isArray(key) ? key : [key];
+    if (arrayKeys.some((filterKey) => filterKeysWithMeValue.includes(filterKey))) {
+      // replace ME_FILTER_VALUE with the id of the user
+      if (filter.values.includes(ME_FILTER_VALUE)) {
+        // eslint-disable-next-line no-param-reassign
+        filter.values = filter.values.map((v) => (v === ME_FILTER_VALUE ? user.id : v));
+      }
+    }
+  });
+  filtersResult.filterGroups.forEach((fg) => replaceMeValuesInFilters(user, fg));
+  return filtersResult;
 };

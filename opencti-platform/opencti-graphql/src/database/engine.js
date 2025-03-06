@@ -139,7 +139,7 @@ import {
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { checkAndConvertFilters, isFilterGroupNotEmpty, replaceMeValuesInFilters } from '../utils/filtering/filtering-utils';
 import {
   ALIAS_FILTER,
   complexConversionFilterKeys,
@@ -2961,7 +2961,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
   } : filters;
   // Handle filters
   if (isFilterGroupNotEmpty(completeFilters)) {
-    const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
+    const filtersWithMeValuesReplaced = replaceMeValuesInFilters(user, completeFilters);
+    const finalFilters = await completeSpecialFilterKeys(context, user, filtersWithMeValuesReplaced);
     const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);
