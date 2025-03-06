@@ -10,6 +10,7 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  filterKeysWithMeValue,
   INSTANCE_REGARDING_OF,
   ME_FILTER_VALUE,
   MEMBERS_GROUP_FILTER,
@@ -321,7 +322,6 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
 
 export const replaceMeValuesInFilters = (user: AuthUser, filterGroup: FilterGroup) => {
   const filtersResult = { ...filterGroup };
-  const filterKeysWithMeValue = ['objectAssignee', 'objectParticipant', 'creator_id'];
   filtersResult.filters.forEach((filter) => {
     const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];

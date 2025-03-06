@@ -35,7 +35,7 @@ import { fetchQuery } from '../../relay/environment';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
-import { contextFilters, entityTypesFilters } from './filtersUtils';
+import { contextFilters, entityTypesFilters, ME_FILTER_LABEL, ME_FILTER_VALUE } from './filtersUtils';
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 
@@ -240,6 +240,13 @@ const workspacesQuery = graphql`
 `;
 
 export type EntityValue = OptionValue;
+
+const meEntity = {
+  label: ME_FILTER_LABEL,
+  value: ME_FILTER_VALUE,
+  type: 'User',
+  color: 'red',
+};
 
 const useSearchEntities = ({
   availableEntityTypes,
@@ -476,6 +483,9 @@ const useSearchEntities = ({
             group: n?.node.entity_type,
           }));
           unionSetEntities(key, membersEntities);
+          if (entityTypes.includes('User')) { // add @me filter value
+            unionSetEntities(key, [meEntity]);
+          }
           const membersSystems = (
             (data as ObjectAssigneeFieldMembersSearchQuery$data)?.systemMembers
               ?.edges ?? []
@@ -496,7 +506,7 @@ const useSearchEntities = ({
       type: string,
       data: IdentitySearchCreatorsSearchQuery$data['creators'], // this type is actually the same for the different queries we use, not only creators
     ) => {
-      const newOptions = (data?.edges ?? []).map((n) => ({
+      const newOptions: { label: string, value: string, type: string, color?: string }[] = (data?.edges ?? []).map((n) => ({
         label: n?.node.name ?? '',
         value: n?.node.id ?? '',
         type,
@@ -508,6 +518,10 @@ const useSearchEntities = ({
           value: me.id,
           type,
         });
+      }
+      // add @me value for filters with user id as values
+      if (type === 'User') {
+        newOptions.push(meEntity);
       }
 
       setCacheEntities({ ...cacheEntities, [key]: newOptions });
@@ -563,7 +577,7 @@ const useSearchEntities = ({
               .toPromise()
               .then((response) => {
                 const data = response as ObjectAssigneeFieldAssigneesSearchQuery$data;
-                buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.assignees);
+                buildCachedOptionsFromGenericFetchResponse(filterKey, 'User', data?.assignees);
               });
           }
           break;
@@ -602,7 +616,7 @@ const useSearchEntities = ({
               .toPromise()
               .then((response) => {
                 const data = response as IdentitySearchCreatorsSearchQuery$data;
-                buildCachedOptionsFromGenericFetchResponse(filterKey, 'Individual', data?.creators);
+                buildCachedOptionsFromGenericFetchResponse(filterKey, 'User', data?.creators);
               });
           }
           break;

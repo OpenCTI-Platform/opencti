@@ -37,6 +37,10 @@ export const emptyFilterGroup = {
 export const SELF_ID = 'SELF_ID';
 export const SELF_ID_VALUE = 'CURRENT ENTITY';
 
+export const ME_FILTER_LABEL = 'ME';
+export const ME_FILTER_VALUE = '@me';
+const filterKeysWithMeValue = ['objectAssignee', 'objectParticipant', 'contextCreator', 'creator_id', 'contextEntityId', 'members_user'];
+
 // 'within' operator filter constants
 export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
 
