@@ -247,6 +247,7 @@ const typesWithRftTypes = ['Case-Rft'];
 const typesWithDetection = ['Indicator'];
 const typesWithKillChains = ['Indicator'];
 const typesWithIndicatorTypes = ['Indicator'];
+const typesWithPlateforms = ['Indicator'];
 
 const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
 const notShareableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
@@ -365,6 +366,7 @@ class DataTableToolBar extends Component {
         request_for_information_types_ov: [],
         request_for_takedown_types_ov: [],
         indicator_type_ov: [],
+        platforms_ov: [],
       },
       navOpen: localStorage.getItem('navOpen') === 'true',
       assignees: [],
@@ -498,6 +500,7 @@ class DataTableToolBar extends Component {
       request_for_information_types_ov: 'information_types',
       request_for_takedown_types_ov: 'takedown_types',
       indicator_type_ov: 'indicator_type',
+      platforms_ov: 'x_mitre_platforms',
     };
 
     const actions = actionsInputs.map((n) => {
@@ -840,6 +843,7 @@ class DataTableToolBar extends Component {
       (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
       checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Kill chains'), value: 'killChainPhases' },
       checkTypes(typesWithIndicatorTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Indicator Types'), value: 'indicator_type_ov' },
+      checkTypes(typesWithPlateforms) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Plateforms'), value: 'platforms_ov' },
       ...(actionsInputs[i]?.type === 'REPLACE' ? [
         { label: t('Author'), value: 'created-by' },
         { label: t('Confidence'), value: 'confidence' },
@@ -1562,6 +1566,7 @@ class DataTableToolBar extends Component {
       case 'request_for_information_types_ov':
       case 'request_for_takedown_types_ov':
       case 'indicator_type_ov':
+      case 'platforms_ov':
         return (
           <Autocomplete
             disabled={disabled}
