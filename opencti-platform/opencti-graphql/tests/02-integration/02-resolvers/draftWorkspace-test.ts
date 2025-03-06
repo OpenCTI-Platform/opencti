@@ -437,7 +437,7 @@ describe('Drafts workspace resolver testing', () => {
     expect(bundleData.objects[0].extensions[STIX_EXT_OCTI].files[0].data).toBeDefined();
 
     // Validate draft, verify work result and that draft was correctly deleted
-    const validateResult = await queryAsAdmin({
+    const validateResult = await adminQuery({
       query: VALIDATE_DRAFT_WORKSPACE_QUERY,
       variables: { id: addedDraftId },
     });
@@ -446,7 +446,7 @@ describe('Drafts workspace resolver testing', () => {
     expect(validateResult.data?.draftWorkspaceValidate.connector.id).toEqual(DRAFT_VALIDATION_CONNECTOR_ID);
 
     // Verify that draft still exists, but that the draft is in validated state.
-    const draftWorkspaceResult = await queryAsAdmin({
+    const draftWorkspaceResult = await adminQuery({
       query: READ_DRAFT_WORKSPACE_QUERY,
       variables: { id: addedDraftId }
     });
