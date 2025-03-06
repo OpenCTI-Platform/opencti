@@ -65,7 +65,6 @@ const ImportFilesOptions = ({
             label={t_i18n('Validation mode')}
             fullWidth={true}
             containerstyle={{ marginTop: 20, width: '100%' }}
-            setFieldValue={optionsFormikContext.setFieldValue}
           >
             <MenuItem
               key={'workbench'}
