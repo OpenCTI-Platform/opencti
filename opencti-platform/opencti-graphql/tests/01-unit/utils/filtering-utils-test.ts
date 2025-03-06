@@ -262,7 +262,7 @@ describe('Filtering utils', () => {
         },
       ],
     } as FilterGroup;
-    const finalFilter = replaceMeValuesInFilters({ id: user_id, name: 'My user' } as AuthUser, filterGroup);
+    const finalFilter = replaceMeValuesInFilters(filterGroup, user_id);
     expect(finalFilter).toEqual(expectedFilter);
   });
 });
