@@ -191,9 +191,9 @@ const DashboardRelationshipsViz = ({
           height={undefined} // because calling js component in ts
           title={undefined} // because calling js component in ts
           field={undefined} // because calling js component in ts
-          withoutTitle={false} // because calling js component in ts
-          fromId={false} // because calling js component in ts
-          relationshipType={false} // because calling js component in ts
+          withoutTitle={undefined} // because calling js component in ts
+          fromId={undefined} // because calling js component in ts
+          relationshipType={undefined} // because calling js component in ts
         />
       );
     case 'radar':
