@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { addFilter, convertRelationRefsFilterKeys, checkFilterGroupSyntax, replaceFilterKey, replaceMeValuesInFilters } from '../../../src/utils/filtering/filtering-utils';
 import type { FilterGroup } from '../../../src/generated/graphql';
 import { ME_FILTER_VALUE } from '../../../src/utils/filtering/filtering-constants';
-import type { AuthUser } from '../../../src/types/user';
 
 describe('Filtering utils', () => {
   it('should check a filter syntax', async () => {
