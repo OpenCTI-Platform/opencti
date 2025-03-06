@@ -6,6 +6,9 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useTheme } from '@mui/styles';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import CircularProgress from '@mui/material/CircularProgress';
+import { Badge } from '@mui/material';
+import { CheckCircleOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { hexToRGB } from '../../../utils/Colors';
@@ -15,30 +18,30 @@ import type { Theme } from '../../../components/Theme';
 
 const DraftProcessingStatus = () => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const [displayProcesses, setDisplayProcesses] = useState(false);
   const [tabValue, setTabValue] = useState<string>('Works');
   const draftContext = useDraftContext();
   const currentDraftId = draftContext ? draftContext.id : '';
   const currentDraftProcessingCount = draftContext?.processingCount ?? 0;
-  const currentDraftProcessingStatus = currentDraftProcessingCount > 0 ? t_i18n('Processing') : t_i18n('Ready');
-  const draftColor = getDraftModeColor(theme);
-  const currentDraftProcessingStatusColor = currentDraftProcessingCount > 0 ? draftColor : theme.palette.success.main;
-  const currentProgressLabel = currentDraftProcessingCount > 0 ? `${currentDraftProcessingStatus} (${currentDraftProcessingCount})` : currentDraftProcessingStatus;
+  const isCurrentDraftProcessing = currentDraftProcessingCount > 0;
 
   return (
     <>
-      <Chip
-        onClick={() => { setDisplayProcesses(true); }}
-        variant="outlined"
-        label={currentProgressLabel}
-        style={{
-          color: currentDraftProcessingStatusColor,
-          borderColor: currentDraftProcessingStatusColor,
-          backgroundColor: hexToRGB(currentDraftProcessingStatusColor),
-          cursor: 'pointer',
-        }}
-      />
+      {!isCurrentDraftProcessing && (
+      <CheckCircleOutlined color="success"/>
+      )}
+      {isCurrentDraftProcessing && (
+      <Badge
+        badgeContent={currentDraftProcessingCount}
+        color="warning"
+      >
+        <CircularProgress
+          onClick={() => { setDisplayProcesses(true); }}
+          variant={'indeterminate'}
+          size={35}
+          style={{ cursor: 'pointer' }}
+        />
+      </Badge>)}
       <Drawer
         title={t_i18n('Draft processes')}
         open={displayProcesses}

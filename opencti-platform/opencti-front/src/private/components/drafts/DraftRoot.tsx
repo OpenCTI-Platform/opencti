@@ -18,6 +18,8 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import CircularProgress from '@mui/material/CircularProgress';
+import { CheckCircleOutlined } from '@mui/icons-material';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -70,8 +72,6 @@ const draftRootFragment = graphql`
 const RootDraftComponent = ({ draftId, queryRef }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
-  const draftColor = getDraftModeColor(theme);
   const draftContext = useDraftContext();
 
   const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
@@ -84,8 +84,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
   const currentProgress = validationWork?.tracking?.import_processed_number ?? '0';
   const requiredProgress = validationWork?.tracking?.import_expected_number ?? '0';
   const isValidating = validationWork?.status === 'wait' || validationWork?.status === 'progress';
-  const validationLabel = isValidating ? `${t_i18n('Ingesting')}: ${currentProgress}/${requiredProgress}` : t_i18n('Completed');
-  const validationColor = isValidating ? draftColor : theme.palette.success.main;
+  const validationProgress = requiredProgress !== 0 ? Math.floor(100 * (currentProgress / requiredProgress)) : 0;
 
   // switch to draft
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
@@ -116,7 +115,7 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
           { label: name, current: true },
         ]}
         />
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <Tooltip title={name}>
             <Typography
               variant="h1"
@@ -128,16 +127,18 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
               {truncate(name, 80)}
             </Typography>
           </Tooltip>
-          <Chip
-            variant="outlined"
-            label={validationLabel}
-            style={{
-              marginBottom: 10,
-              color: validationColor,
-              borderColor: validationColor,
-              backgroundColor: hexToRGB(validationColor),
-            }}
-          />
+          {!isValidating && (
+          <CheckCircleOutlined color="success"/>
+          )}
+          {isValidating && (
+          <Tooltip title={t_i18n('Validation progress')}>
+            <CircularProgress
+              variant={'determinate'}
+              value={20}
+              color={'primary'}
+            />
+          </Tooltip>
+          )}
         </div>
       </>
       )}

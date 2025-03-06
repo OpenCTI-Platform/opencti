@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  graphql,
-  PreloadedQuery,
-  useFragment,
-  usePreloadedQuery,
-  useQueryLoader,
-  UseQueryLoaderLoadQueryOptions
-} from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader, UseQueryLoaderLoadQueryOptions } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import DraftBlock from '@components/common/draft/DraftBlock';
@@ -18,22 +11,18 @@ import Dialog from '@mui/material/Dialog';
 import DraftProcessingStatus from '@components/drafts/DraftProcessingStatus';
 import Alert from '@mui/material/Alert';
 import { AlertTitle } from '@mui/material';
+import { ContainerMappingContent_container$data } from '@components/common/containers/__generated__/ContainerMappingContent_container.graphql';
+import {
+  ContainerStixCoreObjectsSuggestedMappingQuery,
+  ContainerStixCoreObjectsSuggestedMappingQuery$variables,
+} from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql';
+import { containerStixCoreObjectsSuggestedMappingQuery } from '@components/common/containers/ContainerStixCoreObjectsSuggestedMapping';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { truncate } from '../../../utils/String';
 import { MESSAGING$ } from '../../../relay/environment';
 import Transition from '../../../components/Transition';
-import {
-  ContainerMappingContent_container$data
-} from "@components/common/containers/__generated__/ContainerMappingContent_container.graphql";
-import {
-  ContainerStixCoreObjectsSuggestedMappingQuery,
-  ContainerStixCoreObjectsSuggestedMappingQuery$variables
-} from "@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql";
-import {
-  containerStixCoreObjectsSuggestedMappingQuery
-} from "@components/common/containers/ContainerStixCoreObjectsSuggestedMapping";
 
 const draftContextBannerMeUserFragment = graphql`
   fragment DraftContextBanner_data on DraftWorkspace {
@@ -144,7 +133,7 @@ const DraftContextBanner = () => {
   return (
     <div style={{ padding: '0 12px', flex: 1 }}>
       <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-        <div>
+        <div style={{ padding: '0 12px' }}>
           <DraftProcessingStatus/>
         </div>
         <div style={{ padding: '0 12px', flex: 1 }}>
