@@ -10,7 +10,9 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  filterKeysWithMeValue,
   INSTANCE_REGARDING_OF,
+  ME_FILTER_VALUE,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
@@ -271,20 +273,42 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
 };
 
 /**
+ * Replace @me by the user id in filter whose values can contain user ids
+ */
+export const replaceMeValuesInFilters = (filterGroup: FilterGroup, userId: string) => {
+  const filtersResult = { ...filterGroup };
+  filtersResult.filters.forEach((filter) => {
+    const { key } = filter;
+    const arrayKeys = Array.isArray(key) ? key : [key];
+    if (arrayKeys.some((filterKey) => filterKeysWithMeValue.includes(filterKey))) {
+      // replace ME_FILTER_VALUE with the id of the user
+      if (filter.values.includes(ME_FILTER_VALUE)) {
+        // eslint-disable-next-line no-param-reassign
+        filter.values = filter.values.map((v) => (v === ME_FILTER_VALUE ? userId : v));
+      }
+    }
+  });
+  filtersResult.filterGroups.forEach((fg) => replaceMeValuesInFilters(fg, userId));
+  return filtersResult;
+};
+
+/**
  * Go through all keys in a filter group to:
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
  */
-export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean } = {}) => {
-  if (!filterGroup) {
+export const checkAndConvertFilters = (inputFilterGroup: FilterGroup | null | undefined, userId: string, opts: { noFiltersChecking?: boolean } = {}) => {
+  if (!inputFilterGroup) {
     return undefined;
   }
   // 00. detect filters in the old format or in a bad format
-  checkFilterGroupSyntax(filterGroup);
+  checkFilterGroupSyntax(inputFilterGroup);
+  // 01. replace special values
+  const filterGroup = replaceMeValuesInFilters(inputFilterGroup, userId);
   const { noFiltersChecking = false } = opts;
-  // 01. check filters keys exist in schema
   // TODO improvement: check filters keys correspond to the entity types if types is given
   if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
+    // 02. check filters keys exist in schema
     const keys = extractFilterKeys(filterGroup)
       .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
     if (keys.length > 0) {
@@ -309,7 +333,7 @@ export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefin
       }
     }
 
-    // 02. translate the filter keys on relation refs and return the converted filters
+    // 03. translate the filter keys on relation refs and return the converted filters
     return convertRelationRefsFilterKeys(filterGroup);
   }
 
