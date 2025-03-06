@@ -1,20 +1,16 @@
 import React, { useState } from 'react';
-import Chip from '@mui/material/Chip';
 import Drawer from '@components/common/drawer/Drawer';
 import Alert from '@mui/material/Alert';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import { useTheme } from '@mui/styles';
-import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Badge } from '@mui/material';
 import { CheckCircleOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
-import { hexToRGB } from '../../../utils/Colors';
 import DraftWorks from './DraftWorks';
 import DraftTasks from './DraftTasks';
-import type { Theme } from '../../../components/Theme';
 
 const DraftProcessingStatus = () => {
   const { t_i18n } = useFormatter();
@@ -26,22 +22,26 @@ const DraftProcessingStatus = () => {
   const isCurrentDraftProcessing = currentDraftProcessingCount > 0;
 
   return (
-    <>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
       {!isCurrentDraftProcessing && (
-      <CheckCircleOutlined color="success"/>
+        <Tooltip title={t_i18n('Processing status')}>
+          <CheckCircleOutlined color="success"/>
+        </Tooltip>
       )}
       {isCurrentDraftProcessing && (
-      <Badge
-        badgeContent={currentDraftProcessingCount}
-        color="warning"
-      >
-        <CircularProgress
-          onClick={() => { setDisplayProcesses(true); }}
-          variant={'indeterminate'}
-          size={35}
-          style={{ cursor: 'pointer' }}
-        />
-      </Badge>)}
+        <Tooltip title={t_i18n('Processing status')}>
+          <Badge
+            badgeContent={currentDraftProcessingCount}
+            color="warning"
+          >
+            <CircularProgress
+              onClick={() => { setDisplayProcesses(true); }}
+              variant={'indeterminate'}
+              size={25}
+              style={{ cursor: 'pointer' }}
+            />
+          </Badge>
+        </Tooltip>)}
       <Drawer
         title={t_i18n('Draft processes')}
         open={displayProcesses}
@@ -57,7 +57,7 @@ const DraftProcessingStatus = () => {
           {tabValue === 'Tasks' && (<DraftTasks draftId={currentDraftId}/>)}
         </>
       </Drawer>
-    </>
+    </div>
   );
 };
 

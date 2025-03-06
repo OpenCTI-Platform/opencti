@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { DraftEntitiesLinesPaginationQuery, DraftEntitiesLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftEntitiesLinesPaginationQuery.graphql';
 import { useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
@@ -221,6 +221,46 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     },
   };
 
+  let createButton: ReactNode;
+  if (!isReadOnly) {
+    createButton = entitiesType === 'Stix-Cyber-Observable' ? (
+      <>
+        <StixCyberObservableCreation
+          display={open}
+          contextual={false}
+          inputValue={searchTerm}
+          paginationKey="Pagination_draftWorkspaceEntities"
+          paginationOptions={queryPaginationOptions}
+          speeddial={false}
+          open={openCreateObservable}
+          controlledDialStyles={{ marginLeft: 1 }}
+          handleClose={handleCloseCreateObservable}
+        />
+      </>
+    ) : (
+      <>
+        <StixDomainObjectCreation
+          display={true}
+          inputValue={searchTerm}
+          paginationKey="Pagination_draftWorkspaceEntities"
+          paginationOptions={queryPaginationOptions}
+          speeddial={false}
+          fabReplaced={isFABReplaced}
+          controlledDialStyles={{ marginLeft: 1 }}
+          open={openCreateEntity}
+          handleClose={handleCloseCreateEntity}
+          onCompleted={() => setOpenCreateEntity(false)}
+          stixDomainObjectTypes={entitiesType}
+          creationCallback={undefined}
+          confidence={undefined}
+          defaultCreatedBy={undefined}
+          isFromBulkRelation={undefined}
+          defaultMarkingDefinitions={undefined}
+        />
+      </>
+    );
+  }
+
   return (
     <span data-testid="draft-entities-page">
       {queryRef && (
@@ -235,44 +275,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           entityTypes={[entitiesType]}
           removeFromDraftEnabled
           disableLineSelection={isReadOnly}
-          createButton={
-            entitiesType === 'Stix-Cyber-Observable' ? (
-              <>
-                <StixCyberObservableCreation
-                  display={open}
-                  contextual={false}
-                  inputValue={searchTerm}
-                  paginationKey="Pagination_draftWorkspaceEntities"
-                  paginationOptions={queryPaginationOptions}
-                  speeddial={false}
-                  open={openCreateObservable}
-                  controlledDialStyles={{ marginLeft: 1 }}
-                  handleClose={handleCloseCreateObservable}
-                />
-              </>
-            ) : (
-              <>
-                <StixDomainObjectCreation
-                  display={true}
-                  inputValue={searchTerm}
-                  paginationKey="Pagination_draftWorkspaceEntities"
-                  paginationOptions={queryPaginationOptions}
-                  speeddial={false}
-                  fabReplaced={isFABReplaced}
-                  controlledDialStyles={{ marginLeft: 1 }}
-                  open={openCreateEntity}
-                  handleClose={handleCloseCreateEntity}
-                  onCompleted={() => setOpenCreateEntity(false)}
-                  stixDomainObjectTypes={entitiesType}
-                  creationCallback={undefined}
-                  confidence={undefined}
-                  defaultCreatedBy={undefined}
-                  isFromBulkRelation={undefined}
-                  defaultMarkingDefinitions={undefined}
-                />
-              </>
-            )
-          }
+          createButton={createButton}
         />
       )}
     </span>

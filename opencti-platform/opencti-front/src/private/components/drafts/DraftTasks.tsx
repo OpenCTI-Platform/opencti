@@ -128,26 +128,30 @@ const DraftTasks : FunctionComponent<DraftTasksProps> = ({ draftId }) => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     initiator: {
+      id: 'Initiator',
       label: 'Initiator',
       percentWidth: 25,
-      isSortable: true,
+      isSortable: false,
       render: ({ initiator }) => defaultRender(initiator.representative.main),
     },
     created_at: {
       percentWidth: 25,
       isSortable: true,
+      render: ({ created_at }, h) => defaultRender(h.nsdt(created_at)),
     },
-    last_execution_date: {
-      label: 'Last execution',
+    task_expected_number: {
+      id: 'Impacted elements',
+      label: 'Impacted elements',
       percentWidth: 25,
-      isSortable: true,
-      render: ({ last_execution_date }, h) => defaultRender(h.fd(last_execution_date)),
+      isSortable: false,
+      render: ({ task_expected_number }) => defaultRender(task_expected_number),
     },
     completed: {
+      id: 'Completed',
       label: 'Completed',
       percentWidth: 25,
       isSortable: false,
-      render: ({ completed }) => defaultRender(completed),
+      render: ({ completed }, h) => defaultRender(completed ? h.t_i18n('Yes') : h.t_i18n('No')),
     },
   };
 

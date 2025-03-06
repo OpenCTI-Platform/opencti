@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader, UseQueryLoaderLoadQueryOptions } from 'react-relay';
+import React, { FunctionComponent, Suspense, useEffect, useState } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import DraftBlock from '@components/common/draft/DraftBlock';
@@ -11,20 +11,22 @@ import Dialog from '@mui/material/Dialog';
 import DraftProcessingStatus from '@components/drafts/DraftProcessingStatus';
 import Alert from '@mui/material/Alert';
 import { AlertTitle } from '@mui/material';
-import { ContainerMappingContent_container$data } from '@components/common/containers/__generated__/ContainerMappingContent_container.graphql';
-import {
-  ContainerStixCoreObjectsSuggestedMappingQuery,
-  ContainerStixCoreObjectsSuggestedMappingQuery$variables,
-} from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingQuery.graphql';
-import { containerStixCoreObjectsSuggestedMappingQuery } from '@components/common/containers/ContainerStixCoreObjectsSuggestedMapping';
+import { interval } from 'rxjs';
+import { DraftContextBannerQuery } from '@components/drafts/__generated__/DraftContextBannerQuery.graphql';
+import { DraftContextBanner_data$key } from '@components/drafts/__generated__/DraftContextBanner_data.graphql';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { truncate } from '../../../utils/String';
 import { MESSAGING$ } from '../../../relay/environment';
 import Transition from '../../../components/Transition';
+import { TEN_SECONDS } from '../../../utils/Time';
+import Loader, { LoaderVariant } from '../../../components/Loader';
+import ErrorNotFound from '../../../components/ErrorNotFound';
 
-const draftContextBannerMeUserFragment = graphql`
+const interval$ = interval(TEN_SECONDS * 3);
+
+const draftContextBannerFragment = graphql`
   fragment DraftContextBanner_data on DraftWorkspace {
       id
       name
@@ -63,12 +65,13 @@ export const draftContextBannerValidateDraftMutation = graphql`
     }
   }
 `;
+
 interface DraftContextBannerComponentProps {
-  queryRef: PreloadedQuery<DraftContextBannerQuery>
-  loadQuery: (variables: DraftContextBannerQuery$variables, options?: (UseQueryLoaderLoadQueryOptions | undefined)) => void
+  queryRef: PreloadedQuery<DraftContextBannerQuery>;
+  refetch: () => void;
 }
 
-const DraftContextBanner = () => {
+const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponentProps> = ({ queryRef, refetch }) => {
   const { t_i18n } = useFormatter();
   const [commitExitDraft] = useApiMutation(draftContextBannerMutation);
   const [commitValidateDraft] = useApiMutation(draftContextBannerValidateDraftMutation);
@@ -77,24 +80,13 @@ const DraftContextBanner = () => {
   const navigate = useNavigate();
   const draftContext = useDraftContext();
 
-  // const draftContextData = usePreloadedQuery<DraftContextBannerQuery>(
-  //     draftContextBannerQuery,
-  //     queryRef,
-  // );
-  const currentDraftContextName = draftContext?.name ?? '';
-  const currentlyProcessing = draftContext?.processingCount && draftContext.processingCount > 0;
+  const { draftWorkspace } = usePreloadedQuery<DraftContextBannerQuery>(draftContextBannerQuery, queryRef);
+  if (!draftWorkspace) {
+    return (<ErrorNotFound />);
+  }
 
-  // // Refetch data every 30s
-  // useEffect(() => {
-  //   const refetchDraftContext = () => {
-  //       loadQuery(
-  //           { id: draftContext?.id },
-  //           { fetchPolicy: 'store-and-network' },
-  //       );
-  //   };
-  //   const interval = setInterval(refetchDraftContext, 2000);
-  //   return () => clearInterval(interval);
-  // }, [loadQuery, containerData, askingSuggestion]);
+  const { name, processingCount } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
+  const currentlyProcessing = processingCount > 0;
 
   const handleExitDraft = () => {
     commitExitDraft({
@@ -130,6 +122,16 @@ const DraftContextBanner = () => {
     }
   };
 
+  useEffect(() => {
+    // Refresh
+    const subscription = interval$.subscribe(() => {
+      refetch();
+    });
+    return function cleanup() {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <div style={{ padding: '0 12px', flex: 1 }}>
       <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
@@ -137,7 +139,7 @@ const DraftContextBanner = () => {
           <DraftProcessingStatus/>
         </div>
         <div style={{ padding: '0 12px', flex: 1 }}>
-          <DraftBlock body={truncate(currentDraftContextName, 40)}/>
+          <DraftBlock body={truncate(name, 40)}/>
         </div>
         <div>
           <Button
@@ -194,31 +196,31 @@ const DraftContextBanner = () => {
   );
 };
 
-// const DraftContextBanner = () => {
-//   const draftContext = useDraftContext();
-//   const [queryRef, loadQuery] = useQueryLoader<DraftContextBannerQuery>(
-//       draftContextBannerQuery,
-//   );
-//
-//    useEffect(() => {
-//     if (!queryRef) {
-//       loadQuery(
-//         { id: draftContext?.id },
-//         { fetchPolicy: 'store-and-network' },
-//       );
-//     }
-//   }, [queryRef]);
-//
-//   if (!queryRef) {
-//     return null;
-//   }
-//
-//   return (
-//       <DraftContextBannerComponent
-//           queryRef={queryRef}
-//           loadQuery={loadQuery}
-//       />
-//   );
-// };
+const DraftContextBanner = () => {
+  const draftContext = useDraftContext();
+  const [queryRef, loadQuery] = useQueryLoader<DraftContextBannerQuery>(draftContextBannerQuery);
+
+  if (!draftContext) {
+    return null;
+  }
+
+  useEffect(() => {
+    loadQuery({ id: draftContext.id }, { fetchPolicy: 'store-and-network' });
+  }, []);
+
+  const refetch = React.useCallback(() => {
+    loadQuery({ id: draftContext.id }, { fetchPolicy: 'store-and-network' });
+  }, [queryRef]);
+
+  return (
+    <>
+      {queryRef && (
+        <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <DraftContextBannerComponent queryRef={queryRef} refetch={refetch} />
+        </Suspense>
+      )}
+    </>
+  );
+};
 
 export default DraftContextBanner;

@@ -52,18 +52,27 @@ DraftWorksComponentProps
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 50,
+      percentWidth: 48,
       isSortable: false,
+    },
+    connector: {
+      id: 'Connector',
+      label: 'Connector',
+      percentWidth: 20,
+      isSortable: false,
+      render: ({ connector }) => defaultRender(connector.name),
     },
     timestamp: {
+      id: 'Timestamp',
       label: 'Timestamp',
-      percentWidth: 25,
+      percentWidth: 20,
       isSortable: false,
-      render: ({ timestamp }, h) => defaultRender(h.fd(timestamp)),
+      render: ({ timestamp }, h) => defaultRender(h.nsdt(timestamp)),
     },
     status: {
+      id: 'Status',
       label: 'Status',
-      percentWidth: 35,
+      percentWidth: 12,
       isSortable: false,
       render: ({ status }) => (
         <Chip
@@ -93,6 +102,7 @@ DraftWorksComponentProps
         dataColumns={dataColumns}
         data={works}
         storageKey={`${LOCAL_STORAGE_KEY}-${id}`}
+        isLocalStorageEnabled={false}
         globalCount={works ? works.length : 0}
         variant={DataTableVariant.inline}
         disableNavigation

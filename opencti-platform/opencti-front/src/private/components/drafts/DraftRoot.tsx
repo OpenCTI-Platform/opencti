@@ -5,7 +5,6 @@ import React, { Suspense, useEffect } from 'react';
 import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
-import { useTheme } from '@mui/styles';
 import Tab from '@mui/material/Tab';
 import DraftEntities from '@components/drafts/DraftEntities';
 import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
@@ -13,16 +12,14 @@ import { draftContextBannerMutation } from '@components/drafts/DraftContextBanne
 import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
 import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.graphql';
-import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
+import { graphql, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
-import Chip from '@mui/material/Chip';
-import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import CircularProgress from '@mui/material/CircularProgress';
 import { CheckCircleOutlined } from '@mui/icons-material';
+import { interval } from 'rxjs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import { getCurrentTab } from '../../../utils/utils';
@@ -32,7 +29,9 @@ import { RelayError } from '../../../relay/relayTypes';
 import Import from '../data/import/Import';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { truncate } from '../../../utils/String';
-import { hexToRGB } from '../../../utils/Colors';
+import { TEN_SECONDS } from '../../../utils/Time';
+
+const interval$ = interval(TEN_SECONDS);
 
 const draftRootQuery = graphql`
   query DraftRootQuery($id: String!) {
@@ -69,7 +68,7 @@ const draftRootFragment = graphql`
   }
 `;
 
-const RootDraftComponent = ({ draftId, queryRef }) => {
+const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
@@ -106,6 +105,16 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
     }
   }, [commitSwitchToDraft]);
 
+  useEffect(() => {
+    // Refresh
+    const subscription = interval$.subscribe(() => {
+      refetch();
+    });
+    return function cleanup() {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <>
       {isDraftReadOnly && (
@@ -128,13 +137,16 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
             </Typography>
           </Tooltip>
           {!isValidating && (
-          <CheckCircleOutlined color="success"/>
+          <Tooltip title={t_i18n('Completed')}>
+            <CheckCircleOutlined color="success"/>
+          </Tooltip>
           )}
           {isValidating && (
           <Tooltip title={t_i18n('Validation progress')}>
             <CircularProgress
               variant={'determinate'}
-              value={20}
+              size={20}
+              value={validationProgress}
               color={'primary'}
             />
           </Tooltip>
@@ -238,12 +250,20 @@ const RootDraftComponent = ({ draftId, queryRef }) => {
 
 const RootDraft = () => {
   const { draftId } = useParams() as { draftId: string };
-  const queryRef = useQueryLoading<DraftRootQuery>(draftRootQuery, { id: draftId });
+  const [queryRef, loadQuery] = useQueryLoader<DraftRootQuery>(draftRootQuery);
+  useEffect(() => {
+    loadQuery({ id: draftId }, { fetchPolicy: 'store-and-network' });
+  }, []);
+
+  const refetch = React.useCallback(() => {
+    loadQuery({ id: draftId }, { fetchPolicy: 'store-and-network' });
+  }, [queryRef]);
+
   return (
     <>
       {queryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootDraftComponent draftId={draftId} queryRef={queryRef} />
+          <RootDraftComponent draftId={draftId} queryRef={queryRef} refetch={refetch} />
         </Suspense>
       )}
     </>
