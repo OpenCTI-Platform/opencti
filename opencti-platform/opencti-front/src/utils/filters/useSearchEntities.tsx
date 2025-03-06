@@ -35,7 +35,7 @@ import { fetchQuery } from '../../relay/environment';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
-import { contextFilters, entityTypesFilters, ME_FILTER_LABEL, ME_FILTER_VALUE } from './filtersUtils';
+import { contextFilters, entityTypesFilters, ME_FILTER_VALUE } from './filtersUtils';
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 
@@ -242,7 +242,7 @@ const workspacesQuery = graphql`
 export type EntityValue = OptionValue;
 
 const meEntity = {
-  label: ME_FILTER_LABEL,
+  label: ME_FILTER_VALUE,
   value: ME_FILTER_VALUE,
   type: 'User',
   color: 'red',

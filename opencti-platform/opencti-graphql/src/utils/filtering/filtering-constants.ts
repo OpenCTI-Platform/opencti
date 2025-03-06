@@ -158,7 +158,6 @@ export const specialFilterKeysWhoseValueToResolve = [
 
 // special filter values
 export const ME_FILTER_VALUE = '@me';
-export const ME_FILTER_LABEL = 'ME';
 export const filterKeysWithMeValue = [
   ASSIGNEE_FILTER,
   PARTICIPANT_FILTER,
