@@ -6,7 +6,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
 import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
-import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -19,6 +18,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -122,18 +122,6 @@ const StixSightingRelationshipCreationForm = ({
   const isMultipleFrom = fromEntities.length > 1;
   const isMultipleTo = toEntities.length > 1;
 
-  const defaultName = (entity) => (entity ? truncate(
-    // eslint-disable-next-line no-nested-ternary
-    (entity.parent_types.includes('Stix-Cyber-Observable')
-      ? entity.observable_value
-      : entity.entity_type === 'stix_relation'
-        ? `${entity.from.name} ${String.fromCharCode(8594)} ${entity.to.name}`
-        : entity.name),
-    20,
-  )
-    : undefined
-  );
-
   const initialValues = useDefaultValues(
     STIX_SIGHTING_TYPE,
     {
@@ -193,7 +181,7 @@ const StixSightingRelationshipCreationForm = ({
                   <span className={classes.name}>
                     {isMultipleFrom
                       ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                      : (defaultName(fromEntity))}
+                      : (getMainRepresentative(fromEntity))}
                   </span>
                 </div>
               </div>
@@ -242,7 +230,7 @@ const StixSightingRelationshipCreationForm = ({
                   <span className={classes.name}>
                     {isMultipleTo
                       ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                      : (defaultName(toEntity))}
+                      : (getMainRepresentative(toEntity))}
                   </span>
                 </div>
 
