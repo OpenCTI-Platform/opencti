@@ -27,7 +27,7 @@ describe('Filtering utils', () => {
         filterGroups: [],
       }],
     } as FilterGroup;
-    expect(() => checkFiltersValidity(filterGroup2)).toThrowError('A filter key must be defined for every filter');
+    expect(() => checkFiltersValidity(filterGroup2)).toThrowError('Incorrect filters format');
   });
   it('should check a filter syntax for filter with "within" operator', async () => {
     const filterGroup1 = {
