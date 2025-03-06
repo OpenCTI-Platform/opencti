@@ -43,7 +43,7 @@ interface DraftPopoverProps {
 
 const DraftPopover: React.FC<DraftPopoverProps> = ({
   draftId,
-    draftLocked,
+  draftLocked,
   paginationOptions,
   updater,
 }) => {
