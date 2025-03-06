@@ -60,7 +60,7 @@ import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import { Switch, FormControlLabel } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
@@ -543,7 +543,6 @@ class DataTableToolBar extends Component {
         || value === 'external-reference'
         || value === 'object-assignee'
         || value === 'object-participant'
-        || value === 'killChains'
       ) {
         actionsInputs[i] = R.assoc(
           'fieldType',
@@ -593,6 +592,17 @@ class DataTableToolBar extends Component {
       Array.isArray(value) ? value : [value],
       actionsInputs[i] || {},
     );
+    this.setState({ actionsInputs });
+  }
+
+  handleChangeSwitchInput(i, key, value) {
+    const { actionsInputs } = this.state;
+    const currentValue = actionsInputs[i] ? actionsInputs[i][key] : null;
+    if (key === 'values' && currentValue !== value) {
+      actionsInputs[i] = { ...actionsInputs[i], [key]: [String(value)] };
+    } else {
+      actionsInputs[i] = { ...actionsInputs[i], [key]: value };
+    }
     this.setState({ actionsInputs });
   }
 
@@ -1664,6 +1674,19 @@ class DataTableToolBar extends Component {
                 <div className={classes.text}>{option.label}</div>
               </li>
             )}
+          />
+        );
+      case 'x_opencti_detection':
+        return (
+          <FormControlLabel
+            control={
+              <Switch
+                onChange={(event) => this.handleChangeSwitchInput(i, 'values', event.target.checked)}
+                name={`actions-${i}-value`}
+                color="primary"
+              />
+            }
+            label={t('Value')}
           />
         );
       default:
