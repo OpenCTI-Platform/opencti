@@ -236,8 +236,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setXtmOpen({ open: false, anchorEl: null });
   };
   const handleSearch = (searchKeyword: string) => {
-    setIsNLQLoading(true);
     if (askAI && isEnterpriseEdition) {
+      setIsNLQLoading(true);
       commitMutationNLQ({
         variables: {
           search: searchKeyword,
