@@ -18,7 +18,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 const Feed = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Data sharing: CSV Feeds | Data'));
+  setTitle(t_i18n('CSV Feeds | Data sharing | Data'));
   const LOCAL_STORAGE_KEY = 'feed';
   const navigate = useNavigate();
   const location = useLocation();

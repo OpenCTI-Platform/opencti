@@ -32,7 +32,7 @@ const IngestionCsv = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Ingestion: CSV Feeds | Data'));
+  setTitle(t_i18n('CSV Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,

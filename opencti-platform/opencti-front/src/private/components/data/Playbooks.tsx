@@ -110,7 +110,7 @@ const Playbooks: FunctionComponent = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n, n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Processing: Automation | Data'));
+  setTitle(t_i18n('Automation | Processing | Data'));
 
   const initialValues = {
     searchTerm: '',

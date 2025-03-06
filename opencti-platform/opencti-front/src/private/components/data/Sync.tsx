@@ -27,7 +27,7 @@ const Sync = () => {
   const { setTitle } = useConnectedDocumentModifier();
   const { platformModuleHelpers } = useAuth();
 
-  setTitle(t_i18n('Ingestion: Remote OCTI Streams | Data'));
+  setTitle(t_i18n('Remote OCTI Streams | Ingestion | Data'));
 
   const {
     viewStorage,

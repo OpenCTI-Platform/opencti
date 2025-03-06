@@ -27,7 +27,7 @@ const Role = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security: Roles | Settings'));
+  setTitle(t_i18n('Roles | Security | Settings'));
   const params = buildViewParamsFromUrlAndStorage(
     navigate,
     location,
