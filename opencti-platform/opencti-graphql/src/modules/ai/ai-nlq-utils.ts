@@ -1,7 +1,7 @@
 import { ChatPromptTemplate, FewShotChatMessagePromptTemplate } from '@langchain/core/prompts';
 import { z } from 'zod';
 
-// TODO Cathia (pas duppliquer les keys des autres fitres indiques)
+// TODO generalize (and dont duplicate keys of filters already mentionned !)
 const FilterTypeEnum = z.enum([
   'created_at',
   'updated_at',
