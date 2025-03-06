@@ -510,7 +510,7 @@ const LeftBar = () => {
                 classes={{ root: classes.menuItem }}
               >
                 <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <DashboardOutlined />
+                  <ArchitectureOutlined />
                 </ListItemIcon>
                 {navOpen && (
                   <ListItemText

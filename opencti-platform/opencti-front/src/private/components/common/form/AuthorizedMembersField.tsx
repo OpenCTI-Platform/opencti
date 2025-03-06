@@ -278,6 +278,9 @@ const AuthorizedMembersField = ({
         }) => (
           <>
             <Alert severity="info">{accessInfoMessage}</Alert>
+            {!!draftContext && (
+            <Alert style={{ marginTop: 15 }} severity="warning">{t_i18n('Not available in draft')}</Alert>
+            )}
             {canDeactivate && (
               <Field
                 component={SwitchField}
