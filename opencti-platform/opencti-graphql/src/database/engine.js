@@ -139,7 +139,7 @@ import {
 import { convertTypeToStixType } from './stix-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { checkAndConvertFilters, isFilterGroupNotEmpty, replaceMeValuesInFilters } from '../utils/filtering/filtering-utils';
+import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
   ALIAS_FILTER,
   complexConversionFilterKeys,
@@ -2928,7 +2928,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const { ids = [], after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
   const { types = null, search = null } = options;
-  const filters = checkAndConvertFilters(options.filters, { noFiltersChecking: options.noFiltersChecking });
+  const filters = checkAndConvertFilters(options.filters, user.id, { noFiltersChecking: options.noFiltersChecking });
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
@@ -2961,8 +2961,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   } : filters;
   // Handle filters
   if (isFilterGroupNotEmpty(completeFilters)) {
-    const filtersWithMeValuesReplaced = replaceMeValuesInFilters(user, completeFilters);
-    const finalFilters = await completeSpecialFilterKeys(context, user, filtersWithMeValuesReplaced);
+    const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
     const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);
