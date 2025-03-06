@@ -57,7 +57,9 @@ const containerResolvers = {
       }
       return 'Unknown';
     },
+    // authorized_members: @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
     authorized_members: (container, _, context) => getAuthorizedMembers(context, context.user, container),
+    restricted_members: (container, _, context) => getAuthorizedMembers(context, context.user, container),
     currentUserAccessRight: (container, _, context) => getUserAccessRight(context.user, container),
     objects: (container, args, context) => objects(context, context.user, container.id, args),
     relatedContainers: (container, args, context) => relatedContainers(context, context.user, container.id, args),

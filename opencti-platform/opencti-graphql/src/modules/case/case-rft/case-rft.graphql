@@ -97,7 +97,8 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(

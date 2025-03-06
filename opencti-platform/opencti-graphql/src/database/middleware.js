@@ -3036,8 +3036,23 @@ export const getExistingEntities = async (context, user, input, type) => {
 };
 
 const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
+  /**
+  // region renaming fields
+    TODO: that or graphQL API deprecation ??
+  let rawInputRenamed = { ...rawInput };
+  if (rawInput.authorized_members) {
+    rawInputRenamed = { ...rawInputRenamed, restricted_members: rawInput.authorized_members };
+    delete rawInputRenamed.authorized_members;
+  }
+  // endregion
+
+  // region confidence control
+  const input = { ...rawInputRenamed };
+*/
+
   // region confidence control
   const input = { ...rawInput };
+
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // endregion

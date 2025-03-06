@@ -97,7 +97,8 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
-  authorized_members: [MemberAccess!]
+  restricted_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
@@ -241,7 +242,8 @@ input CaseRfiAddInput {
   update: Boolean
   information_types: [String!]
   caseTemplates: [String!]
-  authorized_members: [MemberAccessInput!]
+  authorized_members: [MemberAccessInput!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccessInput!]
 }
 
 type Mutation {

@@ -1957,6 +1957,7 @@ export type CapabilityEdge = {
 };
 
 export type Case = {
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
@@ -2004,6 +2005,7 @@ export type Case = {
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -2209,6 +2211,7 @@ export type CaseEdge = {
 
 export type CaseIncident = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseIncident';
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
@@ -2259,6 +2262,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   response_types?: Maybe<Array<Scalars['String']['output']>>;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   severity?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
@@ -2514,6 +2518,7 @@ export enum CaseIncidentsOrdering {
 
 export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseRfi';
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
@@ -2563,6 +2568,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   severity?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
@@ -2756,6 +2762,7 @@ export type CaseRfiStixCoreRelationshipsDistributionArgs = {
 };
 
 export type CaseRfiAddInput = {
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
@@ -2778,6 +2785,7 @@ export type CaseRfiAddInput = {
   objectParticipant?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   priority?: InputMaybe<Scalars['String']['input']>;
+  restricted_members?: InputMaybe<Array<MemberAccessInput>>;
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   severity?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
@@ -2817,6 +2825,7 @@ export enum CaseRfisOrdering {
 
 export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'CaseRft';
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
@@ -2865,6 +2874,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   severity?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
@@ -3823,6 +3833,7 @@ export enum ConnectorType {
 }
 
 export type Container = {
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
@@ -3859,6 +3870,7 @@ export type Container = {
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -7894,6 +7906,7 @@ export enum FeedOrdering {
 
 export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Feedback';
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
@@ -7942,6 +7955,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -8492,6 +8506,7 @@ export type GroupEditMutationsRelationDeleteArgs = {
 
 export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Grouping';
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
@@ -8540,6 +8555,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -16764,6 +16780,7 @@ export type NetworkTrafficAddInput = {
 export type Note = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Note';
   attribute_abstract?: Maybe<Scalars['String']['output']>;
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   authors?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -16811,6 +16828,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -17245,6 +17263,7 @@ export type ObservablesValues = {
 
 export type ObservedData = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'ObservedData';
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
@@ -17292,6 +17311,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -17577,6 +17597,7 @@ export type OpenCtiFile = {
 
 export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Opinion';
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   authors?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -17623,6 +17644,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -22989,6 +23011,7 @@ export type RemoteStreamCollection = {
 
 export type Report = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Report';
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
@@ -23039,6 +23062,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   report_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -26999,6 +27023,7 @@ export enum SystemsOrdering {
 
 export type Task = BasicObject & Container & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Task';
+  /** @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members */
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
   avatar?: Maybe<OpenCtiFile>;
@@ -27045,6 +27070,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  restricted_members?: Maybe<Array<MemberAccess>>;
   revoked: Scalars['Boolean']['output'];
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
@@ -33599,6 +33625,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -33678,6 +33705,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseIncidentReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   response_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -33758,6 +33786,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRfiRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseRfiReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -33837,6 +33866,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRftRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseRftReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -34177,6 +34207,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ContainerRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ContainerReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -35591,6 +35622,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<FeedbackRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<FeedbackReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -35845,6 +35877,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<GroupingRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<GroupingReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -38150,6 +38183,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<NoteRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<NoteReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -38346,6 +38380,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ObservedDataRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ObservedDataReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -38441,6 +38476,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<OpinionRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<OpinionReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -39630,6 +39666,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   report_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ReportReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -41073,6 +41110,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<TaskRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<TaskReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
