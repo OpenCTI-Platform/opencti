@@ -12,7 +12,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFiltersValidity(filterGroup1)).toThrowError('A filter key must be defined for every filter');
+    expect(() => checkFiltersValidity(filterGroup1)).toThrowError('Incorrect filters format');
     const filterGroup2 = {
       mode: 'or',
       filters: [
