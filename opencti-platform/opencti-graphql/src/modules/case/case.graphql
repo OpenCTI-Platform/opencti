@@ -97,7 +97,8 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
-  authorized_members: [MemberAccess!]
+  restricted_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(

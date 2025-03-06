@@ -3221,7 +3221,8 @@ interface Container {
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Container
-  authorized_members: [MemberAccess!]
+  restricted_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
@@ -3381,7 +3382,8 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
@@ -3614,7 +3616,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
@@ -3823,7 +3826,8 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   # Container
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
@@ -4050,7 +4054,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
   # Container
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(
