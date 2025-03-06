@@ -74,7 +74,7 @@ const DashboardEntitiesViz = ({
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
-          withoutTitle={false} // because calling js component in ts
+          withoutTitle={undefined} // because calling js component in ts
         />
       );
     case 'list':
