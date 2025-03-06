@@ -13596,9 +13596,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18n-auto-translation@npm:1.10.1":
-  version: 1.10.1
-  resolution: "i18n-auto-translation@npm:1.10.1"
+"i18n-auto-translation@npm:2.1.1":
+  version: 2.1.1
+  resolution: "i18n-auto-translation@npm:2.1.1"
   dependencies:
     "@google-cloud/translate": "npm:8.5.0"
     axios: "npm:1.7.9"
@@ -13607,9 +13607,10 @@ __metadata:
     html-entities: "npm:2.5.2"
     just-extend: "npm:6.2.0"
     yargs: "npm:17.7.2"
+    yocto-spinner: "npm:0.2.0"
   bin:
-    i18n-auto-translation: dist/index.js
-  checksum: 10/1157f6a12446da3f04a484d7acadbb0817df9bbad5925c51933d468161018efef03b6da68d4cfd2b6d29ae7a7d4bc8f7f299d081431c497c5e3cc61d4c0101ef
+    i18n-auto-translation: dist/src/index.js
+  checksum: 10/22678635cede99994a9063bc13f03dda9c3fd02bf34e18375cb3ea21d4e19e681e58199766dca0955963284835662a79b1bd851fc99c5eb24fa2b9632013b90d
   languageName: node
   linkType: hard
 
@@ -16962,7 +16963,7 @@ __metadata:
     html-to-image: "npm:1.11.11"
     html-to-pdfmake: "npm:2.5.21"
     http-proxy-middleware: "npm:3.0.3"
-    i18n-auto-translation: "npm:1.10.1"
+    i18n-auto-translation: "npm:2.1.1"
     invert-color: "npm:2.0.0"
     js-base64: "npm:3.7.7"
     js-file-download: "npm:0.4.12"
@@ -21959,6 +21960,22 @@ __metadata:
   version: 0.1.0
   resolution: "yocto-queue@npm:0.1.0"
   checksum: 10/f77b3d8d00310def622123df93d4ee654fc6a0096182af8bd60679ddcdfb3474c56c6c7190817c84a2785648cdee9d721c0154eb45698c62176c322fb46fc700
+  languageName: node
+  linkType: hard
+
+"yocto-spinner@npm:0.2.0":
+  version: 0.2.0
+  resolution: "yocto-spinner@npm:0.2.0"
+  dependencies:
+    yoctocolors: "npm:^2.1.1"
+  checksum: 10/d6b27a444187e0863cdddb72b7188ce807b67f1823c23835a065f1abf4e8013148d1f520182d100b96c3978ef7659634ec4157c0151b3b3ad529f3c0b45fd141
+  languageName: node
+  linkType: hard
+
+"yoctocolors@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "yoctocolors@npm:2.1.1"
+  checksum: 10/563fbec88bce9716d1044bc98c96c329e1d7a7c503e6f1af68f1ff914adc3ba55ce953c871395e2efecad329f85f1632f51a99c362032940321ff80c42a6f74d
   languageName: node
   linkType: hard
 
