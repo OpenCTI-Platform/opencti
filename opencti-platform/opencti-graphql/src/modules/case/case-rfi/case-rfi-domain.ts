@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { createEntity } from '../../../database/middleware';
 import type { EntityOptions } from '../../../database/middleware-loader';
 import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import { BUS_TOPICS } from '../../../config/conf';
+import { BUS_TOPICS, logApp } from '../../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
 import { now } from '../../../utils/format';
@@ -26,13 +26,24 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
 };
 
 export const addCaseRfi = async (context: AuthContext, user: AuthUser, caseRfiAdd: CaseRfiAddInput) => {
-  let caseToCreate = caseRfiAdd.created ? caseRfiAdd : { ...caseRfiAdd, created: now() };
+  logApp.info('ANGIE - addCaseRfi', caseRfiAdd);
+  let caseToCreate: any = caseRfiAdd.created ? caseRfiAdd : { ...caseRfiAdd, created: now() };
   if (isEmptyField(caseRfiAdd.createdBy)) {
     const individualId = await resolveUserIndividual(context, user);
     caseToCreate = { ...caseToCreate, createdBy: individualId };
   }
-  const { caseTemplates } = caseToCreate;
+
+  // region @deprecated [>=6.6 & <6.9] on renaming authorized_members to restricted_members
+  if (caseRfiAdd.authorized_members) {
+    caseToCreate = { ...caseToCreate, restricted_members: caseRfiAdd.authorized_members };
+    delete caseToCreate.authorized_members;
+  }
+  // end region
+
+  const { caseTemplates } = caseRfiAdd;
   delete caseToCreate.caseTemplates;
+  logApp.info('ANGIE - about to create case:', { caseToCreate });
+
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_CASE_RFI);
   if (caseTemplates) {
     await Promise.all(caseTemplates.map((caseTemplate) => upsertTemplateForCase(context, user, created.id, caseTemplate)));
