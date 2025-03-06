@@ -805,7 +805,7 @@ describe('Restricted entities listing', () => {
       query: DELETE_QUERY,
       variables: { id: caseIrId },
     });
-    // Verify is no longer found
+    // Verify that it is no longer found
     const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();
