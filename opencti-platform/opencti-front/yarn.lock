@@ -1809,6 +1809,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime-corejs2@npm:^7.4.5":
+  version: 7.26.9
+  resolution: "@babel/runtime-corejs2@npm:7.26.9"
+  dependencies:
+    core-js: "npm:^2.6.12"
+    regenerator-runtime: "npm:^0.14.0"
+  checksum: 10/b89264c4a9dfa0997969f6e3881fcf1a085943cb0df80036f27fa0f1b29f52e0d3b7b9f45512060fb687edb62d359817b3ce59cc729e51840db434a02158f466
+  languageName: node
+  linkType: hard
+
 "@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.12.1, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.13.10, @babel/runtime@npm:^7.16.3, @babel/runtime@npm:^7.17.8, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.23.2, @babel/runtime@npm:^7.23.9, @babel/runtime@npm:^7.24.1, @babel/runtime@npm:^7.24.6, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.2, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
   version: 7.25.0
   resolution: "@babel/runtime@npm:7.25.0"
@@ -6394,6 +6404,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rjsf/validator-ajv8@npm:^5.24.3":
+  version: 5.24.3
+  resolution: "@rjsf/validator-ajv8@npm:5.24.3"
+  dependencies:
+    ajv: "npm:^8.12.0"
+    ajv-formats: "npm:^2.1.1"
+    lodash: "npm:^4.17.21"
+    lodash-es: "npm:^4.17.21"
+  peerDependencies:
+    "@rjsf/utils": ^5.24.x
+  checksum: 10/cabfc41c3b9afc4a87ed57ce17c522edb465e60a4f129c1cc4d876f54cda89de4d88e9b5d69a25e153a73fe50a90dacc3d62264f3ad6281da9b0c074b30e0cc3
+  languageName: node
+  linkType: hard
+
 "@rollup/plugin-graphql@npm:2.0.5":
   version: 2.0.5
   resolution: "@rollup/plugin-graphql@npm:2.0.5"
@@ -7376,6 +7400,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-jsonschema-form@npm:^1":
+  version: 1.7.13
+  resolution: "@types/react-jsonschema-form@npm:1.7.13"
+  dependencies:
+    "@types/json-schema": "npm:*"
+    "@types/react": "npm:*"
+  checksum: 10/83f5a423f1d6399ba3cb29c622aa05c7e04b8dbc7a66e8fb0698c93d8045d925c9a9e67d97e097fa11d521e0ce99345c81a8850839f595b7c86a44b3595cd79f
+  languageName: node
+  linkType: hard
+
 "@types/react-relay@npm:*, @types/react-relay@npm:16.0.6":
   version: 16.0.6
   resolution: "@types/react-relay@npm:16.0.6"
@@ -8081,7 +8115,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ajv@npm:^6.12.4":
+"ajv@npm:^6.12.4, ajv@npm:^6.7.0":
   version: 6.12.6
   resolution: "ajv@npm:6.12.6"
   dependencies:
@@ -8093,7 +8127,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ajv@npm:^8.0.0, ajv@npm:^8.9.0":
+"ajv@npm:^8.0.0, ajv@npm:^8.12.0, ajv@npm:^8.9.0":
   version: 8.17.1
   resolution: "ajv@npm:8.17.1"
   dependencies:
@@ -9730,6 +9764,13 @@ __metadata:
   dependencies:
     browserslist: "npm:^4.23.3"
   checksum: 10/7ebdca6b305c9c470980e1f7e7a3d759add7cb754bff62926242907ee4d1d4e8bb13f70eb9a7d7769e0f63aec3f4cca83abf60f502286853b45d4b63a01c25ed
+  languageName: node
+  linkType: hard
+
+"core-js@npm:^2.5.7, core-js@npm:^2.6.12":
+  version: 2.6.12
+  resolution: "core-js@npm:2.6.12"
+  checksum: 10/7c624eb00a59c74c769d5d80f751f3bf1fc6201205b6562f27286ad5e00bbca1483f2f7eb0c2854b86f526ef5c7dc958b45f2ff536f8a31b8e9cb1a13a96efca
   languageName: node
   linkType: hard
 
@@ -16339,6 +16380,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nanoid@npm:^3.3.8":
+  version: 3.3.8
+  resolution: "nanoid@npm:3.3.8"
+  bin:
+    nanoid: bin/nanoid.cjs
+  checksum: 10/2d1766606cf0d6f47b6f0fdab91761bb81609b2e3d367027aff45e6ee7006f660fb7e7781f4a34799fe6734f1268eeed2e37a5fdee809ade0c2d4eb11b0f9c40
+  languageName: node
+  linkType: hard
+
 "nanomatch@npm:^1.2.9":
   version: 1.2.13
   resolution: "nanomatch@npm:1.2.13"
@@ -16800,6 +16850,7 @@ __metadata:
     "@rjsf/core": "npm:5.24.1"
     "@rjsf/mui": "npm:5.24.1"
     "@rjsf/utils": "npm:5.24.1"
+    "@rjsf/validator-ajv8": "npm:^5.24.3"
     "@rollup/plugin-graphql": "npm:2.0.5"
     "@testing-library/dom": "npm:10.4.0"
     "@testing-library/jest-dom": "npm:6.6.3"
@@ -16814,6 +16865,7 @@ __metadata:
     "@types/react-csv": "npm:1.1.10"
     "@types/react-dom": "npm:18.3.5"
     "@types/react-grid-layout": "npm:1.3.5"
+    "@types/react-jsonschema-form": "npm:^1"
     "@types/react-relay": "npm:16.0.6"
     "@types/react-router-dom": "npm:5.3.3"
     "@types/react-syntax-highlighter": "npm:15.5.13"
@@ -16894,6 +16946,7 @@ __metadata:
     react-force-graph-3d: "npm:1.24.4"
     react-grid-layout: "npm:1.5.0"
     react-intl: "npm:6.8.9"
+    react-jsonschema-form: "npm:^1.8.1"
     react-leaflet: "npm:4.2.1"
     react-markdown: "npm:9.0.3"
     react-material-ui-carousel: "npm:3.4.2"
@@ -17466,7 +17519,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:15, prop-types@npm:15.8.1, prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:15, prop-types@npm:15.8.1, prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.5.8, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -17854,7 +17907,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:^16.13.1, react-is@npm:^16.7.0":
+"react-is@npm:^16.13.1, react-is@npm:^16.7.0, react-is@npm:^16.8.4":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: 10/5aa564a1cde7d391ac980bedee21202fc90bdea3b399952117f54fb71a932af1e5902020144fb354b4690b2414a0c7aafe798eb617b76a3d441d956db7726fdf
@@ -17872,6 +17925,24 @@ __metadata:
   version: 19.0.0
   resolution: "react-is@npm:19.0.0"
   checksum: 10/6cd3695c462ec3f0d4db98583f0c1b9a439248d60214f6c42c2b0e2951a1066339d0eefa74707f03484042e043fca87750282a35b652492c035f5f3da0d6498a
+  languageName: node
+  linkType: hard
+
+"react-jsonschema-form@npm:^1.8.1":
+  version: 1.8.1
+  resolution: "react-jsonschema-form@npm:1.8.1"
+  dependencies:
+    "@babel/runtime-corejs2": "npm:^7.4.5"
+    ajv: "npm:^6.7.0"
+    core-js: "npm:^2.5.7"
+    lodash: "npm:^4.17.15"
+    prop-types: "npm:^15.5.8"
+    react-is: "npm:^16.8.4"
+    react-lifecycles-compat: "npm:^3.0.4"
+    shortid: "npm:^2.2.14"
+  peerDependencies:
+    react: ">=15"
+  checksum: 10/2511f953e4084e8772679a496cb29e4a77146aba06ac890a3ac2b14f3801dcd92a5f99e8c65d99517a7b4f0e9056c6f8931274cdf8914c07ab8694701dd6d1f1
   languageName: node
   linkType: hard
 
@@ -19294,6 +19365,15 @@ __metadata:
   version: 3.0.0
   resolution: "shebang-regex@npm:3.0.0"
   checksum: 10/1a2bcae50de99034fcd92ad4212d8e01eedf52c7ec7830eedcf886622804fe36884278f2be8be0ea5fde3fd1c23911643a4e0f726c8685b61871c8908af01222
+  languageName: node
+  linkType: hard
+
+"shortid@npm:^2.2.14":
+  version: 2.2.17
+  resolution: "shortid@npm:2.2.17"
+  dependencies:
+    nanoid: "npm:^3.3.8"
+  checksum: 10/5c85635e31c08f8c6824b1802a0abb4cd26b39a5c84498dacc91b865f9a860979b010420423e5a4c0abf966aedf197a664a610e813745a6df1497f1376a72350
   languageName: node
   linkType: hard
 

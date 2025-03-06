@@ -1890,6 +1890,10 @@ input RegisterConnectorsManagerInput {
   contracts: [String!]!
 }
 
+input UpdateConnectorManagerStatusInput {
+  id: ID!
+}
+
 input RequestConnectorStatusInput {
   id: ID!
   status: ConnectorRequestStatus!
@@ -1967,7 +1971,6 @@ enum ConnectorRequestStatus {
 }
 
 enum ConnectorCurrentStatus {
-  created
   started
   stopped
 }
@@ -1998,6 +2001,7 @@ type Connector implements BasicObject & InternalObject {
   created_at: DateTime
   config: ConnectorConfig
   works(status: String): [Work]
+  is_managed: Boolean
   ## Built in Connector
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
@@ -2030,6 +2034,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   # Connector
   name: String!
   connector_manager_contracts: [String!]!
+  last_sync_execution: DateTime
 }
 
 ############## Rules
@@ -14525,6 +14530,7 @@ type Mutation {
   managedConnectorEdit(input: EditManagedConnectorInput): ManagedConnector @auth(for: [CONNECTORAPI])
   managedConnectorAdd(input: AddManagedConnectorInput): ManagedConnector @auth(for: [CONNECTORAPI])
   registerConnectorsManager(input: RegisterConnectorsManagerInput): ConnectorManager @auth(for: [CONNECTORAPI])
+  updateConnectorManagerStatus(input: UpdateConnectorManagerStatusInput): ConnectorManager @auth(for: [CONNECTORAPI])
   resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
   deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
   updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): ManagedConnector @auth(for: [MODULES_MODMANAGE])

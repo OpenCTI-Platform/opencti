@@ -390,6 +390,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { ...updatedAt, update: true }, // Allow change of updated_at for connector ping
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_manager_contracts', label: 'Manager contracts', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
+    { name: 'last_sync_execution', label: 'Last execution', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },

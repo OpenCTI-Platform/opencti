@@ -3759,6 +3759,7 @@ export type Connector = BasicObject & InternalObject & {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  is_managed?: Maybe<Scalars['Boolean']['output']>;
   name: Scalars['String']['output'];
   only_contextual?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -3798,7 +3799,6 @@ export type ConnectorContractConfiguration = {
 };
 
 export enum ConnectorCurrentStatus {
-  Created = 'created',
   Started = 'started',
   Stopped = 'stopped'
 }
@@ -3827,6 +3827,7 @@ export type ConnectorManager = BasicObject & InternalObject & {
   connector_manager_contracts: Array<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  last_sync_execution?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
@@ -14040,6 +14041,7 @@ export type Mutation = {
   triggerKnowledgeLiveAdd?: Maybe<Trigger>;
   updateConnectorCurrentStatus?: Maybe<ManagedConnector>;
   updateConnectorLogs?: Maybe<ManagedConnector>;
+  updateConnectorManagerStatus?: Maybe<ConnectorManager>;
   updateConnectorRequestedStatus?: Maybe<ManagedConnector>;
   updateConnectorTrigger?: Maybe<Connector>;
   uploadImport?: Maybe<File>;
@@ -16028,6 +16030,11 @@ export type MutationUpdateConnectorCurrentStatusArgs = {
 
 export type MutationUpdateConnectorLogsArgs = {
   input: LogsConnectorStatusInput;
+};
+
+
+export type MutationUpdateConnectorManagerStatusArgs = {
+  input?: InputMaybe<UpdateConnectorManagerStatusInput>;
 };
 
 
@@ -29096,6 +29103,10 @@ export enum UnitSystem {
   Auto = 'auto'
 }
 
+export type UpdateConnectorManagerStatusInput = {
+  id: Scalars['ID']['input'];
+};
+
 export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Url';
   cases?: Maybe<CaseConnection>;
@@ -32155,6 +32166,7 @@ export type ResolversTypes = ResolversObject<{
   TriggersOrdering: TriggersOrdering;
   TypeAttribute: ResolverTypeWrapper<TypeAttribute>;
   UnitSystem: UnitSystem;
+  UpdateConnectorManagerStatusInput: UpdateConnectorManagerStatusInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   Url: ResolverTypeWrapper<Omit<Url, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   UrlAddInput: UrlAddInput;
@@ -32921,6 +32933,7 @@ export type ResolversParentTypes = ResolversObject<{
   TriggerEdge: Omit<TriggerEdge, 'node'> & { node: ResolversParentTypes['Trigger'] };
   TriggerLiveAddInput: TriggerLiveAddInput;
   TypeAttribute: TypeAttribute;
+  UpdateConnectorManagerStatusInput: UpdateConnectorManagerStatusInput;
   Upload: Scalars['Upload']['output'];
   Url: Omit<Url, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   UrlAddInput: UrlAddInput;
@@ -34197,6 +34210,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   only_contextual?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -34245,6 +34259,7 @@ export type ConnectorManagerResolvers<ContextType = any, ParentType extends Reso
   connector_manager_contracts?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  last_sync_execution?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -38034,6 +38049,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   triggerKnowledgeLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeLiveAddArgs, 'input'>>;
   updateConnectorCurrentStatus?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorCurrentStatusArgs, 'input'>>;
   updateConnectorLogs?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorLogsArgs, 'input'>>;
+  updateConnectorManagerStatus?: Resolver<Maybe<ResolversTypes['ConnectorManager']>, ParentType, ContextType, Partial<MutationUpdateConnectorManagerStatusArgs>>;
   updateConnectorRequestedStatus?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorRequestedStatusArgs, 'input'>>;
   updateConnectorTrigger?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorTriggerArgs, 'id' | 'input'>>;
   uploadImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadImportArgs, 'file'>>;

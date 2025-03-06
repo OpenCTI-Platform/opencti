@@ -33,7 +33,8 @@ import {
   type RegisterConnectorsManagerInput,
   type RequestConnectorStatusInput,
   type SynchronizerAddInput,
-  type SynchronizerFetchInput
+  type SynchronizerFetchInput,
+  type UpdateConnectorManagerStatusInput
 } from '../generated/graphql';
 import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
@@ -152,7 +153,11 @@ export const registerConnectorsManager = async (context: AuthContext, user: Auth
     validatedContracts.set(jsonContract.container_image, JSON.stringify(jsonContract));
   }
   const manager = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER);
-  const patch = { name: input.name, connector_manager_contracts: Array.from(validatedContracts.values()) };
+  const patch = {
+    name: input.name,
+    connector_manager_contracts: Array.from(validatedContracts.values()),
+    last_sync_execution: now()
+  };
   if (manager) {
     const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
     return element;
@@ -191,6 +196,12 @@ const computeConnectorTargetContract = (configurations: any, targetContract: any
     throw UnsupportedError('Invalid contract definition');
   }
   return contractConfigurations;
+};
+
+export const updateConnectorManagerStatus = async (context: AuthContext, user:AuthUser, input: UpdateConnectorManagerStatusInput) => {
+  const patch: any = { last_sync_execution: now() };
+  const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
+  return element;
 };
 
 export const managedConnectorEdit = async (
@@ -250,7 +261,7 @@ export const managedConnectorAdd = async (
     connector_user_id: input.connector_user_id,
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,
-    manager_requested_status: 'creating',
+    manager_requested_status: 'stopped',
     built_in: false
   };
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);

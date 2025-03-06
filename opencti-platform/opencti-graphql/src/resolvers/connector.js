@@ -23,7 +23,7 @@ import {
   syncEditContext,
   syncEditField,
   testSync,
-  updateConnectorCurrentStatus,
+  updateConnectorCurrentStatus, updateConnectorManagerStatus,
   updateConnectorRequestedStatus
 } from '../domain/connector';
 import {
@@ -113,6 +113,7 @@ const connectorResolvers = {
     // region new managed connectors
     managedConnectorAdd: (_, { input }, context) => managedConnectorAdd(context, context.user, input),
     managedConnectorEdit: (_, { input }, context) => managedConnectorEdit(context, context.user, input),
+    updateConnectorManagerStatus: (_, { input }, context) => updateConnectorManagerStatus(context, context.user, input),
     registerConnectorsManager: (_, { input }, context) => registerConnectorsManager(context, context.user, input),
     updateConnectorRequestedStatus: (_, { input }, context) => updateConnectorRequestedStatus(context, context.user, input),
     updateConnectorCurrentStatus: (_, { input }, context) => updateConnectorCurrentStatus(context, context.user, input),
