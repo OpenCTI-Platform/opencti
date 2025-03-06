@@ -192,7 +192,7 @@ const Search = () => {
   setTitle(t_i18n('Knowledge Search | Advanced Search'));
   const { keyword, filters: paramsFilters } = useParams() as { keyword: string, filters?: string };
 
-  const searchTerm = decodeSearchKeyword(keyword);
+  const searchTerm = paramsFilters ? undefined : decodeSearchKeyword(keyword);
 
   const initialValues = {
     sortBy: '_score',
