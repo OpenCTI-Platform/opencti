@@ -18,6 +18,7 @@ import { resolveLink } from '../../../../../utils/Entity';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import Transition from '../../../../../components/Transition';
 import type { Theme } from '../../../../../components/Theme';
+import DeleteDialog from '../../../../../components/DeleteDialog';
 
 interface FintelTemplateFormDrawerProps {
   isOpen: boolean
@@ -46,11 +47,8 @@ const FintelTemplateFormDrawer = ({
   const [commitEditMutation] = useFintelTemplateEdit();
   const [commitDeleteMutation, deleting] = useFintelTemplateDelete(entitySettingId);
 
-  const {
-    handleOpenDelete,
-    displayDelete,
-    handleCloseDelete,
-  } = useDeletion({});
+  const deletion = useDeletion({});
+  const { handleOpenDelete, handleCloseDelete, } = deletion;
 
   const onDelete = () => {
     if (!template) return;
@@ -137,26 +135,11 @@ const FintelTemplateFormDrawer = ({
         </>
       </Drawer>
 
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayDelete}
-        slots={{ transition: Transition }}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this FINTEL template?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={onDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={onDelete}
+        message={t_i18n('Do you want to delete this FINTEL template?')}
+      />
     </>
   );
 };
