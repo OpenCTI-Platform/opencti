@@ -78,7 +78,8 @@ export interface GraphState {
   correlationMode: 'all' | 'observables' | null
   showTimeRange: boolean
   showLinearProgress: boolean
-  isLoadingData: boolean
+  loadingTotal?: number
+  loadingCurrent?: number
   disabledEntityTypes: string[]
   disabledCreators: string[]
   disabledMarkings: string[]

@@ -3,7 +3,6 @@ import ForceGraph3D from 'react-force-graph-3d';
 import React, { type MutableRefObject, ReactNode } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useTheme } from '@mui/material/styles';
-import Alert from '@mui/material/Alert';
 import RectangleSelection from './components/RectangleSelection';
 import { useGraphContext } from './GraphContext';
 import useResizeObserver from '../hooks/useResizeObserver';
@@ -15,7 +14,7 @@ import useGraphFilter from './utils/useGraphFilter';
 import EntitiesDetailsRightsBar from './components/EntitiesDetailsRightBar';
 import type { Theme } from '../../components/Theme';
 import RelationSelection from './components/RelationSelection';
-import { useFormatter } from '../../components/i18n';
+import GraphLoadingAlert from './components/GraphLoadingAlert';
 
 export interface GraphProps {
   parentRef: MutableRefObject<HTMLDivElement | null>
@@ -30,7 +29,6 @@ const Graph = ({
 }: GraphProps) => {
   const graphId = `graph-${uuid()}`;
   const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
   const { width, height } = useResizeObserver(parentRef);
 
   const {
@@ -69,7 +67,8 @@ const Graph = ({
       withForces,
       selectedNodes,
       selectedLinks,
-      isLoadingData,
+      loadingCurrent,
+      loadingTotal,
     },
   } = useGraphContext();
 
@@ -88,22 +87,11 @@ const Graph = ({
     onPositionsChanged(newPositions);
   };
 
+  const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
+
   return (
     <div id={graphId} style={{ position: 'relative' }}>
-      {isLoadingData && (
-        <Alert
-          severity="info"
-          variant='outlined'
-          sx={{
-            position: 'absolute',
-            top: theme.spacing(4),
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}
-        >
-          {t_i18n('The graph is currently loading data.')}
-        </Alert>
-      )}
+      {isLoadingData && <GraphLoadingAlert />}
       {selectedEntities.length > 0 && (
         // TODO update EntitiesDetailsRightsBar component when every refacto done
         <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />

@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef } from 'react';
+import React, { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
@@ -442,7 +442,8 @@ const graphContainerKnowledgeObjectsFragment = graphql`
 // endregion
 
 interface GraphContainerKnowledgeComponentProps {
-  loadingData: boolean
+  totalData: number
+  currentData: number
   dataHeader: ContainerHeader_container$key
   dataContainer: GraphContainerKnowledgeData_fragment$key
   enableReferences: boolean
@@ -458,7 +459,8 @@ interface GraphContainerKnowledgeComponentProps {
 }
 
 const GraphContainerKnowledgeComponent = ({
-  loadingData,
+  totalData,
+  currentData,
   dataHeader,
   dataContainer,
   enableReferences,
@@ -475,13 +477,19 @@ const GraphContainerKnowledgeComponent = ({
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
-  const { addLink, setIsLoadingData } = useGraphInteractions();
+
+  const {
+    addLink,
+    setLoadingCurrent,
+    setLoadingTotal,
+  } = useGraphInteractions();
 
   const container = useFragment(graphContainerKnowledgeDataFragment, dataContainer);
 
   useEffect(() => {
-    setIsLoadingData(loadingData);
-  }, [loadingData]);
+    setLoadingTotal(totalData);
+    setLoadingCurrent(currentData);
+  }, [totalData, currentData]);
 
   const headerHeight = 64;
   const paddingHeight = 25;
@@ -526,7 +534,7 @@ const GraphContainerKnowledgeComponent = ({
 const REFETCH_DEBOUNCE_MS = 300;
 
 interface GraphContainerKnowledgeProps
-  extends Omit<GraphContainerKnowledgeComponentProps, 'data' | 'loadingData'> {
+  extends Omit<GraphContainerKnowledgeComponentProps, 'data' | 'currentData' | 'totalData'> {
   containerId: string
   containerType: string
   dataPositions: GraphContainerKnowledgePositions_fragment$key
@@ -543,6 +551,7 @@ const GraphContainerKnowledge = ({
   ...otherProps
 }: GraphContainerKnowledgeProps) => {
   const localStorageKey = `${containerType}-knowledge-graph-${containerId}`;
+  const [dataLoaded, setDataLoaded] = useState(0);
 
   const {
     data: { container },
@@ -560,13 +569,19 @@ const GraphContainerKnowledge = ({
 
   // Use a debounce to avoid spamming too quickly the backend.
   const debounceFetchMore = useDebounceCallback(
-    () => loadMore(pageSize),
+    () => { loadMore(pageSize); },
     REFETCH_DEBOUNCE_MS,
   );
   // When finishing fetching a page, get the next if any.
   useEffect(() => {
-    if (!isLoadingMore() && hasMore()) debounceFetchMore();
-  }, [isLoadingMore, hasMore]);
+    if (!isLoadingMore() && hasMore()) {
+      debounceFetchMore();
+    }
+  }, [isLoadingMore(), hasMore()]);
+
+  useEffect(() => {
+    setDataLoaded(container?.objects?.edges?.length ?? 0);
+  }, [container]);
 
   const { x_opencti_graph_data } = useFragment(
     graphContainerKnowledgePositionsFragment,
@@ -583,7 +598,8 @@ const GraphContainerKnowledge = ({
       positions={positions}
     >
       <GraphContainerKnowledgeComponent
-        loadingData={hasMore()}
+        currentData={dataLoaded}
+        totalData={container?.objects?.pageInfo.globalCount ?? 1}
         {...otherProps}
       />
     </GraphProvider>

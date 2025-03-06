@@ -114,8 +114,12 @@ const useGraphInteractions = () => {
     setGraphStateProp('showLinearProgress', val);
   };
 
-  const setIsLoadingData = (val: boolean) => {
-    setGraphStateProp('isLoadingData', val);
+  const setLoadingTotal = (val: number) => {
+    setGraphStateProp('loadingTotal', val);
+  };
+
+  const setLoadingCurrent = (val: number) => {
+    setGraphStateProp('loadingCurrent', val);
   };
 
   const switchSelectRelationshipMode = () => {
@@ -450,7 +454,8 @@ const useGraphInteractions = () => {
     setRawPositions,
     setLinearProgress,
     rebuildGraphData,
-    setIsLoadingData,
+    setLoadingTotal,
+    setLoadingCurrent,
   };
 };
 

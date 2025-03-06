@@ -1,5 +1,5 @@
 import { graphql, PreloadedQuery, useFragment } from 'react-relay';
-import React, { CSSProperties, Suspense, useEffect, useMemo, useRef } from 'react';
+import React, { CSSProperties, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/material/styles';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
@@ -386,24 +386,32 @@ export const investigationGraphQuery = graphql`
 `;
 
 interface InvestigationGraphComponentProps {
-  loadingData: boolean
+  totalData: number
+  currentData: number
   dataInvestigation: InvestigationGraph_fragment$key
 }
 
 const InvestigationGraphComponent = ({
-  loadingData,
+  totalData,
+  currentData,
   dataInvestigation,
 }: InvestigationGraphComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
-  const { addLink, setIsLoadingData } = useGraphInteractions();
+
+  const {
+    addLink,
+    setLoadingCurrent,
+    setLoadingTotal,
+  } = useGraphInteractions();
 
   const investigation = useFragment(investigationGraphFragment, dataInvestigation);
 
   useEffect(() => {
-    setIsLoadingData(loadingData);
-  }, [loadingData]);
+    setLoadingTotal(totalData);
+    setLoadingCurrent(currentData);
+  }, [totalData, currentData]);
 
   const [commitEditPositions] = useInvestigationGraphEdit();
   const [commitUpdateEntities] = useInvestigationGraphUpdateEntities();
@@ -489,7 +497,7 @@ const InvestigationGraphComponent = ({
 const REFETCH_DEBOUNCE_MS = 300;
 
 interface InvestigationGraphLoaderProps
-  extends Omit<InvestigationGraphComponentProps, 'loadingData'> {
+  extends Omit<InvestigationGraphComponentProps, 'currentData' | 'totalData'> {
   investigationId: string
   dataPositions: InvestigationGraphData_fragment$key
   queryObjectsRef: PreloadedQuery<InvestigationGraphObjectsQuery>
@@ -504,6 +512,7 @@ const InvestigationGraphLoader = ({
   ...otherProps
 }: InvestigationGraphLoaderProps) => {
   const localStorageKey = `investigation-graph-${investigationId}`;
+  const [dataLoaded, setDataLoaded] = useState(0);
 
   const {
     data: { workspace },
@@ -521,13 +530,19 @@ const InvestigationGraphLoader = ({
 
   // Use a debounce to avoid spamming too quickly the backend.
   const debounceFetchMore = useDebounceCallback(
-    () => loadMore(pageSize),
+    () => { loadMore(pageSize); },
     REFETCH_DEBOUNCE_MS,
   );
   // When finishing fetching a page, get the next if any.
   useEffect(() => {
-    if (!isLoadingMore() && hasMore()) debounceFetchMore();
-  }, [isLoadingMore, hasMore]);
+    if (!isLoadingMore() && hasMore()) {
+      debounceFetchMore();
+    }
+  }, [isLoadingMore(), hasMore()]);
+
+  useEffect(() => {
+    setDataLoaded(workspace?.objects?.edges?.length ?? 0);
+  }, [workspace]);
 
   const { graph_data } = useFragment(investigationGraphDataFragment, dataPositions);
 
@@ -542,7 +557,8 @@ const InvestigationGraphLoader = ({
       context='investigation'
     >
       <InvestigationGraphComponent
-        loadingData={hasMore()}
+        currentData={dataLoaded}
+        totalData={workspace?.objects?.pageInfo.globalCount ?? 1}
         {...otherProps}
       />
     </GraphProvider>

@@ -1,5 +1,5 @@
 import { graphql, PreloadedQuery, useFragment } from 'react-relay';
-import React, { CSSProperties, useEffect, useMemo, useRef } from 'react';
+import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { knowledgeCorrelationStixCoreObjectQuery, knowledgeCorrelationStixCoreRelationshipQuery } from '@components/common/containers/KnowledgeCorrelationQuery';
@@ -330,22 +330,29 @@ const graphContainerCorrelationObjectsFragment = graphql`
 // endregion
 
 interface GraphContainerCorrelationComponentProps {
-  loadingData: boolean
+  totalData: number
+  currentData: number
   onPositionsChanged: (positions: OctiGraphPositions) => void
 }
 
 const GraphContainerCorrelationComponent = ({
-  loadingData,
+  totalData,
+  currentData,
   onPositionsChanged,
 }: GraphContainerCorrelationComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
-  const { setIsLoadingData } = useGraphInteractions();
+
+  const {
+    setLoadingCurrent,
+    setLoadingTotal,
+  } = useGraphInteractions();
 
   useEffect(() => {
-    setIsLoadingData(loadingData);
-  }, [loadingData]);
+    setLoadingTotal(totalData);
+    setLoadingCurrent(currentData);
+  }, [totalData, currentData]);
 
   const headerHeight = 64;
   const paddingHeight = 25;
@@ -373,7 +380,7 @@ const GraphContainerCorrelationComponent = ({
 const REFETCH_DEBOUNCE_MS = 300;
 
 interface GraphContainerCorrelationProps
-  extends Omit<GraphContainerCorrelationComponentProps, 'loadingData'> {
+  extends Omit<GraphContainerCorrelationComponentProps, 'currentData' | 'totalData'> {
   containerId: string
   containerType: string
   dataPositions: GraphContainerCorrelationPositions_fragment$key
@@ -390,6 +397,7 @@ const GraphContainerCorrelation = ({
   ...otherProps
 }: GraphContainerCorrelationProps) => {
   const localStorageKey = `${containerType}-correlation-graph-${containerId}`;
+  const [dataLoaded, setDataLoaded] = useState(0);
 
   const {
     data: { container },
@@ -407,13 +415,19 @@ const GraphContainerCorrelation = ({
 
   // Use a debounce to avoid spamming too quickly the backend.
   const debounceFetchMore = useDebounceCallback(
-    () => loadMore(pageSize),
+    () => { loadMore(pageSize); },
     REFETCH_DEBOUNCE_MS,
   );
   // When finishing fetching a page, get the next if any.
   useEffect(() => {
-    if (!isLoadingMore() && hasMore()) debounceFetchMore();
-  }, [isLoadingMore, hasMore]);
+    if (!isLoadingMore() && hasMore()) {
+      debounceFetchMore();
+    }
+  }, [isLoadingMore(), hasMore()]);
+
+  useEffect(() => {
+    setDataLoaded(container?.objects?.edges?.length ?? 0);
+  }, [container]);
 
   const { x_opencti_graph_data } = useFragment(
     graphContainerCorrelationPositionsFragment,
@@ -431,7 +445,8 @@ const GraphContainerCorrelation = ({
       context='correlation'
     >
       <GraphContainerCorrelationComponent
-        loadingData={hasMore()}
+        currentData={dataLoaded}
+        totalData={container?.objects?.pageInfo.globalCount ?? 1}
         {...otherProps}
       />
     </GraphProvider>
