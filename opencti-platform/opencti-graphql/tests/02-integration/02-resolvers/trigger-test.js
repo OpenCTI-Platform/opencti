@@ -489,6 +489,7 @@ describe('Trigger activity resolver standard behavior', () => {
     const triggerToDeleteId = trigger.data.triggerKnowledgeLiveAdd.id;
     // list all triggers => we should have now 3 triggers : 2 activity & 1 knowledge
     let queryResult = await securityQuery({ query: LIST_TRIGGERS_QUERY, variables: { first: 10 } });
+    console.log('List triggers query results: ' + JSON.stringify(queryResult));
     expect(queryResult.data.triggers.edges.length).toEqual(3);
     // delete the live trigger
     await securityQuery({ query: DELETE_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerToDeleteId } });
