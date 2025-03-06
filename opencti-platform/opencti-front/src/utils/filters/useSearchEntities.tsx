@@ -241,13 +241,6 @@ const workspacesQuery = graphql`
 
 export type EntityValue = OptionValue;
 
-const meEntity = {
-  label: ME_FILTER_VALUE,
-  value: ME_FILTER_VALUE,
-  type: 'User',
-  color: 'red',
-};
-
 const useSearchEntities = ({
   availableEntityTypes,
   availableRelationshipTypes,
@@ -273,6 +266,12 @@ const useSearchEntities = ({
     const currentMap = schema.filterKeysSchema.get(entityType);
     currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
   });
+  const meEntity = {
+    label: ME_FILTER_VALUE,
+    value: ME_FILTER_VALUE,
+    type: 'User',
+    color: theme.palette.primary.main,
+  };
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
     [key]: [...newEntities, ...(c[key] ?? [])].filter(

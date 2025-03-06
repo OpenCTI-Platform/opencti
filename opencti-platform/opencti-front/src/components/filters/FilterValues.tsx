@@ -137,7 +137,6 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       && isFilterEditable(filtersRestrictions, filterKey, filterValues);
     const operatorClassName = isLocalModeSwitchable ? classes.inlineOperator : classes.inlineOperatorReadOnly;
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
-    console.log('filtersRepresentativesMap', filtersRepresentativesMap);
     const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     return (
       <Fragment key={id}>
