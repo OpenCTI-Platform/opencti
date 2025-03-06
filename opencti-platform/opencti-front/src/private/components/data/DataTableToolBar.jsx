@@ -369,7 +369,7 @@ class DataTableToolBar extends Component {
       navOpen: localStorage.getItem('navOpen') === 'true',
       assignees: [],
       participants: [],
-      killChains: [],
+      killChainPhases: [],
     };
   }
 
@@ -838,7 +838,7 @@ class DataTableToolBar extends Component {
       actionsInputs[i]?.type === 'ADD' && { label: t('In containers'), value: 'container-object' },
       ((actionsInputs[i]?.type === 'ADD' && isAdmin) || (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && { label: t('Creator'), value: 'creator_id' },
       (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
-      checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Kill chains'), value: 'killChains' },
+      checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Kill chains'), value: 'killChainPhases' },
       checkTypes(typesWithIndicatorTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Indicator Types'), value: 'indicator_type_ov' },
       ...(actionsInputs[i]?.type === 'REPLACE' ? [
         { label: t('Author'), value: 'created-by' },
@@ -1208,7 +1208,7 @@ class DataTableToolBar extends Component {
     })
       .toPromise()
       .then((data) => {
-        const killChains = pipe(
+        const killChainPhases = pipe(
           pathOr([], ['killChainPhases', 'edges']),
           sortWith([ascend(path(['node', 'x_opencti_order']))]),
           map((n) => ({
@@ -1217,7 +1217,7 @@ class DataTableToolBar extends Component {
           })),
         )(data);
         this.setState({
-          killChains: union(this.state.killChains, killChains),
+          killChainPhases: union(this.state.killChainPhases, killChainPhases),
         });
       });
   }
@@ -1640,7 +1640,7 @@ class DataTableToolBar extends Component {
             onChange={this.handleChangeActionInputValuesReplace.bind(this, i)}
           />
         );
-      case 'killChains':
+      case 'killChainPhases':
         return (
           <Autocomplete
             disabled={disabled}
@@ -1662,7 +1662,7 @@ class DataTableToolBar extends Component {
               />
             )}
             noOptionsText={t('No available options')}
-            options={this.state.killChains}
+            options={this.state.killChainPhases}
             onInputChange={this.searchKillChains.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onChange={this.handleChangeActionInputValues.bind(this, i)}
