@@ -99,7 +99,7 @@ const FintelTemplatePopover = ({
       <DeleteDialog
         deletion={deletion}
         submitDelete={onDelete}
-        message={t_i18n('Do you want to delete this grouping?')}
+        message={t_i18n('Do you want to delete this FINTEL template?')}
       />
     </>
   );
