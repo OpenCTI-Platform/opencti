@@ -168,14 +168,6 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     type: 'files',
   });
 
-  // Check if a file is selected and CSV connector have a configuration mapper selected
-  const isValid = useMemo(() => {
-    return files.length > 0 && files.every((file) => {
-      const hasCsvMapperConnector = file.connectors?.some((connector) => connector.name === CSV_MAPPER_NAME);
-      return hasCsvMapperConnector ? !!file.configuration : true;
-    });
-  }, [files]);
-
   const handleCreateDraftAndSetContext = useCallback(async (name: string) => {
     // Create the draft workspace
     const { draftWorkspaceAdd } = await new Promise<DraftCreationMutation$data>((resolve, reject) => {
@@ -286,9 +278,11 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
 
     const { validationMode, draftName } = values;
-    if (validationMode === 'draft') {
+    if (validationMode === 'workbench') {
+      // uploadPending
+      importFiles(selectedEntityId, fileMarkingIds, validationMode, setErrors);
+    } else {
       await handleCreateDraftAndSetContext(draftName);
-
       importFiles(selectedEntityId, fileMarkingIds, validationMode, setErrors);
     }
   };
@@ -303,6 +297,18 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     },
     onSubmit,
   });
+
+  // Check if a file is selected and CSV connector have a configuration mapper selected
+  const isValid = useMemo(() => {
+    return files.length > 0 && files.every((file) => {
+      const hasCsvMapperConnector = file.connectors?.some((connector) => connector.name === CSV_MAPPER_NAME);
+      return hasCsvMapperConnector ? !!file.configuration : true;
+    });
+  }, [files]);
+
+  const isValidImport = useMemo(() => {
+    return (optionsContext.values.validationMode === 'draft' && optionsContext.values.draftName.length > 0) || optionsContext.values.validationMode === 'workbench';
+  }, [optionsContext.values]);
 
   return (
     <Dialog
@@ -363,7 +369,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
                 {t_i18n('Next')}
               </Button>
             ) : (
-              <Button onClick={optionsContext.submitForm} color="secondary">
+              <Button onClick={optionsContext.submitForm} color="secondary" disabled={!isValidImport}>
                 {t_i18n('Import')}
               </Button>
             )}
@@ -373,15 +379,26 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
             <Button onClick={() => handleClose()}>
               {t_i18n('Close')}
             </Button>
-            {optionsContext.values.associatedEntity?.value && (
+            {optionsContext.values.validationMode === 'draft' ? (
               <Button
                 color="secondary"
                 onClick={() => handleClose()}
                 component={Link}
-                to={`${resolveLink(optionsContext.values.associatedEntity.type)}/${optionsContext.values.associatedEntity.value}/files`}
+                to={`/dashboard/drafts/${draftContext?.id}/files`}
               >
-                {t_i18n('Navigate to entity')}
+                {t_i18n('Navigate to draft')}
               </Button>
+            ) : (
+              optionsContext.values.associatedEntity?.value && (
+                <Button
+                  color="secondary"
+                  onClick={() => handleClose()}
+                  component={Link}
+                  to={`${resolveLink(optionsContext.values.associatedEntity.type)}/${optionsContext.values.associatedEntity.value}/files`}
+                >
+                  {t_i18n('Navigate to entity')}
+                </Button>
+              )
             )}
           </>
         )

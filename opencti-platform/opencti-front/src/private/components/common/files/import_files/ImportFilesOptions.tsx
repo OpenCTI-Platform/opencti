@@ -81,15 +81,13 @@ const ImportFilesOptions = ({
             </MenuItem>
           </Field>
         )}
-        {optionsFormikContext.values.validationMode === 'draft' && (
-          <Field
-            name="draftName"
-            label={t_i18n('Draft name')}
-            component={TextField}
-            variant="standard"
-            fullWidth={true}
-          />
-        )}
+        <Field
+          name="name"
+          label={t_i18n('Name')}
+          component={TextField}
+          variant="standard"
+          fullWidth={true}
+        />
       </Box>
     </FormikProvider>
   );
