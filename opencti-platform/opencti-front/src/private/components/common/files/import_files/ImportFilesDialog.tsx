@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography, Box } from '@mui/material';
-import { FormikConfig, useFormik } from 'formik';
+import { FormikConfig, FormikErrors, useFormik } from 'formik';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { Option } from '@components/common/form/ReferenceField';
 import ImportFilesUploader, { FileWithConnectors } from '@components/common/files/import_files/ImportFilesUploader';
@@ -18,12 +18,17 @@ import {
 import { Link } from 'react-router-dom';
 import ImportFilesStepper from '@components/common/files/import_files/ImportFilesStepper';
 import ImportFilesUploadProgress from '@components/common/files/import_files/ImportFilesUploadProgress';
+import { draftCreationMutation } from '@components/drafts/DraftCreation';
+import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
+import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
+import { DraftContextBannerMutation, DraftContextBannerMutation$data } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import Transition from '../../../../../components/Transition';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../../utils/hooks/useBulkCommit';
 import { resolveLink } from '../../../../../utils/Entity';
+import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -103,14 +108,17 @@ interface ImportFilesDialogProps {
   entityId?: string;
 }
 
-type OptionsFormValues = {
+export type OptionsFormValues = {
   fileMarkings: Option[];
   associatedEntity: AssociatedEntityOption;
+  validationMode: 'draft' | 'workbench';
+  draftName: string;
 };
 
 const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
 
+  const draftContext = useDraftContext();
   const [activeStep, setActiveStep] = useState(0);
   const [files, setFiles] = useState<FileWithConnectors[]>([]);
   const [uploadStatus, setUploadStatus] = useState<undefined | 'uploading' | 'success'>();
@@ -137,6 +145,15 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     { successMessage },
   );
 
+  const [commitCreationMutation] = useApiMutation<DraftCreationMutation>(draftCreationMutation, undefined, {
+    errorMessage: t_i18n('Failed to create draft workspace.'),
+    successMessage: t_i18n('Draft workspace created successfully.'),
+  });
+
+  const [commitContextMutation] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation, undefined, {
+    errorMessage: t_i18n('Failed to set draft context.'),
+    successMessage: t_i18n('Draft context set successfully.'),
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -151,7 +168,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     type: 'files',
   });
 
-  // Check if CSV connector have a configuration mapper selected
+  // Check if a file is selected and CSV connector have a configuration mapper selected
   const isValid = useMemo(() => {
     return files.length > 0 && files.every((file) => {
       const hasCsvMapperConnector = file.connectors?.some((connector) => connector.name === CSV_MAPPER_NAME);
@@ -159,13 +176,60 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     });
   }, [files]);
 
-  const onSubmit: FormikConfig<OptionsFormValues>['onSubmit'] = (values, { setErrors }) => {
-    setUploadStatus('uploading');
-    const selectedEntityId = entityId ?? (values.associatedEntity?.value || undefined);
-    const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
+  const handleCreateDraftAndSetContext = useCallback(async (name: string) => {
+    // Create the draft workspace
+    const { draftWorkspaceAdd } = await new Promise<DraftCreationMutation$data>((resolve, reject) => {
+      commitCreationMutation({
+        variables: {
+          input: {
+            name,
+          },
+        },
+        onCompleted: (response, errors) => {
+          if (errors) {
+            reject(errors);
+          } else {
+            resolve(response);
+          }
+        },
+        onError: (error) => {
+          reject(error);
+        },
+      });
+    });
+    const draftId = draftWorkspaceAdd?.id;
 
-    const validationMode = 'draft';
+    // Set the draft context
+    return new Promise<DraftContextBannerMutation$data>((resolve, reject) => {
+      commitContextMutation({
+        variables: {
+          input: [
+            {
+              key: 'draft_context',
+              value: [draftId],
+            },
+          ],
+        },
+        onCompleted: (response, errors) => {
+          if (errors) {
+            reject(errors);
+          } else {
+            resolve(response);
+          }
+        },
+        onError: (error) => {
+          reject(error);
+        },
+      });
+    });
+  }, [commitCreationMutation, commitContextMutation]);
 
+  const importFiles = (
+    selectedEntityId: string | undefined,
+    fileMarkingIds: string[],
+    validationMode: 'workbench' | 'draft',
+    setErrors: (errors: FormikErrors<OptionsFormValues>) => void,
+  ) => {
     const variables = files.map(({ file, connectors, configuration }) => (selectedEntityId
       ? (
         {
@@ -216,11 +280,26 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     });
   };
 
+  const onSubmit: FormikConfig<OptionsFormValues>['onSubmit'] = async (values, { setErrors }) => {
+    setUploadStatus('uploading');
+    const selectedEntityId = entityId ?? (values.associatedEntity?.value || undefined);
+    const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
+
+    const { validationMode, draftName } = values;
+    if (validationMode === 'draft') {
+      await handleCreateDraftAndSetContext(draftName);
+
+      importFiles(selectedEntityId, fileMarkingIds, validationMode, setErrors);
+    }
+  };
+
   const optionsContext = useFormik({
     enableReinitialize: true,
     initialValues: {
       fileMarkings: [] as Option[],
       associatedEntity: { label: '', value: '', type: '' } as AssociatedEntityOption,
+      validationMode: draftContext || files.length > 1 ? 'draft' : 'workbench',
+      draftName: '',
     },
     onSubmit,
   });
@@ -253,7 +332,14 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
                   queryRef={queryRef}
                 />
               )}
-              {activeStep === 1 && <ImportFilesOptions optionsFormikContext={optionsContext} entityId={entityId} />}
+              {activeStep === 1 && (
+                <ImportFilesOptions
+                  optionsFormikContext={optionsContext}
+                  entityId={entityId}
+                  draftContext={draftContext}
+                  isWorkbenchEnabled={files.length === 1}
+                />
+              )}
             </Box>
           </>
         ) : (
