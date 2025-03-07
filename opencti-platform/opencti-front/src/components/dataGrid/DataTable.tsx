@@ -165,6 +165,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'additionalFilterKeys'
 | 'variant'
 | 'actions'
+| 'icon'
 | 'rootRef'
 | 'onLineClick'
 | 'disableNavigation'

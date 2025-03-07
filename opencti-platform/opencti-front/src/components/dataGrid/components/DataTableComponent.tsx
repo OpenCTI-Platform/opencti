@@ -24,6 +24,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'dataTableToolBarComponent'
 | 'variant'
 | 'actions'
+| 'icon'
 | 'availableFilterKeys'
 | 'initialValues'
 | 'disableNavigation'
@@ -61,6 +62,7 @@ const DataTableComponent = ({
   variant = DataTableVariant.default,
   rootRef,
   actions,
+  icon,
   createButton,
   disableNavigation,
   disableLineSelection,
@@ -82,7 +84,7 @@ const DataTableComponent = ({
   const buildColumns = (withLocalStorage = true) => {
     const dataColumnsKeys = Object.keys(dataColumns);
     const localStorageColumnsKeys = Object.keys(localStorageColumns)
-      .filter((key) => key !== 'select' && key !== 'navigate');
+      .filter((key) => key !== 'select' && key !== 'navigate' && key !== 'icon');
 
     // Check if keys order/length is the same
     const isOrderSame = dataColumnsKeys.length === localStorageColumnsKeys.length
@@ -94,6 +96,8 @@ const DataTableComponent = ({
     return [
       // Checkbox if necessary
       ...(canToggleLine && !disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
+      // Icon if necessary
+      ...(icon ? [{ id: 'icon', visible: true } as DataTableColumn] : []),
       // Our real columns
       ...Object.entries(dataColumns).map(([key, column], index) => {
         const currentColumn = localStorageColumns?.[key];
@@ -133,7 +137,7 @@ const DataTableComponent = ({
     });
   }, [columns]);
 
-  const startsWithAction = useMemo(() => columns.at(0)?.id === 'select', [columns]);
+  const startsWithAction = useMemo(() => columns.at(0)?.id === 'select' || columns.at(0)?.id === 'icon', [columns]);
   const endsWithNavigate = useMemo(() => columns.at(-1)?.id === 'navigate', [columns]);
   const endsWithAction = useMemo(() => endsWithNavigate || !!actions, [endsWithNavigate, actions]);
 
@@ -172,6 +176,7 @@ const DataTableComponent = ({
         variant,
         rootRef,
         actions,
+        icon,
         createButton,
         disableNavigation,
         disableToolBar,

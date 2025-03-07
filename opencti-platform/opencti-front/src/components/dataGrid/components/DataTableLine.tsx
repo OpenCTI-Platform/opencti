@@ -96,6 +96,7 @@ const DataTableLine = ({
     useLineData,
     useComputeLink,
     actions,
+    icon,
     disableNavigation,
     onLineClick,
     selectOnLineClick,
@@ -188,22 +189,28 @@ const DataTableLine = ({
               width: SELECT_COLUMN_SIZE,
             }}
           >
-            <Checkbox
-              onClick={handleSelectLine}
-              sx={{
-                marginRight: 1,
-                flex: '0 0 auto',
-                paddingLeft: 0,
-                '&:hover': {
-                  background: 'transparent',
-                },
-              }}
-              checked={
-                (selectAll
-                  && !((data.id || 'id') in (deSelectedElements || {})))
-                || (data.id || 'id') in (selectedElements || {})
-              }
-            />
+            { (icon) ? (
+              <div style={{ display: 'flex', paddingLeft: 10 }}>
+                {icon(data)}
+              </div>
+            ) : (
+              <Checkbox
+                onClick={handleSelectLine}
+                sx={{
+                  marginRight: 1,
+                  flex: '0 0 auto',
+                  paddingLeft: 0,
+                  '&:hover': {
+                    background: 'transparent',
+                  },
+                }}
+                checked={
+                  (selectAll
+                    && !((data.id || 'id') in (deSelectedElements || {})))
+                  || (data.id || 'id') in (selectedElements || {})
+                }
+              />
+            )}
           </div>
         )}
 

@@ -6,6 +6,7 @@ import { DragDropContext, Draggable, DraggableLocation, Droppable } from '@hello
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover/Popover';
 import { useTheme } from '@mui/styles';
+import Box from '@mui/material/Box';
 import { DataTableColumn, DataTableColumns, DataTableHeadersProps } from '../dataTableTypes';
 import DataTableHeader, { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import type { Theme } from '../../Theme';
@@ -31,6 +32,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     disableSelectAll,
     startsWithAction,
     endsWithAction,
+    icon,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
     },
@@ -70,19 +72,28 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     <div ref={containerRef} style={{ display: 'flex', height: 42 }}>
       {startsWithAction && (
       <div data-testid="dataTableCheckAll" style={checkboxStyle}>
-        <Checkbox
-          checked={selectAll}
-          sx={{
+        { icon ? (
+          <Box sx={{
             marginRight: 1,
             flex: '0 0 auto',
             paddingLeft: 0,
-            '&:hover': {
-              background: 'transparent',
-            },
           }}
-          onChange={handleToggleSelectAll}
-          disabled={!handleToggleSelectAll || disableSelectAll}
-        />
+          />
+        ) : (
+          <Checkbox
+            checked={selectAll}
+            sx={{
+              marginRight: 1,
+              flex: '0 0 auto',
+              paddingLeft: 0,
+              '&:hover': {
+                background: 'transparent',
+              },
+            }}
+            onChange={handleToggleSelectAll}
+            disabled={!handleToggleSelectAll || disableSelectAll}
+          />
+        )}
       </div>
       )}
 
@@ -157,7 +168,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
           )}
 
           {columns
-            .filter(({ id }) => !['select', 'navigate'].includes(id))
+            .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
             .map((column) => (
               <DataTableHeader
                 key={column.id}

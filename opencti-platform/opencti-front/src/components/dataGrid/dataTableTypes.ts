@@ -57,6 +57,7 @@ export interface DataTableContextProps {
   formatter: DataTableProps['formatter']
   variant: DataTableVariant
   actions?: DataTableProps['actions']
+  icon?: DataTableProps['icon']
   rootRef?: DataTableProps['rootRef']
   createButton?: DataTableProps['createButton']
   resetColumns: () => void
@@ -125,6 +126,7 @@ export interface DataTableProps {
   variant?: DataTableVariant
   rootRef?: HTMLDivElement
   actions?: (row: any) => ReactNode
+  icon?: (row: any) => ReactNode
   createButton?: ReactNode
   pageSize?: string
   disableNavigation?: boolean
