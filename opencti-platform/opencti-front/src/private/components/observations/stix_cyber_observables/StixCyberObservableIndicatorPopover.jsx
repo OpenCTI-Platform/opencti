@@ -16,6 +16,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNodeFromId } from '../../../../utils/store';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   container: {
@@ -135,6 +136,9 @@ class StixCyberObservableIndicatorPopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to remove the indicator from this observable?')}
@@ -152,7 +156,7 @@ class StixCyberObservableIndicatorPopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Remove')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

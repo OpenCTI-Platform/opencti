@@ -33,6 +33,7 @@ import ItemLikelihood from '../../../../components/ItemLikelihood';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DialogTitle from '@mui/material/DialogTitle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -288,6 +289,9 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
         slots={{ transition: Transition }}
         onClose={handleCloseDialog}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to remove this note from this entity?')}
@@ -298,7 +302,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
             {t_i18n('Cancel')}
           </Button>
           <Button onClick={handleRemoval} color="secondary" disabled={removing}>
-            {t_i18n('Remove')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

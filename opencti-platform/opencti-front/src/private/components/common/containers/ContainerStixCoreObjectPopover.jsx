@@ -25,6 +25,7 @@ import Security from '../../../../utils/Security';
 import { deleteElementByValue } from '../../../../utils/utils';
 import Transition from '../../../../components/Transition';
 import { serializeObjectB64 } from '../../../../utils/object';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   container: {
@@ -317,6 +318,9 @@ class ContainerStixCoreObjectPopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDeleteMapping.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete the mapping for this entity?')}
@@ -334,7 +338,7 @@ class ContainerStixCoreObjectPopover extends Component {
               onClick={this.handleSubmitDeleteMapping.bind(this)}
               disabled={this.state.deletingMapping}
             >
-              {t('Delete mapping')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -345,6 +349,9 @@ class ContainerStixCoreObjectPopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseRemove.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to remove the entity from this container?')}
@@ -362,7 +369,7 @@ class ContainerStixCoreObjectPopover extends Component {
               onClick={this.handleSubmitRemove.bind(this)}
               disabled={this.state.removing}
             >
-              {t('Remove')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -399,6 +406,9 @@ class ContainerStixCoreObjectPopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this entity?')}
@@ -421,7 +431,7 @@ class ContainerStixCoreObjectPopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
