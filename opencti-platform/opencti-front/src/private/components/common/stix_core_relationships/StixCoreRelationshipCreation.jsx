@@ -369,11 +369,11 @@ class StixCoreRelationshipCreation extends Component {
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const relationshipTypes = resolveRelationsTypes(
+          const relationshipTypes = R.uniq(resolveRelationsTypes(
             fromObjects[0].entity_type,
             toObjects[0].entity_type,
             schema.schemaRelationsTypesMapping,
-          );
+          ));
           return (
             <>
               <div className={classes.header}>
