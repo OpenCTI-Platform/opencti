@@ -3,7 +3,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import React from 'react';
+import React, { UIEvent } from 'react';
 import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
 import { AlertTitle } from '@mui/material';
@@ -13,7 +13,7 @@ import { Deletion } from '../utils/hooks/useDeletion';
 
 type DeleteDialogProps = {
   deletion: Deletion
-  submitDelete: () => void
+  submitDelete: (e: UIEvent) => void
   onClose?: () => void
   message: React.ReactNode
   warning?: {
@@ -36,7 +36,7 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
       slotProps={{ paper: { elevation: 1 } }}
       keepMounted={true}
       slots={{ transition: Transition }}
-      onClose={onClose ?? deletion.handleCloseDelete}
+      onClose={onClose ?? ((e) => deletion.handleCloseDelete(e as UIEvent))}
     >
       <DialogTitle>
         {t_i18n('Are you sure?')}

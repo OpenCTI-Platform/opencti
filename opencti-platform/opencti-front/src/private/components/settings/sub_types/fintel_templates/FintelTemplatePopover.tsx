@@ -1,17 +1,13 @@
 import MoreVert from '@mui/icons-material/MoreVert';
 import React, { UIEvent, useState } from 'react';
-import { MenuItem, Menu, PopoverProps, IconButton } from '@mui/material';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
+import { IconButton, Menu, MenuItem, PopoverProps } from '@mui/material';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import useFintelTemplateExport from './useFintelTemplateExport';
 import useFintelTemplateDelete from './useFintelTemplateDelete';
-import Transition from '../../../../../components/Transition';
 import stopEvent from '../../../../../utils/domEvent';
 import { useFormatter } from '../../../../../components/i18n';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
+import DeleteDialog from '../../../../../components/DeleteDialog';
 
 interface FintelTemplatePopoverProps {
   onUpdate: () => void,
@@ -33,30 +29,19 @@ const FintelTemplatePopover = ({
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [commitDeleteMutation, deleting] = useFintelTemplateDelete(entitySettingId);
 
+  const deletion = useDeletion({ handleClose: () => setAnchorEl(undefined) });
   const {
     handleOpenDelete,
-    displayDelete,
     handleCloseDelete,
-  } = useDeletion({});
+  } = deletion;
 
   const onOpenMenu = (e: UIEvent) => {
     stopEvent(e);
     setAnchorEl(e.currentTarget);
   };
 
-  const onHandleOpenDelete = (e: UIEvent) => {
-    stopEvent(e);
-    handleOpenDelete();
-  };
-
   const onCloseMenu = (e: UIEvent) => {
     stopEvent(e);
-    setAnchorEl(undefined);
-  };
-
-  const onHandleCloseDelete = (e: UIEvent) => {
-    stopEvent(e);
-    handleCloseDelete();
     setAnchorEl(undefined);
   };
 
@@ -107,30 +92,15 @@ const FintelTemplatePopover = ({
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
         <MenuItem onClick={update}>{t_i18n('Update')}</MenuItem>
-        <MenuItem onClick={onHandleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
       </Menu>
 
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayDelete}
-        slots={{ transition: Transition }}
-        onClose={onHandleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this FINTEL template?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onHandleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={onDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={onDelete}
+        message={t_i18n('Do you want to delete this FINTEL template?')}
+      />
     </>
   );
 };
