@@ -17,6 +17,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import RoleEdition from './RoleEdition';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = () => ({
   container: {
@@ -160,6 +161,9 @@ class RolePopover extends Component {
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this role?')}
@@ -177,7 +181,7 @@ class RolePopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
