@@ -11,12 +11,13 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rf
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 
 const XTM_OPENBAS_URL = conf.get('xtm:openbas_url');
+const XTM_OPENBAS_API_OVERRIDE_URL = conf.get('xtm:openbas_api_override_url');
 const XTM_OPENBAS_TOKEN = conf.get('xtm:openbas_token');
 const XTM_OPENBAS_REJECT_UNAUTHORIZED = conf.get('xtm:openbas_reject_unauthorized');
 
 export const buildXTmOpenBasHttpClient = () => {
   const httpClientOptions: GetHttpClient = {
-    baseURL: `${XTM_OPENBAS_URL}/api`,
+    baseURL: XTM_OPENBAS_API_OVERRIDE_URL || `${XTM_OPENBAS_URL}/api`,
     responseType: 'json',
     rejectUnauthorized: XTM_OPENBAS_REJECT_UNAUTHORIZED,
     headers: {
