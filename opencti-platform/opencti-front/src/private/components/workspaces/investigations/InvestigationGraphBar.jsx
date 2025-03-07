@@ -54,6 +54,7 @@ import StixCyberObservableEdition from '../../observations/stix_cyber_observable
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import TimeRange from '../../../../components/range_slider/RangeSlider';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = () => ({
   bottomNav: {
@@ -954,6 +955,9 @@ class InvestigationGraphBar extends Component {
                         TransitionComponent={Transition}
                         onClose={this.handleCloseRemove.bind(this)}
                       >
+                        <DialogTitle>
+                          {t('Are you sure?')}
+                        </DialogTitle>
                         <DialogContent>
                           <DialogContentText>
                             {t(
@@ -972,7 +976,7 @@ class InvestigationGraphBar extends Component {
                             }}
                             color="secondary"
                           >
-                            {t('Remove')}
+                            {t('Confirm')}
                           </Button>
                         </DialogActions>
                       </Dialog>
