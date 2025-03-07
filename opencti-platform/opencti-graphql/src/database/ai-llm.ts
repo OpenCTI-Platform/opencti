@@ -1,12 +1,16 @@
+import type { ChatPromptValueInterface } from '@langchain/core/prompt_values';
+import { ChatOpenAI } from '@langchain/openai';
 import { Mistral } from '@mistralai/mistralai';
+import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
 import OpenAI from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
-import { isEmptyField } from './utils';
-import { notify } from './redis';
+import { UnsupportedError } from '../config/errors';
+import { OpenCTIFiltersOutput } from '../modules/ai/ai-nlq-utils';
 import { AI_BUS } from '../modules/ai/ai-types';
 import type { AuthUser } from '../types/user';
-import { UnsupportedError } from '../config/errors';
 import { truncate } from '../utils/format';
+import { notify } from './redis';
+import { isEmptyField } from './utils';
 
 const AI_ENABLED = conf.get('ai:enabled');
 const AI_TYPE = conf.get('ai:type');
@@ -16,6 +20,7 @@ const AI_MODEL = conf.get('ai:model');
 const AI_MAX_TOKENS = conf.get('ai:max_tokens');
 
 let client: Mistral | OpenAI | null = null;
+let llm = null;
 if (AI_ENABLED && AI_TOKEN) {
   switch (AI_TYPE) {
     case 'mistralai':
@@ -28,6 +33,14 @@ if (AI_ENABLED && AI_TOKEN) {
           group: (label) => logApp.info(`[AI] group ${label} start.`),
           groupEnd: () => logApp.info('[AI] group end.'),
         } */
+      });
+      llm = new ChatOpenAI({
+        model: 'mistral',
+        apiKey: AI_TOKEN,
+        temperature: 0,
+        configuration: {
+          baseURL: `${AI_ENDPOINT}/v1`,
+        },
       });
       break;
     case 'openai':
@@ -47,13 +60,14 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
   }
   try {
     logApp.debug('[AI] Querying MistralAI with prompt', { questionStart: userMessage.substring(0, 100) });
-    const response = await (client as Mistral)?.chat.stream({
+    const request: ChatCompletionStreamRequest = {
       model: AI_MODEL,
       messages: [
         { role: 'system', content: systemMessage },
-        { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) }
+        { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) },
       ],
-    });
+    };
+    const response = await (client as Mistral)?.chat.stream(request);
     let content = '';
     if (response) {
       // eslint-disable-next-line no-restricted-syntax
@@ -126,4 +140,11 @@ export const queryAi = async (busId: string | null, developerMessage: string | n
     default:
       throw UnsupportedError('Not supported AI type', { type: AI_TYPE });
   }
+};
+
+export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
+  if (!llm) {
+    throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
+  }
+  return llm.withStructuredOutput(OpenCTIFiltersOutput).invoke(promptValue);
 };

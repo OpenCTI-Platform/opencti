@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addFilter, convertRelationRefsFilterKeys, checkFilterGroupSyntax, replaceFilterKey } from '../../../src/utils/filtering/filtering-utils';
+import { addFilter, checkFiltersValidity, convertRelationRefsFilterKeys, extractFilterGroupValues, replaceFilterKey } from '../../../src/utils/filtering/filtering-utils';
 import type { FilterGroup } from '../../../src/generated/graphql';
 
 describe('Filtering utils', () => {
@@ -12,7 +12,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFilterGroupSyntax(filterGroup1)).toThrowError('A filter key must be defined for every filter');
+    expect(() => checkFiltersValidity(filterGroup1)).toThrowError('Incorrect filters format');
     const filterGroup2 = {
       mode: 'or',
       filters: [
@@ -27,7 +27,7 @@ describe('Filtering utils', () => {
         filterGroups: [],
       }],
     } as FilterGroup;
-    expect(() => checkFilterGroupSyntax(filterGroup2)).toThrowError('A filter key must be defined for every filter');
+    expect(() => checkFiltersValidity(filterGroup2)).toThrowError('Incorrect filters format');
   });
   it('should check a filter syntax for filter with "within" operator', async () => {
     const filterGroup1 = {
@@ -37,7 +37,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFilterGroupSyntax(filterGroup1)).toThrowError('A filter with "within" operator must have 2 values');
+    expect(() => checkFiltersValidity(filterGroup1)).toThrowError('A filter with "within" operator must have 2 values');
     const filterGroup2 = {
       mode: 'or',
       filters: [
@@ -45,7 +45,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFilterGroupSyntax(filterGroup2)).toThrowError('A filter with "within" operator must have 2 values');
+    expect(() => checkFiltersValidity(filterGroup2)).toThrowError('A filter with "within" operator must have 2 values');
     const filterGroup3 = {
       mode: 'or',
       filters: [
@@ -53,7 +53,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFilterGroupSyntax(filterGroup3)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
+    expect(() => checkFiltersValidity(filterGroup3)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
     const filterGroup4 = {
       mode: 'or',
       filters: [
@@ -61,7 +61,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFilterGroupSyntax(filterGroup4)).not.toThrowError();
+    expect(() => checkFiltersValidity(filterGroup4)).not.toThrowError();
     const filterGroup5 = {
       mode: 'or',
       filters: [
@@ -69,7 +69,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFilterGroupSyntax(filterGroup5)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
+    expect(() => checkFiltersValidity(filterGroup5)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
     const filterGroup6 = {
       mode: 'or',
       filters: [
@@ -77,7 +77,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFilterGroupSyntax(filterGroup6)).not.toThrowError();
+    expect(() => checkFiltersValidity(filterGroup6)).not.toThrowError();
     const filterGroup7 = {
       mode: 'or',
       filters: [
@@ -85,7 +85,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFilterGroupSyntax(filterGroup7)).not.toThrowError();
+    expect(() => checkFiltersValidity(filterGroup7)).not.toThrowError();
     const filterGroup8 = {
       mode: 'or',
       filters: [
@@ -93,7 +93,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFilterGroupSyntax(filterGroup8)).toThrowError();
+    expect(() => checkFiltersValidity(filterGroup8)).toThrowError();
     const filterGroup9 = {
       mode: 'or',
       filters: [
@@ -101,7 +101,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFilterGroupSyntax(filterGroup9)).toThrowError();
+    expect(() => checkFiltersValidity(filterGroup9)).toThrowError();
   });
   it('should add a filter to a filter group and separate them with the AND mode', async () => {
     const filterGroup = {
@@ -219,5 +219,75 @@ describe('Filtering utils', () => {
     };
     const newFilter = convertRelationRefsFilterKeys(filterGroup);
     expect(newFilter).toEqual(expectedFilter);
+  });
+  it('should extract the filter values corresponding to a given array of filter keys', async () => {
+    const filterGroup1 = {
+      mode: 'or',
+      filters: [
+        { key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' },
+        { key: ['publication_date'], values: ['YYY'] },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(extractFilterGroupValues(filterGroup1, 'entity_type')).toStrictEqual(['Report']);
+    const filterGroup2 = {
+      mode: 'or',
+      filters: [
+        { key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' },
+        { key: ['publication_date'], values: ['YYY'], operator: 'gt' },
+      ],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [
+            { key: ['entity_type', 'parent_types'], values: ['City', 'Region'], operator: 'not_eq', mode: 'and' },
+            { key: 'objectLabel', values: ['label1'] },
+            { key: 'objectMarking', values: ['marking1'] },
+          ]
+        }
+      ],
+    } as FilterGroup;
+    expect(extractFilterGroupValues(filterGroup2, ['entity_type', 'objectMarking'])).toStrictEqual(['Report', 'City', 'Region', 'marking1']);
+    const filterGroup3 = {
+      mode: 'or',
+      filters: [
+        { key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' },
+        { key: ['publication_date'], values: ['YYY'], operator: 'gt' },
+      ],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [
+            { key: ['entity_type'], values: ['City', 'Region'], operator: 'not_eq', mode: 'and' },
+            { key: ['objectLabel'], values: ['label1'] },
+            { key: 'objectMarking', values: ['marking1'] },
+          ]
+        }
+      ],
+    } as FilterGroup;
+    expect(extractFilterGroupValues(filterGroup3, ['entity_type'], true)).toStrictEqual(['YYY', 'label1', 'marking1']);
+    const filterGroup4 = {
+      mode: 'or',
+      filters: [
+        { key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' },
+        { key: ['publication_date'], values: ['YYY'], operator: 'gt' },
+      ],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [
+            { key: 'entity_type', values: ['City', 'Region'], operator: 'not_eq', mode: 'and' },
+            { key: ['objectLabel'], values: ['label1'] },
+            { key: 'regardingOf',
+              values: [
+                { key: 'relationship_type', values: ['related-to'] },
+                { key: 'id', values: ['id1', 'id2'] },
+              ],
+            },
+          ]
+        }
+      ],
+    } as FilterGroup;
+    expect(extractFilterGroupValues(filterGroup4, ['objectLabel', 'regardingOf'])).toStrictEqual(['label1', 'id1', 'id2']);
   });
 });

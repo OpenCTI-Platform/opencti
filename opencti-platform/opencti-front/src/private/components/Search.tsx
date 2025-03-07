@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import {
@@ -190,9 +190,9 @@ const Search = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Knowledge Search | Advanced Search'));
-  const { keyword } = useParams() as { keyword: string };
+  const { keyword, filters: paramsFilters } = useParams() as { keyword: string, filters?: string };
 
-  const searchTerm = decodeSearchKeyword(keyword);
+  const searchTerm = paramsFilters ? undefined : decodeSearchKeyword(keyword);
 
   const initialValues = {
     sortBy: '_score',
@@ -207,9 +207,14 @@ const Search = () => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const {
-    filters,
-  } = viewStorage;
+  const filters = paramsFilters ? JSON.parse(paramsFilters) : viewStorage.filters;
+  useEffect(() => {
+    if (paramsFilters) {
+      storageHelpers.handleSetFilters(filters);
+    } else {
+      storageHelpers.handleClearAllFilters();
+    }
+  }, [paramsFilters]);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
   const queryPaginationOptions = {

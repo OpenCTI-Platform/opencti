@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Badge } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, AppsOutlined, AlarmOnOutlined, NotificationsOutlined, CloudUploadOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AlarmOnOutlined, AppsOutlined, NotificationsOutlined, CloudUploadOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
@@ -19,6 +19,7 @@ import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
+import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
@@ -32,7 +33,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
+import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from '../../../utils/SearchUtils';
 import octiDark from '../../../static/images/xtm/octi_dark.png';
 import octiLight from '../../../static/images/xtm/octi_light.png';
 import obasDark from '../../../static/images/xtm/obas_dark.png';
@@ -42,6 +43,9 @@ import xtmhubLight from '../../../static/images/xtm/xtm_hub_light.png';
 import { isNotEmptyField } from '../../../utils/utils';
 import useHelper from '../../../utils/hooks/useHelper';
 import ItemBoolean from '../../../components/ItemBoolean';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { RelayError } from '../../../relay/relayTypes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -71,9 +75,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     cursor: 'pointer',
     height: 35,
     marginRight: 4,
-  },
-  menuContainer: {
-    width: '30%',
   },
   barRight: {
     marginRight: theme.spacing(2),
@@ -135,6 +136,15 @@ const topBarQuery = graphql`
   }
 `;
 
+const topBarAskAINLQMutation = graphql`
+  mutation TopBarAskAINLQMutation($search: String!) {
+    aiNLQ(search: $search) {
+      filters
+      notResolvedValues
+    }
+  }
+`;
+
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
 }) => {
@@ -145,6 +155,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const location = useLocation();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const {
@@ -157,6 +168,10 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
   );
+  const [askAI, setAskAI] = useState(false);
+  const [isNLQLoading, setIsNLQLoading] = useState(false);
+  const [commitMutationNLQ] = useApiMutation<TopBarAskAINLQMutation>(topBarAskAINLQMutation);
+
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
   const handleNewNotificationsNumber = (
@@ -221,7 +236,29 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setXtmOpen({ open: false, anchorEl: null });
   };
   const handleSearch = (searchKeyword: string) => {
-    handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
+    if (askAI && isEnterpriseEdition) {
+      setIsNLQLoading(true);
+      commitMutationNLQ({
+        variables: {
+          search: searchKeyword,
+        },
+        onCompleted: (response: TopBarAskAINLQMutation$data) => {
+          setIsNLQLoading(false);
+          const notResolvedValues = response.aiNLQ?.notResolvedValues ?? [];
+          if (notResolvedValues.length > 0) {
+            MESSAGING$.notifyNLQ(`${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`);
+          }
+          handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ?.filters);
+        },
+        onError: (error: Error) => {
+          setIsNLQLoading(false);
+          const { errors } = (error as unknown as RelayError).res;
+          MESSAGING$.notifyError(errors.at(0)?.message);
+        },
+      });
+    } else {
+      handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
+    }
   };
   const handleOpenDrawer = () => {
     setOpenDrawer(true);
@@ -262,13 +299,18 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           </Link>
         </div>
         {hasKnowledgeAccess && (
-          <div className={classes.menuContainer} style={{ marginLeft: theme.spacing(3) }}>
+          <div
+            style={{ display: 'flex', marginLeft: theme.spacing(3) }}
+          >
             <SearchInput
               onSubmit={handleSearch}
               keyword={keyword}
+              setAskAI={setAskAI}
+              askAI={askAI}
               variant="topBar"
               placeholder={`${t_i18n('Search the platform')}...`}
               fullWidth={true}
+              isNLQLoading={askAI && isNLQLoading}
             />
           </div>
         )}

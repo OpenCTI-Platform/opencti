@@ -26,6 +26,7 @@ const RootSearch = () => {
     <Routes>
       <Route path="/knowledge" element={<SearchKnowledge />} />
       <Route path="/knowledge/:keyword" element={<SearchKnowledge />} />
+      <Route path="/nlq/:filters/:keyword" element={<SearchKnowledge />} />
       <Route path="/files" element={<SearchFiles />} />
       <Route path="/files/:keyword" element={<SearchFiles />} />
       <Route path="/" element={<Navigate to="/dashboard/search/knowledge" replace={true} />} />
