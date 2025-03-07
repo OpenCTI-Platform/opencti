@@ -225,6 +225,12 @@ export const schemaAttributesDefinition = {
   getAttributeByName(name: string): AttributeDefinition | undefined {
     return this.allAttributes.get(name);
   },
+  getAttributesNamesByType(entityType: string, type: string) {
+    const attributes = this.attributes[this.selectEntityType(entityType)] ?? new Map();
+    return Array.from(attributes.values())
+      .filter((a) => a.type === type)
+      .map((a) => a.name);
+  },
   isMultipleAttribute(entityType: string, attributeName: string): boolean {
     return this.getAttribute(entityType, attributeName)?.multiple ?? false;
   },
