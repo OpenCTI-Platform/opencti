@@ -64,7 +64,7 @@ DraftWorksComponentProps
     },
     timestamp: {
       id: 'Timestamp',
-      label: 'Timestamp',
+      label: 'Start time',
       percentWidth: 20,
       isSortable: false,
       render: ({ timestamp }, h) => defaultRender(h.nsdt(timestamp)),

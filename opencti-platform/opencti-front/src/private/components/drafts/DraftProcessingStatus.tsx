@@ -24,12 +24,16 @@ const DraftProcessingStatus = () => {
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       {!isCurrentDraftProcessing && (
-        <Tooltip title={t_i18n('Processing status')}>
-          <CheckCircleOutlined color="success"/>
+        <Tooltip title={t_i18n('No processes running')}>
+          <CheckCircleOutlined
+            onClick={() => { setDisplayProcesses(true); }}
+            color="success"
+            style={{ cursor: 'pointer' }}
+          />
         </Tooltip>
       )}
       {isCurrentDraftProcessing && (
-        <Tooltip title={t_i18n('Processing status')}>
+        <Tooltip title={t_i18n('Processes currently running')}>
           <Badge
             badgeContent={currentDraftProcessingCount}
             color="warning"
@@ -48,7 +52,7 @@ const DraftProcessingStatus = () => {
         onClose={() => { setDisplayProcesses(false); }}
       >
         <>
-          <Alert severity="info">{t_i18n('This page lists the works and tasks of the current draft')}</Alert>
+          <Alert severity="info">{t_i18n('This page lists the most recent works and tasks of the current draft')}</Alert>
           <Tabs style={{ paddingBottom: 10 }} value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
             <Tab label={t_i18n('Works')} value="Works" />
             <Tab label={t_i18n('Tasks')} value="Tasks" />

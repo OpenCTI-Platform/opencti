@@ -15,9 +15,9 @@ import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.
 import { graphql, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
-import CircularProgress from '@mui/material/CircularProgress';
-import { CheckCircleOutlined } from '@mui/icons-material';
 import { interval } from 'rxjs';
+import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
+import Paper from '@mui/material/Paper';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -80,10 +80,6 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
 
   const { name, objectsCount, draft_status, validationWork } = useFragment(draftRootFragment, draftWorkspace);
   const isDraftReadOnly = draft_status !== 'open';
-  const currentProgress = validationWork?.tracking?.import_processed_number ?? '0';
-  const requiredProgress = validationWork?.tracking?.import_expected_number ?? '0';
-  const isValidating = validationWork?.status === 'wait' || validationWork?.status === 'progress';
-  const validationProgress = requiredProgress !== 0 ? Math.floor(100 * (currentProgress / requiredProgress)) : 0;
 
   // switch to draft
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
@@ -136,22 +132,24 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
               {truncate(name, 80)}
             </Typography>
           </Tooltip>
-          {!isValidating && (
-          <Tooltip title={t_i18n('Completed')}>
-            <CheckCircleOutlined color="success"/>
-          </Tooltip>
-          )}
-          {isValidating && (
-          <Tooltip title={t_i18n('Validation progress')}>
-            <CircularProgress
-              variant={'determinate'}
-              size={20}
-              value={validationProgress}
-              color={'primary'}
-            />
-          </Tooltip>
-          )}
         </div>
+        <Paper
+          key={validationWork.id}
+          style={{ margin: '10px 0 20px 0', padding: '15px', borderRadius: 4, position: 'relative' }}
+          variant="outlined"
+        >
+          <ConnectorWorkLine
+            workId={validationWork.id}
+            workName={validationWork.name}
+            workStatus={validationWork.status}
+            workReceivedTime={validationWork.received_time}
+            workEndTime={validationWork.completed_time}
+            workExpectedNumber={validationWork.tracking?.import_processed_number}
+            workProcessedNumber={validationWork.tracking?.import_expected_number}
+            workErrors={validationWork.errors}
+            readOnly
+          />
+        </Paper>
       </>
       )}
       <Box
