@@ -42,6 +42,28 @@ export const entitySettingFragment = graphql`
         width
         label
     }
+    requestAccessConfiguration {
+        id
+        approval_admin {
+            id
+            name
+        }
+        declined_status {
+            id
+            template {
+                id
+                name
+                color
+            }
+        }
+        approved_status {
+            template {
+                id
+                name
+                color
+            }
+        }
+    }
   }
 `;
 

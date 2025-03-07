@@ -12,10 +12,12 @@ import {
   OrderingMode,
   type QueryStatusesArgs,
   type QueryStatusTemplatesArgs,
+  type QueryStatusTemplatesByStatusScopeArgs,
   type StatusAddInput,
   StatusOrdering,
+  StatusScope,
   type StatusTemplate,
-  type StatusTemplateAddInput
+  type StatusTemplateAddInput,
 } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -33,6 +35,18 @@ export const findTemplateById = (context: AuthContext, user: AuthUser, statusTem
 };
 export const findAllTemplates = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesArgs) => {
   return listEntitiesPaginated<BasicStoreEntity>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
+};
+export const findAllTemplatesByStatusScope = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesByStatusScopeArgs) => {
+  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+  const allStatusesByScope = platformStatuses.filter((status) => status.scope === args.scope);
+  const templateByScope: StatusTemplate[] = [];
+
+  for (let i = 0; i < allStatusesByScope.length; i += 1) {
+    const status = allStatusesByScope[i];
+    const templateForStatus = await storeLoadById(context, user, status.template_id, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
+    templateByScope.push(templateForStatus);
+  }
+  return templateByScope;
 };
 export const findById = async (context: AuthContext, user: AuthUser, statusId: string): Promise<BasicWorkflowStatus> => {
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
@@ -64,14 +78,39 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
     [SEMATTRS_DB_OPERATION]: 'read',
   }, getTypeStatusesFn);
 };
-export const batchStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
+
+// For now, we duplicate the method, there is a strange behavior with the batch loading.
+// For some reason when scope is an args of statuses and is called twice in the same graphQL query, first scope is applied for all.
+export const batchRequestAccessStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
+  const batchStatusesByTypeFn = async () => {
+    const argsFilter = {
+      orderBy: StatusOrdering.Order,
+      orderMode: OrderingMode.Asc,
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['type'], values: types }, { key: ['scope'], values: [StatusScope.RequestAccess] }],
+        filterGroups: [],
+      },
+      connectionFormat: false
+    };
+    const statuses = await listAllEntities<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], argsFilter);
+    const statusesGrouped = R.groupBy((e) => e.type, statuses);
+    return types.map((type) => statusesGrouped[type] || []);
+  };
+  return telemetry(context, user, 'BATCH type statuses', {
+    [SEMATTRS_DB_NAME]: 'statuses_domain',
+    [SEMATTRS_DB_OPERATION]: 'read',
+  }, batchStatusesByTypeFn);
+};
+
+export const batchGlobalStatusesByType = async (context: AuthContext, user: AuthUser, types: string[]) => {
   const batchStatusesByTypeFn = async () => {
     const args = {
       orderBy: StatusOrdering.Order,
       orderMode: OrderingMode.Asc,
       filters: {
         mode: FilterMode.And,
-        filters: [{ key: ['type'], values: types }],
+        filters: [{ key: ['type'], values: types }, { key: ['scope'], values: [StatusScope.Global] }],
         filterGroups: [],
       },
       connectionFormat: false
@@ -111,7 +150,7 @@ export const createStatus = async (context: AuthContext, user: AuthUser, subType
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, data, user);
 };
-export const statusEditField = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string, input: EditInput) => {
+export const statusEditField = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string, input: EditInput[]) => {
   validateSetting(subTypeId, 'workflow_configuration');
   const { element } = await updateAttribute(context, user, statusId, ENTITY_TYPE_STATUS, input);
   await publishUserAction({

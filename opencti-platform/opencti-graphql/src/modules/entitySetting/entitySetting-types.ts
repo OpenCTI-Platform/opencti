@@ -39,12 +39,19 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   availableSettings?: string[];
   overview_layout_customization?: Array<OverviewLayoutCustomization>;
   templates?: Array<FintelTemplate>;
+  request_access_workflow?: RequestAccessFlow
 }
 
 export interface OverviewLayoutCustomization {
   key: string;
   width: number;
   label: string;
+}
+
+export interface RequestAccessFlow {
+  approved_workflow_id?: string;
+  declined_workflow_id?: string;
+  approval_admin: string[];
 }
 
 export interface StoreEntityEntitySetting extends StoreEntity {
@@ -57,6 +64,7 @@ export interface StoreEntityEntitySetting extends StoreEntity {
   availableSettings?: string[];
   overviewLayoutCustomization?: Array<string>;
   templates?: Array<FintelTemplate>;
+  request_access_workflow?: RequestAccessFlow
 }
 
 export interface StixEntitySetting extends StixObject {
@@ -68,6 +76,7 @@ export interface StixEntitySetting extends StixObject {
   workflow_configuration: boolean;
   available_settings?: string[];
   templates?: Array<FintelTemplate>;
+  request_access_workflow?: RequestAccessFlow
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   }
