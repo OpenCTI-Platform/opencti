@@ -32,8 +32,8 @@ interface ConnectorWorkLineProps {
   workId: string
   workName: string | null | undefined;
   workStatus: State;
-  workReceivedTime: any;
-  workEndTime: any;
+  workReceivedTime: string;
+  workEndTime: string;
   workExpectedNumber: number | null | undefined;
   workProcessedNumber: number | null | undefined;
   workErrors: WorkMessages | null | undefined ;

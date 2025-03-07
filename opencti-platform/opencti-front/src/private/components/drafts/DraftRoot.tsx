@@ -13,8 +13,6 @@ import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
 import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.graphql';
 import { graphql, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import Tooltip from '@mui/material/Tooltip';
 import { interval } from 'rxjs';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
 import Paper from '@mui/material/Paper';
@@ -28,7 +26,6 @@ import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
 import Import from '../data/import/Import';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import { truncate } from '../../../utils/String';
 import { TEN_SECONDS } from '../../../utils/Time';
 
 const interval$ = interval(TEN_SECONDS);
@@ -120,19 +117,6 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
           { label: name, current: true },
         ]}
         />
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <Tooltip title={name}>
-            <Typography
-              variant="h1"
-              sx={{
-                margin: 0,
-                lineHeight: 'unset',
-              }}
-            >
-              {truncate(name, 80)}
-            </Typography>
-          </Tooltip>
-        </div>
         <Paper
           key={validationWork.id}
           style={{ margin: '10px 0 20px 0', padding: '15px', borderRadius: 4, position: 'relative' }}
