@@ -17,6 +17,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import StixNestedRefRelationshipEdition from './StixNestedRefRelationshipEdition';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   container: {
@@ -151,6 +152,9 @@ class StixNestedRefRelationshipPopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this relation?')}
@@ -168,7 +172,7 @@ class StixNestedRefRelationshipPopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

@@ -22,6 +22,7 @@ import StixCyberObservableEditionContainer from './StixCyberObservableEditionCon
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -150,6 +151,9 @@ class StixCyberObservablePopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this observable?')}
@@ -167,7 +171,7 @@ class StixCyberObservablePopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

@@ -17,6 +17,7 @@ import { commitMutation } from '../../../../relay/environment';
 import KillChainPhaseEdition from './KillChainPhaseEdition';
 import Transition from '../../../../components/Transition';
 import { deleteNode } from '../../../../utils/store';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = () => ({
   container: {
@@ -127,6 +128,9 @@ class KillChainPhasePopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this kill chain phase?')}
@@ -144,7 +148,7 @@ class KillChainPhasePopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

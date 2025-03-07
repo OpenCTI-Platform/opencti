@@ -18,6 +18,7 @@ import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import StreamCollectionEdition, { streamCollectionMutationFieldPatch } from './StreamCollectionEdition';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   container: {
@@ -171,6 +172,9 @@ class StreamCollectionPopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this live stream?')}
@@ -181,7 +185,7 @@ class StreamCollectionPopover extends Component {
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Cancel')}
+              {t('Confirm')}
             </Button>
             <Button
               color="secondary"

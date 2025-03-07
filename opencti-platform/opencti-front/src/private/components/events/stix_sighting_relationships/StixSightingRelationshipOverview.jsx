@@ -42,6 +42,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   container: {
@@ -608,6 +609,9 @@ class StixSightingRelationshipContainer extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this sighting?')}
@@ -625,7 +629,7 @@ class StixSightingRelationshipContainer extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

@@ -16,6 +16,9 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import UserEdition from './UserEdition';
 import Transition from '../../../../components/Transition';
+import DialogContentText from '@mui/material/DialogContentText';
+import { AlertTitle } from '@mui/material';
+import Alert from '@mui/material/Alert';
 
 const userPopoverDeletionMutation = graphql`
   mutation UserPopoverDeletionMutation($id: ID!) {
@@ -125,13 +128,20 @@ class UserPopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
-          <DialogTitle>{t('Do you want to delete this user?')}</DialogTitle>
-          <DialogContent dividers>
-            <ul>
-              <li>{t('All notifications, triggers and digests associated with the user will be deleted.')}</li>
-              <li>{t('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
-            </ul>
-            {t('If you want to keep the associated information, we recommend deactivating the user instead.')}
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to delete this user?')}
+            </DialogContentText>
+            <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
+              <AlertTitle>{t('If you want to keep the associated information, we recommend deactivating the user instead.')}</AlertTitle>
+              <ul>
+                <li>{t('All notifications, triggers and digests associated with the user will be deleted.')}</li>
+                <li>{t('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
+              </ul>
+            </Alert>
           </DialogContent>
           <DialogActions>
             <Button
@@ -145,7 +155,7 @@ class UserPopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

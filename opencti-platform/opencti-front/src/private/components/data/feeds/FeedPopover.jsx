@@ -18,6 +18,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import FeedEdition from './FeedEdition';
 import FeedCreation from './FeedCreation';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = () => ({
   container: {
@@ -198,6 +199,9 @@ class FeedPopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this feed?')}
@@ -215,7 +219,7 @@ class FeedPopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

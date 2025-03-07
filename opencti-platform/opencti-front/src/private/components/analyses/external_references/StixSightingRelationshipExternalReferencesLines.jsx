@@ -37,6 +37,7 @@ import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -395,6 +396,9 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           slots={{ transition: Transition }}
           onClose={this.handleCloseDialog.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to remove this external reference?')}
@@ -412,7 +416,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
               color="primary"
               disabled={this.state.removing}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
