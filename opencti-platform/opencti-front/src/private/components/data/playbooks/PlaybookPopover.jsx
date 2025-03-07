@@ -83,7 +83,7 @@ const PlaybookPopover = (props) => {
     setAnchorEl(null);
     setDisplayStop(true);
   };
-  const deletion = useDeletion({});
+  const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
   const { setDeleting, handleOpenDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);

@@ -4,22 +4,7 @@ import * as R from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
-import {
-  AccountBalanceOutlined,
-  AspectRatio,
-  CenterFocusStrongOutlined,
-  DateRangeOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  FilterAltOffOutlined,
-  FilterListOutlined,
-  GestureOutlined,
-  HubOutlined,
-  LinkOutlined,
-  PolylineOutlined,
-  ScatterPlotOutlined,
-  VisibilityOutlined,
-} from '@mui/icons-material';
+import { AccountBalanceOutlined, AspectRatio, CenterFocusStrongOutlined, DateRangeOutlined, DeleteOutlined, EditOutlined, FilterAltOffOutlined, FilterListOutlined, GestureOutlined, HubOutlined, LinkOutlined, PolylineOutlined, ScatterPlotOutlined, VisibilityOutlined, } from '@mui/icons-material';
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
@@ -66,6 +51,7 @@ import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ContainerAddStixCoreObjectsInGraph from '../../common/containers/ContainerAddStixCoreObjectsInGraph';
 import TimeRange from '../../../../components/range_slider/RangeSlider';
+import DialogContentText from '@mui/material/DialogContentText';
 
 const styles = () => ({
   bottomNav: {
@@ -1142,11 +1128,11 @@ class GroupingKnowledgeGraphBar extends Component {
                         {t('Are you sure?')}
                       </DialogTitle>
                       <DialogContent>
-                        <Typography variant="body">
+                        <DialogContentText>
                           {t(
                             'Do you want to remove these elements from this grouping?',
                           )}
-                        </Typography>
+                        </DialogContentText>
                         <Alert
                           severity="warning"
                           variant="outlined"
@@ -1178,7 +1164,7 @@ class GroupingKnowledgeGraphBar extends Component {
                           onClick={this.handleSubmitRemoveElements.bind(this)}
                           color="secondary"
                         >
-                          {t('Remove')}
+                          {t('Confirm')}
                         </Button>
                       </DialogActions>
                     </Dialog>
