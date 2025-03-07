@@ -99,7 +99,7 @@ const Labels = () => {
   const { t_i18n } = useFormatter();
 
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Taxonomies: Labels | Settings'));
+  setTitle(t_i18n('Labels | Taxonomies | Settings'));
   const initialValues = {
     sortBy: 'value',
     orderAsc: true,

@@ -57,7 +57,7 @@ const Groups = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security: Groups | Settings'));
+  setTitle(t_i18n('Groups | Security | Settings'));
   const params = buildViewParamsFromUrlAndStorage(
     navigate,
     location,

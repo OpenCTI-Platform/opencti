@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "6.5.3",
+  "version": "6.5.5",
   "private": true,
   "main": "src/front.tsx",
   "dependencies": {
@@ -22,7 +22,7 @@
     "@rjsf/mui": "5.24.3",
     "@rjsf/utils": "5.24.3",
     "analytics": "0.8.16",
-    "apexcharts": "4.4.0",
+    "apexcharts": "4.5.0",
     "axios": "1.7.9",
     "buffer": "6.0.3",
     "ckeditor5": "43.3.1",
@@ -32,7 +32,7 @@
     "d3-scale": "4.0.2",
     "d3-timer": "3.0.1",
     "dagre": "0.8.5",
-    "date-fns": "3.6.0",
+    "date-fns": "4.1.0",
     "dompurify": "3.2.4",
     "extract-files": "13.0.0",
     "filigran-icon": "0.14.0",
@@ -82,7 +82,7 @@
     "react-rectangle-selection": "1.0.4",
     "react-relay": "17.0.0",
     "react-relay-network-modern": "6.2.2",
-    "react-router-dom": "6.29.0",
+    "react-router-dom": "6.30.0",
     "react-syntax-highlighter": "15.6.1",
     "react-transition-group": "4.4.5",
     "react-virtualized": "9.22.5",
@@ -108,7 +108,7 @@
     "@testing-library/user-event": "14.6.1",
     "@types/d3-scale": "4.0.9",
     "@types/html-to-pdfmake": "2.4.4",
-    "@types/node": "22.13.5",
+    "@types/node": "22.13.9",
     "@types/qrcode": "1.5.5",
     "@types/ramda": "0.30.2",
     "@types/react": "18.3.18",
@@ -141,9 +141,9 @@
     "express": "4.21.2",
     "fs-extra": "11.3.0",
     "http-proxy-middleware": "3.0.3",
-    "i18n-auto-translation": "1.10.1",
-    "jsdom": "25.0.1",
-    "monocart-reporter": "2.9.13",
+    "i18n-auto-translation": "2.1.1",
+    "jsdom": "26.0.0",
+    "monocart-reporter": "2.9.15",
     "react-test-renderer": "18.3.1",
     "relay-compiler": "17.0.0",
     "relay-test-utils": "17.0.0",
@@ -206,5 +206,5 @@
   "workspaces": [
     "packages/*"
   ],
-  "packageManager": "yarn@4.6.0"
+  "packageManager": "yarn@4.7.0"
 }

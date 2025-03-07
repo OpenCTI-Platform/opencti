@@ -26,7 +26,7 @@ const Sessions = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security: Sessions | Settings'));
+  setTitle(t_i18n('Sessions | Security | Settings'));
   const { viewStorage, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {},

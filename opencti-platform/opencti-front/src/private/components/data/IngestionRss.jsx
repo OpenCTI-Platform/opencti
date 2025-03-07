@@ -30,7 +30,7 @@ const IngestionRss = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Ingestion: RSS Feeds | Data'));
+  setTitle(t_i18n('RSS Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,

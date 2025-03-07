@@ -24,7 +24,7 @@ const useStyles = makeStyles(() => ({
 const Tasks = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Processing: Tasks | Data'));
+  setTitle(t_i18n('Tasks | Processing | Data'));
   const classes = useStyles();
   const { platformModuleHelpers } = useAuth();
   const optionsInProgress = {

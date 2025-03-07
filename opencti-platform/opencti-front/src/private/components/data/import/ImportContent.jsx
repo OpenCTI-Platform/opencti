@@ -174,7 +174,7 @@ const ImportContentComponent = ({
   const { isFeatureEnable } = useHelper();
   const draftContext = useDraftContext();
   const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
-  setTitle(t_i18n('Import: Import | Data'));
+  setTitle(t_i18n('Import | Import | Data'));
 
   const [fileToImport, setFileToImport] = useState(null);
   const [fileToValidate, setFileToValidate] = useState(null);

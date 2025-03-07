@@ -97,7 +97,7 @@ const markingDefinitionsLinesFragment = graphql`
 const MarkingDefinitions = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security: Marking Definitions | Settings'));
+  setTitle(t_i18n('Marking Definitions | Security | Settings'));
 
   const initialValues = {
     searchTerm: '',
