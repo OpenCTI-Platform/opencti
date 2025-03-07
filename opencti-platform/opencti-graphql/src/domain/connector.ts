@@ -18,13 +18,13 @@ import { publishUserAction } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
 import {
+  ConnectorType,
+  type EditContext,
   type EditInput,
+  type MutationSynchronizerTestArgs,
   type RegisterConnectorInput,
   type SynchronizerAddInput,
-  type SynchronizerFetchInput,
-  type EditContext,
-  type MutationSynchronizerTestArgs,
-  ConnectorType
+  type SynchronizerFetchInput
 } from '../generated/graphql';
 import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
@@ -115,7 +115,7 @@ interface RegisterOptions {
 }
 export const registerConnector = async (context: AuthContext, user:AuthUser, connectorData:RegisterConnectorInput, opts: RegisterOptions = {}) => {
   // eslint-disable-next-line camelcase
-  const { id, name, type, scope, auto = null, only_contextual = null, playbook_compatible = false } = connectorData;
+  const { id, name, type, scope, auto = null, only_contextual = null, playbook_compatible = false, listen_callback_uri } = connectorData;
   const conn = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
@@ -129,6 +129,7 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
       auto,
       only_contextual,
       playbook_compatible,
+      listen_callback_uri,
       connector_user_id: opts.connector_user_id ?? user.id,
       built_in: opts.built_in ?? false
     };
@@ -149,6 +150,7 @@ export const registerConnector = async (context: AuthContext, user:AuthUser, con
     auto,
     only_contextual,
     playbook_compatible,
+    listen_callback_uri,
     connector_user_id: opts.connector_user_id ?? user.id,
     built_in: opts.built_in ?? false,
   };
