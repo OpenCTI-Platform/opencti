@@ -119,15 +119,11 @@ const MarkingDefinitions = () => {
   const definitionTypeRender: DataTableColumn['render'] = (
     data: MarkingDefinitionsLine_node$data,
   ) => {
-    const { standard_id, definition_type, x_opencti_color } = data;
+    const { standard_id, definition_type } = data;
     const { isSensitive } = useSensitiveModifications('markings', standard_id);
     return (
       <Tooltip title={definition_type}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <ItemIcon
-            type="Marking-Definition"
-            color={x_opencti_color ?? undefined}
-          />
           <Truncate>{definition_type}</Truncate>
           {isSensitive && <DangerZoneChip />}
         </div>
@@ -135,7 +131,23 @@ const MarkingDefinitions = () => {
     );
   };
 
+  const iconRender: DataTableColumn['render'] = (
+    data: MarkingDefinitionsLine_node$data,
+  ) => {
+    const { x_opencti_color } = data;
+    return (
+      <ItemIcon
+        type="Marking-Definition"
+        color={x_opencti_color ?? undefined}
+      />
+    );
+  };
+
   const dataColumns = {
+    icon: {
+      percentWidth: 3,
+      render: iconRender,
+    },
     definition_type: {
       percentWidth: 25,
       render: definitionTypeRender,
@@ -143,7 +155,7 @@ const MarkingDefinitions = () => {
     definition: { percentWidth: 25 },
     x_opencti_color: { percentWidth: 15 },
     x_opencti_order: { percentWidth: 15 },
-    created: { percentWidth: 20 },
+    created: { percentWidth: 17 },
   };
 
   const queryRef = useQueryLoading(
