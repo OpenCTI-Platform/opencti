@@ -246,7 +246,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           setIsNLQLoading(false);
           const notResolvedValues = response.aiNLQ?.notResolvedValues ?? [];
           if (notResolvedValues.length > 0) {
-            MESSAGING$.notifyNLQ(t_i18n(`Some entities you mentioned have not been found in the platform: ${notResolvedValues}`));
+            MESSAGING$.notifyNLQ(`${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`);
           }
           handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ?.filters);
         },
