@@ -19,8 +19,8 @@ import { ObjectToParse } from '../utils/useGraphParser';
 import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './GraphToolbarRemoveConfirm';
 
 export interface GraphToolbarContentToolsProps {
-  stixCoreObjectRefetchQuery: GraphQLTaggedNode
-  relationshipRefetchQuery: GraphQLTaggedNode
+  stixCoreObjectRefetchQuery?: GraphQLTaggedNode
+  relationshipRefetchQuery?: GraphQLTaggedNode
   onAddRelation?: (rel: ObjectToParse, onCompleted: () => void) => void
   entity?: GraphEntity
   enableReferences?: boolean
@@ -138,10 +138,12 @@ const GraphToolbarContentTools = ({
         />
       )}
 
-      <GraphToolbarEditObject
-        stixCoreObjectRefetchQuery={stixCoreObjectRefetchQuery}
-        relationshipRefetchQuery={relationshipRefetchQuery}
-      />
+      {stixCoreObjectRefetchQuery && relationshipRefetchQuery && (
+        <GraphToolbarEditObject
+          stixCoreObjectRefetchQuery={stixCoreObjectRefetchQuery}
+          relationshipRefetchQuery={relationshipRefetchQuery}
+        />
+      )}
 
       {onAddRelation && entity && (
         <>
