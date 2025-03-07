@@ -35,11 +35,11 @@ if (AI_ENABLED && AI_TOKEN) {
         } */
       });
       llm = new ChatOpenAI({
-        modelName: 'mistral',
+        model: 'mistral',
         apiKey: AI_TOKEN,
         temperature: 0,
         configuration: {
-          baseURL: 'https://ai.filigran.io/v1',
+          baseURL: `${AI_ENDPOINT}/v1`,
         },
       });
       break;

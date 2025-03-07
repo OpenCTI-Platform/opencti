@@ -349,7 +349,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   try {
     rawResponse = await callWithTimeout(queryNLQAi(promptValue), NLQ_TIMEOUT);
   } catch (error) {
-    throw UnknownError('The NLQ model takes too long to respond', { error, promptValue });
+    throw UnknownError('Error when calling the NLQ model', { error, promptValue });
   }
   const parsedResponse = rawResponse as unknown as FilterGroup;
 
