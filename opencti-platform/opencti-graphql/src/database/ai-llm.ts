@@ -54,7 +54,7 @@ if (AI_ENABLED && AI_TOKEN) {
   }
 }
 
-export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser, requestOpts?: any) => {
+export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -66,7 +66,6 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
         { role: 'system', content: systemMessage },
         { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) },
       ],
-      ...requestOpts,
     };
     const response = await (client as Mistral)?.chat.stream(request);
     let content = '';
@@ -131,11 +130,11 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
   }
 };
 
-export const queryAi = async (busId: string | null, developerMessage: string | null, userMessage: string, user: AuthUser, requestOpts?: any) => {
+export const queryAi = async (busId: string | null, developerMessage: string | null, userMessage: string, user: AuthUser) => {
   const finalDeveloperMessage = developerMessage || 'You are an assistant helping a cyber threat intelligence analyst to better understand cyber threat intelligence data.';
   switch (AI_TYPE) {
     case 'mistralai':
-      return queryMistralAi(busId, finalDeveloperMessage, userMessage, user, requestOpts);
+      return queryMistralAi(busId, finalDeveloperMessage, userMessage, user);
     case 'openai':
       return queryChatGpt(busId, finalDeveloperMessage, userMessage, user);
     default:
