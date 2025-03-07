@@ -5,7 +5,6 @@ import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Fab from '@mui/material/Fab';
 import IconButton from '@mui/material/IconButton';
@@ -61,10 +60,11 @@ import WorkbenchFileToolbar from './WorkbenchFileToolbar';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import RichTextField from '../../../../../components/fields/RichTextField';
 import Drawer from '../../drawer/Drawer';
-import Transition from '../../../../../components/Transition';
 import { markingDefinitionsLinesSearchQuery } from '../../../settings/MarkingDefinitionsQuery';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
+import DeleteDialog from '../../../../../components/DeleteDialog';
+import useDeletion from '../../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -509,6 +509,9 @@ const WorkbenchFileContentComponent = ({
   if (selectAll) {
     numberOfSelectedElements = elements.length - Object.keys(deSelectedElements || {}).length;
   }
+
+  const deletion = useDeletion({});
+  const { handleOpenDelete, handleCloseDelete } = deletion;
   // endregion
 
   // region control
@@ -562,8 +565,14 @@ const WorkbenchFileContentComponent = ({
       setSelectedElements(newSelectedElements);
     }
   };
-  const handleDeleteObject = (object) => setDeleteObject(object);
-  const handleCloseDeleteObject = () => setDeleteObject(null);
+  const handleDeleteObject = (object) => {
+    setDeleteObject(object);
+    handleOpenDelete();
+  };
+  const handleCloseDeleteObject = () => {
+    setDeleteObject(null);
+    handleCloseDelete();
+  };
 
   const handleOpenEntity = (type, id) => {
     setEntityStep(0);
@@ -1123,6 +1132,7 @@ const WorkbenchFileContentComponent = ({
     setStixSightings(finalStixSightings);
     setContainers(finalContainers);
     setDeleteObject(null);
+    handleCloseDelete();
   };
 
   const onSubmitEntity = (values) => {
@@ -4223,25 +4233,11 @@ const WorkbenchFileContentComponent = ({
       {currentTab === 2 && renderRelationships()}
       {currentTab === 3 && renderSightings()}
       {currentTab === 4 && renderContainers()}
-      <Dialog
-        open={!!deleteObject}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted
-        slots={{ transition: Transition }}
-        onClose={handleCloseDeleteObject}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to remove this object?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteObject}>{t_i18n('Cancel')}</Button>
-          <Button color="secondary" onClick={() => submitDeleteObject()}>
-            {t_i18n('Remove')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={() => submitDeleteObject()}
+        message={t_i18n('Do you want to remove this object?')}
+      />
       <Formik
         enableReinitialize={true}
         initialValues={{
