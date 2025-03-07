@@ -1,4 +1,3 @@
-/* eslint-disable no-useless-escape */
 /*
 Copyright (c) 2021-2025 Filigran SAS
 
