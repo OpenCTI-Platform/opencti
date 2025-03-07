@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { DeleteOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
-import { interval } from 'rxjs';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -16,13 +15,11 @@ import IconButton from '@mui/material/IconButton';
 import { graphql, createRefetchContainer } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation } from '../../../relay/environment';
-import { FIVE_SECONDS, timestamp } from '../../../utils/Time';
+import { timestamp } from '../../../utils/Time';
 import { userSessionKillMutation } from './users/User';
 import ItemIcon from '../../../components/ItemIcon';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
-
-const interval$ = interval(FIVE_SECONDS);
 
 const useStyles = makeStyles((theme) => ({
   item: {},
@@ -30,24 +27,13 @@ const useStyles = makeStyles((theme) => ({
     paddingLeft: theme.spacing(4),
   },
   name: {
-    width: '20%',
+    width: '100%',
     height: 20,
     lineHeight: '20px',
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-  },
-  email: {
-    width: '70%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: '#a5a5a5',
-    fontSize: 12,
   },
   created: {
     width: '50%',
@@ -57,6 +43,7 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    fontSize: 12,
   },
   ttl: {
     width: '40%',
@@ -82,13 +69,6 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
   const [killing, setKilling] = useState(false);
   const [sessionToKill, setSessionToKill] = useState(null);
 
-  useEffect(() => {
-    const subscription = interval$.subscribe(() => relay.refetch());
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
   const handleOpenKillSession = (session) => {
     setDisplayKillSession(true);
     setSessionToKill(session);
@@ -109,6 +89,7 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
       onCompleted: () => {
         setKilling(false);
         handleCloseKillSession();
+        relay.refetch(); // refetch sessions after killing to refresh the list
       },
       onError: () => {
         setKilling(false);
@@ -147,11 +128,10 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                 </ListItemIcon>
                 <ListItemText
                   primary={
-                    <div>
-                      <div className={classes.name}>{user.name}</div>
-                      <div className={classes.email}>{user.email}</div>
+                    <div className={classes.name}>
+                      {user.name} {orderedSessions.length < session.total && (<> - {orderedSessions.length} / {session.total} {t_i18n('sessions')}</>)}
                     </div>
-                  }
+                    }
                 />
                 <ListItemIcon classes={{ root: classes.goIcon }}>
                   &nbsp;
@@ -171,7 +151,7 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                       primary={
                         <div>
                           <div className={classes.created}>
-                            {nsdt(userSession.created)}
+                            {nsdt(userSession.created)} {userSession.user_execution?.name ? (<b>- Impersonating {userSession.user_execution?.name}</b>) : ''}
                           </div>
                           <div className={classes.ttl}>
                             {Math.round(userSession.ttl / 60)}{' '}
@@ -246,10 +226,14 @@ export default createRefetchContainer(
             id
             name
           }
+          total
           sessions {
             id
             created
             ttl
+            user_execution {
+              name
+            }
             originalMaxAge
           }
         }
