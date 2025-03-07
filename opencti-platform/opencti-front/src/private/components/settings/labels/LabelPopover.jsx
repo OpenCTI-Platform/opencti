@@ -12,12 +12,12 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
+import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import LabelEdition from './LabelEdition';
 import Transition from '../../../../components/Transition';
 import { deleteNode } from '../../../../utils/store';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = () => ({
   container: {

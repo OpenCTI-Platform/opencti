@@ -4,7 +4,26 @@ import * as R from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
-import { AccountBalanceOutlined, AspectRatioOutlined, CenterFocusStrongOutlined, DateRangeOutlined, DeleteOutlined, EditOutlined, FilterAltOffOutlined, FilterListOutlined, GestureOutlined, HubOutlined, LinkOutlined, PolylineOutlined, ScatterPlotOutlined, SwipeDown, SwipeUp, SwipeVertical, TouchApp, VisibilityOutlined, } from '@mui/icons-material';
+import {
+  AccountBalanceOutlined,
+  AspectRatioOutlined,
+  CenterFocusStrongOutlined,
+  DateRangeOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  FilterAltOffOutlined,
+  FilterListOutlined,
+  GestureOutlined,
+  HubOutlined,
+  LinkOutlined,
+  PolylineOutlined,
+  ScatterPlotOutlined,
+  SwipeDown,
+  SwipeUp,
+  SwipeVertical,
+  TouchApp,
+  VisibilityOutlined,
+} from '@mui/icons-material';
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
@@ -29,6 +48,8 @@ import Slide from '@mui/material/Slide';
 import { Form, Formik } from 'formik';
 import ToggleButton from '@mui/material/ToggleButton';
 import { ToggleButtonGroup } from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContentText from '@mui/material/DialogContentText';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import CommitMessage from '../../common/form/CommitMessage';
 import inject18n from '../../../../components/i18n';
@@ -49,8 +70,6 @@ import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ContainerAddStixCoreObjectsInGraph from '../../common/containers/ContainerAddStixCoreObjectsInGraph';
 import TimeRange from '../../../../components/range_slider/RangeSlider';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContentText from '@mui/material/DialogContentText';
 
 const styles = () => ({
   bottomNav: {

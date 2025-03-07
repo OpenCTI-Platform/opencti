@@ -17,6 +17,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -45,7 +46,6 @@ import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsVi
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import withRouter from '../../../../utils/compat_router/withRouter';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   container: {

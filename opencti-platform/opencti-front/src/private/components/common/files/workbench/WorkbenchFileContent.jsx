@@ -572,10 +572,6 @@ const WorkbenchFileContentComponent = ({
     setDeleteObject(object);
     handleOpenDelete();
   };
-  const handleCloseDeleteObject = () => {
-    setDeleteObject(null);
-    handleCloseDelete();
-  };
 
   const handleOpenEntity = (type, id) => {
     setEntityStep(0);

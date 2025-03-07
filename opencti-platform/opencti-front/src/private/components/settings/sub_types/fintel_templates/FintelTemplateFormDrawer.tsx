@@ -40,10 +40,10 @@ const FintelTemplateFormDrawer = ({
 
   const [commitAddMutation] = useFintelTemplateAdd(entitySettingId);
   const [commitEditMutation] = useFintelTemplateEdit();
-  const [commitDeleteMutation, deleting] = useFintelTemplateDelete(entitySettingId);
+  const [commitDeleteMutation] = useFintelTemplateDelete(entitySettingId);
 
   const deletion = useDeletion({});
-  const { handleOpenDelete, handleCloseDelete, } = deletion;
+  const { handleOpenDelete, handleCloseDelete } = deletion;
 
   const onDelete = () => {
     if (!template) return;

@@ -13,12 +13,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
+import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import SyncEdition from './SyncEdition';
 import { deleteNode } from '../../../../utils/store';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   container: {
