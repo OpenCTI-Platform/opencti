@@ -12447,13 +12447,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"foreground-child@npm:^3.1.0, foreground-child@npm:^3.3.0":
+"foreground-child@npm:^3.1.0":
   version: 3.3.0
   resolution: "foreground-child@npm:3.3.0"
   dependencies:
     cross-spawn: "npm:^7.0.0"
     signal-exit: "npm:^4.0.1"
   checksum: 10/e3a60480f3a09b12273ce2c5fcb9514d98dd0e528f58656a1b04680225f918d60a2f81f6a368f2f3b937fcee9cfc0cbf16f1ad9a0bc6a3a6e103a84c9a90087e
+  languageName: node
+  linkType: hard
+
+"foreground-child@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "foreground-child@npm:3.3.1"
+  dependencies:
+    cross-spawn: "npm:^7.0.6"
+    signal-exit: "npm:^4.0.1"
+  checksum: 10/427b33f997a98073c0424e5c07169264a62cda806d8d2ded159b5b903fdfc8f0a1457e06b5fc35506497acb3f1e353f025edee796300209ac6231e80edece835
   languageName: node
   linkType: hard
 
@@ -16361,9 +16371,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-coverage-reports@npm:^2.11.5":
-  version: 2.12.1
-  resolution: "monocart-coverage-reports@npm:2.12.1"
+"monocart-coverage-reports@npm:^2.12.1":
+  version: 2.12.2
+  resolution: "monocart-coverage-reports@npm:2.12.2"
   dependencies:
     acorn: "npm:^8.14.0"
     acorn-loose: "npm:^8.4.0"
@@ -16371,7 +16381,7 @@ __metadata:
     commander: "npm:^13.1.0"
     console-grid: "npm:^2.2.3"
     eight-colors: "npm:^1.3.1"
-    foreground-child: "npm:^3.3.0"
+    foreground-child: "npm:^3.3.1"
     istanbul-lib-coverage: "npm:^3.2.2"
     istanbul-lib-report: "npm:^3.0.1"
     istanbul-reports: "npm:^3.1.7"
@@ -16379,7 +16389,7 @@ __metadata:
     monocart-locator: "npm:^1.0.2"
   bin:
     mcr: lib/cli.js
-  checksum: 10/5d119ef51b216d41ad91fd75a2bcead28502a2676edd0666e9b8ecbeb688db0c20b17f33c17fadd1c78d034f3de023e5531615d635136ec469d6df1ecf9c6d3b
+  checksum: 10/a1f510acada9c84109097c4fa0cc3470dfe3aad972235c696988aec1f9b255110aa546799993fb172e0a2573c78b90e17ef6b1876ae93efefcfc0ebf7a821bd1
   languageName: node
   linkType: hard
 
@@ -16390,21 +16400,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-reporter@npm:2.9.13":
-  version: 2.9.13
-  resolution: "monocart-reporter@npm:2.9.13"
+"monocart-reporter@npm:2.9.15":
+  version: 2.9.15
+  resolution: "monocart-reporter@npm:2.9.15"
   dependencies:
     console-grid: "npm:^2.2.3"
     eight-colors: "npm:^1.3.1"
     koa: "npm:^2.15.3"
     koa-static-resolver: "npm:^1.0.6"
     lz-utils: "npm:^2.1.0"
-    monocart-coverage-reports: "npm:^2.11.5"
+    monocart-coverage-reports: "npm:^2.12.1"
     monocart-locator: "npm:^1.0.2"
-    nodemailer: "npm:^6.9.16"
+    nodemailer: "npm:^6.10.0"
   bin:
     monocart: lib/cli.js
-  checksum: 10/46ffc576b0deb52022ad30ec6a1f569ff26ef6a00749f20f93561854fb84632f5b60ec48fd58e9566aa5eb344bb8ce7081cbdd0be4e369405a83c4b7c9d76aa8
+  checksum: 10/1edfa5439e7626a9e741c8a20d21b8aaef201f00435c0d89040c43e6418e62ac0b472d5a987bce739c2a66491f5bae21ac053cc277ddcc3e4283a853bbcd279f
   languageName: node
   linkType: hard
 
@@ -16613,7 +16623,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:^6.9.16":
+"nodemailer@npm:^6.10.0":
   version: 6.10.0
   resolution: "nodemailer@npm:6.10.0"
   checksum: 10/2e28961c264501e2621860d912e1ab59788825c5aea5ce71041c5b5b52c7470b63e7ab290003d755f647f25048552c6eec256f468292f454d4d6a68c93dd0659
@@ -16976,7 +16986,7 @@ __metadata:
     mdi-material-ui: "npm:7.9.1"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.47"
-    monocart-reporter: "npm:2.9.13"
+    monocart-reporter: "npm:2.9.15"
     pdfmake: "npm:0.2.18"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
