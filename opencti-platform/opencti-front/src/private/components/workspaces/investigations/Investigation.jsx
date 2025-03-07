@@ -30,7 +30,10 @@ class InvestigationComponent extends Component {
             if (props) {
               if (props.workspace) {
                 return (
-                  <InvestigationGraph data={props.workspace} graphData={props.workspace} />
+                  <InvestigationGraph
+                    id={workspace.id}
+                    data={props.workspace}
+                  />
                 );
               }
               return <ErrorNotFound />;
