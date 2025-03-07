@@ -192,6 +192,9 @@
     "ce_ee_toggle": {
       "enabled": true
     },
+    "connector_reset": {
+      "enabled": true
+    },
     "file_indexing": {
       "enabled": true
     },

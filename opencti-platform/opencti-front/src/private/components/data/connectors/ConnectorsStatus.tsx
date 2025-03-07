@@ -34,6 +34,7 @@ import type { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import SortConnectorsHeader from './SortConnectorsHeader';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -120,42 +121,42 @@ export const connectorsStatusQuery = graphql`
 `;
 
 const connectorsStatusFragment = graphql`
-      fragment ConnectorsStatus_data on Query {
-        connectors {
-          id
-          name
-          active
-          auto
-          connector_trigger_filters
-          connector_type
-          connector_scope
-          updated_at
-          config {
-            listen
-            listen_exchange
-            push
-            push_exchange
-          }
-          built_in
-        }
-        rabbitMQMetrics {
-          queues {
-            name
-            messages
-            messages_ready
-            messages_unacknowledged
-            consumers
-            idle_since
-            message_stats {
-              ack
-              ack_details {
-                rate
-              }
-            }
+  fragment ConnectorsStatus_data on Query {
+    connectors {
+      id
+      name
+      active
+      auto
+      connector_trigger_filters
+      connector_type
+      connector_scope
+      updated_at
+      config {
+        listen
+        listen_exchange
+        push
+        push_exchange
+      }
+      built_in
+    }
+    rabbitMQMetrics {
+      queues {
+        name
+        messages
+        messages_ready
+        messages_unacknowledged
+        consumers
+        idle_since
+        message_stats {
+          ack
+          ack_details {
+            rate
           }
         }
       }
-    `;
+    }
+  }
+`;
 
 interface ConnectorsStatusComponentProps {
   queryRef: PreloadedQuery<ConnectorsStatusQuery>;
@@ -167,6 +168,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   refetch,
 }) => {
   const { t_i18n, nsdt, n } = useFormatter();
+
   const classes = useStyles(); // TODO remove as deprecated
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<string>('name');
@@ -175,10 +177,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const [connectorMessages, setConnectorMessages] = useState<string | number | null | undefined>();
   const [resetting, setResetting] = useState<boolean>(false);
 
-  const data = usePreloadedFragment<
-  ConnectorsStatusQuery,
-  ConnectorsStatus_data$key
-  >({
+  const data = usePreloadedFragment<ConnectorsStatusQuery,
+  ConnectorsStatus_data$key>({
     queryDef: connectorsStatusQuery,
     fragmentDef: connectorsStatusFragment,
     queryRef,
@@ -281,6 +281,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     return valueA > valueB ? -1 : 1;
   });
 
+  const { isSensitive } = useSensitiveModifications('connector_reset');
   return (
     <>
       <Dialog
@@ -366,7 +367,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                       <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
                   </div>
-                  }
+                }
               />
               <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
             </ListItem>
@@ -436,20 +437,22 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                 <ListItemSecondaryAction>
                   <Security needs={[MODULES_MODMANAGE]}>
                     <>
-                      <Tooltip title={t_i18n('Reset the connector state')}>
-                        <IconButton
-                          onClick={() => {
-                            setConnectorIdToReset(connector.id);
-                            setConnectorMessages(connector.messages);
-                          }}
-                          aria-haspopup="true"
-                          color="primary"
-                          size="large"
-                          disabled={!!connector.built_in}
-                        >
-                          <PlaylistRemoveOutlined />
-                        </IconButton>
-                      </Tooltip>
+                      {!isSensitive && (
+                        <Tooltip title={t_i18n('Reset the connector state')}>
+                          <IconButton
+                            onClick={() => {
+                              setConnectorIdToReset(connector.id);
+                              setConnectorMessages(connector.messages);
+                            }}
+                            aria-haspopup="true"
+                            color="primary"
+                            size="large"
+                            disabled={!!connector.built_in}
+                          >
+                            <PlaylistRemoveOutlined />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       <Tooltip title={t_i18n('Clear this connector')}>
                         <IconButton
                           onClick={() => {
