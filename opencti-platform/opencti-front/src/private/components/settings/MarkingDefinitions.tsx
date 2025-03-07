@@ -151,7 +151,7 @@ const MarkingDefinitions = () => {
     definition: { percentWidth: 25 },
     x_opencti_color: { percentWidth: 15 },
     x_opencti_order: { percentWidth: 15 },
-    created: { percentWidth: 17 },
+    created: { percentWidth: 20 },
   };
 
   const queryRef = useQueryLoading(
