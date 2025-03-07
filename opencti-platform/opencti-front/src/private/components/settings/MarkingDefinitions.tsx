@@ -19,6 +19,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import { Truncate } from '../../../components/dataGrid/dataTableUtils';
 import type { DataTableColumn } from '../../../components/dataGrid/dataTableTypes';
+import ItemIcon from '../../../components/ItemIcon';
 
 const LOCAL_STORAGE_KEY = 'MarkingDefinitions';
 
@@ -122,7 +123,7 @@ const MarkingDefinitions = () => {
     const { isSensitive } = useSensitiveModifications('markings', standard_id);
     return (
       <Tooltip title={definition_type}>
-        <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <Truncate>{definition_type}</Truncate>
           {isSensitive && <DangerZoneChip />}
         </div>
@@ -130,7 +131,23 @@ const MarkingDefinitions = () => {
     );
   };
 
+  const iconRender: DataTableColumn['render'] = (
+    data: MarkingDefinitionsLine_node$data,
+  ) => {
+    const { x_opencti_color } = data;
+    return (
+      <ItemIcon
+        type="Marking-Definition"
+        color={x_opencti_color ?? undefined}
+      />
+    );
+  };
+
   const dataColumns = {
+    icon: {
+      percentWidth: 3,
+      render: iconRender,
+    },
     definition_type: {
       percentWidth: 25,
       render: definitionTypeRender,
@@ -138,7 +155,7 @@ const MarkingDefinitions = () => {
     definition: { percentWidth: 25 },
     x_opencti_color: { percentWidth: 15 },
     x_opencti_order: { percentWidth: 15 },
-    created: { percentWidth: 20 },
+    created: { percentWidth: 17 },
   };
 
   const queryRef = useQueryLoading(
