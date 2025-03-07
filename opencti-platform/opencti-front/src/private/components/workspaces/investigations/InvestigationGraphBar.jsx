@@ -38,6 +38,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import React, { Component } from 'react';
 import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
+import DialogTitle from '@mui/material/DialogTitle';
 import { getPreExpansionStateList } from './utils/investigationStorage';
 import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import inject18n from '../../../../components/i18n';
@@ -54,7 +55,6 @@ import StixCyberObservableEdition from '../../observations/stix_cyber_observable
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import TimeRange from '../../../../components/range_slider/RangeSlider';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = () => ({
   bottomNav: {

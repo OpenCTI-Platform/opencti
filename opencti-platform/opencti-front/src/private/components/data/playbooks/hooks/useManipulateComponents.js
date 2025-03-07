@@ -7,11 +7,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import DialogTitle from '@mui/material/DialogTitle';
 import { commitMutation } from '../../../../../relay/environment';
 import PlaybookAddComponents from '../PlaybookAddComponents';
 import Transition from '../../../../../components/Transition';
 import { useFormatter } from '../../../../../components/i18n';
-import DialogTitle from '@mui/material/DialogTitle';
 
 export const useManipulateComponentsPlaybookUpdatePositionsMutation = graphql`
   mutation useManipulateComponentsPlaybookUpdatePositionsMutation(
