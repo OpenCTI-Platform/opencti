@@ -124,13 +124,6 @@ const DisseminationLists = () => {
   );
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    icon: {
-      id: 'icon',
-      label: ' ',
-      isSortable: false,
-      percentWidth: 5,
-      render: () => <ItemIcon type="dissemination-list" />,
-    },
     name: {
       id: 'name',
       label: 'Name',
@@ -185,6 +178,7 @@ const DisseminationLists = () => {
                 disableNavigation
                 preloadedPaginationProps={preloadedPaginationProps}
                 actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
+                icon={() => <ItemIcon type="dissemination-list" />}
               />
             )}
             <DisseminationListCreation paginationOptions={queryPaginationOptions} />

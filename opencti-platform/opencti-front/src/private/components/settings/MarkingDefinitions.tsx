@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { MarkingDefinitionsLine_node$data } from '@components/settings/__generated__/MarkingDefinitionsLine_node.graphql';
@@ -131,9 +131,9 @@ const MarkingDefinitions = () => {
     );
   };
 
-  const iconRender: DataTableColumn['render'] = (
+  const iconRender = (
     data: MarkingDefinitionsLine_node$data,
-  ) => {
+  ) : ReactNode => {
     const { x_opencti_color } = data;
     return (
       <ItemIcon
@@ -144,10 +144,6 @@ const MarkingDefinitions = () => {
   };
 
   const dataColumns = {
-    icon: {
-      percentWidth: 3,
-      render: iconRender,
-    },
     definition_type: {
       percentWidth: 25,
       render: definitionTypeRender,
@@ -189,6 +185,7 @@ const MarkingDefinitions = () => {
           toolbarFilters={contextFilters}
           lineFragment={markingDefinitionLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
+          icon={iconRender}
           actions={(markingDefinition) => (
             <MarkingDefinitionPopover
               markingDefinition={markingDefinition}
