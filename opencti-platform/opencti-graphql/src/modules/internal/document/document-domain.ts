@@ -133,7 +133,7 @@ const buildFileFilters = (paths: string[], opts?: FilesOptions<BasicStoreEntityD
 export const allFilesForPaths = async (context: AuthContext, user: AuthUser, paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(paths, opts),
-    noFiltersKeysChecking: true // No associated model
+    noFiltersChecking: true // No associated model
   };
   // Default ordering on lastModified starting from the oldest
   const orderOptions: any = {};
@@ -151,7 +151,7 @@ export const allRemainingFilesCount = async (context: AuthContext, user: AuthUse
   const modifiedSince = await getIndexFromDate(context);
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(paths, { ...opts, modifiedSince }),
-    noFiltersKeysChecking: true // No associated model
+    noFiltersChecking: true // No associated model
   };
   const remainingOpts = { ...findOpts, types: [ENTITY_TYPE_INTERNAL_FILE] };
   return elCount(context, user, [READ_INDEX_INTERNAL_OBJECTS], remainingOpts);
@@ -160,7 +160,7 @@ export const allRemainingFilesCount = async (context: AuthContext, user: AuthUse
 export const allFilesMimeTypeDistribution = async (context: AuthContext, user: AuthUser, paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(paths, opts),
-    noFiltersKeysChecking: true // No associated model
+    noFiltersChecking: true // No associated model
   };
   return elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, {
     ...findOpts,
@@ -180,7 +180,7 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
   const pathsToTarget = draftContext ? [`${getDraftFilePrefix(draftContext)}${path}`, path] : [path];
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
     filters: buildFileFilters(pathsToTarget, filterOpts),
-    noFiltersKeysChecking: true // No associated model
+    noFiltersChecking: true // No associated model
   };
   const orderOptions: any = {};
   if (isEmptyField(opts?.orderBy)) {

@@ -1084,7 +1084,7 @@ const listEntitiesByHashes = async (context, user, type, hashes) => {
       filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
       filterGroups: [],
     },
-    noFiltersKeysChecking: true,
+    noFiltersChecking: true,
     connectionFormat: false,
   });
 };
@@ -2230,7 +2230,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           filters: [{ key: 'contact_information', values: [updatedInstance.user_email] }],
           filterGroups: [],
         },
-        noFiltersKeysChecking: true,
+        noFiltersChecking: true,
         connectionFormat: false
       };
       const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);

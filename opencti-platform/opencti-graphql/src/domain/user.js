@@ -1230,7 +1230,7 @@ export const buildCompleteUsers = async (context, clients) => {
   const resolvedUsers = [];
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const contactInformationFilter = { mode: 'and', filters: [{ key: 'contact_information', values: clients.map((c) => c.user_email) }], filterGroups: [] };
-  const individualArgs = { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, connectionFormat: false, noFiltersKeysChecking: true };
+  const individualArgs = { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, connectionFormat: false, noFiltersChecking: true };
   const individualsPromise = listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
   const authRelationships = [RELATION_PARTICIPATE_TO, RELATION_MEMBER_OF, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_ACCESSES_TO];
   const relations = await listAllRelations(context, SYSTEM_USER, authRelationships, { indices: READ_RELATIONSHIPS_INDICES });

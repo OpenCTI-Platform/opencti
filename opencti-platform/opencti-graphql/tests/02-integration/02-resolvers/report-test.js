@@ -460,7 +460,7 @@ describe('Report resolver standard behavior', () => {
             }],
             filterGroups: [],
           },
-          noFiltersKeysChecking: true
+          noFiltersChecking: true
         },
       );
       await Promise.all(investigations.map(({ id }) => deleteElementById(testContext, ADMIN_USER, id, ENTITY_TYPE_WORKSPACE)));

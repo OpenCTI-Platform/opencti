@@ -66,7 +66,7 @@ const closeOldWorks = async (context, connector) => {
     };
     await elList(context, SYSTEM_USER, [READ_INDEX_HISTORY], {
       filters,
-      noFiltersKeysChecking: true,
+      noFiltersChecking: true,
       types: ['Work'],
       orderBy: 'timestamp',
       connectionFormat: false,
@@ -99,7 +99,7 @@ export const deleteCompletedWorks = async (context, connector) => {
     filters,
     types: ['Work'],
     orderBy: 'timestamp',
-    noFiltersKeysChecking: true,
+    noFiltersChecking: true,
     connectionFormat: false,
     baseData: true,
     baseFields: ['internal_id'],

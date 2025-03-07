@@ -67,7 +67,7 @@ export interface ListFilter<T extends BasicStoreCommon> {
   baseData?: boolean
   orderMode?: InputMaybe<OrderingMode>;
   filters?: FilterGroupWithNested | null
-  noFiltersKeysChecking?: boolean
+  noFiltersChecking?: boolean
   callback?: (result: Array<T>) => Promise<boolean | void>
 }
 
@@ -416,7 +416,7 @@ export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon
     filters,
     indices,
     connectionFormat: false,
-    noFiltersKeysChecking: true,
+    noFiltersChecking: true,
   });
   // region Resolved all targets for all relations
   const targetIds = R.uniq(relations.map((s) => s[`${opposite}Id`]));

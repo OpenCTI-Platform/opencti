@@ -2928,7 +2928,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const { ids = [], after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
   const { types = null, search = null } = options;
-  const filters = checkAndConvertFilters(options.filters, { noFiltersKeysChecking: options.noFiltersKeysChecking });
+  const filters = checkAndConvertFilters(options.filters, { noFiltersChecking: options.noFiltersChecking });
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];

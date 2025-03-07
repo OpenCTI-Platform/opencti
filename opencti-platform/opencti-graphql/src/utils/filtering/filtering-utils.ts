@@ -309,13 +309,13 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
   }
 };
 
-export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersKeysChecking = false) => {
+export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersChecking = false) => {
   // detect filters in the old format or in a bad format
   if (!isFilterGroupFormatCorrect(filterGroup)) {
     throw UnsupportedError('Incorrect filters format', { filter: JSON.stringify(filterGroup) });
   }
   // check filters keys exist in schema
-  if (!noFiltersKeysChecking && isFilterGroupNotEmpty(filterGroup)) {
+  if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
     checkFilterKeys(filterGroup);
   }
   // check values are in a correct syntax
@@ -327,15 +327,15 @@ export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersKeysChec
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
  */
-export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersKeysChecking?: boolean } = {}) => {
+export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean } = {}) => {
   if (!filterGroup) {
     return undefined;
   }
   // 01. check filters validity
-  const { noFiltersKeysChecking = false } = opts;
-  checkFiltersValidity(filterGroup, noFiltersKeysChecking);
+  const { noFiltersChecking = false } = opts;
+  checkFiltersValidity(filterGroup, noFiltersChecking);
   // 02. translate the filter keys on relation refs and return the converted filters
-  if (!noFiltersKeysChecking && isFilterGroupNotEmpty(filterGroup)) {
+  if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
     return convertRelationRefsFilterKeys(filterGroup);
   }
 

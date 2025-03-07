@@ -136,7 +136,7 @@ export const up = async (next) => {
         ],
         filterGroups: [],
       },
-      noFiltersKeysChecking: true
+      noFiltersChecking: true
     }
   );
 
