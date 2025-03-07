@@ -11,7 +11,7 @@ import Button from '@mui/material/Button';
 import Form from '@rjsf/core';
 import validator from '@rjsf/validator-ajv8';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
-import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, PlaylistRemoveOutlined, SettingsOutlined } from '@mui/icons-material';
+import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, PlaylistRemoveOutlined, SettingsOutlined, HubOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -130,6 +130,8 @@ const connectorsStatusFragment = graphql`
         connectorManagers {
           id
           name
+          active
+          last_sync_execution
           connector_manager_contracts
         }
         connectors {
@@ -350,10 +352,13 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                   <div style={{ width: '25%' }}>
                     <SortConnectorsHeader field="name" label="Name" isSortable={false} sortBy={''} reverseBy={() => {}} orderAsc={false} />
                   </div>
+                  <div style={{ width: '10%' }}>
+                    <SortConnectorsHeader field="messages" label="Contracts" isSortable={false} sortBy={''} reverseBy={() => {}} orderAsc={false} />
+                  </div>
                   <div style={{ width: '15%' }}>
                     <SortConnectorsHeader field="active" label="Status" isSortable={false} sortBy={''} reverseBy={() => {}} orderAsc={false} />
                   </div>
-                  <div style={{ width: '15%' }}>
+                  <div style={{ width: '35%' }}>
                     <SortConnectorsHeader field="updated_at" label="Modified" isSortable={false} sortBy={''} reverseBy={() => {}} orderAsc={false} />
                   </div>
                 </div>}
@@ -370,7 +375,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                   divider={true}
                 >
                   <ListItemIcon>
-                    <DeveloperBoardOutlined />
+                    <HubOutlined />
                   </ListItemIcon>
                   <ListItemText
                     primary={
@@ -378,11 +383,18 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                         <div className={classes.bodyItem} style={inlineStyles.name}>
                           {manager.name}
                         </div>
+                        <div className={classes.bodyItem} style={inlineStyles.connector_type}>
+                          {manager.connector_manager_contracts.length}
+                        </div>
                         <div className={classes.bodyItem} style={inlineStyles.active}>
-                          STATUS
+                          <ItemBoolean
+                            status={manager.active}
+                            label={manager.active ? t_i18n('Active') : t_i18n('Inactive')}
+                            variant="inList"
+                          />
                         </div>
                         <div className={classes.bodyItem} style={inlineStyles.updated_at}>
-                          UPDATED_AT
+                          {nsdt(manager.last_sync_execution)}
                         </div>
                       </div>
                       }

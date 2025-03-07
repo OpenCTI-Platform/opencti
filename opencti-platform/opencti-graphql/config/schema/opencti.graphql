@@ -2035,6 +2035,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   name: String!
   connector_manager_contracts: [String!]!
   last_sync_execution: DateTime
+  active: Boolean!
 }
 
 ############## Rules

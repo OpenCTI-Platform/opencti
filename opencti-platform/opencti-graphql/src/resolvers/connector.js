@@ -41,7 +41,7 @@ import {
   worksForConnector
 } from '../domain/work';
 import { batchCreator } from '../domain/user';
-import { now } from '../utils/format';
+import {now, sinceNowInMinutes} from '../utils/format';
 import {
   computeManagerConnectorConfiguration,
   computeManagerConnectorImage,
@@ -93,6 +93,9 @@ const connectorResolvers = {
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
+  },
+  ConnectorManager: {
+    active: (cm) => sinceNowInMinutes(cm.updated_at) < 5,
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
