@@ -4,29 +4,13 @@ import * as R from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
-import {
-  AccountBalanceOutlined,
-  AspectRatioOutlined,
-  CenterFocusStrongOutlined,
-  DateRangeOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  FilterAltOffOutlined,
-  FilterListOutlined,
-  GestureOutlined,
-  HubOutlined,
-  LinkOutlined,
-  PolylineOutlined,
-  ScatterPlotOutlined,
-  VisibilityOutlined,
-} from '@mui/icons-material';
+import { AccountBalanceOutlined, AspectRatioOutlined, CenterFocusStrongOutlined, DateRangeOutlined, DeleteOutlined, EditOutlined, FilterAltOffOutlined, FilterListOutlined, GestureOutlined, HubOutlined, LinkOutlined, PolylineOutlined, ScatterPlotOutlined, VisibilityOutlined, } from '@mui/icons-material';
 import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -65,6 +49,8 @@ import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ContainerAddStixCoreObjectsInGraph from '../../common/containers/ContainerAddStixCoreObjectsInGraph';
 import TimeRange from '../../../../components/range_slider/RangeSlider';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContentText from '@mui/material/DialogContentText';
 
 const styles = () => ({
   bottomNav: {
@@ -1140,12 +1126,15 @@ class IncidentKnowledgeGraphBar extends Component {
                       TransitionComponent={Transition}
                       onClose={this.handleCloseRemove.bind(this)}
                     >
+                      <DialogTitle>
+                        {t('Are you sure?')}
+                      </DialogTitle>
                       <DialogContent>
-                        <Typography variant="body">
+                        <DialogContentText>
                           {t(
                             'Do you want to remove these elements from this case?',
                           )}
-                        </Typography>
+                        </DialogContentText>
                         <Alert
                           severity="warning"
                           variant="outlined"
@@ -1177,7 +1166,7 @@ class IncidentKnowledgeGraphBar extends Component {
                           onClick={ this.handleSubmitRemoveElements.bind(this)}
                           color="secondary"
                         >
-                          {t('Remove')}
+                          {t('Confirm')}
                         </Button>
                       </DialogActions>
                     </Dialog>
