@@ -20,6 +20,7 @@ import { interval } from 'rxjs';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
+import DialogTitle from '@mui/material/DialogTitle';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import inject18n from '../../../../components/i18n';
@@ -37,7 +38,6 @@ import ExternalReferencePopover from './ExternalReferencePopover';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const interval$ = interval(FIVE_SECONDS);
 

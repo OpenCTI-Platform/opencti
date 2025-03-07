@@ -14,9 +14,9 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import { MoreVertOutlined } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
+import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   container: {

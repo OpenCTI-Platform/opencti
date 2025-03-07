@@ -13,11 +13,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
+import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import RoleEdition from './RoleEdition';
 import withRouter from '../../../../utils/compat_router/withRouter';
-import DialogTitle from '@mui/material/DialogTitle';
 import { roleDeletionMutation } from './RoleEditionOverview';
 
 const styles = () => ({

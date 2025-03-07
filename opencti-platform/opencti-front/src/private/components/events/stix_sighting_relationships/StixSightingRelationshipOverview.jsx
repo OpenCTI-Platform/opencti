@@ -17,6 +17,7 @@ import { ArrowRightAlt, Edit } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
+import DialogTitle from '@mui/material/DialogTitle';
 import StixCoreRelationshipInference from '../../common/stix_core_relationships/StixCoreRelationshipInference';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { itemColor } from '../../../../utils/Colors';
@@ -42,7 +43,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   container: {

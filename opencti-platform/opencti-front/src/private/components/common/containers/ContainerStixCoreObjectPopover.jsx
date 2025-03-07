@@ -17,6 +17,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
 import { Form, Formik } from 'formik';
+import DialogTitle from '@mui/material/DialogTitle';
 import CommitMessage from '../form/CommitMessage';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -25,7 +26,6 @@ import Security from '../../../../utils/Security';
 import { deleteElementByValue } from '../../../../utils/utils';
 import Transition from '../../../../components/Transition';
 import { serializeObjectB64 } from '../../../../utils/object';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   container: {

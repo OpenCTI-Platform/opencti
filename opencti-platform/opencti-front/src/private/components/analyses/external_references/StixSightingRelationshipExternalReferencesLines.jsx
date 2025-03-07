@@ -21,6 +21,7 @@ import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
+import DialogTitle from '@mui/material/DialogTitle';
 import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -37,7 +38,6 @@ import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const interval$ = interval(FIVE_SECONDS);
 

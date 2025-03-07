@@ -14,11 +14,11 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
+import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import FeedEdition from './FeedEdition';
 import FeedCreation from './FeedCreation';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = () => ({
   container: {

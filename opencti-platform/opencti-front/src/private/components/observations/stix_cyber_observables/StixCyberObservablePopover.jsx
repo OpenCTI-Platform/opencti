@@ -13,6 +13,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import ToggleButton from '@mui/material/ToggleButton';
+import DialogTitle from '@mui/material/DialogTitle';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import inject18n from '../../../../components/i18n';
@@ -22,7 +23,6 @@ import StixCyberObservableEditionContainer from './StixCyberObservableEditionCon
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Transition from '../../../../components/Transition';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const styles = (theme) => ({
   drawerPaper: {

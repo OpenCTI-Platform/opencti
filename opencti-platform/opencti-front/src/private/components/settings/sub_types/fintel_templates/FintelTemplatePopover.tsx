@@ -27,7 +27,7 @@ const FintelTemplatePopover = ({
   const { t_i18n } = useFormatter();
   const exportFintel = useFintelTemplateExport();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
-  const [commitDeleteMutation, deleting] = useFintelTemplateDelete(entitySettingId);
+  const [commitDeleteMutation] = useFintelTemplateDelete(entitySettingId);
 
   const deletion = useDeletion({ handleClose: () => setAnchorEl(undefined) });
   const {

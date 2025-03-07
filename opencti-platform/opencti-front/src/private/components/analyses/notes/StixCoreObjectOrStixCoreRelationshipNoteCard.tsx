@@ -16,6 +16,7 @@ import IconButton from '@mui/material/IconButton';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
+import DialogTitle from '@mui/material/DialogTitle';
 import { useFormatter } from '../../../../components/i18n';
 import { noteMutationRelationDelete } from './AddNotesLines';
 import NotePopover from './NotePopover';
@@ -33,7 +34,6 @@ import ItemLikelihood from '../../../../components/ItemLikelihood';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import DialogTitle from '@mui/material/DialogTitle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

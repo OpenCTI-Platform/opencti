@@ -11,14 +11,14 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DialogTitle from '@mui/material/DialogTitle';
+import DialogContentText from '@mui/material/DialogContentText';
+import { AlertTitle } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import UserEdition from './UserEdition';
 import Transition from '../../../../components/Transition';
-import DialogContentText from '@mui/material/DialogContentText';
-import { AlertTitle } from '@mui/material';
-import Alert from '@mui/material/Alert';
 
 const userPopoverDeletionMutation = graphql`
   mutation UserPopoverDeletionMutation($id: ID!) {
