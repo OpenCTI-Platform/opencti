@@ -499,7 +499,7 @@ class DataTableToolBar extends Component {
       incident_response_types_ov: 'response_types',
       request_for_information_types_ov: 'information_types',
       request_for_takedown_types_ov: 'takedown_types',
-      indicator_type_ov: 'indicator_type',
+      indicator_type_ov: 'indicator_types',
       platforms_ov: 'x_mitre_platforms',
     };
 
