@@ -937,16 +937,15 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const relationshipTypes = R.uniq(R.filter(
+          const relationshipTypes = R.uniq(resolveRelationsTypes(
+            fromEntities[0].entity_type,
+            toEntities[0].entity_type,
+            schema?.schemaRelationsTypesMapping ?? new Map(),
+          ).filter(
             (n) => R.isNil(allowedRelationshipTypes)
               || allowedRelationshipTypes.length === 0
               || allowedRelationshipTypes.includes('stix-core-relationship')
               || allowedRelationshipTypes.includes(n),
-            resolveRelationsTypes(
-              fromEntities[0].entity_type,
-              toEntities[0].entity_type,
-              schema?.schemaRelationsTypesMapping ?? new Map(),
-            ),
           ));
           return (
             <StixCoreRelationshipCreationForm
