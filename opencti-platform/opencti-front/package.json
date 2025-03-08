@@ -35,7 +35,7 @@
     "date-fns": "4.1.0",
     "dompurify": "3.2.4",
     "extract-files": "13.0.0",
-    "filigran-icon": "0.14.0",
+    "filigran-icon": "0.14.1",
     "filigran-ui": "0.32.1",
     "formik": "2.4.6",
     "formik-mui": "5.0.0-alpha.0",
