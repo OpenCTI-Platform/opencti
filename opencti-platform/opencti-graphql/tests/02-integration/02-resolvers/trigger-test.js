@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, AMBER_GROUP, editorQuery, queryAsAdmin, securityQuery, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 import { EVENT_TYPE_CREATE } from '../../../src/database/utils';
 import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { FilterOperator } from '../../../src/generated/graphql';
 
 const LIST_TRIGGERS_KNOWLEDGE_QUERY = gql`
     query triggersKnowledge(
@@ -236,7 +237,7 @@ describe('Trigger knowledge resolver standard behavior', () => {
       includeAuthorities: true,
       filters: {
         mode: 'and',
-        filters: [{ key: 'authorized_members.id', values: [ADMIN_USER.id] }],
+        filters: [{ key: 'restricted_members', operator: FilterOperator.Eq, values: [{ key: 'id', operator: FilterOperator.Eq, values: [ADMIN_USER.id] }], mode: 'or' }],
         filterGroups: [],
       }
     };

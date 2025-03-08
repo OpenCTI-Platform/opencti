@@ -163,6 +163,7 @@ import {
 } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
 import {
+  authorizedMembers,
   booleanMapping,
   dateMapping,
   iAliasedIds,
@@ -462,6 +463,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
   }
   // check user access
   must.push(...buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities }));
+  logApp.info('ANGIE - buildDataRestrictions -1-: must', { must });
   // If user have bypass, no need to check restrictions
   if (!isBypassUser(user)) {
     // region Handle marking restrictions
@@ -560,6 +562,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
         should.push({ match: { 'initiator_id.keyword': user.internal_id } });
         // Access to authorized members
         should.push(...buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities, excludeEmptyAuthorizedMembers: true }));
+        logApp.info('ANGIE - buildDataRestrictions -2-: should', { should });
         // Finally build the bool should search
         must.push({ bool: { should, minimum_should_match: 1 } });
       }
@@ -575,21 +578,32 @@ const buildUserMemberAccessFilter = (user, opts) => {
   if (includeAuthorities && capabilities.includes(BYPASS)) {
     return [];
   }
+  logApp.info('ANGIE - buildUserMemberAccessFilter, not bypass');
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
-  const emptyAuthorizedMembers = { bool: { must_not: { exists: { field: 'authorized_members' } } } };
+  const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: { } } } } } };
   const authorizedFilters = [
-    { terms: { 'authorized_members.id.keyword': [MEMBER_ACCESS_ALL, ...userAccessIds] } },
+    { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } },
   ];
-  if (!excludeEmptyAuthorizedMembers) {
-    authorizedFilters.push(emptyAuthorizedMembers);
-  }
+  const shouldConditions = [];
   if (includeAuthorities) {
     const roleIds = user.roles.map((r) => r.id);
     const owners = [...userAccessIds, ...capabilities, ...roleIds];
-    authorizedFilters.push({ terms: { 'authorized_authorities.keyword': owners } });
+    shouldConditions.push({ terms: { 'authorized_authorities.keyword': owners } });
   }
-  return [{ bool: { should: authorizedFilters } }];
+  if (!excludeEmptyAuthorizedMembers) {
+    shouldConditions.push(emptyAuthorizedMembers);
+  }
+  const nestedQuery = {
+    nested: {
+      path: authorizedMembers.name,
+      query: {
+        bool: { should: authorizedFilters }
+      }
+    }
+  };
+  shouldConditions.push(nestedQuery);
+  return [{ bool: { should: shouldConditions } }];
 };
 
 export const elIndexExists = async (indexName) => {
@@ -1639,8 +1653,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     }
     const restrictionOptions = { includeAuthorities: true }; // By default include authorized through capabilities
     // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
-    const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
-    mustTerms.push(...markingRestrictions.must);
+    const dataRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
+    logApp.info('ANGIE - buildDataRestrictions result -1-:', { markingRestrictions: dataRestrictions });
+    mustTerms.push(...dataRestrictions.must);
     // Handle draft
     const draftMust = buildDraftFilter(context, user, opts);
     const body = {
@@ -1648,10 +1663,12 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       query: {
         bool: {
           must: [...mustTerms, ...draftMust],
-          must_not: markingRestrictions.must_not,
+          must_not: dataRestrictions.must_not,
         },
       },
     };
+    logApp.info('ANGIE - buildDataRestrictions body:', { body });
+
     let searchAfter;
     let hasNextPage = true;
     while (hasNextPage) {
@@ -3158,7 +3175,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
     });
 };
 
-const extractNestedQueriesFromBool = (boolQueryArray) => {
+const extractNestedQueriesFromBool = (boolQueryArray, nestedPath = 'connections') => {
   let result = [];
   for (let i = 0; i < boolQueryArray.length; i += 1) {
     const boolQuery = boolQueryArray[i];
@@ -3166,7 +3183,7 @@ const extractNestedQueriesFromBool = (boolQueryArray) => {
     const nestedQueries = [];
     for (let j = 0; j < shouldArray.length; j += 1) {
       const queryElement = shouldArray[j];
-      if (queryElement.nested) nestedQueries.push(queryElement.nested.query);
+      if (queryElement.nested && queryElement.nested.path === nestedPath) nestedQueries.push(queryElement.nested.query);
       if (queryElement.bool?.should) { // case nested is in an imbricated filterGroup (not possible for the moment)
         const nestedBoolResult = extractNestedQueriesFromBool([queryElement]);
         if (nestedBoolResult.length > 0) {

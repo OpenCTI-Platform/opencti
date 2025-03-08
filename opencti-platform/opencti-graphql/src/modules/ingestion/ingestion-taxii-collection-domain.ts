@@ -4,6 +4,7 @@ import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-
 import { BUS_TOPICS } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
+import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiCollectionAddInput } from '../../generated/graphql';
@@ -45,7 +46,7 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
-    if (key === 'authorized_members') {
+    if (key === authorizedMembers.name) {
       item.value = value.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
     }
     return item;

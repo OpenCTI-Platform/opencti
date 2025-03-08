@@ -1605,16 +1605,23 @@ type Member {
   group_confidence_level: ConfidenceLevel
 }
 
+type MemberGroupRestriction {
+  id: String!
+  name: String!
+}
+
 type MemberAccess {
   id: ID!
   name: String!
   entity_type: String!
   access_right: String!
+  groups_restriction: [MemberGroupRestriction!]
 }
 
 input MemberAccessInput {
   id: ID!
   access_right: String!
+  groups_restriction_ids: [ID!]
 }
 
 type OtpElement {
@@ -2908,7 +2915,8 @@ interface Container {
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  restricted_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -2984,7 +2992,8 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -3119,7 +3128,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -3229,7 +3239,8 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -3358,7 +3369,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_graph_data: String
   objectAssignee: [Assignee!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -9397,7 +9409,8 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -10206,7 +10219,8 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -10348,7 +10362,8 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  restricted_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -10473,7 +10488,8 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -10600,7 +10616,8 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  restricted_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -10682,7 +10699,8 @@ input CaseRfiAddInput {
   update: Boolean
   information_types: [String!]
   caseTemplates: [String!]
-  authorized_members: [MemberAccessInput!]
+  authorized_members: [MemberAccessInput!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccessInput!]
 }
 
 type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -10725,7 +10743,8 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -10851,7 +10870,8 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
-  authorized_members: [MemberAccess!]
+  authorized_members: [MemberAccess!] @deprecated(reason: "[>=6.6 & <6.9] on renaming authorized_members to restricted_members")
+  restricted_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection

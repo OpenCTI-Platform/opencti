@@ -48,6 +48,7 @@ import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { validateFilterGroupForActivityEventMatch } from '../../utils/filtering/filtering-activity-event/activity-event-filtering';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { authorizedMembers } from '../../schema/attribute-definition';
 
 // Triggers
 // Due to engine limitation we restrict the recipient to only one user for now
@@ -88,13 +89,13 @@ export const addTrigger = async (
     validateFilterGroupForStixMatch(filters);
   }
 
-  let authorizedMembers;
+  let members;
   const recipient = await extractUniqRecipient(context, user, triggerInput, type);
   const isSelfTrigger = recipient.id === user.id;
   if (recipient.entity_type === ENTITY_TYPE_USER) {
-    authorizedMembers = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
+    members = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
   } else if (recipient.entity_type === ENTITY_TYPE_GROUP || recipient.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
-    authorizedMembers = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }];
+    members = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }];
   } else {
     throw UnsupportedError(`Cannot add a recipient with type ${type}`);
   }
@@ -106,7 +107,7 @@ export const addTrigger = async (
     updated_at: now(),
     trigger_scope: 'knowledge',
     instance_trigger: type === TriggerTypeValue.Digest ? false : (triggerInput as TriggerLiveAddInput).instance_trigger,
-    authorized_members: authorizedMembers,
+    restricted_members: members,
     authorized_authorities: [SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN] // Add extra capabilities
   };
   const trigger = { ...triggerInput, ...defaultOpts };
@@ -147,7 +148,7 @@ export const addTriggerActivity = async (
     updated_at: now(),
     trigger_scope: 'activity',
     trigger_type: type,
-    authorized_members: [...(triggerInput.recipients ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }))],
+    restricted_members: [...(triggerInput.recipients ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }))],
     authorized_authorities: [SETTINGS_SECURITYACTIVITY] // Add extra capabilities
   };
   const trigger = { ...triggerInput, ...defaultOpts };
@@ -175,7 +176,7 @@ export const triggersGet = (context: AuthContext, user: AuthUser, triggerIds: st
 export const getTriggerRecipients = async (context: AuthContext, user: AuthUser, element: BasicStoreEntityTrigger) => {
   const access = getUserAccessRight(user, element);
   if (access === MEMBER_ACCESS_RIGHT_ADMIN) {
-    const ids = element.authorized_members.map((a) => a.id);
+    const ids = element.restricted_members.map((a) => a.id);
     return internalFindByIds<BasicStoreEntity>(context, user, ids);
   }
   return [];
@@ -218,7 +219,7 @@ export const triggerActivityEdit = async (context: AuthContext, user: AuthUser, 
     const inputElement = input[index];
     if (inputElement.key === 'recipients') {
       const value = (inputElement.value ?? []).map((r) => ({ id: r, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
-      finalInput.push({ key: 'authorized_members', value });
+      finalInput.push({ key: authorizedMembers.name, value });
     } else {
       finalInput.push(inputElement);
     }
@@ -234,18 +235,18 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
   }
   // If user is only organization admin, check if he has access on all targets
   if (isOnlyOrgaAdmin(user)) {
-    const memberIds = (trigger.authorized_members ?? []).map((a: AuthorizedMember) => a.id);
+    const memberIds = (trigger.restricted_members ?? []).map((a: AuthorizedMember) => a.id);
     const adminOrganizationIds = (user.administrated_organizations ?? []).map((o) => o.internal_id);
     if (!adminOrganizationIds.every((v) => memberIds.includes(v))) {
       throw ForbiddenAccess();
     }
   }
-  const adminIds = (trigger.authorized_members ?? [])
+  const adminIds = (trigger.restricted_members ?? [])
     .filter((a: AuthorizedMember) => a.access_right === 'admin')
     .map((a: AuthorizedMember) => a.id);
   const isSelfTrigger = adminIds.length === 1;
   const deleted = await deleteElementById(context, user, triggerId, ENTITY_TYPE_TRIGGER);
-  const memberIds = (trigger.authorized_members ?? []).map((a: AuthorizedMember) => a.id);
+  const memberIds = (trigger.restricted_members ?? []).map((a: AuthorizedMember) => a.id);
   const recipients = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, memberIds);
   const recipientNames = recipients.map((r) => r.name);
   await notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].DELETE_TOPIC, deleted, user);

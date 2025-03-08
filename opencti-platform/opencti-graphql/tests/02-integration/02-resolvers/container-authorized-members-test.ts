@@ -413,7 +413,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     // Activate authorized members for IR
     const authorizedMembersConfiguration = JSON.stringify([
       {
-        name: 'authorized_members',
+        name: 'restricted_members',
         default_values: [
           JSON.stringify({
             id: ADMIN_USER.id,
@@ -445,7 +445,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     ]);
     caseIncidentResponseAuthorizedMembersFromSettings = caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd;
     // Clean
-    const cleanAuthorizedMembersConfiguration = JSON.stringify([{ name: 'authorized_members', default_values: null }]);
+    const cleanAuthorizedMembersConfiguration = JSON.stringify([{ name: 'restricted_members', default_values: null }]);
     const cleanEntitySettingsResult = await adminQuery({
       query: ENTITY_SETTINGS_UPDATE_QUERY,
       variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [cleanAuthorizedMembersConfiguration] } },
@@ -805,7 +805,7 @@ describe('Restricted entities listing', () => {
       query: DELETE_QUERY,
       variables: { id: caseIrId },
     });
-    // Verify is no longer found
+    // Verify that it is no longer found
     const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();
