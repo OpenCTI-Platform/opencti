@@ -108,7 +108,7 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
   return storeLoadById(context, user, id, 'Connector').then((data) => completeConnector(data));
 };
 export const resetStateConnector = async (context: AuthContext, user: AuthUser, id: string) => {
-  const patch = { connector_state: '', connector_state_reset: true };
+  const patch = { connector_state: '', connector_state_reset: true, connector_state_timestamp: now() };
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
   await publishUserAction({
     user,
@@ -262,6 +262,7 @@ export const managedConnectorAdd = async (
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,
     manager_requested_status: 'stopped',
+    connector_state_timestamp: now(),
     built_in: false
   };
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
@@ -321,6 +322,7 @@ export const registerConnector = async (
     only_contextual,
     playbook_compatible,
     connector_user_id: opts.connector_user_id ?? user.id,
+    connector_state_timestamp: now(),
     built_in: opts.built_in ?? false,
   };
   if (opts.active !== undefined) {

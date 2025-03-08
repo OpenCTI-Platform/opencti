@@ -55,7 +55,7 @@ export const computeManagerContractHash = async (context, user, cn) => {
   const image = computeManagerConnectorImage(cn);
   const config = await computeManagerConnectorConfiguration(context, user, cn);
   const subHash = config.map((c) => `${c.key}|${c.value}`);
-  return shortHash({ image, subHash });
+  return shortHash({ image, subHash, state: cn.connector_state_timestamp });
 };
 
 export const connectors = async (context, user) => {
