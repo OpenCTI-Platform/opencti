@@ -1,5 +1,5 @@
 import { uniq } from 'ramda';
-import { buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
@@ -62,10 +62,21 @@ const isFilterGroupFormatCorrect = (filterGroup: FilterGroup): boolean => {
 /**
  * Tells if a filter group values are valid
  * (Enables to check filters won't raise an error at the query resolution)
- * Only implemented for the 'within' operator for the moment
  * @param filterGroup
  */
 export const checkFilterGroupValuesSyntax = (filterGroup: FilterGroup) => {
+  // date filters
+  const dateFilterKeys = schemaAttributesDefinition.getAttributesNamesByType(ABSTRACT_STIX_CORE_OBJECT, 'date');
+  const dateFilters = filterGroup.filters.filter((f) => {
+    const arrayKeys = Array.isArray(f.key) ? f.key : [f.key];
+    return arrayKeys.every((k) => dateFilterKeys.includes(k));
+  });
+  dateFilters.forEach((f) => {
+    const relative_date_regex = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
+    if (f.values.some((v) => !v.match(relative_date_regex) && v !== 'now' && !isValidDate(v))) {
+      throw UnsupportedError('The values for a date filter are not valid: you should provide a datetime or a relative date expressed in date math.', { filter: f });
+    }
+  });
   // 'within' operator
   const withinFilters = filterGroup.filters.filter((f) => f.operator === FilterOperator.Within);
   withinFilters.forEach((f) => {
@@ -75,10 +86,6 @@ export const checkFilterGroupValuesSyntax = (filterGroup: FilterGroup) => {
     }
     if (values.some((v) => v === null || v === '')) {
       throw UnsupportedError('A filter with "within" operator must have 2 values', { filter: f });
-    }
-    const relative_date_regex = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
-    if (values.some((v) => !v.match(relative_date_regex) && v !== 'now' && !isValidDate(v))) {
-      throw UnsupportedError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.', { filter: f });
     }
   });
   // recursively check the syntax of sub filter groups

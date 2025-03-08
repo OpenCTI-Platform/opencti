@@ -9,7 +9,7 @@ import { SearchStixCoreObjectsLines_data$data } from '@components/__generated__/
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useAuth from '../../utils/hooks/useAuth';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../utils/filters/filtersUtils';
 import { decodeSearchKeyword } from '../../utils/SearchUtils';
 import DataTable from '../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
@@ -207,16 +207,15 @@ const Search = () => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const filters = paramsFilters ? JSON.parse(paramsFilters) : viewStorage.filters;
   useEffect(() => {
     if (paramsFilters) {
-      storageHelpers.handleSetFilters(filters);
+      storageHelpers.handleSetFilters(deserializeFilterGroupForFrontend(paramsFilters) ?? emptyFilterGroup);
     } else {
       storageHelpers.handleClearAllFilters();
     }
   }, [paramsFilters]);
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', viewStorage.filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,

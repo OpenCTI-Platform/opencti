@@ -29,7 +29,7 @@ describe('Filtering utils', () => {
     } as FilterGroup;
     expect(() => checkFiltersValidity(filterGroup2)).toThrowError('Incorrect filters format');
   });
-  it('should check a filter syntax for filter with "within" operator', async () => {
+  it('should check filter values syntax for date filters', async () => {
     const filterGroup1 = {
       mode: 'or',
       filters: [
@@ -53,7 +53,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFiltersValidity(filterGroup3)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
+    expect(() => checkFiltersValidity(filterGroup3)).toThrowError('The values for a date filter are not valid: you should provide a datetime or a relative date expressed in date math.');
     const filterGroup4 = {
       mode: 'or',
       filters: [
@@ -69,7 +69,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFiltersValidity(filterGroup5)).toThrowError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.');
+    expect(() => checkFiltersValidity(filterGroup5)).toThrowError('The values for a date filter are not valid: you should provide a datetime or a relative date expressed in date math.');
     const filterGroup6 = {
       mode: 'or',
       filters: [
@@ -102,6 +102,22 @@ describe('Filtering utils', () => {
       filterGroups: [],
     } as FilterGroup;
     expect(() => checkFiltersValidity(filterGroup9)).toThrowError();
+    const filterGroup10 = {
+      mode: 'or',
+      filters: [
+        { key: ['created_at'], values: ['now3'], operator: 'gt' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(() => checkFiltersValidity(filterGroup10)).toThrowError('The values for a date filter are not valid: you should provide a datetime or a relative date expressed in date math.');
+    const filterGroup11 = {
+      mode: 'or',
+      filters: [
+        { key: ['modified'], values: ['now'], operator: 'gt' },
+      ],
+      filterGroups: [],
+    } as FilterGroup;
+    expect(() => checkFiltersValidity(filterGroup11)).not.toThrowError();
   });
   it('should add a filter to a filter group and separate them with the AND mode', async () => {
     const filterGroup = {
