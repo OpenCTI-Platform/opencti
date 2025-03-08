@@ -162,9 +162,9 @@ const Labels = () => {
           actions={(label) => <LabelPopover label={label} paginationOptions={queryPaginationOptions} />}
           searchContextFinal={{ entityTypes: ['Label'] }}
           disableNavigation
+          createButton={<LabelCreation paginationOptions={queryPaginationOptions} />}
         />
       )}
-      <LabelCreation paginationOptions={queryPaginationOptions} />
     </div>
   );
 };

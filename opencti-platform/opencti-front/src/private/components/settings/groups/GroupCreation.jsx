@@ -13,6 +13,8 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -53,10 +55,21 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
+const CreateGroupControlledDial = (props) => (
+  <CreateEntityControlledDial
+    entityType='Group'
+    entityPrefix={false}
+    size='medium'
+    {...props}
+  />
+);
+
 const GroupCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const { group_confidence_level, ...rest } = values;
@@ -94,7 +107,8 @@ const GroupCreation = ({ paginationOptions }) => {
   return (
     <Drawer
       title={t_i18n('Create a group')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced ? CreateGroupControlledDial : undefined}
     >
       {({ onClose }) => (
         <Formik
