@@ -51,6 +51,7 @@ import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-d
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
 import { convertStoreToStix } from '../database/stix-converter';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -255,7 +256,12 @@ const platformPublicDashboards = (context: AuthContext) => {
   };
   return { values: null, fn: reloadPublicDashboards };
 };
-
+const platformDraftWorkspaces = (context: AuthContext) => {
+  const reloadDraftWorkspaces = () => {
+    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_DRAFT_WORKSPACE], { connectionFormat: false });
+  };
+  return { values: null, fn: reloadDraftWorkspaces };
+};
 type SubEvent = { instance: StoreEntity | StoreRelation };
 
 const initCacheManager = () => {
@@ -279,6 +285,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_STREAM_COLLECTION, platformStreams(context));
     writeCacheForEntity(ENTITY_TYPE_NOTIFIER, platformNotifiers(context));
     writeCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD, platformPublicDashboards(context));
+    writeCacheForEntity(ENTITY_TYPE_DRAFT_WORKSPACE, platformDraftWorkspaces(context));
   };
   return {
     init: () => initCacheContent(), // Use for testing

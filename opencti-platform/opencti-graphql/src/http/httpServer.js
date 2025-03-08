@@ -17,11 +17,13 @@ import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
 import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
-import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
-import { ForbiddenAccess } from '../config/errors';
+import { authenticateUserFromRequest, userEditField, userWithOrigin } from '../domain/user';
+import { DraftLockedError, ForbiddenAccess } from '../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isNotEmptyField } from '../database/utils';
+import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -167,6 +169,26 @@ const createHttpServer = async () => {
           }
         } catch (error) {
           logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });
+        }
+
+        // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
+        if (isFeatureEnabled('DRAFT_WORKSPACE') && !!executeContext.draft_context) {
+          const draftWorkspaces = await getEntitiesMapFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
+          const draftWorkspace = draftWorkspaces.get(executeContext.draft_context);
+          if (!draftWorkspace) {
+            if (executeContext.user.draft_context === executeContext.draft_context) {
+              // If user is stuck in an invalid draft, remove draft context from user
+              await userEditField(executeContext, executeContext.user, executeContext.user.id, [{ key: 'draft_context', value: '' }]);
+            }
+            throw DraftLockedError('Could not find draft workspace');
+          }
+          if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
+            if (executeContext.user.draft_context === executeContext.draft_context) {
+              // If user is stuck in an invalid draft, remove draft context from user
+              await userEditField(executeContext, executeContext.user, executeContext.user.id, [{ key: 'draft_context', value: '' }]);
+            }
+            throw DraftLockedError('Can not execute request in a draft not in an open state');
+          }
         }
         return executeContext;
       }

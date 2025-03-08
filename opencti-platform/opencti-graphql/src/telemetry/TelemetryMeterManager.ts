@@ -24,6 +24,12 @@ export class TelemetryMeterManager {
 
   disseminationCount = 0;
 
+  // Number of active drafts
+  draftCount = 0;
+
+  // Number of active workbenches
+  workbenchCount = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -52,6 +58,14 @@ export class TelemetryMeterManager {
     this.disseminationCount += 1;
   }
 
+  setDraftCount(n: number) {
+    this.draftCount = n;
+  }
+
+  setWorkbenchCount(n: number) {
+    this.workbenchCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
@@ -72,5 +86,7 @@ export class TelemetryMeterManager {
     this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
     this.registerGauge('call_dissemination', 'dissemination feature usage', 'disseminationCount');
+    this.registerGauge('active_drafts_count', 'number of active drafts', 'draftCount');
+    this.registerGauge('active_workbenches_count', 'number of active workbenches', 'workbenchCount');
   }
 }

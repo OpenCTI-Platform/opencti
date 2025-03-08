@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { DraftEntitiesLinesPaginationQuery, DraftEntitiesLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftEntitiesLinesPaginationQuery.graphql';
 import { useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
@@ -117,11 +117,13 @@ const LOCAL_STORAGE_KEY = 'draft_entities';
 interface DraftEntitiesProps {
   entitiesType?: string;
   excludedEntitiesType?: string;
+  isReadOnly: boolean;
 }
 
 const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   entitiesType = 'Stix-Core-Object',
   excludedEntitiesType,
+  isReadOnly,
 }) => {
   const { draftId } = useParams() as { draftId: string };
   const { isFeatureEnable } = useHelper();
@@ -219,6 +221,46 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     },
   };
 
+  let createButton: ReactNode;
+  if (!isReadOnly) {
+    createButton = entitiesType === 'Stix-Cyber-Observable' ? (
+      <>
+        <StixCyberObservableCreation
+          display={open}
+          contextual={false}
+          inputValue={searchTerm}
+          paginationKey="Pagination_draftWorkspaceEntities"
+          paginationOptions={queryPaginationOptions}
+          speeddial={false}
+          open={openCreateObservable}
+          controlledDialStyles={{ marginLeft: 1 }}
+          handleClose={handleCloseCreateObservable}
+        />
+      </>
+    ) : (
+      <>
+        <StixDomainObjectCreation
+          display={true}
+          inputValue={searchTerm}
+          paginationKey="Pagination_draftWorkspaceEntities"
+          paginationOptions={queryPaginationOptions}
+          speeddial={false}
+          fabReplaced={isFABReplaced}
+          controlledDialStyles={{ marginLeft: 1 }}
+          open={openCreateEntity}
+          handleClose={handleCloseCreateEntity}
+          onCompleted={() => setOpenCreateEntity(false)}
+          stixDomainObjectTypes={entitiesType}
+          creationCallback={undefined}
+          confidence={undefined}
+          defaultCreatedBy={undefined}
+          isFromBulkRelation={undefined}
+          defaultMarkingDefinitions={undefined}
+        />
+      </>
+    );
+  }
+
   return (
     <span data-testid="draft-entities-page">
       {queryRef && (
@@ -232,44 +274,8 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           lineFragment={draftEntitiesLineFragment}
           entityTypes={[entitiesType]}
           removeFromDraftEnabled
-          createButton={
-            entitiesType === 'Stix-Cyber-Observable' ? (
-              <>
-                <StixCyberObservableCreation
-                  display={open}
-                  contextual={false}
-                  inputValue={searchTerm}
-                  paginationKey="Pagination_draftWorkspaceEntities"
-                  paginationOptions={queryPaginationOptions}
-                  speeddial={false}
-                  open={openCreateObservable}
-                  controlledDialStyles={{ marginLeft: 1 }}
-                  handleClose={handleCloseCreateObservable}
-                />
-              </>
-            ) : (
-              <>
-                <StixDomainObjectCreation
-                  display={true}
-                  inputValue={searchTerm}
-                  paginationKey="Pagination_draftWorkspaceEntities"
-                  paginationOptions={queryPaginationOptions}
-                  speeddial={false}
-                  fabReplaced={isFABReplaced}
-                  controlledDialStyles={{ marginLeft: 1 }}
-                  open={openCreateEntity}
-                  handleClose={handleCloseCreateEntity}
-                  onCompleted={() => setOpenCreateEntity(false)}
-                  stixDomainObjectTypes={entitiesType}
-                  creationCallback={undefined}
-                  confidence={undefined}
-                  defaultCreatedBy={undefined}
-                  isFromBulkRelation={undefined}
-                  defaultMarkingDefinitions={undefined}
-                />
-              </>
-            )
-          }
+          disableLineSelection={isReadOnly}
+          createButton={createButton}
         />
       )}
     </span>

@@ -34,6 +34,7 @@ const draftPopoverDeleteMutation = graphql`
 
 interface DraftPopoverProps {
   draftId: string;
+  draftLocked: boolean;
   paginationOptions: DraftsLinesPaginationQuery$variables;
   updater?: (
     store: RecordSourceSelectorProxy<DraftContextBannerMutation$data>,
@@ -42,6 +43,7 @@ interface DraftPopoverProps {
 
 const DraftPopover: React.FC<DraftPopoverProps> = ({
   draftId,
+  draftLocked,
   paginationOptions,
   updater,
 }) => {
@@ -155,7 +157,7 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
           onClose={handleClose}
         >
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-          <MenuItem onClick={handleOpenSwitch}>{t_i18n('Switch to Draft')}</MenuItem>
+          <MenuItem onClick={handleOpenSwitch} disabled={draftLocked}>{t_i18n('Switch to Draft')}</MenuItem>
         </Menu>
         <Dialog
           open={openDelete}

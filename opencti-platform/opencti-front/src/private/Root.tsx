@@ -136,6 +136,8 @@ const meUserFragment = graphql`
     draftContext {
       id
       name
+      draft_status
+      processingCount
     }
     effective_confidence_level {
       max_confidence
