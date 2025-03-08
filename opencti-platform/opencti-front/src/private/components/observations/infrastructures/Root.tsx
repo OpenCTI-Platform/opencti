@@ -118,6 +118,8 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
                 <InfrastructureEdition infrastructureId={infrastructure.id} />
               </Security>
             )}
+            enableEnricher={true}
+            enableEnrollPlaybook={true}
             enableQuickSubscription={true}
           />
           <Box
