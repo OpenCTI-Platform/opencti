@@ -23,7 +23,8 @@ import {
   syncEditContext,
   syncEditField,
   testSync,
-  updateConnectorCurrentStatus, updateConnectorManagerStatus,
+  updateConnectorCurrentStatus,
+  updateConnectorManagerStatus,
   updateConnectorRequestedStatus
 } from '../domain/connector';
 import {
@@ -41,7 +42,7 @@ import {
   worksForConnector
 } from '../domain/work';
 import { batchCreator } from '../domain/user';
-import {now, sinceNowInMinutes} from '../utils/format';
+import { now, sinceNowInMinutes } from '../utils/format';
 import {
   computeManagerConnectorConfiguration,
   computeManagerConnectorImage,
@@ -59,8 +60,10 @@ import {
 import { batchLoader } from '../database/middleware';
 import { getConnectorQueueSize } from '../database/rabbitmq';
 import { redisGetConnectorLogs } from '../database/redis';
+import pjson from '../../package.json';
 
 const creatorLoader = batchLoader(batchCreator);
+export const PLATFORM_VERSION = pjson.version;
 
 const connectorResolvers = {
   Query: {
@@ -96,6 +99,7 @@ const connectorResolvers = {
   },
   ConnectorManager: {
     active: (cm) => sinceNowInMinutes(cm.updated_at) < 5,
+    about_version: () => PLATFORM_VERSION
   },
   Work: {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),

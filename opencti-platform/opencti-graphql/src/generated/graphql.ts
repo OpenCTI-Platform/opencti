@@ -3825,6 +3825,7 @@ export type ConnectorInfoInput = {
 
 export type ConnectorManager = BasicObject & InternalObject & {
   __typename?: 'ConnectorManager';
+  about_version: Scalars['String']['output'];
   active: Scalars['Boolean']['output'];
   connector_manager_contracts: Array<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
@@ -34260,6 +34261,7 @@ export type ConnectorInfoResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type ConnectorManagerResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorManager'] = ResolversParentTypes['ConnectorManager']> = ResolversObject<{
+  about_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   active?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   connector_manager_contracts?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
