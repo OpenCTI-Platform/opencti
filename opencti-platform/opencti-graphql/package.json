@@ -165,7 +165,7 @@
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.5",
-    "@graphql-codegen/client-preset": "4.6.4",
+    "@graphql-codegen/client-preset": "4.7.0",
     "@graphql-codegen/introspection": "4.0.3",
     "@graphql-codegen/typescript": "4.1.5",
     "@graphql-codegen/typescript-resolvers": "4.4.4",
