@@ -10048,10 +10048,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:5.9.6":
-  version: 5.9.6
-  resolution: "jose@npm:5.9.6"
-  checksum: 10/3ebbda9f6a96d493944f2720bf4436347884666cd87b7087a61cff12a3b540fe6fd743b5eb8defe7bc2a45aa58992ae6687da78797d91fc4e3e5e8588aa98c7d
+"jose@npm:6.0.8":
+  version: 6.0.8
+  resolution: "jose@npm:6.0.8"
+  checksum: 10/4456813a9e8a98daf8e34ab4a595f40bf915ddd151bde462e4d606256e0e93d9cd20ec53513eebb2bb64d95e95abb777197402722898f6cf48fb08ce9b83dd0a
   languageName: node
   linkType: hard
 
