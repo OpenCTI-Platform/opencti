@@ -7170,6 +7170,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"echarts@npm:5.6.0":
+  version: 5.6.0
+  resolution: "echarts@npm:5.6.0"
+  dependencies:
+    tslib: "npm:2.3.0"
+    zrender: "npm:5.6.1"
+  checksum: 10/e73344abb777fd8401c0b89a5d83b65c7a81a11540e2047d51f4aae9419baf4dc2524a5d9561f9ca0fe8d6b432c58b7a1d518f2a4338041046506db8257a1332
+  languageName: node
+  linkType: hard
+
 "ee-first@npm:1.1.1":
   version: 1.1.1
   resolution: "ee-first@npm:1.1.1"
@@ -11593,6 +11603,7 @@ __metadata:
     dataloader: "npm:2.2.3"
     domino: "npm:2.1.6"
     dot-object: "npm:2.1.5"
+    echarts: "npm:5.6.0"
     ejs: "npm:3.1.10"
     esbuild: "npm:0.25.0"
     esbuild-plugin-copy: "npm:2.1.1"
@@ -13909,6 +13920,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tslib@npm:2.3.0":
+  version: 2.3.0
+  resolution: "tslib@npm:2.3.0"
+  checksum: 10/9c55c9abd5ecd94e5fd37573db27e26933fb6c33506431403fb4627dcb8aa9a45b772afa6d05dd2c25dc1de22a213193251e6303742f3bcdc179e523a9295bfd
+  languageName: node
+  linkType: hard
+
 "tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.4.0, tslib@npm:^2.5.0, tslib@npm:^2.6.2, tslib@npm:^2.6.3, tslib@npm:^2.8.0":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
@@ -15050,5 +15068,14 @@ __metadata:
   version: 3.24.2
   resolution: "zod@npm:3.24.2"
   checksum: 10/604c62a8cf8e330d78b106a557f4b44f5d14845d20b1360a423ccc09b58cb8525ccf7e4b40cf1bd4852d22393d2c67774b5817ec5a2fedab25f543b36ed15943
+  languageName: node
+  linkType: hard
+
+"zrender@npm:5.6.1":
+  version: 5.6.1
+  resolution: "zrender@npm:5.6.1"
+  dependencies:
+    tslib: "npm:2.3.0"
+  checksum: 10/25dfd476be243f051614f131675855d184eb05e8b9a39dc41146a3a553a17aad5ceba77e166d525be9c4adc2bb237c56dfdfb3456667940bbeddb05eef3deac7
   languageName: node
   linkType: hard
