@@ -7,7 +7,7 @@ import type { DataTableCellProps, DataTableLineProps } from '../dataTableTypes';
 import { DataTableVariant } from '../dataTableTypes';
 import type { Theme } from '../../Theme';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
-import { SELECT_COLUMN_SIZE } from './DataTableHeader';
+import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { useDataTableContext } from './DataTableContext';
 
 const cellContainerStyle = (theme: Theme) => ({
@@ -104,6 +104,8 @@ const DataTableLine = ({
     startsWithAction,
     endsWithAction,
     endsWithNavigate,
+    disableLineSelection,
+    canToggleLine,
     useDataTableToggle: {
       selectAll,
       deSelectedElements,
@@ -186,14 +188,10 @@ const DataTableLine = ({
             key={`select_${data.id}`}
             style={{
               ...cellContainerStyle(theme),
-              width: SELECT_COLUMN_SIZE,
+              width: icon ? (!disableLineSelection ? ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE : SELECT_COLUMN_SIZE) : SELECT_COLUMN_SIZE,
             }}
           >
-            { (icon) ? (
-              <div style={{ display: 'flex', paddingLeft: 10 }}>
-                {icon(data)}
-              </div>
-            ) : (
+            { !disableLineSelection && canToggleLine && (
               <Checkbox
                 onClick={handleSelectLine}
                 sx={{
@@ -205,11 +203,16 @@ const DataTableLine = ({
                   },
                 }}
                 checked={
-                  (selectAll
-                    && !((data.id || 'id') in (deSelectedElements || {})))
-                  || (data.id || 'id') in (selectedElements || {})
-                }
+                (selectAll
+                  && !((data.id || 'id') in (deSelectedElements || {})))
+                || (data.id || 'id') in (selectedElements || {})
+              }
               />
+            )}
+            {icon && (
+              <div style={{ display: 'flex', paddingLeft: 10 }}>
+                {icon(data)}
+              </div>
             )}
           </div>
         )}
