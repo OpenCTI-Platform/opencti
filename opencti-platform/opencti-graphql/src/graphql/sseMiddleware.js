@@ -304,7 +304,7 @@ const createSseMiddleware = () => {
       },
     };
     const heartTimer = () => {
-      if (lastEventId && !req.finished) {
+      if (lastEventId) {
         const [idTime] = lastEventId.split('-');
         const idDate = utcDate(parseInt(idTime, 10)).toISOString();
         channel.sendEvent(lastEventId, 'heartbeat', idDate);
