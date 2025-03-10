@@ -463,7 +463,6 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
   }
   // check user access
   must.push(...buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities }));
-  logApp.info('ANGIE - buildDataRestrictions -1-: must', { must });
   // If user have bypass, no need to check restrictions
   if (!isBypassUser(user)) {
     // region Handle marking restrictions
@@ -562,7 +561,6 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
         should.push({ match: { 'initiator_id.keyword': user.internal_id } });
         // Access to authorized members
         should.push(...buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities, excludeEmptyAuthorizedMembers: true }));
-        logApp.info('ANGIE - buildDataRestrictions -2-: should', { should });
         // Finally build the bool should search
         must.push({ bool: { should, minimum_should_match: 1 } });
       }
@@ -578,7 +576,6 @@ const buildUserMemberAccessFilter = (user, opts) => {
   if (includeAuthorities && capabilities.includes(BYPASS)) {
     return [];
   }
-  logApp.info('ANGIE - buildUserMemberAccessFilter, not bypass');
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
   const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: { } } } } } };
@@ -1653,9 +1650,8 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     }
     const restrictionOptions = { includeAuthorities: true }; // By default include authorized through capabilities
     // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
-    const dataRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
-    logApp.info('ANGIE - buildDataRestrictions result -1-:', { markingRestrictions: dataRestrictions });
-    mustTerms.push(...dataRestrictions.must);
+    const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
+    mustTerms.push(...markingRestrictions.must);
     // Handle draft
     const draftMust = buildDraftFilter(context, user, opts);
     const body = {
@@ -1663,12 +1659,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       query: {
         bool: {
           must: [...mustTerms, ...draftMust],
-          must_not: dataRestrictions.must_not,
+          must_not: markingRestrictions.must_not,
         },
       },
     };
-    logApp.info('ANGIE - buildDataRestrictions body:', { body });
-
     let searchAfter;
     let hasNextPage = true;
     while (hasNextPage) {
