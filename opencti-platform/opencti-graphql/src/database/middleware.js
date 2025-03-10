@@ -3033,6 +3033,11 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   const input = { ...rawInput };
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
+  // authorized_members renaming
+  if (input.authorized_members?.length > 0) {
+    input.restricted_members = input.authorized_members;
+    delete input.authorized_members;
+  }
   // endregion
   // validate authorized members access (when creating a new entity with authorized members)
   if (input.restricted_members?.length > 0) {
