@@ -1,5 +1,5 @@
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER, StoreEntitySavedFilter } from './savedFilter-types';
+import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER, type StoreEntitySavedFilter } from './savedFilter-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listEntitiesPaginated } from '../../database/middleware-loader';
 import type { QuerySavedFiltersArgs, SavedFilterAddInput } from '../../generated/graphql';
