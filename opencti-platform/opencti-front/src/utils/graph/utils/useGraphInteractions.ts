@@ -255,6 +255,7 @@ const useGraphInteractions = () => {
   const clearSelection = () => {
     setSelectedNodes([]);
     setSelectedLinks([]);
+    setGraphStateProp('search', undefined);
   };
 
   /**
@@ -297,6 +298,7 @@ const useGraphInteractions = () => {
 
   const selectBySearch = (search: string) => {
     clearSelection();
+    setGraphStateProp('search', search);
     if (search) {
       const searchLow = search.toLowerCase();
       const matchingNodes = (graphData?.nodes ?? []).filter((node) => {

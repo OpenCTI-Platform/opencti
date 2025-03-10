@@ -24,10 +24,18 @@ const GraphToolbar = ({
 }: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
   const navOpen = localStorage.getItem('navOpen') === 'true';
-
-  const { graphState, context } = useGraphContext();
-  const { showTimeRange, showLinearProgress, loadingCurrent, loadingTotal } = graphState;
   const { selectBySearch } = useGraphInteractions();
+
+  const {
+    graphState: {
+      showTimeRange,
+      showLinearProgress,
+      loadingCurrent,
+      loadingTotal,
+      search,
+    },
+    context,
+  } = useGraphContext();
 
   const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
 
@@ -81,7 +89,13 @@ const GraphToolbar = ({
         )}
 
         <div style={{ flex: 1 }}>
-          {context !== 'analyses' && <SearchInput variant="thin" onSubmit={selectBySearch} />}
+          {context !== 'analyses' && (
+            <SearchInput
+              keyword={search ?? ''}
+              variant="thin"
+              onSubmit={selectBySearch}
+            />
+          )}
         </div>
 
         {context === 'investigation' && (

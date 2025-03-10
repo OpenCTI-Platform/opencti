@@ -15,6 +15,7 @@ const useGraphPainter = () => {
     graphState: {
       selectedLinks,
       selectedNodes,
+      search,
     },
   } = useGraphContext();
 
@@ -44,6 +45,8 @@ const useGraphPainter = () => {
     const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred } = data;
     const { showNbConnectedElements } = opts;
     const selected = !!selectedNodes.find((n) => n.id === data.id);
+
+    ctx.globalAlpha = !selected && search ? 0.4 : 1;
 
     ctx.beginPath();
     ctx.fillStyle = disabled ? colors.disabled : color;
@@ -124,6 +127,7 @@ const useGraphPainter = () => {
   const linkColorPaint = (link: GraphLink) => {
     const selected = !!selectedLinks.find((l) => l.id === link.id);
 
+    if (!selected && search) return colors.disabled;
     if (selected) return colors.selected;
     if (link.isNestedInferred) return colors.inferred;
     if (link.disabled) return colors.disabled;

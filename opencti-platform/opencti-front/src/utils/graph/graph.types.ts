@@ -86,6 +86,7 @@ export interface GraphState {
   selectedTimeRangeInterval?: [Date, Date]
   selectedNodes: GraphNode[]
   selectedLinks: GraphLink[]
+  search?: string
   zoom?: {
     k: number
     x: number
