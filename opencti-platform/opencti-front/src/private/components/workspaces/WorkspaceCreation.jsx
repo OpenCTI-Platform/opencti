@@ -78,7 +78,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
   const isXTMHubFeatureEnabled = isFeatureEnable('XTM_HUB_INTEGRATION');
   const { settings } = useContext(UserContext);
-  const importFromHubUrl = isNotEmptyField(settings) ? `${settings.platform_xtmhub_url}/redirect/custom_dashboards?octi_instance_id=${settings.id}`.replaceAll('//', '/') : '';
+  const importFromHubUrl = isNotEmptyField(settings) ? `${settings.platform_xtmhub_url}/redirect/custom_dashboards?octi_instance_id=${settings.id}` : '';
 
   const [commitImportMutation] = useApiMutation(importMutation);
   const [commitCreationMutation] = useApiMutation(workspaceMutation);
