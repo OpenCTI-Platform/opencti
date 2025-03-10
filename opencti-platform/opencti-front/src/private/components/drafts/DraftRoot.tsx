@@ -135,7 +135,8 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
             workErrors={validationWork.errors}
             readOnly
           />
-        </Paper>)}
+        </Paper>
+        )}
       </>
       )}
       <Box
