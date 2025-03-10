@@ -146,7 +146,9 @@ export const uploadAndAskJobImport = async (context, user, args = {}) => {
     connectors,
     validationMode = defaultValidationMode,
   } = args;
-  const uploadedFile = await uploadImport(context, user, { file, fileMarkings });
+  const uploadedFile = validationMode === 'workbench'
+    ? await uploadPending(context, user, { file, file_markings: fileMarkings })
+    : await uploadImport(context, user, { file, fileMarkings });
 
   if (connectors) {
     await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
