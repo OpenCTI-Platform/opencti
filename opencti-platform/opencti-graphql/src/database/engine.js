@@ -579,8 +579,20 @@ const buildUserMemberAccessFilter = (user, opts) => {
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
   const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: { } } } } } };
+  // condition on authorizedMembers id
+  const authorizedMembersIdsTerms = { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } };
+  // condition on group restriction ids
+  const userGroupsIds = user.groups.map((group) => group.internal_id);
+  const groupRestrictionCondition = {
+    bool: {
+      should: [
+        { bool: { must_not: [{ exists: { field: [`${authorizedMembers.name}.groups_restriction_ids`] } }] } },
+        { terms: { [`${authorizedMembers.name}.groups_restriction_ids.keyword`]: userGroupsIds } }
+      ]
+    }
+  };
   const authorizedFilters = [
-    { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } },
+    { bool: { must: [authorizedMembersIdsTerms, groupRestrictionCondition] } }
   ];
   const shouldConditions = [];
   if (includeAuthorities) {
