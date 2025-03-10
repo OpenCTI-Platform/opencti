@@ -137,7 +137,7 @@ const DataTableComponent = ({
     });
   }, [columns]);
 
-  const startsWithAction = useMemo(() => columns.at(0)?.id === 'select' || columns.at(0)?.id === 'icon', [columns]);
+  const startsWithAction = useMemo(() => columns.at(0)?.id === 'select' || columns.at(0)?.id === 'icon' || columns.at(1)?.id === 'icon', [columns]);
   const endsWithNavigate = useMemo(() => columns.at(-1)?.id === 'navigate', [columns]);
   const endsWithAction = useMemo(() => endsWithNavigate || !!actions, [endsWithNavigate, actions]);
 
@@ -183,6 +183,8 @@ const DataTableComponent = ({
         disableSelectAll,
         selectOnLineClick,
         onLineClick,
+        disableLineSelection,
+        canToggleLine,
         page,
         setPage,
         tableWidthState,

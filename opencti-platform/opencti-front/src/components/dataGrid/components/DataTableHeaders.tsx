@@ -8,7 +8,7 @@ import { PopoverProps } from '@mui/material/Popover/Popover';
 import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
 import { DataTableColumn, DataTableColumns, DataTableHeadersProps } from '../dataTableTypes';
-import DataTableHeader, { SELECT_COLUMN_SIZE } from './DataTableHeader';
+import DataTableHeader, { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import type { Theme } from '../../Theme';
 import { useDataTableContext } from './DataTableContext';
 
@@ -33,6 +33,8 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     startsWithAction,
     endsWithAction,
     icon,
+    disableLineSelection,
+    canToggleLine,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
     },
@@ -56,14 +58,14 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     setColumns(newColumns);
   };
 
-  const draggableColumns = useMemo(() => columns.filter(({ id }) => !['select', 'navigate'].includes(id)), [columns]);
+  const draggableColumns = useMemo(() => columns.filter(({ id }) => !['select', 'navigate', 'icon'].includes(id)), [columns]);
 
   const hasSelectedElements = numberOfSelectedElements > 0 || selectAll;
   const checkboxStyle: CSSProperties = {
     background: hasSelectedElements
       ? theme.palette.background.accent
       : 'transparent',
-    width: SELECT_COLUMN_SIZE,
+    width: icon ? (!disableLineSelection ? ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE : SELECT_COLUMN_SIZE) : SELECT_COLUMN_SIZE,
   };
 
   const showToolbar = numberOfSelectedElements > 0 && !disableToolBar;
@@ -72,28 +74,29 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     <div ref={containerRef} style={{ display: 'flex', height: 42 }}>
       {startsWithAction && (
       <div data-testid="dataTableCheckAll" style={checkboxStyle}>
-        { icon ? (
+        { !disableLineSelection && canToggleLine && (
+        <Checkbox
+          checked={selectAll}
+          sx={{
+            marginRight: 1,
+            flex: '0 0 auto',
+            paddingLeft: 0,
+            '&:hover': {
+              background: 'transparent',
+            },
+          }}
+          onChange={handleToggleSelectAll}
+          disabled={!handleToggleSelectAll || disableSelectAll}
+        />
+        )}
+        { icon && (
           <Box sx={{
             marginRight: 1,
             flex: '0 0 auto',
             paddingLeft: 0,
           }}
           />
-        ) : (
-          <Checkbox
-            checked={selectAll}
-            sx={{
-              marginRight: 1,
-              flex: '0 0 auto',
-              paddingLeft: 0,
-              '&:hover': {
-                background: 'transparent',
-              },
-            }}
-            onChange={handleToggleSelectAll}
-            disabled={!handleToggleSelectAll || disableSelectAll}
-          />
-        )}
+        ) }
       </div>
       )}
 
