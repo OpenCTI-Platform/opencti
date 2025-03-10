@@ -20,7 +20,7 @@ import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalR
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { patchAttribute } from '../database/middleware';
 import { notify } from '../database/redis';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
@@ -31,7 +31,6 @@ export const getAuthorizedMembers = async (
   user: AuthUser,
   entity: BasicStoreEntity
 ): Promise<MemberAccess[]> => {
-  logApp.info('ANGIE - getAuthorizedMembers');
   let authorizedMembers: MemberAccess[] = [];
   if (isEmptyField(entity.restricted_members)) {
     return authorizedMembers;
