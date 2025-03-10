@@ -13,6 +13,7 @@ import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '
 import { publishUserAction } from '../listener/UserActionListener';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
+import { authorizedMembers } from '../schema/attribute-definition';
 
 // Stream graphQL handlers
 export const createStreamCollection = async (context, user, input) => {
@@ -68,7 +69,7 @@ export const streamCollectionEditField = async (context, user, collectionId, inp
 
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
-    if (key === 'authorized_members') {
+    if (key === authorizedMembers.name) {
       item.value = value.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
     }
     return item;

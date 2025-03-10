@@ -80,6 +80,7 @@ import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
+import { authorizedMembers } from '../schema/attribute-definition';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -132,11 +133,19 @@ export const findAllAuthMemberRestricted = async (context, user, args) => {
     throw ForbiddenAccess();
   }
   const types = extractStixCoreObjectTypesFromArgs(args);
-  const filters = addFilter(args.filters, 'authorized_members.id', [], FilterOperator.NotNil);
+  const nested = [
+    { key: 'id', operator: FilterOperator.NotNil, values: [] },
+  ];
+  const authorizedExistsFilter = { key: authorizedMembers.name, operator: FilterOperator.NotNil, values: nested, mode: 'or' };
+  const filterWithAuthorizedMembers = {
+    mode: 'and',
+    filters: [authorizedExistsFilter],
+    filterGroups: args.filters ? [args.filters] : [],
+  };
   const finalArgs = {
     ...args,
     includeAuthorities: true,
-    filters
+    filters: filterWithAuthorizedMembers
   };
 
   return listEntitiesPaginated(context, user, types, finalArgs);
