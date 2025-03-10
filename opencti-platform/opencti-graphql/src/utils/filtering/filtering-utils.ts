@@ -1,5 +1,10 @@
 import { uniq } from 'ramda';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
+import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  buildRefRelationKey,
+  RULE_PREFIX
+} from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
