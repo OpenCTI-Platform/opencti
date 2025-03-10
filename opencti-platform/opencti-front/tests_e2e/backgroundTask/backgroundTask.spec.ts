@@ -36,6 +36,7 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
   // Filter on label
   await filter.addFilter('Label', 'background-task', true);
   await expect(dataTable.getNumberElements(2)).toBeVisible();
+  await incidentPage.goto();
 
   // Select all
   await dataTable.getCheckAll().click();

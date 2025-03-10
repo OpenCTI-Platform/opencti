@@ -24,6 +24,8 @@ import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../u
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
 import { useDataTablePaginationLocalStorage } from '../../../../components/dataGrid/dataTableHooks';
+import useHelper from '../../../../utils/hooks/useHelper';
+import UpdateGroupControlledDial from '../../../../components/UpdateEntityControlledDial';
 
 export const groupEditionContainerQuery = graphql`
   query GroupEditionContainerQuery($id: String!) {
@@ -77,6 +79,8 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const [currentTab, setTab] = useState(0);
 
@@ -113,11 +117,17 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   return (
     <Drawer
       title={t_i18n('Update a group')}
-      variant={open == null ? DrawerVariant.updateWithPanel : undefined}
+      variant={open == null && !isFABReplaced
+        ? DrawerVariant.updateWithPanel
+        : undefined}
       context={editContext}
       onClose={handleClose}
       open={open}
       disabled={disabled}
+      controlledDial={isFABReplaced
+        ? UpdateGroupControlledDial
+        : undefined
+      }
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
