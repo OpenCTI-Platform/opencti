@@ -23546,13 +23546,12 @@ export type RuleTask = BackgroundTask & {
 
 export type SavedFilter = BasicObject & InternalObject & {
   __typename?: 'SavedFilter';
-  created_at: Scalars['DateTime']['output'];
   entity_type: Scalars['String']['output'];
   filters: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
-  scope?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  scope: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
 };
 
@@ -39849,13 +39848,12 @@ export type RuleTaskResolvers<ContextType = any, ParentType extends ResolversPar
 }>;
 
 export type SavedFilterResolvers<ContextType = any, ParentType extends ResolversParentTypes['SavedFilter'] = ResolversParentTypes['SavedFilter']> = ResolversObject<{
-  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  scope?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  scope?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
