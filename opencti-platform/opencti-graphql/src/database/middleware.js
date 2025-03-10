@@ -203,7 +203,8 @@ import {
   adaptUpdateInputsConfidence,
   controlCreateInputWithUserConfidence,
   controlUpsertInputWithUserConfidence,
-  controlUserConfidenceAgainstElement
+  controlUserConfidenceAgainstElement,
+  shouldCheckConfidenceOnRefRelationship
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
@@ -2257,7 +2258,13 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
     throw FunctionalError('Cant update undefined element');
   }
   // region confidence control
-  controlUserConfidenceAgainstElement(user, initial);
+  const checkConfidence = (inputs ?? []).some(({ key, operation }) => {
+    if (operation !== 'add') return true;
+    return shouldCheckConfidenceOnRefRelationship(key);
+  });
+  if (checkConfidence) {
+    controlUserConfidenceAgainstElement(user, initial);
+  }
   const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
   // endregion
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
@@ -2809,7 +2816,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
-  if (isStixRefRelationship(relationshipType)) {
+  if (isStixRefRelationship(relationshipType) && shouldCheckConfidenceOnRefRelationship(relationshipType)) {
     controlUserConfidenceAgainstElement(user, from);
   }
 
