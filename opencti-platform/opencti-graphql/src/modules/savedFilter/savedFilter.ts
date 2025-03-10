@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
-import { ENTITY_TYPE_USER } from 'src/schema/internalObject';
 import convertSavedFiltersToStix from './savedFilter-converter';
 import { ENTITY_TYPE_SAVED_FILTER, type StoreEntitySavedFilter, type StixSavedFilter } from './savedFilter-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { isFeatureEnabled } from '../../config/conf';
+import { creators, createdAt } from '../../schema/attribute-definition';
 
 const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSavedFilter> = {
   type: {
@@ -19,23 +19,13 @@ const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSave
     },
   },
   attributes: [
-    {
-      name: 'user',
-      label: 'User',
-      type: 'string',
-      format: 'id',
-      entityTypes: [ENTITY_TYPE_USER],
-      mandatoryType: 'no',
-      editDefault: false,
-      multiple: false,
-      upsert: true,
-      isFilterable: true
-    },
+    creators,
+    createdAt,
     {
       name: 'name',
       label: 'Name',
       type: 'string',
-      format: 'short',
+      format: 'text',
       mandatoryType: 'external',
       editDefault: false,
       multiple: false,
@@ -43,15 +33,15 @@ const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSave
       isFilterable: true
     },
     {
-      name: 'filter',
-      label: 'Filter',
+      name: 'filters',
+      label: 'Filters',
       type: 'string',
-      format: 'short',
+      format: 'json',
       mandatoryType: 'external',
       editDefault: false,
-      multiple: true,
+      multiple: false,
       upsert: false,
-      isFilterable: true
+      isFilterable: false
     },
     {
       name: 'scope',
@@ -60,9 +50,9 @@ const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSave
       format: 'short',
       mandatoryType: 'external',
       editDefault: false,
-      multiple: true,
+      multiple: false,
       upsert: false,
-      isFilterable: true
+      isFilterable: false
     }
   ],
   relations: [],

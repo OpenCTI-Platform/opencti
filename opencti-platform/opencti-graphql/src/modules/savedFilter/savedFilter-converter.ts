@@ -6,7 +6,7 @@ const convertSavedFiltersToStix = (instance: StoreEntitySavedFilter): StixSavedF
   return {
     ...stixObject,
     name: instance.name,
-    filter: instance.filter,
+    filters: instance.filters,
     scope: instance.scope,
   };
 };

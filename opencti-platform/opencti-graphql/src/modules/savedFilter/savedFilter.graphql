@@ -6,8 +6,7 @@ type SavedFilter implements InternalObject & BasicObject {
     # SavedFilters
     name: String!
     filters: String!
-    scope: [String!]
-    created_at: DateTime!
+    scope: String!
 }
 
 type SavedFilterEdge {
@@ -40,5 +39,4 @@ type Query {
 type Mutation {
     savedFilterAdd(input: SavedFilterAddInput!): SavedFilter @auth
     savedFilterDelete(id: ID!): ID @auth
-#    savedFiltersDelete(): ID @auth
 }
