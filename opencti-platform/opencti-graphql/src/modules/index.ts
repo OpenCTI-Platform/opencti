@@ -127,4 +127,5 @@ import './exclusionList/exclusionList-graphql';
 import './draftWorkspace/draftWorkspace-graphql';
 import './fintelTemplate/fintelTemplate-graphql';
 import './disseminationList/disseminationList-graphql';
+import './requestAccess/requestAccess-graphql';
 // endregion
