@@ -375,6 +375,7 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftSightingsLinesPaginationQuery>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getRedirectionLink = (stixSighting: any) => {
     return isReadOnly ? `/dashboard/id/${stixSighting.standard_id}` : computeLink(stixSighting);
   };

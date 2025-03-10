@@ -275,8 +275,9 @@ const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isRea
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftRelationshipsLinesPaginationQuery>;
 
-  const getRedirectionLink = (stixObject: any) => {
-    return isReadOnly ? `/dashboard/id/${stixObject.standard_id}` : computeLink(stixObject);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getRedirectionLink = (stixRelationship: any) => {
+    return isReadOnly ? `/dashboard/id/${stixRelationship.standard_id}` : computeLink(stixRelationship);
   };
 
   return (

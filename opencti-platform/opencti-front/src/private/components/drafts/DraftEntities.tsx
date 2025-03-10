@@ -5,6 +5,7 @@ import { graphql } from 'react-relay';
 import { DraftEntitiesLines_data$data } from '@components/drafts/__generated__/DraftEntitiesLines_data.graphql';
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
+import { DraftEntities_node$data } from '@components/drafts/__generated__/DraftEntities_node.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -263,7 +264,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     );
   }
 
-  const getRedirectionLink = (stixObject: any) => {
+  const getRedirectionLink = (stixObject: DraftEntities_node$data) => {
     return isReadOnly ? `/dashboard/id/${stixObject.standard_id}` : computeLink(stixObject);
   };
 
