@@ -586,7 +586,7 @@ const buildUserMemberAccessFilter = (user, opts) => {
   const groupRestrictionCondition = {
     bool: {
       should: [
-        { bool: { must_not: [{ exists: { field: [`${authorizedMembers.name}.groups_restriction_ids`] } }] } },
+        { bool: { must_not: [{ exists: { field: `${authorizedMembers.name}.groups_restriction_ids` } }] } },
         { terms: { [`${authorizedMembers.name}.groups_restriction_ids.keyword`]: userGroupsIds } }
       ]
     }
