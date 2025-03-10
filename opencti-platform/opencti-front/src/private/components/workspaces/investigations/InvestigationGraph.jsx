@@ -35,7 +35,7 @@ import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRig
 import LassoSelection from '../../../../utils/graph/LassoSelection';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
-import WorkspaceHeader from '../WorkspaceHeader';
+import WorkspaceHeader from '../workspaceHeader/WorkspaceHeader';
 import InvestigationGraphBar from './InvestigationGraphBar';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
