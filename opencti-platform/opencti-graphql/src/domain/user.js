@@ -892,7 +892,14 @@ export const deleteAllTriggerAndDigestByUser = async (userId) => {
         bool: {
           must: [
             { term: { 'entity_type.keyword': { value: 'Trigger' } } },
-            { term: { [`${authorizedMembers.name}.id.keyword`]: { value: userId } } }
+            {
+              nested: {
+                path: authorizedMembers.name,
+                query: {
+                  term: { [`${authorizedMembers.name}.id.keyword`]: { value: userId } }
+                }
+              }
+            }
           ]
         }
       }
