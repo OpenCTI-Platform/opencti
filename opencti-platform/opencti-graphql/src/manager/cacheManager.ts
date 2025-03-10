@@ -163,6 +163,9 @@ const platformUsers = (context: AuthContext) => {
   const loadUsers = async (ids?: string[]): Promise<AuthUser[]> => {
     const users = ids ? await internalFindByIds(context, SYSTEM_USER, ids)
       : await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], { connectionFormat: false });
+    if (users.length === 0) {
+      return [];
+    }
     return buildCompleteUsers(context, users);
   };
   const removeUser = async (values: AuthUser[], instance: BasicStoreCommon) => {
