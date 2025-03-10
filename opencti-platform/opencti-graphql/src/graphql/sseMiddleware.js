@@ -291,7 +291,6 @@ const createSseMiddleware = () => {
         if (!req.finished) {
           try {
             res.end();
-            req.session.destroy();
           } catch (e) {
             logApp.error('Stream session destroy fail', { cause: e, action: 'close', clientId: channel.userId });
           }
