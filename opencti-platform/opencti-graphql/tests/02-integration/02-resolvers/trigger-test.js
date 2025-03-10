@@ -4,6 +4,7 @@ import { ADMIN_USER, AMBER_GROUP, editorQuery, queryAsAdmin, securityQuery, USER
 import { EVENT_TYPE_CREATE } from '../../../src/database/utils';
 import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { FilterOperator } from '../../../src/generated/graphql';
+import { authorizedMembers } from '../../../src/schema/attribute-definition';
 
 const LIST_TRIGGERS_KNOWLEDGE_QUERY = gql`
     query triggersKnowledge(
@@ -237,7 +238,7 @@ describe('Trigger knowledge resolver standard behavior', () => {
       includeAuthorities: true,
       filters: {
         mode: 'and',
-        filters: [{ key: 'restricted_members', operator: FilterOperator.Eq, values: [{ key: 'id', operator: FilterOperator.Eq, values: [ADMIN_USER.id] }], mode: 'or' }],
+        filters: [{ key: authorizedMembers.name, operator: FilterOperator.Eq, values: [{ key: 'id', operator: FilterOperator.Eq, values: [ADMIN_USER.id] }], mode: 'or' }],
         filterGroups: [],
       }
     };
@@ -487,9 +488,12 @@ describe('Trigger activity resolver standard behavior', () => {
     expect(trigger).not.toBeNull();
     expect(trigger.data.triggerKnowledgeLiveAdd).not.toBeNull();
     const triggerToDeleteId = trigger.data.triggerKnowledgeLiveAdd.id;
+    // list activity triggers
+    const activityTriggersList = await securityQuery({ query: LIST_TRIGGERS_ACTIVITY_QUERY, variables: { first: 10 } });
+    expect(activityTriggersList.data.triggersActivity.edges.length).toEqual(2);
     // list all triggers => we should have now 3 triggers : 2 activity & 1 knowledge
     let queryResult = await securityQuery({ query: LIST_TRIGGERS_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.triggers.edges.length).toEqual(3);
+    expect(queryResult.data.triggers.edges.length, `triggers ${JSON.stringify(queryResult)}`).toEqual(3);
     // delete the live trigger
     await securityQuery({ query: DELETE_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerToDeleteId } });
     // list all triggers => we should have now only 2 triggers
