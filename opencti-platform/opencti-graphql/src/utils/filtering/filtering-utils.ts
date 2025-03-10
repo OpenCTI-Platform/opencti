@@ -353,13 +353,13 @@ export const checkAndConvertFilters = (inputFilterGroup: FilterGroup | null | un
   if (!inputFilterGroup) {
     return undefined;
   }
-  // 01. replace dynamic @me value
-  const filterGroup = replaceMeValuesInFilters(inputFilterGroup, userId);
-  // 02. check filters validity
+  // 01. check filters validity
   const { noFiltersChecking = false } = opts;
+  checkFiltersValidity(inputFilterGroup, noFiltersChecking);
+  // 02. replace dynamic @me value
+  const filterGroup = replaceMeValuesInFilters(inputFilterGroup, userId);
+  // 03. convert relation refs
   if (!noFiltersChecking && isFilterGroupNotEmpty(inputFilterGroup)) {
-    checkFiltersValidity(inputFilterGroup, noFiltersChecking);
-    // 03. convert relation refs
     return convertRelationRefsFilterKeys(filterGroup);
   }
 
