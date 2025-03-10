@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { now } from 'moment';
 import { addFilter, checkFiltersValidity, convertRelationRefsFilterKeys, extractFilterGroupValues, replaceFilterKey } from '../../../src/utils/filtering/filtering-utils';
 import type { FilterGroup } from '../../../src/generated/graphql';
+import { utcDate } from '../../../src/utils/format';
 
 describe('Filtering utils', () => {
   it('should check a filter syntax', async () => {
@@ -54,7 +56,21 @@ describe('Filtering utils', () => {
     expect(() => checkFiltersValidity({
       mode: 'or',
       filters: [
-        { key: ['published'], values: ['now-1y', 'now'], operator: 'within' },
+        { key: ['published'], values: ['now-1y', utcDate()], operator: 'within' },
+      ],
+      filterGroups: [],
+    } as FilterGroup)).not.toThrowError();
+    expect(() => checkFiltersValidity({
+      mode: 'or',
+      filters: [
+        { key: ['published'], values: ['now-1d/d', 'now'], operator: 'within' },
+      ],
+      filterGroups: [],
+    } as FilterGroup)).not.toThrowError();
+    expect(() => checkFiltersValidity({
+      mode: 'or',
+      filters: [
+        { key: ['published'], values: [new Date(now()), 'now+18M'], operator: 'within' },
       ],
       filterGroups: [],
     } as FilterGroup)).not.toThrowError();
@@ -104,13 +120,6 @@ describe('Filtering utils', () => {
       mode: 'or',
       filters: [
         { key: ['published'], values: ['-3563', '245289'], operator: 'within' },
-      ],
-      filterGroups: [],
-    } as FilterGroup)).not.toThrowError();
-    expect(() => checkFiltersValidity({
-      mode: 'or',
-      filters: [
-        { key: ['published'], values: ['now-1d/d', 'now'], operator: 'within' },
       ],
       filterGroups: [],
     } as FilterGroup)).not.toThrowError();

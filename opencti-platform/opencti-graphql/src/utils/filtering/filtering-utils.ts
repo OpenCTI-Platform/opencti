@@ -1,4 +1,5 @@
 import { uniq } from 'ramda';
+import { isDate, isMoment } from 'moment';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
@@ -25,8 +26,8 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
 import { isNotEmptyField } from '../../database/utils';
-import { isValidDate } from '../../schema/schemaUtils';
 import { schemaTypesDefinition } from '../../schema/schema-types';
+import { isValidStringDate } from '../../schema/schemaUtils';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -60,6 +61,16 @@ const isFilterGroupFormatCorrect = (filterGroup: FilterGroup): boolean => {
   );
 };
 
+const isValidDateValue = (v: unknown) => {
+  const relative_date_regex = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
+  return (
+    isMoment(v)
+    || isDate(v)
+    || (typeof v === 'string'
+      && (v.match(relative_date_regex) || isValidStringDate(v)))
+  );
+};
+
 /**
  * Tells if a filter group values are valid
  * (Enables to check filters won't raise an error at the query resolution)
@@ -74,8 +85,7 @@ export const checkFilterGroupValuesSyntax = (filterGroup: FilterGroup) => {
     return arrayKeys.every((k) => dateFilterKeys.includes(k));
   });
   dateFilters.forEach((f) => {
-    const relative_date_regex = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
-    if (f.values.some((v) => !v.match(relative_date_regex) && !isValidDate(v))) {
+    if (f.values.some((v) => !isValidDateValue(v))) {
       throw UnsupportedError('The values for a date filter are not valid: you should provide a datetime or a relative date expressed in date math.', { filter: f });
     }
   });

@@ -60,7 +60,7 @@ export const isValidISODate = (stringDate) => {
   return dateInstance.toISOString() === stringDate;
 };
 
-export const isValidDate = (stringDate) => {
+export const isValidStringDate = (stringDate) => {
   const dateParsed = Date.parse(stringDate);
   if (!dateParsed) return false;
   try {
