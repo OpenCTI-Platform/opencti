@@ -45,7 +45,7 @@ describe('Filtering utils', () => {
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFiltersValidity(filterGroup2)).toThrowError('A filter with "within" operator must have 2 values');
+    expect(() => checkFiltersValidity(filterGroup2)).toThrowError('The values for a date filter are not valid: you should provide a datetime or a relative date expressed in date math.');
     const filterGroup3 = {
       mode: 'or',
       filters: [
@@ -65,7 +65,7 @@ describe('Filtering utils', () => {
     const filterGroup5 = {
       mode: 'or',
       filters: [
-        { key: ['published'], values: ['now', '2039-09-T00:51:35.000Z'], operator: 'within' },
+        { key: ['published'], values: ['2039-09-T00:51:35.000Z'], operator: 'lt' },
       ],
       filterGroups: [],
     } as FilterGroup;
@@ -89,19 +89,19 @@ describe('Filtering utils', () => {
     const filterGroup8 = {
       mode: 'or',
       filters: [
-        { key: ['published'], values: ['now-1d/', 'now'], operator: 'within' },
+        { key: ['first_observed'], values: ['now-1d/'], operator: 'gt' },
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFiltersValidity(filterGroup8)).toThrowError();
+    expect(() => checkFiltersValidity(filterGroup8)).toThrowError('The values for a date filter are not valid: you should provide a datetime or a relative date expressed in date math.');
     const filterGroup9 = {
       mode: 'or',
       filters: [
-        { key: ['published'], values: ['10y/y', 'now'], operator: 'within' },
+        { key: ['last_seen'], values: ['10y/y'], operator: 'gte' },
       ],
       filterGroups: [],
     } as FilterGroup;
-    expect(() => checkFiltersValidity(filterGroup9)).toThrowError();
+    expect(() => checkFiltersValidity(filterGroup9)).toThrowError('The values for a date filter are not valid: you should provide a datetime or a relative date expressed in date math.');
     const filterGroup10 = {
       mode: 'or',
       filters: [
