@@ -13,10 +13,12 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useHelper from '../../../utils/hooks/useHelper';
+import { computeLink } from '../../../utils/Entity';
 
 const draftEntitiesLineFragment = graphql`
     fragment DraftEntities_node on StixCoreObject {
         id
+        standard_id
         entity_type
         created_at
         representative {
@@ -261,6 +263,10 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     );
   }
 
+  const getRedirectionLink = (stixObject: any) => {
+    return isReadOnly ? `/dashboard/id/${stixObject.standard_id}` : computeLink(stixObject);
+  };
+
   return (
     <span data-testid="draft-entities-page">
       {queryRef && (
@@ -271,6 +277,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           initialValues={initialValues}
           toolbarFilters={toolbarFilters}
           preloadedPaginationProps={preloadedPaginationProps}
+          useComputeLink={getRedirectionLink}
           lineFragment={draftEntitiesLineFragment}
           entityTypes={[entitiesType]}
           removeFromDraftEnabled

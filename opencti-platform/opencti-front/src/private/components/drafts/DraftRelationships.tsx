@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { DraftRelationshipsLines_data$data } from '@components/drafts/__generated__/DraftRelationshipsLines_data.graphql';
@@ -14,10 +14,12 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemEntityType from '../../../components/ItemEntityType';
+import { computeLink } from '../../../utils/Entity';
 
 const draftRelationshipsLineFragment = graphql`
     fragment DraftRelationships_node on StixCoreRelationship {
         id
+        standard_id
         entity_type
         parent_types
         relationship_type
@@ -187,7 +189,11 @@ export const draftRelationshipsLinesFragment = graphql`
 
 const LOCAL_STORAGE_KEY = 'draft_relationships';
 
-const DraftRelationships = () => {
+interface DraftRelationshipsProps {
+  isReadOnly: boolean;
+}
+
+const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isReadOnly }) => {
   const { draftId } = useParams() as { draftId: string };
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -269,6 +275,10 @@ const DraftRelationships = () => {
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftRelationshipsLinesPaginationQuery>;
 
+  const getRedirectionLink = (stixObject: any) => {
+    return isReadOnly ? `/dashboard/id/${stixObject.standard_id}` : computeLink(stixObject);
+  };
+
   return (
     <span data-testid="draft-relationships-page">
       {queryRef && (
@@ -277,6 +287,7 @@ const DraftRelationships = () => {
         resolvePath={(data: DraftRelationshipsLines_data$data) => data.draftWorkspaceRelationships?.edges?.map((n) => n?.node)}
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
+        useComputeLink={getRedirectionLink}
         toolbarFilters={toolbarFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={draftRelationshipsLineFragment}
