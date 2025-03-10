@@ -53,6 +53,7 @@ const draftRootFragment = graphql`
     }
     draft_status
     validationWork {
+      name
       received_time
       processed_time
       completed_time
@@ -117,6 +118,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
           { label: name, current: true },
         ]}
         />
+        {validationWork && (
         <Paper
           key={validationWork.id}
           style={{ margin: '10px 0 20px 0', padding: '15px', borderRadius: 4, position: 'relative' }}
@@ -134,6 +136,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
             readOnly
           />
         </Paper>
+        )}
       </>
       )}
       <Box

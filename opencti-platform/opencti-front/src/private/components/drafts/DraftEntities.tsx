@@ -5,6 +5,7 @@ import { graphql } from 'react-relay';
 import { DraftEntitiesLines_data$data } from '@components/drafts/__generated__/DraftEntitiesLines_data.graphql';
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
+import { DraftEntities_node$data } from '@components/drafts/__generated__/DraftEntities_node.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -13,10 +14,12 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useHelper from '../../../utils/hooks/useHelper';
+import { computeLink } from '../../../utils/Entity';
 
 const draftEntitiesLineFragment = graphql`
     fragment DraftEntities_node on StixCoreObject {
         id
+        standard_id
         entity_type
         created_at
         representative {
@@ -261,6 +264,10 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     );
   }
 
+  const getRedirectionLink = (stixObject: DraftEntities_node$data) => {
+    return isReadOnly ? `/dashboard/id/${stixObject.standard_id}` : computeLink(stixObject);
+  };
+
   return (
     <span data-testid="draft-entities-page">
       {queryRef && (
@@ -271,6 +278,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           initialValues={initialValues}
           toolbarFilters={toolbarFilters}
           preloadedPaginationProps={preloadedPaginationProps}
+          useComputeLink={getRedirectionLink}
           lineFragment={draftEntitiesLineFragment}
           entityTypes={[entitiesType]}
           removeFromDraftEnabled

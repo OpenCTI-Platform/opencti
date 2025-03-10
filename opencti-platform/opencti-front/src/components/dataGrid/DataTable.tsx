@@ -170,6 +170,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'actions'
 | 'rootRef'
 | 'onLineClick'
+| 'useComputeLink'
 | 'disableNavigation'
 | 'disableLineSelection'
 | 'disableToolBar'
