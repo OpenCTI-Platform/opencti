@@ -7,7 +7,7 @@ import type { DataTableCellProps, DataTableLineProps } from '../dataTableTypes';
 import { DataTableVariant } from '../dataTableTypes';
 import type { Theme } from '../../Theme';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
-import { SELECT_COLUMN_SIZE } from './DataTableHeader';
+import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { useDataTableContext } from './DataTableContext';
 
 const cellContainerStyle = (theme: Theme) => ({
@@ -96,6 +96,7 @@ const DataTableLine = ({
     useLineData,
     useComputeLink,
     actions,
+    icon,
     disableNavigation,
     onLineClick,
     selectOnLineClick,
@@ -103,6 +104,8 @@ const DataTableLine = ({
     startsWithAction,
     endsWithAction,
     endsWithNavigate,
+    disableLineSelection,
+    canToggleLine,
     useDataTableToggle: {
       selectAll,
       deSelectedElements,
@@ -185,25 +188,32 @@ const DataTableLine = ({
             key={`select_${data.id}`}
             style={{
               ...cellContainerStyle(theme),
-              width: SELECT_COLUMN_SIZE,
+              width: icon ? (!disableLineSelection ? ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE : SELECT_COLUMN_SIZE) : SELECT_COLUMN_SIZE,
             }}
           >
-            <Checkbox
-              onClick={handleSelectLine}
-              sx={{
-                marginRight: 1,
-                flex: '0 0 auto',
-                paddingLeft: 0,
-                '&:hover': {
-                  background: 'transparent',
-                },
-              }}
-              checked={
+            { !disableLineSelection && canToggleLine && (
+              <Checkbox
+                onClick={handleSelectLine}
+                sx={{
+                  marginRight: 1,
+                  flex: '0 0 auto',
+                  paddingLeft: 0,
+                  '&:hover': {
+                    background: 'transparent',
+                  },
+                }}
+                checked={
                 (selectAll
                   && !((data.id || 'id') in (deSelectedElements || {})))
                 || (data.id || 'id') in (selectedElements || {})
               }
-            />
+              />
+            )}
+            {icon && (
+              <div style={{ display: 'flex', paddingLeft: 10 }}>
+                {icon(data)}
+              </div>
+            )}
           </div>
         )}
 
