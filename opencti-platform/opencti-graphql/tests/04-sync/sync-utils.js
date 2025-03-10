@@ -94,10 +94,17 @@ export const checkPreSyncContent = async () => {
   return { objectMap, relMap, initStixReport };
 };
 export const checkMapConsistency = (before, after) => {
+  const failedExpects = [];
   after.forEach((value, key) => {
     const compareValue = before.get(key);
-    expect(`${key} - ${value}`).toEqual(`${key} - ${compareValue}`);
+    const current = `${key} - ${value}`;
+    const expected = `${key} - ${compareValue}`;
+    if (current !== expected) {
+      failedExpects.push({ current, expected });
+    }
+    // expect(`${key} - ${value}`).toEqual(`${key} - ${compareValue}`);
   });
+  expect(failedExpects.length, `checkMapConsistency failed ${JSON.stringify(failedExpects)}`).toEqual(0);
 };
 export const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
   const client = createHttpClient();
