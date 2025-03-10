@@ -230,7 +230,6 @@ const createSseMiddleware = () => {
   const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = processor ? await processor.info() : {};
     req.on('close', () => {
-      req.finished = true;
       client.close();
       delete broadcastClients[client.id];
       logApp.info(`[STREAM] Closing stream processor for ${client.id}`);
@@ -259,10 +258,10 @@ const createSseMiddleware = () => {
         channel.delay = d;
       },
       setLastEventId: (id) => { lastEventId = id; },
-      connected: () => !req.finished,
+      connected: () => !res.finished,
       sendEvent: (eventId, topic, event) => {
-        if (!res.writable) {
-          // Write on an already terminated response
+        // Write on an already terminated response
+        if (res.finished || !res.writable) {
           return;
         }
         let message = '';
@@ -293,7 +292,7 @@ const createSseMiddleware = () => {
         logApp.info('[STREAM] Closing SSE channel', { clientId: channel.userId });
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         channel.expirationTime = 0;
-        if (!req.finished) {
+        if (!res.finished) {
           try {
             res.end();
             req.session.destroy();
