@@ -779,7 +779,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
           />
         </Grid>
         <Grid item xs={8}>
-          <Themes handleRefetch={handleRefetch} version={version} />
+          <Themes handleRefetch={handleRefetch} />
         </Grid>
         <Grid item xs={4}>
           <Typography variant="h4" gutterBottom={true}>

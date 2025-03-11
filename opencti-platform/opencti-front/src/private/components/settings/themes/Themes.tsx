@@ -8,8 +8,8 @@ import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../../utils/f
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { ThemesLinesSearchQuery, ThemesLinesSearchQuery$variables } from '../__generated__/ThemesLinesSearchQuery.graphql';
-import { ThemesLines_data$data } from '../__generated__/ThemesLines_data.graphql';
+import { ThemesLinesSearchQuery, ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
+import { ThemesLines_data$data } from './__generated__/ThemesLines_data.graphql';
 import ThemePopover from './ThemePopover';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import ThemeCreation from './ThemeCreation';
@@ -25,15 +25,7 @@ export const refetchableThemesQuery = graphql`
         node {
           id
           name
-          theme_background
-          theme_paper
-          theme_nav
-          theme_primary
-          theme_secondary
-          theme_accent
-          theme_logo
-          theme_logo_collapsed
-          theme_logo_login
+          manifest
         }
       }
     }
@@ -82,26 +74,16 @@ const themesLineFragment = graphql`
   fragment ThemesLine_data on Theme {
     id
     name
-    theme_background
-    theme_paper
-    theme_nav
-    theme_primary
-    theme_secondary
-    theme_accent
-    theme_logo
-    theme_logo_collapsed
-    theme_logo_login
+    manifest
   }
 `;
 
 interface ThemesProps {
   handleRefetch: () => Disposable;
-  version: string;
 }
 
 const Themes: FunctionComponent<ThemesProps> = ({
   handleRefetch,
-  version,
 }) => {
   const { t_i18n } = useFormatter();
   const [displayCreation, setDisplayCreation] = useState<boolean>(false);
@@ -164,7 +146,6 @@ const Themes: FunctionComponent<ThemesProps> = ({
           </Tooltip>
           <Tooltip title={t_i18n('Import a theme')}>
             <ThemeImporter
-              version={version}
               handleRefetch={handleRefetch}
               paginationOptions={paginationOptions.variables}
             />
@@ -194,10 +175,9 @@ const Themes: FunctionComponent<ThemesProps> = ({
             variant={DataTableVariant.inline}
             actions={(row) => (
               <ThemePopover
-                theme={row}
+                themeData={row}
                 handleRefetch={handleRefetch}
                 paginationOptions={paginationOptions.variables}
-                version={version}
               />
             )}
             resolvePath={(data: ThemesLines_data$data) => data.themes?.edges?.map((n) => n?.node)}

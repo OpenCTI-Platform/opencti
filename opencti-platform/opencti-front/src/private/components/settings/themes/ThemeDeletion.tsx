@@ -5,7 +5,7 @@ import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { deleteNode } from '../../../../utils/store';
-import { ThemesLinesSearchQuery$variables } from '../__generated__/ThemesLinesSearchQuery.graphql';
+import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
 
 const deleteThemeMutation = graphql`
   mutation ThemeDeletionMutation($id: ID!) {
@@ -52,9 +52,9 @@ const ThemeDeletion: FunctionComponent<ThemeDeletionProps> = ({
       ),
       onCompleted: () => {
         setDeleting(false);
+        handleRefetch();
       },
     });
-    handleRefetch();
     handleClose();
   };
 

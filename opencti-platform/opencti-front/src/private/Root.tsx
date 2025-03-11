@@ -224,15 +224,7 @@ const rootPrivateQuery = graphql`
       edges {
         node {
           name
-          theme_background
-          theme_paper
-          theme_nav
-          theme_primary
-          theme_secondary
-          theme_accent
-          theme_logo
-          theme_logo_collapsed
-          theme_logo_login
+          manifest
         }
       }
     }

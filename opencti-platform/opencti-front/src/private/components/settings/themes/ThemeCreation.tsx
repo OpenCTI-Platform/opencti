@@ -12,22 +12,15 @@ import Drawer from '../../common/drawer/Drawer';
 import type { Theme } from '../../../../components/Theme';
 import { ThemeCreationCreateMutation } from './__generated__/ThemeCreationCreateMutation.graphql';
 import { insertNode } from '../../../../utils/store';
-import { ThemesLinesSearchQuery$variables } from '../__generated__/ThemesLinesSearchQuery.graphql';
+import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
+import { serializeThemeManifest } from './ThemeType';
 
 export const createThemeMutation = graphql`
   mutation ThemeCreationCreateMutation($input: ThemeAddInput!) {
     themeAdd(input: $input) {
       id
       name
-      theme_background
-      theme_paper
-      theme_nav
-      theme_primary
-      theme_secondary
-      theme_accent
-      theme_logo
-      theme_logo_collapsed
-      theme_logo_login
+      manifest
     }
   }
 `;
@@ -102,8 +95,10 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
     }: FormikHelpers<typeof initialValues>,
   ) => {
     themeValidator.validate(values).then(() => {
+      const { name, ...valuesToSerialize } = values;
+      const manifest = serializeThemeManifest(valuesToSerialize);
       commit({
-        variables: { input: values },
+        variables: { input: { name, manifest } },
         updater: (store: RecordSourceSelectorProxy) => insertNode(
           store,
           'Pagination_themes',
@@ -113,10 +108,10 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
         onCompleted: () => {
           setSubmitting(false);
           resetForm();
+          handleRefetch();
         },
       });
     });
-    handleRefetch();
     handleClose();
   };
 
