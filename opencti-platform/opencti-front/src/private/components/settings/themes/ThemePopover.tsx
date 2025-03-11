@@ -9,7 +9,7 @@ import { ThemesLine_data$data } from './__generated__/ThemesLine_data.graphql';
 import ThemeDeletion from './ThemeDeletion';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { ThemesLinesSearchQuery$variables } from '../__generated__/ThemesLinesSearchQuery.graphql';
+import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
 
 interface ThemePopoverProps {
   theme: ThemesLine_data$data;

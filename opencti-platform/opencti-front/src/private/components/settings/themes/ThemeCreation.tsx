@@ -12,7 +12,7 @@ import Drawer from '../../common/drawer/Drawer';
 import type { Theme } from '../../../../components/Theme';
 import { ThemeCreationCreateMutation } from './__generated__/ThemeCreationCreateMutation.graphql';
 import { insertNode } from '../../../../utils/store';
-import { ThemesLinesSearchQuery$variables } from '../__generated__/ThemesLinesSearchQuery.graphql';
+import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
 
 export const createThemeMutation = graphql`
   mutation ThemeCreationCreateMutation($input: ThemeAddInput!) {

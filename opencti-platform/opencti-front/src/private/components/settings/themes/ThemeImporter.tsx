@@ -10,7 +10,7 @@ import { ThemeCreationCreateMutation } from './__generated__/ThemeCreationCreate
 import { createThemeMutation } from './ThemeCreation';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import { insertNode } from '../../../../utils/store';
-import { ThemesLinesSearchQuery$variables } from '../__generated__/ThemesLinesSearchQuery.graphql';
+import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
 
 interface ThemeImporterProps {
   version: string;

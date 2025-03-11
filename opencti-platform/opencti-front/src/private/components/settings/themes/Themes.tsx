@@ -8,8 +8,8 @@ import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../../utils/f
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { ThemesLinesSearchQuery, ThemesLinesSearchQuery$variables } from '../__generated__/ThemesLinesSearchQuery.graphql';
-import { ThemesLines_data$data } from '../__generated__/ThemesLines_data.graphql';
+import { ThemesLinesSearchQuery, ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
+import { ThemesLines_data$data } from './__generated__/ThemesLines_data.graphql';
 import ThemePopover from './ThemePopover';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import ThemeCreation from './ThemeCreation';

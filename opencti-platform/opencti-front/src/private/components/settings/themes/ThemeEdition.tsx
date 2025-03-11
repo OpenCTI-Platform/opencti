@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import { graphql } from 'relay-runtime';
 import * as Yup from 'yup';
 import { TextField } from 'formik-mui';
-import { ThemesLine_data$data } from '../__generated__/ThemesLine_data.graphql';
+import { ThemesLine_data$data } from './__generated__/ThemesLine_data.graphql';
 import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import ColorPickerField from '../../../../components/ColorPickerField';
