@@ -1,13 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form, Formik, FormikHelpers } from 'formik';
 import { graphql } from 'relay-runtime';
 import * as Yup from 'yup';
 import { TextField } from 'formik-mui';
-import { ThemesLine_data$data } from '../__generated__/ThemesLine_data.graphql';
 import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
+import ThemeType, { serializeThemeManifest } from './ThemeType';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const editThemeMutation = graphql`
   mutation ThemeEditionMutation(
@@ -17,21 +17,13 @@ const editThemeMutation = graphql`
     themeFieldPatch (id: $id, input: $input) {
       id
       name
-      theme_background
-      theme_paper
-      theme_nav
-      theme_primary
-      theme_secondary
-      theme_accent
-      theme_logo
-      theme_logo_collapsed
-      theme_logo_login
+      manifest
     }
   }
 `;
 
 interface ThemeEditionProps {
-  theme: ThemesLine_data$data;
+  theme: ThemeType;
   open: boolean;
   handleClose: () => void;
 }
@@ -42,6 +34,14 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const [commit] = useApiMutation(
+    editThemeMutation,
+    undefined,
+    {
+      successMessage: t_i18n("Successfully updated theme"),
+      errorMessage: t_i18n("Failed to update theme"),
+    },
+  );
 
   const themeValidator = Yup.object().shape({
     name: Yup.string()
@@ -70,33 +70,40 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
     theme_logo_collapsed: Yup.string().nullable(),
     theme_logo_login: Yup.string().nullable(),
   });
-  const handleSubmitField = (id: string, name: string, value: string) => {
-    themeValidator.validateAt(name, { [name]: value }).then(() => {
-      commitMutation({
-        ...defaultCommitMutation,
-        mutation: editThemeMutation,
-        variables: {
-          id,
-          input: [
-            { key: name, value: value ?? '' },
-          ],
-        },
-      });
+
+  const handleSubmit = (values: ThemeType, { setSubmitting }: FormikHelpers<ThemeType>) => {
+    const { id, name: _, ...valuesToSerialize } = values;
+    const manifest = serializeThemeManifest(valuesToSerialize);
+    commit({
+      variables: {
+        id,
+        input: [{
+          key: "manifest",
+          value: manifest,
+        }],
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+      },
     });
   };
 
   return (
-    <Drawer
-      title={t_i18n('Update a theme')}
-      open={open}
-      onClose={handleClose}
+    <Formik
+      onSubmit={handleSubmit}
+      validationSchema={themeValidator}
+      enabledReinitalize={true}
+      initialValues={theme}
     >
-      <Formik
-        onSubmit={() => {}}
-        enabledReinitalize={true}
-        initialValues={theme}
-      >
-        {({ values }) => (
+      {({ submitForm }) => (
+        <Drawer
+          title={t_i18n('Update a theme')}
+          open={open}
+          onClose={() => {
+            submitForm()
+            handleClose()
+          }}
+        >
           <Form>
             <Field
               component={ColorPickerField}
@@ -107,7 +114,6 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
                 shrink: true,
               }}
               fullWidth
-              onSubmit={(name: string, value: string) => handleSubmitField(values.id, name, value)}
               variant="standard"
             />
             <Field
@@ -120,8 +126,6 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
-              onSubmit={(name: string, value: string) => handleSubmitField(values.id, name, value)
-              }
               variant="standard"
             />
             <Field
@@ -134,8 +138,6 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
-              onSubmit={(name: string, value: string) => handleSubmitField(values.id, name, value)
-              }
               variant="standard"
             />
             <Field
@@ -148,8 +150,6 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
-              onSubmit={(name: string, value: string) => handleSubmitField(values.id, name, value)
-              }
               variant="standard"
             />
             <Field
@@ -162,8 +162,6 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
-              onSubmit={(name: string, value: string) => handleSubmitField(values.id, name, value)
-              }
               variant="standard"
             />
             <Field
@@ -176,8 +174,6 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
-              onSubmit={(name: string, value: string) => handleSubmitField(values.id, name, value)
-              }
               variant="standard"
             />
             <Field
@@ -191,8 +187,6 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
-              onSubmit={(name: string, value: string) => handleSubmitField(values.id, name, value)
-              }
             />
             <Field
               component={TextField}
@@ -205,8 +199,6 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
-              onSubmit={(name: string, value: string) => handleSubmitField(values.id, name, value)
-              }
             />
             <Field
               component={TextField}
@@ -219,13 +211,11 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
-              onSubmit={(name: string, value: string) => handleSubmitField(values.id, name, value)
-              }
             />
           </Form>
-        )}
-      </Formik>
-    </Drawer>
+        </Drawer>
+      )}
+    </Formik>
   );
 };
 

@@ -9,24 +9,29 @@ import { ThemesLine_data$data } from './__generated__/ThemesLine_data.graphql';
 import ThemeDeletion from './ThemeDeletion';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { ThemesLinesSearchQuery$variables } from '../__generated__/ThemesLinesSearchQuery.graphql';
+import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
+import ThemeType, { deserializeThemeManifest } from './ThemeType';
+import handleExportJson from './ThemeExportHandler';
 
 interface ThemePopoverProps {
-  theme: ThemesLine_data$data;
+  themeData: ThemesLine_data$data;
   handleRefetch: () => Disposable;
   paginationOptions: ThemesLinesSearchQuery$variables;
-  version: string;
 }
 
 const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
-  theme,
+  themeData,
   handleRefetch,
   paginationOptions,
-  version,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<(EventTarget & Element) | null>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
+  const theme: ThemeType = {
+    id: themeData.id,
+    name: themeData.name,
+    ...deserializeThemeManifest(themeData.manifest),
+  }
 
   const handleOpen = (event: React.UIEvent) => {
     setAnchorEl(event.currentTarget);
@@ -39,26 +44,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
   const handleCloseUpdate = () => setDisplayUpdate(false);
   const deletion = useDeletion({ handleClose });
   const handleExport = () => {
-    const { id: _, ...exportTheme } = theme;
-    // create file in browser
-    const json = JSON.stringify({
-      openCTI_version: version,
-      type: 'theme',
-      configuration: exportTheme,
-    }, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const href = URL.createObjectURL(blob);
-
-    // create "a" HTLM element with href to file
-    const link = document.createElement('a');
-    link.href = href;
-    link.download = `${exportTheme.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`;
-    document.body.appendChild(link);
-    link.click();
-
-    // clean up "a" element & remove ObjectURL
-    document.body.removeChild(link);
-    URL.revokeObjectURL(href);
+    handleExportJson(theme);
   };
 
   return (

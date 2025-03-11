@@ -8,6 +8,7 @@ import themeLight from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
+import { deserializeThemeManifest } from '../private/components/settings/themes/ThemeType';
 
 interface AppThemeProviderProps {
   children: React.ReactNode;
@@ -89,12 +90,16 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   const themeName = me?.theme && me.theme !== 'default' ? me.theme : platformTheme;
   const theme: AppThemeType = themes?.edges
     ?.filter((node) => !!node)
-    .map((node) => ({
-      ...node.node,
-      theme_logo: node.node.theme_logo ?? '',
-      theme_logo_collapsed: node.node.theme_logo_collapsed ?? '',
-      theme_logo_login: node.node.theme_logo_login ?? '',
-    }))
+    .map(({ node }) => {
+      const manifestFields = deserializeThemeManifest(node.manifest);
+      return {
+        name: node.name,
+        ...manifestFields,
+        theme_logo: manifestFields.theme_logo ?? '',
+        theme_logo_collapsed: manifestFields.theme_logo_collapsed ?? '',
+        theme_logo_login: manifestFields.theme_logo_login ?? '',
+      };
+    })
     .find(({ name }) => name === themeName)
     ?? defaultTheme;
   const themeComponent = themeBuilder(theme);
