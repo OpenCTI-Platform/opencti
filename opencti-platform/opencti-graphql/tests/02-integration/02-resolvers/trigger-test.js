@@ -3,7 +3,6 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, AMBER_GROUP, editorQuery, queryAsAdmin, securityQuery, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 import { EVENT_TYPE_CREATE } from '../../../src/database/utils';
 import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
-import { FilterOperator } from '../../../src/generated/graphql';
 import { authorizedMembers } from '../../../src/schema/attribute-definition';
 
 const LIST_TRIGGERS_KNOWLEDGE_QUERY = gql`
