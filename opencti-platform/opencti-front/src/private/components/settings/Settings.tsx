@@ -39,9 +39,9 @@ import ItemCopy from '../../../components/ItemCopy';
 import Loader from '../../../components/Loader';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { SettingsQuery } from './__generated__/SettingsQuery.graphql';
-import { ThemesEditor_themes$key } from './__generated__/ThemesEditor_themes.graphql';
-import ThemesEditor, { refetchableThemesQuery } from './ThemesEditor';
 import type { Theme } from '../../../components/Theme';
+import Themes, { refetchableThemesQuery } from './themes/Themes';
+import { Themes_themes$key } from './themes/__generated__/Themes_themes.graphql';
 
 const settingsQuery = graphql`
   query SettingsQuery {
@@ -120,7 +120,7 @@ const settingsQuery = graphql`
         version
       }
     }
-    ...ThemesEditor_themes
+    ...Themes_themes
   }
 `;
 
@@ -229,7 +229,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
   const data = usePreloadedQuery<SettingsQuery>(settingsQuery, queryRef);
   const [{ themes }, refetch] = useRefetchableFragment<
   SettingsQuery,
-  ThemesEditor_themes$key
+  Themes_themes$key
   >(
     refetchableThemesQuery,
     data,
@@ -779,19 +779,7 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
           />
         </Grid>
         <Grid item xs={8}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Theme Settings')}
-            <ThemesEditor
-              currentTheme={settings.platform_theme}
-              themes={themes}
-              refetch={handleRefetch}
-              version={version}
-              editContext={editContext as {
-                name: string,
-                focusOn: string
-              }[]}
-            />
-          </Typography>
+          <Themes handleRefetch={handleRefetch} version={version} />
         </Grid>
         <Grid item xs={4}>
           <Typography variant="h4" gutterBottom={true}>
