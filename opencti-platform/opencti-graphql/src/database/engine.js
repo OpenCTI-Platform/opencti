@@ -2903,6 +2903,10 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         const nested = [{ key: 'role', operator: filter.operator, values }];
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
+      if (filterKey === 'authorized_members.id' || filterKey === 'restricted_members.id') {
+        const nested = [{ key: 'id', operator: filter.operator, values: filter.values }];
+        finalFilters.push({ key: authorizedMembers.name, nested, mode: filter.mode });
+      }
       if (filterKey === ALIAS_FILTER) {
         finalFilterGroups.push({
           mode: filter.operator === 'nil' || (filter.operator.startsWith('not_') && filter.operator !== 'not_nil')

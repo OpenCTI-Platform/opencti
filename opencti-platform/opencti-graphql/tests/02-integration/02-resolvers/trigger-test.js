@@ -238,7 +238,7 @@ describe('Trigger knowledge resolver standard behavior', () => {
       includeAuthorities: true,
       filters: {
         mode: 'and',
-        filters: [{ key: authorizedMembers.name, operator: FilterOperator.Eq, values: [{ key: 'id', operator: FilterOperator.Eq, values: [ADMIN_USER.id] }], mode: 'or' }],
+        filters: [{ key: `${authorizedMembers.name}.id`, values: [ADMIN_USER.id] }],
         filterGroups: [],
       }
     };
