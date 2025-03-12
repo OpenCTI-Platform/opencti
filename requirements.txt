@@ -6,7 +6,7 @@ python-magic-bin~=0.4.14; sys_platform == 'win32'
 python_json_logger~=2.0.4
 PyYAML~=6.0
 pydantic>=2.8.2,<2.11
-requests~=2.32.2
+requests>=2.32.0,<=2.32.3
 setuptools~=71.1.0
 cachetools~=5.5.0
 prometheus-client~=0.21.1
