@@ -4,6 +4,7 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { useTheme } from '@mui/material/styles';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import WorkspaceHeader from '@components/workspaces/WorkspaceHeader';
+import { InvestigationGraphStixCountRelToQuery$data } from '@components/workspaces/investigations/__generated__/InvestigationGraphStixCountRelToQuery.graphql';
 import { InvestigationGraphObjectsQuery } from './__generated__/InvestigationGraphObjectsQuery.graphql';
 import { InvestigationGraphObjects_fragment$key } from './__generated__/InvestigationGraphObjects_fragment.graphql';
 import { InvestigationGraphQuery$data } from './__generated__/InvestigationGraphQuery.graphql';
@@ -23,6 +24,8 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
+import { fetchQuery } from '../../../../relay/environment';
+import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
 
 const investigationGraphDataFragment = graphql`
   fragment InvestigationGraphData_fragment on Workspace {
@@ -385,6 +388,28 @@ export const investigationGraphQuery = graphql`
   }
 `;
 
+// To count the number of relationships for MetaObjects and Identities.
+//
+// /!\ It counts only rels that point towards given ids. So the value may not be
+// exactly the total number of rels in some cases when entities (Identities) also
+// have relations where there are the source of the relation.
+// This issue can be fixed by making a second query fetching the count in the
+// other direction.
+const investigationGraphCountRelToQuery = graphql`
+  query InvestigationGraphStixCountRelToQuery($objectIds: [String!]!) {
+    stixRelationshipsDistribution(
+      field: "internal_id"
+      isTo: true
+      operation: count
+      toId: $objectIds
+      relationship_type: "stix-relationship"
+    ) {
+      label
+      value
+    }
+  }
+`;
+
 interface InvestigationGraphComponentProps {
   totalData: number
   currentData: number
@@ -546,7 +571,43 @@ const InvestigationGraphLoader = ({
 
   const { graph_data } = useFragment(investigationGraphDataFragment, dataPositions);
 
-  const objects = useMemo(() => (workspace ? getObjectsToParse(workspace) : []), [workspace]);
+  const [objects, setObjects] = useState<ObjectToParse[]>([]);
+  useEffect(() => {
+    let workspaceObjects = workspace ? getObjectsToParse(workspace) : [];
+    async function fetchCounts() {
+      // Keep only meta-objects and identities.
+      const objectIds = workspaceObjects.filter(
+        (object) => object.parent_types.includes('Stix-Meta-Object')
+          || object.parent_types.includes('Identity'),
+      ).map((object) => object.id);
+
+      if (objectIds.length > 0) {
+        const { stixRelationshipsDistribution: relCounts } = await fetchQuery(
+          investigationGraphCountRelToQuery,
+          { objectIds },
+        ).toPromise() as InvestigationGraphStixCountRelToQuery$data;
+
+        // For each object, add the number of relations it has in our objects data.
+        (relCounts ?? []).forEach((count) => {
+          if (!count) return;
+          const { label, value } = count;
+          const object = workspaceObjects.find((obj) => obj.id === label);
+          if (object) {
+            workspaceObjects = [
+              ...workspaceObjects.filter((obj) => obj.id !== label),
+              {
+                ...object,
+                numberOfConnectedElement: value ?? undefined,
+              },
+            ];
+          }
+        });
+      }
+      setObjects(workspaceObjects);
+    }
+    fetchCounts();
+  }, [workspace]);
+
   const positions = useMemo(() => deserializeObjectB64(graph_data), [graph_data]);
 
   return (
