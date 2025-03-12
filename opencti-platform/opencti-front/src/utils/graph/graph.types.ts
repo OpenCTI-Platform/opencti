@@ -78,12 +78,15 @@ export interface GraphState {
   correlationMode: 'all' | 'observables' | null
   showTimeRange: boolean
   showLinearProgress: boolean
+  loadingTotal?: number
+  loadingCurrent?: number
   disabledEntityTypes: string[]
   disabledCreators: string[]
   disabledMarkings: string[]
   selectedTimeRangeInterval?: [Date, Date]
   selectedNodes: GraphNode[]
   selectedLinks: GraphLink[]
+  search?: string
   zoom?: {
     k: number
     x: number

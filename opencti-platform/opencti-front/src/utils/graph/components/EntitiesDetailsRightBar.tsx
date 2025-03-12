@@ -11,6 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import { Typography } from '@mui/material';
 import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
 import { useFormatter } from '../../../components/i18n';
@@ -31,7 +32,7 @@ const useStyles = makeStyles<Theme>(() => ({
     maxWidth: 400,
     height: '60%',
     maxHeight: '60%',
-    padding: '60px 0 20px 20px',
+    padding: '20px 0 20px 20px',
     zIndex: 900,
     borderRadius: 4,
   },
@@ -99,15 +100,15 @@ EntityDetailsRightsBarProps
       PaperProps={{ variant: 'outlined' }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
-      <div
-        style={{
-          display: 'flex',
-          position: 'fixed',
-          left: 20,
-          top: 20,
-          width: 360,
-        }}
-      >
+      <Typography variant='h3' sx={{ marginBottom: 3 }}>
+        {t_i18n('', {
+          id: 'objects selected',
+          values: {
+            count: uniqSelectedEntities.length,
+          },
+        })}
+      </Typography>
+      <div style={{ display: 'flex' }}>
         <FormControl fullWidth={true} size="small" style={{ flex: 'grow' }}>
           <InputLabel id="label" variant="outlined">
             {t_i18n('Object')}
