@@ -20,6 +20,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginTop: theme.spacing(1.5),
     padding: '10px 20px 10px 20px',
     borderRadius: 4,
+    maxHeight: 600,
+    overflowY: 'auto',
   },
 }));
 
@@ -106,7 +108,7 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
     <Paper
       classes={{ root: classes.paper }}
       variant="outlined"
-      style={{ marginTop: 0 }}
+      style={{ marginTop: 0, minHeight: 500 }}
       className={'paper-for-grid'}
     >
       {audits.length > 0 ? (
