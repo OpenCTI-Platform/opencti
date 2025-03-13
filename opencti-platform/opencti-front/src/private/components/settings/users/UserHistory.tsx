@@ -51,7 +51,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
         { key: ['context_data.id'], values: [userId], operator: 'wildcard', mode: 'or' },
       ],
     } as GqlFilterGroup,
-    first: 10,
+    first: 500,
     orderBy: 'timestamp' as LogsOrdering,
     orderMode: 'desc' as OrderingMode,
     search: entitySearchTerm,
