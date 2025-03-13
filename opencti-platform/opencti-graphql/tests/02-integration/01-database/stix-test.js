@@ -16,7 +16,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObje
 import { convertTypeToStixType } from '../../../src/database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
 
-describe('Stix 2.1 opencti converter_2_1', () => {
+describe('Stix 2.1 opencti converter', () => {
   const dataMap = new Map(data.objects.map((obj) => [obj.id, obj]));
 
   const rawDataCompare = async (rawId, standardId) => {
