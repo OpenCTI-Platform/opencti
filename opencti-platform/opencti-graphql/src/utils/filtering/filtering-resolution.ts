@@ -17,7 +17,7 @@ import {
   WORKFLOW_FILTER
 } from './filtering-constants';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { StixObject } from '../../types/stix-2-1/stix-2-1-common';
+import type { StixObject } from '../../types/stix-2-1-common';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../access';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';

@@ -11,12 +11,12 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { csvMapperMockSimpleSkipLine } from './simple-skip-line-test/csv-mapper-mock-simple-skip-line';
 import { csvMapperMalware } from './entities-with-booleans/mapper';
 
-import type { StixObject } from '../../../src/types/stix-2-1/stix-2-1-common';
+import type { StixObject } from '../../../src/types/stix-2-1-common';
 import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import type { StixIdentity, StixLocation, StixMalware, StixThreatActor } from '../../../src/types/stix-2-1/stix-2-1-sdo';
-import type { StixRelation, StixSighting } from '../../../src/types/stix-2-1/stix-2-1-sro';
+import type { StixIdentity, StixLocation, StixMalware, StixThreatActor } from '../../../src/types/stix-2-1-sdo';
+import type { StixRelation, StixSighting } from '../../../src/types/stix-2-1-sro';
 import { csvMapperDynamicIpAndUrl } from './dynamic-url-and-ip/mapper-url-ip';
-import type { StixDomainName, StixEmailAddress, StixFile, StixIPv4Address, StixIPv6Address, StixURL } from '../../../src/types/stix-2-1/stix-2-1-sco';
+import type { StixDomainName, StixEmailAddress, StixFile, StixIPv4Address, StixIPv6Address, StixURL } from '../../../src/types/stix-2-1-sco';
 import { csvMapperMockFileHashHack } from './dynamic-file-hash/csv-mapper-mock-file-hash-hack';
 import { STIX_EXT_OCTI_SCO } from '../../../src/types/stix-extensions';
 import { csvMapperDynamicChar } from './dynamic-url-ip-character/csv-mapper-mock-url-ip-char';

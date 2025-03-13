@@ -1,5 +1,5 @@
 import type { BasicIdentityEntity, StoreEntityIdentity } from '../../types/store';
-import type { StixIdentity } from '../../types/stix-2-1/stix-2-1-sdo';
+import type { StixIdentity } from '../../types/stix-2-1-sdo';
 import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 
 export const ENTITY_TYPE_IDENTITY_ORGANIZATION = 'Organization';

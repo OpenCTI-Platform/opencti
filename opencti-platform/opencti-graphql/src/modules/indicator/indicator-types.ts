@@ -1,5 +1,5 @@
-import type { StixDate, StixDomainObject, StixMitreExtension, StixOpenctiExtension } from '../../types/stix-2-1/stix-2-1-common';
-import type { StixKillChainPhase } from '../../types/stix-2-1/stix-2-1-smo';
+import type { StixDate, StixDomainObject, StixMitreExtension, StixOpenctiExtension } from '../../types/stix-2-1-common';
+import type { StixKillChainPhase } from '../../types/stix-2-1-smo';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { DecayHistory } from '../decayRule/decayRule-domain';
