@@ -166,6 +166,26 @@ const DataTableLine = ({
     cursor: clickable ? 'pointer' : 'unset',
   };
 
+  const startActionsWidth = useMemo(() => {
+    if (icon && !disableLineSelection) {
+      return ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE;
+    }
+    if (icon) {
+      return ICON_COLUMN_SIZE;
+    }
+    return SELECT_COLUMN_SIZE;
+  }, []);
+
+  const columnsOffset = useMemo(() => {
+    if (startsWithAction) {
+      if (icon && !disableLineSelection) {
+        return 2;
+      }
+      return 1;
+    }
+    return 0;
+  }, []);
+
   return (
     <Box sx={{
       '&:hover > a': {
@@ -188,7 +208,7 @@ const DataTableLine = ({
             key={`select_${data.id}`}
             style={{
               ...cellContainerStyle(theme),
-              width: icon ? (!disableLineSelection ? ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE : SELECT_COLUMN_SIZE) : SELECT_COLUMN_SIZE,
+              width: startActionsWidth,
             }}
           >
             { !disableLineSelection && canToggleLine && (
@@ -217,7 +237,7 @@ const DataTableLine = ({
           </div>
         )}
 
-        {columns.slice(startsWithAction ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
+        {columns.slice(columnsOffset, (actions || disableNavigation) ? undefined : -1).map((column) => (
           <DataTableCell
             key={column.id}
             cell={column}

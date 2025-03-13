@@ -58,6 +58,17 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     setColumns(newColumns);
   };
 
+  // Use the same in DataTableLine.tsx:169
+  const startActionsWidth = useMemo(() => {
+    if (icon && !disableLineSelection) {
+      return ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE;
+    }
+    if (icon) {
+      return ICON_COLUMN_SIZE;
+    }
+    return SELECT_COLUMN_SIZE;
+  }, []);
+
   const draggableColumns = useMemo(() => columns.filter(({ id }) => !['select', 'navigate', 'icon'].includes(id)), [columns]);
 
   const hasSelectedElements = numberOfSelectedElements > 0 || selectAll;
@@ -65,7 +76,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     background: hasSelectedElements
       ? theme.palette.background.accent
       : 'transparent',
-    width: icon ? (!disableLineSelection ? ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE : SELECT_COLUMN_SIZE) : SELECT_COLUMN_SIZE,
+    minWidth: startActionsWidth,
   };
 
   const showToolbar = numberOfSelectedElements > 0 && !disableToolBar;
