@@ -1,4 +1,4 @@
-import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1/stix-2-1-common';
+import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 

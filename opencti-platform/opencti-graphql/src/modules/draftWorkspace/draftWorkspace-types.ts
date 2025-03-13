@@ -1,4 +1,4 @@
-import type { StixObject } from '../../types/stix-2-1/stix-2-1-common';
+import type { StixObject } from '../../types/stix-2-1-common';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 
 export const ENTITY_TYPE_DRAFT_WORKSPACE = 'DraftWorkspace';

@@ -1,5 +1,5 @@
 import type { Operation } from 'fast-json-patch';
-import type { StixCoreObject } from './stix-2-1/stix-2-1-common';
+import type { StixCoreObject } from './stix-2-1-common';
 import type { UserOrigin } from './user';
 import type { StoreRelation } from './store';
 

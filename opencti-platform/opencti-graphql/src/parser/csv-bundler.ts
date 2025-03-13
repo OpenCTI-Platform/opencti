@@ -12,7 +12,7 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
 import conf, { logApp } from '../config/conf';
-import type { StixBundle, StixObject } from '../types/stix-2-1/stix-2-1-common';
+import type { StixBundle, StixObject } from '../types/stix-2-1-common';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 
 const inlineEntityTypes = [ENTITY_TYPE_EXTERNAL_REFERENCE];

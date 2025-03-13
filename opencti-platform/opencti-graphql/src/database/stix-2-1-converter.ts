@@ -39,11 +39,11 @@ import {
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
-import type * as S from '../types/stix-2-1/stix-2-1-common';
-import type * as SDO from '../types/stix-2-1/stix-2-1-sdo';
-import type * as SRO from '../types/stix-2-1/stix-2-1-sro';
-import type * as SCO from '../types/stix-2-1/stix-2-1-sco';
-import type * as SMO from '../types/stix-2-1/stix-2-1-smo';
+import type * as S from '../types/stix-2-1-common';
+import type * as SDO from '../types/stix-2-1-sdo';
+import type * as SRO from '../types/stix-2-1-sro';
+import type * as SCO from '../types/stix-2-1-sco';
+import type * as SMO from '../types/stix-2-1-smo';
 import type { StoreCommon, StoreCyberObservable, StoreEntity, StoreEntityIdentity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,

@@ -23,7 +23,7 @@ import { registerEntityValidator } from './validator-register';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { registerStixDomainAliased, resolveAliasesField } from './stixDomainObject';
 import { registerModelIdentifier } from './identifier';
-import type { StixObject } from '../types/stix-2-1/stix-2-1-common';
+import type { StixObject } from '../types/stix-2-1-common';
 import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { registerEntityOverviewLayoutCustomization } from './overviewLayoutCustomization-register';

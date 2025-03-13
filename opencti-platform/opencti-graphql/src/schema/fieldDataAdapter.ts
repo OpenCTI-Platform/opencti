@@ -6,7 +6,7 @@ import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixMetaObject } from './stixMetaObject';
 import { isStixDomainObject } from './stixDomainObject';
-import type { StixArtifact, StixFile, StixX509Certificate } from '../types/stix-2-1/stix-2-1-sco';
+import type { StixArtifact, StixFile, StixX509Certificate } from '../types/stix-2-1-sco';
 import type { HashInput } from '../generated/graphql';
 
 export const SENSITIVE_HASHES = ['SSDEEP', 'SDHASH'];

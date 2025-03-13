@@ -6,7 +6,7 @@ import { storeLoadByIdsWithRefs } from '../../database/middleware';
 import { buildStixBundle, convertStoreToStix } from '../../database/stix-2-1-converter';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { generateStandardId } from '../../schema/identifier';
-import type { StixId, StixObject } from '../../types/stix-2-1/stix-2-1-common';
+import type { StixId, StixObject } from '../../types/stix-2-1-common';
 import { internalLoadById } from '../../database/middleware-loader';
 import { addWorkspace } from './workspace-domain';
 import type { BasicStoreEntity, StoreEntity, StoreEntityReport } from '../../types/store';

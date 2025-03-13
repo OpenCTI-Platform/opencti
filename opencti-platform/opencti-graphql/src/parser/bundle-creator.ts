@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as R from 'ramda';
-import type { StixBundle, StixObject } from '../types/stix-2-1/stix-2-1-common';
+import type { StixBundle, StixObject } from '../types/stix-2-1-common';
 import { STIX_SPEC_VERSION } from '../database/stix';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 

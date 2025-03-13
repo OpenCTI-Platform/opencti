@@ -1,8 +1,8 @@
 import { head } from 'ramda';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { getStixRepresentativeConverters } from './stix-2-1-converter';
-import type * as SRO from '../types/stix-2-1/stix-2-1-sro';
-import type * as S from '../types/stix-2-1/stix-2-1-common';
+import type * as SRO from '../types/stix-2-1-sro';
+import type * as S from '../types/stix-2-1-common';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -22,9 +22,9 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import type * as SDO from '../types/stix-2-1/stix-2-1-sdo';
+import type * as SDO from '../types/stix-2-1-sdo';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import type * as SMO from '../types/stix-2-1/stix-2-1-smo';
+import type * as SMO from '../types/stix-2-1-smo';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_BANK_ACCOUNT,
@@ -59,7 +59,7 @@ import {
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from '../schema/stixCyberObservable';
-import type * as SCO from '../types/stix-2-1/stix-2-1-sco';
+import type * as SCO from '../types/stix-2-1-sco';
 import { hashValue } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
 import { isInternalObject } from '../schema/internalObject';
