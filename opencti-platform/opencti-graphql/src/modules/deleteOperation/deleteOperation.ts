@@ -36,7 +36,7 @@ const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, 
   representative: (stix: StixDeleteOperation) => {
     return stix.main_entity_name;
   },
-  converter: convertDeleteOperationToStix
+  converter_2_1: convertDeleteOperationToStix
 };
 
 registerDefinition(DELETE_OPERATION_DEFINITION);

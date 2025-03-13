@@ -42,7 +42,7 @@ const ENTITY_PLAYBOOK_DEFINITION: ModuleDefinition<StoreEntityPlaybook, StixPlay
   representative: (stix: StixPlaybook) => {
     return stix.name;
   },
-  converter: convertEntityPlaybookToStix
+  converter_2_1: convertEntityPlaybookToStix
 };
 
 registerDefinition(ENTITY_PLAYBOOK_DEFINITION);

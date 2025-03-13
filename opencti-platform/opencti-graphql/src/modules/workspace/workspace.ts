@@ -39,7 +39,7 @@ export const WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityWorkspace, StixWo
   representative: (stix: StixWorkspace) => {
     return stix.name;
   },
-  converter: convertWorkspaceToStix
+  converter_2_1: convertWorkspaceToStix
 };
 
 registerDefinition(WORKSPACE_DEFINITION);

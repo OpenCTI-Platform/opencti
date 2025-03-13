@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { JSONSchemaType } from 'ajv';
-import type { StixObject, StixOpenctiExtensionSDO, StixBundle } from '../../types/stix-common';
+import type { StixObject, StixOpenctiExtensionSDO, StixBundle } from '../../types/stix-2-1/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 

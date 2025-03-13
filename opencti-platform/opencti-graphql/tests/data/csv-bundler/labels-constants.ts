@@ -1,5 +1,5 @@
 import type { CsvMapperParsed, CsvMapperRepresentation } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import type { StixBundle, StixDomainObject } from '../../../src/types/stix-common';
+import type { StixBundle, StixDomainObject } from '../../../src/types/stix-2-1/stix-2-1-common';
 
 export const indicatorsWithLabelsExpectedBundle: StixBundle = {
   id: 'bundle--c8593959-d4b1-4ccf-95d5-bee644cf2c9b',

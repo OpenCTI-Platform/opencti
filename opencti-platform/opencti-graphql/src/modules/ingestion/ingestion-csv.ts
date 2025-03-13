@@ -42,7 +42,7 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
   representative: (stix: StixIngestionCsv) => {
     return stix.name;
   },
-  converter: convertIngestionCsvToStix
+  converter_2_1: convertIngestionCsvToStix
 };
 
 registerDefinition(INGESTION_CSV_DEFINITION);

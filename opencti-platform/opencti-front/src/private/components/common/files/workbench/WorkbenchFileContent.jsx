@@ -1621,7 +1621,7 @@ const WorkbenchFileContentComponent = ({
   };
   // endregion
 
-  // region converter
+  // region converter_2_1
   const resolveMarkings = (objects, markingIds) => {
     if (markingIds) {
       return objects.filter((n) => markingIds.includes(n.id));

@@ -1,8 +1,8 @@
 import { v4, v5 } from 'uuid';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from './stix-extensions';
-import type { StixRelation, StixSighting } from './stix-sro';
-import type { StixInternalExternalReference } from './stix-smo';
-import { AuthorizedMember } from '../utils/access';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../stix-extensions';
+import type { StixRelation, StixSighting } from './stix-2-1-sro';
+import type { StixInternalExternalReference } from './stix-2-1-smo';
+import { AuthorizedMember } from '../../utils/access';
 
 export type StixDate = string | undefined;
 type StixId = `${string}--${v4 | v5}`;

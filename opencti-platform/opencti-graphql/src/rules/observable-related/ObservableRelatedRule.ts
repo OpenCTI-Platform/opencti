@@ -6,7 +6,7 @@ import def from './ObservableRelatedDefinition';
 import { createRuleContent } from '../rules-utils';
 import { computeAverage } from '../../database/utils';
 import { listAllRelations } from '../../database/middleware-loader';
-import type { StixRelation } from '../../types/stix-sro';
+import type { StixRelation } from '../../types/stix-2-1/stix-2-1-sro';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';

@@ -1,5 +1,5 @@
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import { buildStixDomain, cleanObject } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject } from '../../database/stix-2-1-converter';
 import type { StixPublicDashboard, StoreEntityPublicDashboard } from './publicDashboard-types';
 
 const convertPublicDashboardToStix = (instance: StoreEntityPublicDashboard): StixPublicDashboard => {

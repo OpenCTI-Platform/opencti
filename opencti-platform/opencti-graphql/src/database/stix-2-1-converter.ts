@@ -39,11 +39,11 @@ import {
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
-import type * as S from '../types/stix-common';
-import type * as SDO from '../types/stix-sdo';
-import type * as SRO from '../types/stix-sro';
-import type * as SCO from '../types/stix-sco';
-import type * as SMO from '../types/stix-smo';
+import type * as S from '../types/stix-2-1/stix-2-1-common';
+import type * as SDO from '../types/stix-2-1/stix-2-1-sdo';
+import type * as SRO from '../types/stix-2-1/stix-2-1-sro';
+import type * as SCO from '../types/stix-2-1/stix-2-1-sco';
+import type * as SMO from '../types/stix-2-1/stix-2-1-smo';
 import type { StoreCommon, StoreCyberObservable, StoreEntity, StoreEntityIdentity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -1377,7 +1377,7 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     if (isStixSightingRelationship(type)) {
       return convertSightingToStix(basic);
     }
-    throw UnsupportedError('No relation converter available', { type });
+    throw UnsupportedError('No relation converter_2_1 available', { type });
   }
   if (isInternalObject(type)) {
     const internal = instance as StoreEntity;
@@ -1449,7 +1449,7 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     if (ENTITY_TYPE_VULNERABILITY === type) {
       return convertVulnerabilityToStix(basic, type);
     }
-    // No converter found
+    // No converter_2_1 found
     throw UnsupportedError(`No entity converter available for ${type}`);
   }
   if (isStixMetaObject(type)) {
@@ -1571,7 +1571,7 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     if (ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE === type) {
       return convertX509CertificateToStix(cyber, type);
     }
-    // No converter found
+    // No converter_2_1 found
     throw UnsupportedError(`No observable converter available for ${type}`);
   }
   throw UnsupportedError(`No entity converter available for ${type}`);

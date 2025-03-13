@@ -25,7 +25,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import type { SseEvent, StreamDataEvent } from '../types/event';
-import type { StixBundle } from '../types/stix-common';
+import type { StixBundle } from '../types/stix-2-1/stix-2-1-common';
 import { streamEventId, utcDate } from '../utils/format';
 import { findById } from '../modules/playbook/playbook-domain';
 import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../modules/playbook/playbook-components';
