@@ -151,7 +151,7 @@ const DataTableComponent = ({
 
   const tableWidthState = useState(0);
   const tableRef = useRef<HTMLDivElement | null>(null);
-
+    console.log(columns)
   return (
     <DataTableProvider
       initialValue={{
