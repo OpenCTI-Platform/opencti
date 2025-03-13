@@ -35,13 +35,13 @@ const workspaceMutation = graphql`
 `;
 
 type WorkspaceHeaderTagManagerProps = {
-  tags: string[];
+  tags: readonly string[];
   workspaceId: string;
   canEdit: boolean;
 };
 
 export type WorkspaceHeaderTagCreatorFormValues = {
-  newTags: string;
+  newTag: string;
 };
 const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHeaderTagManagerProps) => {
   const { t_i18n } = useFormatter();
@@ -100,122 +100,118 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
         )}
       </div>
       <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
-        {tags.length > 1 ? (
-          <IconButton
-            color="primary"
-            aria-label="More"
-            onClick={toggleTagDialog}
-            size="medium"
-          >
-            <DotsHorizontalCircleOutline fontSize="small" />
-          </IconButton>
-        ) : (
-          <Tooltip title={isTagInputOpen ? t_i18n('Cancel') : t_i18n('Add tag')}>
+        <>
+          {tags.length > 1 ? (
             <IconButton
               color="primary"
-              aria-label="Add tag"
-              onClick={toggleTagInput}
+              aria-label="More"
+              onClick={toggleTagDialog}
               size="medium"
             >
-              {isTagInputOpen ? (
-                <CloseOutlined fontSize="small" />
-              ) : (
-                <LabelOutlined fontSize="small" />
-              )}
+              <DotsHorizontalCircleOutline fontSize="small" />
             </IconButton>
-          </Tooltip>
-        )}
+          ) : (
+            <Tooltip title={isTagInputOpen ? t_i18n('Cancel') : t_i18n('Add tag')}>
+              <IconButton
+                color="primary"
+                aria-label="Add tag"
+                onClick={toggleTagInput}
+                size="medium"
+              >
+                {isTagInputOpen ? (
+                  <CloseOutlined fontSize="small" />
+                ) : (
+                  <LabelOutlined fontSize="small" />
+                )}
+              </IconButton>
+            </Tooltip>
+          )}
 
-        <Slide
-          direction="left"
-          in={isTagInputOpen}
-          mountOnEnter
-          unmountOnExit
-        >
-          <div>
-            <Formik
-              initialValues={{ newTag: '' }}
-              onSubmit={onSubmitCreateTag}
-            >
-              <Form>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="newTag"
-                  aria-label="tag field"
-                  autoFocus
-                  placeholder={t_i18n('New tag')}
-                  onChange={handleChangeNewTag}
-                  value={newTag}
-                />
-              </Form>
-            </Formik>
-          </div>
-        </Slide>
+          <Slide
+            direction="left"
+            in={isTagInputOpen}
+            mountOnEnter
+            unmountOnExit
+          >
+            <div>
+              <Formik
+                initialValues={{ newTag: '' }}
+                onSubmit={onSubmitCreateTag}
+              >
+                <Form>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="newTag"
+                    aria-label="tag field"
+                    autoFocus
+                    placeholder={t_i18n('New tag')}
+                    onChange={handleChangeNewTag}
+                    value={newTag}
+                  />
+                </Form>
+              </Formik>
+            </div>
+          </Slide>
 
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={isTagDialogOpen}
-          TransitionComponent={Transition}
-          onClose={toggleTagDialog}
-          fullWidth
-        >
-          <DialogTitle>
-            {t_i18n('Entity tags')}
-            <Formik
-              initialValues={{ newTag: '' }}
-              onSubmit={onSubmitCreateTag}
-            >
-              {({ submitForm }) => (
+          <Dialog
+            PaperProps={{ elevation: 1 }}
+            open={isTagDialogOpen}
+            TransitionComponent={Transition}
+            onClose={toggleTagDialog}
+            fullWidth
+          >
+            <DialogTitle>
+              {t_i18n('Entity tags')}
+              <Formik
+                initialValues={{ newTag: '' }}
+                onSubmit={onSubmitCreateTag}
+              >
                 <Form style={{ float: 'right' }}>
                   <Field
                     component={TextField}
                     variant="standard"
                     name="newTag"
-                    autoFocus={true}
+                    autoFocus
                     placeholder={t_i18n('New tag')}
                     onChange={handleChangeNewTag}
                     value={newTag}
-                    onKeyDown={(e) => {
-                      if (e.keyCode === 13) return submitForm();
-                      return true;
-                    }}
                   />
                 </Form>
-              )}
-            </Formik>
-          </DialogTitle>
-          <DialogContent dividers>
-            <List>
-              {tags.map(
-                (label) => label.length > 0 && (
-                <ListItem
-                  key={label}
-                  disableGutters
-                  dense
-                >
-                  <ListItemText primary={label} />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={deleteTag(label)}
-                      size="large"
-                    >
-                      <Delete />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-                ),
-              )}
-            </List>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={toggleTagDialog} color="primary">
-              {t_i18n('Close')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+              </Formik>
+            </DialogTitle>
+            <DialogContent dividers>
+              <List>
+                {tags.map(
+                  (label) => label.length > 0 && (
+                  <ListItem
+                    key={label}
+                    disableGutters
+                    dense
+                  >
+                    <ListItemText primary={label} />
+                    <ListItemSecondaryAction>
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={deleteTag(label)}
+                        size="large"
+                      >
+                        <Delete />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  ),
+                )}
+              </List>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={toggleTagDialog} color="primary">
+                {t_i18n('Close')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
       </Security>
     </>
   );
