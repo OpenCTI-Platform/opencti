@@ -36,7 +36,7 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   representative: (stix: StixCase) => {
     return stix.name;
   },
-  converter: convertCaseToStix
+  converter_2_1: convertCaseToStix
 };
 
 registerDefinition(CASE_DEFINITION);

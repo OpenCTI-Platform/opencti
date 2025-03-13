@@ -32,6 +32,6 @@ const NOTIFIER_DEFINITION: ModuleDefinition<StoreEntityNotifier, StixNotifier> =
   representative: (stix: StixNotifier) => {
     return stix.name;
   },
-  converter: convertNotifierToStix
+  converter_2_1: convertNotifierToStix
 };
 registerDefinition(NOTIFIER_DEFINITION);

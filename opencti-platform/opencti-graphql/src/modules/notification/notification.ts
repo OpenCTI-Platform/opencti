@@ -55,7 +55,7 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
   representative: (stix: StixTrigger) => {
     return stix.name;
   },
-  converter: convertTriggerToStix
+  converter_2_1: convertTriggerToStix
 };
 registerDefinition(TRIGGER_DEFINITION);
 
@@ -123,6 +123,6 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
   representative: (stix: StixNotification) => {
     return stix.messages.join(', ');
   },
-  converter: convertNotificationToStix
+  converter_2_1: convertNotificationToStix
 };
 registerDefinition(NOTIFICATION_DEFINITION);

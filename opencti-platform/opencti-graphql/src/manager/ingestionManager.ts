@@ -35,7 +35,7 @@ import { createWork, reportExpectation, updateExpectationsNumber } from '../doma
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
 import { findById as findUserById } from '../domain/user';
 import { compareHashSHA256, hashSHA256 } from '../utils/hash';
-import type { StixBundle, StixObject } from '../types/stix-common';
+import type { StixBundle, StixObject } from '../types/stix-2-1/stix-2-1-common';
 import { patchAttribute } from '../database/middleware';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { connectorIdFromIngestId, queueDetails } from '../domain/connector';

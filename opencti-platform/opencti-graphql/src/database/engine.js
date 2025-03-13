@@ -135,7 +135,7 @@ import {
   schemaAttributesDefinition,
   validateDataBeforeIndexing
 } from '../schema/schema-attributes';
-import { convertTypeToStixType } from './stix-converter';
+import { convertTypeToStixType } from './stix-2-1-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';

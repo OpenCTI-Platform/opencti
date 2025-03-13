@@ -98,7 +98,7 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
   representative: (instance: StixExclusionList) => {
     return instance.name;
   },
-  converter: convertExclusionListToStix
+  converter_2_1: convertExclusionListToStix
 };
 
 registerDefinition(EXCLUSION_LIST_DEFINITION);

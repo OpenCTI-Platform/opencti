@@ -307,6 +307,6 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
   representative: (stix: StixThreatActorIndividual) => {
     return stix.name;
   },
-  converter: convertThreatActorIndividualToStix
+  converter_2_1: convertThreatActorIndividualToStix
 };
 registerDefinition(THREAT_ACTOR_INDIVIDUAL_DEFINITION);

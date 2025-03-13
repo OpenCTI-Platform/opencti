@@ -7,8 +7,8 @@ import type {
   StixOpenctiExtension,
   StixMitreExtension,
   StixContainerExtension
-} from './stix-common';
-import { STIX_EXT_MITRE, STIX_EXT_OCTI } from './stix-extensions';
+} from './stix-2-1-common';
+import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../stix-extensions';
 
 // Attack Pattern Specific Properties
 // name, description, aliases, kill_chain_phases

@@ -1,5 +1,5 @@
 import type { StixEntities } from './general';
-import type { StixRelation } from './stix-sro';
+import type { StixRelation } from './stix-2-1/stix-2-1-sro';
 import type { StoreObject } from './store';
 import type { UpdateEvent } from './event';
 

@@ -1,5 +1,5 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixDomainObject, StixOpenctiExtensionSDO, StixDate } from '../../types/stix-common';
+import type { StixDomainObject, StixOpenctiExtensionSDO, StixDate } from '../../types/stix-2-1/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 
 export const ENTITY_TYPE_EVENT = 'Event';

@@ -40,7 +40,7 @@ const DISSEMINATION_LIST_DEFINITION: ModuleDefinition<StoreEntityDisseminationLi
   representative: (stix: StixDisseminationList) => {
     return stix.name;
   },
-  converter: convertDisseminationListToStix
+  converter_2_1: convertDisseminationListToStix
 };
 
 registerDefinition(DISSEMINATION_LIST_DEFINITION);

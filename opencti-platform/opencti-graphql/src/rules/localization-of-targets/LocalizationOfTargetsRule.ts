@@ -5,7 +5,7 @@ import { RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './LocalizationOfTargetsDefinition';
 import { createRuleContent } from '../rules-utils';
 import { computeAverage } from '../../database/utils';
-import type { StixRelation } from '../../types/stix-sro';
+import type { StixRelation } from '../../types/stix-2-1/stix-2-1-sro';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';

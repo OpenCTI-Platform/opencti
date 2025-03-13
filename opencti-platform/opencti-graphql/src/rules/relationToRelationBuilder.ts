@@ -6,7 +6,7 @@ import { computeAverage } from '../database/utils';
 import { listAllRelations } from '../database/middleware-loader';
 import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { BasicStoreRelation, StoreObject } from '../types/store';
-import type { StixRelation } from '../types/stix-sro';
+import type { StixRelation } from '../types/stix-2-1/stix-2-1-sro';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';

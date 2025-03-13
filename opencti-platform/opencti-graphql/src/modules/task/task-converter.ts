@@ -1,4 +1,4 @@
-import { buildStixDomain, cleanObject, convertObjectReferences, convertToStixDate } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject, convertObjectReferences, convertToStixDate } from '../../database/stix-2-1-converter';
 import { INPUT_CREATED_BY, INPUT_OBJECTS } from '../../schema/general';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StixTask, StoreEntityTask } from './task-types';

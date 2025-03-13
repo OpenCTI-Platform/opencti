@@ -10,7 +10,7 @@ import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
-import type { StixObject } from '../types/stix-common';
+import type { StixObject } from '../types/stix-2-1/stix-2-1-common';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { telemetry } from '../config/tracing';

@@ -1,5 +1,5 @@
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import { buildStixDomain, cleanObject, convertToStixDate } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject, convertToStixDate } from '../../database/stix-2-1-converter';
 import type { StixEvent, StoreEntityEvent } from './event-types';
 
 const convertEventToStix = (instance: StoreEntityEvent): StixEvent => {

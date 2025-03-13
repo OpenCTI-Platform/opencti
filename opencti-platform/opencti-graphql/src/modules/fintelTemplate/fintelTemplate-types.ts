@@ -1,6 +1,6 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
+import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1/stix-2-1-common';
 import type { FintelTemplateWidget } from '../../generated/graphql';
 
 export const ENTITY_TYPE_FINTEL_TEMPLATE = 'FintelTemplate';

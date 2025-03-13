@@ -32,7 +32,7 @@ const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRul
   representative: (stix: StixDecayRule) => {
     return stix.name;
   },
-  converter: convertDecayRuleToStix
+  converter_2_1: convertDecayRuleToStix
 };
 
 registerDefinition(DECAY_RULE_DEFINITION);

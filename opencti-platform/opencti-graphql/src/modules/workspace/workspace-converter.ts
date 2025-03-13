@@ -1,5 +1,5 @@
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import { buildStixDomain, cleanObject, convertObjectReferences } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject, convertObjectReferences } from '../../database/stix-2-1-converter';
 import type { StixWorkspace, StoreEntityWorkspace } from './workspace-types';
 
 const convertWorkspaceToStix = (instance: StoreEntityWorkspace): StixWorkspace => {
