@@ -681,14 +681,17 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
     fileMarkings,
     connectors,
     validationMode = defaultValidationMode,
+    draftId,
     version,
     importContextEntities,
   } = args;
-  const uploadedFile = await stixCoreObjectImportPush(context, user, id, file, { version, fileMarkings, importContextEntities, noTriggerImport: true });
+
+  const contextInDraft = { ...context, draft_context: draftId };
+  const uploadedFile = await stixCoreObjectImportPush(contextInDraft, user, id, file, { version, fileMarkings, importContextEntities, noTriggerImport: true });
 
   if (connectors) {
     await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
-      askJobImport(context, user, { fileName: uploadedFile.id, connectorId, configuration, validationMode })
+      askJobImport(contextInDraft, user, { fileName: uploadedFile.id, connectorId, configuration, validationMode, manualValidation: true })
     )));
   }
 

@@ -429,7 +429,7 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
 };
 
 export const uploadJobImport = async (context, user, file, entityId, opts = {}) => {
-  const { manual = false, connectorId = null, configuration = null, bypassValidation = false, validationMode = defaultValidationMode } = opts;
+  const { manual = false, connectorId = null, configuration = null, bypassValidation = false, validationMode = defaultValidationMode, manualValidation = false } = opts;
   const draftContext = getDraftContext(context, user);
   let connectors = await connectorsForImport(context, user, file.metaData.mimetype, true, !manual);
   if (connectorId) {
@@ -464,6 +464,7 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
           entity_id: entityId, // Context of the upload*
           validation_mode: draftContext ? 'draft' : validationMode, // Force to draft if we are in draft
           bypass_validation: draftContext ? true : bypassValidation, // Force no validation: always force it when in draft
+          manual_validation: manualValidation, // Force validation
         },
         configuration: connectorConfiguration
       };

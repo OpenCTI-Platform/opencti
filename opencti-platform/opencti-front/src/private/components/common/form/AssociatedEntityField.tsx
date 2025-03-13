@@ -100,7 +100,7 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
       selectOnFocus={true}
       autoHighlight={true}
       getOptionLabel={(option) => (option.label ?? '')}
-      value={value ?? undefined}
+      value={value ?? null}
       multiple={false}
       renderInput={(params) => (
         <TextField
@@ -120,7 +120,7 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
       onChange={handleChangeSelectedValue}
       isOptionEqualToValue={(option, val) => { return option.value === val.value; }}
       renderOption={(props, option) => (
-        <li {...props}>
+        <li {...props} key={props.key || ''}>
           <div style={{ paddingTop: 4, display: 'inline-block' }}>
             <ItemIcon type={option.type} />
           </div>
