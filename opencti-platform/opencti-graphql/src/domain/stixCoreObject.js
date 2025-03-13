@@ -680,6 +680,7 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
     version,
     importContextEntities,
   } = args;
+
   const uploadedFile = await stixCoreObjectImportPush(context, user, id, file, { version, fileMarkings, importContextEntities, noTriggerImport: true });
 
   if (connectors) {
