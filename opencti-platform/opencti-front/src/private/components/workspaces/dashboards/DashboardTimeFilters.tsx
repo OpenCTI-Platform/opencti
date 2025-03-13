@@ -19,7 +19,7 @@ interface DashboardTimeFiltersProps {
     endDate: string | null
     relativeDate: string | null
   }
-  handleDateChange: (bound: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => unknown
+  handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void
 }
 
 const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({

@@ -39,7 +39,7 @@ type WorkspaceHeaderProps = {
   workspace: Dashboard_workspace$data | InvestigationGraph_workspace$data;
   variant: 'dashboard' | 'investigation';
   adjust: () => void;
-  handleDateChange: (type: string, value: string) => void;
+  handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void
   config?: {
     startDate: object
     endDate: object
@@ -123,25 +123,27 @@ const WorkspaceHeader = ({
           />
         </div>
         <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canManage}>
-          <Tooltip title={t_i18n('Manage access restriction')}>
-            <ToggleButtonGroup size="small" color="warning" exclusive sx={{ marginRight: '3px' }}>
-              <ToggleButton
-                aria-label={t_i18n('Manage access restriction')}
-                onClick={handleOpenManageAccess}
-                size="small"
-                value="manage-access"
-              >
-                <LockPersonOutlined fontSize="small" color="primary" />
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Tooltip>
-          <WorkspaceManageAccessDialog
-            workspaceId={workspace.id}
-            open={displayManageAccess}
-            authorizedMembersData={workspace}
-            owner={workspace.owner}
-            handleClose={handleCloseManageAccess}
-          />
+          <>
+            <Tooltip title={t_i18n('Manage access restriction')}>
+              <ToggleButtonGroup size="small" color="warning" exclusive sx={{ marginRight: '3px' }}>
+                <ToggleButton
+                  aria-label={t_i18n('Manage access restriction')}
+                  onClick={handleOpenManageAccess}
+                  size="small"
+                  value="manage-access"
+                >
+                  <LockPersonOutlined fontSize="small" color="primary" />
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Tooltip>
+            <WorkspaceManageAccessDialog
+              workspaceId={workspace.id}
+              open={displayManageAccess}
+              authorizedMembersData={workspace}
+              owner={workspace.owner}
+              handleClose={handleCloseManageAccess}
+            />
+          </>
         </Security>
         {variant === 'investigation' && (
           <>
@@ -186,7 +188,7 @@ const WorkspaceHeader = ({
             needs={[EXPLORE_EXUPDATE]}
             hasAccess={canEdit}
           >
-            <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace}></WorkspaceWidgetConfig>
+            <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace} />
           </Security>
         )}
         <WorkspaceDuplicationDialog
