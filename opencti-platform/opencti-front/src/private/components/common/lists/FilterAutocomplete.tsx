@@ -51,6 +51,7 @@ interface FilterAutocompleteProps {
 }
 
 const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) => {
+  console.log({props})
   const {
     filterKey,
     searchContext,
