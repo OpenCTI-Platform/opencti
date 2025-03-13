@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Alert, Collapse, Grid, IconButton, List, ListItem, Box, Select, MenuItem, Tooltip, Typography } from '@mui/material';
 import { TransitionGroup } from 'react-transition-group';
 import { DeleteOutlined, UploadFileOutlined } from '@mui/icons-material';
@@ -52,6 +52,12 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForI
     onChange(updatedFiles);
   };
 
+  const isConfigurationColumn = useMemo(() => {
+    return files.some(({ connectors }) => {
+      return connectors?.some((connector) => connector?.name === CSV_MAPPER_NAME);
+    });
+  }, [files]);
+
   return (
     <List>
       <TransitionGroup>
@@ -60,7 +66,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForI
             <ListItem divider>
               <Grid container columnSpacing={2}>
                 <Grid item xs={0.5}></Grid>
-                <Grid item xs={5}>
+                <Grid item xs={isConfigurationColumn ? 5 : 8}>
                   <Typography fontWeight="bold">
                     {t_i18n('Files')}
                   </Typography>
@@ -72,11 +78,13 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForI
                   </Typography>
                 </Grid>
 
-                <Grid item xs={3}>
-                  <Typography fontWeight="bold">
-                    {t_i18n('CSV Mappers')}
-                  </Typography>
-                </Grid>
+                {isConfigurationColumn && (
+                  <Grid item xs={3}>
+                    <Typography fontWeight="bold">
+                      {t_i18n('Configuration')}
+                    </Typography>
+                  </Grid>
+                )}
 
                 <Grid item xs={0.5}></Grid>
               </Grid>
@@ -94,7 +102,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForI
                 </Grid>
 
                 {/* Column 2: File Name */}
-                <Grid item xs={5}>
+                <Grid item xs={isConfigurationColumn ? 5 : 8}>
                   <Tooltip title={file.name}>
                     <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
                       {file.name}
@@ -127,34 +135,37 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForI
                     </Grid>
 
                     {/* Column 4: Select - CSV Mapper */}
-                    <Grid item xs={3}>
-                      {!!connectors.filter((c) => c?.name === CSV_MAPPER_NAME).length && (
-                      <Select
-                        variant="standard"
-                        fullWidth
-                        value={configuration || ''}
-                        onChange={(e) => handleMapperChange(file.name, e.target.value as string)}
-                        error={!configuration} // ✅ Adds red border on error
-                        displayEmpty
-                        sx={{
-                          '& .MuiSelect-select': {
-                            color: !configuration ? theme.palette.error.main : 'inherit',
-                          },
-                        }}
-                      >
-                        <MenuItem value="" disabled>
-                          {t_i18n('Select a mapper')}
-                        </MenuItem>
-                        {connectorsForImport
-                          ?.find((connector) => connector?.name === CSV_MAPPER_NAME)
-                          ?.configurations?.map((mapper) => (
-                            <MenuItem key={mapper?.id} value={mapper?.configuration}>
-                              {mapper?.name}
-                            </MenuItem>
-                          ))}
-                      </Select>
+                    { isConfigurationColumn
+                      && (
+                      <Grid item xs={3}>
+                        {!!connectors.filter((c) => c?.name === CSV_MAPPER_NAME).length && (
+                        <Select
+                          variant="standard"
+                          fullWidth
+                          value={configuration || ''}
+                          onChange={(e) => handleMapperChange(file.name, e.target.value as string)}
+                          error={!configuration} // ✅ Adds red border on error
+                          displayEmpty
+                          sx={{
+                            '& .MuiSelect-select': {
+                              color: !configuration ? theme.palette.error.main : 'inherit',
+                            },
+                          }}
+                        >
+                          <MenuItem value="" disabled>
+                            {t_i18n('Select a configuration')}
+                          </MenuItem>
+                          {connectorsForImport
+                            ?.find((connector) => connector?.name === CSV_MAPPER_NAME)
+                            ?.configurations?.map((mapper) => (
+                              <MenuItem key={mapper?.id} value={mapper?.configuration}>
+                                {mapper?.name}
+                              </MenuItem>
+                            ))}
+                        </Select>
+                        )}
+                      </Grid>
                       )}
-                    </Grid>
                   </>
                 ) : (
                   <Grid item xs={6}>

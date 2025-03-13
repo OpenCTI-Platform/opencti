@@ -49,6 +49,13 @@ const SearchScopeElement = ({
       };
     })
     .sort((a, b) => a.label.localeCompare(b.label));
+  console.log({
+    name,
+    searchScope,
+    setSearchScope,
+    availableRelationFilterTypes,
+    entitiesTypes
+  })
   const handleOpenSearchScope = (event) => setAnchorElSearchScope(event.currentTarget);
   const handleCloseSearchScope = () => setAnchorElSearchScope(undefined);
   const handleToggleSearchScope = (key, value) => {

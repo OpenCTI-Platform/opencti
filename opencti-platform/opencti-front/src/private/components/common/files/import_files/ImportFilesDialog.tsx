@@ -220,7 +220,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     enableReinitialize: true,
     initialValues: {
       fileMarkings: [] as Option[],
-      associatedEntity: { label: '', value: '', type: '' } as AssociatedEntityOption,
+      associatedEntity: null,
     },
     onSubmit,
   });
