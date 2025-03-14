@@ -109,7 +109,7 @@ export const editAuthorizedMembers = async (
 ) => {
   if (getDraftContext(context, user)) throw UnsupportedError('Cannot edit authorized members in draft');
   const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
-  let restricted_members: { id: string, access_right: string }[] | null = null;
+  let restricted_members: { id: string, access_right: string, groups_restriction_ids: string[] | null | undefined }[] | null = null;
 
   if (input) {
     // validate input (validate access right) and remove duplicates
@@ -131,7 +131,13 @@ export const editAuthorizedMembers = async (
       throw FunctionalError('It should have at least one valid member with admin access');
     }
 
-    restricted_members = filteredInput.map(({ id, access_right, groups_restriction_ids }) => ({ id, access_right, groups_restriction_ids }));
+    restricted_members = filteredInput.map(({ id, access_right, groups_restriction_ids }) => {
+      const member = { id, access_right, groups_restriction_ids };
+      if (!groups_restriction_ids) {
+        delete member.groups_restriction_ids;
+      }
+      return member;
+    });
   }
 
   const patch = { restricted_members };
