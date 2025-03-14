@@ -23551,14 +23551,14 @@ export type SavedFilter = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
-  scope: Scalars['String']['output'];
+  scope?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
 
 export type SavedFilterAddInput = {
-  filters: FilterGroup;
+  filters: Scalars['String']['input'];
   name: Scalars['String']['input'];
-  scope?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  scope?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SavedFilterConnection = {
@@ -39853,7 +39853,7 @@ export type SavedFilterResolvers<ContextType = any, ParentType extends Resolvers
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  scope?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

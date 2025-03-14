@@ -6,7 +6,7 @@ type SavedFilter implements InternalObject & BasicObject {
     # SavedFilters
     name: String!
     filters: String!
-    scope: String!
+    scope: String
 }
 
 type SavedFilterEdge {
@@ -21,8 +21,8 @@ type SavedFilterConnection {
 
 input SavedFilterAddInput {
     name: String!
-    filters: FilterGroup!
-    scope: [String]
+    filters: String!
+    scope: String
 }
 
 type Query {
