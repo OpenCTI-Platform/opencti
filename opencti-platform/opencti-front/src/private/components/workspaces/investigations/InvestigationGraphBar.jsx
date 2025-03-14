@@ -25,7 +25,6 @@ import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Popover from '@mui/material/Popover';
@@ -38,6 +37,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import React, { Component } from 'react';
 import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
+import { ListItemButton } from '@mui/material';
 import { getPreExpansionStateList } from './utils/investigationStorage';
 import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import inject18n from '../../../../components/i18n';
@@ -367,11 +367,13 @@ class InvestigationGraphBar extends Component {
             anchor="bottom"
             variant="permanent"
             classes={{ paper: classes.bottomNav }}
-            PaperProps={{
-              variant: 'elevation',
-              elevation: 1,
-              style: {
-                bottom: bannerSettings.bannerHeightNumber,
+            slotProps={{
+              desktopPaper: {
+                variant: 'elevation',
+                elevation: 1,
+                style: {
+                  bottom: bannerSettings.bannerHeightNumber,
+                },
               },
             }}
           >
@@ -560,11 +562,10 @@ class InvestigationGraphBar extends Component {
                   >
                     <List>
                       {stixCoreObjectsTypes.map((stixCoreObjectType) => (
-                        <ListItem
+                        <ListItemButton
                           key={stixCoreObjectType}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={this.handleSelectByType.bind(
                             this,
                             stixCoreObjectType,
@@ -573,7 +574,7 @@ class InvestigationGraphBar extends Component {
                           <ListItemText
                             primary={t(`entity_${stixCoreObjectType}`)}
                           />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -632,11 +633,10 @@ class InvestigationGraphBar extends Component {
                   >
                     <List>
                       {stixCoreObjectsTypes.map((stixCoreObjectType) => (
-                        <ListItem
+                        <ListItemButton
                           key={stixCoreObjectType}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={handleToggleStixCoreObjectType.bind(
                             this,
                             stixCoreObjectType,
@@ -656,7 +656,7 @@ class InvestigationGraphBar extends Component {
                           <ListItemText
                             primary={t(`entity_${stixCoreObjectType}`)}
                           />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -692,11 +692,10 @@ class InvestigationGraphBar extends Component {
                   >
                     <List>
                       {markedBy.map((markingDefinition) => (
-                        <ListItem
+                        <ListItemButton
                           key={markingDefinition.id}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={handleToggleMarkedBy.bind(
                             this,
                             markingDefinition.id,
@@ -714,7 +713,7 @@ class InvestigationGraphBar extends Component {
                           <ListItemText
                             primary={truncate(markingDefinition.definition, 20, false)}
                           />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -750,11 +749,10 @@ class InvestigationGraphBar extends Component {
                   >
                     <List>
                       {createdBy.map((createdByRef) => (
-                        <ListItem
+                        <ListItemButton
                           key={createdBy.id}
                           role={undefined}
                           dense={true}
-                          button={true}
                           onClick={handleToggleCreatedBy.bind(
                             this,
                             createdByRef.id,
@@ -770,7 +768,7 @@ class InvestigationGraphBar extends Component {
                             />
                           </ListItemIcon>
                           <ListItemText primary={createdByRef.name} />
-                        </ListItem>
+                        </ListItemButton>
                       ))}
                     </List>
                   </Popover>
@@ -949,9 +947,9 @@ class InvestigationGraphBar extends Component {
                       </Tooltip>
                       <Dialog
                         open={this.state.displayRemove}
-                        PaperProps={{ elevation: 1 }}
+                        slotProps={{ paper: { elevation: 1 } }}
                         keepMounted={true}
-                        TransitionComponent={Transition}
+                        slots={{ transition: Transition }}
                         onClose={this.handleCloseRemove.bind(this)}
                       >
                         <DialogContent>

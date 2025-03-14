@@ -10,9 +10,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Fab from '@mui/material/Fab';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -29,6 +27,8 @@ import { useNavigate } from 'react-router-dom';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
 import Alert from '@mui/material/Alert';
+import { ListItemButton } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemBoolean from '../../../../../components/ItemBoolean';
@@ -1754,15 +1754,14 @@ const WorkbenchFileContentComponent = ({
     return (
       <List>
         {translatedOrderedList.map((subType) => (
-          <ListItem
+          <ListItemButton
             key={subType.label}
             divider
-            button
             dense
             onClick={() => setEntityType(subType.label)}
           >
             <ListItemText primary={subType.tlabel} />
-          </ListItem>
+          </ListItemButton>
         ))}
       </List>
     );
@@ -2447,15 +2446,14 @@ const WorkbenchFileContentComponent = ({
     return (
       <List>
         {translatedOrderedList.map((subType) => (
-          <ListItem
+          <ListItemButton
             key={subType.label}
             divider
-            button
             dense
             onClick={() => setObservableType(subType.label)}
           >
             <ListItemText primary={subType.tlabel} />
-          </ListItem>
+          </ListItemButton>
         ))}
       </List>
     );
@@ -2966,7 +2964,7 @@ const WorkbenchFileContentComponent = ({
     return (
       <div style={{ padding: '0 15px 0 15px' }}>
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem
+          <ListItemButton
             classes={{ root: classes.itemHead }}
             divider={false}
             style={{ paddingTop: 0 }}
@@ -3004,7 +3002,7 @@ const WorkbenchFileContentComponent = ({
                 </div>
               }
             />
-          </ListItem>
+          </ListItemButton>
           {sortedObjects.map((object) => {
             let type = convertFromStixType(object.type);
             let secondaryType = '';
@@ -3031,7 +3029,6 @@ const WorkbenchFileContentComponent = ({
                 key={object.id}
                 classes={{ root: classes.item }}
                 divider
-                button
                 onClick={(event) => handleToggleContainerSelectObject(object, event)
                 }
               >
@@ -3222,38 +3219,40 @@ const WorkbenchFileContentComponent = ({
             classes={{ root: classes.itemHead }}
             divider={false}
             style={{ paddingTop: 0 }}
+            secondaryAction={<>&nbsp;</>}
           >
-            <ListItemIcon
-              style={{
-                minWidth: 38,
-              }}
-              onClick={handleToggleSelectAll}
-            >
-              <Checkbox edge="start" checked={selectAll} disableRipple={true} />
-            </ListItemIcon>
-            <ListItemIcon>
-              <span
+            <ListItemButton>
+              <ListItemIcon
                 style={{
-                  padding: '0 8px 0 8px',
-                  fontWeight: 700,
-                  fontSize: 12,
+                  minWidth: 38,
                 }}
+                onClick={handleToggleSelectAll}
               >
-                &nbsp;
-              </span>
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <div>
-                  {sortHeader('ttype', 'Type', true)}
-                  {sortHeader('default_value', 'Default value', true)}
-                  {sortHeader('labels', 'Labels', false)}
-                  {sortHeader('markings', 'Marking definitions', true)}
-                  {sortHeader('in_platform', 'Already in plat.', false)}
-                </div>
-              }
-            />
-            <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
+                <Checkbox edge="start" checked={selectAll} disableRipple={true} />
+              </ListItemIcon>
+              <ListItemIcon>
+                <span
+                  style={{
+                    padding: '0 8px 0 8px',
+                    fontWeight: 700,
+                    fontSize: 12,
+                  }}
+                >
+                  &nbsp;
+                </span>
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <div>
+                    {sortHeader('ttype', 'Type', true)}
+                    {sortHeader('default_value', 'Default value', true)}
+                    {sortHeader('labels', 'Labels', false)}
+                    {sortHeader('markings', 'Marking definitions', true)}
+                    {sortHeader('in_platform', 'Already in plat.', false)}
+                  </div>
+                }
+              />
+            </ListItemButton>
           </ListItem>
           {sortedStixDomainObjects.map((object) => {
             let type = convertFromStixType(object.type);
@@ -3286,6 +3285,14 @@ const WorkbenchFileContentComponent = ({
                   object.type === 'marking-definition'
                     ? null
                     : () => handleOpenEntity(object.type, object.id)
+                }
+                secondaryAction={
+                  <IconButton
+                    onClick={() => handleDeleteObject(object)}
+                    aria-haspopup="true"
+                  >
+                    <DeleteOutlined />
+                  </IconButton>
                 }
               >
                 <ListItemIcon
@@ -3358,14 +3365,6 @@ const WorkbenchFileContentComponent = ({
                     </div>
                   }
                 />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    onClick={() => handleDeleteObject(object)}
-                    aria-haspopup="true"
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
-                </ListItemSecondaryAction>
               </ListItem>
             );
           })}
@@ -3419,6 +3418,7 @@ const WorkbenchFileContentComponent = ({
             classes={{ root: classes.itemHead }}
             divider={false}
             style={{ paddingTop: 0 }}
+            secondaryAction={<>&nbsp;</>}
           >
             <ListItemIcon
               style={{
@@ -3450,7 +3450,6 @@ const WorkbenchFileContentComponent = ({
                 </div>
               }
             />
-            <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
           {sortedStixCyberObservables.map((object) => {
             const type = convertFromStixType(object.type);
@@ -3464,6 +3463,14 @@ const WorkbenchFileContentComponent = ({
                   object.type === 'marking-definition'
                     ? null
                     : () => handleOpenObservable(object.type, object.id)
+                }
+                secondaryAction={
+                  <IconButton
+                    onClick={() => handleDeleteObject(object)}
+                    aria-haspopup="true"
+                  >
+                    <DeleteOutlined />
+                  </IconButton>
                 }
               >
                 <ListItemIcon
@@ -3597,14 +3604,6 @@ const WorkbenchFileContentComponent = ({
                     </div>
                   }
                 />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    onClick={() => handleDeleteObject(object)}
-                    aria-haspopup="true"
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
-                </ListItemSecondaryAction>
               </ListItem>
             );
           })}
@@ -3659,6 +3658,7 @@ const WorkbenchFileContentComponent = ({
             classes={{ root: classes.itemHead }}
             divider={false}
             style={{ paddingTop: 0 }}
+            secondaryAction={<>&nbsp;</>}
           >
             <ListItemIcon
               style={{
@@ -3689,78 +3689,79 @@ const WorkbenchFileContentComponent = ({
                 </div>
               }
             />
-            <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
           {sortedStixCoreRelationships.map((object) => (
             <ListItem
               key={object.id}
-              classes={{ root: classes.item }}
               divider
-              button
-              onClick={() => handleOpenRelationship(object.id)}
-            >
-              <ListItemIcon
-                classes={{ root: classes.itemIcon }}
-                style={{ minWidth: 40 }}
-                onClick={(event) => handleToggleSelectObject(object, event)}
-              >
-                <Checkbox
-                  edge="start"
-                  checked={
-                    (selectAll && !(object.id in (deSelectedElements || {})))
-                    || object.id in (selectedElements || {})
-                  }
-                  disableRipple
-                />
-              </ListItemIcon>
-              <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <ItemIcon type={object.relationship_type} />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.ttype}
-                    >
-                      {object.ttype}
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.default_value}
-                    >
-                      {object.default_value || t_i18n('Unknown')}
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.labels}
-                    >
-                      <StixItemLabels
-                        variant="inList"
-                        labels={object.labels || []}
-                      />
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.markings}
-                    >
-                      <StixItemMarkings
-                        variant="inList"
-                        markingDefinitions={object.markings || []}
-                        limit={2}
-                      />
-                    </div>
-                  </div>
-                }
-              />
-              <ListItemSecondaryAction>
+              secondaryAction={
                 <IconButton
                   onClick={() => handleDeleteObject(object)}
                   aria-haspopup="true"
                 >
                   <DeleteOutlined />
                 </IconButton>
-              </ListItemSecondaryAction>
+              }
+            >
+              <ListItemButton
+                classes={{ root: classes.item }}
+                onClick={() => handleOpenRelationship(object.id)}
+              >
+                <ListItemIcon
+                  classes={{ root: classes.itemIcon }}
+                  style={{ minWidth: 40 }}
+                  onClick={(event) => handleToggleSelectObject(object, event)}
+                >
+                  <Checkbox
+                    edge="start"
+                    checked={
+                    (selectAll && !(object.id in (deSelectedElements || {})))
+                    || object.id in (selectedElements || {})
+                  }
+                    disableRipple
+                  />
+                </ListItemIcon>
+                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  <ItemIcon type={object.relationship_type} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.ttype}
+                      >
+                        {object.ttype}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.default_value}
+                      >
+                        {object.default_value || t_i18n('Unknown')}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.labels}
+                      >
+                        <StixItemLabels
+                          variant="inList"
+                          labels={object.labels || []}
+                        />
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.markings}
+                      >
+                        <StixItemMarkings
+                          variant="inList"
+                          markingDefinitions={object.markings || []}
+                          limit={2}
+                        />
+                      </div>
+                    </div>
+                }
+                />
+              </ListItemButton>
             </ListItem>
           ))}
         </List>
@@ -3811,6 +3812,7 @@ const WorkbenchFileContentComponent = ({
             classes={{ root: classes.itemHead }}
             divider={false}
             style={{ paddingTop: 0 }}
+            secondaryAction={<>&nbsp;</>}
           >
             <ListItemIcon
               style={{
@@ -3841,77 +3843,78 @@ const WorkbenchFileContentComponent = ({
                 </div>
               }
             />
-            <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
           {sortedStixSightings.map((object) => (
             <ListItem
               key={object.id}
-              classes={{ root: classes.item }}
               divider
-              button={false}
-            >
-              <ListItemIcon
-                classes={{ root: classes.itemIcon }}
-                style={{ minWidth: 40 }}
-                onClick={(event) => handleToggleSelectObject(object, event)}
-              >
-                <Checkbox
-                  edge="start"
-                  checked={
-                    (selectAll && !(object.id in (deSelectedElements || {})))
-                    || object.id in (selectedElements || {})
-                  }
-                  disableRipple
-                />
-              </ListItemIcon>
-              <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <ItemIcon type="sighting" />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.ttype}
-                    >
-                      {object.ttype}
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.default_value}
-                    >
-                      {object.default_value || t_i18n('Unknown')}
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.labels}
-                    >
-                      <StixItemLabels
-                        variant="inList"
-                        labels={object.labels || []}
-                      />
-                    </div>
-                    <div
-                      className={classes.bodyItem}
-                      style={inlineStyles.markings}
-                    >
-                      <StixItemMarkings
-                        variant="inList"
-                        markingDefinitions={object.markings || []}
-                        limit={2}
-                      />
-                    </div>
-                  </div>
-                }
-              />
-              <ListItemSecondaryAction>
+              secondaryAction={
                 <IconButton
                   onClick={() => handleDeleteObject(object)}
                   aria-haspopup="true"
                 >
                   <DeleteOutlined />
                 </IconButton>
-              </ListItemSecondaryAction>
+              }
+            >
+              <ListItemButton
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon
+                  classes={{ root: classes.itemIcon }}
+                  style={{ minWidth: 40 }}
+                  onClick={(event) => handleToggleSelectObject(object, event)}
+                >
+                  <Checkbox
+                    edge="start"
+                    checked={
+                    (selectAll && !(object.id in (deSelectedElements || {})))
+                    || object.id in (selectedElements || {})
+                  }
+                    disableRipple
+                  />
+                </ListItemIcon>
+                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  <ItemIcon type="sighting" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.ttype}
+                      >
+                        {object.ttype}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.default_value}
+                      >
+                        {object.default_value || t_i18n('Unknown')}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.labels}
+                      >
+                        <StixItemLabels
+                          variant="inList"
+                          labels={object.labels || []}
+                        />
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.markings}
+                      >
+                        <StixItemMarkings
+                          variant="inList"
+                          markingDefinitions={object.markings || []}
+                          limit={2}
+                        />
+                      </div>
+                    </div>
+                }
+                />
+              </ListItemButton>
             </ListItem>
           ))}
         </List>
@@ -3945,15 +3948,14 @@ const WorkbenchFileContentComponent = ({
     return (
       <List>
         {translatedOrderedList.map((subType) => (
-          <ListItem
+          <ListItemButton
             key={subType.label}
             divider
-            button
             dense
             onClick={() => setContainerType(subType.label)}
           >
             <ListItemText primary={subType.tlabel} />
-          </ListItem>
+          </ListItemButton>
         ))}
       </List>
     );
@@ -3977,6 +3979,7 @@ const WorkbenchFileContentComponent = ({
             classes={{ root: classes.itemHead }}
             divider={false}
             style={{ paddingTop: 0 }}
+            secondaryAction={<>&nbsp;</>}
           >
             <ListItemIcon
               style={{
@@ -4008,7 +4011,7 @@ const WorkbenchFileContentComponent = ({
                 </div>
               }
             />
-            <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
+
           </ListItem>
           {sortedContainers.map((object) => {
             const type = convertFromStixType(object.type);
@@ -4019,6 +4022,14 @@ const WorkbenchFileContentComponent = ({
                 divider
                 button={object.type !== 'marking-definition'}
                 onClick={() => handleOpenContainer(object.type, object.id)}
+                secondaryAction={
+                  <IconButton
+                    onClick={() => handleDeleteObject(object)}
+                    aria-haspopup="true"
+                  >
+                    <DeleteOutlined />
+                  </IconButton>
+                }
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -4134,14 +4145,6 @@ const WorkbenchFileContentComponent = ({
                     </div>
                   }
                 />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    onClick={() => handleDeleteObject(object)}
-                    aria-haspopup="true"
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
-                </ListItemSecondaryAction>
               </ListItem>
             );
           })}
@@ -4222,9 +4225,9 @@ const WorkbenchFileContentComponent = ({
       {currentTab === 4 && renderContainers()}
       <Dialog
         open={!!deleteObject}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDeleteObject}
       >
         <DialogContent>
@@ -4253,7 +4256,7 @@ const WorkbenchFileContentComponent = ({
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
               open={displayValidate}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               keepMounted
               onClose={handleCloseValidate}
               fullWidth
@@ -4328,7 +4331,7 @@ const WorkbenchFileContentComponent = ({
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
               open={displayConvertToDraft}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               keepMounted
               onClose={handleCloseConvertToDraft}
               fullWidth

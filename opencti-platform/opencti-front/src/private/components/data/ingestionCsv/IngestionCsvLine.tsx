@@ -4,7 +4,6 @@ import React, { FunctionComponent, useState } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Skeleton from '@mui/material/Skeleton';
 import { MoreVert } from '@mui/icons-material';
 import IngestionCsvPopover from '@components/data/ingestionCsv/IngestionCsvPopover';
@@ -75,7 +74,20 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   const data = useFragment(ingestionCsvLineFragment, node);
   const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : '-');
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <Security needs={[INGESTION_SETINGESTIONS]}>
+          <IngestionCsvPopover
+            ingestionCsvId={data.id}
+            paginationOptions={paginationOptions}
+            running={data.ingestion_running}
+            setStateHash={setStateHash}
+          />
+        </Security>
+      }
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <TableViewIcon />
       </ListItemIcon>
@@ -118,16 +130,6 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
           </div>
         }
       />
-      <ListItemSecondaryAction>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          <IngestionCsvPopover
-            ingestionCsvId={data.id}
-            paginationOptions={paginationOptions}
-            running={data.ingestion_running}
-            setStateHash={setStateHash}
-          />
-        </Security>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };
@@ -135,7 +137,11 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
 export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={<MoreVert classes={classes.itemIconDisabled}/>}
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton
           animation="wave"
@@ -204,9 +210,6 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
           </div>
         }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert/>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

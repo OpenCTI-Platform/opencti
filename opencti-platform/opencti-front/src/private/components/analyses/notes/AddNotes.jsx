@@ -101,7 +101,7 @@ class AddNotes extends Component {
               return (
                 <List>
                   {Array.from(Array(20), (e, i) => (
-                    <ListItem key={i} divider={true} button={false}>
+                    <ListItem key={i} divider={true}>
                       <ListItemIcon>
                         <Skeleton
                           animation="wave"

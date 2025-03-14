@@ -8,7 +8,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
@@ -82,17 +81,9 @@ class AttackPatternCoursesOfActionComponent extends Component {
                   key={courseOfAction.id}
                   dense={true}
                   divider={true}
-                  button={true}
                   component={Link}
                   to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}`}
-                >
-                  <ListItemIcon>
-                    <ListItemIcon>
-                      <ProgressWrench color="primary"/>
-                    </ListItemIcon>
-                  </ListItemIcon>
-                  <ListItemText primary={courseOfAction.name}/>
-                  <ListItemSecondaryAction>
+                  secondaryAction={
                     <IconButton
                       aria-label="Remove"
                       onClick={this.removeCourseOfAction.bind(
@@ -103,7 +94,14 @@ class AttackPatternCoursesOfActionComponent extends Component {
                     >
                       <LinkOff/>
                     </IconButton>
-                  </ListItemSecondaryAction>
+                  }
+                >
+                  <ListItemIcon>
+                    <ListItemIcon>
+                      <ProgressWrench color="primary"/>
+                    </ListItemIcon>
+                  </ListItemIcon>
+                  <ListItemText primary={courseOfAction.name}/>
                 </ListItem>
               );
             })}

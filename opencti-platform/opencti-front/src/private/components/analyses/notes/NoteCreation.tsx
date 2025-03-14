@@ -372,7 +372,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
         <Dialog
           open={open}
           onClose={() => setOpen(false)}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
         >
           <DialogTitle>{t_i18n('Create a note')}</DialogTitle>
           <DialogContent>
