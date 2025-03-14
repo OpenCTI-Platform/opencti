@@ -952,7 +952,6 @@ export const userDelete = async (context, user, userId) => {
   await deleteAllTriggerAndDigestByUser(userId);
   await deleteAllNotificationByUser(userId);
   await deleteAllWorkspaceForUser(context, user, userId);
-  // TODO : delete saved filters
 
   const deleted = await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
