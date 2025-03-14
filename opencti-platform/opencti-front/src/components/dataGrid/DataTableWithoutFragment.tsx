@@ -34,7 +34,7 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps) => {
       dataQueryArgs={(line: never) => line}
       resolvePath={(a) => a}
       initialValues={{}}
-      canToggleLine={false}
+      disableLineSelection={true}
     />
   );
 };

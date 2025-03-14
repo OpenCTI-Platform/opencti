@@ -8,7 +8,7 @@ import { PopoverProps } from '@mui/material/Popover/Popover';
 import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
 import { DataTableColumn, DataTableColumns, DataTableHeadersProps } from '../dataTableTypes';
-import DataTableHeader, { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
+import DataTableHeader, { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import type { Theme } from '../../Theme';
 import { useDataTableContext } from './DataTableContext';
 
@@ -31,10 +31,9 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     disableToolBar,
     disableSelectAll,
     startsWithAction,
+    startsWithIcon,
+    startColumnWidth,
     endsWithAction,
-    icon,
-    disableLineSelection,
-    canToggleLine,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
     },
@@ -58,17 +57,6 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     setColumns(newColumns);
   };
 
-  // Use the same in DataTableLine.tsx:169
-  const startActionsWidth = useMemo(() => {
-    if (icon && !disableLineSelection) {
-      return ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE;
-    }
-    if (icon) {
-      return ICON_COLUMN_SIZE;
-    }
-    return SELECT_COLUMN_SIZE;
-  }, []);
-
   const draggableColumns = useMemo(() => columns.filter(({ id }) => !['select', 'navigate', 'icon'].includes(id)), [columns]);
 
   const hasSelectedElements = numberOfSelectedElements > 0 || selectAll;
@@ -76,39 +64,39 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     background: hasSelectedElements
       ? theme.palette.background.accent
       : 'transparent',
-    minWidth: startActionsWidth,
+    minWidth: startColumnWidth,
   };
 
   const showToolbar = numberOfSelectedElements > 0 && !disableToolBar;
 
   return (
     <div ref={containerRef} style={{ display: 'flex', height: 42 }}>
-      {startsWithAction && (
-      <div data-testid="dataTableCheckAll" style={checkboxStyle}>
-        { !disableLineSelection && canToggleLine && (
-        <Checkbox
-          checked={selectAll}
-          sx={{
-            marginRight: 1,
-            flex: '0 0 auto',
-            paddingLeft: 0,
-            '&:hover': {
-              background: 'transparent',
-            },
-          }}
-          onChange={handleToggleSelectAll}
-          disabled={!handleToggleSelectAll || disableSelectAll}
-        />
-        )}
-        { icon && (
-          <Box sx={{
-            marginRight: 1,
-            flex: '0 0 auto',
-            paddingLeft: 0,
-          }}
-          />
-        ) }
-      </div>
+      {(startsWithAction || startsWithIcon) && (
+        <div data-testid="dataTableCheckAll" style={checkboxStyle}>
+          {startsWithAction && (
+            <Checkbox
+              checked={selectAll}
+              sx={{
+                marginRight: 1,
+                flex: '0 0 auto',
+                paddingLeft: 0,
+                '&:hover': {
+                  background: 'transparent',
+                },
+              }}
+              onChange={handleToggleSelectAll}
+              disabled={!handleToggleSelectAll || disableSelectAll}
+            />
+          )}
+          {startsWithIcon && (
+            <Box sx={{
+              marginRight: 1,
+              flex: '0 0 auto',
+              paddingLeft: 0,
+            }}
+            />
+          ) }
+        </div>
       )}
 
       {showToolbar ? dataTableToolBarComponent : (

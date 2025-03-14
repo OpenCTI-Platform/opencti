@@ -67,11 +67,12 @@ export interface DataTableContextProps {
   disableLineSelection: DataTableProps['disableLineSelection']
   selectOnLineClick: DataTableProps['selectOnLineClick']
   onLineClick: DataTableProps['onLineClick']
-  canToggleLine: DataTableProps['canToggleLine']
   page: number
   setPage:Dispatch<SetStateAction<number>>
   tableWidthState: [number, Dispatch<SetStateAction<number>>]
   startsWithAction: boolean
+  startsWithIcon: boolean
+  startColumnWidth: number
   endsWithAction: boolean
   endsWithNavigate: boolean
 }
@@ -139,7 +140,6 @@ export interface DataTableProps {
   selectOnLineClick?: boolean
   onLineClick?: (line: any) => void
   hideHeaders?: boolean
-  canToggleLine?: boolean
   message?: string
   isLocalStorageEnabled?: boolean
 }

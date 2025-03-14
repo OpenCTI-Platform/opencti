@@ -15,6 +15,7 @@ import {
   useDataTableToggle,
 } from '../dataTableHooks';
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 
 type DataTableComponentProps = Pick<DataTableProps,
 | 'dataColumns'
@@ -41,7 +42,6 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'useComputeLink'
 | 'selectOnLineClick'
 | 'onLineClick'
-| 'canToggleLine'
 | 'disableLineSelection'>;
 
 const DataTableComponent = ({
@@ -70,7 +70,6 @@ const DataTableComponent = ({
   disableSelectAll,
   selectOnLineClick,
   onLineClick,
-  canToggleLine = true,
 }: DataTableComponentProps) => {
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
@@ -95,7 +94,7 @@ const DataTableComponent = ({
 
     return [
       // Checkbox if necessary
-      ...(canToggleLine && !disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
+      ...(!disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
       // Icon if necessary
       ...(icon ? [{ id: 'icon', visible: true } as DataTableColumn] : []),
       // Our real columns
@@ -137,7 +136,10 @@ const DataTableComponent = ({
     });
   }, [columns]);
 
-  const startsWithAction = useMemo(() => columns.at(0)?.id === 'select' || columns.at(0)?.id === 'icon' || columns.at(1)?.id === 'icon', [columns]);
+  const startsWithAction = useMemo(() => columns.at(0)?.id === 'select', [columns]);
+  const startsWithIcon = useMemo(() => {
+    return !!columns.find((column) => column.id === 'icon');
+  }, [columns]);
   const endsWithNavigate = useMemo(() => columns.at(-1)?.id === 'navigate', [columns]);
   const endsWithAction = useMemo(() => endsWithNavigate || !!actions, [endsWithNavigate, actions]);
 
@@ -151,6 +153,17 @@ const DataTableComponent = ({
 
   const tableWidthState = useState(0);
   const tableRef = useRef<HTMLDivElement | null>(null);
+
+  const startColumnWidth = useMemo(() => {
+    if (startsWithIcon && startsWithAction) {
+      return ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE;
+    }
+    if (startsWithIcon) {
+      return ICON_COLUMN_SIZE;
+    }
+    return SELECT_COLUMN_SIZE;
+  }, [startsWithIcon, startsWithAction]);
+
   return (
     <DataTableProvider
       initialValue={{
@@ -183,11 +196,12 @@ const DataTableComponent = ({
         selectOnLineClick,
         onLineClick,
         disableLineSelection,
-        canToggleLine,
         page,
         setPage,
         tableWidthState,
         startsWithAction,
+        startsWithIcon,
+        startColumnWidth,
         endsWithAction,
         endsWithNavigate,
       }}

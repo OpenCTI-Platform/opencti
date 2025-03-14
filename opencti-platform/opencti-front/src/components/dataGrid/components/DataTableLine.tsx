@@ -7,7 +7,7 @@ import type { DataTableCellProps, DataTableLineProps } from '../dataTableTypes';
 import { DataTableVariant } from '../dataTableTypes';
 import type { Theme } from '../../Theme';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
-import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
+import { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import { useDataTableContext } from './DataTableContext';
 
 const cellContainerStyle = (theme: Theme) => ({
@@ -102,10 +102,10 @@ const DataTableLine = ({
     selectOnLineClick,
     variant,
     startsWithAction,
+    startsWithIcon,
+    startColumnWidth,
     endsWithAction,
     endsWithNavigate,
-    disableLineSelection,
-    canToggleLine,
     useDataTableToggle: {
       selectAll,
       deSelectedElements,
@@ -166,25 +166,10 @@ const DataTableLine = ({
     cursor: clickable ? 'pointer' : 'unset',
   };
 
-  const startActionsWidth = useMemo(() => {
-    if (icon && !disableLineSelection) {
-      return ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE;
-    }
-    if (icon) {
-      return ICON_COLUMN_SIZE;
-    }
-    return SELECT_COLUMN_SIZE;
-  }, []);
-
-  const columnsOffset = useMemo(() => {
-    if (startsWithAction) {
-      if (icon && !disableLineSelection) {
-        return 2;
-      }
-      return 1;
-    }
-    return 0;
-  }, []);
+  const columnsOffset = useMemo(
+    () => [startsWithAction, startsWithIcon].filter(Boolean).length,
+    [startsWithAction, startsWithIcon],
+  );
 
   return (
     <Box sx={{
@@ -203,15 +188,15 @@ const DataTableLine = ({
         onClick={variant !== DataTableVariant.widget ? handleRowClick : undefined}
         data-testid={getMainRepresentative(data)}
       >
-        {startsWithAction && (
+        {(startsWithAction || startsWithIcon) && (
           <div
             key={`select_${data.id}`}
             style={{
               ...cellContainerStyle(theme),
-              width: startActionsWidth,
+              width: startColumnWidth,
             }}
           >
-            { !disableLineSelection && canToggleLine && (
+            { startsWithAction && (
               <Checkbox
                 onClick={handleSelectLine}
                 sx={{
@@ -229,7 +214,7 @@ const DataTableLine = ({
               }
               />
             )}
-            {icon && (
+            {(startsWithIcon && icon) && (
               <div style={{ display: 'flex', paddingLeft: 10 }}>
                 {icon(data)}
               </div>
