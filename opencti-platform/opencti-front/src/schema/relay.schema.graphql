@@ -1367,6 +1367,7 @@ type PlatformProtectedSensitiveConfig {
   roles: PlatformProtectedSubConfig!
   rules: PlatformProtectedSubConfig!
   ce_ee_toggle: PlatformProtectedSubConfig!
+  connector_reset: PlatformProtectedSubConfig!
   file_indexing: PlatformProtectedSubConfig!
   platform_organization: PlatformProtectedSubConfig!
 }

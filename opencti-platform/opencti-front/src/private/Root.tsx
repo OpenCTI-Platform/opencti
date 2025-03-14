@@ -117,6 +117,10 @@ const rootSettingsFragment = graphql`
         enabled
         protected_ids
       }
+      connector_reset {
+        enabled
+        protected_ids
+      }
     }
   }
 `;
