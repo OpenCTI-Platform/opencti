@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 import { Field, Form, Formik } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
+import Tooltip from '@mui/material/Tooltip';
 import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
@@ -19,6 +20,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import { truncate } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -178,11 +180,15 @@ const StixSightingRelationshipCreationForm = ({
                   </div>
                 </div>
                 <div className={classes.content}>
-                  <span className={classes.name}>
-                    {isMultipleFrom
-                      ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                      : (getMainRepresentative(fromEntity))}
-                  </span>
+                  <Tooltip title={getMainRepresentative(fromEntity)}>
+                    <span className={classes.name}>
+                      {isMultipleFrom
+                        ? (<em>{t_i18n('Multiple entities selected')}</em>)
+                        : (
+                          truncate(getMainRepresentative(fromEntity), 20)
+                        )}
+                    </span>
+                  </Tooltip>
                 </div>
               </div>
               <div className={classes.middle} style={{ paddingTop: 25 }}>
@@ -227,11 +233,13 @@ const StixSightingRelationshipCreationForm = ({
                   </div>
                 </div>
                 <div className={classes.content}>
-                  <span className={classes.name}>
-                    {isMultipleTo
-                      ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                      : (getMainRepresentative(toEntity))}
-                  </span>
+                  <Tooltip title={getMainRepresentative(toEntity)}>
+                    <span className={classes.name}>
+                      {isMultipleTo
+                        ? (<em>{t_i18n('Multiple entities selected')}</em>)
+                        : (truncate(getMainRepresentative(toEntity), 20))}
+                    </span>
+                  </Tooltip>
                 </div>
 
               </div>
