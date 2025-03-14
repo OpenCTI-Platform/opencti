@@ -1,7 +1,6 @@
 version: 2.1
 orbs:
   slack: circleci/slack@4.13.3
-  ms-teams: cloudradar-monitoring/ms-teams@0.0.1
   kubernetes: circleci/kubernetes@1.3.1
 jobs:
   build_frontend:
@@ -26,9 +25,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
       - persist_to_workspace:
           root: ~/
           paths:
@@ -57,9 +53,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
       - persist_to_workspace:
           root: ~/
           paths:
@@ -86,9 +79,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
       - persist_to_workspace:
           root: ~/
           paths:
@@ -118,9 +108,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   package_rolling:
     working_directory: ~/opencti
@@ -146,9 +133,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   package_rolling_musl:
     working_directory: ~/opencti_musl
@@ -175,9 +159,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   tag_package_rolling_musl:
     working_directory: ~/opencti_musl
@@ -204,9 +185,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   docker_build_platform:
     working_directory: ~/opencti_docker
@@ -254,9 +232,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   docker_build_worker:
     working_directory: ~/opencti_docker
@@ -303,9 +278,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   docker_build_platform_fips:
     working_directory: ~/opencti_docker
@@ -347,10 +319,7 @@ jobs:
           no_output_timeout: 30m
       - slack/notify:
           event: fail
-          template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
+          template: basic_fail_1      
 
   docker_build_worker_fips:
     working_directory: ~/opencti_docker
@@ -392,9 +361,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   docker_build_platform_rolling:
     working_directory: ~/opencti_docker
@@ -440,9 +406,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   docker_build_worker_rolling:
     working_directory: ~/opencti_docker
@@ -487,9 +450,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   docker_build_platform_prerelease:
     working_directory: ~/opencti_docker
@@ -535,9 +495,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   docker_build_worker_prerelease:
     working_directory: ~/opencti_docker
@@ -582,9 +539,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   docker_build_platform_fips_rolling:
     working_directory: ~/opencti_docker
@@ -627,9 +581,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   docker_build_worker_fips_rolling:
     working_directory: ~/opencti_docker
@@ -671,9 +622,6 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
   deploy_testing:
     docker:
@@ -707,9 +655,6 @@ jobs:
       - slack/notify:
           event: pass
           template: basic_success_1
-      - ms-teams/report:
-          only_on_fail: false
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
   notify:
     docker:
       - image: "cimg/base:stable"
@@ -718,9 +663,6 @@ jobs:
       - slack/notify:
           event: pass
           template: basic_success_1
-      - ms-teams/report:
-          only_on_fail: false
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
 workflows:
   opencti:
