@@ -209,7 +209,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const StixCoreObjectsField = (props) => {
-  const { name, style, helpertext, required = false } = props;
+  const { name, style, helpertext, required = false, multiple = true, label } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: entityTypes } = useAttributes();
@@ -263,10 +263,10 @@ const StixCoreObjectsField = (props) => {
         style={style}
         name={name}
         required={required}
-        multiple={true}
+        multiple={multiple}
         textfieldprops={{
           variant: 'standard',
-          label: t_i18n('Entities'),
+          label: label ?? (multiple ? t_i18n('Entities') : t_i18n('Entity')),
           helperText: helpertext,
           onFocus: searchStixCoreObjects,
         }}
@@ -317,7 +317,7 @@ const StixCoreObjectsField = (props) => {
         options={stixCoreObjects}
         onInputChange={searchStixCoreObjects}
         renderOption={(innerProps, option) => (
-          <li {...innerProps}>
+          <li {...innerProps} key={option.id}>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type={option.type} />
             </div>
