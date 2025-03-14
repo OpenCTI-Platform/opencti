@@ -22,8 +22,6 @@ import { RelayError } from '../../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import DeleteDialog from '../../../../components/DeleteDialog';
-import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const deleteOperationPopoverConfirmMutation = graphql`
   mutation DeleteOperationPopoverConfirmMutation($id: ID!) {
