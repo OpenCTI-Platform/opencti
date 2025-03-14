@@ -23,6 +23,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { ListItemButton } from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
 import useAuth from '../../../../utils/hooks/useAuth';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
@@ -36,7 +37,6 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction='up' ref={ref} {...otherProps}>{children}</Slide>
