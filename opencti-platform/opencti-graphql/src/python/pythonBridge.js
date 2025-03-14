@@ -43,8 +43,9 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
       console.log('[PYTHON BRIDGE] executing pythonShell with options', options);
       const shell = new PythonShell(scriptName, options);
       // Messaging is used to get data out of the python process
-      let jsonResult = { status: 'success' };
+      let jsonResult = { status: 'success', messages };
       shell.on('message', (message) => {
+        messages.push(message);
         logApp.info('[PYTHON BRIDGE] message received', { message });
         /* eslint-disable no-console */
         console.log('[PYTHON BRIDGE] message received', message);
@@ -58,8 +59,6 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
       shell.on('stderr', (stderr) => {
         logApp.error('[PYTHON BRIDGE] Error executing python', { stderr });
         messages.push(stderr);
-        /* eslint-disable no-console */
-        console.log('[PYTHON BRIDGE]  Error executing python', stderr);
         //* v8 ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {
           jsonResult = { status: 'error', message: stderr };

@@ -49,6 +49,7 @@ describe('Database sync raw', () => {
       const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
+      expect(execution.messages.length, `Execution messages ${JSON.stringify(execution.messages)}`).toEqual(0);
 
       const queryResultAfter = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 350 } });
 
