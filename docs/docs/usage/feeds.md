@@ -77,6 +77,10 @@ The entries in the file correspond to the information that matches the filters a
 
 ![CSV feed](assets/csv-feed.png)
 
+### Rolling Time & Base Attribute
+
+The *Rolling Time* value (represented in minutes) determines how far back in time OpenCTI should look for data that matches your filters since the last fetch. The *Base Attribute* value determines whether OpenCTI should look for data <ins>created</ins> within the *Rolling Time* period, or data <ins>updated</ins> within the *Rolling Time* period.
+
 ### Duplication
 To easily configure a new CSV feed, you can choose to start from an existing feed configuration and duplicate it.
 The "duplicate" action is accessible from the feed burger menu. 
