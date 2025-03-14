@@ -145,7 +145,7 @@ const feedValidation = (t) => Yup.object().shape({
   rolling_time: Yup.number().required(t('This field is required')),
   feed_types: Yup.array().min(1, t('Minimum one entity type')).required(t('This field is required')),
   feed_public: Yup.bool().nullable(),
-  authorized_members: Yup.array().nullable(),
+  restricted_members: Yup.array().nullable(),
 });
 
 const FeedEditionContainer = (props) => {
@@ -191,8 +191,8 @@ const FeedEditionContainer = (props) => {
       R.assoc('feed_attributes', finalFeedAttributes),
       R.assoc('filters', serializeFilterGroupForBackend(filters)),
       R.assoc(
-        'authorized_members',
-        values.authorized_members.map(({ value }) => ({
+        'restricted_members',
+        values.restricted_members.map(({ value }) => ({
           id: value,
           access_right: 'view',
         })),
@@ -281,7 +281,7 @@ const FeedEditionContainer = (props) => {
     include_header: feed.include_header,
     feed_types: feed.feed_types,
     feed_public: feed.feed_public,
-    authorized_members: convertAuthorizedMembers(feed),
+    restricted_members: convertAuthorizedMembers(feed),
   };
 
   return (
@@ -369,7 +369,7 @@ const FeedEditionContainer = (props) => {
                           style={fieldSpacingContainerStyle}
                           multiple={true}
                           helpertext={t('Leave the field empty to grant all authenticated users')}
-                          name="authorized_members"
+                          name="restricted_members"
                         />
                       )}
                     </Alert>

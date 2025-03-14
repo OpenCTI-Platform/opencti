@@ -41,8 +41,9 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
       };
       const shell = new PythonShell(scriptName, options);
       // Messaging is used to get data out of the python process
-      let jsonResult = { status: 'success' };
+      let jsonResult = { status: 'success', messages };
       shell.on('message', (message) => {
+        messages.push(message);
         /* v8 ignore next */
         try {
           jsonResult = JSON.parse(message);
