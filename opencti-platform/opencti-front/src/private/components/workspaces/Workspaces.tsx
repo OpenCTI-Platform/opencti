@@ -223,10 +223,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
           ) : isXTMHubFeatureEnabled && isNotEmptyField(importFromHubUrl) && (
             <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
               <GradientButton
-                color='primary'
-                variant='outlined'
                 size="small"
-                disableElevation
                 sx={{ marginLeft: theme.spacing(1) }}
                 href={importFromHubUrl}
                 target="_blank"

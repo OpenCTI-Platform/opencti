@@ -143,10 +143,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       </ToggleButton>
       {isXTMHubFeatureEnabled && isNotEmptyField(importFromHubUrl) && (
         <GradientButton
-          color='primary'
-          variant='outlined'
           size="small"
-          disableElevation
           sx={{ marginLeft: theme.spacing(1) }}
           href={importFromHubUrl}
           target="_blank"
