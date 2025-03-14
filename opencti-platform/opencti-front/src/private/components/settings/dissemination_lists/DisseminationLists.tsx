@@ -128,7 +128,7 @@ const DisseminationLists = () => {
       id: 'name',
       label: 'Name',
       isSortable: true,
-      percentWidth: 20,
+      percentWidth: 25,
     },
     description: {
       id: 'description',

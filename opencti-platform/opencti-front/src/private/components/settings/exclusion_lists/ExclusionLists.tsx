@@ -159,7 +159,7 @@ const ExclusionLists = () => {
       id: 'name',
       label: t_i18n('Name'),
       isSortable: true,
-      percentWidth: 15,
+      percentWidth: 20,
     },
     description: {
       id: 'description',
