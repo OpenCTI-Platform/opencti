@@ -71,9 +71,9 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           </Select>
         </FormControl>
         <DatePicker
-          value={config.startDate ? new Date(config.startDate) : new Date()}
+          value={config.startDate ? new Date(config.startDate) : null}
           label={t_i18n('Start date')}
-          disableFuture={true}
+          disableFuture
           disabled={!!config.relativeDate}
           onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('startDate', value)}
           slotProps={{
@@ -85,10 +85,10 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           }}
         />
         <DatePicker
-          value={config.startDate}
+          value={config.endDate ? new Date(config.endDate) : null}
           label={t_i18n('End date')}
           disabled={!!config.relativeDate}
-          disableFuture={true}
+          disableFuture
           onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('endDate', value)}
           slotProps={{
             textField: {
