@@ -155,3 +155,14 @@ export const specialFilterKeysWhoseValueToResolve = [
   RELATION_FROM_FILTER,
   RELATION_TO_FILTER
 ];
+
+// special filter values
+export const ME_FILTER_VALUE = '@me';
+export const filterKeysWithMeValue = [
+  ASSIGNEE_FILTER,
+  PARTICIPANT_FILTER,
+  CONTEXT_CREATOR_FILTER,
+  CREATOR_FILTER,
+  CONTEXT_ENTITY_ID_FILTER,
+  MEMBERS_USER_FILTER,
+];

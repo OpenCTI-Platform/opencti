@@ -10,7 +10,9 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  filterKeysWithMeValue,
   INSTANCE_REGARDING_OF,
+  ME_FILTER_VALUE,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
@@ -280,6 +282,26 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
 };
 
 /**
+ * Replace @me by the user id in filter whose values can contain user ids
+ */
+export const replaceMeValuesInFilters = (filterGroup: FilterGroup, userId: string) => {
+  const filtersResult = { ...filterGroup };
+  filtersResult.filters.forEach((filter) => {
+    const { key } = filter;
+    const arrayKeys = Array.isArray(key) ? key : [key];
+    if (arrayKeys.some((filterKey) => filterKeysWithMeValue.includes(filterKey))) {
+      // replace ME_FILTER_VALUE with the id of the user
+      if (filter.values.includes(ME_FILTER_VALUE)) {
+        // eslint-disable-next-line no-param-reassign
+        filter.values = filter.values.map((v) => (v === ME_FILTER_VALUE ? userId : v));
+      }
+    }
+  });
+  filtersResult.filterGroups.forEach((fg) => replaceMeValuesInFilters(fg, userId));
+  return filtersResult;
+};
+
+/**
  * Check the filter keys exist in the schema
  */
 const checkFilterKeys = (filterGroup: FilterGroup) => {
@@ -327,15 +349,17 @@ export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersChecking
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
  */
-export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean } = {}) => {
-  if (!filterGroup) {
+export const checkAndConvertFilters = (inputFilterGroup: FilterGroup | null | undefined, userId: string, opts: { noFiltersChecking?: boolean } = {}) => {
+  if (!inputFilterGroup) {
     return undefined;
   }
   // 01. check filters validity
   const { noFiltersChecking = false } = opts;
-  checkFiltersValidity(filterGroup, noFiltersChecking);
-  // 02. translate the filter keys on relation refs and return the converted filters
-  if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
+  checkFiltersValidity(inputFilterGroup, noFiltersChecking);
+  // 02. replace dynamic @me value
+  const filterGroup = replaceMeValuesInFilters(inputFilterGroup, userId);
+  // 03. convert relation refs
+  if (!noFiltersChecking && isFilterGroupNotEmpty(inputFilterGroup)) {
     return convertRelationRefsFilterKeys(filterGroup);
   }
 
