@@ -22,7 +22,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import type { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
@@ -119,15 +119,14 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(ATTACK_PATTERN_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     x_mitre_id: Yup.string().nullable(),
-  };
-  const attackPatternValidator = useSchemaCreationValidation(
-    ATTACK_PATTERN_TYPE,
-    basicShape,
-  );
+  }, mandatoryAttributes);
+
+  const attackPatternValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<AttackPatternCreationMutation>(
     attackPatternMutation,
@@ -137,11 +136,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
 
   const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (
     values,
-    {
-      setSubmitting,
-      setErrors,
-      resetForm,
-    },
+    { setSubmitting, setErrors, resetForm },
   ) => {
     const input: AttackPatternCreationMutation$variables['input'] = {
       name: values.name,
@@ -196,6 +191,8 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
     <Formik<AttackPatternAddInput>
       initialValues={initialValues}
       validationSchema={attackPatternValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -205,6 +202,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             detectDuplicate={['Attack-Pattern']}
           />
@@ -212,6 +210,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             component={TextField}
             name="x_mitre_id"
             label={t_i18n('External ID')}
+            required={(mandatoryAttributes.includes('x_mitre_id'))}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
@@ -219,6 +218,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -230,26 +230,31 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
           />
           <KillChainPhasesField
             name="killChainPhases"
+            required={(mandatoryAttributes.includes('killChainPhases'))}
             style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
@@ -308,7 +313,7 @@ const AttackPatternCreation = ({
   );
   const CreateAttackPatternControlledDialContextual = CreateAttackPatternControlledDial({
     onOpen: handleOpen,
-    onClose: () => {},
+    onClose: () => { },
   });
   const renderClassic = () => (
     <Drawer
