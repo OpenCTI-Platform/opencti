@@ -39,16 +39,11 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         scriptPath,
         args,
       };
-      /* eslint-disable no-console */
-      console.log('[PYTHON BRIDGE] executing pythonShell with options', options);
       const shell = new PythonShell(scriptName, options);
       // Messaging is used to get data out of the python process
       let jsonResult = { status: 'success', messages };
       shell.on('message', (message) => {
         messages.push(message);
-        logApp.info('[PYTHON BRIDGE] message received', { message });
-        /* eslint-disable no-console */
-        console.log('[PYTHON BRIDGE] message received', message);
         /* v8 ignore next */
         try {
           jsonResult = JSON.parse(message);
