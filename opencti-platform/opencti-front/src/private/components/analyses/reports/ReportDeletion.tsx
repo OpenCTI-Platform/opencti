@@ -3,6 +3,7 @@ import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertTitle, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, FormControlLabel, FormGroup } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import DialogTitle from '@mui/material/DialogTitle';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Security from '../../../../utils/Security';
@@ -11,7 +12,6 @@ import Transition from '../../../../components/Transition';
 import { QueryRenderer } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
 import { ReportDeletionQuery$data } from './__generated__/ReportDeletionQuery.graphql';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const reportDeletionQuery = graphql`
   query ReportDeletionQuery($id: String) {
