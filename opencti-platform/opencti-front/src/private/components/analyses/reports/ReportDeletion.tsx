@@ -11,6 +11,7 @@ import Transition from '../../../../components/Transition';
 import { QueryRenderer } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
 import { ReportDeletionQuery$data } from './__generated__/ReportDeletionQuery.graphql';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const reportDeletionQuery = graphql`
   query ReportDeletionQuery($id: String) {
@@ -90,6 +91,9 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
         slotProps={{ paper: { elevation: 1 } }}
         onClose={handleCloseDelete}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to delete this report?')}
@@ -137,7 +141,7 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
             {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -19,6 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const reportPopoverDeletionQuery = graphql`
   query ReportPopoverDeletionQuery($id: String) {
@@ -73,6 +74,9 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
       slotProps={{ paper: { elevation: 1 } }}
       onClose={handleCloseDelete}
     >
+      <DialogTitle>
+        {t_i18n('Are you sure?')}
+      </DialogTitle>
       <DialogContent>
         <DialogContentText>
           {t_i18n('Do you want to delete this report?')}
@@ -120,7 +124,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
           {t_i18n('Cancel')}
         </Button>
         <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-          {t_i18n('Delete')}
+          {t_i18n('Confirm')}
         </Button>
       </DialogActions>
     </Dialog>

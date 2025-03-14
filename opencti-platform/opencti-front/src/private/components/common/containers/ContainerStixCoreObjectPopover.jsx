@@ -412,7 +412,7 @@ class ContainerStixCoreObjectPopover extends Component {
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this entity?')}
-              <Alert severity="warning" style={{ marginTop: 20 }}>
+              <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
                 {t(
                   'You are about to completely delete the entity from the platform (not only from the container), be sure of what you are doing.',
                 )}

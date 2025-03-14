@@ -76,7 +76,7 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
     setOpenEdition(true);
     handleMenuClose();
   };
-  const deletion = useDeletion({});
+  const deletion = useDeletion({ handleClose: handleMenuClose });
   const { handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     commitMutation({

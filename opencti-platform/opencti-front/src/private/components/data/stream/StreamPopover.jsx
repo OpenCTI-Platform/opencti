@@ -185,14 +185,14 @@ class StreamCollectionPopover extends Component {
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Confirm')}
+              {t('Cancel')}
             </Button>
             <Button
               color="secondary"
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

@@ -38,6 +38,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import DialogTitle from '@mui/material/DialogTitle';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
@@ -450,6 +451,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         slots={{ transition: Transition }}
         onClose={handleCloseRemove}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to remove this job?')}
@@ -464,7 +468,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             onClick={() => handleRemoveJob(file?.id)}
             disabled={deleting}
           >
-            {t_i18n('Delete')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
