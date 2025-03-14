@@ -71,6 +71,15 @@ cd docker
 
     - Check the [OpenCTI Integration User Permissions in OpenSearch/ElasticSearch](rollover.md#opencti-integration-user-permissions-in-opensearchelasticsearch) for detailed information about the user permissions required for the OpenSearch/ElasticSearch integration.
 
+!!! warning "RabbitMQ configuration"
+
+    - We strongly recommend that you add the following RabbitMQ parameter:
+
+    ```bash
+    max_message_size = 536870912
+    consumer_timeout = 86400000
+    ```
+
 Before running the `docker-compose` command, the `docker-compose.yml` file should be configured. By default, the `docker-compose.yml` file is using environment variables available in the file `.env.sample`.
 
 You can either rename the file `.env.sample` as `.env` and enter the values or just directly edit the `docker-compose.yml` with the values for your environment.
