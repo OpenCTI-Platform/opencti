@@ -1,83 +1,94 @@
-import Button from '@mui/material/Button';
+import React from 'react';
 import { Field, Form, Formik } from 'formik';
-import React, { FunctionComponent } from 'react';
-import { graphql } from 'react-relay';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { TextField } from 'formik-mui';
+import { Button, useTheme } from '@mui/material';
 import * as Yup from 'yup';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
-import useHelper from 'src/utils/hooks/useHelper';
-import { useTheme } from '@mui/styles';
-import { useFormatter } from '../../../../components/i18n';
+import { ConnectionHandler, graphql } from 'react-relay';
+import { DataID, RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
 import MarkdownField from '../../../../components/fields/MarkdownField';
-import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
-import { insertNode } from '../../../../utils/store';
-import CaseTemplateTasks from '../../common/form/CaseTemplateTasks';
-import { CaseTemplateLinesPaginationQuery$variables } from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
-import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
+import { PaginationOptions } from '../../../../components/list_lines';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
-const caseTemplateMutation = graphql`
-  mutation CaseTemplateCreationMutation($input: CaseTemplateAddInput!) {
-    caseTemplateAdd(input: $input) {
-      ...CaseTemplateLine_node
+const roleMutation = graphql`
+  mutation RoleCreationMutation($input: RoleAddInput!) {
+    roleAdd(input: $input) {
+      ...RoleLine_node
     }
   }
 `;
 
-const CreateCaseTemplateControlledDial = (
-  props: DrawerControlledDialProps,
-) => (
+type FormValuesType = {
+  name: string,
+  description: string,
+};
+
+const CreateRoleControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType="Case-Template"
-    size="medium"
+    entityType='Role'
+    entityPrefix={false}
+    size='medium'
     {...props}
   />
 );
 
-interface CaseTemplateCreationProps {
-  paginationOptions?: CaseTemplateLinesPaginationQuery$variables;
-}
-
-const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
-  paginationOptions,
+const RoleCreation = ({ paginationOptions }: {
+  paginationOptions: PaginationOptions
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
+  const theme = useTheme();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const caseTemplateValidation = Yup.object().shape({
+
+  const roleValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
-    tasks: Yup.array(),
   });
-  const initialValues = {
-    name: '',
-    description: '',
-    tasks: [],
+
+  const sharedUpdater = (
+    store: RecordSourceSelectorProxy,
+    userId: DataID,
+    newEdge: RecordProxy,
+  ) => {
+    const userProxy = store.get(userId);
+    if (!userProxy) return;
+
+    const conn = ConnectionHandler.getConnection(
+      userProxy,
+      'Pagination_roles',
+      paginationOptions,
+    );
+    if (!conn) return;
+
+    ConnectionHandler.insertEdgeBefore(conn, newEdge);
   };
+
   const onSubmit = (
-    values: typeof initialValues,
+    values: FormValuesType,
     { setSubmitting, resetForm }: {
       setSubmitting: (flag: boolean) => void,
       resetForm: () => void,
     },
   ) => {
-    const finalValues = {
-      ...values,
-      tasks: values.tasks.map(({ value }) => value),
-    };
-    setSubmitting(true);
     commitMutation({
       ...defaultCommitMutation,
-      mutation: caseTemplateMutation,
-      variables: { input: finalValues },
+      mutation: roleMutation,
+      variables: {
+        input: values,
+      },
       updater: (store: RecordSourceSelectorProxy) => {
-        insertNode(
+        const payload = store.getRootField('roleAdd');
+        if (!payload) return;
+
+        const newEdge = payload.setLinkedRecord(payload, 'node');
+        const container = store.getRoot();
+        sharedUpdater(
           store,
-          'Pagination_caseTemplates',
-          paginationOptions,
-          'caseTemplateAdd',
+          container.getDataID(),
+          newEdge,
         );
       },
       setSubmitting,
@@ -88,24 +99,28 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
     });
   };
 
+  const initialValues: FormValuesType = {
+    name: '',
+    description: '',
+  };
+
   return (
     <Drawer
-      title={t_i18n('Create a case template')}
+      title={t_i18n('Create a role')}
       variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreateCaseTemplateControlledDial : undefined}
+      controlledDial={isFABReplaced ? CreateRoleControlledDial : undefined}
     >
       {({ onClose }) => (
         <Formik
           initialValues={initialValues}
-          validationSchema={caseTemplateValidation}
+          validationSchema={roleValidation}
           onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+          {({ submitForm, handleReset, isSubmitting, isValid }) => (
             <Form>
               <Field
                 component={TextField}
-                variant="standard"
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth={true}
@@ -116,12 +131,8 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                 label={t_i18n('Description')}
                 fullWidth={true}
                 multiline={true}
-                rows="4"
+                rows={4}
                 style={{ marginTop: 20 }}
-              />
-              <CaseTemplateTasks
-                onChange={setFieldValue}
-                values={values.tasks}
               />
               <div style={{
                 marginTop: 20,
@@ -140,7 +151,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                   variant="contained"
                   color="secondary"
                   onClick={submitForm}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !isValid}
                   style={{ marginLeft: theme.spacing(2) }}
                 >
                   {t_i18n('Create')}
@@ -154,4 +165,4 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
   );
 };
 
-export default CaseTemplateCreation;
+export default RoleCreation;

@@ -9,7 +9,7 @@ export default class UsersSettingsPage {
   }
 
   getAddUserButton() {
-    return this.page.getByLabel('Add');
+    return this.page.getByRole('button', { name: 'Create User' });
   }
 
   getUserInList(userName: string) {

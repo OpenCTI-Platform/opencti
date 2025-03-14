@@ -248,9 +248,9 @@ const ExclusionLists = () => {
             disableNavigation
             preloadedPaginationProps={preloadedPaginationProps}
             actions={(row) => <ExclusionListPopover data={row} paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
+            createButton={<ExclusionListCreation paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
           />
         )}
-        <ExclusionListCreation paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />
       </PageContainer>
     </>
   );

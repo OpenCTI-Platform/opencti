@@ -184,9 +184,9 @@ const MarkingDefinitions = () => {
           disableToolBar
           disableSelectAll
           canToggleLine={false}
+          createButton={<MarkingDefinitionCreation paginationOptions={queryPaginationOptions}/>}
         />
       )}
-      <MarkingDefinitionCreation paginationOptions={queryPaginationOptions}/>
     </div>
   );
 };

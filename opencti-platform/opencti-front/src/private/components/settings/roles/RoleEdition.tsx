@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -10,44 +10,66 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
-import { RoleEdition_role$data } from './__generated__/RoleEdition_role.graphql';
+import { RoleEdition_role$key } from './__generated__/RoleEdition_role.graphql';
+import { RolePopoverEditionQuery$data } from './__generated__/RolePopoverEditionQuery.graphql';
+import useHelper from '../../../../utils/hooks/useHelper';
+import UpdateRoleControlledDial from '../../../../components/UpdateEntityControlledDial';
 
-interface RoleEditionProps {
-  role: RoleEdition_role$data
+const RoleEditionFragment = graphql`
+  fragment RoleEdition_role on Role {
+    id
+    ...RoleEditionOverview_role
+    ...RoleEditionCapabilities_role
+    editContext {
+      name
+      focusOn
+    }
+  }
+`;
+
+interface RoleEditionDrawerProps {
+  roleRef: RolePopoverEditionQuery$data['role']
   handleClose?: () => void
   open?: boolean
   disabled?: boolean
 }
 
-const RoleEdition: FunctionComponent<RoleEditionProps> = ({
+const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
   handleClose = () => {},
-  role,
+  roleRef,
   open,
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const [currentTab, setTab] = useState(0);
-  const { editContext } = role;
-
+  const [currentTab, setCurrentTab] = useState(0);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(roleEditionCapabilitiesLinesSearch);
+  const role = useFragment<RoleEdition_role$key>(RoleEditionFragment, roleRef);
 
   return (
     <Drawer
       title={t_i18n('Update a role')}
-      variant={open == null ? DrawerVariant.updateWithPanel : undefined}
+      variant={open == null && !isFABReplaced
+        ? DrawerVariant.updateWithPanel
+        : undefined}
       open={open}
       onClose={handleClose}
-      context={editContext}
+      context={role?.editContext}
       disabled={disabled}
+      controlledDial={isFABReplaced
+        ? UpdateRoleControlledDial
+        : undefined
+      }
     >
-      <>
+      {role ? (<>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
+          <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
             <Tab label={t_i18n('Overview')} />
             <Tab label={t_i18n('Capabilities')} />
           </Tabs>
         </Box>
-        {currentTab === 0 && <RoleEditionOverview role={role} context={editContext} />}
+        {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
         {currentTab === 1 && queryRef && (
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inline} />}
@@ -55,23 +77,34 @@ const RoleEdition: FunctionComponent<RoleEditionProps> = ({
             <RoleEditionCapabilities role={role} queryRef={queryRef} />
           </React.Suspense>
         )}
-      </>
+      </>)
+        : (<Loader />)}
     </Drawer>
   );
 };
 
-const RoleEditionFragment = createFragmentContainer(RoleEdition, {
-  role: graphql`
-    fragment RoleEdition_role on Role {
-      id
-      ...RoleEditionOverview_role
-      ...RoleEditionCapabilities_role
-      editContext {
-        name
-        focusOn
-      }
-    }
-  `,
-});
+interface RoleEditionProps {
+  roleEditionData?: RolePopoverEditionQuery$data
+  handleClose?: () => void
+  open?: boolean
+  disabled?: boolean
+}
 
-export default RoleEditionFragment;
+const RoleEdition: FunctionComponent<RoleEditionProps> = ({
+  roleEditionData,
+  handleClose = () => {},
+  open,
+  disabled = false,
+}) => {
+  if (!roleEditionData) return <Loader />;
+  return (
+    <RoleEditionDrawer
+      roleRef={roleEditionData.role}
+      handleClose={handleClose}
+      open={open}
+      disabled={disabled}
+    />
+  );
+};
+
+export default RoleEdition;
