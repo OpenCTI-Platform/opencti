@@ -64,8 +64,10 @@ export interface DataTableContextProps {
   disableNavigation: DataTableProps['disableNavigation']
   disableToolBar: DataTableProps['disableToolBar']
   disableSelectAll: DataTableProps['disableSelectAll']
+  disableLineSelection: DataTableProps['disableLineSelection']
   selectOnLineClick: DataTableProps['selectOnLineClick']
   onLineClick: DataTableProps['onLineClick']
+  canToggleLine: DataTableProps['canToggleLine']
   page: number
   setPage:Dispatch<SetStateAction<number>>
   tableWidthState: [number, Dispatch<SetStateAction<number>>]
