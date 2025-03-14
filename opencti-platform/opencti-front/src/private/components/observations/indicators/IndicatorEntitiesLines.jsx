@@ -25,7 +25,7 @@ class IndicatorEntitiesLines extends Component {
 
   componentDidUpdate(prevProps) {
     // Compute the new count based on the current data
-    const globalCount = (this.props.data.stixCoreRelationships?.edges || []).length;
+    const globalCount = (this.props.data?.stixCoreRelationships?.edges || []).length;
 
     const updatedProps = {
       data: {

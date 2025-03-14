@@ -2448,16 +2448,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-react@npm:9.4.0":
-  version: 9.4.0
-  resolution: "@ckeditor/ckeditor5-react@npm:9.4.0"
+"@ckeditor/ckeditor5-react@npm:9.5.0":
+  version: 9.5.0
+  resolution: "@ckeditor/ckeditor5-react@npm:9.5.0"
   dependencies:
     "@ckeditor/ckeditor5-integrations-common": "npm:^2.2.2"
-    prop-types: "npm:^15.7.2"
   peerDependencies:
     ckeditor5: ">=42.0.0 || ^0.0.0-nightly"
     react: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/426aaa435e4c550cc4ba08c9eb961e110a1e9f843e175a4f26a93976b1ff64bb8bee9c997822b520ebda6a84959a457db5156bf32ec3753a4e5673731cfa17cf
+  checksum: 10/f36fdb8c18026ea7e0920d7f58dd49305431656ad2ae22b329583724aedbd97a527ff470ceb1850c6967aecf6975763618ec3a69af461124b8ffad3f0bfcc671
   languageName: node
   linkType: hard
 
@@ -6384,9 +6383,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:5.24.3":
-  version: 5.24.3
-  resolution: "@rjsf/core@npm:5.24.3"
+"@rjsf/core@npm:5.24.7":
+  version: 5.24.7
+  resolution: "@rjsf/core@npm:5.24.7"
   dependencies:
     lodash: "npm:^4.17.21"
     lodash-es: "npm:^4.17.21"
@@ -6396,13 +6395,13 @@ __metadata:
   peerDependencies:
     "@rjsf/utils": ^5.24.x
     react: ^16.14.0 || >=17
-  checksum: 10/675212de9b3f8aa3909aba17be4ccc873a72969fb37662cab64b06b73b0eb8c66d606bd91763b378634d17022c62d7d11251f6315048f4f2bf22ada45b6f9209
+  checksum: 10/422773dfb5dbf7491c150b975249ee527e2238817a39fba09930c58c7602b52e1e85bf6977740f291119a0d5d78ad666503e37d6ef1ed94ef6516597a3895203
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:5.24.3":
-  version: 5.24.3
-  resolution: "@rjsf/mui@npm:5.24.3"
+"@rjsf/mui@npm:5.24.7":
+  version: 5.24.7
+  resolution: "@rjsf/mui@npm:5.24.7"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
@@ -6411,13 +6410,13 @@ __metadata:
     "@rjsf/core": ^5.24.x
     "@rjsf/utils": ^5.24.x
     react: ">=17"
-  checksum: 10/deb585818ce2d45a7778f1ac13e8a860b5b5477ec65ee767786113b753cc479b12bda8b7fabb07a8149ff61f04e2592ab0b1bb26038319c91325ad745453c981
+  checksum: 10/921e78e6e97d499a45d5ba1094525e1e5bed0554e0aad28b52b0bfb07bc3289b0483234afa19b7d77a0f84d998156880bf30fdabfcf68410f618f69b24f536a1
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:5.24.3":
-  version: 5.24.3
-  resolution: "@rjsf/utils@npm:5.24.3"
+"@rjsf/utils@npm:5.24.7":
+  version: 5.24.7
+  resolution: "@rjsf/utils@npm:5.24.7"
   dependencies:
     json-schema-merge-allof: "npm:^0.8.1"
     jsonpointer: "npm:^5.0.1"
@@ -6426,7 +6425,7 @@ __metadata:
     react-is: "npm:^18.2.0"
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 10/6be55c3bb297eb35c25461b50e0f5897972cc085987b4f86ab6288c1beae09244f8d22a9f29b330d5a211c5dc8752be4ced625c1851a7be67672725a0ab6f2aa
+  checksum: 10/2dade79a1af8350ba03a8c12c06f6090cd16f3ab522befa3a25ae8636abababa22a5a71e4c2c60062779fcce03952beb6ecedf6445c668f1f3453f1fda4a55fb
   languageName: node
   linkType: hard
 
@@ -8577,6 +8576,17 @@ __metadata:
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
   checksum: 10/b7a5f660ea53ba9c2a745bf5ad77ad8bf4f1338e13ccc3f9f09f810267d6c638c03dac88b55dae8dc98b79c57d2d6835be651d58d2af97c174f43d289a9fd007
+  languageName: node
+  linkType: hard
+
+"axios@npm:1.8.2":
+  version: 1.8.2
+  resolution: "axios@npm:1.8.2"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.0"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10/d4328758128d0602cc809a8e7627622cb7839b379eae5e4d6b9d603dd4d5fb89159985630243ec107cf5c675cd8825dba737a319dff9499f3b7688d9a69ec9ed
   languageName: node
   linkType: hard
 
@@ -12254,10 +12264,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filigran-icon@npm:0.14.0":
-  version: 0.14.0
-  resolution: "filigran-icon@npm:0.14.0"
-  checksum: 10/e91a5a0697eab47e9a122cba72d3fbd587b3011d29fb6fbd5c48512ce6e7bc6e4d7893cec760f652692d0c70e83a84be1cca80790f232c9b76804995e43c1b8e
+"filigran-icon@npm:0.14.1":
+  version: 0.14.1
+  resolution: "filigran-icon@npm:0.14.1"
+  checksum: 10/12165cdb0501f160de28fabd6b3e175dca14549ba5f7d2a21640b82d0fb795ea5ba325f7504155cb881d218350380d1b2faa99b3e2eba2e0e1382b5dc29ed141
   languageName: node
   linkType: hard
 
@@ -13449,10 +13459,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-to-pdfmake@npm:2.5.21":
-  version: 2.5.21
-  resolution: "html-to-pdfmake@npm:2.5.21"
-  checksum: 10/4be6d4ca1ba4b94ab17897e11002eea3beeef3ddc85e321e3df393caff9163f3031efb599e6acbb0a8652acb310c4e601b8a26516575cc62ea7ab3761c7fd462
+"html-to-pdfmake@npm:2.5.23":
+  version: 2.5.23
+  resolution: "html-to-pdfmake@npm:2.5.23"
+  checksum: 10/a155e74a67397f2df6c884ecfa986d9d4f492cb72ad6a794b449d63b39de65e2c0653a894509faf631cfcbe44c3024f097f7a347ab47ac66c412160553c296e2
   languageName: node
   linkType: hard
 
@@ -16894,7 +16904,7 @@ __metadata:
   resolution: "opencti-front@workspace:."
   dependencies:
     "@analytics/google-analytics": "npm:1.1.0"
-    "@ckeditor/ckeditor5-react": "npm:9.4.0"
+    "@ckeditor/ckeditor5-react": "npm:9.5.0"
     "@date-fns/upgrade": "npm:1.0.3"
     "@date-io/date-fns": "npm:3.2.0"
     "@fontsource/geologica": "npm:5.1.1"
@@ -16908,9 +16918,9 @@ __metadata:
     "@mui/utils": "npm:5.16.14"
     "@mui/x-date-pickers": "npm:6.20.2"
     "@playwright/test": "npm:1.49.1"
-    "@rjsf/core": "npm:5.24.3"
-    "@rjsf/mui": "npm:5.24.3"
-    "@rjsf/utils": "npm:5.24.3"
+    "@rjsf/core": "npm:5.24.7"
+    "@rjsf/mui": "npm:5.24.7"
+    "@rjsf/utils": "npm:5.24.7"
     "@rollup/plugin-graphql": "npm:2.0.5"
     "@testing-library/dom": "npm:10.4.0"
     "@testing-library/jest-dom": "npm:6.6.3"
@@ -16935,7 +16945,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:4.3.4"
     analytics: "npm:0.8.16"
     apexcharts: "npm:4.5.0"
-    axios: "npm:1.7.9"
+    axios: "npm:1.8.2"
     babel-plugin-relay: "npm:17.0.0"
     buffer: "npm:6.0.3"
     chokidar: "npm:3.6.0"
@@ -16963,7 +16973,7 @@ __metadata:
     eslint-plugin-react: "npm:7.37.4"
     express: "npm:4.21.2"
     extract-files: "npm:13.0.0"
-    filigran-icon: "npm:0.14.0"
+    filigran-icon: "npm:0.14.1"
     filigran-ui: "npm:0.32.1"
     formik: "npm:2.4.6"
     formik-mui: "npm:5.0.0-alpha.0"
@@ -16974,7 +16984,7 @@ __metadata:
     graphql-ws: "npm:5.16.2"
     html-react-parser: "npm:5.2.2"
     html-to-image: "npm:1.11.11"
-    html-to-pdfmake: "npm:2.5.21"
+    html-to-pdfmake: "npm:2.5.23"
     http-proxy-middleware: "npm:3.0.3"
     i18n-auto-translation: "npm:2.1.1"
     invert-color: "npm:2.0.0"

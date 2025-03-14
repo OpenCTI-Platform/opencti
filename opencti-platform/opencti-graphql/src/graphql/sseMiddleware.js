@@ -34,9 +34,9 @@ import {
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   SYSTEM_USER
 } from '../utils/access';
-import { streamEventId, FROM_START_STR, utcDate } from '../utils/format';
+import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
 import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
@@ -52,6 +52,7 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/generate-message';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
+import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -225,7 +226,6 @@ const createSseMiddleware = () => {
   const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = processor ? await processor.info() : {};
     req.on('close', () => {
-      req.finished = true;
       client.close();
       delete broadcastClients[client.id];
       logApp.info(`[STREAM] Closing stream processor for ${client.id}`);
@@ -254,10 +254,10 @@ const createSseMiddleware = () => {
         channel.delay = d;
       },
       setLastEventId: (id) => { lastEventId = id; },
-      connected: () => !req.finished,
+      connected: () => !res.finished,
       sendEvent: (eventId, topic, event) => {
-        if (req.finished) {
-          // Write on an already terminated response
+        // Write on an already terminated response
+        if (res.finished || !res.writable) {
           return;
         }
         let message = '';
@@ -288,7 +288,7 @@ const createSseMiddleware = () => {
         logApp.info('[STREAM] Closing SSE channel', { clientId: channel.userId });
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         channel.expirationTime = 0;
-        if (!req.finished) {
+        if (!res.finished) {
           try {
             res.end();
           } catch (e) {
@@ -298,7 +298,7 @@ const createSseMiddleware = () => {
       },
     };
     const heartTimer = () => {
-      if (lastEventId && !req.finished) {
+      if (lastEventId) {
         const [idTime] = lastEventId.split('-');
         const idDate = utcDate(parseInt(idTime, 10)).toISOString();
         channel.sendEvent(lastEventId, 'heartbeat', idDate);
@@ -690,6 +690,7 @@ const createSseMiddleware = () => {
           return channel.connected();
         };
         const queryOptions = await convertFiltersToQueryOptions(streamFilters, {
+          defaultTypes: [STIX_CORE_RELATIONSHIPS, STIX_SIGHTING_RELATIONSHIP, ABSTRACT_STIX_OBJECT],
           after: startIsoDate,
           before: recoverIsoDate
         });
