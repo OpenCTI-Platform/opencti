@@ -113,11 +113,9 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     handleOpenDelete();
   };
 
-  const handleWidgetConfigOpen = (isOpen: boolean) => {
-    setIsWidgetFormOpen(isOpen);
-    if (!isOpen) {
-      setSelectedWidget(undefined);
-    }
+  const handleCloseWidgetConfig = () => {
+    setIsWidgetFormOpen(false);
+    setSelectedWidget(undefined);
   };
 
   const closeDeleteConfirm = () => {
@@ -237,7 +235,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
 
       <WidgetConfig
         open={isWidgetFormOpen}
-        setOpen={handleWidgetConfigOpen}
+        onClose={handleCloseWidgetConfig}
         onComplete={handleUpsertWidget}
         widget={selectedWidget?.widget}
         disabledSteps={[0]}

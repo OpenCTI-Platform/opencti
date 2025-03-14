@@ -26,6 +26,7 @@ import WorkspaceWidgetConfig from 'src/private/components/workspaces/dashboards/
 import WorkspaceHeaderTagManager from '@components/workspaces/workspaceHeader/WorkspaceHeaderTagManager';
 import DashboardTimeFilters from '@components/workspaces/dashboards/DashboardTimeFilters';
 import { InvestigationGraph_workspace$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_workspace.graphql';
+import { WorkspaceHeaderToStixReportBundleQuery$data } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderToStixReportBundleQuery.graphql';
 
 const workspaceHeaderToStixReportBundleQuery = graphql`
   query WorkspaceHeaderToStixReportBundleQuery($id: String!) {
@@ -41,9 +42,9 @@ type WorkspaceHeaderProps = {
   adjust: () => void;
   handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void
   config?: {
-    startDate: object
-    endDate: object
-    relativeDate: string
+    startDate: string | null
+    endDate: string | null
+    relativeDate: string | null
   },
   handleAddWidget: () => void;
 };
@@ -82,9 +83,9 @@ const WorkspaceHeader = ({
     fetchQuery(workspaceHeaderToStixReportBundleQuery, { id: workspace.id })
       .toPromise()
       .then((data) => {
-        const toStixBundleData = data?.workspace?.toStixReportBundle;
-        if (toStixBundleData) {
-          const blob = new Blob([toStixBundleData], { type: 'text/json' });
+        const result = data as WorkspaceHeaderToStixReportBundleQuery$data;
+        if (result && result.workspace?.toStixReportBundle) {
+          const blob = new Blob([result.workspace.toStixReportBundle], { type: 'text/json' });
           const fileName = `${nowUTC()}_(export-stix-report)_${workspace.name}.json`;
           fileDownload(blob, fileName);
         }
