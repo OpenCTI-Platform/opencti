@@ -66,6 +66,7 @@ import './exclusionList/exclusionList';
 import './draftWorkspace/draftWorkspace';
 import './fintelTemplate/fintelTemplate';
 import './disseminationList/disseminationList';
+import './savedFilter/savedFilter';
 
 // incomplete modules
 import './report/report';
@@ -127,4 +128,5 @@ import './exclusionList/exclusionList-graphql';
 import './draftWorkspace/draftWorkspace-graphql';
 import './fintelTemplate/fintelTemplate-graphql';
 import './disseminationList/disseminationList-graphql';
+import './savedFilter/savedFilter-graphql';
 // endregion
