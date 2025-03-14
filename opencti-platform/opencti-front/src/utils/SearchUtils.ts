@@ -1,4 +1,4 @@
-import { NavigateFunction } from 'react-router/dist/lib/hooks';
+import { NavigateFunction } from 'react-router-dom';
 import { emptyFilterGroup } from './filters/filtersUtils';
 
 export const handleSearchByKeyword = (searchKeyword: string, searchScope: string, navigate: NavigateFunction) => {
