@@ -4,7 +4,7 @@ import DataTableHeaders from './DataTableHeaders';
 import { DataTableBodyProps, DataTableLineProps, DataTableVariant } from '../dataTableTypes';
 import DataTableLine, { DataTableLinesDummy } from './DataTableLine';
 import { useDataTableContext } from './DataTableContext';
-import { SELECT_COLUMN_SIZE } from './DataTableHeader';
+import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
 
 const DataTableBody = ({
@@ -21,7 +21,6 @@ const DataTableBody = ({
     variant,
     resolvePath,
     tableWidthState: [tableWidth, setTableWidth],
-    startsWithAction,
     endsWithAction,
     actions,
     columns,
@@ -38,6 +37,8 @@ const DataTableBody = ({
     useDataTablePaginationLocalStorage: {
       viewStorage: { filters },
     },
+    disableLineSelection,
+    icon,
   } = useDataTableContext();
 
   const resolvedData = useMemo(() => {
@@ -59,7 +60,8 @@ const DataTableBody = ({
     if (tableRef.current) {
       const resize = (el: Element) => {
         let offset = 10;
-        if (startsWithAction) offset += SELECT_COLUMN_SIZE;
+        if (!disableLineSelection) offset += SELECT_COLUMN_SIZE;
+        if (icon) offset += ICON_COLUMN_SIZE;
         if (endsWithAction) offset += SELECT_COLUMN_SIZE;
         if ((el.clientWidth - offset) !== tableWidth) {
           setTableWidth(el.clientWidth - offset);
@@ -69,7 +71,7 @@ const DataTableBody = ({
       observer = callbackResizeObserver(tableRef.current, resize);
     }
     return () => { observer?.disconnect(); };
-  }, [tableRef.current, tableWidth, startsWithAction, endsWithAction]);
+  }, [tableRef.current, tableWidth, endsWithAction, disableLineSelection, icon]);
 
   const onToggleShiftEntity: DataTableLineProps['onToggleShiftEntity'] = (currentIndex, currentEntity, event) => {
     if (selectedElements && !R.isEmpty(selectedElements)) {
@@ -145,10 +147,10 @@ const DataTableBody = ({
 
   const rowWidth = useMemo(() => (
     Math.floor(columns.reduce((acc, col) => {
-      const width = col.percentWidth
-        ? tableWidth * (col.percentWidth / 100)
-        : SELECT_COLUMN_SIZE;
-      return acc + width;
+      if (col.percentWidth) {
+        return acc + tableWidth * (col.percentWidth / 100);
+      }
+      return acc + (col.id === 'icon' ? ICON_COLUMN_SIZE : SELECT_COLUMN_SIZE);
     }, actions ? SELECT_COLUMN_SIZE + 9 : 9)) // 9 is for scrollbar.
   ), [columns, tableWidth]);
 
