@@ -178,6 +178,7 @@ class ThreatActor:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
 
         self.opencti.app_logger.info(
@@ -216,9 +217,31 @@ class ThreatActor:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(
-            result["data"]["threatActors"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["threatActors"])
+            final_data = final_data + data
+            while result["data"]["threatActors"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["threatActors"]["pageInfo"]["endCursor"]
+                self.opencti.app_logger.info("Listing threatActors", {"after": after})
+                result = self.opencti.query(
+                    query,
+                    {
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(result["data"]["threatActors"])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["threatActors"], with_pagination
+            )
 
     def read(self, **kwargs) -> Union[dict, None]:
         """Read a Threat-Actor object
