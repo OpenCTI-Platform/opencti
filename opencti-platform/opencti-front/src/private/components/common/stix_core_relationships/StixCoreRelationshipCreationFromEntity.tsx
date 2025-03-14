@@ -790,7 +790,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                   <div style={{ height: '100%' }} ref={setTableRootRef}>
                     <DataTable
                       disableToolBar
-                      disableSelectAll
                       disableNavigation
                       selectOnLineClick
                       rootRef={tableRootRef ?? undefined}
