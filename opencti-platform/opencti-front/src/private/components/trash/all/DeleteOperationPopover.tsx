@@ -22,6 +22,8 @@ import { RelayError } from '../../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const deleteOperationPopoverConfirmMutation = graphql`
   mutation DeleteOperationPopoverConfirmMutation($id: ID!) {
@@ -166,7 +168,7 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
         <DialogContent>
           <DialogContentText>
             {confirmOperation === 'delete' && (
-              <Alert severity="warning">
+              <Alert severity="warning" variant="outlined">
                 {t_i18n('', { id: 'The main object and the ... relationships/references linked to it will be deleted permanently.', values: { count: deletedCount - 1 } })}
                 <br/>
                 {t_i18n('This operation cannot be undone.')}
@@ -182,7 +184,7 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
             {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitConfirm} disabled={deleting || restoring}>
-            {confirmOperation === 'delete' ? t_i18n('Delete') : t_i18n('Restore')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
