@@ -25,6 +25,7 @@ import { ListItem, ListItemButton } from '@mui/material';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useTheme } from '@mui/styles';
 import { OverridableStringUnion } from '@mui/types';
+import DialogTitle from '@mui/material/DialogTitle';
 import useAuth from '../../../../utils/hooks/useAuth';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
@@ -38,7 +39,6 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import DialogTitle from '@mui/material/DialogTitle';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
