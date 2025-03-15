@@ -6,8 +6,9 @@ import { DragDropContext, Draggable, DraggableLocation, Droppable } from '@hello
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover/Popover';
 import { useTheme } from '@mui/styles';
+import Box from '@mui/material/Box';
 import { DataTableColumn, DataTableColumns, DataTableHeadersProps } from '../dataTableTypes';
-import DataTableHeader, { SELECT_COLUMN_SIZE } from './DataTableHeader';
+import DataTableHeader, { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import type { Theme } from '../../Theme';
 import { useDataTableContext } from './DataTableContext';
 
@@ -31,6 +32,9 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     disableSelectAll,
     startsWithAction,
     endsWithAction,
+    icon,
+    disableLineSelection,
+    canToggleLine,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
     },
@@ -54,14 +58,25 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     setColumns(newColumns);
   };
 
-  const draggableColumns = useMemo(() => columns.filter(({ id }) => !['select', 'navigate'].includes(id)), [columns]);
+  // Use the same in DataTableLine.tsx:169
+  const startActionsWidth = useMemo(() => {
+    if (icon && !disableLineSelection) {
+      return ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE;
+    }
+    if (icon) {
+      return ICON_COLUMN_SIZE;
+    }
+    return SELECT_COLUMN_SIZE;
+  }, []);
+
+  const draggableColumns = useMemo(() => columns.filter(({ id }) => !['select', 'navigate', 'icon'].includes(id)), [columns]);
 
   const hasSelectedElements = numberOfSelectedElements > 0 || selectAll;
   const checkboxStyle: CSSProperties = {
     background: hasSelectedElements
       ? theme.palette.background.accent
       : 'transparent',
-    width: SELECT_COLUMN_SIZE,
+    minWidth: startActionsWidth,
   };
 
   const showToolbar = numberOfSelectedElements > 0 && !disableToolBar;
@@ -70,6 +85,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     <div ref={containerRef} style={{ display: 'flex', height: 42 }}>
       {startsWithAction && (
       <div data-testid="dataTableCheckAll" style={checkboxStyle}>
+        { !disableLineSelection && canToggleLine && (
         <Checkbox
           checked={selectAll}
           sx={{
@@ -83,6 +99,15 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
           onChange={handleToggleSelectAll}
           disabled={!handleToggleSelectAll || disableSelectAll}
         />
+        )}
+        { icon && (
+          <Box sx={{
+            marginRight: 1,
+            flex: '0 0 auto',
+            paddingLeft: 0,
+          }}
+          />
+        ) }
       </div>
       )}
 
@@ -157,7 +182,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
           )}
 
           {columns
-            .filter(({ id }) => !['select', 'navigate'].includes(id))
+            .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
             .map((column) => (
               <DataTableHeader
                 key={column.id}

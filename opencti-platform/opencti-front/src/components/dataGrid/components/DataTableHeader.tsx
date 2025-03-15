@@ -10,6 +10,7 @@ import { DataTableColumn, DataTableHeaderProps, DataTableVariant } from '../data
 import { useDataTableContext } from './DataTableContext';
 
 export const SELECT_COLUMN_SIZE = 42;
+export const ICON_COLUMN_SIZE = 56;
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
