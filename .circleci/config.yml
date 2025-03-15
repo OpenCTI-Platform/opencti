@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   slack: circleci/slack@4.13.3
-  kubernetes: circleci/kubernetes@1.3.1
+  kubernetes: circleci/kubernetes@2.0.0
 jobs:
   build_frontend:
     working_directory: ~/opencti
