@@ -72,6 +72,7 @@ class OpenCTIApiConnector:
                         }
                         listen
                         listen_exchange
+                        listen_callback_uri
                         push
                         push_exchange
                         push_routing
