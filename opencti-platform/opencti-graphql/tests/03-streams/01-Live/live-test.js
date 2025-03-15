@@ -4,7 +4,7 @@ import { ADMIN_USER, FIVE_MINUTES, SYNC_LIVE_EVENTS_SIZE, testContext } from '..
 import { checkInstanceDiff, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { elAggregationCount } from '../../../src/database/engine';
-import { convertStoreToStix, convertTypeToStixType } from '../../../src/database/stix-converter';
+import { convertStoreToStix, convertTypeToStixType } from '../../../src/database/stix-2-1-converter';
 import { utcDate } from '../../../src/utils/format';
 import { PORT } from '../../../src/config/conf';
 import { READ_DATA_INDICES } from '../../../src/database/utils';

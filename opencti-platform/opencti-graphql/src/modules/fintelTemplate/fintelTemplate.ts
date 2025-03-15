@@ -30,7 +30,7 @@ export const FINTEL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityFintelTempl
   representative: (stix: StixFintelTemplate) => {
     return stix.name;
   },
-  converter: convertFintelTemplateToStix
+  converter_2_1: convertFintelTemplateToStix
 };
 
 registerDefinition(FINTEL_TEMPLATE_DEFINITION);

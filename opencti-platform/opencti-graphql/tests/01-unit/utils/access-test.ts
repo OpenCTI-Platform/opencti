@@ -15,7 +15,7 @@ import type { BasicStoreSettings } from '../../../src/types/settings';
 import { PLATFORM_ORGANIZATION, TEST_ORGANIZATION } from '../../utils/testQuery';
 import { RELATION_GRANTED_TO } from '../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
-import type { StixObject, StixOpenctiExtension } from '../../../src/types/stix-common';
+import type { StixObject, StixOpenctiExtension } from '../../../src/types/stix-2-1-common';
 
 describe('Check markings test coverage', () => {
   it('should element with no marking be allowed', async () => {

@@ -12,7 +12,7 @@ import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../type
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
-import type { StixCoreObject, StixObject, StixRelationshipObject } from '../types/stix-common';
+import type { StixCoreObject, StixObject, StixRelationshipObject } from '../types/stix-2-1-common';
 import {
   type BasicStoreEntityDigestTrigger,
   type BasicStoreEntityLiveTrigger,
@@ -29,7 +29,7 @@ import { extractStixRepresentative } from '../database/stix-representative';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import type { BasicStoreCommon } from '../types/store';
-import type { StixRelation, StixSighting } from '../types/stix-sro';
+import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { replaceFilterKey } from '../utils/filtering/filtering-utils';

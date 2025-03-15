@@ -1,5 +1,5 @@
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import { buildStixObject, cleanObject } from '../../database/stix-converter';
+import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
 import type {
   StixIngestionCsv,
   StixIngestionRss,

@@ -79,7 +79,7 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
   representative: (stix: StixDataComponent) => {
     return stix.name;
   },
-  converter: convertDataComponentToStix
+  converter_2_1: convertDataComponentToStix
 };
 
 registerDefinition(DATA_COMPONENT_DEFINITION);

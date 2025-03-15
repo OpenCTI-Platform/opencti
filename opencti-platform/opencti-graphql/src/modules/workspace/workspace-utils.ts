@@ -7,7 +7,7 @@ import { internalFindByIds } from '../../database/middleware-loader';
 import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
 import { isInternalId, isStixId } from '../../schema/schemaUtils';
 
-// workspace ids converter
+// workspace ids converter_2_1
 // Export => Dashboard filter ids must be converted to standard id
 // Import => Dashboards filter ids must be converted back to internal id
 

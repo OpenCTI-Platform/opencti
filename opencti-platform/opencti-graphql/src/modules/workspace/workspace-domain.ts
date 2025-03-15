@@ -321,7 +321,7 @@ export const checkConfigurationImport = (type: string, parsedData: any) => {
   }
 };
 
-// region workspace ids converter
+// region workspace ids converter_2_1
 // Export => Dashboard filter ids must be converted to standard id
 // Import => Dashboards filter ids must be converted back to internal id
 const convertWorkspaceManifestIds = async (context: AuthContext, user: AuthUser, manifest: string, from: 'internal' | 'stix'): Promise<string> => {

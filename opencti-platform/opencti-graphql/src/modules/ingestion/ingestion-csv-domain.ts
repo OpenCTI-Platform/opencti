@@ -15,7 +15,7 @@ import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/h
 import { verifyIngestionAuthenticationContent } from './ingestion-common';
 import { IngestionAuthType } from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
-import type { StixObject } from '../../types/stix-common';
+import type { StixObject } from '../../types/stix-2-1-common';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);

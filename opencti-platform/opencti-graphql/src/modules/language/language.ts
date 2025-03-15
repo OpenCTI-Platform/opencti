@@ -29,7 +29,7 @@ const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> =
   representative: (stix: StixLanguage) => {
     return stix.name;
   },
-  converter: convertLanguageToStix
+  converter_2_1: convertLanguageToStix
 };
 
 registerDefinition(LANGUAGE_DEFINITION);
