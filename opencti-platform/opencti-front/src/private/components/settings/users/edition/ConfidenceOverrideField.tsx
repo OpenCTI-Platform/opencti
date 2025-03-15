@@ -196,9 +196,9 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
         </AccordionDetails>
       </Accordion>
       <DeleteDialog
-        title={t_i18n('Do you want to delete this line?')}
         deletion={deletion}
         submitDelete={handleSubmitDelete}
+        message={t_i18n('Do you want to delete this line?')}
       />
     </>
   );

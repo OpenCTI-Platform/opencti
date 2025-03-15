@@ -20,6 +20,8 @@ import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const ingestionCsvPopoverDeletionMutation = graphql`
   mutation IngestionCsvPopoverDeletionMutation($id: ID!) {
@@ -93,17 +95,9 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   };
 
   // -- Deletion --
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [commitDelete] = useApiMutation(ingestionCsvPopoverDeletionMutation);
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitDelete({
@@ -233,34 +227,11 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
             </>
           </React.Suspense>
         )}
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={displayDelete}
-          keepMounted
-          TransitionComponent={Transition}
-          onClose={handleCloseDelete}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to delete this CSV ingester?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleCloseDelete}
-              disabled={deleting}
-            >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={submitDelete}
-              disabled={deleting}
-            >
-              {t_i18n('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <DeleteDialog
+          deletion={deletion}
+          submitDelete={submitDelete}
+          message={t_i18n('Do you want to delete this CSV ingester?')}
+        />
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={displayResetState}

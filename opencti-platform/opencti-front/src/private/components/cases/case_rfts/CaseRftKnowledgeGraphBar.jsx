@@ -26,7 +26,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
@@ -45,6 +44,8 @@ import Slide from '@mui/material/Slide';
 import { Form, Formik } from 'formik';
 import { ToggleButtonGroup } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContentText from '@mui/material/DialogContentText';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import CommitMessage from '../../common/form/CommitMessage';
 import inject18n from '../../../../components/i18n';
@@ -1137,12 +1138,15 @@ class CaseRftKnowledgeGraphBar extends Component {
                       TransitionComponent={Transition}
                       onClose={this.handleCloseRemove.bind(this)}
                     >
+                      <DialogTitle>
+                        {t('Are you sure?')}
+                      </DialogTitle>
                       <DialogContent>
-                        <Typography variant="body">
+                        <DialogContentText>
                           {t(
                             'Do you want to remove these elements from this case?',
                           )}
-                        </Typography>
+                        </DialogContentText>
                         <Alert
                           severity="warning"
                           variant="outlined"
@@ -1174,10 +1178,11 @@ class CaseRftKnowledgeGraphBar extends Component {
                           onClick={ this.handleSubmitRemoveElements.bind(this)}
                           color="secondary"
                         >
-                          {t('Remove')}
+                          {t('Confirm')}
                         </Button>
                       </DialogActions>
-                    </Dialog>{enableReferences && (
+                    </Dialog>
+                    {enableReferences && (
                       <Formik
                         initialValues={{ message: '', references: [] }}
                         onSubmit={this.submitReference.bind(this)}

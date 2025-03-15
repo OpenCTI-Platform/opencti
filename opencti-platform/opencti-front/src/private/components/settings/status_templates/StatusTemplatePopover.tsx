@@ -2,12 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -18,8 +13,9 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StatusTemplateEdition from './StatusTemplateEdition';
 import { deleteNode } from '../../../../utils/store';
-import Transition from '../../../../components/Transition';
 import { StatusTemplatePopoverEditionQuery$data } from './__generated__/StatusTemplatePopoverEditionQuery.graphql';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -57,8 +53,6 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
-  const [deleting, setDeleting] = useState<boolean>(false);
 
   const handleOpen = (event: React.MouseEvent) => setAnchorEl(event.currentTarget);
 
@@ -71,13 +65,8 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
 
   const handleCloseUpdate = () => setDisplayUpdate(false);
 
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-
-  const handleCloseDelete = () => setDisplayDelete(false);
-
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
@@ -136,27 +125,11 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
           }}
         />
       </Drawer>
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this status template?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this template?')}
+      />
     </div>
   );
 };

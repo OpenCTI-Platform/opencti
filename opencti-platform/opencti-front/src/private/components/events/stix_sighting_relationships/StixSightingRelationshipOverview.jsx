@@ -17,6 +17,7 @@ import { ArrowRightAlt, Edit } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
+import DialogTitle from '@mui/material/DialogTitle';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
@@ -613,6 +614,9 @@ class StixSightingRelationshipContainer extends Component {
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this sighting?')}
@@ -630,7 +634,7 @@ class StixSightingRelationshipContainer extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
