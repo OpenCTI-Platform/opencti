@@ -43,6 +43,7 @@ class OpenCTIConnector:
         auto: bool,
         only_contextual: bool,
         playbook_compatible: bool,
+        listen_callback_uri=None,
     ):
         self.id = connector_id
         self.name = connector_name
@@ -56,6 +57,7 @@ class OpenCTIConnector:
         self.auto = auto
         self.only_contextual = only_contextual
         self.playbook_compatible = playbook_compatible
+        self.listen_callback_uri = listen_callback_uri
 
     def to_input(self) -> dict:
         """connector input to use in API query
@@ -72,5 +74,6 @@ class OpenCTIConnector:
                 "auto": self.auto,
                 "only_contextual": self.only_contextual,
                 "playbook_compatible": self.playbook_compatible,
+                "listen_callback_uri": self.listen_callback_uri,
             }
         }
