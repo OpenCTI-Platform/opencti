@@ -426,6 +426,7 @@
   "Linked to": "リンク先",
   "List of parameters": "パラメータ一覧",
   "Listen deletion": "リッスン削除",
+  "Listen through http callback": "httpコールバックを介してリッスンする",
   "Location type": "ロケーションタイプ",
   "Log sources": "インフラの種類",
   "Login message": "ログインメッセージ",

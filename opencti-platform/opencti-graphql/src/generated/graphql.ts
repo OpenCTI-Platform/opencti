@@ -3768,6 +3768,7 @@ export type ConnectorConfig = {
   __typename?: 'ConnectorConfig';
   connection: RabbitMqConnection;
   listen: Scalars['String']['output'];
+  listen_callback_uri?: Maybe<Scalars['String']['output']>;
   listen_exchange: Scalars['String']['output'];
   listen_routing: Scalars['String']['output'];
   push: Scalars['String']['output'];
@@ -15488,6 +15489,7 @@ export type MutationStatusTemplateFieldPatchArgs = {
 export type MutationStixBundlePushArgs = {
   bundle: Scalars['String']['input'];
   connectorId: Scalars['String']['input'];
+  work_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -22916,6 +22918,7 @@ export enum RegionsOrdering {
 export type RegisterConnectorInput = {
   auto?: InputMaybe<Scalars['Boolean']['input']>;
   id: Scalars['ID']['input'];
+  listen_callback_uri?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   only_contextual?: InputMaybe<Scalars['Boolean']['input']>;
   playbook_compatible?: InputMaybe<Scalars['Boolean']['input']>;
@@ -34030,6 +34033,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
 export type ConnectorConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorConfig'] = ResolversParentTypes['ConnectorConfig']> = ResolversObject<{
   connection?: Resolver<ResolversTypes['RabbitMQConnection'], ParentType, ContextType>;
   listen?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  listen_callback_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   listen_exchange?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   listen_routing?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   push?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

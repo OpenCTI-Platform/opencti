@@ -188,7 +188,7 @@ export const getConnectorQueueSize = async (context, user, connectorId) => {
   return targetQueues.length > 0 ? targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0)) : 0;
 };
 
-export const connectorConfig = (id) => ({
+export const connectorConfig = (id, listen_callback_uri = undefined) => ({
   connection: config(),
   push: `${RABBIT_QUEUE_PREFIX}push_${id}`,
   push_routing: pushRouting(id),
@@ -196,6 +196,7 @@ export const connectorConfig = (id) => ({
   listen: `${RABBIT_QUEUE_PREFIX}listen_${id}`,
   listen_routing: listenRouting(id),
   listen_exchange: CONNECTOR_EXCHANGE,
+  listen_callback_uri,
 });
 
 export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
