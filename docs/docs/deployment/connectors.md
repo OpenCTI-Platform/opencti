@@ -137,13 +137,13 @@ To put the connector in this mode, you have to set the following parameter:
 
 Here is an example of a connector `docker-compose.yml` file:
 ```yaml
-- CONNECTOR_LISTEN_PROTOCOL=API # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, AMQP (default) to connect to RabbitMQ queue
+- CONNECTOR_LISTEN_PROTOCOL=api # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, amqp (default) to connect to RabbitMQ queue
 ```
 
 Here is an example in a connector `config.yml` file:
 ```yaml
 connector:
-  listen_protocol: 'API' # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, AMQP (default) to connect to RabbitMQ queue
+  listen_protocol: 'api' # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, amqp (default) to connect to RabbitMQ queue
 ```
 
 Once this is set, you have a few more parameters to be able to customize the HTTP server and the behavior of the connector.
@@ -178,22 +178,21 @@ Enrichment connectors are the only connectors that are both listening jobs / bun
 Here is an example of a connector `docker-compose.yml` file:
 ```yaml
 - CONNECTOR_QUEUE_PROTOCOL=api # Use api to send bundle through HTTP query to the API, amqp (default) to send to rabbit
-- CONNECTOR_LISTEN_PROTOCOL=API # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, AMQP (default) to connect to RabbitMQ queue
-- CONNECTOR_LISTEN_PROTOCOL_API_PORT=443
-- CONNECTOR_LISTEN_PROTOCOL_API_SSL=true
-- CONNECTOR_LISTEN_PROTOCOL_API_URI=https://myconnector.myorganization.com
+- CONNECTOR_LISTEN_PROTOCOL=api # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, AMQP (default) to connect to RabbitMQ queue
+- CONNECTOR_LISTEN_PROTOCOL_API_PORT=80
+- CONNECTOR_LISTEN_PROTOCOL_API_URI=http://myconnector.myorganization.com
 ```
 
 Here is an example in a connector `config.yml` file:
 ```yaml
 connector:
   queue_protocol: 'api' # Use api to send bundle through HTTP query to the API, amqp (default) to send to rabbit
-  listen_protocol: 'API' # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, AMQP (default) to connect to RabbitMQ queue
-  listen_protocol_api_ssl: true
-  listen_protocol_api_uri: 'https://myconnector.myorganization.com'
+  listen_protocol: 'api' # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, AMQP (default) to connect to RabbitMQ queue
+  listen_protocol_port: 80
+  listen_protocol_api_uri: 'http://myconnector.myorganization.com'
 ```
 
-In this configuration, the platform (workers) will automatically send enrichment request to `https://myconnector.myorganization.com` and the connector will send bundle back using the HTTP API. **The connector will then never try to connect to RabbitMQ**. 
+In this configuration, the platform (workers) will automatically send enrichment request to `http://myconnector.myorganization.com` and the connector will send bundle back using the HTTP API. **The connector will then never try to connect to RabbitMQ**. 
 
 ## Networking
 
