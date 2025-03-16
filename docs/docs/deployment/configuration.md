@@ -181,7 +181,7 @@ Here are the configuration keys, for both containers (environment variables) and
 
 | Parameter                                   | Environment variable              | Default value | Description                                 |
 |:--------------------------------------------|:----------------------------------|:--------------|:--------------------------------------------|
-| rabbitmq:hostname                           | RABBITMQ__HOSTNAME                | localhost 7   | Hostname of the RabbitMQ server             |
+| rabbitmq:hostname                           | RABBITMQ__HOSTNAME                | localhost     | Hostname of the RabbitMQ server             |
 | rabbitmq:port                               | RABBITMQ__PORT                    | 5672          | Port of the RabbitMQ server                 |
 | rabbitmq:port_management                    | RABBITMQ__PORT_MANAGEMENT         | 15672         | Port of the RabbitMQ Management Plugin      |
 | rabbitmq:username                           | RABBITMQ__USERNAME                | guest         | RabbitMQ user                               |

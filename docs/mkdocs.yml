@@ -117,14 +117,6 @@ nav:
       - Configuration: deployment/configuration.md
       - Authentication: deployment/authentication.md
       - Upgrade: deployment/upgrade.md
-      - Breaking changes:
-        - Index: deployment/breaking-changes.md
-        - Migration guides:
-          - GenerationScenario Mutations in OpenCTI - OpenBAS with Placeholders: deployment/breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders.md
-          - Removing bi-directional stream connectors: deployment/breaking-changes/6.3-removing-some-connectors.md
-          - Promote to Indicator: deployment/breaking-changes/6.2-promote-to-indicator.md
-          - SAML authentication: deployment/breaking-changes/6.2-saml-authentication.md
-          - New filter API: deployment/breaking-changes/5.12-filters.md
     - Ecosystem:
       - Connectors: deployment/connectors.md
       - Integrations: deployment/integrations.md
@@ -135,6 +127,14 @@ nav:
       - Indices and rollover: deployment/rollover.md
       - On-premise map server: deployment/map.md
       - Troubleshooting: deployment/troubleshooting.md
+    - Breaking changes:
+        - Index: deployment/breaking-changes.md
+        - Migration guides:
+            - OpenBAS scenario generation: deployment/breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders.md
+            - Stream connectors data import: deployment/breaking-changes/6.3-removing-some-connectors.md
+            - Promote to Indicator: deployment/breaking-changes/6.2-promote-to-indicator.md
+            - SAML authentication: deployment/breaking-changes/6.2-saml-authentication.md
+            - New filter API: deployment/breaking-changes/5.12-filters.md
   - User Guide:
     - Getting started: usage/getting-started.md
     - Foundations:

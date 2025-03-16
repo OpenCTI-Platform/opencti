@@ -65,7 +65,6 @@ Here is an example of a connector `docker-compose.yml` file:
 ```
 
 Here is an example in a connector `config.yml` file:
-
 ```yaml
 connector:
   id: 'ChangeMe'
@@ -77,21 +76,11 @@ connector:
 
 ### Advanced parameters
 
-By default, connectors are connecting to `RabbitMQ`.
+#### Overwrite RabbitMQ config
 
-You can also send the Bundle to API (`stixBundlePush`) that will push the bundle to the correct `RabbitMQ` queue.
+The connection to `RabbitMQ` is done by using parameters and credentials directly given by the platform during the connector registration process. In some cases, you may need to override them.
 
-```yaml
-connector:
-  queue_protocol: 'api' # use api to send bundle through API mutation, amqp (default) to send to rabbit
-```
-
-!!! warning "Limitation"
-
-    Currently the connector can not send bundle larger the the configuration of the OpenCTI backend (default 50Mb)
-
-The connection to `RabbitMQ` is done by using parameters and credentials directly given by the API during the connector registration process. In some cases, you may need to override them.
-
+Here is an example of a connector `docker-compose.yml` file:
 ```yaml
 - MQ_HOST=rabbit.mydomain.com
 - MQ_PORT=5672
@@ -102,7 +91,6 @@ The connection to `RabbitMQ` is done by using parameters and credentials directl
 ```
 
 Here is an example in a connector `config.yml` file:
-
 ```yaml
 mq:
   host: 'rabbit.mydomain.com'
@@ -111,6 +99,101 @@ mq:
   user: 'guest'
   pass: 'guest'
 ```
+
+#### Send data to API (HTTP) instead of RabbitMQ
+
+By default, some connectors are connecting to `RabbitMQ` in order to push knowledge / data to the platform. In some cases, you may like the connector to send data directly through HTTP (for instance, if they cannot connect to RabbitMQ).
+
+!!! info "Applicable connectors"
+
+    This config applies to connectors with the following types: `EXTERNAL_IMPORT`, `INTERNAL_ENRICHMENT` and `INTERNAL_IMPORT_FILE`. Indeed, enrichment connectors are both listening for enrichment jobs and then sending enrichment results.
+
+Here is an example of a connector `docker-compose.yml` file:
+```yaml
+- CONNECTOR_QUEUE_PROTOCOL=api # Use api to send bundle through HTTP query to the API, amqp (default) to send to rabbit
+```
+
+Here is an example in a connector `config.yml` file:
+```yaml
+connector:
+  queue_protocol: 'api' # Use api to send bundle through HTTP query to the API, amqp (default) to send to rabbit
+```
+
+!!! warning "STIX bundles size limit"
+
+    Currently the connector cannot send bundle larger the the configuration of the OpenCTI backend (default 50Mb). This configuration can be changed using the parameter `APP__MAX_PAYLOAD_BODY_SIZE=50mb` on the platform side.
+
+#### Listening data / jobs using HTTP instead of RabbitMQ
+
+By default, some connectors are connecting to `RabbitMQ` in order to listen for jobs (enrichment, export) and eventually associated data to enrich / process. In some cases, you may like the connector to listen data directly on an HTTP endpoint (for instance, if they cannot connect to RabbitMQ).
+
+!!! info "Applicable connectors"
+
+    This config applies to connectors with the following types: `INTERNAL_ENRICHMENT` and `INTERNAL_EXPORT_FILE`.
+
+When using this mode, the connector will start an HTTP server and will listen for bundle / jobs on this endpoint. The platform (workers) will then send the bundle directly to this HTTP endpoint instead of sending this to the RabbitMQ queue.
+
+To put the connector in this mode, you have to set the following parameter:
+
+Here is an example of a connector `docker-compose.yml` file:
+```yaml
+- CONNECTOR_LISTEN_PROTOCOL=API # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, AMQP (default) to connect to RabbitMQ queue
+```
+
+Here is an example in a connector `config.yml` file:
+```yaml
+connector:
+  listen_protocol: 'API' # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, AMQP (default) to connect to RabbitMQ queue
+```
+
+Once this is set, you have a few more parameters to be able to customize the HTTP server and the behavior of the connector.
+
+!!! info
+
+    The connector will declare all the parameters to the platform the registering so you can customize them without touching anything in the platform configuration.
+
+| Parameter (yml)                               | Environment variable                | Default value          | Description                                                                    |
+|:----------------------------------------------|:------------------------------------|:-----------------------|:-------------------------------------------------------------------------------|
+| connector:listen_protocol_api_port            | CONNECTOR_LISTEN_PROTOCOL_API_PORT  | 7070                   | Port of the listening HTTP server                                              |
+| connector:listen_protocol_api_path            | CONNECTOR_LISTEN_PROTOCOL_API_PATH  | /api/callback          | URI (path) where the HTTP query will be sent by the platform                   |
+| connector:listen_protocol_api_uri             | CONNECTOR_LISTEN_PROTOCOL_API_URI   | http://127.0.0.1:7070  | The full URL (excluding the path) used by the platform to send the HTTP query. |
+| -                                             | -                                   | -                      | -                                                                              |
+| connector:listen_protocol_api_ssl             | CONNECTOR_LISTEN_PROTOCOL_API_SSL   | `false`                | Launch the HTTP server in TLS mode                                             |
+| connector:listen_protocol_api_ssl_key         | LISTEN_PROTOCOL_API_SSL_KEY         |                        | SSL Key for TLS mode                                                           |
+| connector:listen_protocol_api_ssl_cert        | LISTEN_PROTOCOL_API_SSL_CERT        |                        | SSL Cert for TLS mode                                                          |
+| connector:listen_protocol_api_ssl_passphrase  | LISTEN_PROTOCOL_API_SSL_PASSPHRASE  |                        | Optional passphrase for the SSL key                                            |
+
+In this mode, the platform will use the workers to send the HTTP queries to the connectors declared in this mode, we have added a few worker configuration parameters to help with those queries. **The following configuration is for the workers and is generally not needed**.
+
+| Parameter (yml)                           | Environment variable               | Default value | Description                                                      |
+|:------------------------------------------|:-----------------------------------|:--------------|:-----------------------------------------------------------------|
+| worker:listen_api_ssl_verify              | WORKER_LISTEN_API_SSL_VERIFY       |               | Verify SSL certificate when sending data to HTTP mode connectors |
+| worker:listen_api_http_proxy              | WORKER_LISTEN_API_HTTP_PROXY       |               | Use a proxy to send the data to HTTP mode connectors             |
+| worker:listen_api_https_proxy             | WORKER_LISTEN_API_HTTPS_PROXY      |               | Use a proxy to send the data to HTTP mode connectors (SSL).      |
+
+#### Examples for enrichment connectors in full HTTP mode
+
+Enrichment connectors are the only connectors that are both listening jobs / bundles and then sending back new data / knowledge to the platform. If you need to use those connectors in *full HTTP mode*, here is the example of config:
+
+Here is an example of a connector `docker-compose.yml` file:
+```yaml
+- CONNECTOR_QUEUE_PROTOCOL=api # Use api to send bundle through HTTP query to the API, amqp (default) to send to rabbit
+- CONNECTOR_LISTEN_PROTOCOL=API # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, AMQP (default) to connect to RabbitMQ queue
+- CONNECTOR_LISTEN_PROTOCOL_API_PORT=443
+- CONNECTOR_LISTEN_PROTOCOL_API_SSL=true
+- CONNECTOR_LISTEN_PROTOCOL_API_URI=https://myconnector.myorganization.com
+```
+
+Here is an example in a connector `config.yml` file:
+```yaml
+connector:
+  queue_protocol: 'api' # Use api to send bundle through HTTP query to the API, amqp (default) to send to rabbit
+  listen_protocol: 'API' # Launch an HTTP server on the connector side to listen jobs / bundle sent by OpenCTI, AMQP (default) to connect to RabbitMQ queue
+  listen_protocol_api_ssl: true
+  listen_protocol_api_uri: 'https://myconnector.myorganization.com'
+```
+
+In this configuration, the platform (workers) will automatically send enrichment request to `https://myconnector.myorganization.com` and the connector will send bundle back using the HTTP API. **The connector will then never try to connect to RabbitMQ**. 
 
 ## Networking
 
