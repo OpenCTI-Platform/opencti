@@ -195,7 +195,7 @@ const NarrativeEditionOverviewComponent = (props) => {
         isValid,
         dirty,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form>
           <AlertConfidenceForEntity entity={narrative} />
           <Field
             component={TextField}
