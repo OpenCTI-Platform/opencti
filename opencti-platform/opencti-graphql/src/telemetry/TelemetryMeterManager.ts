@@ -54,8 +54,8 @@ export class TelemetryMeterManager {
     this.activeConnectorsCount = n;
   }
 
-  addDisseminationCount() {
-    this.disseminationCount += 1;
+  setDisseminationCount(n: number) {
+    this.disseminationCount = n;
   }
 
   setDraftCount(n: number) {

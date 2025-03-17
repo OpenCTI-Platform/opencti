@@ -1,12 +1,14 @@
-import { afterAll, beforeAll, describe, expect, it, test } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { Resource } from '@opentelemetry/resources';
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../../../src/telemetry/TelemetryMeterManager';
 import { PLATFORM_VERSION } from '../../../src/config/conf';
-import { addDisseminationCount, fetchTelemetryData } from '../../../src/manager/telemetryManager';
+import { fetchTelemetryData } from '../../../src/manager/telemetryManager';
 import { TESTING_USERS } from '../../utils/testQuery';
+import { redisClearTelemetry, redisSetTelemetryAdd } from '../../../src/database/redis';
+import { addDisseminationCount } from '../../../src/modules/disseminationList/disseminationList-domain';
 
 describe('Telemetry manager test coverage', () => {
   test('Verify that metrics get collected from both elastic and redis', async () => {
@@ -23,17 +25,17 @@ describe('Telemetry manager test coverage', () => {
     const filigranMeterProvider = new MeterProvider(({ resource, readers: [] }));
     const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
     filigranTelemetryMeterManager.registerFiligranTelemetry();
+    // AND Given starting from clean state in redis
+    await redisClearTelemetry();
 
     // AND GIVEN some "user event" from this node
     const DISSEMINATION_EVENT_NODE1 = 5;
     const DISSEMINATION_EVENT_NODE2 = 3;
     for (let i = 0; i < DISSEMINATION_EVENT_NODE1; i += 1) {
-      addDisseminationCount();
+      await addDisseminationCount();
     }
     // AND GIVEN some "user event" from another node (simulated by a redis update)
-    for (let i = 0; i < DISSEMINATION_EVENT_NODE2; i += 1) {
-      // TODO call redis
-    }
+    await redisSetTelemetryAdd('disseminationCount', DISSEMINATION_EVENT_NODE2);
 
     // WHEN data is fetched from elastic (platform wide gauges) and redis (user event gauge)
     await fetchTelemetryData(filigranTelemetryMeterManager);

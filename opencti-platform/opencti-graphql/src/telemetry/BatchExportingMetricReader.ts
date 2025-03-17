@@ -13,6 +13,7 @@ export type BatchExportingMetricReaderOptions = {
   exportIntervalMillis?: number;
   exportTimeoutMillis?: number;
   metricProducers?: MetricProducer[];
+  collectCallback?: () => void;
 };
 
 export class BatchExportingMetricReader extends MetricReader {
@@ -30,11 +31,13 @@ export class BatchExportingMetricReader extends MetricReader {
 
   private readonly _exportTimeout: number;
 
+  private _collectCallback:(() => void) | undefined;
+
   constructor(options: BatchExportingMetricReaderOptions) {
     super({
       aggregationSelector: options.exporter.selectAggregation?.bind(options.exporter),
       aggregationTemporalitySelector: options.exporter.selectAggregationTemporality?.bind(options.exporter),
-      metricProducers: options.metricProducers,
+      metricProducers: options.metricProducers
     });
     if (options.exportIntervalMillis !== undefined && options.exportIntervalMillis <= 0) {
       throw Error('exportIntervalMillis must be greater than 0');
@@ -50,6 +53,7 @@ export class BatchExportingMetricReader extends MetricReader {
     this._exportInterval = options.exportIntervalMillis ?? 60000;
     this._exportTimeout = options.exportTimeoutMillis ?? 30000;
     this._exporter = options.exporter;
+    this._collectCallback = options.collectCallback;
   }
 
   private async _doRunCollect(): Promise<void> {
@@ -73,6 +77,9 @@ export class BatchExportingMetricReader extends MetricReader {
         });
       } else {
         this._resourceMetrics = resourceMetrics;
+      }
+      if (this._collectCallback) {
+        this._collectCallback();
       }
     };
 

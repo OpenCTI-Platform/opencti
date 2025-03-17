@@ -21,6 +21,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { elCount } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FilterMode } from '../generated/graphql';
+import { redisClearTelemetry, redisGetTelemetry } from '../database/redis';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -39,16 +40,22 @@ const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
 // Manager schedule, data point generation
 const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
-let filigranTelemetryMeterManager: TelemetryMeterManager;
+// Gauge name for event gauge
+export const TELEMETRY_GAUGE_DISSEMINATION = 'disseminationCount';
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
   const context = executionContext('telemetry_manager');
   const filigranMetricReaders = [];
+  const collectorCallback = async () => {
+    logApp.info('[TELEMETRY] clearing all telemetry data in Redis.');
+    await redisClearTelemetry();
+  };
   // region File exporter
   const fileExporterReader = new BatchExportingMetricReader({
     exporter: new MetricFileExporter(AggregationTemporality.DELTA),
     collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
     exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
+    collectCallback: collectorCallback
   });
   filigranMetricReaders.push(fileExporterReader);
   logApp.info('[TELEMETRY] File exporter activated');
@@ -102,15 +109,9 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   });
   const resource = Resource.default().merge(filigranResource);
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));
-  filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
+  const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
   filigranTelemetryMeterManager.registerFiligranTelemetry();
   return filigranTelemetryMeterManager;
-};
-
-export const addDisseminationCount = () => {
-  if (filigranTelemetryMeterManager) {
-    filigranTelemetryMeterManager.addDisseminationCount();
-  }
 };
 
 export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
@@ -146,6 +147,11 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const workbenchesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { filters: pendingFileFilter, types: [ENTITY_TYPE_INTERNAL_FILE] });
     manager.setWorkbenchCount(workbenchesCount);
     // endregion
+
+    // region Telemetry user events
+    const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
+    manager.setDisseminationCount(disseminationCountInRedis);
+    // end region Telemetry user events
   } catch (e) {
     logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
   }
