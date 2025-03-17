@@ -1,5 +1,5 @@
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER, StoreEntitySavedFilter } from './savedFilter-types';
+import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER, type StoreEntitySavedFilter } from './savedFilter-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listEntitiesPaginated } from '../../database/middleware-loader';
 import type { QuerySavedFiltersArgs, SavedFilterAddInput } from '../../generated/graphql';
@@ -14,8 +14,5 @@ export const addSavedFilter = (context: AuthContext, user: AuthUser, input: Save
   return createInternalObject<StoreEntitySavedFilter>(context, user, input, ENTITY_TYPE_SAVED_FILTER);
 };
 export const deleteSavedFilter = (context: AuthContext, user: AuthUser, savedFilterId: string) => {
-  // TODO: vérifier que le filtre appartient bien à l'utilisateur
-  // TODO: Vérifier la capa ByPass pour éviter de bloquer l'action d'un admin
-  // TODO : add tests
   return deleteInternalObject(context, user, savedFilterId, ENTITY_TYPE_SAVED_FILTER);
 };
