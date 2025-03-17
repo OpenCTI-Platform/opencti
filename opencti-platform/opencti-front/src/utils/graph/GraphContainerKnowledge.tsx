@@ -531,7 +531,7 @@ const GraphContainerKnowledgeComponent = ({
   );
 };
 
-const REFETCH_DEBOUNCE_MS = 300;
+const REFETCH_DEBOUNCE_MS = 50;
 
 interface GraphContainerKnowledgeProps
   extends Omit<GraphContainerKnowledgeComponentProps, 'data' | 'currentData' | 'totalData'> {

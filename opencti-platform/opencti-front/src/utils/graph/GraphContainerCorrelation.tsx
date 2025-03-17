@@ -377,7 +377,7 @@ const GraphContainerCorrelationComponent = ({
   );
 };
 
-const REFETCH_DEBOUNCE_MS = 300;
+const REFETCH_DEBOUNCE_MS = 50;
 
 interface GraphContainerCorrelationProps
   extends Omit<GraphContainerCorrelationComponentProps, 'currentData' | 'totalData'> {

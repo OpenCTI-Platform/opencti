@@ -4,7 +4,7 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { useTheme } from '@mui/material/styles';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import WorkspaceHeader from '@components/workspaces/WorkspaceHeader';
-import { InvestigationGraphStixCountRelToQuery$data } from '@components/workspaces/investigations/__generated__/InvestigationGraphStixCountRelToQuery.graphql';
+import fetchMetaObjectsCount from '@components/workspaces/investigations/utils/fetchMetaObjectsCount';
 import { InvestigationGraphObjectsQuery } from './__generated__/InvestigationGraphObjectsQuery.graphql';
 import { InvestigationGraphObjects_fragment$key } from './__generated__/InvestigationGraphObjects_fragment.graphql';
 import { InvestigationGraphQuery$data } from './__generated__/InvestigationGraphQuery.graphql';
@@ -16,7 +16,7 @@ import type { Theme } from '../../../../components/Theme';
 import Graph from '../../../../utils/graph/Graph';
 import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
 import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
-import { GraphProvider } from '../../../../utils/graph/GraphContext';
+import { GraphProvider, useGraphContext } from '../../../../utils/graph/GraphContext';
 import GraphToolbar, { GraphToolbarProps } from '../../../../utils/graph/GraphToolbar';
 import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
 import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteractions';
@@ -24,7 +24,6 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
-import { fetchQuery } from '../../../../relay/environment';
 import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
 
 const investigationGraphDataFragment = graphql`
@@ -395,7 +394,7 @@ export const investigationGraphQuery = graphql`
 // have relations where there are the source of the relation.
 // This issue can be fixed by making a second query fetching the count in the
 // other direction.
-const investigationGraphCountRelToQuery = graphql`
+export const investigationGraphCountRelToQuery = graphql`
   query InvestigationGraphStixCountRelToQuery($objectIds: [String!]!) {
     stixRelationshipsDistribution(
       field: "internal_id"
@@ -424,11 +423,13 @@ const InvestigationGraphComponent = ({
   const ref = useRef(null);
   const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
+  const { rawObjects } = useGraphContext();
 
   const {
     addLink,
     setLoadingCurrent,
     setLoadingTotal,
+    rebuildGraphData,
   } = useGraphInteractions();
 
   const investigation = useFragment(investigationGraphFragment, dataInvestigation);
@@ -484,8 +485,12 @@ const InvestigationGraphComponent = ({
     updateInvestigationEntitiesGraph([rel.id], 'add', () => addLink(rel));
   };
 
-  const addInGraph: GraphToolbarProps['onInvestigationExpand'] = (ids) => {
-    updateInvestigationEntitiesGraph(ids, 'add');
+  const addInGraph: GraphToolbarProps['onInvestigationExpand'] = async (newObjects) => {
+    updateInvestigationEntitiesGraph(newObjects.map((o) => o.id), 'add');
+    rebuildGraphData([
+      ...rawObjects,
+      ...await fetchMetaObjectsCount(newObjects),
+    ]);
   };
 
   const removeInGraph: GraphToolbarProps['onRemove'] = (ids, onCompleted) => {
@@ -519,7 +524,7 @@ const InvestigationGraphComponent = ({
   );
 };
 
-const REFETCH_DEBOUNCE_MS = 300;
+const REFETCH_DEBOUNCE_MS = 50;
 
 interface InvestigationGraphLoaderProps
   extends Omit<InvestigationGraphComponentProps, 'currentData' | 'totalData'> {
@@ -573,37 +578,9 @@ const InvestigationGraphLoader = ({
 
   const [objects, setObjects] = useState<ObjectToParse[]>([]);
   useEffect(() => {
-    let workspaceObjects = workspace ? getObjectsToParse(workspace) : [];
+    const workspaceObjects = workspace ? getObjectsToParse(workspace) : [];
     async function fetchCounts() {
-      // Keep only meta-objects and identities.
-      const objectIds = workspaceObjects.filter(
-        (object) => object.parent_types.includes('Stix-Meta-Object')
-          || object.parent_types.includes('Identity'),
-      ).map((object) => object.id);
-
-      if (objectIds.length > 0) {
-        const { stixRelationshipsDistribution: relCounts } = await fetchQuery(
-          investigationGraphCountRelToQuery,
-          { objectIds },
-        ).toPromise() as InvestigationGraphStixCountRelToQuery$data;
-
-        // For each object, add the number of relations it has in our objects data.
-        (relCounts ?? []).forEach((count) => {
-          if (!count) return;
-          const { label, value } = count;
-          const object = workspaceObjects.find((obj) => obj.id === label);
-          if (object) {
-            workspaceObjects = [
-              ...workspaceObjects.filter((obj) => obj.id !== label),
-              {
-                ...object,
-                numberOfConnectedElement: value ?? undefined,
-              },
-            ];
-          }
-        });
-      }
-      setObjects(workspaceObjects);
+      setObjects(await fetchMetaObjectsCount(workspaceObjects));
     }
     fetchCounts();
   }, [workspace]);
