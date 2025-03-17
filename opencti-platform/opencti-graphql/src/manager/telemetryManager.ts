@@ -113,7 +113,7 @@ export const addDisseminationCount = () => {
   }
 };
 
-const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
+export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
   try {
     const context = executionContext('telemetry_manager');
     // region Settings information
