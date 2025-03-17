@@ -79,7 +79,6 @@ const GraphToolbarContentTools = ({
 
   const relBetweenNodes = selectedNodes.length >= 2 && selectedLinks.length === 0;
   const relBetweenNodeAndLink = selectedNodes.length === 1 && selectedLinks.length === 1;
-  const canAddRelation = relBetweenNodes || relBetweenNodeAndLink;
 
   const selectionContainsInferred = selectedNodes.some((n) => n.isNestedInferred)
     || selectedLinks.some((n) => n.inferred || n.isNestedInferred);
@@ -99,6 +98,8 @@ const GraphToolbarContentTools = ({
     objectsFrom = isReversed ? [selectedNodes[0]] : [selectedLinks[0]];
     objectsTo = isReversed ? [selectedLinks[0]] : [selectedNodes[0]];
   }
+
+  const canAddRelation = objectsFrom.length > 0 && objectsTo.length > 0;
 
   const removeFromAddPanel = (node: { id: string }) => {
     // Remove links associated to removed node
