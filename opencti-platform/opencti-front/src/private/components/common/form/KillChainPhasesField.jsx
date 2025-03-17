@@ -67,7 +67,6 @@ class KillChainPhasesField extends Component {
         required={required}
         multiple={true}
         disabled={disabled}
-        required={required}
         textfieldprops={{
           variant: 'standard',
           label: t('Kill chain phases'),
