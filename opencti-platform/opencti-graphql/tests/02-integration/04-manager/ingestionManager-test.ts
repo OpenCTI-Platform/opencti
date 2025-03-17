@@ -235,6 +235,50 @@ describe('Verify taxii ingestion', () => {
     // Delete the ingest
     await ingestionDelete(testContext, ADMIN_USER, ingestionPaginatedWithStartDate.internal_id);
   });
+
+  it('Should taxii response with more=false and next date be accurate including microsecond', async () => {
+    // 1. Create ingestion in opencti
+    const input3 : IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollectionMicrosecond',
+      ingestion_running: true,
+      name: 'taxii ingestion with last page, more = false and date',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+    };
+    const ingestionPaginatedWithNextDate = await addTaxiiIngestion(testContext, ADMIN_USER, input3);
+    expect(ingestionPaginatedWithNextDate.id).toBeDefined();
+    expect(ingestionPaginatedWithNextDate.internal_id).toBeDefined();
+
+    // 2. Check parameter send to taxii server for the first call
+    const expectedParams1 = prepareTaxiiGetParam(ingestionPaginatedWithNextDate);
+    expect(expectedParams1.next).toBeUndefined();
+    expect(expectedParams1.added_after).toBeUndefined();
+
+    // 3. Simulate a taxii server response with pagination (more = true) and check opencti behavior.
+    const taxiResponse: TaxiiResponseData = {
+      data: {
+        next: undefined,
+        objects: [
+          { confidence: 100,
+            created: '2024-06-03T20:35:44.000Z',
+            description: 'The best description of the world',
+            published: '2024-06-03T20:35:44.000Z',
+            revoked: false,
+            spec_version: '2.1',
+            type: 'report' } as unknown as StixReport],
+        more: false
+      },
+      addedLastHeader: '2025-02-13T19:41:56.302472Z'
+    };
+
+    await processTaxiiResponse(testContext, ingestionPaginatedWithNextDate, taxiResponse);
+    const taxiiEntityAfterCall = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestionPaginatedWithNextDate.id);
+    expect(taxiiEntityAfterCall.added_after_start).toBe('2025-02-13T19:41:56.302472Z');
+
+    // Delete the ingest
+    await ingestionDelete(testContext, ADMIN_USER, ingestionPaginatedWithNextDate.internal_id);
+  });
 });
 
 describe('Verify taxii ingestion - patch part', () => {
