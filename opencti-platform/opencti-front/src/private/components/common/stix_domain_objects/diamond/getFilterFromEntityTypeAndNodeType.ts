@@ -46,7 +46,7 @@ const filterContentFromEntityTypeAndNodeType = {
   },
   [DiamondEntityType.intrusionSet]: {
     [DiamondNodeType.adversary]: {
-      entityType: ['Campaign', 'Threat-Actor-Group', 'Threat-Actor-Individual'],
+      entityType: ['Campaign', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'],
       relationships: ['attributed-to'],
     },
     [DiamondNodeType.infrastructure]: {
@@ -96,7 +96,7 @@ const filterContentFromEntityTypeAndNodeType = {
       relationships: ['uses', 'related-to'],
     },
     [DiamondNodeType.capabilities]: {
-      entityType: ['Attack-Pattern', 'Tool', 'Malware'],
+      entityType: ['Attack-Pattern', 'Malware'],
       relationships: ['uses', 'delivers', 'drops'],
     },
   },
