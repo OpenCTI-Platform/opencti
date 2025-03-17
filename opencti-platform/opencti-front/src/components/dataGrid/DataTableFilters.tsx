@@ -1,7 +1,7 @@
 import Filters from '@components/common/lists/Filters';
 import React, { useState } from 'react';
 import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined, SettingsOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined, SaveOutlined, SettingsOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import StixDomainObjectsExports from '@components/common/stix_domain_objects/StixDomainObjectsExports';
 import StixCoreRelationshipsExports from '@components/common/stix_core_relationships/StixCoreRelationshipsExports';
@@ -19,6 +19,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
+import SavedFilterButton from 'src/components/saved_filters/SavedFilterButton';
 import FilterIconButton from '../FilterIconButton';
 import { useFormatter } from '../i18n';
 import { DataTableDisplayFiltersProps, DataTableFiltersProps, DataTableVariant } from './dataTableTypes';
@@ -51,7 +52,7 @@ export const DataTableDisplayFilters = ({
   }
 
   return (
-    <div id="filter-container" style={{ minHeight: 10 }}>
+    <div id="filter-container" style={{ minHeight: 10, display: 'flex', alignItems: 'center' }}>
       <FilterIconButton
         helpers={helpers}
         availableFilterKeys={availableFilterKeys}
@@ -67,6 +68,7 @@ export const DataTableDisplayFilters = ({
         }}
         redirection
       />
+      <SavedFilterButton />
     </div>
   );
 };
