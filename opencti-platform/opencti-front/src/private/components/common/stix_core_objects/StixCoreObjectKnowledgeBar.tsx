@@ -83,7 +83,7 @@ interface SectionConfig {
     label: string;
     iconType: string;
     path: string;
-    count: number;
+    count?: number;
   }[];
 }
 
@@ -97,6 +97,7 @@ interface KnowledgeBarProps {
 const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {
   const location = useLocation();
   const { t_i18n, n } = useFormatter();
+
   return (
     <MenuItem
       component={Link}
@@ -156,7 +157,6 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'All',
           iconType: 'All',
           path: 'all',
-          count: 0,
         },
       ],
     },
@@ -427,7 +427,7 @@ const StixCoreObjectKnowledgeBar = ({
                   to={`${stixCoreObjectLink}/${path}`}
                   iconType={iconType}
                   label={label}
-                  count={count}
+                  count={count ?? 0}
                 />
               ))}
             </MenuList>
