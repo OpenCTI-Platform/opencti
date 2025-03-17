@@ -21564,7 +21564,7 @@ export type QuerySavedFiltersArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<ExclusionListOrdering>;
+  orderBy?: InputMaybe<SavedFilterOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -23572,6 +23572,11 @@ export type SavedFilterEdge = {
   cursor: Scalars['String']['output'];
   node: SavedFilter;
 };
+
+export enum SavedFilterOrdering {
+  Score = '_score',
+  Name = 'name'
+}
 
 export type ScaleAttribute = {
   __typename?: 'ScaleAttribute';
@@ -31900,6 +31905,7 @@ export type ResolversTypes = ResolversObject<{
   SavedFilterAddInput: SavedFilterAddInput;
   SavedFilterConnection: ResolverTypeWrapper<Omit<SavedFilterConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['SavedFilterEdge']>> }>;
   SavedFilterEdge: ResolverTypeWrapper<Omit<SavedFilterEdge, 'node'> & { node: ResolversTypes['SavedFilter'] }>;
+  SavedFilterOrdering: SavedFilterOrdering;
   ScaleAttribute: ResolverTypeWrapper<ScaleAttribute>;
   ScenarioType: ScenarioType;
   SearchMetrics: ResolverTypeWrapper<SearchMetrics>;

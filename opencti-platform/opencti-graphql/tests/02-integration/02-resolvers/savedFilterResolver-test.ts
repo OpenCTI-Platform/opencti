@@ -8,7 +8,7 @@ const GET_SAVED_FILTERS_QUERY = gql`
   query savedFilters(
     $first: Int
     $after: ID
-    $orderBy: ExclusionListOrdering
+    $orderBy: SavedFilterOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
     $search: String
@@ -81,7 +81,7 @@ describe('Saved Filter Resolver', () => {
 
   describe('savedFilters', () => {
     describe('If I use the savedFilters query', () => {
-      it('gives the saved filter list', async () => {
+      it('gives the list of saved filters', async () => {
         const result = await queryAsAdminWithSuccess({
           query: GET_SAVED_FILTERS_QUERY,
           variables: {},
@@ -89,6 +89,7 @@ describe('Saved Filter Resolver', () => {
 
         const savedFilters = result.data?.savedFilters.edges;
         expect(savedFilters).toBeDefined();
+        expect(savedFilters.length).toEqual(1);
         expect(savedFilters.length).toEqual(1);
       });
     });

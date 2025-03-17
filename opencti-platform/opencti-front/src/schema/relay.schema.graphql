@@ -8204,7 +8204,7 @@ type Query {
   fintelTemplate(id: ID!): FintelTemplate
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
-  savedFilters(first: Int, after: ID, orderBy: ExclusionListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
+  savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
 }
 
 type Subscription {
@@ -12689,6 +12689,11 @@ type SavedFilterEdge {
 type SavedFilterConnection {
   pageInfo: PageInfo!
   edges: [SavedFilterEdge!]
+}
+
+enum SavedFilterOrdering {
+  name
+  _score
 }
 
 input SavedFilterAddInput {

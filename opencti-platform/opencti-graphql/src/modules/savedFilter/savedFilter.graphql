@@ -19,17 +19,23 @@ type SavedFilterConnection {
     edges: [SavedFilterEdge!]
 }
 
+enum SavedFilterOrdering {
+    name
+    _score
+}
+
 input SavedFilterAddInput {
     name: String!
     filters: String!
     scope: String
 }
 
+
 type Query {
     savedFilters(
         first: Int
         after: ID
-        orderBy: ExclusionListOrdering
+        orderBy: SavedFilterOrdering
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
