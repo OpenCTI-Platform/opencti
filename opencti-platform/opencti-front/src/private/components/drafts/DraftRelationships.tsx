@@ -175,6 +175,7 @@ export const draftRelationshipsLinesFragment = graphql`
         ) @connection(key: "Pagination_draftWorkspaceRelationships") {
             edges {
                 node {
+                    id
                     ...DraftRelationships_node
                 }
             }

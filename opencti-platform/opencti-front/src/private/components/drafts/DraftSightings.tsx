@@ -266,6 +266,7 @@ export const draftSightingsLinesFragment = graphql`
         ) @connection(key: "Pagination_draftWorkspaceSightingRelationships") {
             edges {
                 node {
+                    id
                     ...DraftSightings_node
                 }
             }
