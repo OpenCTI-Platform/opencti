@@ -167,7 +167,8 @@ export const batchInternalRels = async (context, user, elements, opts = {}) => {
         const resolve = resolvedElements[id];
         // If resolution is empty the database is inconsistent, an error must be thrown
         if (isEmptyField(resolve)) {
-          throw UnsupportedError('Invalid loading of batched elements', { ids: relId });
+          logApp.warn('Invalid loading of batched elements', { ids: relId });
+          return undefined;
         }
         // If user have correct access right, return the element
         if (await isUserCanAccessStoreElement(context, user, resolve)) {
@@ -176,17 +177,19 @@ export const batchInternalRels = async (context, user, elements, opts = {}) => {
         // If access is not possible, return a restricted entity
         return buildRestrictedEntity(resolve);
       }));
+      const filteredResults = relElements.filter((e) => e);
       // Return sorted elements if needed
       if (opts.sortBy) {
-        return R.sortWith([R.ascend(R.prop(opts.sortBy))])(relElements);
+        return R.sortWith([R.ascend(R.prop(opts.sortBy))])(filteredResults);
       }
-      return relElements;
+      return filteredResults;
     }
     if (relId) {
       const resolve = resolvedElements[relId];
       // If resolution is empty the database is inconsistent, an error must be thrown
       if (isEmptyField(resolve)) {
-        throw UnsupportedError('Invalid loading of batched element', { id: relId });
+        logApp.warn('Invalid loading of batched element', { id: relId });
+        return undefined;
       }
       // If user have correct access right, return the element
       if (await isUserCanAccessStoreElement(context, user, resolve)) {
