@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
+import type { SavedFilter } from 'src/generated/graphql';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
@@ -49,7 +50,7 @@ const DELETE_SAVED_FILTER_MUTATION = gql`
 `;
 
 describe('Saved Filter Resolver', () => {
-  let createdFilterId = null;
+  let createdFilterId: string = '';
   const newFilter = {
     mode: 'and',
     filters: [],
@@ -72,9 +73,9 @@ describe('Saved Filter Resolver', () => {
           },
         });
 
-        expect(result.data.savedFilterAdd).toBeDefined();
-        expect(result.data.savedFilterAdd.name).toEqual('my new filter');
-        createdFilterId = result.data.savedFilterAdd.id;
+        expect(result?.data?.savedFilterAdd).toBeDefined();
+        expect(result?.data?.savedFilterAdd.name).toEqual('my new filter');
+        createdFilterId = result?.data?.savedFilterAdd.id as string;
       });
     });
   });
