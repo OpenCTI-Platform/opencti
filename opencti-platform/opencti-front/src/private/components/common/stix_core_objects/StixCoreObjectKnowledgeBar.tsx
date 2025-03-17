@@ -148,9 +148,6 @@ const StixCoreObjectKnowledgeBar = ({
     return Object.values(source).reduce((sum: number, val) => sum + val, 0);
   };
 
-  const relatedCount = sumEntitiesByKeys(distributions.related);
-  const withoutRelatedCount = sumEntitiesByKeys(distributions.withoutRelated);
-
   const sectionsConfig: SectionConfig[] = [
     {
       title: 'All entities',
@@ -159,7 +156,7 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'All',
           iconType: 'All',
           path: 'all',
-          count: relatedCount + withoutRelatedCount,
+          count: 0,
         },
       ],
     },
