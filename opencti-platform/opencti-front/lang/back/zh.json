@@ -427,6 +427,7 @@
   "Linked to": "链接到",
   "List of parameters": "参数列表",
   "Listen deletion": "监听删除",
+  "Listen through http callback": "通过 http 回调监听",
   "Location type": "位置类型",
   "Log sources": "日志来源",
   "Login message": "登录信息",

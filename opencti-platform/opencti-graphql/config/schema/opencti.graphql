@@ -1864,6 +1864,7 @@ input RegisterConnectorInput {
   auto: Boolean
   only_contextual: Boolean
   playbook_compatible: Boolean
+  listen_callback_uri: String
 }
 type RabbitMQConnection {
   host: String!
@@ -1897,6 +1898,7 @@ type ConnectorConfig {
   listen: String!
   listen_routing: String!
   listen_exchange: String!
+  listen_callback_uri: String
   push: String!
   push_routing: String!
   push_exchange: String!
@@ -14466,7 +14468,7 @@ type Mutation {
   stixCoreObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX DOMAIN OBJECT ENTITIES
-  stixBundlePush(connectorId: String!, bundle: String!): Boolean @auth(for: [CONNECTORAPI])
+  stixBundlePush(connectorId: String!, bundle: String!, work_id: String): Boolean @auth(for: [CONNECTORAPI])
   stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations @auth
   stixDomainObjectsExportAsk(

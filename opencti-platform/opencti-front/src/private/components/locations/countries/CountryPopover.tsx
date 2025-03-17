@@ -53,6 +53,9 @@ const CountryPopover = ({ id }: { id: string }) => {
   const handleCloseDelete = () => {
     setDisplayDelete(false);
   };
+  const handleCloseEdit = () => {
+    setDisplayEdit(false);
+  };
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
@@ -116,7 +119,7 @@ const CountryPopover = ({ id }: { id: string }) => {
           <React.Suspense fallback={<div />}>
             <CountryEditionContainer
               queryRef={queryRef}
-              handleClose={handleClose}
+              handleClose={handleCloseEdit}
               open={displayEdit}
             />
           </React.Suspense>
