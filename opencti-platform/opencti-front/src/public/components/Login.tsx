@@ -25,6 +25,7 @@ import { useFormatter } from '../../components/i18n';
 import { isNotEmptyField } from '../../utils/utils';
 import useDimensions from '../../utils/hooks/useDimensions';
 import SystemBanners from './SystemBanners';
+import ResetPassword from './ResetPassword';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -122,6 +123,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const { t_i18n } = useFormatter();
   const { dimension } = useDimensions();
   const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
+  const [resetPassword, setResetPassword] = useState(false);
 
   const renderExternalAuthButton = (provider?: string | null) => {
     switch (provider) {
@@ -299,16 +301,23 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
           </Box>
         </Paper>
       )}
-      {isAuthForm && !isConsentMessage && (
+      {isAuthForm && !isConsentMessage && !resetPassword && (
         <Paper variant="outlined" classes={{ root: classes.login }}>
           <LoginForm />
+          <div style={{ marginBottom: 10, cursor: 'pointer', }}>
+            <a onClick={() => setResetPassword(true)}>{t_i18n('I forgot my password')}</a>
+          </div>
         </Paper>
       )}
-      {isAuthForm && isConsentMessage && checked && (
+      {isAuthForm && isConsentMessage && checked && !resetPassword && (
         <Paper variant="outlined" classes={{ root: classes.login }}>
           <LoginForm />
+          <div style={{ marginBottom: 10, cursor: 'pointer', }}>
+            <a onClick={() => setResetPassword(true)}>{t_i18n('I forgot my password')}</a>
+          </div>
         </Paper>
       )}
+      {resetPassword && <ResetPassword onCancel={() => setResetPassword(false)} />}
       {isAuthButtons && !isConsentMessage && renderExternalAuth(authSSOs)}
       {isAuthButtons
         && isConsentMessage
