@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
-import type { SavedFilter } from 'src/generated/graphql';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
