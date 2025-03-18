@@ -19,9 +19,9 @@ import { ObjectToParse } from '../utils/useGraphParser';
 import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './GraphToolbarRemoveConfirm';
 
 export interface GraphToolbarContentToolsProps {
-  stixCoreObjectRefetchQuery: GraphQLTaggedNode
-  relationshipRefetchQuery: GraphQLTaggedNode
-  onAddRelation?: (rel: ObjectToParse) => void
+  stixCoreObjectRefetchQuery?: GraphQLTaggedNode
+  relationshipRefetchQuery?: GraphQLTaggedNode
+  onAddRelation?: (rel: ObjectToParse, onCompleted: () => void) => void
   entity?: GraphEntity
   enableReferences?: boolean
   onDeleteRelation?: GraphToolbarDeleteConfirmProps['onDeleteRelation']
@@ -67,6 +67,7 @@ const GraphToolbarContentTools = ({
     addNode,
     removeNode,
     removeLink,
+    addLink,
   } = useGraphInteractions();
 
   const head = selectedNodes.slice(0, 1);
@@ -78,7 +79,6 @@ const GraphToolbarContentTools = ({
 
   const relBetweenNodes = selectedNodes.length >= 2 && selectedLinks.length === 0;
   const relBetweenNodeAndLink = selectedNodes.length === 1 && selectedLinks.length === 1;
-  const canAddRelation = relBetweenNodes || relBetweenNodeAndLink;
 
   const selectionContainsInferred = selectedNodes.some((n) => n.isNestedInferred)
     || selectedLinks.some((n) => n.inferred || n.isNestedInferred);
@@ -99,12 +99,18 @@ const GraphToolbarContentTools = ({
     objectsTo = isReversed ? [selectedLinks[0]] : [selectedNodes[0]];
   }
 
+  const canAddRelation = objectsFrom.length > 0 && objectsTo.length > 0;
+
   const removeFromAddPanel = (node: { id: string }) => {
     // Remove links associated to removed node
     (graphData?.links ?? []).filter(({ source_id, target_id }) => {
       return source_id === node.id || target_id === node.id;
     }).forEach(({ id }) => removeLink(id));
     removeNode(node.id);
+  };
+
+  const addRelation = (rel: ObjectToParse) => {
+    onAddRelation?.(rel, () => addLink(rel));
   };
 
   return (
@@ -133,10 +139,12 @@ const GraphToolbarContentTools = ({
         />
       )}
 
-      <GraphToolbarEditObject
-        stixCoreObjectRefetchQuery={stixCoreObjectRefetchQuery}
-        relationshipRefetchQuery={relationshipRefetchQuery}
-      />
+      {stixCoreObjectRefetchQuery && relationshipRefetchQuery && (
+        <GraphToolbarEditObject
+          stixCoreObjectRefetchQuery={stixCoreObjectRefetchQuery}
+          relationshipRefetchQuery={relationshipRefetchQuery}
+        />
+      )}
 
       {onAddRelation && entity && (
         <>
@@ -156,7 +164,7 @@ const GraphToolbarContentTools = ({
             toObjects={objectsTo}
             startTime={minutesBefore(1, now())}
             stopTime={now()}
-            handleResult={onAddRelation}
+            handleResult={addRelation}
             handleReverseRelation={() => setRelationReversed((r) => !r)}
             handleClose={() => {
               setRelationReversed(false);
@@ -179,7 +187,7 @@ const GraphToolbarContentTools = ({
             startTime={dateFormat(entity.published)}
             stopTime={dateFormat(entity.published)}
             confidence={entity.confidence}
-            handleResult={onAddRelation}
+            handleResult={addRelation}
             handleReverseRelation={() => setNestedReversed((r) => !r)}
             defaultMarkingDefinitions={entity.objectMarking ?? []}
             handleClose={() => {
@@ -208,7 +216,7 @@ const GraphToolbarContentTools = ({
             lastSeen={dateFormat(entity.published) ?? dayStartDate()}
             defaultCreatedBy={convertCreatedBy(entity)}
             defaultMarkingDefinitions={convertMarkings(entity)}
-            handleResult={onAddRelation}
+            handleResult={addRelation}
             handleReverseSighting={() => setSightingReversed((r) => !r)}
             handleClose={() => {
               setSightingReversed(false);
