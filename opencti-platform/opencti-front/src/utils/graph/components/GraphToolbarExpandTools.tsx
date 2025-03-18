@@ -565,7 +565,7 @@ const expandFilterGroup = (
 });
 
 export interface GraphToolbarExpandToolsProps {
-  onInvestigationExpand?: (ids: string[]) => void
+  onInvestigationExpand?: (newObjects: ObjectToParse[]) => void
   onInvestigationRollback?: (ids: string[], onCompleted: () => void) => void
 }
 
@@ -586,8 +586,6 @@ const GraphToolbarExpandTools = ({
 
   const {
     setLinearProgress,
-    addLink,
-    addNode,
     rebuildGraphData,
   } = useGraphInteractions();
 
@@ -647,18 +645,15 @@ const GraphToolbarExpandTools = ({
       const newElements = (stixRelationships?.edges ?? []).flatMap((e) => {
         if (!e) return [];
         const entity = e.node.from?.id === id ? e.node.to : e.node.from;
-        const toReturn: string[] = [];
+        const toReturn: ObjectToParse[] = [];
         if (!objectIds.includes(e.node.id)) {
-          toReturn.push(e.node.id);
-          addLink(e.node as unknown as ObjectToParse);
+          toReturn.push(e.node as unknown as ObjectToParse);
         }
         if (!!entity?.id && !objectIds.includes(entity.id)) {
-          toReturn.push(entity.id);
-          addNode(entity as unknown as ObjectToParse);
+          toReturn.push(entity as unknown as ObjectToParse);
         }
         return toReturn;
       });
-      // this.fetchObjectRelCounts(newElements);
       onInvestigationExpand?.(newElements);
       return '';
     }));

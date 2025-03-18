@@ -114,6 +114,14 @@ const useGraphInteractions = () => {
     setGraphStateProp('showLinearProgress', val);
   };
 
+  const setLoadingTotal = (val: number) => {
+    setGraphStateProp('loadingTotal', val);
+  };
+
+  const setLoadingCurrent = (val: number) => {
+    setGraphStateProp('loadingCurrent', val);
+  };
+
   const switchSelectRelationshipMode = () => {
     const selectedNodesIds = selectedNodes.map((n) => n.id);
     setSelectedLinks((graphData?.links ?? []).filter((l) => {
@@ -247,6 +255,7 @@ const useGraphInteractions = () => {
   const clearSelection = () => {
     setSelectedNodes([]);
     setSelectedLinks([]);
+    setGraphStateProp('search', undefined);
   };
 
   /**
@@ -289,6 +298,7 @@ const useGraphInteractions = () => {
 
   const selectBySearch = (search: string) => {
     clearSelection();
+    setGraphStateProp('search', search);
     if (search) {
       const searchLow = search.toLowerCase();
       const matchingNodes = (graphData?.nodes ?? []).filter((node) => {
@@ -446,6 +456,8 @@ const useGraphInteractions = () => {
     setRawPositions,
     setLinearProgress,
     rebuildGraphData,
+    setLoadingTotal,
+    setLoadingCurrent,
   };
 };
 
