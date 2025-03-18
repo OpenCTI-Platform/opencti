@@ -413,7 +413,7 @@ const GraphContainerCorrelation = ({
     queryRef: queryObjectsRef,
   });
 
-  // Use a debounce to avoid spamming too quickly the backend.
+  // Use debounce to avoid spamming too quickly the backend.
   const debounceFetchMore = useDebounceCallback(
     () => { loadMore(pageSize); },
     REFETCH_DEBOUNCE_MS,

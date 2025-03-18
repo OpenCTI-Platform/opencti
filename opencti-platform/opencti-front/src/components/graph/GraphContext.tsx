@@ -120,6 +120,8 @@ export const GraphProvider = ({
 
   // Dynamically compute time range values
   const timeRange = useMemo(() => {
+    // reset selected range when range is recalculated.
+    setGraphState((old) => ({ ...old, selectedTimeRangeInterval: undefined }));
     const links = graphData?.links ?? [];
     const interval = computeTimeRangeInterval(links);
     return {
