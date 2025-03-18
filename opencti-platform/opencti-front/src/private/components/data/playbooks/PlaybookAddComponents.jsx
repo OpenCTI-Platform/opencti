@@ -185,6 +185,11 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
         { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
+        {
+          label: t_i18n('Status'),
+          value: 'x_opencti_workflow_id',
+          isMultiple: false,
+        },
       ];
     } else if (actionsInputs[i]?.op === 'replace') {
       options = [
@@ -222,6 +227,11 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
         { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
+        {
+          label: t_i18n('Status'),
+          value: 'x_opencti_workflow_id',
+          isMultiple: false,
+        },
       ];
     }
     return (
