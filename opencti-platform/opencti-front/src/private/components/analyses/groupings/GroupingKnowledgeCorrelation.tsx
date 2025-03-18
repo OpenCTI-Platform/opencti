@@ -1,12 +1,12 @@
 import { graphql } from 'react-relay';
 import React, { Suspense } from 'react';
 import useGroupingKnowledgeCorrelationEdit from './useGroupingKnowledgeCorrelationEdit';
-import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
+import { OctiGraphPositions } from '../../../../components/graph/graph.types';
 import { serializeObjectB64 } from '../../../../utils/object';
 import { GroupingKnowledgeCorrelationQuery$data } from './__generated__/GroupingKnowledgeCorrelationQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { GraphContainerCorrelationObjectsQuery } from '../../../../utils/graph/__generated__/GraphContainerCorrelationObjectsQuery.graphql';
-import GraphContainerCorrelation, { graphContainerCorrelationObjectsQuery } from '../../../../utils/graph/GraphContainerCorrelation';
+import { GraphContainerCorrelationObjectsQuery } from '../../../../components/graph/__generated__/GraphContainerCorrelationObjectsQuery.graphql';
+import GraphContainerCorrelation, { graphContainerCorrelationObjectsQuery } from '../../../../components/graph/GraphContainerCorrelation';
 import Loader from '../../../../components/Loader';
 
 export const groupingKnowledgeCorrelationQuery = graphql`

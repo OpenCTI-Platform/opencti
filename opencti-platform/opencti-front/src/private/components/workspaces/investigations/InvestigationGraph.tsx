@@ -13,18 +13,18 @@ import { InvestigationGraphData_fragment$key } from './__generated__/Investigati
 import useInvestigationGraphUpdateEntities from './useInvestigationGraphUpdateEntities';
 import { InvestigationGraph_fragment$key } from './__generated__/InvestigationGraph_fragment.graphql';
 import type { Theme } from '../../../../components/Theme';
-import Graph from '../../../../utils/graph/Graph';
-import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
-import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
-import { GraphProvider, useGraphContext } from '../../../../utils/graph/GraphContext';
-import GraphToolbar, { GraphToolbarProps } from '../../../../utils/graph/GraphToolbar';
+import Graph from '../../../../components/graph/Graph';
+import { OctiGraphPositions } from '../../../../components/graph/graph.types';
+import { getObjectsToParse } from '../../../../components/graph/utils/graphUtils';
+import { GraphProvider, useGraphContext } from '../../../../components/graph/GraphContext';
+import GraphToolbar, { GraphToolbarProps } from '../../../../components/graph/GraphToolbar';
 import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
-import useGraphInteractions from '../../../../utils/graph/utils/useGraphInteractions';
+import useGraphInteractions from '../../../../components/graph/utils/useGraphInteractions';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
-import { ObjectToParse } from '../../../../utils/graph/utils/useGraphParser';
+import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser';
 
 const investigationGraphDataFragment = graphql`
   fragment InvestigationGraphData_fragment on Workspace {

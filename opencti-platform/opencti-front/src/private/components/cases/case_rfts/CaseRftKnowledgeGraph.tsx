@@ -3,15 +3,15 @@ import { graphql } from 'react-relay';
 import CaseRftPopover from './CaseRftPopover';
 import { CaseRftKnowledgeGraphQuery$data } from './__generated__/CaseRftKnowledgeGraphQuery.graphql';
 import useCaseRftKnowledgeGraphDeleteRelation from './useCaseRftKnowledgeGraphDeleteRelation';
-import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
+import { OctiGraphPositions } from '../../../../components/graph/graph.types';
 import useCaseRftKnowledgeGraphAddRelation from './useCaseRftKnowledgeGraphAddRelation';
 import useCaseRftKnowledgeGraphEdit from './useCaseRftKnowledgeGraphEdit';
-import { GraphToolbarProps } from '../../../../utils/graph/GraphToolbar';
+import { GraphToolbarProps } from '../../../../components/graph/GraphToolbar';
 import { serializeObjectB64 } from '../../../../utils/object';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
-import { GraphContainerKnowledgeObjectsQuery } from '../../../../utils/graph/__generated__/GraphContainerKnowledgeObjectsQuery.graphql';
-import GraphContainerKnowledge, { graphContainerKnowledgeObjectsQuery } from '../../../../utils/graph/GraphContainerKnowledge';
+import { GraphContainerKnowledgeObjectsQuery } from '../../../../components/graph/__generated__/GraphContainerKnowledgeObjectsQuery.graphql';
+import GraphContainerKnowledge, { graphContainerKnowledgeObjectsQuery } from '../../../../components/graph/GraphContainerKnowledge';
 
 export const caseRftKnowledgeGraphQuery = graphql`
   query CaseRftKnowledgeGraphQuery($id: String!) {

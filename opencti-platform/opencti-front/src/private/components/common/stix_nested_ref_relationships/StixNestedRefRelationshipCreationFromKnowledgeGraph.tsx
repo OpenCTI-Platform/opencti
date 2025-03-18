@@ -2,7 +2,7 @@ import { stixNestedRefRelationshipCreationResolveQuery } from '@components/commo
 import IconButton from '@mui/material/IconButton';
 import { ReadMoreOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-import React, { FunctionComponent } from 'react';
+import React from 'react';
 import {
   StixNestedRefRelationshipCreationResolveQuery,
 } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipCreationResolveQuery.graphql';
@@ -22,7 +22,7 @@ interface StixNestedRefRelationshipCreationFromKnowledgeGraphProps {
   handleSetNestedRelationExist: (val: boolean) => void,
   handleOpenCreateNested: () => void,
 }
-const StixNestedRefRelationshipCreationFromKnowledgeGraph: FunctionComponent<StixNestedRefRelationshipCreationFromKnowledgeGraphProps> = ({
+const StixNestedRefRelationshipCreationFromKnowledgeGraph = ({
   nestedRelationExist,
   openCreateNested,
   nestedEnabled,
@@ -30,7 +30,7 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraph: FunctionComponent<Sti
   relationToObjects,
   handleSetNestedRelationExist,
   handleOpenCreateNested,
-}) => {
+}: StixNestedRefRelationshipCreationFromKnowledgeGraphProps) => {
   const { t_i18n } = useFormatter();
   const queryRef = (nestedEnabled && relationFromObjects[0] && relationToObjects[0] && !openCreateNested)
     ? useQueryLoading<StixNestedRefRelationshipCreationResolveQuery>(
@@ -41,30 +41,30 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraph: FunctionComponent<Sti
       },
     ) : undefined;
   return (
-    <Tooltip title={t_i18n('Create a nested relationship')}>
-      <>
-        {queryRef
-          ? (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              <StixNestedRefRelationshipCreationFromKnowledgeGraphContent
-                queryRef={queryRef}
-                nestedRelationExist={nestedRelationExist}
-                handleSetNestedRelationExist={handleSetNestedRelationExist}
-                handleOpenCreateNested={handleOpenCreateNested}
-              />
-            </React.Suspense>
-          )
-          : <span>
-            <IconButton
-              color="primary"
-              disabled={true}
-            >
-              <ReadMoreOutlined />
-            </IconButton>
-          </span>
-        }
-      </>
-    </Tooltip>
+    <>
+      {queryRef ? (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <StixNestedRefRelationshipCreationFromKnowledgeGraphContent
+            queryRef={queryRef}
+            nestedRelationExist={nestedRelationExist}
+            handleSetNestedRelationExist={handleSetNestedRelationExist}
+            handleOpenCreateNested={handleOpenCreateNested}
+          />
+        </React.Suspense>
+      )
+        : (
+          <Tooltip title={t_i18n('Create a nested relationship')}>
+            <span>
+              <IconButton
+                color="primary"
+                disabled={true}
+              >
+                <ReadMoreOutlined />
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
+    </>
   );
 };
 

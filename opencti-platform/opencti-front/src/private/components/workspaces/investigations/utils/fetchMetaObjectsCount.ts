@@ -1,7 +1,7 @@
 import { fetchQuery } from '../../../../../relay/environment';
 import { InvestigationGraphStixCountRelToQuery$data } from '../__generated__/InvestigationGraphStixCountRelToQuery.graphql';
 import { investigationGraphCountRelToQuery } from '../InvestigationGraph';
-import { ObjectToParse } from '../../../../../utils/graph/utils/useGraphParser';
+import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 
 const fetchMetaObjectsCount = async (objects: ObjectToParse[]) => {
   // Keep only meta-objects and identities.

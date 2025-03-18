@@ -16,7 +16,7 @@ import { InvestigationExpandFormRelDistributionQuery } from './__generated__/Inv
 import CheckboxesField from '../../../../components/CheckboxesField';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { GraphLink, GraphNode } from '../../../../utils/graph/graph.types';
+import { GraphLink, GraphNode } from '../../../../components/graph/graph.types';
 
 // The number of elements targeted by the given
 // entities ids, sorted by type of entity.
