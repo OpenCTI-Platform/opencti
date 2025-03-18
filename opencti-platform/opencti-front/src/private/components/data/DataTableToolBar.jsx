@@ -842,7 +842,7 @@ class DataTableToolBar extends Component {
       ((actionsInputs[i]?.type === 'ADD' && isAdmin) || (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && { label: t('Creator'), value: 'creator_id' },
       (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
       checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Kill chains'), value: 'killChainPhases' },
-      checkTypes(typesWithIndicatorTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Indicator Types'), value: 'indicator_type_ov' },
+      checkTypes(typesWithIndicatorTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Indicator types'), value: 'indicator_type_ov' },
       checkTypes(typesWithPlateforms) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Plateforms'), value: 'platforms_ov' },
       ...(actionsInputs[i]?.type === 'REPLACE' ? [
         { label: t('Author'), value: 'created-by' },
@@ -1565,6 +1565,37 @@ class DataTableToolBar extends Component {
       case 'incident_response_types_ov':
       case 'request_for_information_types_ov':
       case 'request_for_takedown_types_ov':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values[0] || null}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Select Value')}
+                fullWidth={true}
+                onFocus={this.searchVocabulary.bind(this, i, selectedField)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.vocabularies[selectedField] || []}
+            onInputChange={this.searchVocabulary.bind(this, i, selectedField)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
       case 'indicator_type_ov':
       case 'platforms_ov':
         return (
@@ -1575,7 +1606,8 @@ class DataTableToolBar extends Component {
             selectOnFocus={true}
             autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values[0] || null}
+            value={actionsInputs[i]?.values || null}
+            multiple={true}
             renderInput={(params) => (
               <TextField
                 {...params}
