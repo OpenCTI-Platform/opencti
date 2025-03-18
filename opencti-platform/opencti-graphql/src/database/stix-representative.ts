@@ -64,6 +64,9 @@ import { hashValue } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
 import { isInternalObject } from '../schema/internalObject';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../modules/indicator/indicator-types';
+import { isUserCanAccessStoreElement } from '../utils/access';
+import type { AuthContext, AuthUser } from '../types/user';
+import { extractUserAccessPropertiesFromStixObject } from '../manager/notificationManager';
 
 export const extractStixRepresentative = (
   stix: S.StixObject,
@@ -280,4 +283,15 @@ export const extractStixRepresentative = (
   }
   // endregion
   throw UnsupportedError('No representative extractor available', { type: entityType });
+};
+
+export const extractStixRepresentativeForUser = async (
+  context: AuthContext,
+  user: AuthUser,
+  stix: S.StixObject,
+) => {
+  const [from, to] = extractUserAccessPropertiesFromStixObject(stix);
+  const fromRestricted = from ? !(await isUserCanAccessStoreElement(context, user, from)) : false;
+  const toRestricted = to ? !(await isUserCanAccessStoreElement(context, user, to)) : false;
+  return extractStixRepresentative(stix, { fromRestricted, toRestricted });
 };

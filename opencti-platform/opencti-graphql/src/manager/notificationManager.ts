@@ -7,7 +7,7 @@ import { createStreamProcessor, fetchRangeNotifications, storeNotificationEvent,
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
-import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
+import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
@@ -25,7 +25,7 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { extractStixRepresentative } from '../database/stix-representative';
+import { extractStixRepresentative, extractStixRepresentativeForUser } from '../database/stix-representative';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import type { BasicStoreCommon } from '../types/store';
@@ -359,10 +359,7 @@ export const generateNotificationMessageForInstance = async (
   user: AuthUser,
   instance: StixObject | StixRelationshipObject,
 ) => {
-  const [from, to] = extractUserAccessPropertiesFromStixObject(instance);
-  const fromRestricted = from ? !(await isUserCanAccessStoreElement(context, user, from)) : false;
-  const toRestricted = to ? !(await isUserCanAccessStoreElement(context, user, to)) : false;
-  const instanceRepresentative = extractStixRepresentative(instance, { fromRestricted, toRestricted });
+  const instanceRepresentative = await extractStixRepresentativeForUser(context, user, instance);
   return `[${instance.type.toLowerCase()}] ${instanceRepresentative}`;
 };
 
