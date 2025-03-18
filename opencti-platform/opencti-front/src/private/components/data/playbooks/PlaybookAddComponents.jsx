@@ -18,6 +18,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { ListItemButton } from '@mui/material';
+import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
@@ -185,6 +186,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
         { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
+        { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
         {
           label: t_i18n('Status'),
           value: 'x_opencti_workflow_id',
@@ -206,6 +208,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
         { label: t_i18n('Severity'), value: 'severity', isMultiple: false },
         { label: t_i18n('Priority'), value: 'priority', isMultiple: false },
+        { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
         {
           label: t_i18n('Detection'),
           value: 'x_opencti_detection',
@@ -227,6 +230,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
         { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
+        { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
         {
           label: t_i18n('Status'),
           value: 'x_opencti_workflow_id',
@@ -388,6 +392,15 @@ const PlaybookAddComponentsContent = ({
             name={`actions-${i}-value`}
             type={'case_priority_ov'}
             containerStyle={fieldSpacingContainerStyle}
+            onChange={(_, value) => handleChangeActionInput(i, 'value', [
+              { label: value, value, patch_value: value },
+            ])}
+          />
+        );
+      case 'killChainPhases':
+        return (
+          <KillChainPhasesField
+            name={`actions-${i}-value`}
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
             ])}
