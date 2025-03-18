@@ -5,7 +5,7 @@ import { CloseOutlined, Delete, LabelOutlined } from '@mui/icons-material';
 import React, { useState } from 'react';
 import { useFormatter } from 'src/components/i18n';
 import { FormikConfig } from 'formik/dist/types';
-import { commitMutation, MESSAGING$ } from 'src/relay/environment';
+import { MESSAGING$ } from 'src/relay/environment';
 import { graphql } from 'react-relay';
 import { SelectChangeEvent } from '@mui/material/Select';
 import Slide from '@mui/material/Slide';
@@ -21,10 +21,10 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import * as R from 'ramda';
 import Chip from '@mui/material/Chip';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from 'src/utils/hooks/useGranted';
 import Security from 'src/utils/Security';
+import useApiMutation from 'src/utils/hooks/useApiMutation';
 
 const workspaceMutation = graphql`
   mutation WorkspaceHeaderTagManagerFieldMutation($id: ID!, $input: [EditInput!]!) {
@@ -49,14 +49,16 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
   const [newTag, setNewTag] = useState<string>('');
   const [isTagInputOpen, setIsTagInputOpen] = useState<boolean>(false);
   const [isTagDialogOpen, setIsTagDialogOpen] = useState<boolean>(false);
+
+  const [commit] = useApiMutation(workspaceMutation);
+
   const toggleTagInput = () => setIsTagInputOpen(!isTagInputOpen);
   const toggleTagDialog = () => setIsTagDialogOpen(!isTagDialogOpen);
 
   const handleChangeNewTag = (event: SelectChangeEvent) => setNewTag(event.target.value);
 
-  const handleManageTags = (tagList: string[], message: string, setSubmitting?: (isSubmitting: boolean) => void) => {
-    commitMutation({
-      mutation: workspaceMutation,
+  const handleManageTags = (tagList: string[], message: string) => {
+    commit({
       variables: {
         id: workspaceId,
         input: {
@@ -65,11 +67,6 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
         },
       },
       onCompleted: () => MESSAGING$.notifySuccess(message),
-      onError: undefined,
-      optimisticResponse: undefined,
-      optimisticUpdater: undefined,
-      setSubmitting: setSubmitting ?? undefined,
-      updater: undefined,
     });
   };
   const deleteTag = (tagToDelete: string) => () => {
@@ -77,9 +74,9 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
     handleManageTags(filteredTags, t_i18n('The tag has been removed'));
   };
 
-  const onSubmitCreateTag: FormikConfig<WorkspaceHeaderTagCreatorFormValues>['onSubmit'] = (data, { resetForm, setSubmitting }) => {
+  const onSubmitCreateTag: FormikConfig<WorkspaceHeaderTagCreatorFormValues>['onSubmit'] = (data, { resetForm }) => {
     if (!tags.includes(newTag) && newTag !== '') {
-      handleManageTags([...tags, newTag], t_i18n('The tag has been added'), setSubmitting);
+      handleManageTags([...tags, newTag], t_i18n('The tag has been added'));
     }
     if (isTagInputOpen) toggleTagInput();
     setNewTag('');
@@ -89,7 +86,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
   return (
     <>
       <div style={{ display: 'flex', gap: 7 }}>
-        {R.take(2, tags).map(
+        {tags.slice(0, 2).map(
           (tag) => tag.length > 0 && (
             <Chip
               key={tag}
