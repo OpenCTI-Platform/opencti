@@ -636,8 +636,18 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-      - kubernetes/install-kubectl
-      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_PRE_RELEASE -n customer-prerelease rollout restart deployment -l app=opencti
+      - run:
+          command: |
+            sudo apt update
+            sudo apt install python3-pip
+            pip install awxkit
+            awx \
+              --conf.host $AWX_ENDPOINT \
+              --conf.token $AWX_TOKEN \
+              -f human \
+              job_templates launch 'Rollout restart an instance resources' \
+              --inventory eu-west-staging \
+              --extra_vars '{"customer":"prerelease","solution":"opencti"}'
 
   deploy_dev:
     docker:

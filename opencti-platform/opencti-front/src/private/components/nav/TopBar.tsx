@@ -151,7 +151,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { isFeatureEnable } = useHelper();
   const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const isImportWorkflowEnabled = isFeatureEnable('IMPORT_WORKFLOW');
-  const isXTMHubFeatureEnabled = isFeatureEnable('XTM_HUB_INTEGRATION');
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -395,17 +394,15 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               <Box sx={{ width: '300px', padding: '15px', textAlign: 'center' }}>
                 <div className={classes.subtitle}>{t_i18n('Filigran eXtended Threat Management')}</div>
                 <Grid container={true} spacing={3}>
-                  {isXTMHubFeatureEnabled && (
-                    <Grid item xs={12}>
-                      <Tooltip title="XTM Hub">
-                        <a className={classes.xtmItem} href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://xtmhub.filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
-                          <Badge variant="dot" color="success">
-                            <img style={{ width: '100%', paddingRight: 8, paddingLeft: 8 }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
-                          </Badge>
-                        </a>
-                      </Tooltip>
-                    </Grid>
-                  )}
+                  <Grid item xs={12}>
+                    <Tooltip title="XTM Hub">
+                      <a className={classes.xtmItem} href={isNotEmptyField(xtmhubUrl) ? xtmhubUrl : 'https://xtmhub.filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
+                        <Badge variant="dot" color="success">
+                          <img style={{ width: '100%', paddingRight: 8, paddingLeft: 8 }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
+                        </Badge>
+                      </a>
+                    </Tooltip>
+                  </Grid>
                   <Grid item xs={6}>
                     <Tooltip title={t_i18n('Current platform')}>
                       <a className={classes.xtmItemCurrent}>

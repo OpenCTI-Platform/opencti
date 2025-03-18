@@ -106,11 +106,12 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
-  const isXTMHubFeatureEnabled = isFeatureEnable('XTM_HUB_INTEGRATION');
 
   const theme = useTheme<Theme>();
   const { settings } = useContext(UserContext);
-  const importFromHubUrl = isNotEmptyField(settings) ? `${settings.platform_xtmhub_url}/redirect/custom_dashboards?octi_instance_id=${settings.id}` : '';
+  const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
+    ? `${settings.platform_xtmhub_url}/redirect/custom_dashboards?octi_instance_id=${settings.id}`
+    : '';
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(type === 'dashboard' ? t_i18n('Custom dashboards | Dashboards') : t_i18n('Investigations'));
@@ -220,7 +221,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
                 type={type}
               />
             </Security>
-          ) : isXTMHubFeatureEnabled && isNotEmptyField(importFromHubUrl) && (
+          ) : isNotEmptyField(importFromHubUrl) && (
             <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
               <GradientButton
                 color='primary'
