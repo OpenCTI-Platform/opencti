@@ -1,7 +1,7 @@
 import Filters from '@components/common/lists/Filters';
 import React, { useState } from 'react';
 import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined, SaveOutlined, SettingsOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined, SettingsOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import StixDomainObjectsExports from '@components/common/stix_domain_objects/StixDomainObjectsExports';
 import StixCoreRelationshipsExports from '@components/common/stix_core_relationships/StixCoreRelationshipsExports';
@@ -32,6 +32,7 @@ import Transition from '../Transition';
 import DataTablePagination from './DataTablePagination';
 import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 import { useDataTableContext } from './components/DataTableContext';
+import SavedFiltersInput from '../saved_filters/SavedFiltersInput';
 
 export const DataTableDisplayFilters = ({
   availableFilterKeys,
@@ -137,6 +138,7 @@ const DataTableFilters = ({
               availableRelationFilterTypes={availableRelationFilterTypes}
             />
           )}
+          <SavedFiltersInput/>
         </div>
         <div style={{ display: 'flex' }}>
           {(variant === DataTableVariant.default) && (
