@@ -4,7 +4,7 @@ import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-convent
 import { ConsoleMetricExporter, InstrumentType, MeterProvider } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { AggregationTemporality } from '@opentelemetry/sdk-metrics/build/src/export/AggregationTemporality';
-import conf, { ACCOUNT_STATUS_ACTIVE, DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
+import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../domain/settings';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../telemetry/TelemetryMeterManager';
@@ -21,7 +21,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { elCount } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FilterMode } from '../generated/graphql';
-import { redisClearTelemetry, redisGetTelemetry } from '../database/redis';
+import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import type { AuthUser } from '../types/user';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
@@ -41,8 +41,13 @@ const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
 // Manager schedule, data point generation
 const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
-// Gauge name for event gauge
+// Region user event counters
 export const TELEMETRY_GAUGE_DISSEMINATION = 'disseminationCount';
+export const addDisseminationCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
+};
+
+// End Region user event counters
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
   const context = executionContext('telemetry_manager');
@@ -129,8 +134,6 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region Users information
     const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER) as AuthUser[];
     manager.setUsersCount(users.length);
-    const activeUser = users.filter((user: AuthUser) => user.account_status === ACCOUNT_STATUS_ACTIVE);
-    manager.setActiveUsersCount(activeUser.length);
     // endregion
     // region Connectors information
     const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);

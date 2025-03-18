@@ -971,10 +971,6 @@ export const redisSetTelemetryAdd = async (gaugeName: string, countToAdd: number
   }
 };
 
-export const redisGetAllTelemetry = async () => {
-  return getClientBase().hgetall(TELEMETRY_EVENT_KEY);
-};
-
 /**
  * Get gauge value by name or 0 if not present in redis.
  * @param gaugeName

@@ -24,7 +24,7 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { updateAttribute } from '../../database/middleware';
-import { notify, redisSetTelemetryAdd } from '../../database/redis';
+import { notify } from '../../database/redis';
 import { downloadFile, getFileContent, loadFile } from '../../database/file-storage';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -35,7 +35,7 @@ import { emailChecker } from '../../utils/syntax';
 import type { BasicStoreCommon } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { BASIC_EMAIL_TEMPLATE } from '../../utils/emailTemplates/basicEmailTemplate';
-import { TELEMETRY_GAUGE_DISSEMINATION } from '../../manager/telemetryManager';
+import { addDisseminationCount } from '../../manager/telemetryManager';
 
 const MAX_DISSEMINATION_LIST_SIZE = conf.get('app:dissemination_list:max_list_size') || 500;
 
@@ -57,10 +57,6 @@ interface SendMailArgs {
   html: string;
   attachments?: any[];
 }
-
-export const addDisseminationCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
-};
 
 /**
  * Actual sending of email, used by the background task.
