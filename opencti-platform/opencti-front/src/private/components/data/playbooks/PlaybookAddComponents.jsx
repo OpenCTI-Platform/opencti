@@ -188,6 +188,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
         { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
+        { label: t_i18n('Plateforms'), value: 'plateform', isMultiple: true },
         {
           label: t_i18n('Status'),
           value: 'x_opencti_workflow_id',
@@ -211,6 +212,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Priority'), value: 'priority', isMultiple: false },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
         { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
+        { label: t_i18n('Plateforms'), value: 'plateform', isMultiple: true },
         {
           label: t_i18n('Detection'),
           value: 'x_opencti_detection',
@@ -234,6 +236,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
         { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
+        { label: t_i18n('Plateforms'), value: 'plateform', isMultiple: true },
         {
           label: t_i18n('Status'),
           value: 'x_opencti_workflow_id',
@@ -395,9 +398,38 @@ const PlaybookAddComponentsContent = ({
             name={`actions-${i}-value`}
             type={'indicator_type_ov'}
             containerStyle={fieldSpacingContainerStyle}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              { label: value, value, patch_value: value },
-            ])}
+            multiple={true}
+            onChange={(_, value) => {
+              handleChangeActionInput(
+                i,
+                'value',
+                value.map((n) => ({
+                  label: n.label,
+                  value: n.value,
+                  patch_value: n.value,
+                })),
+              );
+            }}
+          />
+        );
+      case 'plateform':
+        return (
+          <OpenVocabField
+            name={`actions-${i}-value`}
+            type={'platforms_ov'}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
+            onChange={(_, value) => {
+              handleChangeActionInput(
+                i,
+                'value',
+                value.map((n) => ({
+                  label: n.label,
+                  value: n.value,
+                  patch_value: n.value,
+                })),
+              );
+            }}
           />
         );
       case 'priority':
