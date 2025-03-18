@@ -160,6 +160,7 @@ ThreatActorIndividualEditionOverviewProps
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
+    createdBy: Yup.object().nullable(),
     x_opencti_workflow_id: Yup.object(),
     objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
@@ -331,7 +332,7 @@ ThreatActorIndividualEditionOverviewProps
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createBy'))}
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
