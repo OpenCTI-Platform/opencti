@@ -38,7 +38,7 @@ export class BatchExportingMetricReader extends MetricReader {
     super({
       aggregationSelector: options.exporter.selectAggregation?.bind(options.exporter),
       aggregationTemporalitySelector: options.exporter.selectAggregationTemporality?.bind(options.exporter),
-      metricProducers: options.metricProducers
+      metricProducers: options.metricProducers,
     });
     if (options.exportIntervalMillis !== undefined && options.exportIntervalMillis <= 0) {
       throw Error('exportIntervalMillis must be greater than 0');
