@@ -187,6 +187,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
+        { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
         {
           label: t_i18n('Status'),
           value: 'x_opencti_workflow_id',
@@ -209,6 +210,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Severity'), value: 'severity', isMultiple: false },
         { label: t_i18n('Priority'), value: 'priority', isMultiple: false },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
+        { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
         {
           label: t_i18n('Detection'),
           value: 'x_opencti_detection',
@@ -231,6 +233,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
+        { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
         {
           label: t_i18n('Status'),
           value: 'x_opencti_workflow_id',
@@ -380,6 +383,17 @@ const PlaybookAddComponentsContent = ({
           <OpenVocabField
             name={`actions-${i}-value`}
             type={'case_severity_ov'}
+            containerStyle={fieldSpacingContainerStyle}
+            onChange={(_, value) => handleChangeActionInput(i, 'value', [
+              { label: value, value, patch_value: value },
+            ])}
+          />
+        );
+      case 'indicatorType':
+        return (
+          <OpenVocabField
+            name={`actions-${i}-value`}
+            type={'indicator_type_ov'}
             containerStyle={fieldSpacingContainerStyle}
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
