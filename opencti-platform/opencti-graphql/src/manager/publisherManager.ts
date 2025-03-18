@@ -177,8 +177,25 @@ const processLiveNotificationEvent = async (
     let notificationMessage = message;
     if (streamUser && (event as KnowledgeNotificationEvent).streamMessage) {
       const { streamMessage } = event as KnowledgeNotificationEvent;
-      const streamBuiltMessage = `\`${streamUser.name}\` ${streamMessage}`;
+      let streamBuiltMessage = `\`${streamUser.name}\` ${streamMessage}`;
       if (streamBuiltMessage !== notificationMessage) {
+        // for relationships, modify the stream message to keep the parts the stream user has the right to see
+        if ('type' in event.data && event.data.type && event.data.type === 'relationship') {
+          const splittedStreamBuiltMessage = streamBuiltMessage.split('`');
+          if (splittedStreamBuiltMessage.length > 5) {
+            const from = splittedStreamBuiltMessage[3];
+            const to = splittedStreamBuiltMessage[5];
+            const fromRestricted = !message.includes(from);
+            const toRestricted = !message.includes(to);
+            if (fromRestricted && toRestricted) {
+              streamBuiltMessage = `${splittedStreamBuiltMessage[1]}${splittedStreamBuiltMessage[2]}Restricted to Restricted`;
+            } else if (fromRestricted) {
+              streamBuiltMessage = `${splittedStreamBuiltMessage[1]}${splittedStreamBuiltMessage[2]}Restricted to ${splittedStreamBuiltMessage[5]}${splittedStreamBuiltMessage[6]}`;
+            } else if (toRestricted) {
+              streamBuiltMessage = `${splittedStreamBuiltMessage[1]}${splittedStreamBuiltMessage[2]}${splittedStreamBuiltMessage[3]}${splittedStreamBuiltMessage[4]} Restricted`;
+            }
+          }
+        }
         notificationMessage = `${message} - ${streamBuiltMessage}`;
       }
     }
