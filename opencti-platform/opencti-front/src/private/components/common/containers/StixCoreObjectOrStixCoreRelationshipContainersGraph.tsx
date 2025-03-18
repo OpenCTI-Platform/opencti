@@ -5,13 +5,13 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { stixDomainObjectMutationFieldPatch } from '@components/common/stix_domain_objects/StixDomainObjectEditionOverview';
 import { StixDomainObjectEditionOverviewFieldPatchMutation } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectEditionOverviewFieldPatchMutation.graphql';
 import Alert from '@mui/material/Alert';
-import { GraphProvider } from '../../../../utils/graph/GraphContext';
-import { getObjectsToParse } from '../../../../utils/graph/utils/graphUtils';
+import { GraphProvider } from '../../../../components/graph/GraphContext';
+import { getObjectsToParse } from '../../../../components/graph/utils/graphUtils';
 import { StixCoreObjectOrStixCoreRelationshipContainersGraph_fragment$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipContainersGraph_fragment.graphql';
-import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
+import { OctiGraphPositions } from '../../../../components/graph/graph.types';
 import type { Theme } from '../../../../components/Theme';
-import Graph from '../../../../utils/graph/Graph';
-import GraphToolbar from '../../../../utils/graph/GraphToolbar';
+import Graph from '../../../../components/graph/Graph';
+import GraphToolbar from '../../../../components/graph/GraphToolbar';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { serializeObjectB64 } from '../../../../utils/object';
 import { useFormatter } from '../../../../components/i18n';

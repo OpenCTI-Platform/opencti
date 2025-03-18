@@ -1,10 +1,10 @@
 import { graphql } from 'react-relay';
 import React, { Suspense } from 'react';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import GraphContainerCorrelation, { graphContainerCorrelationObjectsQuery } from '../../../../utils/graph/GraphContainerCorrelation';
-import { GraphContainerCorrelationObjectsQuery } from '../../../../utils/graph/__generated__/GraphContainerCorrelationObjectsQuery.graphql';
+import GraphContainerCorrelation, { graphContainerCorrelationObjectsQuery } from '../../../../components/graph/GraphContainerCorrelation';
+import { GraphContainerCorrelationObjectsQuery } from '../../../../components/graph/__generated__/GraphContainerCorrelationObjectsQuery.graphql';
 import useReportKnowledgeCorrelationEdit from './useReportKnowledgeCorrelationEdit';
-import { OctiGraphPositions } from '../../../../utils/graph/graph.types';
+import { OctiGraphPositions } from '../../../../components/graph/graph.types';
 import { serializeObjectB64 } from '../../../../utils/object';
 import Loader from '../../../../components/Loader';
 import { ReportKnowledgeCorrelationQuery$data } from './__generated__/ReportKnowledgeCorrelationQuery.graphql';
