@@ -76,9 +76,10 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   const inputRef = useRef();
   const { isFeatureEnable } = useHelper();
   const FAB_REPLACED = isFeatureEnable('FAB_REPLACEMENT');
-  const isXTMHubFeatureEnabled = isFeatureEnable('XTM_HUB_INTEGRATION');
   const { settings } = useContext(UserContext);
-  const importFromHubUrl = isNotEmptyField(settings) && isNotEmptyField(settings.platform_xtmhub_url) ? `${settings.platform_xtmhub_url}/redirect/custom_dashboards?octi_instance_id=${settings.id}` : '';
+  const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
+    ? `${settings.platform_xtmhub_url}/redirect/custom_dashboards?octi_instance_id=${settings.id}`
+    : '';
 
   const [commitImportMutation] = useApiMutation(importMutation);
   const [commitCreationMutation] = useApiMutation(workspaceMutation);
@@ -141,7 +142,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
       >
         <FileUploadOutlined fontSize="small" color={'primary'}/>
       </ToggleButton>
-      {isXTMHubFeatureEnabled && isNotEmptyField(importFromHubUrl) && (
+      {isNotEmptyField(importFromHubUrl) && (
         <GradientButton
           color='primary'
           variant='outlined'
