@@ -19,8 +19,8 @@ interface RelationSelectionProps {
   width: number
   height: number
   activated: boolean
-  setSelectedNodes: (nodes: Set<Coord>) => void
-  graphDataNodes: Coord[]
+  setSelectedNodes: (nodes: Set<GraphNode>) => void
+  graphDataNodes: GraphNode[]
   graph: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>
 }
 
@@ -34,11 +34,11 @@ interface ContextHandlerProps {
   coord?: Coord
   freeHand?: boolean
   freePathCoords?: Coord[]
-  selectedNodes?: Set<Coord>
-  graphDataNodes?: Coord[]
+  selectedNodes?: Set<GraphNode>
+  graphDataNodes?: GraphNode[]
   canvas?: HTMLCanvasElement
   theme?: Theme
-  setSelectedNodes?: (nodes: Set<Coord>) => void
+  setSelectedNodes?: (nodes: Set<GraphNode>) => void
   activated?: boolean
   storeFreeSelectionFunction?: (event: MouseEvent) => void
   graph?: MutableRefObject<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode, GraphLink>> | undefined>
@@ -70,7 +70,7 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
   let freeHand = false;
   let coord = { x: 0, y: 0 };
   let freePathCoords: number[][] = [];
-  const selectedNodes = new Set<Coord>();
+  const selectedNodes = new Set<GraphNode>();
 
   const startFreeHand = (e: MouseEvent, mouseMoveFunction: (e: MouseEvent) => void) => {
     currentContext.reset();

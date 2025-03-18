@@ -128,7 +128,7 @@ EntityDetailsRightsBarProps
             ))}
           </Select>
         </FormControl>
-        {/* Need to be handle */}
+        {/* Need to be handled */}
         {hasOverviewPage && (
           <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
             <div className={classes.external}>

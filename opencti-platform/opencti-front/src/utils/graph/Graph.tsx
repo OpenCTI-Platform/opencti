@@ -96,7 +96,6 @@ const Graph = ({
       </div>
       <div id={graphId}>
         {selectedEntities.length > 0 && (
-          // TODO update EntitiesDetailsRightsBar component when every refacto done
           <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
         )}
         {mode3D ? (
@@ -133,8 +132,7 @@ const Graph = ({
               activated={selectFree}
               graphDataNodes={graphData?.nodes ?? []}
               graph={graphRef2D}
-              // TODO update LassoSelection component when every refacto done
-              setSelectedNodes={(nodes) => setSelectedNodes(Array.from(nodes) as GraphNode[])}
+              setSelectedNodes={(nodes) => setSelectedNodes(Array.from(nodes))}
             />
             <RelationSelection
               width={width}
@@ -142,9 +140,8 @@ const Graph = ({
               activated={!selectFree && !selectFreeRectangle}
               graphDataNodes={graphData?.nodes ?? []}
               graph={graphRef2D}
-              // TODO update RelationSelection component when every refacto done
               setSelectedNodes={(nodes) => {
-                setSelectedNodes(Array.from(nodes) as GraphNode[]);
+                setSelectedNodes(Array.from(nodes));
                 setIsAddRelationOpen(true);
               }}
             />
