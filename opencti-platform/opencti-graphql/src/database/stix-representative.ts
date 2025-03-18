@@ -1,6 +1,6 @@
+import { head } from 'ramda';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { getStixRepresentativeConverters } from './stix-converter';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import type * as SRO from '../types/stix-sro';
 import type * as S from '../types/stix-common';
 import { isBasicRelationship } from '../schema/stixRelationship';
@@ -66,7 +66,10 @@ import { isInternalObject } from '../schema/internalObject';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../modules/indicator/indicator-types';
 import { isUserCanAccessStoreElement } from '../utils/access';
 import type { AuthContext, AuthUser } from '../types/user';
-import { extractUserAccessPropertiesFromStixObject } from '../manager/notificationManager';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import type { BasicStoreCommon } from '../types/store';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 export const extractStixRepresentative = (
   stix: S.StixObject,
@@ -283,6 +286,54 @@ export const extractStixRepresentative = (
   }
   // endregion
   throw UnsupportedError('No representative extractor available', { type: entityType });
+};
+
+// region: user access information extractors
+// extract information from a sighting to have all the elements to check if a user has access to the from/to of the sighting
+const extractUserAccessPropertiesFromSighting = (sighting: SRO.StixSighting) => {
+  return [
+    {
+      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs,
+      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_granted_refs,
+      entity_type: sighting.extensions[STIX_EXT_OCTI].sighting_of_type,
+    } as BasicStoreCommon,
+    {
+      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs,
+      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_granted_refs,
+      entity_type: head(sighting.extensions[STIX_EXT_OCTI].where_sighted_types),
+    } as BasicStoreCommon
+  ];
+};
+
+// extract information from a relationship to have all the elements to check if a user has access to the from/to of the relationship
+const extractUserAccessPropertiesFromRelationship = (relation: SRO.StixRelation) => {
+  return [
+    {
+      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs,
+      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].source_ref_granted_refs,
+      entity_type: relation.extensions[STIX_EXT_OCTI].source_type,
+    } as BasicStoreCommon,
+    {
+      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs,
+      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].target_ref_granted_refs,
+      entity_type: relation.extensions[STIX_EXT_OCTI].target_type,
+    } as BasicStoreCommon
+  ];
+};
+
+// extract information from a stix object to have all the elements to check if a user has access to the object
+const extractUserAccessPropertiesFromStixObject = (
+  instance: S.StixObject | S.StixRelationshipObject
+) => {
+  if (isStixSightingRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
+    const sighting = instance as SRO.StixSighting;
+    return extractUserAccessPropertiesFromSighting(sighting);
+  }
+  if (isStixCoreRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
+    const relation = instance as SRO.StixRelation;
+    return extractUserAccessPropertiesFromRelationship(relation);
+  }
+  return [];
 };
 
 export const extractStixRepresentativeForUser = async (

@@ -57,10 +57,8 @@ export const internalProcessNotification = async (
       const event = { operation: type, message, instance_id: instance.id };
       const eventNotification = notificationMap.get(notification_id);
       if (eventNotification) {
-        console.log('instance', instance);
         const notificationUser = await findById(context, SYSTEM_USER, user.user_id);
         const main = 'extensions' in instance ? await extractStixRepresentativeForUser(context, notificationUser, instance) : extractRepresentative(instance)?.main;
-        console.log('main', main);
         const notificationName = main;
         if (generatedContent[notificationName]) {
           generatedContent[notificationName] = [...generatedContent[notificationName], event];
@@ -93,8 +91,6 @@ export const internalProcessNotification = async (
       });
     } else if (notifier_connector_id === NOTIFIER_CONNECTOR_EMAIL) {
       const { title, template, url_suffix: urlSuffix } = JSON.parse(configuration ?? '{}') as NOTIFIER_CONNECTOR_EMAIL_INTERFACE;
-      console.log('title', title);
-      console.log('templateData', templateData);
       const generatedTitle = ejs.render(title, templateData);
       const generatedEmail = ejs.render(template, { ...templateData, url_suffix: urlSuffix });
       const mail = { from: settings.platform_email, to: user.user_email, subject: generatedTitle, html: generatedEmail };
