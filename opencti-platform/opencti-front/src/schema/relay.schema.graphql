@@ -8206,6 +8206,7 @@ type Query {
   fintelTemplate(id: ID!): FintelTemplate
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
+  savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
 }
 
 type Subscription {
@@ -9051,6 +9052,8 @@ type Mutation {
   disseminationListDelete(id: ID!): ID
   disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList
   disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
+  savedFilterAdd(input: SavedFilterAddInput!): SavedFilter
+  savedFilterDelete(id: ID!): ID
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12668,4 +12671,35 @@ input DisseminationListSendInput {
   email_body: String!
   email_attachment_ids: [ID!]!
   html_to_body_file_id: ID
+}
+
+type SavedFilter implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  filters: String!
+  scope: String
+}
+
+type SavedFilterEdge {
+  cursor: String!
+  node: SavedFilter!
+}
+
+type SavedFilterConnection {
+  pageInfo: PageInfo!
+  edges: [SavedFilterEdge!]
+}
+
+enum SavedFilterOrdering {
+  name
+  _score
+}
+
+input SavedFilterAddInput {
+  name: String!
+  filters: String!
+  scope: String
 }
