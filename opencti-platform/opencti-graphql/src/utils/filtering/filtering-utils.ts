@@ -1,5 +1,6 @@
 import { uniq } from 'ramda';
-import { buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
+import { isDate, isMoment } from 'moment';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
@@ -25,7 +26,8 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
 import { isNotEmptyField } from '../../database/utils';
-import { isValidDate } from '../../schema/schemaUtils';
+import { schemaTypesDefinition } from '../../schema/schema-types';
+import { isValidStringDate } from '../../schema/schemaUtils';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -59,13 +61,34 @@ const isFilterGroupFormatCorrect = (filterGroup: FilterGroup): boolean => {
   );
 };
 
+const isValidDateValue = (v: unknown) => {
+  const relative_date_regex = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
+  return (
+    isMoment(v)
+    || isDate(v)
+    || (typeof v === 'string'
+      && (v.match(relative_date_regex) || isValidStringDate(v)))
+  );
+};
+
 /**
  * Tells if a filter group values are valid
  * (Enables to check filters won't raise an error at the query resolution)
- * Only implemented for the 'within' operator for the moment
  * @param filterGroup
  */
 export const checkFilterGroupValuesSyntax = (filterGroup: FilterGroup) => {
+  // date filters
+  const stixCoreObjectTypes = [ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE].flatMap((sco) => schemaTypesDefinition.get(sco));
+  const dateFilterKeys = schemaAttributesDefinition.getAttributesNamesByTypes(stixCoreObjectTypes, 'date');
+  const dateFilters = filterGroup.filters.filter((f) => {
+    const arrayKeys = Array.isArray(f.key) ? f.key : [f.key];
+    return arrayKeys.every((k) => dateFilterKeys.includes(k));
+  });
+  dateFilters.forEach((f) => {
+    if (f.values.some((v) => !isValidDateValue(v))) {
+      throw UnsupportedError('The values for a date filter are not valid: you should provide a datetime or a relative date expressed in date math.', { filter: f });
+    }
+  });
   // 'within' operator
   const withinFilters = filterGroup.filters.filter((f) => f.operator === FilterOperator.Within);
   withinFilters.forEach((f) => {
@@ -75,10 +98,6 @@ export const checkFilterGroupValuesSyntax = (filterGroup: FilterGroup) => {
     }
     if (values.some((v) => v === null || v === '')) {
       throw UnsupportedError('A filter with "within" operator must have 2 values', { filter: f });
-    }
-    const relative_date_regex = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
-    if (values.some((v) => !v.match(relative_date_regex) && v !== 'now' && !isValidDate(v))) {
-      throw UnsupportedError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.', { filter: f });
     }
   });
   // recursively check the syntax of sub filter groups
@@ -314,12 +333,12 @@ export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersChecking
   if (!isFilterGroupFormatCorrect(filterGroup)) {
     throw UnsupportedError('Incorrect filters format', { filter: JSON.stringify(filterGroup) });
   }
-  // check filters keys exist in schema
   if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
+    // check filters keys exist in schema
     checkFilterKeys(filterGroup);
+    // check values are in a correct syntax
+    checkFilterGroupValuesSyntax(filterGroup);
   }
-  // check values are in a correct syntax
-  checkFilterGroupValuesSyntax(filterGroup);
 };
 
 /**
