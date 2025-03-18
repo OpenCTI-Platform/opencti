@@ -168,7 +168,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForI
                       )}
                   </>
                 ) : (
-                  <Grid item xs={6}>
+                  <Grid item xs={isConfigurationColumn ? 6 : 3}>
                     <Alert
                       variant="outlined"
                       severity="warning"
