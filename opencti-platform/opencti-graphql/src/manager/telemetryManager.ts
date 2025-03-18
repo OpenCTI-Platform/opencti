@@ -4,7 +4,7 @@ import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-convent
 import { ConsoleMetricExporter, InstrumentType, MeterProvider } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { AggregationTemporality } from '@opentelemetry/sdk-metrics/build/src/export/AggregationTemporality';
-import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
+import conf, { ACCOUNT_STATUS_ACTIVE, DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../domain/settings';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../telemetry/TelemetryMeterManager';
@@ -22,6 +22,7 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry } from '../database/redis';
+import type { AuthUser } from '../types/user';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -126,8 +127,10 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setInstancesCount(clusterInfo.info.instances_number);
     // endregion
     // region Users information
-    const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER);
+    const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER) as AuthUser[];
     manager.setUsersCount(users.length);
+    const activeUser = users.filter((user: AuthUser) => user.account_status === ACCOUNT_STATUS_ACTIVE);
+    manager.setActiveUsersCount(activeUser.length);
     // endregion
     // region Connectors information
     const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
@@ -152,6 +155,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
     manager.setDisseminationCount(disseminationCountInRedis);
     // end region Telemetry user events
+    logApp.info('[TELEMETRY] fetching telemetry data successfully.');
   } catch (e) {
     logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
   }

@@ -50,6 +50,10 @@ export class TelemetryMeterManager {
     this.usersCount = n;
   }
 
+  setActiveUsersCount(n: number) {
+    this.activeUsersCount = n;
+  }
+
   setActiveConnectorsCount(n: number) {
     this.activeConnectorsCount = n;
   }
