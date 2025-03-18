@@ -16,9 +16,6 @@ export class TelemetryMeterManager {
   // Number of users in the platform
   usersCount = 0;
 
-  // Number of active users
-  activeUsersCount = 0;
-
   // Number of active connectors
   activeConnectorsCount = 0;
 
@@ -81,7 +78,6 @@ export class TelemetryMeterManager {
     // This kind of gauge count be synchronous, waiting for opentelemetry-js 3668
     // https://github.com/open-telemetry/opentelemetry-js/issues/3668
     this.registerGauge('total_users_count', 'number of users', 'usersCount');
-    this.registerGauge('active_users_count', 'number of active users', 'activeUsersCount');
     this.registerGauge('total_instances_count', 'cluster number of instances', 'instancesCount');
     this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });

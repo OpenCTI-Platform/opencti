@@ -6,6 +6,7 @@ import { callWithTimeout } from '@opentelemetry/sdk-metrics/build/esnext/utils';
 import type { DataPoint, ResourceMetrics } from '@opentelemetry/sdk-metrics/build/src/export/MetricData';
 import { Resource } from '@opentelemetry/resources/build/src/Resource';
 import { UnknownError } from '../config/errors';
+import { logApp } from '../config/conf';
 
 export type BatchExportingMetricReaderOptions = {
   exporter: PushMetricExporter;
@@ -37,7 +38,7 @@ export class BatchExportingMetricReader extends MetricReader {
     super({
       aggregationSelector: options.exporter.selectAggregation?.bind(options.exporter),
       aggregationTemporalitySelector: options.exporter.selectAggregationTemporality?.bind(options.exporter),
-      metricProducers: options.metricProducers
+      metricProducers: options.metricProducers,
     });
     if (options.exportIntervalMillis !== undefined && options.exportIntervalMillis <= 0) {
       throw Error('exportIntervalMillis must be greater than 0');
@@ -75,11 +76,13 @@ export class BatchExportingMetricReader extends MetricReader {
             metric.dataPoints.push(...newDataPoints);
           });
         });
+        logApp.info('[TELEMETRY] metrics collected.', { metrics });
+        if (this._collectCallback) {
+          this._collectCallback();
+        }
       } else {
+        logApp.info('[TELEMETRY] resource empty, metrics not collected.');
         this._resourceMetrics = resourceMetrics;
-      }
-      if (this._collectCallback) {
-        this._collectCallback();
       }
     };
 

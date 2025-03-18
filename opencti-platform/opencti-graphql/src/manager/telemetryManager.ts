@@ -21,7 +21,8 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { elCount } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FilterMode } from '../generated/graphql';
-import { redisClearTelemetry, redisGetTelemetry } from '../database/redis';
+import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
+import type { AuthUser } from '../types/user';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -40,8 +41,13 @@ const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
 // Manager schedule, data point generation
 const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
-// Gauge name for event gauge
+// Region user event counters
 export const TELEMETRY_GAUGE_DISSEMINATION = 'disseminationCount';
+export const addDisseminationCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
+};
+
+// End Region user event counters
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
   const context = executionContext('telemetry_manager');
@@ -126,7 +132,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setInstancesCount(clusterInfo.info.instances_number);
     // endregion
     // region Users information
-    const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER);
+    const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER) as AuthUser[];
     manager.setUsersCount(users.length);
     // endregion
     // region Connectors information
@@ -152,6 +158,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
     manager.setDisseminationCount(disseminationCountInRedis);
     // end region Telemetry user events
+    logApp.info('[TELEMETRY] fetching telemetry data successfully.');
   } catch (e) {
     logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
   }

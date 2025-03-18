@@ -8,7 +8,6 @@ import {
   getRedisVersion,
   lockResource,
   redisClearTelemetry,
-  redisGetAllTelemetry,
   redisGetTelemetry,
   redisSetTelemetryAdd,
   setEditContext
@@ -27,17 +26,13 @@ describe('Redis basic and utils', () => {
     expect(await redisGetTelemetry('notExistingGaugeInRedis'), 'Calling telemetry data before redis has numbers should not crash').toBe(0);
 
     await redisSetTelemetryAdd('fakeGaugeforUnitTest', 3);
-    const allGauges1 = await redisGetAllTelemetry();
-    expect(allGauges1.fakeGaugeforUnitTest).toBe('3');
     expect(await redisGetTelemetry('fakeGaugeforUnitTest')).toBe(3);
 
     await redisSetTelemetryAdd('fakeGaugeforUnitTest', 2);
-    const allGauges2 = await redisGetAllTelemetry();
-    expect(allGauges2.fakeGaugeforUnitTest).toBe('5');
+    expect(await redisGetTelemetry('fakeGaugeforUnitTest')).toBe(5);
 
     await redisClearTelemetry();
-    const allGaugesAfterCleaning = await redisGetAllTelemetry();
-    expect(allGaugesAfterCleaning.fakeGaugeforUnitTest).toBe(undefined);
+    expect(await redisGetTelemetry('fakeGaugeforUnitTest')).toBe(0);
   });
 });
 

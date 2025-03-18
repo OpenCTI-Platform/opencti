@@ -20,6 +20,7 @@ import { shutdownModules, startModules } from '../../src/managers';
 import { deleteAllBucketContent } from '../../src/database/file-storage-helper';
 import { initExclusionListCache } from '../../src/database/exclusionListCache';
 import { initLockFork } from '../../src/lock/master-lock';
+import { initTestCounters } from './testCountHelper';
 /**
  * Vitest setup is configurable with environment variables, as you can see in our package.json scripts
  *   INIT_TEST_PLATFORM=1 > cleanup the test platform, removing elastic indices, and setup it again
@@ -59,6 +60,7 @@ const testPlatformStart = async () => {
     }
     // Init the modules
     await startModules();
+    initTestCounters();
     logApp.info(`[vitest-global-setup] Platform started in ${new Date().getTime() - stopTime} ms`);
   } catch (e) {
     logApp.error(e);

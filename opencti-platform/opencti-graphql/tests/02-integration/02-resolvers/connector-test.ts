@@ -3,6 +3,8 @@ import gql from 'graphql-tag';
 import { queryAsAdmin, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { ConnectorInfo } from '../../../src/generated/graphql';
+import { addCreateInCounter, addDeleteInCounter } from '../../utils/testCountHelper';
+import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 
 const CREATE_WORK_QUERY = gql`
   mutation workAdd($connectorId: String!, $friendlyName: String) {
@@ -127,6 +129,7 @@ beforeAll(async () => {
     query: CREATE_CONNECTOR_QUERY,
     variables: CONNECTOR_TO_CREATE,
   });
+  addCreateInCounter(ENTITY_TYPE_CONNECTOR);
   expect(connector).not.toBeNull();
   expect(connector.data.registerConnector).not.toBeNull();
   expect(connector.data.registerConnector.name).toEqual('TestConnector');
@@ -274,6 +277,7 @@ describe('Capability checks', () => {
 afterAll(async () => {
   // Delete the connector
   await queryAsAdminWithSuccess({ query: DELETE_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
+  addDeleteInCounter(ENTITY_TYPE_CONNECTOR);
   // Verify is no longer found
   const queryResult = await queryAsAdmin({ query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });
   expect(queryResult).not.toBeNull();

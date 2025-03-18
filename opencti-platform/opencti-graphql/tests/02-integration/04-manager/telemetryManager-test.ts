@@ -5,10 +5,12 @@ import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentele
 import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../../../src/telemetry/TelemetryMeterManager';
 import { PLATFORM_VERSION } from '../../../src/config/conf';
-import { fetchTelemetryData } from '../../../src/manager/telemetryManager';
-import { TESTING_USERS } from '../../utils/testQuery';
+import { addDisseminationCount, fetchTelemetryData, TELEMETRY_GAUGE_DISSEMINATION } from '../../../src/manager/telemetryManager';
 import { redisClearTelemetry, redisSetTelemetryAdd } from '../../../src/database/redis';
-import { addDisseminationCount } from '../../../src/modules/disseminationList/disseminationList-domain';
+import { getCounterTotal } from '../../utils/testCountHelper';
+import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../src/modules/draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 
 describe('Telemetry manager test coverage', () => {
   test('Verify that metrics get collected from both elastic and redis', async () => {
@@ -34,14 +36,19 @@ describe('Telemetry manager test coverage', () => {
     for (let i = 0; i < DISSEMINATION_EVENT_NODE1; i += 1) {
       await addDisseminationCount();
     }
-    // AND GIVEN some "user event" from another node (simulated by a redis update)
-    await redisSetTelemetryAdd('disseminationCount', DISSEMINATION_EVENT_NODE2);
+    // AND GIVEN some "user event" from another node (simulated by a direct redis update)
+    await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, DISSEMINATION_EVENT_NODE2);
 
     // WHEN data is fetched from elastic (platform wide gauges) and redis (user event gauge)
     await fetchTelemetryData(filigranTelemetryMeterManager);
 
     // THEN all data stored in the in-memory class are accurate
-    expect(filigranTelemetryMeterManager.usersCount).toBe(TESTING_USERS.length + 1);
+    expect(filigranTelemetryMeterManager.usersCount).toBe(getCounterTotal(ENTITY_TYPE_USER));
     expect(filigranTelemetryMeterManager.disseminationCount).toBe(DISSEMINATION_EVENT_NODE1 + DISSEMINATION_EVENT_NODE2);
+    expect(filigranTelemetryMeterManager.instancesCount).toBe(1);
+    expect(filigranTelemetryMeterManager.isEEActivated).toBe(1); // 1 mean true
+    // filigranTelemetryMeterManager.activeConnectorsCount : count cannot be verify there are many ways to create internal connectors.
+    expect(filigranTelemetryMeterManager.draftCount).toBe(getCounterTotal(ENTITY_TYPE_DRAFT_WORKSPACE));
+    expect(filigranTelemetryMeterManager.workbenchCount).toBe(getCounterTotal(ENTITY_TYPE_WORKSPACE));
   });
 });

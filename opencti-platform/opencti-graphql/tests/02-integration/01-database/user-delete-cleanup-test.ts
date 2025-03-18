@@ -9,6 +9,8 @@ import { addUser, assignGroupToUser, findById as findUserById, isUserTheLastAdmi
 import { addWorkspace, workspaceEditAuthorizedMembers, findById as findWorkspaceById } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
+import { addCreateInCounter } from '../../utils/testCountHelper';
+import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.
@@ -28,6 +30,7 @@ const createUserForTest = async (adminContext: AuthContext, adminUser: AuthUser,
     lastname: 'opencti'
   };
   const userAdded = await addUser(adminContext, adminUser, simpleUser);
+  addCreateInCounter(ENTITY_TYPE_USER);
   await assignGroupToUser(adminContext, adminUser, userAdded.id, AMBER_STRICT_GROUP.name);
   return findUserById(adminContext, adminUser, userAdded.id);
 };
@@ -73,6 +76,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     };
 
     const privateInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, privateInvestigationInput);
+    addCreateInCounter(ENTITY_TYPE_WORKSPACE);
     expect(privateInvestigationData.restricted_members.length).toBe(1);
 
     // AND user having an Investigation shared to ALL with admin rights
@@ -96,6 +100,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
       type: 'investigation'
     };
     let sharedInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedReadOnlyInvestigationInput);
+    addCreateInCounter(ENTITY_TYPE_WORKSPACE);
     const sharedInvestigationAuthMembers: MemberAccessInput[] = sharedInvestigationData.restricted_members;
     sharedInvestigationAuthMembers.push({ id: 'ALL', access_right: 'view' });
 
@@ -111,6 +116,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     };
 
     const adminInvestigationData = await addWorkspace(adminContext, ADMIN_USER, adminInvestigationInput);
+    addCreateInCounter(ENTITY_TYPE_WORKSPACE);
     const adminInvestigationAuthMembers: MemberAccessInput[] = adminInvestigationData.restricted_members;
     adminInvestigationAuthMembers.push({ id: userToDeletedAuth.id, access_right: 'view' });
     await workspaceEditAuthorizedMembers(adminContext, ADMIN_USER, adminInvestigationData.id, adminInvestigationAuthMembers);
