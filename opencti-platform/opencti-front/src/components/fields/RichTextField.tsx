@@ -62,7 +62,7 @@ const RichTextField = ({
               ),
             );
             const text = getHtmlTextContent(htmlContent).trim();
-            if (text.length > 2) onTextSelection(text);
+            if (text.length > 2 && onTextSelection) onTextSelection(text);
           }
         });
       }}

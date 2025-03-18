@@ -219,7 +219,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               label={t_i18n('Content')}
               fullWidth
               onSubmit={handleSubmitField}
-              onSelect={handleTextSelection}
+              onTextSelection={handleTextSelection}
               askAi={askAi}
               disabled={!editionMode}
               style={{
