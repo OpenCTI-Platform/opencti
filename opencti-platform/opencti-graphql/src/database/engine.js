@@ -182,7 +182,7 @@ import { rule_definitions } from '../rules/rules-definition';
 import { buildElasticSortingForAttributeCriteria } from '../utils/sorting';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { buildEntityData } from './data-builder';
-import { buildDraftFilter, isDraftSupportedEntity } from './draft-utils';
+import { buildDraftFilter, isDraftDependencyCopyNeeded, isDraftSupportedEntity } from './draft-utils';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
@@ -4158,7 +4158,7 @@ export const copyLiveElementToDraft = async (context, user, element, draftOperat
 // If it doesn't exist, creates a copy of live element to draft context then returns it
 const draftCopyLockPrefix = 'draft_copy';
 const loadDraftElement = async (context, user, element) => {
-  if (isDraftIndex(element._index)) return element;
+  if (isDraftIndex(element._index) || !isDraftDependencyCopyNeeded(element)) return element;
 
   let lock;
   const currentDraft = getDraftContext(context, user);
