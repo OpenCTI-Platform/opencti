@@ -5,7 +5,7 @@ import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/co
 import OpenAI from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
-import { OutputSchemaUnion } from '../modules/ai/ai-nlq-utils';
+import { OutputSchema } from '../modules/ai/ai-nlq-schema';
 import { AI_BUS } from '../modules/ai/ai-types';
 import type { AuthUser } from '../types/user';
 import { truncate } from '../utils/format';
@@ -146,5 +146,5 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
   if (!llm) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
-  return llm.withStructuredOutput(OutputSchemaUnion).invoke(promptValue);
+  return llm.withStructuredOutput(OutputSchema).invoke(promptValue);
 };
