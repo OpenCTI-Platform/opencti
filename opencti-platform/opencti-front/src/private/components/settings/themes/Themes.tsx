@@ -14,6 +14,8 @@ import ThemePopover from './ThemePopover';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import ThemeCreation from './ThemeCreation';
 import ThemeImporter from './ThemeImporter';
+import ThemeType, { deserializeThemeManifest } from './ThemeType';
+import { ThemesLine_data$data } from './__generated__/ThemesLine_data.graphql';
 
 const LOCAL_STORAGE_KEY = 'themes';
 
@@ -103,6 +105,10 @@ const Themes: FunctionComponent<ThemesProps> = ({
       label: t_i18n('Name'),
       percentWidth: 100,
       isSortable: false,
+      render: (node: ThemesLine_data$data) => (
+        deserializeThemeManifest(node.manifest).system_default
+          ? t_i18n(node.name)
+          : node.name),
     },
   };
   const { helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<ThemesLinesSearchQuery>(
