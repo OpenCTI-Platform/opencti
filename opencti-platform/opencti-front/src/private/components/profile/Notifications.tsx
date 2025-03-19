@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { IncidentsLines_data$data } from '@components/events/incidents/__generated__/IncidentsLines_data.graphql';
-import { incidentLineFragment } from '@components/events/incidents/IncidentLine';
+import { NotificationsLines_data$data } from '@components/profile/notifications/__generated__/NotificationsLines_data.graphql';
+import { notificationLineFragment } from '@components/profile/notifications/NotificationLine';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { notificationsLinesFragment, notificationsLinesQuery } from './notifications/NotificationsLines';
@@ -102,7 +102,7 @@ const Notifications: FunctionComponent = () => {
     linesQuery: notificationsLinesQuery,
     linesFragment: notificationsLinesFragment,
     queryRef,
-    nodePath: ['notifiers', 'pageInfo', 'globalCount'],
+    nodePath: ['notifiers'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<NotificationsLinesPaginationQuery>;
   return (
@@ -113,9 +113,9 @@ const Notifications: FunctionComponent = () => {
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
         preloadedPaginationProps={preloadedPaginationProps}
-        resolvePath={(data: IncidentsLines_data$data) => data.incidents?.edges?.map((n) => n?.node)}
+        resolvePath={(data: NotificationsLines_data$data) => data.myNotifications?.edges?.map((n) => n?.node)}
         dataColumns={dataColumns}
-        lineFragment={incidentLineFragment}
+        lineFragment={notificationLineFragment}
         toolbarFilters={contextFilters}
         exportContext={{ entity_type: 'Notification' }}
         availableEntityTypes={['Notification']}
