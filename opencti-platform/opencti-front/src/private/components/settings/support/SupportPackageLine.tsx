@@ -199,7 +199,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               <div style={{ width: dataColumns.name.width, ...styles.bodyItem }}>
                 {data.name}
               </div>
-              <div style={{ width: dataColumns.package_status.width, ...styles.bodyItem }}>
+              <div style={{ width: dataColumns.package_status.width, ...styles.bodyItem, paddingLeft: 15 }}>
                 <Chip
                   style={{
                     color: packageStatusColors[finalStatus],
@@ -212,7 +212,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                 />
               </div>
               <div
-                style={{ width: dataColumns.created_at.width, ...styles.bodyItem }}
+                style={{ width: dataColumns.created_at.width, ...styles.bodyItem, paddingLeft: 20 }}
               >
                 {fndt(data.created_at)}
               </div>
