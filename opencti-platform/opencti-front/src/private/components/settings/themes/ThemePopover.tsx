@@ -75,9 +75,11 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
         <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
           <MenuItem onClick={handleExport}>{t_i18n('Export')}</MenuItem>
         </Security>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-        </Security>
+        {!theme.system_default && (
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+          </Security>
+        )}
       </Menu>
       <ThemeEdition
         theme={theme}

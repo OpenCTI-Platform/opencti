@@ -11,6 +11,7 @@ type ThemeManifestType = {
   theme_logo: string | null,
   theme_logo_collapsed: string | null,
   theme_logo_login: string | null,
+  system_default: boolean | null,
 };
 
 interface ThemeType extends ThemeManifestType {

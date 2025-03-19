@@ -40,7 +40,7 @@ const themeBuilder = (
   const platformThemePrimary = theme?.theme_primary ?? null;
   const platformThemeSecondary = theme?.theme_secondary ?? null;
   const platformThemeAccent = theme?.theme_accent ?? null;
-  if (theme?.name === 'light') {
+  if (theme?.name === 'Light') {
     // needed until everything is customizable, like text colors
     return themeLight(
       platformThemeLogo,

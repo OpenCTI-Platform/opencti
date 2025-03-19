@@ -42,6 +42,7 @@ import { SettingsQuery } from './__generated__/SettingsQuery.graphql';
 import type { Theme } from '../../../components/Theme';
 import Themes, { refetchableThemesQuery } from './themes/Themes';
 import { Themes_themes$key } from './themes/__generated__/Themes_themes.graphql';
+import { deserializeThemeManifest } from './themes/ThemeType';
 
 const settingsQuery = graphql`
   query SettingsQuery {
@@ -615,7 +616,11 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
                     }
                   >
                     {themes.edges?.filter((node) => !!node).map(({ node }) => (
-                      <MenuItem key={node.id} value={node.name}>{node.name}</MenuItem>
+                      <MenuItem key={node.id} value={node.name}>
+                        {deserializeThemeManifest(node.manifest)
+                          ? t_i18n(node.name)
+                          : node.name}
+                      </MenuItem>
                     ))}
                   </Field>
                   <Field
