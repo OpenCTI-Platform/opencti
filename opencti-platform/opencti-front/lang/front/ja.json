@@ -2702,6 +2702,7 @@
   "See all relationships created by user": "ユーザーが作成したすべての関係を見る",
   "Select": "選択する",
   "Select a column to add": "追加する列を選択する",
+  "Select a configuration": "コンフィギュレーションを選択する",
   "Select a connector": "コネクタを選択してください",
   "Select a mapper": "マッパーを選択する",
   "Select a relationship": "リレーションシップを選択",
