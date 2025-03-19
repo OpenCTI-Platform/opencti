@@ -400,10 +400,8 @@ export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUs
     n.valuesToResolve,
     n.entityTypes,
   )));
-  console.log('others', otherIdsResolution);
   const valuesIdsMap = new Map(scosMapContent.concat(otherIdsResolution.flatMap((n) => n.mapContent)));
   const notResolvedValues = notResolvedScos.concat(otherIdsResolution.flatMap((n) => n.notResolvedValues));
-  console.log('valuesIdsMap', valuesIdsMap);
   // 04. replace the values in filters with their corresponding ids
   return {
     filters: filtersEntityIdsMappingResult(filters, idsFilterKeys, valuesIdsMap),
