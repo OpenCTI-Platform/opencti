@@ -331,6 +331,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
                 variant="inList"
                 markingDefinitions={data.objectMarking ?? []}
                 limit={1}
+                onClick={undefined}
               />
             </div>
           </div>

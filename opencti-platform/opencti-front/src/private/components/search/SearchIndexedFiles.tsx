@@ -136,6 +136,7 @@ const SearchIndexedFilesComponent = () => {
                 variant="inList"
                 markingDefinitions={node.entity.objectMarking ?? []}
                 limit={1}
+                onClick={undefined}
               />
             )}
           </>

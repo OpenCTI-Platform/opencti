@@ -286,6 +286,8 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         speeddial={true}
         open={openCreateObservable}
         handleClose={() => setOpenCreateObservable(false)}
+        type={undefined}
+        defaultCreatedBy={undefined}
       />
     </>);
   };

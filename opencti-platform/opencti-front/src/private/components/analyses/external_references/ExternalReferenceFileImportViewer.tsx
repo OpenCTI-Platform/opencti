@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import * as PropTypes from 'prop-types';
 import { compose, includes } from 'ramda';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import { interval } from 'rxjs';
@@ -390,11 +389,5 @@ const ExternalReferenceFileImportViewer = createRefetchContainer(
   },
   ExternalReferenceFileImportViewerRefetchQuery,
 );
-
-ExternalReferenceFileImportViewer.propTypes = {
-  entity: PropTypes.object,
-  disableImport: PropTypes.bool,
-  connectors: PropTypes.object,
-};
 
 export default ExternalReferenceFileImportViewer;
