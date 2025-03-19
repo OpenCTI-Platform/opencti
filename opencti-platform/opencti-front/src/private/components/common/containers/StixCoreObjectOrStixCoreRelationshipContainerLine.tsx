@@ -142,6 +142,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
                 variant="inList"
                 markingDefinitions={node.objectMarking ?? []}
                 limit={1}
+                onClick={undefined}
               />
             </div>
           </>

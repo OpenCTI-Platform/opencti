@@ -192,7 +192,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
         }}
       >
         {({ values }) => {
-          const toRemove = useRef<() => void>();
+          const toRemove = useRef<() => void>(undefined);
           const removeAttribute = () => {
             toRemove.current?.();
             toRemove.current = undefined;

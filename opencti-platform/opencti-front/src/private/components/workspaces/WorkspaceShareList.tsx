@@ -148,6 +148,7 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
                 <ItemMarkings
                   variant="inList"
                   markingDefinitions={dashboard.allowed_markings ?? []}
+                  onClick={undefined}
                 />
                 {maxMarkings.length > 0 && (
                   <Tooltip
@@ -158,6 +159,7 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
                           <ItemMarkings
                             variant="inList"
                             markingDefinitions={maxMarkings}
+                            onClick={undefined}
                           />
                         </div>
                       </div>

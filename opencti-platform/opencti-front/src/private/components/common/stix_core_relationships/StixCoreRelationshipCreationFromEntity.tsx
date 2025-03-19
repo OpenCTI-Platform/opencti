@@ -851,6 +851,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               inputValue={searchTerm}
               paginationKey="Pagination_stixCoreObjects"
               paginationOptions={searchPaginationOptions}
+              type={undefined}
+              defaultCreatedBy={undefined}
             />
           )}
           {targetEntities.length === 0 && !isOnlySDOs && !isOnlySCOs && (
@@ -910,6 +912,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 speeddial={true}
                 open={openCreateObservable}
                 handleClose={handleCloseCreateObservable}
+                type={undefined}
+                defaultCreatedBy={undefined}
               />
             </>
           )}

@@ -191,6 +191,9 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         </Grid>
         <Grid item xs={4}>
           <AuditsDonut
+            variant={''}
+            startDate={undefined}
+            endDate={undefined}
             height={350}
             parameters={{
               title: t_i18n('Top events'),

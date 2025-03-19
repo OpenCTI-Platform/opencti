@@ -506,6 +506,11 @@ const InvestigationGraphComponent = ({
       <WorkspaceHeader
         workspace={investigation}
         variant="investigation"
+        widgetActions={undefined}
+        handleAddWidget={undefined}
+        config={undefined}
+        adjust={undefined}
+        handleDateChange={() => {}}
       />
       <div style={graphContainerStyle} ref={ref}>
         <Graph parentRef={ref} onPositionsChanged={savePositions}>

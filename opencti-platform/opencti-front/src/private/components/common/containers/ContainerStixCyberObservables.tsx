@@ -311,7 +311,6 @@ ContainerStixCyberObservablesComponentProps
               types={types ?? []}
               handleToggle={handleToggle}
               handleClear={handleClear}
-              openExports={openExports}
             />
           </ExportContextProvider>
         )}

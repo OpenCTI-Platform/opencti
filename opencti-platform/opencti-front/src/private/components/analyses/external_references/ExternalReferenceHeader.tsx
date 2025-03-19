@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactElement } from 'react';
+import React, { ReactElement } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
@@ -25,7 +25,11 @@ interface ExternalReferenceHeaderComponentProps {
   EditComponent?: React.JSX.Element | boolean;
 }
 
-const ExternalReferenceHeaderComponent: FunctionComponent<ExternalReferenceHeaderComponentProps> = ({ externalReference, PopoverComponent, EditComponent }) => {
+const ExternalReferenceHeaderComponent = ({
+  externalReference,
+  PopoverComponent,
+  EditComponent,
+}: ExternalReferenceHeaderComponentProps) => {
   const classes = useStyles();
 
   return (

@@ -116,6 +116,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         variant="inList"
         markingDefinitions={allowed_markings ?? []}
         limit={2}
+        onClick={undefined}
       />
     ),
   },

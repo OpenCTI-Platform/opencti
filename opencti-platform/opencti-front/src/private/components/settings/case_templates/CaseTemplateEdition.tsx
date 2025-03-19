@@ -82,7 +82,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
   const [commitDeleteTask] = useApiMutation(caseTemplateDeleteTask);
   const [commitFieldPatch] = useApiMutation(caseTemplateFieldPatch);
 
-  const existingTasks = useRef<Option[] | undefined>();
+  const existingTasks = useRef<Option[] | undefined>(undefined);
   if (!existingTasks.current) {
     existingTasks.current = caseTemplate.tasks.edges.map(({ node }) => ({
       value: node.id,

@@ -199,6 +199,8 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               parameters={{ title: t_i18n('Entities distribution') }}
               variant="inEntity"
               height={250}
+              startDate={undefined}
+              endDate={undefined}
             />
           </Grid>
           <Grid item xs={6}>
@@ -207,6 +209,8 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               parameters={{ title: t_i18n('Observables distribution') }}
               variant="inEntity"
               height={250}
+              startDate={undefined}
+              endDate={undefined}
             />
           </Grid>
         </Grid>

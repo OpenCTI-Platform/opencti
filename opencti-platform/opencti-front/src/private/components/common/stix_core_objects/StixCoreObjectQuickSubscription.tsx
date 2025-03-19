@@ -1,7 +1,7 @@
 import { ExpandLess, ExpandMore, NotificationsOutlined } from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
-import { OverridableStringUnion } from '@mui/types';
+import type { OverridableStringUnion } from '@mui/types';
 import Checkbox from '@mui/material/Checkbox';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
