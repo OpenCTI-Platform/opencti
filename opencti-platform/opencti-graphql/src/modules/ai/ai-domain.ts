@@ -20,9 +20,10 @@ import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
 import { isEmptyField } from '../../database/utils';
 import { generateFilterKeysSchema } from '../../domain/filterKeysSchema';
-import { findAll } from '../../domain/stixCoreObject';
+import { findAll as findAllScos } from '../../domain/stixCoreObject';
+import { findAll as findAllUsers } from '../../domain/user';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
-import type { FilterGroup, InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiNlqArgs, MutationAiSummarizeFilesArgs } from '../../generated/graphql';
+import type { FilterGroup, InputMaybe, MutationAiContainerGenerateReportArgs, MutationAiNlqArgs, MutationAiSummarizeFilesArgs, UserConnection } from '../../generated/graphql';
 import { Format, Tone } from '../../generated/graphql';
 import { ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
@@ -37,6 +38,7 @@ import { paginatedForPathWithEnrichment } from '../internal/document/document-do
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
 import { NLQPromptTemplate } from './ai-nlq-utils';
 import { FunctionalError, UnknownError } from '../../config/errors';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
@@ -303,37 +305,62 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
   return response;
 };
 
-export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUser, filters: FilterGroup) => {
-  // 01. fetch the filter keys corresponding to an id
-  const filterDefinitions = await generateFilterKeysSchema();
-  const stixCoreObjectsFilterDefinitions = filterDefinitions.find((f) => f.entity_type === ABSTRACT_STIX_CORE_OBJECT)?.filters_schema.map((f) => f.filterDefinition) ?? [];
-  const idsFilterKeys = stixCoreObjectsFilterDefinitions.filter((f) => f.type === 'id')
-    .map((f) => f.filterKey)
-    .concat([INSTANCE_REGARDING_OF]);
-  // 02. fetch the values to resolve in the filter group
-  const valuesIdsToResolve = extractFilterGroupValues(filters, idsFilterKeys);
-  // 03. resolve the values and deduce potential corresponding ids
+const resolveValuesIdsMapForEntityTypes = async (context: AuthContext, user: AuthUser, valuesIdsToResolve: string[], entityTypes: string[]) => {
   const notResolvedValues: string[] = [];
-  const mapContent = await Promise.all(valuesIdsToResolve.map(async (value): Promise<[string, string | null]> => {
-    const stixCoreObjectsFilter = addFilter(undefined, 'entity_type', ['Stix-Core-Object']);
-    const result = await findAll(context, user, {
-      filters: stixCoreObjectsFilter,
-      search: value,
-      orderBy: '_score',
-      orderMode: 'desc',
-    });
-    const resultIds = result.edges.map((n) => n.node.id);
+  const map = await Promise.all(valuesIdsToResolve.map(async (value): Promise<[string, string | null]> => {
+    const entityTypesFilter = addFilter(undefined, 'entity_type', entityTypes);
+    let resultIds: string[] = [];
+    if (entityTypes.length === 1 && entityTypes.includes(ENTITY_TYPE_USER)) {
+      const result = await findAllUsers(context, user, {
+        filters: entityTypesFilter,
+        search: value,
+        orderBy: '_score',
+        orderMode: 'desc',
+      });
+      resultIds = (result as UserConnection).edges.map((n) => n.node.id);
+    } else {
+      const result = await findAllScos(context, user, {
+        filters: entityTypesFilter,
+        search: value,
+        orderBy: '_score',
+        orderMode: 'desc',
+      });
+      resultIds = result.edges.map((n) => n.node.id);
+    }
     if (resultIds.length > 0) {
       return [value, resultIds[0]];
     }
     notResolvedValues.push(value);
     return [value, null];
   }));
-  const valuesIdsMap = new Map(mapContent);
+  return { map, notResolvedValues };
+};
+
+export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUser, filters: FilterGroup) => {
+  // 01. fetch the filter keys corresponding to an id and separate scos and users
+  const filterDefinitions = await generateFilterKeysSchema();
+  const stixCoreObjectsFilterDefinitions = filterDefinitions.find((f) => f.entity_type === ABSTRACT_STIX_CORE_OBJECT)?.filters_schema.map((f) => f.filterDefinition) ?? [];
+  const idsFiltersDefinitions = stixCoreObjectsFilterDefinitions.filter((f) => f.type === 'id');
+  const scoIdsFilterKeys = idsFiltersDefinitions
+    .filter((f) => !f.elementsForFilterValuesSearch.includes(ENTITY_TYPE_USER))
+    .map((f) => f.filterKey)
+    .concat([INSTANCE_REGARDING_OF]);
+  const userIdsFilterKeys = idsFiltersDefinitions
+    .filter((f) => f.elementsForFilterValuesSearch.includes(ENTITY_TYPE_USER))
+    .map((f) => f.filterKey);
+  const idsFilterKeys = scoIdsFilterKeys.concat(userIdsFilterKeys);
+  // 02. fetch the values to resolve in the filter group
+  const scoValuesIdsToResolve = extractFilterGroupValues(filters, scoIdsFilterKeys);
+  const userValuesIdsToResolve = extractFilterGroupValues(filters, userIdsFilterKeys);
+  // 03. resolve the values and deduce potential corresponding ids
+  const { map: scosMapContent, notResolvedValues: notResolvedScos } = await resolveValuesIdsMapForEntityTypes(context, user, scoValuesIdsToResolve, [ABSTRACT_STIX_CORE_OBJECT]);
+  const { map: usersMapContent, notResolvedValues: notResolvedUsers } = await resolveValuesIdsMapForEntityTypes(context, user, userValuesIdsToResolve, [ENTITY_TYPE_USER]);
+  const valuesIdsMap = new Map(scosMapContent.concat(usersMapContent));
+  const notResolvedValues = notResolvedScos.concat(notResolvedUsers);
   // 04. replace the values with their corresponding ids
   return {
     filters: filtersEntityIdsMappingResult(filters, idsFilterKeys, valuesIdsMap),
-    notResolvedValues
+    notResolvedValues,
   };
 };
 
