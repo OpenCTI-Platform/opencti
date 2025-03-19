@@ -14,7 +14,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -83,13 +83,16 @@ const courseOfActionMutationRelationDelete = graphql`
   }
 `;
 
+const COURSE_OF_ACTION_TYPE = 'Course-Of-Action';
+
 const CourseOfActionEditionOverviewComponent = (props) => {
   const { courseOfAction, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(COURSE_OF_ACTION_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     x_opencti_threat_hunting: Yup.string().nullable(),
@@ -97,12 +100,10 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     x_mitre_id: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const courseOfActionValidator = useSchemaEditionValidation(
-    'Course-Of-Action',
-    basicShape,
-  );
-
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const courseOfActionValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
     fieldPatch: courseOfActionMutationFieldPatch,
     relationAdd: courseOfActionMutationRelationAdd,
@@ -189,7 +190,6 @@ const CourseOfActionEditionOverviewComponent = (props) => {
       'objectMarking',
       'confidence',
       'x_opencti_workflow_id',
-      'x_mitre_id',
     ]),
   )(courseOfAction);
   return (
@@ -197,6 +197,8 @@ const CourseOfActionEditionOverviewComponent = (props) => {
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={courseOfActionValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -213,6 +215,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -224,6 +227,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             component={TextField}
             name="x_mitre_id"
             label={t_i18n('External ID')}
+            required={(mandatoryAttributes.includes('x_mitre_id'))}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
@@ -236,6 +240,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -258,6 +263,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="x_opencti_threat_hunting"
             label={t_i18n('Threat hunting techniques')}
+            required={(mandatoryAttributes.includes('x_opencti_threat_hunting'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -275,6 +281,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             component={TextField}
             name="x_opencti_log_sources"
             label={t_i18n('Log sources (1 / line)')}
+            required={(mandatoryAttributes.includes('x_opencti_log_sources'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -307,6 +314,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}
+            required={(mandatoryAttributes.includes('createdBy'))}
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -315,6 +323,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
