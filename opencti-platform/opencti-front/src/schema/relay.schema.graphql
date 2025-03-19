@@ -2066,7 +2066,7 @@ type ConnectorQueueDetails {
 
 type ConnectorContractConfiguration {
   key: String!
-  value: String!
+  value: String
 }
 
 enum ConnectorRequestStatus {

@@ -6,7 +6,7 @@ import { createEntity, deleteElementById, internalDeleteElementById, patchAttrib
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
 import { getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
@@ -252,6 +252,10 @@ export const managedConnectorAdd = async (
   const manager: any = await storeLoadById(context, user, input.manager_id, ENTITY_TYPE_CONNECTOR_MANAGER);
   if (isEmptyField(manager)) {
     throw UnsupportedError('Manager not found');
+  }
+  const connectorUser: any = await storeLoadById(context, user, input.connector_user_id, ENTITY_TYPE_USER);
+  if (isEmptyField(connectorUser)) {
+    throw UnsupportedError('Connector user not found');
   }
   const contractsMap = new Map(manager.connector_manager_contracts.map((rawContract: any) => {
     const contrat = JSON.parse(rawContract);
