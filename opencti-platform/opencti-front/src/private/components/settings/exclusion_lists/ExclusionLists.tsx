@@ -155,18 +155,11 @@ const ExclusionLists = () => {
   };
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    icon: {
-      id: 'icon',
-      label: ' ',
-      isSortable: false,
-      percentWidth: 5,
-      render: () => <ItemIcon type="exclusion-list" />,
-    },
     name: {
       id: 'name',
       label: t_i18n('Name'),
       isSortable: true,
-      percentWidth: 15,
+      percentWidth: 20,
     },
     description: {
       id: 'description',
@@ -248,6 +241,7 @@ const ExclusionLists = () => {
             disableNavigation
             preloadedPaginationProps={preloadedPaginationProps}
             actions={(row) => <ExclusionListPopover data={row} paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
+            icon={() => <ItemIcon type="exclusion-list" />}
           />
         )}
         <ExclusionListCreation paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />
