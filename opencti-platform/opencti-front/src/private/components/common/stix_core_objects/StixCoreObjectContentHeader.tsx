@@ -51,7 +51,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
             to='mapping'
             selected={currentMode === 'mapping'}
             value={'mapping'}
-            disabled={disabled || draftContext}
+            disabled={disabled || !!draftContext}
           >
             <DifferenceOutlined
               fontSize="small"
