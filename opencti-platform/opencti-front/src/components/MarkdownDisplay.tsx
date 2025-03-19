@@ -92,58 +92,63 @@ MarkdownWithRedirectionWarningProps
   }
   const markdownElement = () => {
     return (
-      <Markdown
-        className="markdown"
-        disallowedElements={disallowedElements}
-        unwrapDisallowed={true}
-      >
-        {limit ? truncate(content, limit) : content}
-      </Markdown>
+      <div className="markdown">
+        <Markdown
+          disallowedElements={disallowedElements}
+          unwrapDisallowed={true}
+        >
+          {limit ? truncate(content, limit) : content}
+        </Markdown>
+      </div>
     );
   };
   const remarkGfmMarkdownElement = () => {
     if (remarkPlugins) {
       return (
-        <Markdown
-          className="markdown"
-          remarkPlugins={remarkPlugins}
-          disallowedElements={disallowedElements}
-          unwrapDisallowed={true}
-        >
-          {expand || !limit ? content : truncate(content, limit)}
-        </Markdown>
+        <div className="markdown">
+          <Markdown
+            remarkPlugins={remarkPlugins}
+            disallowedElements={disallowedElements}
+            unwrapDisallowed={true}
+          >
+            {expand || !limit ? content : truncate(content, limit)}
+          </Markdown>
+        </div>
+
       );
     }
     if (markdownComponents) {
       return (
+        <div className="markdown">
+          <Markdown
+            remarkPlugins={[
+              remarkGfm,
+              remarkFlexibleMarkers,
+              [remarkParse, { commonmark: !!commonmark }],
+            ]}
+            components={MarkDownComponents(theme)}
+            disallowedElements={disallowedElements}
+            unwrapDisallowed={true}
+          >
+            {expand || !limit ? content : truncate(content, limit)}
+          </Markdown>
+        </div>
+      );
+    }
+    return (
+      <div className="markdown">
         <Markdown
-          className="markdown"
           remarkPlugins={[
             remarkGfm,
             remarkFlexibleMarkers,
             [remarkParse, { commonmark: !!commonmark }],
           ]}
-          components={MarkDownComponents(theme)}
           disallowedElements={disallowedElements}
           unwrapDisallowed={true}
         >
-          {expand || !limit ? content : truncate(content, limit)}
+          {limit ? truncate(content, limit) : content}
         </Markdown>
-      );
-    }
-    return (
-      <Markdown
-        className="markdown"
-        remarkPlugins={[
-          remarkGfm,
-          remarkFlexibleMarkers,
-          [remarkParse, { commonmark: !!commonmark }],
-        ]}
-        disallowedElements={disallowedElements}
-        unwrapDisallowed={true}
-      >
-        {limit ? truncate(content, limit) : content}
-      </Markdown>
+      </div>
     );
   };
   const browseLinkWarning = (
