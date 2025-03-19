@@ -1,15 +1,14 @@
 import React from 'react';
-import { Option } from '@components/common/form/ReferenceField';
-import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { Box } from '@mui/material';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import { OptionsFormValues } from '@components/common/files/import_files/ImportFilesDialog';
 import { FormikContextType, FormikProvider } from 'formik';
 import StixCoreObjectsField from '@components/common/form/StixCoreObjectsField';
 import { useFormatter } from '../../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 interface ImportFilesOptionsProps {
-  optionsFormikContext: FormikContextType<{ fileMarkings: Option[]; associatedEntity: AssociatedEntityOption }>;
+  optionsFormikContext: FormikContextType<OptionsFormValues>;
   entityId?: string;
 }
 

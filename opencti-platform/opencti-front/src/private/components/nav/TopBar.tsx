@@ -202,7 +202,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       sub.unsubscribe();
     };
   });
-
   useEffect(() => {
     page();
   }, [location.pathname]);

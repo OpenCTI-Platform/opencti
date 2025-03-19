@@ -1,12 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Autocomplete, TextField } from '@mui/material';
-import { useTheme } from '@mui/styles';
 import { AssociatedEntityFieldQuery$data } from './__generated__/AssociatedEntityFieldQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
-import type { Theme } from '../../../../components/Theme';
 
 interface AssociatedEntityFieldProps {
   name: string;
@@ -56,7 +54,6 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
   onChange,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const [associatedEntities, setAssociatedEntities] = useState<AssociatedEntityOption[]>([]);
   const [inputValue, setInputValue] = useState<string>('');
   const [value, setValue] = useState<AssociatedEntityOption | null>(null);
@@ -123,11 +120,7 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
       onChange={handleChangeSelectedValue}
       isOptionEqualToValue={(option, val) => { return option.value === val.value; }}
       renderOption={(props, option) => (
-        <li
-          {...props}
-          key={option.value}
-          // style={{ background: theme.palette.background.accent }}
-        >
+        <li {...props}>
           <div style={{ paddingTop: 4, display: 'inline-block' }}>
             <ItemIcon type={option.type} />
           </div>

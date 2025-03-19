@@ -103,9 +103,9 @@ interface ImportFilesDialogProps {
   entityId?: string;
 }
 
-type OptionsFormValues = {
+export type OptionsFormValues = {
   fileMarkings: Option[];
-  associatedEntity: AssociatedEntityOption;
+  associatedEntity: AssociatedEntityOption | null;
 };
 
 const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogProps) => {
