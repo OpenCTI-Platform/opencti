@@ -83,7 +83,7 @@ interface SectionConfig {
     label: string;
     iconType: string;
     path: string;
-    count: number;
+    count?: number;
   }[];
 }
 
@@ -97,6 +97,7 @@ interface KnowledgeBarProps {
 const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {
   const location = useLocation();
   const { t_i18n, n } = useFormatter();
+
   return (
     <MenuItem
       component={Link}
@@ -148,9 +149,6 @@ const StixCoreObjectKnowledgeBar = ({
     return Object.values(source).reduce((sum: number, val) => sum + val, 0);
   };
 
-  const relatedCount = sumEntitiesByKeys(distributions.related);
-  const withoutRelatedCount = sumEntitiesByKeys(distributions.withoutRelated);
-
   const sectionsConfig: SectionConfig[] = [
     {
       title: 'All entities',
@@ -159,7 +157,6 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'All',
           iconType: 'All',
           path: 'all',
-          count: relatedCount + withoutRelatedCount,
         },
       ],
     },
@@ -430,7 +427,7 @@ const StixCoreObjectKnowledgeBar = ({
                   to={`${stixCoreObjectLink}/${path}`}
                   iconType={iconType}
                   label={label}
-                  count={count}
+                  count={count ?? 0}
                 />
               ))}
             </MenuList>
