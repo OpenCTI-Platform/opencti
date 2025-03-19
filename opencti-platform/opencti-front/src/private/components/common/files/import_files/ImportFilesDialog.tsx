@@ -216,7 +216,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     });
   };
 
-  const optionsContext = useFormik({
+  const optionsContext = useFormik<OptionsFormValues>({
     enableReinitialize: true,
     initialValues: {
       fileMarkings: [] as Option[],
