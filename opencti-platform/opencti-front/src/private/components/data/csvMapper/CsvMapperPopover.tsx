@@ -42,7 +42,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
 
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
-    loadQuery({ id: csvMapperId });
+    loadQuery({ id: csvMapperId }, { fetchPolicy: 'network-only' });
     handleClose();
   };
 
