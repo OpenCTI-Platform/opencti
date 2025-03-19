@@ -9074,6 +9074,7 @@ type Mutation {
   disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
   savedFilterAdd(input: SavedFilterAddInput!): SavedFilter
   savedFilterDelete(id: ID!): ID
+  requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
 }
 
@@ -12728,6 +12729,7 @@ input SavedFilterAddInput {
   name: String!
   filters: String!
   scope: String
+}
 
 enum RequestAccessType {
   organization_sharing
