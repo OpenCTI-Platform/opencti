@@ -3797,7 +3797,7 @@ export type ConnectorConfiguration = {
 export type ConnectorContractConfiguration = {
   __typename?: 'ConnectorContractConfiguration';
   key: Scalars['String']['output'];
-  value: Scalars['String']['output'];
+  value?: Maybe<Scalars['String']['output']>;
 };
 
 export enum ConnectorCurrentStatus {
@@ -34282,7 +34282,7 @@ export type ConnectorConfigurationResolvers<ContextType = any, ParentType extend
 
 export type ConnectorContractConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorContractConfiguration'] = ResolversParentTypes['ConnectorContractConfiguration']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
