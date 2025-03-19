@@ -1,30 +1,4 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery } from 'react-relay';
-import { DataColumns } from '../../../../components/list_lines';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
-import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { NotificationLineComponent, NotificationLineDummy } from './NotificationLine';
-import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from './__generated__/NotificationsLinesPaginationQuery.graphql';
-import { NotificationsLines_data$key } from './__generated__/NotificationsLines_data.graphql';
-import { NotificationLine_node$data } from './__generated__/NotificationLine_node.graphql';
-
-const nbOfRowsToLoad = 50;
-
-interface NotificationLinesProps {
-  queryRef: PreloadedQuery<NotificationsLinesPaginationQuery>;
-  dataColumns: DataColumns;
-  paginationOptions?: NotificationsLinesPaginationQuery$variables;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: HandleAddFilter;
-  selectedElements: Record<string, NotificationLine_node$data>;
-  deSelectedElements: Record<string, NotificationLine_node$data>;
-  onToggleEntity: (
-    entity: NotificationLine_node$data,
-    event: React.SyntheticEvent
-  ) => void;
-  selectAll: boolean;
-}
+import { graphql } from 'react-relay';
 
 export const notificationsLinesQuery = graphql`
   query NotificationsLinesPaginationQuery(
@@ -47,7 +21,7 @@ export const notificationsLinesQuery = graphql`
   }
 `;
 
-const notificationsLinesFragment = graphql`
+export const notificationsLinesFragment = graphql`
   fragment NotificationsLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
@@ -80,50 +54,3 @@ const notificationsLinesFragment = graphql`
     }
   }
 `;
-
-const NotificationsLines: FunctionComponent<NotificationLinesProps> = ({
-  setNumberOfElements,
-  queryRef,
-  dataColumns,
-  paginationOptions,
-  onLabelClick,
-  selectedElements,
-  deSelectedElements,
-  selectAll,
-  onToggleEntity,
-}) => {
-  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  NotificationsLinesPaginationQuery,
-  NotificationsLines_data$key
-  >({
-    linesQuery: notificationsLinesQuery,
-    linesFragment: notificationsLinesFragment,
-    queryRef,
-    nodePath: ['myNotifications', 'pageInfo', 'globalCount'],
-    setNumberOfElements,
-  });
-  return (
-    <ListLinesContent
-      initialLoading={!data}
-      isLoading={isLoadingMore}
-      loadMore={loadMore}
-      hasMore={hasMore}
-      dataList={data?.myNotifications?.edges ?? []}
-      globalCount={
-        data?.myNotifications?.pageInfo?.globalCount ?? nbOfRowsToLoad
-      }
-      LineComponent={NotificationLineComponent}
-      DummyLineComponent={NotificationLineDummy}
-      dataColumns={dataColumns}
-      nbOfRowsToLoad={nbOfRowsToLoad}
-      paginationOptions={paginationOptions}
-      onLabelClick={onLabelClick}
-      selectedElements={selectedElements}
-      deSelectedElements={deSelectedElements}
-      onToggleEntity={onToggleEntity}
-      selectAll={selectAll}
-    />
-  );
-};
-
-export default NotificationsLines;
