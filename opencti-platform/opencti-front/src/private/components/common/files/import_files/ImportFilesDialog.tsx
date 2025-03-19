@@ -30,8 +30,8 @@ export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 const importFilesDialogGlobalMutation = graphql`
   mutation ImportFilesDialogGlobalMutation(
     $file: Upload!,
-    $fileMarkings: [String],
-    $connectors: [ConnectorWithConfig],
+    $fileMarkings: [String!],
+    $connectors: [ConnectorWithConfig!],
     $validationMode: ValidationMode,
   ) {
     uploadAndAskJobImport(
@@ -50,8 +50,8 @@ const importFilesDialogEntityMutation = graphql`
   mutation ImportFilesDialogEntityMutation(
     $id: ID!,
     $file: Upload!,
-    $fileMarkings: [String],
-    $connectors: [ConnectorWithConfig],
+    $fileMarkings: [String!],
+    $connectors: [ConnectorWithConfig!],
     $validationMode: ValidationMode,
   ) {
     stixCoreObjectEdit(id: $id) {

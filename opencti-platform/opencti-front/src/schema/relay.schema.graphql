@@ -8397,7 +8397,7 @@ type StixCoreObjectEditMutations {
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean): File
-  uploadAndAskJobImport(file: Upload!, connectors: [ConnectorWithConfig], fileMarkings: [String], validationMode: ValidationMode, noTriggerImport: Boolean): File
+  uploadAndAskJobImport(file: Upload!, connectors: [ConnectorWithConfig!], fileMarkings: [String!], validationMode: ValidationMode, noTriggerImport: Boolean): File
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
   removeFromDraft: ID
@@ -8703,7 +8703,7 @@ enum ValidationMode {
 type Mutation {
   deleteImport(fileName: String): ID
   uploadImport(file: Upload!, fileMarkings: [String]): File
-  uploadAndAskJobImport(file: Upload!, fileMarkings: [String], connectors: [ConnectorWithConfig], validationMode: ValidationMode, noTriggerImport: Boolean): File
+  uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode, noTriggerImport: Boolean): File
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, file_markings: [String!], refreshEntity: Boolean): File
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode): File
   resetFileIndexing: Boolean
