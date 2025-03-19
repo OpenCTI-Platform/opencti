@@ -15,7 +15,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { Option } from '../../common/form/ReferenceField';
@@ -88,13 +88,14 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(CAMPAIGN_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
-  };
-  const campaignValidator = useSchemaCreationValidation(
-    CAMPAIGN_TYPE,
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
     basicShape,
   );
 
@@ -171,7 +172,9 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
   return (
     <Formik<CampaignAddInput>
       initialValues={initialValues}
-      validationSchema={campaignValidator}
+      validationSchema={validator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -207,6 +210,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               askAi={true}
               detectDuplicate={[
@@ -224,6 +228,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -232,22 +237,26 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
             />
             <CreatedByField
               name="createdBy"
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
