@@ -30,6 +30,7 @@ import { isNilField } from '../../../../utils/utils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface ContentBlocProps {
   title: ReactNode
@@ -115,6 +116,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   hasOutcomesTemplate,
 }) => {
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
   const isEnterpriseEdition = useEnterpriseEdition();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
@@ -190,6 +192,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                 primary={t_i18n('Description & Main content')}
                 secondary={t_i18n('Description and content of the entity')}
               />
+              {!draftContext && (
               <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
                 <ListItemSecondaryAction>
                   <IconButton
@@ -205,9 +208,9 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                   </IconButton>
                 </ListItemSecondaryAction>
               </Security>
+              )}
             </ListItemButton>
           </List>
-
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
@@ -285,7 +288,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                 </Tooltip>}
             </>
           }
-          actions={isEnterpriseEdition && (
+          actions={!draftContext && isEnterpriseEdition && (
             <StixCoreObjectFileExport
               scoId={stixCoreObjectId}
               scoName={stixCoreObjectName}

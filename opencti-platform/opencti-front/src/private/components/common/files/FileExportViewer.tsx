@@ -13,6 +13,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from './FileLine';
 import { useFormatter } from '../../../../components/i18n';
 import { FileExportViewer_entity$data } from './__generated__/FileExportViewer_entity.graphql';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -36,6 +37,13 @@ interface FileExportViewerComponentProps {
 const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProps> = ({ entity, relay, handleOpenExport, isExportPossible }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
+  let titleToUse = t_i18n('Generate an export');
+  if (draftContext) {
+    titleToUse = t_i18n('Not available in draft');
+  } else if (!isExportPossible) {
+    titleToUse = t_i18n('No export connector available to generate an export');
+  }
   const { id, exportFiles } = entity;
   useEffect(() => {
     // Refresh the export viewer every interval
@@ -54,17 +62,13 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
       </Typography>
       <div style={{ float: 'left', marginTop: -15 }}>
         <Tooltip
-          title={
-            isExportPossible
-              ? t_i18n('Generate an export')
-              : t_i18n('No export connector available to generate an export')
-          }
+          title={titleToUse}
           aria-label="generate-export"
         >
           <span>
             <IconButton
               onClick={handleOpenExport}
-              disabled={!isExportPossible}
+              disabled={!isExportPossible || !!draftContext}
               aria-haspopup="true"
               color="primary"
               size="medium"
