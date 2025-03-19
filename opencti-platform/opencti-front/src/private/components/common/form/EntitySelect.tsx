@@ -95,10 +95,9 @@ const EntitySelectComponent = ({
 
 type EntitySelectProps = Omit<EntitySelectComponentProps, 'onInputChange' | 'queryRef'> & {
   types: string[]
-  typesFilter?: boolean
 };
 
-const EntitySelect = ({ types, typesFilter = false, ...otherProps }: EntitySelectProps) => {
+const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
   const [search, setSearch] = useState('');
 
   const variables = useMemo(() => ({

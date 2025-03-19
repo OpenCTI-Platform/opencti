@@ -35,7 +35,7 @@ const ImportFilesOptions = ({ optionsFormikContext, entityId }: ImportFilesOptio
         && (
           <div style={{ paddingTop: '10px' }}>
             <StixCoreObjectsField
-              name="entity"
+              name="associatedEntity"
               label={t_i18n('Associated entity')}
               multiple={false}
               setFieldValue={optionsFormikContext.setFieldValue}
