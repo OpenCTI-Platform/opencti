@@ -276,7 +276,7 @@ const stixCyberObservableValidation = () => Yup.object().shape({
 const StixCyberObservableCreation = ({
   contextual,
   open,
-  handleClose,
+  handleClose = () => {},
   type,
   display,
   speeddial,
@@ -287,7 +287,7 @@ const StixCyberObservableCreation = ({
   defaultCreatedBy,
   defaultMarkingDefinitions,
   isFromBulkRelation,
-  onCompleted,
+  onCompleted = () => {},
 }) => {
   const classes = useStyles();
   const theme = useTheme();

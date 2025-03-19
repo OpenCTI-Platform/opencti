@@ -238,6 +238,8 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           open={openCreateObservable}
           controlledDialStyles={{ marginLeft: 1 }}
           handleClose={handleCloseCreateObservable}
+          type={undefined}
+          defaultCreatedBy={undefined}
         />
       </>
     ) : (
