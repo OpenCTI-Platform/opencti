@@ -127,7 +127,7 @@ const initActivityManager = () => {
       const context = executionContext('activity_listener');
       const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
       // 01. Check activity authorization
-      if (!['query', 'internal'].includes(action.user.origin.socket ?? '')) { // Subscription is not part of the listening
+      if (!['query', 'internal'].includes(action.user.origin?.socket ?? '')) { // Subscription is not part of the listening
         return;
       }
       if (settings.valid_enterprise_edition !== true) { // If enterprise edition is not activated
