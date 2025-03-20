@@ -81,6 +81,8 @@ export const systemPrompt = `You are an expert in Cyber Threat Intelligence (CTI
       "operator": "eq",
       "mode": "or"
     }}
+  - Ensure numerical values are correctly parsed and use the appropriate comparison operator
+    (e.g., \"gt\" for greater than, \"lt\" for less than).
   
   #### If filtering data by TLP classification (e.g., "TLP:RED", "TLP:AMBER"):
   - Ensure the **correct entity type is included**:
