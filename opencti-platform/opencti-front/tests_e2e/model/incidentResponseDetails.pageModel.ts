@@ -52,6 +52,6 @@ export default class IncidentResponseDetailsPage {
     .filter({ hasText: 'Update' })
     .click();
     await this.page.getByRole('button', { name: 'Delete' }).click();
-    return this.page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
+    return this.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
   }
 }
