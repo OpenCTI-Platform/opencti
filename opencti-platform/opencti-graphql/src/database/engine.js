@@ -2729,6 +2729,19 @@ const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   return { newFilter, newFilterGroup };
 };
 
+const adaptFilterValueToIsInferredFilter = (value, operator = 'eq') => {
+  const equivalentBooleanValueIsTrue = value === 'true';
+  const wildcardOperator = (operator === 'eq' && equivalentBooleanValueIsTrue)
+  || (operator === 'not_eq' && !equivalentBooleanValueIsTrue)
+    ? 'wildcard'
+    : 'not_wildcard';
+  return {
+    key: 'i_rule_*',
+    values: ['*'],
+    operator: wildcardOperator,
+  };
+};
+
 /**
  * Complete the filter if needed for several special filter keys
  * Some keys need this preprocessing before building the query:
@@ -2886,19 +2899,16 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
       }
       if (filterKey === IS_INFERRED_FILTER) {
         // an entity/relationship is inferred <=> a field i_rule_XX is defined, indicating the inferred rule that created the element (ex: i_rule_location_targets)
-        const equivalentBooleanValueIsTrue = !!(
-          (filter.values.length === 1 && filter.values.includes('true'))
-          || (filter.values.includes('true') && filter.values.includes('false') && filter.operator === 'or')
-        );
-        const wildcardOperator = (filter.operator === 'eq' && equivalentBooleanValueIsTrue)
-          || (filter.operator === 'not_eq' && !equivalentBooleanValueIsTrue)
-          ? 'wildcard'
-          : 'not_wildcard';
-        finalFilters.push({
-          key: 'i_rule_*',
-          values: ['*'],
-          operator: wildcardOperator,
-        });
+        if (filter.values.length === 1) {
+          const value = filter.values[0];
+          finalFilters.push(adaptFilterValueToIsInferredFilter(value, filter.operator));
+        } else {
+          finalFilterGroups.push({
+            mode: filter.mode,
+            filters: filter.values.map((v) => adaptFilterValueToIsInferredFilter(v, filter.operator)),
+            filterGroups: [],
+          });
+        }
       }
     } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {
