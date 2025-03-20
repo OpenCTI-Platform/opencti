@@ -12888,10 +12888,6 @@ type Query {
     search: String
   ): StatusTemplateConnection @auth
   statusTemplatesByStatusScope(
-    first: Int
-    after: ID
-    orderBy: StatusTemplateOrdering
-    orderMode: OrderingMode
     search: String
     scope: StatusScope
   ): [StatusTemplate] @auth

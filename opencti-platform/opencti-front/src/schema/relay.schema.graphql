@@ -7942,7 +7942,7 @@ type Query {
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): StreamCollectionConnection!
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
-  statusTemplatesByStatusScope(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String, scope: StatusScope): [StatusTemplate]
+  statusTemplatesByStatusScope(search: String, scope: StatusScope): [StatusTemplate]
   status(id: String!): Status
   statuses(first: Int, after: ID, orderBy: StatusOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, scope: StatusScope): StatusConnection
   backgroundTask(id: String!): BackgroundTask

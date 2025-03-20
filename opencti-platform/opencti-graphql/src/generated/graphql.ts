@@ -21658,10 +21658,6 @@ export type QueryStatusTemplatesArgs = {
 
 
 export type QueryStatusTemplatesByStatusScopeArgs = {
-  after?: InputMaybe<Scalars['ID']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<StatusTemplateOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
   scope?: InputMaybe<StatusScope>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
