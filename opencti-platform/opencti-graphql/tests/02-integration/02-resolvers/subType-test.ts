@@ -7,7 +7,6 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-r
 import { StatusScope, type TypeAttribute } from '../../../src/generated/graphql';
 import type { BasicStoreEntity, BasicStoreEntityEdge } from '../../../src/types/store';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
-import { logApp } from '../../../src/config/conf';
 import { listEntitiesPaginated } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 import { QUERY_REQUEST_ACCESS_SETTINGS } from './requestAccess-test';
