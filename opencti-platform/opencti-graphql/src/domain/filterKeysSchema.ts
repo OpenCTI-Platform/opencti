@@ -24,13 +24,14 @@ import {
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
   INSTANCE_REGARDING_OF,
+  IS_INFERRED_FILTER,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
   OBJECT_CONTAINS_FILTER,
   REPRESENTATIVE_FILTER,
   TYPE_FILTER,
-  WORKFLOW_FILTER,
+  WORKFLOW_FILTER
 } from '../utils/filtering/filtering-constants';
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_GRANTED_REFS, isAbstract } from '../schema/general';
 import { getEntityFromCache } from '../database/cache';
@@ -267,6 +268,15 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       type: 'id',
       label: 'Contains',
       multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [],
+    });
+    // is_inferred filter
+    filterDefinitionsMap.set(IS_INFERRED_FILTER, {
+      filterKey: IS_INFERRED_FILTER,
+      type: 'boolean',
+      label: 'Is inferred',
+      multiple: false,
       subEntityTypes,
       elementsForFilterValuesSearch: [],
     });
