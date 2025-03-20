@@ -2982,6 +2982,7 @@
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.",
   "The Max Confidence Level is currently inherited from...": "The Max Confidence Level is currently inherited from the group {link}.",
   "The min value cannot be greater than max value": "The min value cannot be greater than max value",
+  "The NLQ model didn't find filters corresponding to your question": "The NLQ model didn't find filters corresponding to your question",
   "The number of results should be lower than 100": "The number of results should be lower than 100",
   "The operators and modes are restricted for these filters.": "The operators and modes are restricted for these filters.",
   "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.",

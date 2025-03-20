@@ -46,6 +46,7 @@ import ItemBoolean from '../../../components/ItemBoolean';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { RelayError } from '../../../relay/relayTypes';
+import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -244,8 +245,11 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         onCompleted: (response: TopBarAskAINLQMutation$data) => {
           setIsNLQLoading(false);
           const notResolvedValues = response.aiNLQ?.notResolvedValues ?? [];
+          const filters = response.aiNLQ?.filters;
           if (notResolvedValues.length > 0) {
             MESSAGING$.notifyNLQ(`${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`);
+          } else if (!filters || !isFilterGroupNotEmpty(JSON.parse(filters))) {
+            MESSAGING$.notifyNLQ(t_i18n('The NLQ model didn\'t find filters corresponding to your question'));
           }
           handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ?.filters);
         },
