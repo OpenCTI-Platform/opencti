@@ -65,42 +65,20 @@ const Notifications: FunctionComponent = () => {
   const [commitDelete] = useApiMutation(
     notificationLineNotificationDeleteMutation,
   );
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [updating, setUpdating] = useState<boolean>(false);
+  // const [displayDelete, setDisplayDelete] = useState(false);
   // const [open, setOpen] = useState<boolean>(false);
-  const handleRead = (id: string, read: boolean) => {
-    setUpdating(true);
-    return commitMarkRead({
-      variables: {
-        id,
-        read,
-      },
-      onCompleted: () => {
-        setUpdating(false);
-      },
-    });
+  const [notificationToDelete, setNotificationToDelete] = useState<NotificationLine_node$data>();
+  const handleCloseDelete = () => {
+    setNotificationToDelete(undefined);
   };
   const handleDelete = (id: string) => {
-    setUpdating(true);
     return commitDelete({
       variables: {
         id,
       },
-      // updater: (store) => {
-      //   deleteNode(store, 'Pagination_myNotifications', paginationOptions, id);
-      // },
       onCompleted: () => {
-        setUpdating(false);
       },
     });
-  };
-
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
   };
   const colors: Record<string, string> = {
     none: green[500],
@@ -255,6 +233,60 @@ const Notifications: FunctionComponent = () => {
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<NotificationsLinesPaginationQuery>;
 
+  const renderActions = (data: NotificationLine_node$data) => {
+    const [updating, setUpdating] = useState<boolean>(false);
+
+    const handleRead = (id: string, read: boolean) => {
+      setUpdating(true);
+      return commitMarkRead({
+        variables: {
+          id,
+          read,
+        },
+        onCompleted: () => {
+          setUpdating(false);
+        },
+      });
+    };
+
+    const handleOpenDelete = () => {
+      setUpdating(true);
+      setNotificationToDelete(data);
+    };
+
+    return (
+      <>
+        {/* <IconButton */}
+        {/*  disabled={updating} */}
+        {/*  onClick={(event) => { */}
+        {/*    event.stopPropagation(); */}
+        {/*    event.preventDefault(); */}
+        {/*    handleRead(data.id, !data.is_read); */}
+        {/*  }} */}
+        {/*  size="large" */}
+        {/*  color={data.is_read ? 'success' : 'warning'} */}
+        {/* > */}
+        {/*  {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />} */}
+        {/* </IconButton> */}
+        <Tooltip title={t_i18n('Delete this notification')}>
+          <span>
+            <IconButton
+              disabled={updating}
+              onClick={(event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                handleOpenDelete();
+              }}
+              size="large"
+              color="primary"
+            >
+              <DeleteOutlined/>
+            </IconButton>
+          </span>
+        </Tooltip>
+      </>
+    );
+  };
   return (
     <div>
       <Breadcrumbs elements={[{ label: t_i18n('Notifications'), current: true }]} />
@@ -274,62 +306,33 @@ const Notifications: FunctionComponent = () => {
         toolbarFilters={contextFilters}
         exportContext={{ entity_type: 'Notification' }}
         availableEntityTypes={['Notification']}
-        actions={(data) => (<><IconButton
-          disabled={updating}
-          onClick={(event) => {
-            event.stopPropagation();
-            event.preventDefault();
-            handleRead(data.id, !data.is_read);
-          }}
-          size="large"
-          color={data.is_read ? 'success' : 'warning'}
-                              >
-          {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />}
-        </IconButton>
-          <Tooltip title={t_i18n('Delete this notification')}>
-            <span>
-              <IconButton
-                disabled={updating}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  event.preventDefault();
-                  handleOpenDelete();
-                }}
-                size="large"
-                color="primary"
-              >
-                <DeleteOutlined/>
-              </IconButton>
-            </span>
-          </Tooltip>
-          {displayDelete && (
-          <Dialog
-            PaperProps={{ elevation: 1 }}
-            open={displayDelete}
-            TransitionComponent={Transition}
-            onClose={handleCloseDelete}
-          >
-            <DialogContent>
-              <DialogContentText>
-                {t_i18n('Do you want to delete this notification?')}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDelete}>
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                onClick={() => handleDelete(data.id)}
-                color="secondary"
-              >
-                {t_i18n('Delete')}
-              </Button>
-            </DialogActions>
-          </Dialog>)}
-        </>
-        )}
+        actions={renderActions}
       />
       )}
+      {notificationToDelete && (
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={notificationToDelete}
+          TransitionComponent={Transition}
+          onClose={handleCloseDelete}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t_i18n('Do you want to delete this notification?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDelete}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              onClick={() => handleDelete(notificationToDelete.id)}
+              color="secondary"
+            >
+              {t_i18n('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>)}
     </div>
   );
 };
