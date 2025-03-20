@@ -1,9 +1,12 @@
 import {
-  RegaringOfRelationshipSchema,
-  RegaringOfEntityNameSchema,
-  OperatorUnion,
-  ModeUnion,
-  EntityUnion,
+  modeDescription,
+  modeKeys,
+  operatorDescription,
+  operatorKeys,
+  entityObservableKeys,
+  entityObservableDescription,
+  relationshipKeysSmall,
+  relationshipDescription,
   filterKeysSmall,
   FilterEnum,
 } from "./ai-nlq-values";
@@ -77,8 +80,52 @@ export function createZodLiteralUnion(
 }
 
 // =======================
+// Operator
+// =======================
+
+const operatorKeysWithDescription = createZodLiteralUnion(
+  operatorKeys,
+  operatorDescription,
+  "The operator used to filter results."
+);
+
+// =======================
+// Mode
+// =======================
+
+const modeKeysWithDescriptsions = createZodLiteralUnion(
+  modeKeys,
+  modeDescription,
+  "The logical mode (or/and) used to filter results."
+);
+
+// =======================
 // RegardingOf
 // =======================
+
+const RelationshipKeysSmallWithDescriptions = createZodLiteralUnion(
+  relationshipKeysSmall,
+  relationshipDescription,
+  "List of STIX relationship types recognized by OpenCTI."
+);
+
+const RegaringOfRelationshipSchema = z.object({
+  key: z
+    .literal("relationship_type")
+    .describe(
+      "The key of a 'regardingOf' relationship type filter, always 'relationship_type'."
+    ),
+  values: z
+    .array(RelationshipKeysSmallWithDescriptions)
+    .describe("A list of relationship type filter values."),
+});
+
+const RegaringOfEntityNameSchema = z.object({
+  key: z
+    .literal("id")
+    .describe("The key of a 'regardingOf' entity name filter, always 'id'."),
+  values: z.array(z.string()).describe("A list of entity name filter values."),
+});
 
 const RegardingOfFilterItem = z
   .object({
@@ -90,8 +137,8 @@ const RegardingOfFilterItem = z
         z.union([RegaringOfRelationshipSchema, RegaringOfEntityNameSchema])
       )
       .describe("A list of entity name or relationship type filter values."),
-    operator: OperatorUnion,
-    mode: ModeUnion,
+    operator: operatorKeysWithDescription,
+    mode: modeKeysWithDescriptsions,
   })
   .describe(
     "A filter used to further refine entity filtering based on associated entities and/or relationships."
@@ -101,16 +148,22 @@ const RegardingOfFilterItem = z
 // Entities & Observables
 // =======================
 
+const entityObservableKeysWithDescriprition = createZodLiteralUnion(
+  entityObservableKeys,
+  entityObservableDescription,
+  "List of STIX/OpenCTI entity types recognized by OpenCTI."
+);
+
 const EntityTypeFilterItem = z
   .object({
     key: z
       .literal("entity_type")
       .describe("The key of the entity type filter, always 'entity_type'."),
     values: z
-      .array(EntityUnion)
+      .array(entityObservableKeysWithDescriprition)
       .describe("A list of entity type filter values."),
-    operator: OperatorUnion,
-    mode: ModeUnion,
+    operator: operatorKeysWithDescription,
+    mode: modeKeysWithDescriptsions,
   })
   .describe(
     "A filter used to filter entities by their type as defined by the STIX standard."
@@ -122,13 +175,15 @@ const EntityTypeFilterItem = z
 
 const filterKeys = filterKeysSmall.filter(
   (key) => key !== FilterEnum.ENTITY_TYPE && key !== FilterEnum.REGARDING_OF
-) as unknown as readonly [FilterEnum, ...FilterEnum[]];
+);
 
 const GenericFilterItem = z.object({
-  key: z.enum(filterKeys).describe("The key of the filter."),
+  key: z
+    .enum(filterKeys as [string, ...string[]])
+    .describe("The key of the filter."),
   values: z.array(z.string()).describe("A list of filter values."),
-  operator: OperatorUnion,
-  mode: ModeUnion,
+  operator: operatorKeysWithDescription,
+  mode: modeKeysWithDescriptsions,
 });
 
 // =======================
@@ -141,5 +196,5 @@ export const OutputSchema = z.object({
       z.union([EntityTypeFilterItem, RegardingOfFilterItem, GenericFilterItem])
     )
     .describe("The list of filters applied to refine the OpenCTI query."),
-  mode: ModeUnion,
+  mode: modeKeysWithDescriptsions,
 });
