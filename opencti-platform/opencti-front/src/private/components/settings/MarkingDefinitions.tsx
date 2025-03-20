@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { MarkingDefinitionsLine_node$data } from '@components/settings/__generated__/MarkingDefinitionsLine_node.graphql';
@@ -19,6 +19,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
 import { Truncate } from '../../../components/dataGrid/dataTableUtils';
 import type { DataTableColumn } from '../../../components/dataGrid/dataTableTypes';
+import ItemIcon from '../../../components/ItemIcon';
 
 const LOCAL_STORAGE_KEY = 'MarkingDefinitions';
 
@@ -122,11 +123,23 @@ const MarkingDefinitions = () => {
     const { isSensitive } = useSensitiveModifications('markings', standard_id);
     return (
       <Tooltip title={definition_type}>
-        <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
           <Truncate>{definition_type}</Truncate>
           {isSensitive && <DangerZoneChip />}
         </div>
       </Tooltip>
+    );
+  };
+
+  const iconRender = (
+    data: MarkingDefinitionsLine_node$data,
+  ) : ReactNode => {
+    const { x_opencti_color } = data;
+    return (
+      <ItemIcon
+        type="Marking-Definition"
+        color={x_opencti_color ?? undefined}
+      />
     );
   };
 
@@ -172,6 +185,7 @@ const MarkingDefinitions = () => {
           toolbarFilters={contextFilters}
           lineFragment={markingDefinitionLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
+          icon={iconRender}
           actions={(markingDefinition) => (
             <MarkingDefinitionPopover
               markingDefinition={markingDefinition}
@@ -183,6 +197,7 @@ const MarkingDefinitions = () => {
           disableNavigation
           disableToolBar
           disableSelectAll
+          disableLineSelection
           canToggleLine={false}
           createButton={<MarkingDefinitionCreation paginationOptions={queryPaginationOptions}/>}
         />

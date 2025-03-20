@@ -96,11 +96,14 @@ const DataTableLine = ({
     useLineData,
     useComputeLink,
     actions,
+    icon,
     disableNavigation,
     onLineClick,
     selectOnLineClick,
     variant,
     startsWithAction,
+    startsWithIcon,
+    startColumnWidth,
     endsWithAction,
     endsWithNavigate,
     useDataTableToggle: {
@@ -163,6 +166,11 @@ const DataTableLine = ({
     cursor: clickable ? 'pointer' : 'unset',
   };
 
+  const columnsOffset = useMemo(
+    () => [startsWithAction, startsWithIcon].filter(Boolean).length,
+    [startsWithAction, startsWithIcon],
+  );
+
   return (
     <Box sx={{
       '&:hover > a': {
@@ -180,34 +188,41 @@ const DataTableLine = ({
         onClick={variant !== DataTableVariant.widget ? handleRowClick : undefined}
         data-testid={getMainRepresentative(data)}
       >
-        {startsWithAction && (
+        {(startsWithAction || startsWithIcon) && (
           <div
             key={`select_${data.id}`}
             style={{
               ...cellContainerStyle(theme),
-              width: SELECT_COLUMN_SIZE,
+              width: startColumnWidth,
             }}
           >
-            <Checkbox
-              onClick={handleSelectLine}
-              sx={{
-                marginRight: 1,
-                flex: '0 0 auto',
-                paddingLeft: 0,
-                '&:hover': {
-                  background: 'transparent',
-                },
-              }}
-              checked={
+            { startsWithAction && (
+              <Checkbox
+                onClick={handleSelectLine}
+                sx={{
+                  marginRight: 1,
+                  flex: '0 0 auto',
+                  paddingLeft: 0,
+                  '&:hover': {
+                    background: 'transparent',
+                  },
+                }}
+                checked={
                 (selectAll
                   && !((data.id || 'id') in (deSelectedElements || {})))
                 || (data.id || 'id') in (selectedElements || {})
               }
-            />
+              />
+            )}
+            {(startsWithIcon && icon) && (
+              <div style={{ display: 'flex', paddingLeft: 10 }}>
+                {icon(data)}
+              </div>
+            )}
           </div>
         )}
 
-        {columns.slice(startsWithAction ? 1 : 0, (actions || disableNavigation) ? undefined : -1).map((column) => (
+        {columns.slice(columnsOffset, (actions || disableNavigation) ? undefined : -1).map((column) => (
           <DataTableCell
             key={column.id}
             cell={column}

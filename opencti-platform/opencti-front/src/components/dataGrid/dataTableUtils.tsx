@@ -1225,12 +1225,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
-  icon: {
-    id: 'icon',
-    label: ' ',
-    percentWidth: 3,
-    isSortable: false,
-  },
   x_opencti_aliases: {
     id: 'x_opencti_aliases',
     label: 'Aliases',

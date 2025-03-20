@@ -168,6 +168,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'additionalFilterKeys'
 | 'variant'
 | 'actions'
+| 'icon'
 | 'rootRef'
 | 'onLineClick'
 | 'useComputeLink'
@@ -175,7 +176,6 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'disableLineSelection'
 | 'disableToolBar'
 | 'disableSelectAll'
-| 'canToggleLine'
 | 'selectOnLineClick'
 | 'createButton'
 | 'entityTypes'> & {
