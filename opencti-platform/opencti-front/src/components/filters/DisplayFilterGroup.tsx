@@ -14,11 +14,17 @@ import { useFormatter } from '../i18n';
 import { FilterRepresentative } from './FiltersModel';
 import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
 
-const displayValues = (
+interface DisplayFiltersValuesProps {
   filtersRepresentativesMap: Map<string, FilterRepresentative>,
   values: string[],
   mode?: string,
-) => {
+}
+
+const DisplayFiltersValues: FunctionComponent<DisplayFiltersValuesProps> = ({
+  filtersRepresentativesMap,
+  values,
+  mode,
+}) => {
   const { t_i18n } = useFormatter();
   return (
     <>
@@ -48,11 +54,18 @@ const displayValues = (
     </>
   );
 };
-const displayFilters = (
+
+interface DisplayFiltersFiltersProps {
   filtersRepresentativesMap: Map<string, FilterRepresentative>,
   filters: Filter[],
   parentMode: string,
-) => {
+}
+
+const DisplayFiltersFilters: FunctionComponent<DisplayFiltersFiltersProps> = ({
+  filtersRepresentativesMap,
+  filters,
+  parentMode,
+}) => {
   const { t_i18n } = useFormatter();
   return filters.map((f, i) => {
     const { key, operator, values, mode, id } = f;
@@ -110,11 +123,17 @@ const displayFilters = (
           <Box sx={{ display: 'inline-block' }}>
             {key === 'regardingOf'
               ? <>
-                {values.filter((v) => v.key === 'relationship_type').flat().map((value) => {
-                  return (<span key={'relationship_type'}>
-                    {displayValues(filtersRepresentativesMap, value.values)}
-                  </span>);
-                })}
+                {values
+                  .filter((v) => v.key === 'relationship_type')
+                  .flat()
+                  .map((value) => {
+                    return (<span key={'relationship_type'}>
+                      <DisplayFiltersValues
+                        filtersRepresentativesMap={filtersRepresentativesMap}
+                        values={value.values}
+                      />
+                    </span>);
+                  })}
                 {values.filter((v) => v.key === 'id').length > 0
                   && <Box
                     sx={{
@@ -133,11 +152,18 @@ const displayFilters = (
                 }
                 {values.filter((v) => v.key === 'id').flat().map((value) => {
                   return (<span key={'id'}>
-                    {displayValues(filtersRepresentativesMap, value.values)}
+                    <DisplayFiltersValues
+                      filtersRepresentativesMap={filtersRepresentativesMap}
+                      values={value.values}
+                    />
                   </span>);
                 })}
               </>
-              : displayValues(filtersRepresentativesMap, values, mode ?? 'or')
+              : <DisplayFiltersValues
+                  filtersRepresentativesMap={filtersRepresentativesMap}
+                  values={values}
+                  mode={mode ?? 'or'}
+                />
             }
           </Box>
         </Box>
@@ -145,12 +171,19 @@ const displayFilters = (
     );
   });
 };
-const displayFilterGroups = (
+
+interface DisplayFilterGroupsProps {
   filtersRepresentativesMap: Map<string, FilterRepresentative>,
-  filter: FilterGroup[],
+  filterGroups: FilterGroup[],
   filterMode: string,
-) => {
-  return filter.map((f, i) => {
+}
+
+const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = ({
+  filtersRepresentativesMap,
+  filterGroups,
+  filterMode,
+}) => {
+  return filterGroups.map((f, i) => {
     return (
       <Fragment key={i}>
         {i !== 0 && (
@@ -178,7 +211,11 @@ const displayFilterGroups = (
           }}
         >
           <Stack sx={{ gap: '8px', paddingBottom: '8px' }}>
-            {displayFilters(filtersRepresentativesMap, f.filters, f.mode)}
+            <DisplayFiltersFilters
+              filtersRepresentativesMap={filtersRepresentativesMap}
+              filters={f.filters}
+              parentMode={f.mode}
+            />
           </Stack>
           {f.filterGroups.length > 0 && (
             <Stack direction="row">
@@ -196,7 +233,11 @@ const displayFilterGroups = (
               >
                 {f.mode}
               </Box>
-              {displayFilterGroups(filtersRepresentativesMap, f.filterGroups, filterMode)}
+              <DisplayFiltersFilterGroups
+                filtersRepresentativesMap={filtersRepresentativesMap}
+                filterGroups={f.filterGroups}
+                filterMode={filterMode}
+              />
             </Stack>
           )}
         </Box>
@@ -212,6 +253,7 @@ interface DisplayFilterGroupProps {
   classFilter: string;
   classChipLabel: string;
 }
+
 const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
   filterObj,
   filterMode,
@@ -267,8 +309,11 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
           >
             Your filter group cannot be modified yet :
           </Typography>
-          {displayFilterGroups(filtersRepresentativesMap, filterGroups, filterMode)}
-
+          <DisplayFiltersFilterGroups
+            filtersRepresentativesMap={filtersRepresentativesMap}
+            filterGroups={filterGroups}
+            filterMode={filterMode}
+          />
           <Typography
             variant="h2"
             sx={{ textTransform: 'none' }}
