@@ -15,6 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { callWithTimeout } from '@opentelemetry/sdk-metrics/build/esnext/utils';
 import { logApp } from '../../config/conf';
+import { FunctionalError, UnknownError } from '../../config/errors';
 import { queryAi, queryNLQAi } from '../../database/ai-llm';
 import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
@@ -431,6 +432,8 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   } catch (error) {
     throw FunctionalError(`The NLQ filters response format is not correct: ${JSON.stringify(parsedResponse)}`, { error, data: parsedResponse });
   }
+  // Log structured parsedResponse
+  // console.log('---parsedResponse--\n', JSON.stringify(parsedResponse, null, 2));
 
   // 03. map entities ids
   const { filters: filtersResult, notResolvedValues } = await filtersEntityIdsMapping(context, user, parsedResponse);

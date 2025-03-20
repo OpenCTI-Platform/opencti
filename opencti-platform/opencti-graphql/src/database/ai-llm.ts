@@ -1,4 +1,5 @@
 import type { ChatPromptValueInterface } from '@langchain/core/prompt_values';
+import { ChatMistralAI } from '@langchain/mistralai';
 import { ChatOpenAI } from '@langchain/openai';
 import { Mistral } from '@mistralai/mistralai';
 import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
@@ -20,9 +21,11 @@ const AI_MODEL = conf.get('ai:model');
 const AI_MAX_TOKENS = conf.get('ai:max_tokens');
 
 let client: Mistral | OpenAI | null = null;
-let llm = null;
+let nlqModel: ChatOpenAI | ChatMistralAI | null = null;
+
 if (AI_ENABLED && AI_TOKEN) {
   switch (AI_TYPE) {
+
     case 'mistralai':
       client = new Mistral({
         serverURL: isEmptyField(AI_ENDPOINT) ? undefined : AI_ENDPOINT,
@@ -34,26 +37,50 @@ if (AI_ENABLED && AI_TOKEN) {
           groupEnd: () => logApp.info('[AI] group end.'),
         } */
       });
-      llm = new ChatOpenAI({
-        model: 'mistral',
-        apiKey: AI_TOKEN,
-        temperature: 0,
-        configuration: {
-          baseURL: `${AI_ENDPOINT}/v1`,
-        },
-      });
+
+      if (AI_ENDPOINT.includes('https://api.mistral.ai')) {
+        // Official MistralAI API
+        nlqModel = new ChatMistralAI({
+          model: AI_MODEL,
+          apiKey: AI_TOKEN,
+          temperature: 0,
+        });
+      } else {
+        // Mistral model deployed via vLLM (OpenAI-compatible)
+        nlqModel = new ChatOpenAI({
+          model: AI_MODEL,
+          apiKey: AI_TOKEN,
+          temperature: 0,
+          configuration: {
+            baseURL: `${AI_ENDPOINT}/v1`,
+          },
+        });
+      }
+
       break;
+
     case 'openai':
       client = new OpenAI({
         apiKey: AI_TOKEN,
         ...(isEmptyField(AI_ENDPOINT) ? {} : { baseURL: AI_ENDPOINT }),
       });
+
+      nlqModel = new ChatOpenAI({
+        model: AI_MODEL,
+        apiKey: AI_TOKEN,
+        temperature: 0,
+        configuration: {
+          baseURL: AI_ENDPOINT ? AI_ENDPOINT : undefined,
+        },
+      });
+
       break;
     default:
       throw UnsupportedError('Not supported AI type (currently support: mistralai, openai)', { type: AI_TYPE });
   }
 }
 
+// Query MistralAI (Streaming)
 export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
@@ -92,6 +119,7 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
   }
 };
 
+// Query OpenAI (Streaming)
 export const queryChatGpt = async (busId: string | null, developerMessage: string, userMessage: string, user: AuthUser) => {
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
@@ -130,6 +158,7 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
   }
 };
 
+// Generic AI Query Handler
 export const queryAi = async (busId: string | null, developerMessage: string | null, userMessage: string, user: AuthUser) => {
   const finalDeveloperMessage = developerMessage || 'You are an assistant helping a cyber threat intelligence analyst to better understand cyber threat intelligence data.';
   switch (AI_TYPE) {
@@ -142,9 +171,23 @@ export const queryAi = async (busId: string | null, developerMessage: string | n
   }
 };
 
+// NLQ AI Query with LangChain's Chat Models
 export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
-  if (!llm) {
-    throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
+  if (!nlqModel) {
+    throw UnsupportedError('Incorrect AI configuration for NLQ', {
+      enabled: AI_ENABLED,
+      type: AI_TYPE,
+      endpoint: AI_ENDPOINT,
+      model: AI_MODEL,
+    });
   }
-  return llm.withStructuredOutput(OutputSchema).invoke(promptValue);
+
+  try {
+    logApp.info('[NLQ] Querying AI model for structured output');
+    return await nlqModel.withStructuredOutput(OutputSchema).invoke(promptValue);
+  } catch (err) {
+    logApp.error('[NLQ] Error querying AI model', { cause: err });
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    return `An error occurred while processing NLQ: ${errorMessage}`;
+  }
 };
