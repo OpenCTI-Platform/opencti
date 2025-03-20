@@ -14,6 +14,195 @@ import { useFormatter } from '../i18n';
 import { FilterRepresentative } from './FiltersModel';
 import { Filter, FilterGroup } from '../../utils/filters/filtersHelpers-types';
 
+const displayValues = (
+  filtersRepresentativesMap: Map<string, FilterRepresentative>,
+  values: string[],
+  mode?: string,
+) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <>
+      {values.map((value, j) => (
+        <Fragment key={value}>
+          <span key={value}>
+            {' '}
+            {filtersRepresentativesMap.get(value) ? filtersRepresentativesMap.get(value)?.value : value}{' '}
+          </span>
+          {j + 1 < values.length && (
+            <Box
+              sx={{
+                paddingTop: 2,
+                textTransform: 'uppercase',
+                fontFamily: 'Consolas, monaco, monospace',
+                backgroundColor: mode ? 'rgba(255, 255, 255, .1)' : 'rgba(255, 255, 255, .0)',
+                fontWeight: 'bold',
+                display: 'inline-block',
+                padding: '8px',
+              }}
+            >
+              {t_i18n(mode ?? 'or')}
+            </Box>
+          )}
+        </Fragment>
+      ))}
+    </>
+  );
+};
+const displayFilters = (
+  filtersRepresentativesMap: Map<string, FilterRepresentative>,
+  filters: Filter[],
+  parentMode: string,
+) => {
+  const { t_i18n } = useFormatter();
+  return filters.map((f, i) => {
+    const { key, operator, values, mode, id } = f;
+    return (
+      <Box
+        key={id ?? key}
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'auto 1fr',
+          gap: '8px',
+          alignItems: 'center',
+        }}
+      >
+        {i !== 0 && (
+          <Box
+            sx={{
+              textTransform: 'uppercase',
+              fontWeight: 'bold',
+              display: 'inline-block',
+              borderRadius: '24px',
+              padding: '8px 16px',
+              fontFamily: 'Consolas, monaco, monospace',
+              backgroundColor: '#01478d',
+            }}
+          >
+            {parentMode}
+          </Box>
+        )}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            borderRadius: '24px',
+            padding: '0 16px',
+            backgroundColor: 'rgba(255, 255, 255, 0.16)',
+            width: 'fit-content',
+          }}
+        >
+          <span>{t_i18n(key)}</span>
+          <Box
+            sx={{
+              textTransform: 'uppercase',
+              fontFamily: 'Consolas, monaco, monospace',
+              backgroundColor: 'rgb(74 117 162)',
+              fontWeight: 'bold',
+              display: 'inline-block',
+              margin: '0 8px',
+              padding: '8px',
+            }}
+          >
+            {' '}
+            {operator}
+          </Box>
+          <Box sx={{ display: 'inline-block' }}>
+            {key === 'regardingOf'
+              ? <>
+                {values.filter((v) => v.key === 'relationship_type').flat().map((value) => {
+                  return (<span key={'relationship_type'}>
+                    {displayValues(filtersRepresentativesMap, value.values)}
+                  </span>);
+                })}
+                <Box
+                  sx={{
+                    paddingTop: 2,
+                    textTransform: 'uppercase',
+                    fontFamily: 'Consolas, monaco, monospace',
+                    backgroundColor: 'rgba(255, 255, 255, .1)',
+                    fontWeight: 'bold',
+                    display: 'inline-block',
+                    margin: '0 8px',
+                    padding: '8px',
+                  }}
+                >
+                  {t_i18n('WITH')}
+                </Box>
+                {values.filter((v) => v.key === 'id').flat().map((value) => {
+                  return (<span key={'id'}>
+                    {displayValues(filtersRepresentativesMap, value.values)}
+                  </span>);
+                })}
+              </>
+              : displayValues(filtersRepresentativesMap, values, mode ?? 'or')
+            }
+          </Box>
+        </Box>
+      </Box>
+    );
+  });
+};
+const displayFilterGroups = (
+  filtersRepresentativesMap: Map<string, FilterRepresentative>,
+  filter: FilterGroup[],
+  filterMode: string,
+) => {
+  return filter.map((f, i) => {
+    return (
+      <Fragment key={i}>
+        {i !== 0 && (
+          <Box
+            sx={{
+              textTransform: 'uppercase',
+              fontWeight: 'bold',
+              display: 'inline-block',
+              borderRadius: '24px',
+              padding: '8px 16px',
+              fontFamily: 'Consolas, monaco, monospace',
+              height: 'fit-content',
+              backgroundColor: '#01478d',
+              marginBottom: '8px',
+            }}
+          >
+            {filterMode}
+          </Box>
+        )}
+        <Box
+          sx={{
+            padding: '16px',
+            backgroundColor: 'rgba(0,0,0, 0.1)',
+            marginBottom: '16px',
+          }}
+        >
+          <Stack sx={{ gap: '8px', paddingBottom: '8px' }}>
+            {displayFilters(filtersRepresentativesMap, f.filters, f.mode)}
+          </Stack>
+          {f.filterGroups.length > 0 && (
+            <Stack direction="row">
+              <Box
+                sx={{
+                  textTransform: 'uppercase',
+                  fontWeight: 'bold',
+                  borderRadius: '24px',
+                  padding: '8px 16px',
+                  fontFamily: 'Consolas, monaco, monospace',
+                  backgroundColor: '#01478d',
+                  marginRight: '8px',
+                  height: 'fit-content',
+                }}
+              >
+                {f.mode}
+              </Box>
+              {displayFilterGroups(filtersRepresentativesMap, f.filterGroups, filterMode)}
+            </Stack>
+          )}
+        </Box>
+      </Fragment>
+    );
+  });
+};
+
 interface DisplayFilterGroupProps {
   filterObj: FilterGroup;
   filterMode: string;
@@ -36,180 +225,6 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
   };
   const handleClose = () => {
     setOpen(false);
-  };
-  const displayValues = (values: string[], mode?: string) => {
-    return (
-      <>
-        {values.map((value, j) => (
-          <Fragment key={value}>
-            <span key={value}>
-              {' '}
-              {filtersRepresentativesMap.get(value) ? filtersRepresentativesMap.get(value)?.value : value}{' '}
-            </span>
-            {j + 1 < values.length && (
-              <Box
-                sx={{
-                  paddingTop: 2,
-                  textTransform: 'uppercase',
-                  fontFamily: 'Consolas, monaco, monospace',
-                  backgroundColor: mode ? 'rgba(255, 255, 255, .1)' : 'rgba(255, 255, 255, .0)',
-                  fontWeight: 'bold',
-                  display: 'inline-block',
-                  padding: '8px',
-                }}
-              >
-                {t_i18n(mode ?? 'or')}
-              </Box>
-            )}
-          </Fragment>
-        ))}
-      </>
-    );
-  };
-  const displayFilters = (filters: Filter[], parentMode: string) => {
-    return filters.map((f, i) => {
-      const { key, operator, values, mode, id } = f;
-      return (
-        <Box
-          key={id ?? key}
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'auto 1fr',
-            gap: '8px',
-            alignItems: 'center',
-          }}
-        >
-          {i !== 0 && (
-            <Box
-              sx={{
-                textTransform: 'uppercase',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                borderRadius: '24px',
-                padding: '8px 16px',
-                fontFamily: 'Consolas, monaco, monospace',
-                backgroundColor: '#01478d',
-              }}
-            >
-              {parentMode}
-            </Box>
-          )}
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              borderRadius: '24px',
-              padding: '0 16px',
-              backgroundColor: 'rgba(255, 255, 255, 0.16)',
-              width: 'fit-content',
-            }}
-          >
-            <span>{t_i18n(key)}</span>
-            <Box
-              sx={{
-                textTransform: 'uppercase',
-                fontFamily: 'Consolas, monaco, monospace',
-                backgroundColor: 'rgb(74 117 162)',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                margin: '0 8px',
-                padding: '8px',
-              }}
-            >
-              {' '}
-              {operator}
-            </Box>
-            <Box sx={{ display: 'inline-block' }}>
-              {key === 'regardingOf'
-                ? <>
-                  {values.filter((v) => v.key === 'relationship_type').flat().map((value) => {
-                    return (<span key={'relationship_type'}>
-                      {displayValues(value.values)}
-                    </span>);
-                  })}
-                  <Box
-                    sx={{
-                      paddingTop: 2,
-                      textTransform: 'uppercase',
-                      fontFamily: 'Consolas, monaco, monospace',
-                      backgroundColor: 'rgba(255, 255, 255, .1)',
-                      fontWeight: 'bold',
-                      display: 'inline-block',
-                      margin: '0 8px',
-                      padding: '8px',
-                    }}
-                  >
-                    {t_i18n('WITH')}
-                  </Box>
-                  {values.filter((v) => v.key === 'id').flat().map((value) => {
-                    return (<span key={'id'}>
-                      {displayValues(value.values)}
-                    </span>);
-                  })}
-                </>
-                : displayValues(values, mode ?? 'or')
-              }
-            </Box>
-          </Box>
-        </Box>
-      );
-    });
-  };
-  const displayFilterGroups = (filter: FilterGroup[]) => {
-    return filter.map((f, i) => {
-      return (
-        <Fragment key={i}>
-          {i !== 0 && (
-            <Box
-              sx={{
-                textTransform: 'uppercase',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                borderRadius: '24px',
-                padding: '8px 16px',
-                fontFamily: 'Consolas, monaco, monospace',
-                height: 'fit-content',
-                backgroundColor: '#01478d',
-                marginBottom: '8px',
-              }}
-            >
-              {filterMode}
-            </Box>
-          )}
-          <Box
-            sx={{
-              padding: '16px',
-              backgroundColor: 'rgba(0,0,0, 0.1)',
-              marginBottom: '16px',
-            }}
-          >
-            <Stack sx={{ gap: '8px', paddingBottom: '8px' }}>
-              {displayFilters(f.filters, f.mode)}
-            </Stack>
-            {f.filterGroups.length > 0 && (
-              <Stack direction="row">
-                <Box
-                  sx={{
-                    textTransform: 'uppercase',
-                    fontWeight: 'bold',
-                    borderRadius: '24px',
-                    padding: '8px 16px',
-                    fontFamily: 'Consolas, monaco, monospace',
-                    backgroundColor: '#01478d',
-                    marginRight: '8px',
-                    height: 'fit-content',
-                  }}
-                >
-                  {f.mode}
-                </Box>
-                {displayFilterGroups(f.filterGroups)}
-              </Stack>
-            )}
-          </Box>
-        </Fragment>
-      );
-    });
   };
 
   return (
@@ -250,7 +265,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
           >
             Your filter group cannot be modified yet :
           </Typography>
-          {displayFilterGroups(filterGroups)}
+          {displayFilterGroups(filtersRepresentativesMap, filterGroups, filterMode)}
 
           <Typography
             variant="h2"
