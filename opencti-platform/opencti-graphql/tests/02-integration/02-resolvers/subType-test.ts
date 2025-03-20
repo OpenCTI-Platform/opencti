@@ -146,7 +146,6 @@ describe('SubType resolver for RFI and request access use case', () => {
 
   it('should statuses list only global workflow statuses (and not request-access one)', async () => {
     const queryResult = await queryAsAdminWithSuccess({ query: SUB_TYPE_FIND_BY_ID_QUERY, variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI } });
-    logApp.info('ANGIE - queryResult', { queryResult });
     const workflowStatuses = queryResult.data?.subType.statuses;
     // From data-initalization we do expect some status
     expect(workflowStatuses.some((status: any) => status.template.name === 'DECLINED')).toBeFalsy();

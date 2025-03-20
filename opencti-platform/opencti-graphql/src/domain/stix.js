@@ -289,7 +289,6 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
 };
 
 export const addOrganizationRestriction = async (context, user, fromId, organizationId) => {
-  logApp.info('addOrganizationRestriction:', { organizationId });
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot restrict organization in draft');
   }
