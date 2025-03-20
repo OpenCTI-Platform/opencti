@@ -1,9 +1,19 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { NotificationsLines_data$data } from '@components/profile/notifications/__generated__/NotificationsLines_data.graphql';
 import { notificationLineFragment } from '@components/profile/notifications/NotificationLine';
-import { Tooltip } from '@mui/material';
+import { Badge, Tooltip } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import { deepPurple, green, indigo, red } from '@mui/material/colors';
+import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
+import { NotificationLine_node$data } from '@components/profile/notifications/__generated__/NotificationLine_node.graphql';
+import IconButton from '@mui/material/IconButton';
+import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
+import { graphql } from 'react-relay';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { notificationsLinesFragment, notificationsLinesQuery } from './notifications/NotificationsLines';
@@ -18,8 +28,27 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { hexToRGB } from '../../../utils/Colors';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import Transition from '../../../components/Transition';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
+
+export const notificationLineNotificationMarkReadMutation = graphql`
+    mutation NotificationsNotificationMarkReadMutation(
+        $id: ID!
+        $read: Boolean!
+    ) {
+        notificationMarkRead(id: $id, read: $read) {
+            ...NotificationLine_node
+        }
+    }
+`;
+
+const notificationLineNotificationDeleteMutation = graphql`
+    mutation NotificationsNotificationDeleteMutation($id: ID!) {
+        notificationDelete(id: $id)
+    }
+`;
 
 const Notifications: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
@@ -30,30 +59,93 @@ const Notifications: FunctionComponent = () => {
     me,
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+  const [commitMarkRead] = useApiMutation(
+    notificationLineNotificationMarkReadMutation,
+  );
+  const [commitDelete] = useApiMutation(
+    notificationLineNotificationDeleteMutation,
+  );
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [updating, setUpdating] = useState<boolean>(false);
+  // const [open, setOpen] = useState<boolean>(false);
+  const handleRead = (id: string, read: boolean) => {
+    setUpdating(true);
+    return commitMarkRead({
+      variables: {
+        id,
+        read,
+      },
+      onCompleted: () => {
+        setUpdating(false);
+      },
+    });
+  };
+  const handleDelete = (id: string) => {
+    setUpdating(true);
+    return commitDelete({
+      variables: {
+        id,
+      },
+      // updater: (store) => {
+      //   deleteNode(store, 'Pagination_myNotifications', paginationOptions, id);
+      // },
+      onCompleted: () => {
+        setUpdating(false);
+      },
+    });
+  };
 
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+  };
+
+  const handleCloseDelete = () => {
+    setDisplayDelete(false);
+  };
+  const colors: Record<string, string> = {
+    none: green[500],
+    create: green[500],
+    update: deepPurple[500],
+    delete: red[500],
+    multiple: indigo[500],
+  };
+  const getFirstOperation = ({ notification_content, notification_type }: Pick<NotificationLine_node$data, 'notification_content' | 'notification_type'>) => {
+    const events = notification_content.map((n: any) => n.events).flat();
+    const firstEvent = events.at(0);
+    const isDigest = notification_type === 'digest';
+    return isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
+  };
+  const iconSelector = (notification: NotificationLine_node$data) => {
+    const operation = getFirstOperation(notification);
+    switch (operation) {
+      case 'create':
+        return <BellPlusOutline style={{ color: colors[operation] }} />;
+      case 'update':
+        return <BellCogOutline style={{ color: colors[operation] }} />;
+      case 'delete':
+        return <BellRemoveOutline style={{ color: colors[operation] }} />;
+      case 'multiple':
+        return (
+          <FileTableBoxMultipleOutline style={{ color: colors[operation] }} />
+        );
+      default:
+        return <BellOutline style={{ color: colors[operation] }} />;
+    }
+  };
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     operation: {
       label: 'Operation',
       percentWidth: 20,
       isSortable: isRuntimeSort,
-      render: ({ notification_content, notification_type }) => {
-        const events = notification_content.map((n: any) => n.events).flat();
-        const firstEvent = events.at(0);
-        const isDigest = notification_type === 'digest';
-        const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
+      render: ({ notification_content, notification_type }: NotificationLine_node$data) => {
+        const firstOperation = getFirstOperation({ notification_content, notification_type });
+        const events = notification_content.map((n) => n.events).flat();
         const eventTypes: Record<string, string> = {
           create: t_i18n('Creation'),
           update: t_i18n('Modification'),
           delete: t_i18n('Deletion'),
           none: t_i18n('Unknown'),
-        };
-        const colors: Record<string, string> = {
-          none: green[500],
-          create: green[500],
-          update: deepPurple[500],
-          delete: red[500],
-          multiple: indigo[500],
         };
         return (<div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
           <Chip
@@ -70,7 +162,7 @@ const Notifications: FunctionComponent = () => {
             label={
               events.length > 1
                 ? t_i18n('Multiple')
-                : (eventTypes[firstEvent?.operation ?? 'none'] ?? firstEvent?.operation)
+                : (eventTypes[firstOperation] ?? firstOperation)
             }
           />
         </div>);
@@ -173,10 +265,69 @@ const Notifications: FunctionComponent = () => {
         preloadedPaginationProps={preloadedPaginationProps}
         resolvePath={(data: NotificationsLines_data$data) => data.myNotifications?.edges?.map((n) => n?.node)}
         dataColumns={dataColumns}
+        icon={ (data) => (
+          <Badge color="warning" variant="dot" invisible={data.is_read}>
+            {iconSelector(data)}
+          </Badge>
+        )}
         lineFragment={notificationLineFragment}
         toolbarFilters={contextFilters}
         exportContext={{ entity_type: 'Notification' }}
         availableEntityTypes={['Notification']}
+        actions={(data) => (<><IconButton
+          disabled={updating}
+          onClick={(event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            handleRead(data.id, !data.is_read);
+          }}
+          size="large"
+          color={data.is_read ? 'success' : 'warning'}
+                              >
+          {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />}
+        </IconButton>
+          <Tooltip title={t_i18n('Delete this notification')}>
+            <span>
+              <IconButton
+                disabled={updating}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  event.preventDefault();
+                  handleOpenDelete();
+                }}
+                size="large"
+                color="primary"
+              >
+                <DeleteOutlined/>
+              </IconButton>
+            </span>
+          </Tooltip>
+          {displayDelete && (
+          <Dialog
+            PaperProps={{ elevation: 1 }}
+            open={displayDelete}
+            TransitionComponent={Transition}
+            onClose={handleCloseDelete}
+          >
+            <DialogContent>
+              <DialogContentText>
+                {t_i18n('Do you want to delete this notification?')}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDelete}>
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                onClick={() => handleDelete(data.id)}
+                color="secondary"
+              >
+                {t_i18n('Delete')}
+              </Button>
+            </DialogActions>
+          </Dialog>)}
+        </>
+        )}
       />
       )}
     </div>
