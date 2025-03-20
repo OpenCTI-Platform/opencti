@@ -1,11 +1,11 @@
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 
 const message = '[MIGRATION] Status add scope migration and default to GLOBAL';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   const updateQuery = {
     script: {
       source: "if (!ctx._source.containsKey('scope')) { ctx._source.scope = 'GLOBAL' }",
@@ -23,7 +23,7 @@ export const up = async (next) => {
     [READ_INDEX_INTERNAL_OBJECTS],
     updateQuery
   );
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 
