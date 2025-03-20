@@ -6,7 +6,7 @@ import { READ_DATA_INDICES, READ_INDEX_INTERNAL_OBJECTS } from '../database/util
 import { prepareDate } from '../utils/format';
 import { patchAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUS_EXPIRED, booleanConf, logApp } from '../config/conf';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext, EXPIRATION_MANAGER_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { userEditField } from '../domain/user';
@@ -28,8 +28,13 @@ const revokedInstances = async (context) => {
       // For indicator, we also need to force x_opencti_detection to false
       if (element.entity_type === ENTITY_TYPE_INDICATOR) {
         patch.x_opencti_detection = false;
+        if (element.decay_applied_rule && element.decay_applied_rule.decay_revoke_score) {
+          patch.x_opencti_score = element.decay_applied_rule.decay_revoke_score;
+        } else {
+          patch.x_opencti_score = 0;
+        }
       }
-      await patchAttribute(context, SYSTEM_USER, element.id, element.entity_type, patch);
+      await patchAttribute(context, EXPIRATION_MANAGER_USER, element.id, element.entity_type, patch);
     };
     await Promise.map(elements, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   };
@@ -42,7 +47,7 @@ const revokedInstances = async (context) => {
     filterGroups: [],
   };
   const opts = { filters, noFiltersChecking: true, connectionFormat: false, callback };
-  await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
+  await elList(context, EXPIRATION_MANAGER_USER, READ_DATA_INDICES, opts);
 };
 
 const expiredAccounts = async (context) => {
@@ -51,7 +56,7 @@ const expiredAccounts = async (context) => {
     logApp.info(`[OPENCTI] Expiration manager will expire ${elements.length} users`);
     const concurrentUpdate = async (element) => {
       const inputs = [{ key: 'account_status', value: [ACCOUNT_STATUS_EXPIRED] }];
-      await userEditField(context, SYSTEM_USER, element.internal_id, inputs);
+      await userEditField(context, EXPIRATION_MANAGER_USER, element.internal_id, inputs);
     };
     await Promise.map(elements, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   };
@@ -65,7 +70,7 @@ const expiredAccounts = async (context) => {
     filterGroups: [],
   };
   const opts = { filters, connectionFormat: false, callback };
-  await elList(context, SYSTEM_USER, [READ_INDEX_INTERNAL_OBJECTS], opts);
+  await elList(context, EXPIRATION_MANAGER_USER, [READ_INDEX_INTERNAL_OBJECTS], opts);
 };
 
 const expireHandler = async () => {
