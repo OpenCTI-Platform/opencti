@@ -527,13 +527,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
-  message: {
-    id: 'message',
-    label: 'Message',
-    percentWidth: 48,
-    isSortable: true,
-    render: ({ message }) => defaultRender(message),
-  },
   modified: {
     id: 'modified',
     label: 'Modification date',
@@ -572,13 +565,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         />
       );
     },
-  },
-  operation: {
-    id: 'operation',
-    label: 'Operation',
-    percentWidth: 20,
-    isSortable: true,
-    render: ({ operation }) => defaultRender(operation),
   },
   tool_types: {
     id: 'tool_types',
