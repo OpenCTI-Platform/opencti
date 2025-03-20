@@ -110,7 +110,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
                       fullWidth={true}
                       variant="standard"
                       style={fieldSpacingContainerStyle}
-                      askAi={true}
+                      askAi={false}
                       multiline={true}
                       minRows={5}
                     />
