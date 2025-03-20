@@ -6,7 +6,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { notificationsLinesFragment, notificationsLinesQuery } from './notifications/NotificationsLines';
 import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from './notifications/__generated__/NotificationsLinesPaginationQuery.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useGetDefaultFilterObject, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -42,33 +42,23 @@ const Notifications: FunctionComponent = () => {
     },
   };
   const initialValues = {
-    filters: emptyFilterGroup,
-    sortBy: 'created_at',
+    searchTerm: '',
+    sortBy: 'created',
     orderAsc: false,
-    openExports: false,
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['is_read', 'trigger_id'], ['Notification']),
+    },
+    numberOfElements: {
+      number: 0,
+      symbol: '',
+    },
   };
 
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NotificationsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
-    // {
-    //   searchTerm: '',
-    //   sortBy: 'created',
-    //   orderAsc: false,
-    //   filters: {
-    //     ...emptyFilterGroup,
-    //     filters: useGetDefaultFilterObject(['is_read', 'trigger_id'], ['Notification']),
-    //   },
-    //   numberOfElements: {
-    //     number: 0,
-    //     symbol: '',
-    //   },
-    // },
   );
-  // const {
-  //   filters,
-  // } = viewStorage;
-  // const contextFilters = useBuildEntityTypeBasedFilterContext('Notification', filters);
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Notification']);
   const contextFilters = {
@@ -122,64 +112,6 @@ const Notifications: FunctionComponent = () => {
       />
       )}
     </div>
-
-  // <ListLines
-  //   helpers={helpers}
-  //   sortBy={sortBy}
-  //   orderAsc={orderAsc}
-  //   dataColumns={dataColumns}
-  //   handleSort={helpers.handleSort}
-  //   handleSearch={helpers.handleSearch}
-  //   handleAddFilter={helpers.handleAddFilter}
-  //   handleRemoveFilter={helpers.handleRemoveFilter}
-  //   handleSwitchFilter={helpers.handleSwitchFilter}
-  //   handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-  //   handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-  //   handleToggleSelectAll={handleToggleSelectAll}
-  //   selectAll={selectAll}
-  //   keyword={searchTerm}
-  //   filters={filters}
-  //   iconExtension={true}
-  //   secondaryAction={true}
-  //   paginationOptions={queryPaginationOptions}
-  //   numberOfElements={numberOfElements}
-  //   entityTypes={['Notification']}
-  // >
-  //   {queryRef && (
-  //   <React.Suspense
-  //     fallback={
-  //       <>
-  //         {Array.from(Array(20).keys()).map((idx) => (
-  //           <NotificationLineDummy
-  //             key={`NotificationLineDummy-${idx}`}
-  //             dataColumns={dataColumns}
-  //           />
-  //         ))}
-  //       </>
-  //                   }
-  //   >
-  //     <NotificationsLines
-  //       queryRef={queryRef}
-  //       paginationOptions={queryPaginationOptions}
-  //       dataColumns={dataColumns}
-  //       onLabelClick={helpers.handleAddFilter}
-  //       setNumberOfElements={helpers.handleSetNumberOfElements}
-  //       selectedElements={selectedElements}
-  //       deSelectedElements={deSelectedElements}
-  //       onToggleEntity={onToggleEntity}
-  //       selectAll={selectAll}
-  //     />
-  //     <NotificationsToolBar
-  //       selectedElements={selectedElements}
-  //       deSelectedElements={deSelectedElements}
-  //       numberOfSelectedElements={numberOfSelectedElements}
-  //       handleClearSelectedElements={handleClearSelectedElements}
-  //       selectAll={selectAll}
-  //       filters={contextFilters}
-  //     />
-  //   </React.Suspense>
-  //   )}
-  // </ListLines>
   );
 };
 
