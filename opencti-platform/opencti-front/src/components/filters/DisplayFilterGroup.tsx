@@ -115,20 +115,22 @@ const displayFilters = (
                     {displayValues(filtersRepresentativesMap, value.values)}
                   </span>);
                 })}
-                <Box
-                  sx={{
-                    paddingTop: 2,
-                    textTransform: 'uppercase',
-                    fontFamily: 'Consolas, monaco, monospace',
-                    backgroundColor: 'rgba(255, 255, 255, .1)',
-                    fontWeight: 'bold',
-                    display: 'inline-block',
-                    margin: '0 8px',
-                    padding: '8px',
-                  }}
-                >
-                  {t_i18n('WITH')}
-                </Box>
+                {values.filter((v) => v.key === 'id').length > 0
+                  && <Box
+                    sx={{
+                      paddingTop: 2,
+                      textTransform: 'uppercase',
+                      fontFamily: 'Consolas, monaco, monospace',
+                      backgroundColor: 'rgba(255, 255, 255, .1)',
+                      fontWeight: 'bold',
+                      display: 'inline-block',
+                      margin: '0 8px',
+                      padding: '8px',
+                    }}
+                     >
+                    {t_i18n('WITH')}
+                  </Box>
+                }
                 {values.filter((v) => v.key === 'id').flat().map((value) => {
                   return (<span key={'id'}>
                     {displayValues(filtersRepresentativesMap, value.values)}
