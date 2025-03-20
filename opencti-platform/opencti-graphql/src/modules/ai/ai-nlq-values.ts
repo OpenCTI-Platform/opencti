@@ -1,126 +1,96 @@
 import { z } from "zod";
-import { createZodLiteralUnion } from "./ai-nlq-schema";
 import { FilterMode, FilterOperator } from "./../../generated/graphql";
 
 // =======================
 // Modes
 // =======================
 
-const ModeObject = {
+export const modeDescription = {
   [FilterMode.And]: {
-    type: z.literal(FilterMode.And),
     description: "Requires all filter conditions to be met (logical AND).",
   },
   [FilterMode.Or]: {
-    type: z.literal(FilterMode.Or),
     description:
       "Requires at least one filter condition to be met (logical OR).",
   },
 };
 
-export const ModeUnion = createZodLiteralUnion(
-  Object.values(FilterMode),
-  ModeObject,
-  "The logical mode (or/and) used to filter results."
-);
+export const modeKeys = Object.values(FilterMode);
 
 // =======================
 // Operators
 // =======================
 
-const OperatorObject = {
+export const operatorDescription = {
   [FilterOperator.Contains]: {
-    type: z.literal(FilterOperator.Contains),
     description: "Filters for values that contain the given substring.",
   },
   [FilterOperator.EndsWith]: {
-    type: z.literal(FilterOperator.EndsWith),
     description: "Filters for values that end with the given substring.",
   },
   [FilterOperator.Eq]: {
-    type: z.literal(FilterOperator.Eq),
     description: "Filters for values that exactly match the given criterion.",
   },
   [FilterOperator.Gt]: {
-    type: z.literal(FilterOperator.Gt),
     description: "Filters for values greater than the given numeric value.",
   },
   [FilterOperator.Gte]: {
-    type: z.literal(FilterOperator.Gte),
     description:
       "Filters for values greater than or equal to the given numeric value.",
   },
   [FilterOperator.Lt]: {
-    type: z.literal(FilterOperator.Lt),
     description: "Filters for values less than the given numeric value.",
   },
   [FilterOperator.Lte]: {
-    type: z.literal(FilterOperator.Lte),
     description:
       "Filters for values less than or equal to the given numeric value.",
   },
   [FilterOperator.Match]: {
-    type: z.literal(FilterOperator.Match),
     description:
       "Filters for values that match a specified pattern (regex or similar).",
   },
   [FilterOperator.Nil]: {
-    type: z.literal(FilterOperator.Nil),
     description: "Filters for values that are null or missing.",
   },
   [FilterOperator.NotContains]: {
-    type: z.literal(FilterOperator.NotContains),
     description:
       "Inverse of 'contains'; filters for values not containing the substring.",
   },
   [FilterOperator.NotEndsWith]: {
-    type: z.literal(FilterOperator.NotEndsWith),
     description:
       "Inverse of 'ends_with'; filters for values not ending with the substring.",
   },
   [FilterOperator.NotEq]: {
-    type: z.literal(FilterOperator.NotEq),
     description:
       "Inverse of 'eq'; filters for values that do not match the given criterion.",
   },
   [FilterOperator.NotNil]: {
-    type: z.literal(FilterOperator.NotNil),
     description: "Filters for values that are not null or missing.",
   },
   [FilterOperator.NotStartsWith]: {
-    type: z.literal(FilterOperator.NotStartsWith),
     description:
       "Inverse of 'starts_with'; filters for values not starting with the substring.",
   },
   [FilterOperator.Script]: {
-    type: z.literal(FilterOperator.Script),
     description: "Filters using a custom script or expression.",
   },
   [FilterOperator.Search]: {
-    type: z.literal(FilterOperator.Search),
     description: "Full-text or specialized search operator.",
   },
   [FilterOperator.StartsWith]: {
-    type: z.literal(FilterOperator.StartsWith),
     description: "Filters for values that start with the given substring.",
   },
   [FilterOperator.Wildcard]: {
-    type: z.literal(FilterOperator.Wildcard),
     description:
       "Filters for values matching a wildcard pattern (e.g., * or ?).",
   },
   [FilterOperator.Within]: {
-    type: z.literal(FilterOperator.Within),
     description:
       "Filters for values falling within the specified boundaries or range (e.g., between two numbers or dates).",
   },
 };
 
-export const OperatorUnion = createZodLiteralUnion(
-  Object.values(FilterOperator),
-  OperatorObject,
-  "The operator used to filter results."
-);
+export const operatorKeys = Object.values(FilterOperator);
 
 // =======================
 // Relationship
@@ -162,14 +132,10 @@ enum RelationshipEnum {
   NATIONAL_OF = "national-of",
   ORIGINATES_FROM = "originates-from",
   OWNS = "owns",
-  RELATED_TO = "related-to",
   PART_OF = "part-of",
-  SUBTECHNIQUE_OF = "subtechnique-of",
-  TARGETS = "targets",
-  USES = "uses",
-  VARIANT_OF = "variant-of",
   PARTICIPATES_IN = "participates-in",
   PUBLISHES = "publishes",
+  RELATED_TO = "related-to",
   REMEDIATES = "remediates",
   REPORTS_TO = "reports-to",
   RESIDES_IN = "resides-in",
@@ -177,228 +143,183 @@ enum RelationshipEnum {
   REVOKED_BY = "revoked-by",
   STATIC_ANALYSIS_OF = "static-analysis-of",
   SUBNARRATIVE_OF = "subnarrative-of",
+  SUBTECHNIQUE_OF = "subtechnique-of",
   SUPPORTS = "supports",
+  TARGETS = "targets",
+  USES = "uses",
+  VARIANT_OF = "variant-of",
 }
 
-const RelationshipObject = {
+export const relationshipDescription = {
   [RelationshipEnum.ATTRIBUTED_TO]: {
-    type: z.literal(RelationshipEnum.ATTRIBUTED_TO),
     description: "Indicates attribution to a threat actor or campaign.",
   },
   [RelationshipEnum.EXPLOITS]: {
-    type: z.literal(RelationshipEnum.EXPLOITS),
     description: "Indicates exploitation of a vulnerability or target.",
   },
   [RelationshipEnum.HAS]: {
-    type: z.literal(RelationshipEnum.HAS),
     description: "Expresses possession or inclusion.",
   },
   [RelationshipEnum.INDICATES]: {
-    type: z.literal(RelationshipEnum.INDICATES),
     description: "Suggests an indicator about an entity or relationship.",
   },
   [RelationshipEnum.LOCATED_AT]: {
-    type: z.literal(RelationshipEnum.LOCATED_AT),
     description: "Specifies a geographic or physical location.",
   },
   [RelationshipEnum.ORIGINATES_FROM]: {
-    type: z.literal(RelationshipEnum.ORIGINATES_FROM),
     description: "Specifies origin or source location.",
   },
   [RelationshipEnum.PART_OF]: {
-    type: z.literal(RelationshipEnum.PART_OF),
     description: "Indicates a subcomponent of a bigger entity.",
   },
   [RelationshipEnum.RELATED_TO]: {
-    type: z.literal(RelationshipEnum.RELATED_TO),
     description: "Indicates a non-specific relationship between entities.",
   },
   [RelationshipEnum.SUBTECHNIQUE_OF]: {
-    type: z.literal(RelationshipEnum.SUBTECHNIQUE_OF),
     description: "Specifies that this is a subtechnique of a broader tactic.",
   },
   [RelationshipEnum.TARGETS]: {
-    type: z.literal(RelationshipEnum.TARGETS),
     description:
       "Indicates targeting of an individual, organization, or system.",
   },
   [RelationshipEnum.USES]: {
-    type: z.literal(RelationshipEnum.USES),
     description: "Indicates usage of a tool, malware, or technique.",
   },
   [RelationshipEnum.AMPLIFIES]: {
-    type: z.literal(RelationshipEnum.AMPLIFIES),
     description: "Increases the impact or effect of another entity.",
   },
   [RelationshipEnum.ANALYSIS_OF]: {
-    type: z.literal(RelationshipEnum.ANALYSIS_OF),
     description: "Denotes an analysis performed on another entity.",
   },
   [RelationshipEnum.AUTHORED_BY]: {
-    type: z.literal(RelationshipEnum.AUTHORED_BY),
     description: "Identifies the author of an entity or document.",
   },
   [RelationshipEnum.BASED_ON]: {
-    type: z.literal(RelationshipEnum.BASED_ON),
     description: "Indicates a foundation or dependency on another entity.",
   },
   [RelationshipEnum.BEACONS_TO]: {
-    type: z.literal(RelationshipEnum.BEACONS_TO),
     description:
       "Indicates communication or signaling to a remote destination.",
   },
   [RelationshipEnum.BELONGS_TO]: {
-    type: z.literal(RelationshipEnum.BELONGS_TO),
     description: "Indicates membership or ownership by another entity.",
   },
   [RelationshipEnum.CHARACTERIZES]: {
-    type: z.literal(RelationshipEnum.CHARACTERIZES),
     description: "Describes distinctive traits or qualities of another entity.",
   },
   [RelationshipEnum.CITIZEN_OF]: {
-    type: z.literal(RelationshipEnum.CITIZEN_OF),
     description: "Denotes citizenship or national belonging.",
   },
   [RelationshipEnum.COMMUNICATES_WITH]: {
-    type: z.literal(RelationshipEnum.COMMUNICATES_WITH),
     description: "Indicates two entities communicate or exchange data.",
   },
   [RelationshipEnum.COMPROMISES]: {
-    type: z.literal(RelationshipEnum.COMPROMISES),
     description: "Indicates compromise or unauthorized access.",
   },
   [RelationshipEnum.CONSISTS_OF]: {
-    type: z.literal(RelationshipEnum.CONSISTS_OF),
     description: "Expresses that an entity is composed of other entities.",
   },
   [RelationshipEnum.CONTROLS]: {
-    type: z.literal(RelationshipEnum.CONTROLS),
     description: "Denotes control or governance of another entity.",
   },
   [RelationshipEnum.COOPERATES_WITH]: {
-    type: z.literal(RelationshipEnum.COOPERATES_WITH),
     description: "Indicates collaborative or cooperative behavior.",
   },
   [RelationshipEnum.DELIVERS]: {
-    type: z.literal(RelationshipEnum.DELIVERS),
     description: "Indicates delivery of malware, payload, or content.",
   },
   [RelationshipEnum.DERIVED_FROM]: {
-    type: z.literal(RelationshipEnum.DERIVED_FROM),
     description: "Indicates origin from or derivation of another entity.",
   },
   [RelationshipEnum.DETECTS]: {
-    type: z.literal(RelationshipEnum.DETECTS),
     description: "Specifies detection or identification of another entity.",
   },
   [RelationshipEnum.DOWNLOADS]: {
-    type: z.literal(RelationshipEnum.DOWNLOADS),
     description: "Indicates downloading actions.",
   },
   [RelationshipEnum.DROPS]: {
-    type: z.literal(RelationshipEnum.DROPS),
     description: "Indicates deployment or dropping of malware.",
   },
   [RelationshipEnum.DUPLICATE_OF]: {
-    type: z.literal(RelationshipEnum.DUPLICATE_OF),
     description: "Indicates duplication or identical copy.",
   },
   [RelationshipEnum.DYNAMIC_ANALYSIS_OF]: {
-    type: z.literal(RelationshipEnum.DYNAMIC_ANALYSIS_OF),
     description: "Denotes dynamic analysis conducted on another entity.",
   },
   [RelationshipEnum.EMPLOYED_BY]: {
-    type: z.literal(RelationshipEnum.EMPLOYED_BY),
     description: "Indicates employment or working relationship.",
   },
   [RelationshipEnum.EXFILTRATES_TO]: {
-    type: z.literal(RelationshipEnum.EXFILTRATES_TO),
     description: "Specifies exfiltration of data to a destination.",
   },
   [RelationshipEnum.HOSTS]: {
-    type: z.literal(RelationshipEnum.HOSTS),
     description: "Indicates hosting of content, infrastructure, or malware.",
   },
   [RelationshipEnum.IMPERSONATES]: {
-    type: z.literal(RelationshipEnum.IMPERSONATES),
     description: "Indicates impersonation or masquerading.",
   },
   [RelationshipEnum.INVESTIGATES]: {
-    type: z.literal(RelationshipEnum.INVESTIGATES),
     description: "Denotes investigative action or inquiry.",
   },
   [RelationshipEnum.KNOWN_AS]: {
-    type: z.literal(RelationshipEnum.KNOWN_AS),
     description: "Denotes alternate naming or alias.",
   },
   [RelationshipEnum.MITIGATES]: {
-    type: z.literal(RelationshipEnum.MITIGATES),
     description: "Indicates mitigation actions.",
   },
   [RelationshipEnum.NATIONAL_OF]: {
-    type: z.literal(RelationshipEnum.NATIONAL_OF),
     description: "Denotes nationality or affiliation with a nation-state.",
   },
   [RelationshipEnum.OWNS]: {
-    type: z.literal(RelationshipEnum.OWNS),
     description: "Expresses ownership or possession.",
   },
   [RelationshipEnum.VARIANT_OF]: {
-    type: z.literal(RelationshipEnum.VARIANT_OF),
     description: "Specifies variant or related version.",
   },
   [RelationshipEnum.PARTICIPATES_IN]: {
-    type: z.literal(RelationshipEnum.PARTICIPATES_IN),
     description: "Indicates involvement in an operation, event, or activity.",
   },
   [RelationshipEnum.PUBLISHES]: {
-    type: z.literal(RelationshipEnum.PUBLISHES),
     description:
       "Specifies that an entity publishes content, data, or reports.",
   },
   [RelationshipEnum.REMEDIATES]: {
-    type: z.literal(RelationshipEnum.REMEDIATES),
     description:
       "Indicates that an entity addresses or fixes a vulnerability or issue.",
   },
   [RelationshipEnum.REPORTS_TO]: {
-    type: z.literal(RelationshipEnum.REPORTS_TO),
     description:
       "Specifies a hierarchical reporting relationship between entities.",
   },
   [RelationshipEnum.RESIDES_IN]: {
-    type: z.literal(RelationshipEnum.RESIDES_IN),
     description:
       "Specifies that an entity is located within a particular environment or jurisdiction.",
   },
   [RelationshipEnum.RESOLVES_TO]: {
-    type: z.literal(RelationshipEnum.RESOLVES_TO),
     description:
       "Indicates that an entity, such as a domain name, resolves to another entity like an IP address.",
   },
   [RelationshipEnum.REVOKED_BY]: {
-    type: z.literal(RelationshipEnum.REVOKED_BY),
     description:
       "Specifies that an entity has been revoked or invalidated by another authority.",
   },
   [RelationshipEnum.STATIC_ANALYSIS_OF]: {
-    type: z.literal(RelationshipEnum.STATIC_ANALYSIS_OF),
     description:
       "Indicates that an entity is derived from the static analysis of a sample or artifact.",
   },
   [RelationshipEnum.SUBNARRATIVE_OF]: {
-    type: z.literal(RelationshipEnum.SUBNARRATIVE_OF),
     description:
       "Indicates that one narrative is a sub-part or subset of a larger narrative.",
   },
   [RelationshipEnum.SUPPORTS]: {
-    type: z.literal(RelationshipEnum.SUPPORTS),
     description:
       "Specifies that an entity provides support, such as resources or expertise, to another entity.",
   },
 };
 
-const relationshipKeysSmall = [
+export const relationshipKeysLarge = Object.values(RelationshipEnum);
+
+export const relationshipKeysSmall = [
   RelationshipEnum.ATTRIBUTED_TO,
   RelationshipEnum.EXPLOITS,
   RelationshipEnum.HAS,
@@ -411,18 +332,6 @@ const relationshipKeysSmall = [
   RelationshipEnum.TARGETS,
   RelationshipEnum.USES,
 ];
-
-export const RelationshipUnionSmall = createZodLiteralUnion(
-  relationshipKeysSmall,
-  RelationshipObject,
-  "List of STIX relationship types recognized by OpenCTI."
-);
-
-export const RelationshipUnionLarge = createZodLiteralUnion(
-  Object.values(RelationshipEnum),
-  RelationshipObject,
-  "List of STIX relationship types recognized by OpenCTI."
-);
 
 // =======================
 // Entities & Observables
@@ -504,202 +413,161 @@ enum EntityObservableEnum {
   X509_CERTIFICATE = "X509-Certificate",
 }
 
-const EntityObservableObject = {
+export const entityObservableDescription = {
   // Entity
   [EntityObservableEnum.ADMINISTRATIVE_AREA]: {
-    type: z.literal(EntityObservableEnum.ADMINISTRATIVE_AREA),
     description:
       "Geographical or administrative boundary (non-standard STIX, OpenCTI extension).",
   },
   [EntityObservableEnum.ATTACK_PATTERN]: {
-    type: z.literal(EntityObservableEnum.ATTACK_PATTERN),
     description: "STIX: TTP describing a malicious technique (MITRE ATT&CK).",
   },
   [EntityObservableEnum.CAMPAIGN]: {
-    type: z.literal(EntityObservableEnum.CAMPAIGN),
     description:
       "STIX: A grouping of adversarial activity over a particular timeframe.",
   },
   [EntityObservableEnum.CHANNEL]: {
-    type: z.literal(EntityObservableEnum.CHANNEL),
     description:
       "OpenCTI extension: A communication channel (IRC, Telegram, social media, etc.).",
   },
   [EntityObservableEnum.CITY]: {
-    type: z.literal(EntityObservableEnum.CITY),
     description: "Geographical city-level object (OpenCTI extension).",
   },
   [EntityObservableEnum.COUNTRY]: {
-    type: z.literal(EntityObservableEnum.COUNTRY),
     description: "Geographical country-level object (OpenCTI extension).",
   },
   [EntityObservableEnum.COURSE_OF_ACTION]: {
-    type: z.literal(EntityObservableEnum.COURSE_OF_ACTION),
     description:
       "STIX: A recommendation or guidance to prevent or respond to a threat.",
   },
   [EntityObservableEnum.DATA_COMPONENT]: {
-    type: z.literal(EntityObservableEnum.DATA_COMPONENT),
     description:
       "Represents a subpart of a data source (common in detection definitions).",
   },
   [EntityObservableEnum.DATA_SOURCE]: {
-    type: z.literal(EntityObservableEnum.DATA_SOURCE),
     description:
       "STIX: A source of information used to collect relevant security data.",
   },
   [EntityObservableEnum.EVENT]: {
-    type: z.literal(EntityObservableEnum.EVENT),
     description:
       "Generic event (OpenCTI). Could be a significant cybersecurity occurrence.",
   },
   [EntityObservableEnum.FEEDBACK]: {
-    type: z.literal(EntityObservableEnum.FEEDBACK),
     description:
       "User feedback or comment about an entity (OpenCTI extension).",
   },
   [EntityObservableEnum.GROUPING]: {
-    type: z.literal(EntityObservableEnum.GROUPING),
     description:
       "STIX: A set of objects grouped together for a specific context.",
   },
   [EntityObservableEnum.INCIDENT]: {
-    type: z.literal(EntityObservableEnum.INCIDENT),
     description:
       "OpenCTI extension: A cybersecurity incident referencing a security breach.",
   },
   [EntityObservableEnum.CASE_INCIDENT]: {
-    type: z.literal(EntityObservableEnum.CASE_INCIDENT),
     description:
       "OpenCTI extension: An incident case used for investigation workflows.",
   },
   [EntityObservableEnum.INDICATOR]: {
-    type: z.literal(EntityObservableEnum.INDICATOR),
     description:
       "STIX: A pattern-based detection for suspicious or malicious activity (IOC).",
   },
   [EntityObservableEnum.INDIVIDUAL]: {
-    type: z.literal(EntityObservableEnum.INDIVIDUAL),
     description:
       "OpenCTI extension: An individual person relevant to an investigation.",
   },
   [EntityObservableEnum.INFRASTRUCTURE]: {
-    type: z.literal(EntityObservableEnum.INFRASTRUCTURE),
     description:
       "STIX: Adversarial or victim infrastructure (servers, domains, etc.).",
   },
   [EntityObservableEnum.INTRUSION_SET]: {
-    type: z.literal(EntityObservableEnum.INTRUSION_SET),
     description:
       "STIX: A grouped set of adversarial behaviors, resources, and patterns over time (APT group).",
   },
   [EntityObservableEnum.LANGUAGE]: {
-    type: z.literal(EntityObservableEnum.LANGUAGE),
     description:
       "OpenCTI extension: A spoken or programming language relevant to the entity.",
   },
   [EntityObservableEnum.MALWARE]: {
-    type: z.literal(EntityObservableEnum.MALWARE),
     description:
       "STIX: Malicious software such as ransomware, trojan, worm, etc.",
   },
   [EntityObservableEnum.MALWARE_ANALYSIS]: {
-    type: z.literal(EntityObservableEnum.MALWARE_ANALYSIS),
     description: "STIX: The process or results of analyzing a malware sample.",
   },
   [EntityObservableEnum.NARRATIVE]: {
-    type: z.literal(EntityObservableEnum.NARRATIVE),
     description:
       "OpenCTI extension: A narrative or storyline used in reporting.",
   },
   [EntityObservableEnum.NOTE]: {
-    type: z.literal(EntityObservableEnum.NOTE),
     description: "STIX: A non-rewritable note containing user commentary.",
   },
   [EntityObservableEnum.OBSERVED_DATA]: {
-    type: z.literal(EntityObservableEnum.OBSERVED_DATA),
     description:
       "STIX: Conveys raw information observed on systems or networks (logs, sensor data).",
   },
   [EntityObservableEnum.OPINION]: {
-    type: z.literal(EntityObservableEnum.OPINION),
     description: "STIX: A subjective assessment of the information provided.",
   },
   [EntityObservableEnum.ORGANIZATION]: {
-    type: z.literal(EntityObservableEnum.ORGANIZATION),
     description:
       "An organization, company, or institution relevant to the CTI context.",
   },
   [EntityObservableEnum.POSITION]: {
-    type: z.literal(EntityObservableEnum.POSITION),
     description:
       "A specific job position or role in an organization (OpenCTI extension).",
   },
   [EntityObservableEnum.REGION]: {
-    type: z.literal(EntityObservableEnum.REGION),
     description:
       "A broader geographic region (continent, supra-national zone).",
   },
   [EntityObservableEnum.REPORT]: {
-    type: z.literal(EntityObservableEnum.REPORT),
     description:
       "STIX: A collection of threat intelligence detailing a set of related objects.",
   },
   [EntityObservableEnum.STIX_CYBER_OBSERVABLE]: {
-    type: z.literal(EntityObservableEnum.STIX_CYBER_OBSERVABLE),
     description:
       "STIX: A technical artifact or observable (file, domain, IP address, etc.).",
   },
   [EntityObservableEnum.CASE_RFI]: {
-    type: z.literal(EntityObservableEnum.CASE_RFI),
     description:
       "OpenCTI extension: A request for information in an investigation workflow.",
   },
   [EntityObservableEnum.CASE_RFT]: {
-    type: z.literal(EntityObservableEnum.CASE_RFT),
     description:
       "OpenCTI extension: A request for takedown in an investigation workflow.",
   },
   [EntityObservableEnum.SECTOR]: {
-    type: z.literal(EntityObservableEnum.SECTOR),
     description: "An industry or business sector (finance, telecom, etc.).",
   },
   [EntityObservableEnum.SYSTEM]: {
-    type: z.literal(EntityObservableEnum.SYSTEM),
     description:
       "A system or device relevant to an investigation or infrastructure.",
   },
   [EntityObservableEnum.TASK]: {
-    type: z.literal(EntityObservableEnum.TASK),
     description:
       "An action item in an operational or investigative workflow (OpenCTI extension).",
   },
   [EntityObservableEnum.THREAT_ACTOR_GROUP]: {
-    type: z.literal(EntityObservableEnum.THREAT_ACTOR_GROUP),
     description:
       "STIX: A collective threat actor entity (APT group, cybercriminal gang).",
   },
   [EntityObservableEnum.THREAT_ACTOR_INDIVIDUAL]: {
-    type: z.literal(EntityObservableEnum.THREAT_ACTOR_INDIVIDUAL),
     description: "STIX: A single individual threat actor.",
   },
   [EntityObservableEnum.TOOL]: {
-    type: z.literal(EntityObservableEnum.TOOL),
     description:
       "STIX: A software tool used by threat actors, possibly dual-use (legitimate or malicious).",
   },
   [EntityObservableEnum.VULNERABILITY]: {
-    type: z.literal(EntityObservableEnum.VULNERABILITY),
     description:
       "STIX: A flaw in software or hardware that can be exploited (e.g., CVE).",
   },
   // Observable
   [EntityObservableEnum.ARTIFACT]: {
-    type: z.literal(EntityObservableEnum.ARTIFACT),
     description: "A physical or digital object used as evidence or reference.",
   },
   [EntityObservableEnum.AUTONOMOUS_SYSTEM]: {
-    type: z.literal(EntityObservableEnum.AUTONOMOUS_SYSTEM),
     description:
       "A collection of IP networks and routers under common administration.",
   },
@@ -708,161 +576,106 @@ const EntityObservableObject = {
     description: "A financial account held at a bank or financial institution.",
   },
   [EntityObservableEnum.CREDENTIAL]: {
-    type: z.literal(EntityObservableEnum.CREDENTIAL),
     description:
       "Authentication information such as usernames, passwords, or tokens.",
   },
   [EntityObservableEnum.CRYPTOCURRENCY_WALLET]: {
-    type: z.literal(EntityObservableEnum.CRYPTOCURRENCY_WALLET),
     description: "A digital wallet used to store cryptocurrency credentials.",
   },
   [EntityObservableEnum.CRYPTOGRAPHIC_KEY]: {
-    type: z.literal(EntityObservableEnum.CRYPTOGRAPHIC_KEY),
     description:
       "A key used in cryptographic operations, such as encryption or digital signatures.",
   },
   [EntityObservableEnum.DIRECTORY]: {
-    type: z.literal(EntityObservableEnum.DIRECTORY),
     description: "A file system directory containing files and subdirectories.",
   },
   [EntityObservableEnum.DOMAIN_NAME]: {
-    type: z.literal(EntityObservableEnum.DOMAIN_NAME),
     description: "A human-readable address corresponding to an IP address.",
   },
   [EntityObservableEnum.EMAIL_ADDR]: {
-    type: z.literal(EntityObservableEnum.EMAIL_ADDR),
     description: "An email address used for communication.",
   },
   [EntityObservableEnum.EMAIL_MESSAGE]: {
-    type: z.literal(EntityObservableEnum.EMAIL_MESSAGE),
     description: "An email message object containing metadata and content.",
   },
   [EntityObservableEnum.EMAIL_MIME_PART_TYPE]: {
-    type: z.literal(EntityObservableEnum.EMAIL_MIME_PART_TYPE),
     description: "The MIME type of a part within an email message.",
   },
   [EntityObservableEnum.STIX_FILE]: {
-    type: z.literal(EntityObservableEnum.STIX_FILE),
     description: "A file object formatted in STIX.",
   },
   [EntityObservableEnum.HOSTNAME]: {
-    type: z.literal(EntityObservableEnum.HOSTNAME),
     description: "A host name identifying a device on a network.",
   },
   [EntityObservableEnum.IPV4_ADDR]: {
-    type: z.literal(EntityObservableEnum.IPV4_ADDR),
     description: "An IPv4 address.",
   },
   [EntityObservableEnum.IPV6_ADDR]: {
-    type: z.literal(EntityObservableEnum.IPV6_ADDR),
     description: "An IPv6 address.",
   },
   [EntityObservableEnum.MAC_ADDR]: {
-    type: z.literal(EntityObservableEnum.MAC_ADDR),
     description: "A MAC address used for network interface identification.",
   },
   [EntityObservableEnum.MEDIA_CONTENT]: {
-    type: z.literal(EntityObservableEnum.MEDIA_CONTENT),
     description:
       "Digital media content such as images, videos, or audio files.",
   },
   [EntityObservableEnum.MUTEX]: {
-    type: z.literal(EntityObservableEnum.MUTEX),
     description:
       "A mutual exclusion object used to manage access to shared resources.",
   },
   [EntityObservableEnum.NETWORK_TRAFFIC]: {
-    type: z.literal(EntityObservableEnum.NETWORK_TRAFFIC),
     description: "Data packets or flows representing network traffic.",
   },
   [EntityObservableEnum.PAYMENT_CARD]: {
-    type: z.literal(EntityObservableEnum.PAYMENT_CARD),
     description:
       "Credit or debit card information used for financial transactions.",
   },
   [EntityObservableEnum.PERSONA]: {
-    type: z.literal(EntityObservableEnum.PERSONA),
     description: "A digital representation of an individual's online identity.",
   },
   [EntityObservableEnum.PHONE_NUMBER]: {
-    type: z.literal(EntityObservableEnum.PHONE_NUMBER),
     description: "A telephone number used for contact or communication.",
   },
   [EntityObservableEnum.PROCESS]: {
-    type: z.literal(EntityObservableEnum.PROCESS),
     description:
       "An instance of a running program or process in an operating system.",
   },
   [EntityObservableEnum.SOFTWARE]: {
-    type: z.literal(EntityObservableEnum.SOFTWARE),
     description: "A software application or system.",
   },
   [EntityObservableEnum.TEXT]: {
-    type: z.literal(EntityObservableEnum.TEXT),
     description: "Plain textual content.",
   },
   [EntityObservableEnum.TRACKING_NUMBER]: {
-    type: z.literal(EntityObservableEnum.TRACKING_NUMBER),
     description: "A number used to track shipments or other items.",
   },
   [EntityObservableEnum.URL]: {
-    type: z.literal(EntityObservableEnum.URL),
     description:
       "A Uniform Resource Locator specifying the address of a resource on the internet.",
   },
   [EntityObservableEnum.USER_ACCOUNT]: {
-    type: z.literal(EntityObservableEnum.USER_ACCOUNT),
     description:
       "An account representing a user, used for authentication and access control.",
   },
   [EntityObservableEnum.USER_AGENT]: {
-    type: z.literal(EntityObservableEnum.USER_AGENT),
     description:
       "A string representing the client software making a request (e.g., browser, bot).",
   },
   [EntityObservableEnum.WINDOWS_REGISTRY_KEY]: {
-    type: z.literal(EntityObservableEnum.WINDOWS_REGISTRY_KEY),
     description:
       "A key in the Windows Registry containing configuration settings.",
   },
   [EntityObservableEnum.WINDOWS_REGISTRY_VALUE_TYPE]: {
-    type: z.literal(EntityObservableEnum.WINDOWS_REGISTRY_VALUE_TYPE),
     description:
       "The type of a value in the Windows Registry (e.g., REG_SZ, REG_DWORD).",
   },
   [EntityObservableEnum.X509_CERTIFICATE]: {
-    type: z.literal(EntityObservableEnum.X509_CERTIFICATE),
     description: "A digital certificate conforming to the X.509 standard.",
   },
 };
 
-export const EntityUnion = createZodLiteralUnion(
-  Object.values(EntityObservableEnum),
-  EntityObservableObject,
-  "List of STIX/OpenCTI entity types recognized by OpenCTI."
-);
-
-// =======================
-// Filter Regarding OF
-// =======================
-
-export const RegaringOfRelationshipSchema = z.object({
-  key: z
-    .literal("relationship_type")
-    .describe(
-      "The key of a 'regardingOf' relationship type filter, always 'relationship_type'."
-    ),
-  values: z
-    .array(RelationshipUnionSmall)
-    .describe("A list of relationship type filter values."),
-});
-
-export const RegaringOfEntityNameSchema = z.object({
-  key: z
-    .literal("id")
-    .describe("The key of a 'regardingOf' entity name filter, always 'id'."),
-  values: z.array(z.string()).describe("A list of entity name filter values."),
-});
+export const entityObservableKeys = Object.values(EntityObservableEnum);
 
 // =======================
 // Filter Type
@@ -1199,10 +1012,6 @@ export enum FilterEnum {
   ATTRIBUTE_DATE = "attribute_date",
   CONTENT_TYPE = "content_type",
 }
-
-// =============================================================================
-// === FILTER Subset ============================================================
-// =============================================================================
 
 export const filterKeysSmall = [
   FilterEnum.CREATED_AT,
