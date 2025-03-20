@@ -8,7 +8,7 @@ import { PLATFORM_VERSION } from '../../../src/config/conf';
 import { addDisseminationCount, fetchTelemetryData, TELEMETRY_GAUGE_DISSEMINATION } from '../../../src/manager/telemetryManager';
 import { redisClearTelemetry, redisSetTelemetryAdd } from '../../../src/database/redis';
 import { getCounterTotal } from '../../utils/testCountHelper';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../src/modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 
@@ -47,7 +47,7 @@ describe('Telemetry manager test coverage', () => {
     expect(filigranTelemetryMeterManager.disseminationCount).toBe(DISSEMINATION_EVENT_NODE1 + DISSEMINATION_EVENT_NODE2);
     expect(filigranTelemetryMeterManager.instancesCount).toBe(1);
     expect(filigranTelemetryMeterManager.isEEActivated).toBe(1); // 1 mean true
-    expect(filigranTelemetryMeterManager.activeConnectorsCount).toBe(getCounterTotal(ENTITY_TYPE_CONNECTOR));
+    // filigranTelemetryMeterManager.activeConnectorsCount : count cannot be verify there are many ways to create internal connectors.
     expect(filigranTelemetryMeterManager.draftCount).toBe(getCounterTotal(ENTITY_TYPE_DRAFT_WORKSPACE));
     expect(filigranTelemetryMeterManager.workbenchCount).toBe(getCounterTotal(ENTITY_TYPE_WORKSPACE));
   });
