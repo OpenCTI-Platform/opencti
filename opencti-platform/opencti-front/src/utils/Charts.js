@@ -945,7 +945,7 @@ export const treeMapOptions = (
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
         fontWeight: 600,
-        colors: [theme.palette.text.primary],
+        colors: [theme.palette.text.primary, theme.palette.text.secondary],
       },
       background: {
         enabled: false,
