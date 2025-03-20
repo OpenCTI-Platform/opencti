@@ -505,7 +505,7 @@ const useSearchEntities = ({
       type: string,
       data: IdentitySearchCreatorsSearchQuery$data['creators'], // this type is actually the same for the different queries we use, not only creators
     ) => {
-      const newOptions: { label: string, value: string, type: string, color?: string }[] = (data?.edges ?? []).map((n) => ({
+      const newOptions: EntityValue[] = (data?.edges ?? []).map((n) => ({
         label: n?.node.name ?? '',
         value: n?.node.id ?? '',
         type,
