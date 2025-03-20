@@ -3,6 +3,10 @@ import { Page } from '@playwright/test';
 export default class TaskPopup {
   constructor(private page: Page) {}
 
+  getPage() {
+    return this.page.getByTestId('background-task-popup');
+  }
+
   async launchAddLabel(labelName: string, firstTime: boolean) {
     // Launch background task on selected
     await this.page.getByLabel('Update', { exact: true }).getByLabel('update').click();

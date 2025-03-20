@@ -2074,6 +2074,7 @@ class DataTableToolBar extends Component {
                 onClose={this.handleCloseTask.bind(this)}
                 fullWidth={true}
                 maxWidth="md"
+                data-testid="background-task-popup"
               >
                 <DialogTitle>
                   <div style={{ float: 'left' }}>
