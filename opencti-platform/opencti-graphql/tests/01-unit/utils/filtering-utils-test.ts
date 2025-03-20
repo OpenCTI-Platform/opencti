@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { addFilter, checkFiltersValidity, convertRelationRefsFilterKeys, extractFilterGroupValues, replaceFilterKey } from '../../../src/utils/filtering/filtering-utils';
+import { addFilter, checkFiltersValidity, convertRelationRefsFilterKeys, extractFilterGroupValues, replaceFilterKey, replaceMeValuesInFilters } from '../../../src/utils/filtering/filtering-utils';
 import type { FilterGroup } from '../../../src/generated/graphql';
+import { ME_FILTER_VALUE } from '../../../src/utils/filtering/filtering-constants';
 
 describe('Filtering utils', () => {
   it('should check a filter syntax', async () => {
@@ -289,5 +290,48 @@ describe('Filtering utils', () => {
       ],
     } as FilterGroup;
     expect(extractFilterGroupValues(filterGroup4, ['objectLabel', 'regardingOf'])).toStrictEqual(['label1', 'id1', 'id2']);
+  });
+  it('should replace ME_FILTER_VALUE values in filters compatible with @me', async () => {
+    const user_id = 'user-id';
+    const filterGroup = {
+      mode: 'and',
+      filters: [
+        { key: ['objectAssignee'], values: [ME_FILTER_VALUE, 'id1'], operator: 'eq', mode: 'or' },
+        { key: ['entity_type'], values: ['Report'] },
+        { key: ['name'], values: [ME_FILTER_VALUE, 'me'], operator: 'starts_with', mode: 'or' },
+      ],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [
+            { key: ['objectLabel'], values: ['label1-id', 'label2-id'], mode: 'and' },
+            { key: ['objectParticipant'], values: [ME_FILTER_VALUE] },
+            { key: ['description'], values: [ME_FILTER_VALUE], operator: 'starts_with' },
+          ],
+          filterGroups: [],
+        },
+      ],
+    } as FilterGroup;
+    const expectedFilter = {
+      mode: 'and',
+      filters: [
+        { key: ['objectAssignee'], values: [user_id, 'id1'], operator: 'eq', mode: 'or' },
+        { key: ['entity_type'], values: ['Report'] },
+        { key: ['name'], values: [ME_FILTER_VALUE, 'me'], operator: 'starts_with', mode: 'or' },
+      ],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [
+            { key: ['objectLabel'], values: ['label1-id', 'label2-id'], mode: 'and' },
+            { key: ['objectParticipant'], values: [user_id] },
+            { key: ['description'], values: [ME_FILTER_VALUE], operator: 'starts_with' },
+          ],
+          filterGroups: [],
+        },
+      ],
+    } as FilterGroup;
+    const finalFilter = replaceMeValuesInFilters(filterGroup, user_id);
+    expect(finalFilter).toEqual(expectedFilter);
   });
 });

@@ -37,6 +37,8 @@ export const emptyFilterGroup = {
 export const SELF_ID = 'SELF_ID';
 export const SELF_ID_VALUE = 'CURRENT ENTITY';
 
+export const ME_FILTER_VALUE = '@me';
+
 // 'within' operator filter constants
 export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
 

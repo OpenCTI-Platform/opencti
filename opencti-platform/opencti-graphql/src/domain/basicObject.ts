@@ -1,6 +1,6 @@
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
-import { specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
+import { ME_FILTER_VALUE, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
 import { extractFilterGroupValues } from '../utils/filtering/filtering-utils';
 import { storeLoadByIds } from '../database/middleware-loader';
 import { ABSTRACT_BASIC_OBJECT } from '../schema/general';
@@ -65,6 +65,15 @@ export const findFiltersRepresentatives = async (context: AuthContext, user: Aut
       id: SELF_ID,
       value: SELF_ID_VALUE,
       entity_type: 'Instance',
+      color: null,
+    });
+  }
+  // resolve ME_FILTER_VALUE differently
+  if (idsToResolve.includes(ME_FILTER_VALUE)) {
+    filtersRepresentatives.push({
+      id: ME_FILTER_VALUE,
+      value: ME_FILTER_VALUE,
+      entity_type: 'User',
       color: null,
     });
   }
