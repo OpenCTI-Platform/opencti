@@ -26,9 +26,9 @@ const ImportFilesUploader = ({ files = [], onChange, queryRef }: ImportFilesUplo
 
   const updateFiles = (newFiles: File[]) => {
     const extendedFiles: FileWithConnectors[] = newFiles.map((file) => {
-      const connectors = connectorsForImport?.reduce<{ id: string; name: string }[]>((acc, connector) => {
-        if (connector?.connector_scope?.includes(file.type)) {
-          acc.push({ id: connector.id, name: connector.name });
+      const connectors = connectorsForImport?.reduce<FileWithConnectors['connectors']>((acc, connector) => {
+        if (connector?.active && connector?.connector_scope?.includes(file.type)) {
+          acc?.push({ id: connector.id, name: connector.name });
         }
         return acc;
       }, []);

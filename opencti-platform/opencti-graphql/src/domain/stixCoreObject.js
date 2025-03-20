@@ -675,13 +675,12 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
 export const stixCoreObjectImportFile = async (context, user, id, file, args = {}) => {
   const {
     fileMarkings,
-    noTriggerImport = true,
     connectors,
     validationMode = defaultValidationMode,
     version,
     importContextEntities,
   } = args;
-  const uploadedFile = await stixCoreObjectImportPush(context, user, id, file, { noTriggerImport, version, fileMarkings, importContextEntities });
+  const uploadedFile = await stixCoreObjectImportPush(context, user, id, file, { version, fileMarkings, importContextEntities, noTriggerImport: true });
 
   if (connectors) {
     await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
