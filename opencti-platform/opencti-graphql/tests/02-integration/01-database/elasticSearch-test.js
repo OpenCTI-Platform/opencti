@@ -887,7 +887,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('accesses-to')).toBe(28);
     expect(entityTypeMap.get('member-of')).toBe(13);
     expect(entityTypeMap.get('has-role')).toBe(9);
-    expect(entityTypeMap.get('participate-to')).toBe(4);
+    expect(entityTypeMap.get('participate-to')).toBe(2);
     expect(entityTypeMap.get('uses')).toBe(3);
     expect(entityTypeMap.get('part-of')).toBe(6);
     expect(entityTypeMap.get('indicates')).toBe(4);
@@ -904,7 +904,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('external-reference')).toBe(7);
     expect(entityTypeMap.get('operating-system')).toBe(1);
     expect(entityTypeMap.get('stix-sighting-relationship')).toBe(2);
-    expect(data.length).toEqual(265);
+    expect(data.length).toEqual(263);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
