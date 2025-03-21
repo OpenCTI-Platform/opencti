@@ -55,7 +55,7 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
   representative: (stix: StixDataSource) => {
     return stix.name;
   },
-  converter: convertDataSourceToStix
+  converter_2_1: convertDataSourceToStix
 };
 
 registerDefinition(DATA_SOURCE_DEFINITION);

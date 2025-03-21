@@ -1,4 +1,4 @@
-import { buildStixDomain, cleanObject } from '../../../database/stix-converter';
+import { buildStixDomain, cleanObject } from '../../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../../types/stix-extensions';
 import { INPUT_OBJECTS } from '../../../schema/general';
 import type { StixCaseIncident, StoreEntityCaseIncident } from './case-incident-types';
