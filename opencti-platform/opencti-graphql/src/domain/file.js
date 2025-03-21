@@ -1,19 +1,16 @@
 import * as R from 'ramda';
 import { Readable } from 'stream';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
-import { logApp } from '../config/conf';
-import { defaultValidationMode, deleteFile, loadFile, uploadJobImport } from '../database/file-storage';
+import { defaultValidationMode, deleteFile } from '../database/file-storage';
 import { internalLoadById, listAllEntities } from '../database/middleware-loader';
-import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
+import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
-import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { allFilesMimeTypeDistribution, allRemainingFilesCount } from '../modules/internal/document/document-domain';
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfiguration-utils';
 import { SYSTEM_USER } from '../utils/access';
 import { isEmptyField, isNotEmptyField, READ_INDEX_FILES, READ_INDEX_HISTORY } from '../database/utils';
 import { getStats } from '../database/engine';
-import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { extractContentFrom } from '../utils/fileToContent';
 import { stixLoadById } from '../database/middleware';
@@ -25,6 +22,7 @@ import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
 import { UnsupportedError } from '../config/errors';
 import { isDraftFile } from '../database/draft-utils';
+import { askJobImport } from './connector';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -75,41 +73,6 @@ export const filesMetrics = async (context, user) => {
     globalSize: R.sum(filesMimeTypesDistribution.map((dist) => dist.value)),
     metricsByMimeType,
   };
-};
-
-export const askJobImport = async (context, user, args) => {
-  const { fileName, connectorId = null, configuration = null, bypassEntityId = null, bypassValidation = false, validationMode = defaultValidationMode } = args;
-  logApp.info(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);
-  const file = await loadFile(context, user, fileName);
-  logApp.info('[JOBS] ask import, file found:', file);
-  const entityId = bypassEntityId || file.metaData.entity_id;
-  const opts = { manual: true, connectorId, configuration, bypassValidation, validationMode };
-  const entity = await internalLoadById(context, user, entityId);
-  // This is a manual request for import, we have to check confidence and throw on error
-  if (entity) {
-    controlUserConfidenceAgainstElement(user, entity);
-  }
-  const connectors = await uploadJobImport(context, user, file, entityId, opts);
-  const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
-  const entityType = entityId ? entity.entity_type : 'global';
-  const baseData = {
-    id: entityId,
-    file_id: file.id,
-    file_name: file.name,
-    file_mime: file.metaData.mimetype,
-    connectors: connectors.map((c) => c.name),
-    entity_name: entityName,
-    entity_type: entityType
-  };
-  const contextData = completeContextDataForEntity(baseData, entity);
-  await publishUserAction({
-    user,
-    event_access: 'extended',
-    event_type: 'command',
-    event_scope: 'import',
-    context_data: contextData
-  });
-  return file;
 };
 
 export const uploadImport = async (context, user, args) => {
@@ -174,6 +137,24 @@ export const uploadPending = async (context, user, args) => {
     context_data: contextData
   });
   return up;
+};
+
+export const uploadAndAskJobImport = async (context, user, args = {}) => {
+  const {
+    file,
+    fileMarkings,
+    connectors,
+    validationMode = defaultValidationMode,
+  } = args;
+  const uploadedFile = await uploadImport(context, user, { file, fileMarkings, noTriggerImport: true });
+
+  if (connectors) {
+    await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
+      askJobImport(context, user, { fileName: uploadedFile.id, connectorId, configuration, validationMode })
+    )));
+  }
+
+  return uploadedFile;
 };
 
 export const deleteImport = async (context, user, fileName) => {

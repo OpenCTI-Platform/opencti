@@ -3824,6 +3824,11 @@ export enum ConnectorType {
   Stream = 'STREAM'
 }
 
+export type ConnectorWithConfig = {
+  configuration?: InputMaybe<Scalars['String']['input']>;
+  connectorId?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type Container = {
   authorized_members?: Maybe<Array<MemberAccess>>;
   authorized_members_activation_date?: Maybe<Scalars['DateTime']['output']>;
@@ -13982,6 +13987,7 @@ export type Mutation = {
   triggerKnowledgeFieldPatch?: Maybe<Trigger>;
   triggerKnowledgeLiveAdd?: Maybe<Trigger>;
   updateConnectorTrigger?: Maybe<Connector>;
+  uploadAndAskJobImport?: Maybe<File>;
   uploadImport?: Maybe<File>;
   uploadPending?: Maybe<File>;
   userAdd?: Maybe<User>;
@@ -15965,6 +15971,14 @@ export type MutationTriggerKnowledgeLiveAddArgs = {
 export type MutationUpdateConnectorTriggerArgs = {
   id: Scalars['ID']['input'];
   input: Array<InputMaybe<EditInput>>;
+};
+
+
+export type MutationUploadAndAskJobImportArgs = {
+  connectors?: InputMaybe<Array<ConnectorWithConfig>>;
+  file: Scalars['Upload']['input'];
+  fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  validationMode?: InputMaybe<ValidationMode>;
 };
 
 
@@ -24549,6 +24563,7 @@ export type StixCoreObjectEditMutations = {
   removeFromDraft?: Maybe<Scalars['ID']['output']>;
   restrictionOrganizationAdd?: Maybe<StixCoreObject>;
   restrictionOrganizationDelete?: Maybe<StixCoreObject>;
+  uploadAndAskJobImport?: Maybe<File>;
 };
 
 
@@ -24624,6 +24639,14 @@ export type StixCoreObjectEditMutationsRestrictionOrganizationAddArgs = {
 
 export type StixCoreObjectEditMutationsRestrictionOrganizationDeleteArgs = {
   organizationId: Scalars['ID']['input'];
+};
+
+
+export type StixCoreObjectEditMutationsUploadAndAskJobImportArgs = {
+  connectors?: InputMaybe<Array<ConnectorWithConfig>>;
+  file: Scalars['Upload']['input'];
+  fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  validationMode?: InputMaybe<ValidationMode>;
 };
 
 export type StixCoreObjectOrStixCoreRelationship = AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Credential | CryptocurrencyWallet | CryptographicKey | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | Feedback | Grouping | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Position | Process | PublicDashboard | Region | Report | Sector | Software | StixCoreRelationship | StixFile | Task | Text | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
@@ -31405,6 +31428,7 @@ export type ResolversTypes = ResolversObject<{
   ConnectorMetadata: ResolverTypeWrapper<ConnectorMetadata>;
   ConnectorQueueDetails: ResolverTypeWrapper<ConnectorQueueDetails>;
   ConnectorType: ConnectorType;
+  ConnectorWithConfig: ConnectorWithConfig;
   ConstraintNumber: ResolverTypeWrapper<Scalars['ConstraintNumber']['output']>;
   ConstraintString: ResolverTypeWrapper<Scalars['ConstraintString']['output']>;
   Container: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Container']>;
@@ -31946,7 +31970,7 @@ export type ResolversTypes = ResolversObject<{
   StixCoreObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['StixCoreObject']>;
   StixCoreObjectConnection: ResolverTypeWrapper<Omit<StixCoreObjectConnection, 'edges'> & { edges: Array<ResolversTypes['StixCoreObjectEdge']> }>;
   StixCoreObjectEdge: ResolverTypeWrapper<Omit<StixCoreObjectEdge, 'node'> & { node: ResolversTypes['StixCoreObject'] }>;
-  StixCoreObjectEditMutations: ResolverTypeWrapper<Omit<StixCoreObjectEditMutations, 'analysisPush' | 'askAnalysis' | 'askEnrichment' | 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { analysisPush?: Maybe<ResolversTypes['File']>, askAnalysis?: Maybe<ResolversTypes['Work']>, askEnrichment?: Maybe<ResolversTypes['Work']>, exportAsk?: Maybe<Array<ResolversTypes['File']>>, importPush?: Maybe<ResolversTypes['File']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreObject']> }>;
+  StixCoreObjectEditMutations: ResolverTypeWrapper<Omit<StixCoreObjectEditMutations, 'analysisPush' | 'askAnalysis' | 'askEnrichment' | 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete' | 'uploadAndAskJobImport'> & { analysisPush?: Maybe<ResolversTypes['File']>, askAnalysis?: Maybe<ResolversTypes['Work']>, askEnrichment?: Maybe<ResolversTypes['Work']>, exportAsk?: Maybe<Array<ResolversTypes['File']>>, importPush?: Maybe<ResolversTypes['File']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreObject']>, uploadAndAskJobImport?: Maybe<ResolversTypes['File']> }>;
   StixCoreObjectOrStixCoreRelationship: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['StixCoreObjectOrStixCoreRelationship']>;
   StixCoreObjectsDistributionParameters: StixCoreObjectsDistributionParameters;
   StixCoreObjectsExportAskInput: StixCoreObjectsExportAskInput;
@@ -32274,6 +32298,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConnectorInfoInput: ConnectorInfoInput;
   ConnectorMetadata: ConnectorMetadata;
   ConnectorQueueDetails: ConnectorQueueDetails;
+  ConnectorWithConfig: ConnectorWithConfig;
   ConstraintNumber: Scalars['ConstraintNumber']['output'];
   ConstraintString: Scalars['ConstraintString']['output'];
   Container: ResolversInterfaceTypes<ResolversParentTypes>['Container'];
@@ -32734,7 +32759,7 @@ export type ResolversParentTypes = ResolversObject<{
   StixCoreObject: ResolversInterfaceTypes<ResolversParentTypes>['StixCoreObject'];
   StixCoreObjectConnection: Omit<StixCoreObjectConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixCoreObjectEdge']> };
   StixCoreObjectEdge: Omit<StixCoreObjectEdge, 'node'> & { node: ResolversParentTypes['StixCoreObject'] };
-  StixCoreObjectEditMutations: Omit<StixCoreObjectEditMutations, 'analysisPush' | 'askAnalysis' | 'askEnrichment' | 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { analysisPush?: Maybe<ResolversParentTypes['File']>, askAnalysis?: Maybe<ResolversParentTypes['Work']>, askEnrichment?: Maybe<ResolversParentTypes['Work']>, exportAsk?: Maybe<Array<ResolversParentTypes['File']>>, importPush?: Maybe<ResolversParentTypes['File']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreObject']> };
+  StixCoreObjectEditMutations: Omit<StixCoreObjectEditMutations, 'analysisPush' | 'askAnalysis' | 'askEnrichment' | 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete' | 'uploadAndAskJobImport'> & { analysisPush?: Maybe<ResolversParentTypes['File']>, askAnalysis?: Maybe<ResolversParentTypes['Work']>, askEnrichment?: Maybe<ResolversParentTypes['Work']>, exportAsk?: Maybe<Array<ResolversParentTypes['File']>>, importPush?: Maybe<ResolversParentTypes['File']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreObject']>, uploadAndAskJobImport?: Maybe<ResolversParentTypes['File']> };
   StixCoreObjectOrStixCoreRelationship: ResolversUnionTypes<ResolversParentTypes>['StixCoreObjectOrStixCoreRelationship'];
   StixCoreObjectsDistributionParameters: StixCoreObjectsDistributionParameters;
   StixCoreObjectsExportAskInput: StixCoreObjectsExportAskInput;
@@ -37949,6 +37974,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   triggerKnowledgeFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeFieldPatchArgs, 'id' | 'input'>>;
   triggerKnowledgeLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeLiveAddArgs, 'input'>>;
   updateConnectorTrigger?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorTriggerArgs, 'id' | 'input'>>;
+  uploadAndAskJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadAndAskJobImportArgs, 'file'>>;
   uploadImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadImportArgs, 'file'>>;
   uploadPending?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadPendingArgs, 'file'>>;
   userAdd?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUserAddArgs, 'input'>>;
@@ -40269,6 +40295,7 @@ export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType e
   removeFromDraft?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   restrictionOrganizationAdd?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRestrictionOrganizationAddArgs, 'organizationId'>>;
   restrictionOrganizationDelete?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRestrictionOrganizationDeleteArgs, 'organizationId'>>;
+  uploadAndAskJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsUploadAndAskJobImportArgs, 'file'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

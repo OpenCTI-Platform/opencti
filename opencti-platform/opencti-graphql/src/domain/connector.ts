@@ -13,23 +13,29 @@ import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
-import { publishUserAction } from '../listener/UserActionListener';
+import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
 import {
   ConnectorType,
+  ValidationMode,
   type EditContext,
   type EditInput,
   type MutationSynchronizerTestArgs,
   type RegisterConnectorInput,
   type SynchronizerAddInput,
-  type SynchronizerFetchInput
+  type SynchronizerFetchInput,
 } from '../generated/graphql';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
 import { findById } from './user';
+import { defaultValidationMode, loadFile, uploadJobImport } from '../database/file-storage';
+import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
+import type { BasicStoreCommon } from '../types/store';
+import type { Connector } from '../connector/internalConnector';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -371,4 +377,47 @@ export const connectorUser = async (context: AuthContext, user: AuthUser, userId
     return findById(context, user, userId);
   }
   return null;
+};
+
+export const askJobImport = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: { fileName: string; connectorId?: string; configuration?: string; bypassEntityId?: string; bypassValidation?: boolean; validationMode?: ValidationMode },
+) => {
+  const { fileName, connectorId = null, configuration = null, bypassEntityId = null, bypassValidation = false, validationMode = defaultValidationMode } = args;
+  logApp.info(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);
+  const file = await loadFile(context, user, fileName);
+  if (!file) {
+    logApp.error('[JOBS] ask import, file not found:', fileName);
+    return null;
+  }
+  logApp.info('[JOBS] ask import, file found:', file);
+  const entityId = bypassEntityId || file?.metaData.entity_id;
+  const opts = { manual: true, connectorId, configuration, bypassValidation, validationMode };
+  const entity = await internalLoadById(context, user, entityId) as BasicStoreCommon;
+  // This is a manual request for import, we have to check confidence and throw on error
+  if (entity) {
+    controlUserConfidenceAgainstElement(user, entity);
+  }
+  const connectorsForFile = await uploadJobImport(context, user, file, entityId, opts);
+  const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
+  const entityType = entityId ? entity.entity_type : 'global';
+  const baseData: UserImportActionContextData = {
+    id: entityId || file.id,
+    file_id: file.id,
+    file_name: file.name,
+    file_mime: file.metaData.mimetype,
+    connectors: connectorsForFile.map((c: Connector) => c.name),
+    entity_name: entityName,
+    entity_type: entityType
+  };
+  const contextData = completeContextDataForEntity(baseData, entity);
+  await publishUserAction({
+    user,
+    event_access: 'extended',
+    event_type: 'command',
+    event_scope: 'import',
+    context_data: contextData,
+  });
+  return file;
 };

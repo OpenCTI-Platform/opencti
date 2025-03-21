@@ -1,11 +1,12 @@
 import { loadFile } from '../database/file-storage';
-import { askJobImport, batchFileMarkingDefinitions, batchFileWorks, deleteImport, filesMetrics, uploadImport, uploadPending } from '../domain/file';
+import { batchFileMarkingDefinitions, batchFileWorks, deleteImport, filesMetrics, uploadAndAskJobImport, uploadImport, uploadPending } from '../domain/file';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { buildDraftVersion } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { getDraftContextFilesPrefix } from '../database/draft-utils';
+import { askJobImport } from '../domain/connector';
 
 const creatorLoader = batchLoader(batchCreator);
 const domainLoader = batchLoader(batchStixDomainObjects);
@@ -40,6 +41,7 @@ const fileResolvers = {
     },
     deleteImport: (_, { fileName }, context) => deleteImport(context, context.user, fileName),
     askJobImport: (_, args, context) => askJobImport(context, context.user, args),
+    uploadAndAskJobImport: (_, args, context) => uploadAndAskJobImport(context, context.user, args),
   },
 };
 

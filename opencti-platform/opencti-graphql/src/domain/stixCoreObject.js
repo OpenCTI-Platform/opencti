@@ -41,7 +41,7 @@ import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
+import { defaultValidationMode, deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
@@ -80,6 +80,7 @@ import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
+import { askJobImport } from './connector';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -669,6 +670,25 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
     .filter((e) => e.matchedEntity);
 
   return { analysisType, mappedEntities, analysisStatus: 'complete', analysisDate: analysis.lastModified };
+};
+
+export const stixCoreObjectImportFile = async (context, user, id, file, args = {}) => {
+  const {
+    fileMarkings,
+    connectors,
+    validationMode = defaultValidationMode,
+    version,
+    importContextEntities,
+  } = args;
+  const uploadedFile = await stixCoreObjectImportPush(context, user, id, file, { version, fileMarkings, importContextEntities, noTriggerImport: true });
+
+  if (connectors) {
+    await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
+      askJobImport(context, user, { fileName: uploadedFile.id, connectorId, configuration, validationMode })
+    )));
+  }
+
+  return uploadedFile;
 };
 
 export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {

@@ -1,26 +1,42 @@
 import React, { useState } from 'react';
-import { Collapse, Grid, IconButton, List, ListItem } from '@mui/material';
-import { TransitionGroup } from 'react-transition-group';
-import { DeleteOutlined, UploadFileOutlined } from '@mui/icons-material';
+import { Grid } from '@mui/material';
 import ImportFilesDropzone from '@components/common/files/import_files/ImportFilesDropzone';
 import ImportFilesFreeText from '@components/common/files/import_files/ImportFilesFreeText';
-import { useFormatter } from '../../../../../components/i18n';
+import ImportFilesList from '@components/common/files/import_files/ImportFilesList';
+import { importFilesDialogQuery } from '@components/common/files/import_files/ImportFilesDialog';
+import { usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import { ImportFilesDialogQuery } from '@components/common/files/import_files/__generated__/ImportFilesDialogQuery.graphql';
+
+export type FileWithConnectors = {
+  file: File;
+  connectors?: { id: string; name: string; }[];
+  configuration?: string;
+};
 
 interface ImportFilesUploaderProps {
-  files?: File[];
-  onChange: (files: File[]) => void;
+  files?: FileWithConnectors[];
+  onChange: (files: FileWithConnectors[]) => void;
+  queryRef: PreloadedQuery<ImportFilesDialogQuery>;
 }
 
-const ImportFilesUploader = ({ files = [], onChange }: ImportFilesUploaderProps) => {
-  const { t_i18n } = useFormatter();
+const ImportFilesUploader = ({ files = [], onChange, queryRef }: ImportFilesUploaderProps) => {
   const [isTextView, setIsTextView] = useState(false);
 
-  const addFiles = (newFiles: File[]) => {
-    onChange([...files, ...newFiles]);
-  };
+  const { connectorsForImport } = usePreloadedQuery<ImportFilesDialogQuery>(importFilesDialogQuery, queryRef);
 
-  const removeFile = (name: string) => {
-    onChange(files.filter((file) => file.name !== name));
+  const updateFiles = (newFiles: File[]) => {
+    const extendedFiles: FileWithConnectors[] = newFiles.map((file) => {
+      const connectors = connectorsForImport?.reduce<FileWithConnectors['connectors']>((acc, connector) => {
+        if (connector?.active && connector?.connector_scope?.includes(file.type)) {
+          acc?.push({ id: connector.id, name: connector.name });
+        }
+        return acc;
+      }, []);
+
+      return connectors && connectors.length > 0 ? { file, connectors } : { file };
+    });
+
+    onChange([...files, ...extendedFiles]);
   };
 
   return (
@@ -29,12 +45,12 @@ const ImportFilesUploader = ({ files = [], onChange }: ImportFilesUploaderProps)
         { !isTextView ? (
           <ImportFilesDropzone
             fullSize={files.length === 0}
-            onChange={addFiles}
+            onChange={updateFiles}
             openFreeText={() => setIsTextView(true)}
           />
         ) : (
           <ImportFilesFreeText onSumbit={(file) => {
-            addFiles([file]);
+            updateFiles([file]);
             setIsTextView(false);
           }}
             onClose={ () => setIsTextView(false) }
@@ -43,33 +59,7 @@ const ImportFilesUploader = ({ files = [], onChange }: ImportFilesUploaderProps)
       </Grid>
 
       <Grid item xs={12}>
-        <List>
-          <TransitionGroup>
-            {files.length > 0 && (
-              <Collapse key="header" >
-                <ListItem divider sx={{ paddingLeft: 7 }}>
-                  {t_i18n('Files')}
-                </ListItem>
-              </Collapse>
-            )}
-
-            {files.map((file) => (
-              <Collapse key={file.name}>
-                <ListItem
-                  divider
-                  secondaryAction={
-                    <IconButton edge="end" onClick={() => removeFile(file.name)} color="primary">
-                      <DeleteOutlined />
-                    </IconButton>
-                  }
-                >
-                  <UploadFileOutlined color="primary" sx={{ marginRight: 2 }} />
-                  {file.name}
-                </ListItem>
-              </Collapse>
-            ))}
-          </TransitionGroup>
-        </List>
+        <ImportFilesList files={files} onChange={onChange} connectorsForImport={connectorsForImport} />
       </Grid>
     </Grid>
   );

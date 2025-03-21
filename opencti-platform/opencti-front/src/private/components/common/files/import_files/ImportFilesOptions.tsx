@@ -1,14 +1,14 @@
-import { Option } from '@components/common/form/ReferenceField';
-import AssociatedEntityField, { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
+import React from 'react';
 import { Box } from '@mui/material';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import React from 'react';
+import { OptionsFormValues } from '@components/common/files/import_files/ImportFilesDialog';
 import { FormikContextType, FormikProvider } from 'formik';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import StixCoreObjectsField from '@components/common/form/StixCoreObjectsField';
 import { useFormatter } from '../../../../../components/i18n';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 interface ImportFilesOptionsProps {
-  optionsFormikContext: FormikContextType<{ fileMarkings: Option[]; associatedEntity: AssociatedEntityOption }>;
+  optionsFormikContext: FormikContextType<OptionsFormValues>;
   entityId?: string;
 }
 
@@ -34,10 +34,12 @@ const ImportFilesOptions = ({ optionsFormikContext, entityId }: ImportFilesOptio
         {!entityId
         && (
           <div style={{ paddingTop: '10px' }}>
-            <AssociatedEntityField
-              label={t_i18n('Associated entity')}
+            <StixCoreObjectsField
               name="associatedEntity"
-              onChange={optionsFormikContext.setFieldValue}
+              label={t_i18n('Associated entity')}
+              multiple={false}
+              setFieldValue={optionsFormikContext.setFieldValue}
+              values={optionsFormikContext.values.associatedEntity}
             />
           </div>
         )}
