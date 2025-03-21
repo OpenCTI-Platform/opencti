@@ -1,5 +1,5 @@
 import { files } from '../schema/attribute-definition';
-import { ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { getDraftContext } from '../utils/draftContext';
 import { READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
@@ -67,12 +67,6 @@ export const buildDraftFilter = (context, user, opts = {}) => {
 
 export const isDraftSupportedEntity = (element) => {
   return !isInternalObject(element.entity_type) && !isInternalRelationship(element.entity_type);
-};
-
-// We don't want to reindex user to draft index: it is not impacted by denormalized refs, and it prevents modifying the live user to be able to exit the draft
-const DRAFT_DEPENDENCY_EXCLUDED_ENTITIES = [ENTITY_TYPE_USER];
-export const isDraftDependencyCopyNeeded = (element) => {
-  return !DRAFT_DEPENDENCY_EXCLUDED_ENTITIES.includes(element.entity_type);
 };
 
 export const FILES_UPDATE_KEY = files.name;
