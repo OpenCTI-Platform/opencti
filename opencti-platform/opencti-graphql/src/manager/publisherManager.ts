@@ -58,7 +58,7 @@ export const internalProcessNotification = async (
       const eventNotification = notificationMap.get(notification_id);
       if (eventNotification) {
         const notificationUser = await findById(context, SYSTEM_USER, user.user_id);
-        const main = 'extensions' in instance ? await extractStixRepresentativeForUser(context, notificationUser, instance) : extractRepresentative(instance)?.main;
+        const main = 'extensions' in instance ? await extractStixRepresentativeForUser(context, notificationUser, instance, true) : extractRepresentative(instance)?.main;
         const notificationName = main;
         if (generatedContent[notificationName]) {
           generatedContent[notificationName] = [...generatedContent[notificationName], event];

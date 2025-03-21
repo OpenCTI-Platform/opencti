@@ -73,7 +73,8 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 export const extractStixRepresentative = (
   stix: S.StixObject,
-  { fromRestricted = false, toRestricted = false }: { fromRestricted: boolean, toRestricted: boolean } = { fromRestricted: false, toRestricted: false }
+  { fromRestricted = false, toRestricted = false }: { fromRestricted: boolean, toRestricted: boolean } = { fromRestricted: false, toRestricted: false },
+  withArrowForRelationships = false,
 ): string => {
   const entityType = stix.extensions[STIX_EXT_OCTI].type;
   // region Modules
@@ -99,7 +100,8 @@ export const extractStixRepresentative = (
     const relation = stix as SRO.StixRelation;
     const fromValue = fromRestricted ? 'Restricted' : relation.extensions[STIX_EXT_OCTI].source_value;
     const targetValue = toRestricted ? 'Restricted' : relation.extensions[STIX_EXT_OCTI].target_value;
-    return `${fromValue} ${relation.relationship_type} ${targetValue}`;
+    const separator = withArrowForRelationships ? '➡️' : relation.relationship_type;
+    return `${fromValue} ${separator} ${targetValue}`;
   }
   // endregion
   // region Entities
@@ -340,9 +342,10 @@ export const extractStixRepresentativeForUser = async (
   context: AuthContext,
   user: AuthUser,
   stix: S.StixObject,
+  withArrowForRelationships = false,
 ) => {
   const [from, to] = extractUserAccessPropertiesFromStixObject(stix);
   const fromRestricted = from ? !(await isUserCanAccessStoreElement(context, user, from)) : false;
   const toRestricted = to ? !(await isUserCanAccessStoreElement(context, user, to)) : false;
-  return extractStixRepresentative(stix, { fromRestricted, toRestricted });
+  return extractStixRepresentative(stix, { fromRestricted, toRestricted }, withArrowForRelationships);
 };
