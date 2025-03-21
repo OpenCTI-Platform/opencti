@@ -40,7 +40,7 @@ describe('Database sync raw', () => {
   it(
     'Should python raw sync succeed',
     async () => {
-      const queryResultBefore = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 350 } });
+      const queryResultBefore = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 500 } });
 
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
@@ -50,9 +50,9 @@ describe('Database sync raw', () => {
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       // to uncomment for debug if counters are failing
-      // expect(execution.messages.length, `Execution messages ${JSON.stringify(execution.messages)}`).toEqual(0);
+      expect(execution.messages.length, `Execution messages ${JSON.stringify(execution.messages)}`).toEqual(0);
 
-      const queryResultAfter = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 350 } });
+      const queryResultAfter = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 500 } });
 
       const vocabBefore = queryResultBefore.data.vocabularies.edges.map((e) => e.node);
       const vocabAfter = queryResultAfter.data.vocabularies.edges.map((e) => e.node);
