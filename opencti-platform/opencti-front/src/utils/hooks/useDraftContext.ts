@@ -1,6 +1,6 @@
 import useAuth from './useAuth';
 
-interface DraftContext {
+export interface DraftContext {
   id: string;
   name: string;
   draft_status: string;

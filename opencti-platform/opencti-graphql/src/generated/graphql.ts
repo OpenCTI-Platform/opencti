@@ -16005,6 +16005,7 @@ export type MutationUpdateConnectorTriggerArgs = {
 
 export type MutationUploadAndAskJobImportArgs = {
   connectors?: InputMaybe<Array<ConnectorWithConfig>>;
+  draftId?: InputMaybe<Scalars['String']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
   validationMode?: InputMaybe<ValidationMode>;
@@ -24735,6 +24736,7 @@ export type StixCoreObjectEditMutationsRestrictionOrganizationDeleteArgs = {
 
 export type StixCoreObjectEditMutationsUploadAndAskJobImportArgs = {
   connectors?: InputMaybe<Array<ConnectorWithConfig>>;
+  draftId?: InputMaybe<Scalars['String']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
   validationMode?: InputMaybe<ValidationMode>;

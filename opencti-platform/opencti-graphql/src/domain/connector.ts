@@ -382,9 +382,25 @@ export const connectorUser = async (context: AuthContext, user: AuthUser, userId
 export const askJobImport = async (
   context: AuthContext,
   user: AuthUser,
-  args: { fileName: string; connectorId?: string; configuration?: string; bypassEntityId?: string; bypassValidation?: boolean; validationMode?: ValidationMode },
+  args: {
+    fileName: string;
+    connectorId?: string;
+    configuration?: string;
+    bypassEntityId?: string;
+    bypassValidation?: boolean;
+    validationMode?: ValidationMode;
+    manualValidation?: boolean;
+  },
 ) => {
-  const { fileName, connectorId = null, configuration = null, bypassEntityId = null, bypassValidation = false, validationMode = defaultValidationMode } = args;
+  const {
+    fileName,
+    connectorId = null,
+    configuration = null,
+    bypassEntityId = null,
+    bypassValidation = false,
+    validationMode = defaultValidationMode,
+    manualValidation = false,
+  } = args;
   logApp.info(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);
   const file = await loadFile(context, user, fileName);
   if (!file) {
@@ -393,7 +409,7 @@ export const askJobImport = async (
   }
   logApp.info('[JOBS] ask import, file found:', file);
   const entityId = bypassEntityId || file?.metaData.entity_id;
-  const opts = { manual: true, connectorId, configuration, bypassValidation, validationMode };
+  const opts = { manual: true, connectorId, configuration, bypassValidation, validationMode, manualValidation };
   const entity = await internalLoadById(context, user, entityId) as BasicStoreCommon;
   // This is a manual request for import, we have to check confidence and throw on error
   if (entity) {
