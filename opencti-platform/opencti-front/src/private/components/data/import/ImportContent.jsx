@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
 import Typography from '@mui/material/Typography';
@@ -313,11 +313,11 @@ const ImportContentComponent = ({
 
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
   return (
-    <div style={{ paddingRight: isNewImportScreensEnabled && !inDraftOverview ? 200 : 0 }}>
+    <div style={{ paddingRight: !isNewImportScreensEnabled && !inDraftOverview ? 200 : 0 }}>
       {!inDraftOverview && (
-      <Breadcrumbs
-        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
-      />
+        <Breadcrumbs
+          elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+        />
       )}
       {isNewImportScreensEnabled && !inDraftOverview && <ImportMenu/>}
       <Grid
@@ -350,12 +350,12 @@ const ImportContentComponent = ({
               {importFilesEdges.length ? (
                 <List>
                   {importFilesEdges.map((file) => file?.node && (
-                  <FileLine
-                    key={file.node.id}
-                    file={file.node}
-                    connectors={ importConnsPerFormat[file.node.metaData.mimetype] }
-                    handleOpenImport={handleOpenImport}
-                  />
+                    <FileLine
+                      key={file.node.id}
+                      file={file.node}
+                      connectors={importConnsPerFormat[file.node.metaData.mimetype]}
+                      handleOpenImport={handleOpenImport}
+                    />
                   ))}
                 </List>
               ) : (
@@ -364,10 +364,10 @@ const ImportContentComponent = ({
                 >
                   <span
                     style={{
-                      display: 'table-cell',
-                      verticalAlign: 'middle',
-                      textAlign: 'center',
-                    }}
+                        display: 'table-cell',
+                        verticalAlign: 'middle',
+                        textAlign: 'center',
+                      }}
                   >
                     {t_i18n('No file for the moment')}
                   </span>
@@ -398,10 +398,10 @@ const ImportContentComponent = ({
                   <ListItemIcon>
                     <span
                       style={{
-                        padding: '0 8px 0 8px',
-                        fontWeight: 700,
-                        fontSize: 12,
-                      }}
+                          padding: '0 8px 0 8px',
+                          fontWeight: 700,
+                          fontSize: 12,
+                        }}
                     >
                         &nbsp;
                     </span>
@@ -409,12 +409,12 @@ const ImportContentComponent = ({
                   <ListItemText
                     primary={
                       <div>
-                        {sortHeader('name', 'Name', false)}
-                        {sortHeader('creator_name', 'Creator', false)}
-                        {sortHeader('labels', 'Labels', false)}
-                        {sortHeader('markings', 'Markings', false)}
-                        {sortHeader('lastModified', 'Modification date', false)}
-                      </div>
+                          {sortHeader('name', 'Name', false)}
+                          {sortHeader('creator_name', 'Creator', false)}
+                          {sortHeader('labels', 'Labels', false)}
+                          {sortHeader('markings', 'Markings', false)}
+                          {sortHeader('lastModified', 'Modification date', false)}
+                        </div>
                       }
                   />
                 </ListItem>
@@ -429,7 +429,7 @@ const ImportContentComponent = ({
               </List>
             </Paper>
           </div>
-        </Grid>)}
+          </Grid>)}
       </Grid>
       <div>
         <Formik
@@ -464,7 +464,7 @@ const ImportContentComponent = ({
                           || (connector.connector_scope.length > 0
                             && !connector.connector_scope.includes(fileToImport.metaData.mimetype));
                       return (
-                        <MenuItem
+                          <MenuItem
                           key={connector.id}
                           value={connector.id}
                           disabled={disabled || !connector.active}
@@ -509,15 +509,15 @@ const ImportContentComponent = ({
                         onChange={handleSetCsvMapper}
                       >
                       {selectedConnector.configurations?.map((config) => {
-                        return (
+                          return (
                           <MenuItem
                             key={config.id}
                             value={config.configuration}
                           >
                             {config.name}
                           </MenuItem>
-                        );
-                      })}
+                          );
+                        })}
                     </Field>
                     : <ManageImportConnectorMessage name={selectedConnector?.name }/>
                     }
@@ -581,7 +581,7 @@ const ImportContentComponent = ({
                         || (connector.connector_scope.length > 0
                           && !connector.connector_scope.includes(fileToValidate.metaData.mimetype));
                       return (
-                        <MenuItem
+                          <MenuItem
                           key={i}
                           value={connector.id}
                           disabled={disabled || !connector.active}
@@ -609,23 +609,23 @@ const ImportContentComponent = ({
           )}
         </Formik>
         {!inDraftOverview && (
-        <WorkbenchFileCreator
-          handleCloseCreate={handleCloseCreate}
-          openCreate={displayCreate}
-          onCompleted={onCreateWorkbenchCompleted}
-        />
+          <WorkbenchFileCreator
+            handleCloseCreate={handleCloseCreate}
+            openCreate={displayCreate}
+            onCompleted={onCreateWorkbenchCompleted}
+          />
         )}
       </div>
       {!inDraftOverview && (
-      <Fab
-        onClick={handleOpenCreate}
-        color="primary"
-        aria-label="Add"
-        className={classes.createButton}
-        style={{ right: isNewImportScreensEnabled ? 230 : 30 }}
-      >
-        <Add />
-      </Fab>
+        <Fab
+          onClick={handleOpenCreate}
+          color="primary"
+          aria-label="Add"
+          className={classes.createButton}
+          style={{ right: isNewImportScreensEnabled ? 230 : 30 }}
+        >
+          <Add/>
+        </Fab>
       )}
     </div>
   );
