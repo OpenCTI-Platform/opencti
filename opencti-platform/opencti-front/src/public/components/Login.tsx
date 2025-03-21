@@ -179,7 +179,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings, themes }) => {
   const consentConfirmText = settings.platform_consent_confirm_text
     ? settings.platform_consent_confirm_text
     : t_i18n('I have read and comply with the above statement');
-  const loginMessage = settings.platform_login_message; 
+  const loginMessage = settings.platform_login_message;
   const defaultTheme = themes?.edges?.filter((node) => !!node)
     .map(({ node }) => ({ ...node }))
     .filter(({ name }) => name === settings.platform_theme)?.[0];

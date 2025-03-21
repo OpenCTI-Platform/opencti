@@ -1,5 +1,5 @@
-import { fromB64, toB64 } from "../../../../utils/String";
-import { isEmptyField } from "../../../../utils/utils";
+import { fromB64, toB64 } from '../../../../utils/String';
+import { isEmptyField } from '../../../../utils/utils';
 
 type ThemeManifestType = {
   theme_background: string,
@@ -17,7 +17,7 @@ type ThemeManifestType = {
 interface ThemeType extends ThemeManifestType {
   id: string,
   name: string,
-};
+}
 
 /**
  * Serializes a theme into the backend-compatible manifest type. Base64 encoded.
@@ -32,10 +32,10 @@ export const serializeThemeManifest = (theme: ThemeManifestType): string => {
  * @param manifest Base64-encoded manifest string
  */
 export const deserializeThemeManifest = (
-  manifest: string | undefined | null
+  manifest: string | undefined | null,
 ): ThemeManifestType => {
-  const b64decoded = fromB64(manifest ?? "");
-  return JSON.parse(isEmptyField(b64decoded) ? "{}" : b64decoded);
+  const b64decoded = fromB64(manifest ?? '');
+  return JSON.parse(isEmptyField(b64decoded) ? '{}' : b64decoded);
 };
 
 export default ThemeType;

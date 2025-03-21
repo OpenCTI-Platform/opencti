@@ -38,8 +38,8 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
     editThemeMutation,
     undefined,
     {
-      successMessage: t_i18n("Successfully updated theme"),
-      errorMessage: t_i18n("Failed to update theme"),
+      successMessage: t_i18n('Successfully updated theme'),
+      errorMessage: t_i18n('Failed to update theme'),
     },
   );
 
@@ -78,7 +78,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
       variables: {
         id,
         input: [{
-          key: "manifest",
+          key: 'manifest',
           value: manifest,
         }],
       },
@@ -100,8 +100,8 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
           title={t_i18n('Update a theme')}
           open={open}
           onClose={() => {
-            submitForm()
-            handleClose()
+            submitForm();
+            handleClose();
           }}
         >
           <Form>

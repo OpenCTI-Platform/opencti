@@ -14,7 +14,7 @@ import ThemePopover from './ThemePopover';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import ThemeCreation from './ThemeCreation';
 import ThemeImporter from './ThemeImporter';
-import ThemeType, { deserializeThemeManifest } from './ThemeType';
+import { deserializeThemeManifest } from './ThemeType';
 import { ThemesLine_data$data } from './__generated__/ThemesLine_data.graphql';
 
 const LOCAL_STORAGE_KEY = 'themes';
