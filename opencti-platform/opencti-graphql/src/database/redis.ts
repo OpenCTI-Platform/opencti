@@ -836,6 +836,7 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
 const CLUSTER_LIST_KEY = 'platform_cluster';
 const CLUSTER_NODE_EXPIRE = 2 * 60; // 2 minutes
 export const registerClusterInstance = async (instanceId: string, instanceConfig: ClusterConfig) => {
+  logApp.info('ANGIE registerClusterInstance:', { instanceId, instanceConfig });
   return setKeyWithList(instanceId, [CLUSTER_LIST_KEY], instanceConfig, CLUSTER_NODE_EXPIRE);
 };
 export const getClusterInstances = async () => {
