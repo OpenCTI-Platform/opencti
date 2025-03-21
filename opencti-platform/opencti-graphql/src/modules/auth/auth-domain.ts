@@ -3,14 +3,13 @@ import { UnsupportedError } from '../../config/errors';
 import ejs from 'ejs';
 import { BASIC_EMAIL_TEMPLATE } from '../../utils/emailTemplates/basicEmailTemplate';
 import { sendMail } from '../../database/smtp';
+import type { AuthUser } from '../../types/user';
+import type { User, UserAccount } from '../../generated/graphql';
 
-export const getEmail = async (email: string) => {
-  // @ts-ignore
-  const user = await getUserByEmail(email);
-  // @ts-ignore
+export const getUser = async (email: string): Promise<User> => {
+  const user: any = await getUserByEmail(email);
   if (user.external) throw UnsupportedError('External user');
-  // @ts-ignore
-  return user.user_email;
+  return user;
 };
 
 export const generateCode = () => {
@@ -30,25 +29,27 @@ interface SendMailArgs {
 }
 
 export const askResetPassword = async (email: string) => {
-  const emailChecked = await getEmail(email);
-  const resetToken = generateCode();
-  const username = emailChecked; // TODO : get the username
-  const emailSubject = resetToken + ' is your recovery code of your OpenCTI account';
-  const body = 'Hi '
-    + username
-    + ',</br>'
-    + 'A request has been made to reset your OpenBAS password.</br>'
-    + 'Enter the following password recovery code: '
-    + resetToken;
-  const emailBody = ejs.render(BASIC_EMAIL_TEMPLATE, { body: body });
+  try {
+    const { user_email, name } = await getUser(email);
+    const resetToken = generateCode();
+    const body = 'Hi '
+      + name
+      + ',</br>'
+      + 'A request has been made to reset your OpenBAS password.</br>'
+      + 'Enter the following password recovery code: '
+      + resetToken;
 
-  const sendMailArgs: SendMailArgs = {
-    from: 'admin@opencti.io', // TODO : get the platform email
-    to: emailChecked,
-    subject: emailSubject,
-    html: emailBody,
-  };
-  await sendMail(sendMailArgs);
+    const sendMailArgs: SendMailArgs = {
+      from: 'admin@opencti.io', // TODO : get the platform email
+      to: user_email,
+      subject: resetToken + ' is your recovery code of your OpenCTI account',
+      html: ejs.render(BASIC_EMAIL_TEMPLATE, { body: body }),
+    };
+    await sendMail(sendMailArgs);
+  } catch (e) {
+    // Prevent wrong email address, but return true too if it fail
+    // TODO : log ?
+  }
 
   return true;
 };
