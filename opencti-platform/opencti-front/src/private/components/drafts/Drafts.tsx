@@ -206,36 +206,43 @@ const Drafts: React.FC = () => {
   };
 
   return (
-    <div data-testid="draft-page" style={{ paddingRight: isNewImportScreensEnabled ? 200 : 0 }}>
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Drafts'), current: true }]} />
-      {isNewImportScreensEnabled && <ImportMenu/>}
-      {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        toolbarFilters={contextFilters}
-        preloadedPaginationProps={preloadedPaginationProps}
-        lineFragment={DraftLineFragment}
-        exportContext={{ entity_type: 'DraftWorkspace' }}
-        redirectionModeEnabled
-        createButton={!draftContext && isFABReplaced && (
-          <DraftCreation paginationOptions={queryPaginationOptions} />
-        )}
-        actions={(row) => (
-          <DraftPopover
-            draftId={row.id}
-            draftLocked={row.draft_status !== 'open'}
-            paginationOptions={queryPaginationOptions}
+    <span data-testid="draft-page">
+      {isNewImportScreensEnabled ? (
+        <>
+          <Breadcrumbs
+            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
           />
-        )}
-      />
+          <ImportMenu/>
+        </>
+      ) : (
+        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Drafts'), current: true }]}/>
+      )}
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={DraftLineFragment}
+          redirectionModeEnabled
+          createButton={!draftContext && isFABReplaced && (
+            <DraftCreation paginationOptions={queryPaginationOptions}/>
+          )}
+          actions={(row) => (
+            <DraftPopover
+              draftId={row.id}
+              draftLocked={row.draft_status !== 'open'}
+              paginationOptions={queryPaginationOptions}
+            />
+          )}
+        />
       )}
       {!draftContext && !isFABReplaced && (
-        <DraftCreation paginationOptions={queryPaginationOptions} />
+        <DraftCreation paginationOptions={queryPaginationOptions}/>
       )}
-    </div>
+    </span>
   );
 };
 
