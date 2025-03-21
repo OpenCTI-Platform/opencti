@@ -72,4 +72,21 @@ describe('Stix representative tests', () => {
     expect(extractStixRepresentative(relationship, { fromRestricted: false, toRestricted: true })).toEqual('T234 located-at Restricted');
     expect(extractStixRepresentative(relationship, { fromRestricted: true, toRestricted: true })).toEqual('Restricted located-at Restricted');
   });
+  it('Should return the representative of a stix relationship with relationship arrow option', async () => {
+    const relationship = {
+      name: 'My relationship',
+      relationship_type: 'located-at',
+      extensions: {
+        [STIX_EXT_OCTI]:
+          {
+            type: ABSTRACT_STIX_CORE_RELATIONSHIP,
+            source_value: 'T234',
+            target_value: 'My City',
+          },
+      }
+    } as unknown as StixObject;
+    expect(extractStixRepresentative(relationship, { fromRestricted: true, toRestricted: false }, true)).toEqual('Restricted ➡️ My City');
+    expect(extractStixRepresentative(relationship, { fromRestricted: false, toRestricted: true }, true)).toEqual('T234 ➡️ Restricted');
+    expect(extractStixRepresentative(relationship, { fromRestricted: true, toRestricted: true }, true)).toEqual('Restricted ➡️ Restricted');
+  });
 });
