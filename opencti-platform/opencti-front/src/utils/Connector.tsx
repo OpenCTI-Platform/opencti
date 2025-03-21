@@ -1,5 +1,9 @@
 import { uniq } from 'ramda';
+import React from 'react';
+import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import { stixFilters, useBuildFilterKeysMapFromEntityType } from './filters/filtersUtils';
+import ItemBoolean from '../components/ItemBoolean';
+import { useFormatter } from '../components/i18n';
 import useSchema from './hooks/useSchema';
 
 export interface Connector {
@@ -62,4 +66,49 @@ export const useGetConnectorAvailableFilterKeys = (connector: Connector): string
   // filter to keep only stixFilters
   availableFilterKeys = availableFilterKeys.filter((key) => stixFilters.includes(key));
   return availableFilterKeys;
+};
+
+export const useComputeConnectorStatus = () => {
+  const { t_i18n } = useFormatter();
+  // eslint-disable-next-line react/display-name
+  return ({
+    manager_current_status,
+    manager_requested_status,
+    active,
+  }: Partial<ConnectorsStatus_data$data['connectors'][0]>) => {
+    if (manager_current_status && manager_requested_status) {
+      if (manager_current_status.slice(0, 5) !== manager_requested_status.slice(0, 5)) {
+        return {
+          processing: ['starting', 'stopping'].includes(manager_requested_status),
+          render: (
+            <ItemBoolean
+              status={['starting', 'stopping'].includes(manager_requested_status) ? undefined : true}
+              label={t_i18n(manager_requested_status)}
+              variant="inList"
+            />
+          ),
+        };
+      }
+      return {
+        processing: false,
+        render: (
+          <ItemBoolean
+            status={manager_current_status === 'started'}
+            label={t_i18n(manager_current_status)}
+            variant="inList"
+          />
+        ),
+      };
+    }
+    return {
+      processing: false,
+      render: (
+        <ItemBoolean
+          status={active}
+          label={active ? t_i18n('Active') : t_i18n('Inactive')}
+          variant="inList"
+        />
+      ),
+    };
+  };
 };

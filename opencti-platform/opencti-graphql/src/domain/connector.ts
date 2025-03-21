@@ -24,7 +24,6 @@ import {
   type AddManagedConnectorInput,
   ConnectorType,
   type CurrentConnectorStatusInput,
-  ValidationMode,
   type EditContext,
   type EditInput,
   type EditManagedConnectorInput,
@@ -36,7 +35,6 @@ import {
   type SynchronizerAddInput,
   type SynchronizerFetchInput,
   type UpdateConnectorManagerStatusInput,
-  type SynchronizerFetchInput,
   ValidationMode,
 } from '../generated/graphql';
 import { BUS_TOPICS, logApp } from '../config/conf';

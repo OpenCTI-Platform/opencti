@@ -48,7 +48,7 @@ const StixCyberObservableEditionContainer = (props) => {
         >
           <Close fontSize="small" color="primary" />
         </IconButton>
-        <Typography variant="subtitle2" classes={{ root: classes.title }}>
+        <Typography variant="h2" style={{ textWrap: 'nowrap', margin: 0 }} classes={{ root: classes.title }}>
           {t_i18n('Update an observable')}
         </Typography>
         <SubscriptionAvatars context={editContext} />

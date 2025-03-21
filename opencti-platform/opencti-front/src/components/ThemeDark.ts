@@ -123,7 +123,7 @@ const ThemeDark = (
     },
     subtitle2: {
       fontWeight: 400,
-      fontSize: 18,
+      fontSize: 12,
       color: 'rgba(255, 255, 255, 0.7)',
     },
   },
