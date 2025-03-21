@@ -18914,6 +18914,7 @@ export type PlatformEe = {
 export type PlatformProtectedSensitiveConfig = {
   __typename?: 'PlatformProtectedSensitiveConfig';
   ce_ee_toggle: PlatformProtectedSubConfig;
+  connector_reset: PlatformProtectedSubConfig;
   enabled: Scalars['Boolean']['output'];
   file_indexing: PlatformProtectedSubConfig;
   groups: PlatformProtectedSubConfig;
@@ -38879,6 +38880,7 @@ export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversP
 
 export type PlatformProtectedSensitiveConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformProtectedSensitiveConfig'] = ResolversParentTypes['PlatformProtectedSensitiveConfig']> = ResolversObject<{
   ce_ee_toggle?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
+  connector_reset?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   file_indexing?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
   groups?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;

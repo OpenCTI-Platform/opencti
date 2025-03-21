@@ -103,6 +103,10 @@ export const getProtectedSensitiveConfig = async (context, user) => {
       enabled: booleanConf('protected_sensitive_config:ce_ee_toggle:enabled', false),
       protected_ids: [],
     },
+    connector_reset: {
+      enabled: booleanConf('protected_sensitive_config:connector_reset:enabled', false),
+      protected_ids: [],
+    },
     file_indexing: {
       enabled: booleanConf('protected_sensitive_config:file_indexing:enabled', false),
       protected_ids: [],
