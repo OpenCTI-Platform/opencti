@@ -17,7 +17,7 @@ import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from 
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
-import { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { elAggregationCount, elCount, elList } from '../../database/engine';
@@ -195,9 +195,6 @@ export const listDraftSightingRelations = (context: AuthContext, user: AuthUser,
 };
 
 export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, input: DraftWorkspaceAddInput) => {
-  if (!isFeatureEnabled('DRAFT_WORKSPACE')) {
-    throw UnsupportedError('Feature not yet available');
-  }
   const defaultOps = {
     created_at: now(),
     draft_status: DRAFT_STATUS_OPEN,

@@ -150,7 +150,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
 }) => {
   const { isFeatureEnable } = useHelper();
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const isImportWorkflowEnabled = isFeatureEnable('IMPORT_WORKFLOW');
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
@@ -274,7 +273,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
   // draft
-  const draftModeEnabled = isDraftFeatureEnabled && draftContext;
   const draftModeColor = getDraftModeColor(theme);
   return (
     <AppBar
@@ -289,7 +287,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
           padding: 0,
-          borderBottom: draftModeEnabled ? `1px solid ${draftModeColor}` : 'initial',
+          borderBottom: !!draftContext ? `1px solid ${draftModeColor}` : 'initial',
         }}
       >
         <div className={classes.logoContainer} style={navOpen ? { width: OPEN_BAR_WIDTH } : {}}>
@@ -318,11 +316,11 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           </div>
         )}
         <div className={classes.barRight}>
-          {draftModeEnabled && (
+          {!!draftContext && (
             <DraftContextBanner/>
           )}
           <div className={classes.barRightContainer}>
-            {!draftModeEnabled && (
+            {!draftContext && (
             <Security needs={[KNOWLEDGE]}>
               <>
                 { ee.license_type === 'nfr' && <ItemBoolean variant="large" label={'EE DEV LICENSE'} status={false}/> }
