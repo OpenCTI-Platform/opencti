@@ -188,7 +188,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
         { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
-        { label: t_i18n('Plateforms'), value: 'plateform', isMultiple: true },
+        { label: t_i18n('Platforms'), value: 'platform', isMultiple: true },
         {
           label: t_i18n('Status'),
           value: 'x_opencti_workflow_id',
@@ -212,7 +212,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Priority'), value: 'priority', isMultiple: false },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
         { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
-        { label: t_i18n('Plateforms'), value: 'plateform', isMultiple: true },
+        { label: t_i18n('Platforms'), value: 'platform', isMultiple: true },
         {
           label: t_i18n('Detection'),
           value: 'x_opencti_detection',
@@ -236,7 +236,7 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
         { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
-        { label: t_i18n('Plateforms'), value: 'plateform', isMultiple: true },
+        { label: t_i18n('Platforms'), value: 'platform', isMultiple: true },
         {
           label: t_i18n('Status'),
           value: 'x_opencti_workflow_id',
@@ -412,7 +412,7 @@ const PlaybookAddComponentsContent = ({
             }}
           />
         );
-      case 'plateform':
+      case 'platform':
         return (
           <OpenVocabField
             name={`actions-${i}-value`}
