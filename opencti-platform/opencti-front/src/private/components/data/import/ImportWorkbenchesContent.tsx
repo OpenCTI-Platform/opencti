@@ -1,6 +1,5 @@
 import { graphql } from 'react-relay';
 import React, { useState } from 'react';
-import ImportMenu from '@components/data/ImportMenu';
 import { ImportWorkbenchesContentQuery, ImportWorkbenchesContentQuery$variables } from '@components/data/import/__generated__/ImportWorkbenchesContentQuery.graphql';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
@@ -13,11 +12,11 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
 import { ImportWorkbenchesContentLines_data$data } from '@components/data/import/__generated__/ImportWorkbenchesContentLines_data.graphql';
+import ImportMenu from '@components/data/ImportMenu';
 import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
-import { APP_BASE_PATH } from '../../../../relay/environment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -25,97 +24,100 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { deleteNode } from '../../../../utils/store';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { toB64 } from '../../../../utils/String';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
-  mutation ImportWorkbenchesContentFileLineDeleteMutation($fileName: String) {
-    deleteImport(fileName: $fileName)
-  }
+    mutation ImportWorkbenchesContentFileLineDeleteMutation($fileName: String) {
+        deleteImport(fileName: $fileName)
+    }
 `;
 
 export const workbenchLineFragment = graphql`
-  fragment ImportWorkbenchesContentFileLine_file on File {
-    id
-    entity_type
-    name
-    uploadStatus
-    lastModified
-    lastModifiedSinceMin
-    objectMarking {
-      id
-    }
-    metaData {
-      mimetype
-      list_filters
-      labels
-      labels_text
-      messages {
-        timestamp
-        message
-      }
-      errors {
-        timestamp
-        message
-      }
-      creator {
+    fragment ImportWorkbenchesContentFileLine_file on File {
+        id
+        entity_type
         name
-      }
+        uploadStatus
+        lastModified
+        lastModifiedSinceMin
+        objectMarking {
+            id
+        }
+        metaData {
+            mimetype
+            list_filters
+            labels
+            labels_text
+            messages {
+                timestamp
+                message
+            }
+            errors {
+                timestamp
+                message
+            }
+            creator {
+                name
+            }
+        }
+        ...FileWork_file
     }
-    ...FileWork_file
-  }
 `;
 
 const importWorkbenchLinesFragment = graphql`
-  fragment ImportWorkbenchesContentLines_data on Query
-  @argumentDefinitions(
-    count: { type: "Int", defaultValue: 500 }
-    cursor: { type: "ID" }
-    orderBy: { type: "FileOrdering" }
-    orderMode: { type: "OrderingMode" }
-    search: { type: "String" }
-    filters: { type: "FilterGroup" }
-  )
-  @refetchable(queryName: "ImportWorkbenchesRefetchQuery") {
-    pendingFiles(
-      first: $count,
-      after: $cursor,
-      orderBy: $orderBy,
-      orderMode: $orderMode,
-      search: $search,
-      filters: $filters,
+    fragment ImportWorkbenchesContentLines_data on Query
+    @argumentDefinitions(
+        count: { type: "Int", defaultValue: 500 }
+        cursor: { type: "ID" }
+        orderBy: { type: "FileOrdering" }
+        orderMode: { type: "OrderingMode" }
+        search: { type: "String" }
+        filters: { type: "FilterGroup" }
     )
-    @connection(key: "Pagination_global_pendingFiles") {
-      edges {
-        node {
-          id
-          ...ImportWorkbenchesContentFileLine_file
+    @refetchable(queryName: "ImportWorkbenchesRefetchQuery") {
+        pendingFiles(
+            first: $count,
+            after: $cursor,
+            orderBy: $orderBy,
+            orderMode: $orderMode,
+            search: $search,
+            filters: $filters,
+        )
+        @connection(key: "Pagination_global_pendingFiles") {
+            edges {
+                node {
+                    id
+                    ...ImportWorkbenchesContentFileLine_file
+                }
+            }
+            pageInfo {
+                globalCount
+            }
         }
-      }
-      pageInfo {
-        globalCount
-      }
     }
-  }
 `;
 
 export const importWorkbenchesContentQuery = graphql`
-  query ImportWorkbenchesContentQuery(
-    $count: Int,
-    $cursor: ID,
-    $orderBy: FileOrdering,
-    $orderMode: OrderingMode,
-    $search: String,
-    $filters: FilterGroup,
-  ) {
-    ...ImportWorkbenchesContentLines_data
-    @arguments(
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      search: $search
-      filters: $filters
-    )
-  }
+    query ImportWorkbenchesContentQuery(
+        $count: Int,
+        $cursor: ID,
+        $orderBy: FileOrdering,
+        $orderMode: OrderingMode,
+        $search: String,
+        $filters: FilterGroup,
+    ) {
+        ...ImportWorkbenchesContentLines_data
+        @arguments(
+            count: $count
+            cursor: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+            search: $search
+            filters: $filters
+        )
+    }
 `;
 
 const LOCAL_STORAGE_KEY = 'importWorkbenches';
@@ -123,6 +125,8 @@ const LOCAL_STORAGE_KEY = 'importWorkbenches';
 const ImportWorkbenchesContent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+  const { isFeatureEnable } = useHelper();
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   setTitle(t_i18n('Analyst Workbench | Import | Data'));
   const [displayDelete, setDisplayDelete] = useState<string>('');
 
@@ -132,7 +136,11 @@ const ImportWorkbenchesContent = () => {
     sortBy: 'lastModified',
     orderAsc: false,
   };
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ImportWorkbenchesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<ImportWorkbenchesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
   const { filters } = viewStorage;
   const finalFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['InternalFile']);
   const queryPaginationOptions = {
@@ -194,9 +202,17 @@ const ImportWorkbenchesContent = () => {
   };
 
   return (
-    <div style={{ height: '100%', paddingRight: 200 }} className="break">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Analyst workbenches'), current: true }]} />
-      <ImportMenu />
+    <div style={{ height: '100%' }} className="break">
+      {isNewImportScreensEnabled ? (
+        <>
+          <Breadcrumbs
+            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+          />
+          <ImportMenu/>
+        </>
+      ) : (
+        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Analyst workbenches'), current: true }]}/>
+      )}
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={!!displayDelete}
@@ -256,6 +272,13 @@ const ImportWorkbenchesContent = () => {
           initialValues={initialValues}
           preloadedPaginationProps={preloadedPaginationProps}
           taskScope='IMPORT'
+          onLineClick={(file: ImportWorkbenchesContentFileLine_file$data) => {
+            const { id, metaData, uploadStatus } = file;
+            const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
+            if (!isProgress && !(metaData?.errors && metaData?.errors.length > 0)) {
+              window.location.pathname = `/dashboard/data/import/pending/${toB64(id)}`;
+            }
+          }}
           actions={(file: ImportWorkbenchesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
@@ -265,7 +288,11 @@ const ImportWorkbenchesContent = () => {
                   <Tooltip title={t_i18n('Download this file')}>
                     <IconButton
                       disabled={isProgress}
-                      href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(id)}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        window.location.pathname = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(id)}`;
+                      }}
                       aria-haspopup="true"
                       color={'primary'}
                       size="small"
@@ -278,7 +305,11 @@ const ImportWorkbenchesContent = () => {
                   <IconButton
                     disabled={isProgress}
                     color={'primary'}
-                    onClick={() => setDisplayDelete(id)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      event.preventDefault();
+                      setDisplayDelete(id);
+                    }}
                     size="small"
                   >
                     <DeleteOutlined fontSize="small" />

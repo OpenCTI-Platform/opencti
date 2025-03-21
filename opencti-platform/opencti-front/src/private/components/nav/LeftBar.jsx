@@ -225,6 +225,7 @@ const LeftBar = () => {
   } = useAuth();
   const { isFeatureEnable } = useHelper();
   const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -885,7 +886,7 @@ const LeftBar = () => {
                 </StyledTooltip>
               )}
             </Security>
-            {isDraftFeatureEnabled && !draftContext && (
+            {isDraftFeatureEnabled && !draftContext && !isNewImportScreensEnabled && (
               <Security needs={[KNOWLEDGE]}>
                 <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
                   <MenuItem
@@ -935,7 +936,11 @@ const LeftBar = () => {
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: 'Entities' },
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: 'Relationships' },
                   { granted: isGrantedToIngestion && !draftContext, link: '/dashboard/data/ingestion', label: 'Ingestion' },
-                  { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: 'Import' },
+                  {
+                    granted: isGrantedToImport && !draftContext,
+                    link: `/dashboard/data/import${isNewImportScreensEnabled ? '/file' : ''}`,
+                    label: 'Import',
+                  },
                   { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: 'Processing' },
                   { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: 'Data sharing' },
                   ...(isEnterpriseEdition ? [{ granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: 'Restriction' }] : []),
