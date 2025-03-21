@@ -23,6 +23,7 @@ import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import { UserUserRenewTokenMutation } from '@components/settings/users/__generated__/UserUserRenewTokenMutation.graphql';
 import Tooltip from '@mui/material/Tooltip';
+import DialogTitle from '@mui/material/DialogTitle';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import UserEdition from './UserEdition';
@@ -53,7 +54,6 @@ import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ItemCopy from '../../../../components/ItemCopy';
 import { maskString } from '../../../../utils/String';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const startDate = yearsAgo(1);
 const endDate = now();

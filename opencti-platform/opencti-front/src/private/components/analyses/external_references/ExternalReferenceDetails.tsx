@@ -12,12 +12,12 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
+import DialogTitle from '@mui/material/DialogTitle';
 import { ExternalReferenceDetails_externalReference$data } from './__generated__/ExternalReferenceDetails_externalReference.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemCreators from '../../../../components/ItemCreators';
 import Transition from '../../../../components/Transition';
 import type { Theme } from '../../../../components/Theme';
-import DialogTitle from '@mui/material/DialogTitle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

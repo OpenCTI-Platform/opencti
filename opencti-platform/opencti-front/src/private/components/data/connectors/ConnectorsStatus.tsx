@@ -21,6 +21,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
 import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
+import DialogTitle from '@mui/material/DialogTitle';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -34,7 +35,6 @@ import type { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import SortConnectorsHeader from './SortConnectorsHeader';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const interval$ = interval(FIVE_SECONDS);
 

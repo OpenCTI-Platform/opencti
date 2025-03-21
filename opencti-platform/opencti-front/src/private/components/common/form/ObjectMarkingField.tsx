@@ -9,6 +9,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import { ObjectMarkingFieldAllowedMarkingQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldAllowedMarkingQuery.graphql';
 import { ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldOtherUserAllowedMarkingsQuery.graphql';
+import DialogTitle from '@mui/material/DialogTitle';
 import useAuth from '../../../../utils/hooks/useAuth';
 import ItemIcon from '../../../../components/ItemIcon';
 import Transition from '../../../../components/Transition';
@@ -20,7 +21,6 @@ import { Option } from './ReferenceField';
 import { filterMarkingsOutFor } from '../../../../utils/markings/markingsFiltering';
 import { isEmptyField } from '../../../../utils/utils';
 import { fetchQuery } from '../../../../relay/environment';
-import DialogTitle from '@mui/material/DialogTitle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
