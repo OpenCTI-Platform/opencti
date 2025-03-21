@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { callWithTimeout } from '@opentelemetry/sdk-metrics/build/esnext/utils';
 import { logApp } from '../../config/conf';
-import { FunctionalError, UnknownError } from '../../config/errors';
 import { queryAi, queryNLQAi } from '../../database/ai-llm';
 import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
@@ -48,6 +47,7 @@ import { paginatedForPathWithEnrichment } from '../internal/document/document-do
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
 import { NLQPromptTemplate } from './ai-nlq-utils';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { FunctionalError, UnknownError } from '../../config/errors';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../../schema/stixMetaObject';
 
