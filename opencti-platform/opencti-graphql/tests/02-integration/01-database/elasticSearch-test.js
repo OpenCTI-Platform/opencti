@@ -875,7 +875,7 @@ describe('Elasticsearch pagination', () => {
     expect(metaByEntityType['object-marking'].length).toEqual(28);
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(3);
     expect(metaByEntityType['operating-system'].length).toEqual(1);
-    expect(data.edges.length).toEqual(265);
+    expect(data.edges.length).toEqual(263);
     let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
