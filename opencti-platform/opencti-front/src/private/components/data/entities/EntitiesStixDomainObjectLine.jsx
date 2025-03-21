@@ -9,6 +9,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -60,10 +61,9 @@ const EntitiesStixDomainObjectLineComponent = ({
   const { fd } = useFormatter();
   const link = `${resolveLink(node.entity_type)}/${node.id}`;
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={link}
     >
@@ -146,7 +146,7 @@ const EntitiesStixDomainObjectLineComponent = ({
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

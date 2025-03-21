@@ -162,9 +162,9 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
           </Button>
           <Dialog
             open={displayApprove}
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ paper: { elevation: 1 } }}
             keepMounted={true}
-            TransitionComponent={Transition}
+            slots={{ transition: Transition }}
             onClose={() => setDisplayApprove(false)}
           >
             <DialogTitle>

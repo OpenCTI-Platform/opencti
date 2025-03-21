@@ -6,7 +6,6 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import { MoreVert } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -92,6 +91,13 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
     <ListItem
       sx={listItemSx}
       divider={true}
+      secondaryAction={
+        <DeleteOperationPopover
+          mainEntityId={data.id}
+          deletedCount={data.deleted_elements.length}
+          paginationOptions={paginationOptions}
+        />
+      }
     >
       <ListItemIcon
         style={{ minWidth: 40 }}
@@ -133,13 +139,6 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
           </div>
         }
       />
-      <ListItemSecondaryAction>
-        <DeleteOperationPopover
-          mainEntityId={data.id}
-          deletedCount={data.deleted_elements.length}
-          paginationOptions={paginationOptions}
-        />
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };
@@ -153,6 +152,11 @@ export const DeleteOperationLineDummy: React.FC<DeleteOperationLineDummyProps> =
     <ListItem
       sx={listItemSx}
       divider={true}
+      secondaryAction={
+        <IconButton disabled={true} aria-haspopup="true" size="large">
+          <MoreVert />
+        </IconButton>
+      }
     >
       <ListItemIcon>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
@@ -176,11 +180,6 @@ export const DeleteOperationLineDummy: React.FC<DeleteOperationLineDummyProps> =
           </div>
         }
       />
-      <ListItemSecondaryAction>
-        <IconButton disabled={true} aria-haspopup="true" size="large">
-          <MoreVert />
-        </IconButton>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

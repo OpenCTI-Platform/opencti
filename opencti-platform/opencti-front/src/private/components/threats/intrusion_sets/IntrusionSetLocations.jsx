@@ -8,11 +8,11 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
+import { ListItemButton } from '@mui/material';
 import AddLocations from './AddLocations';
 import { addLocationsMutationRelationDelete } from './AddLocationsLines';
 import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
@@ -93,25 +93,7 @@ class IntrusionSetLocationsComponent extends Component {
                   key={location.id}
                   dense={true}
                   divider={true}
-                  button={true}
-                  component={Link}
-                  to={`${link}/${location.id}`}
-                >
-                  <ListItemIcon>
-                    <ListItemIcon>
-                      {flag ? (
-                        <img
-                          style={{ width: 20 }}
-                          src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                          alt={location.name}
-                        />
-                      ) : (
-                        <ItemIcon type={location.entity_type} />
-                      )}
-                    </ListItemIcon>
-                  </ListItemIcon>
-                  <ListItemText primary={location.name} />
-                  <ListItemSecondaryAction>
+                  secondaryAction={
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
                         aria-label="Remove"
@@ -121,7 +103,27 @@ class IntrusionSetLocationsComponent extends Component {
                         <LinkOff />
                       </IconButton>
                     </Security>
-                  </ListItemSecondaryAction>
+                  }
+                >
+                  <ListItemButton
+                    component={Link}
+                    to={`${link}/${location.id}`}
+                  >
+                    <ListItemIcon>
+                      <ListItemIcon>
+                        {flag ? (
+                          <img
+                            style={{ width: 20 }}
+                            src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                            alt={location.name}
+                          />
+                        ) : (
+                          <ItemIcon type={location.entity_type} />
+                        )}
+                      </ListItemIcon>
+                    </ListItemIcon>
+                    <ListItemText primary={location.name} />
+                  </ListItemButton>
                 </ListItem>
               );
             })}

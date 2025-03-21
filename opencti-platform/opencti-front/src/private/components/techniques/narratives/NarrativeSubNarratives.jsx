@@ -3,14 +3,14 @@ import * as PropTypes from 'prop-types';
 import { compose, filter } from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { SpeakerNotesOutlined, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
+import { ListItemButton } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
 import AddSubNarrative from './AddSubNarrative';
 import { addSubNarrativesMutationRelationDelete } from './AddSubNarrativesLines';
 import { commitMutation } from '../../../../relay/environment';
@@ -63,15 +63,7 @@ class NarrativeSubNarrativesComponent extends Component {
                 key={subNarrative.id}
                 dense={true}
                 divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/techniques/narratives/${subNarrative.id}`}
-              >
-                <ListItemIcon>
-                  <SpeakerNotesOutlined color="primary" />
-                </ListItemIcon>
-                <ListItemText primary={subNarrative.name} />
-                <ListItemSecondaryAction>
+                secondaryAction={
                   <IconButton
                     aria-label="Remove"
                     onClick={this.removeSubNarrative.bind(
@@ -82,7 +74,17 @@ class NarrativeSubNarrativesComponent extends Component {
                   >
                     <LinkOff />
                   </IconButton>
-                </ListItemSecondaryAction>
+                }
+              >
+                <ListItemButton
+                  component={Link}
+                  to={`/dashboard/techniques/narratives/${subNarrative.id}`}
+                >
+                  <ListItemIcon>
+                    <SpeakerNotesOutlined color="primary" />
+                  </ListItemIcon>
+                  <ListItemText primary={subNarrative.name} />
+                </ListItemButton>
               </ListItem>
             );
           })}

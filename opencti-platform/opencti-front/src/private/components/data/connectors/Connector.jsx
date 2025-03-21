@@ -641,18 +641,16 @@ const ConnectorComponent = ({ connector, relay }) => {
                       <Typography variant="body1" gutterBottom={true}>
                         {nsdt(connector.connector_info?.last_run_datetime)}
                       </Typography>
-                    </>
-                  ) : (connector.connector_state
-                      && connectorStateConverted !== null
-                      && checkLastRunExistingInState && checkLastRunIsNumber
-                    ? (<>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Last run (from State)')}
-                      </Typography>
-                      <Typography variant="body1" gutterBottom={true}>
-                        {nsdt(lastRunConverted)}
-                      </Typography>
-                    </>)
+                    </>) : (connector.connector_state
+                        && connectorStateConverted !== null
+                        && checkLastRunExistingInState && checkLastRunIsNumber ? (<>
+                          <Typography variant="h3" gutterBottom={true}>
+                            {t_i18n('Last run (from State)')}
+                          </Typography>
+                          <Typography variant="body1" gutterBottom={true}>
+                            {nsdt(lastRunConverted)}
+                          </Typography>
+                        </>)
                     : (<>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Last run')}
@@ -715,10 +713,10 @@ const ConnectorComponent = ({ connector, relay }) => {
         </Grid>
       </Grid>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayDelete}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>
@@ -743,10 +741,10 @@ const ConnectorComponent = ({ connector, relay }) => {
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayResetState}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseResetState}
       >
         <DialogContent>
@@ -782,10 +780,10 @@ const ConnectorComponent = ({ connector, relay }) => {
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayClearWorks}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseClearWorks}
       >
         <DialogContent>

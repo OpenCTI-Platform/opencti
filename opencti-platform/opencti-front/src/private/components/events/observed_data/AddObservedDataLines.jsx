@@ -4,11 +4,11 @@ import { graphql, createPaginationContainer } from 'react-relay';
 import { map, filter, head, compose, pathOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { CheckCircle, WorkOutline } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -126,11 +126,10 @@ class AddObservedDataLinesContainer extends Component {
             ? `(${observedData.external_id})`
             : '';
           return (
-            <ListItem
+            <ListItemButton
               key={observedData.id}
               classes={{ root: classes.menuItem }}
               divider={true}
-              button={true}
               onClick={this.toggleObservedData.bind(this, observedData)}
             >
               <ListItemIcon>
@@ -154,7 +153,7 @@ class AddObservedDataLinesContainer extends Component {
                   limit={1}
                 />
               </div>
-            </ListItem>
+            </ListItemButton>
           );
         })}
       </List>
