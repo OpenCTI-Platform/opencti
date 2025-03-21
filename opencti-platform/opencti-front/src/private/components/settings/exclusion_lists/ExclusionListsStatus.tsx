@@ -3,7 +3,6 @@ import { ExclusionListsStatusQuery, ExclusionListsStatusQuery$variables } from '
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/styles';
 import React, { FunctionComponent, useEffect } from 'react';
-import { EventRepeatOutlined, UpdateOutlined } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import type { Theme } from 'src/components/Theme';
 import { interval } from 'rxjs';
@@ -57,21 +56,22 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
   }, []);
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={4}>
-        <Typography variant={'h4'}>
-          {t_i18n('Status')}
-        </Typography>
+    <Grid container spacing={2} style={{ minHeight: '8rem' }}>
+      <Grid item xs={2}>
         <Paper
           variant="outlined"
           style={{
             display: 'flex',
             padding: theme.spacing(2),
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             alignItems: 'center',
+            flexDirection: 'column',
           }}
           className={'paper-for-grid'}
         >
+          <Typography variant={'h4'}>
+            {t_i18n('Status')}
+          </Typography>
           <ItemBoolean
             neutralLabel={'In progress'}
             label={'Synchronized'}
@@ -86,40 +86,77 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
           )}
         </Paper>
       </Grid>
-      <Grid item xs={4}>
-        <Typography variant={'h4'}>
-          {t_i18n('Last modification date')}
-        </Typography>
+      <Grid item xs={2}>
         <Paper
           variant="outlined"
           style={{
             display: 'flex',
             padding: theme.spacing(2),
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             alignItems: 'center',
+            flexDirection: 'column',
           }}
           className={'paper-for-grid'}
         >
+          <Typography variant={'h4'}>
+            {t_i18n('Last modification date')}
+          </Typography>
           <div>{fldt(refreshDate)}</div>
-          <UpdateOutlined color="primary" style={{ fontSize: 40 }} />
         </Paper>
       </Grid>
-      <Grid item xs={4}>
-        <Typography variant={'h4'}>
-          {t_i18n('Current cache version date')}
-        </Typography>
+      <Grid item xs={2}>
         <Paper
           variant="outlined"
           style={{
             display: 'flex',
             padding: theme.spacing(2),
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             alignItems: 'center',
+            flexDirection: 'column',
           }}
           className={'paper-for-grid'}
         >
+          <Typography variant={'h4'}>
+            {t_i18n('Current cache version date')}
+          </Typography>
           <div>{fldt(cacheDate)}</div>
-          <EventRepeatOutlined color="primary" style={{ fontSize: 40 }} />
+        </Paper>
+      </Grid>
+      <Grid item xs={2}>
+        <Paper
+          variant="outlined"
+          style={{
+            display: 'flex',
+            padding: theme.spacing(2),
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+          }}
+          className={'paper-for-grid'}
+        >
+          <Typography variant={'h4'}>
+            {t_i18n('Current cache version date')}
+          </Typography>
+          <div>{fldt(cacheDate)}</div>
+        </Paper>
+      </Grid>
+      <Grid item xs={2}>
+        <Paper
+          variant="outlined"
+          style={{
+            display: 'flex',
+            padding: theme.spacing(2),
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+          className={'paper-for-grid'}
+        >
+          <Typography variant={'h4'} style={{ textWrap: 'nowrap', textOverflow: 'ellipsis' }}>
+            {t_i18n('Current cache version date with a long title')}
+          </Typography>
+          <div>{fldt(cacheDate)}</div>
         </Paper>
       </Grid>
     </Grid>

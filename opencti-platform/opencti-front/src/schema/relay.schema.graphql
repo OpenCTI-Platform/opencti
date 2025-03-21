@@ -2079,6 +2079,11 @@ enum ConnectorCurrentStatus {
   stopped
 }
 
+type ManagerContractConfiguration {
+  key: String
+  value: String
+}
+
 type Connector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
@@ -2106,6 +2111,11 @@ type Connector implements BasicObject & InternalObject {
   config: ConnectorConfig
   works(status: String): [Work]
   is_managed: Boolean
+  manager_id: ID
+  manager_current_status: String
+  manager_requested_status: String
+  manager_contract_image: String
+  manager_contract_configuration: [ManagerContractConfiguration!]
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
 }
@@ -8023,9 +8033,9 @@ type Query {
   role(id: String!): Role
   capabilities(first: Int): CapabilityConnection
   connector(id: String!): Connector
-  connectors: [Connector!]
+  connectors: [Connector!]!
   connectorManager(managerId: ID!): ConnectorManager!
-  connectorManagers: [ConnectorManager!]
+  connectorManagers: [ConnectorManager!]!
   connectorsForManager(managerId: ID!): [ManagedConnector!]
   connectorsForWorker: [Connector]
   connectorsForExport: [Connector]
