@@ -9,8 +9,6 @@ import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
 import { addUser, assignGroupToUser, findById as findUserById, isUserTheLastAdmin, userDelete } from '../../../src/domain/user';
 import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
-import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
-import { logApp } from '../../../src/config/conf';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.

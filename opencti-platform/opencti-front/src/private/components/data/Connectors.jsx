@@ -1,5 +1,4 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import IngestionMenu from './IngestionMenu';
 import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
@@ -8,42 +7,41 @@ import ConnectorsStatus, { connectorsStatusQuery } from './connectors/Connectors
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+import PageContainer from '../../../components/PageContainer';
 
 const Connectors = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Connectors | Ingestion | Data'));
   return (
-    <div className={classes.container}>
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connectors'), current: true }]} />
-      <IngestionMenu/>
-      <QueryRenderer
-        query={workersStatusQuery}
-        render={({ props }) => {
-          if (props) {
-            return <WorkersStatus data={props} />;
-          }
-          return <Loader variant={LoaderVariant.container} />;
-        }}
-      />
-      <QueryRenderer
-        query={connectorsStatusQuery}
-        render={({ props }) => {
-          if (props) {
-            return <ConnectorsStatus data={props} />;
-          }
-          return <Loader variant={LoaderVariant.container} />;
-        }}
-      />
-    </div>
+    <>
+      <IngestionMenu />
+      <PageContainer withRightMenu withGap>
+        <Breadcrumbs
+          variant="list"
+          elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connectors'), current: true }]}
+          noMargin
+        />
+        <QueryRenderer
+          query={workersStatusQuery}
+          render={({ props }) => {
+            if (props) {
+              return <WorkersStatus data={props} />;
+            }
+            return <Loader variant={LoaderVariant.container} />;
+          }}
+        />
+        <QueryRenderer
+          query={connectorsStatusQuery}
+          render={({ props }) => {
+            if (props) {
+              return <ConnectorsStatus data={props} />;
+            }
+            return <Loader variant={LoaderVariant.container} />;
+          }}
+        />
+      </PageContainer>
+    </>
   );
 };
 

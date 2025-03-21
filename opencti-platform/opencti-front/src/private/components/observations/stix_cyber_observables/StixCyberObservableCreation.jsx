@@ -938,7 +938,7 @@ const StixCyberObservableCreation = ({
             >
               <Close fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="subtitle2">{t_i18n('Create an observable')}</Typography>
+            <Typography variant="h2" style={{ textWrap: 'nowrap', margin: 0 }}>{t_i18n('Create an observable')}</Typography>
             {!isFromBulkRelation && status.type
               ? <BulkTextModalButton
                   onClick={() => setBulkOpen(true)}
