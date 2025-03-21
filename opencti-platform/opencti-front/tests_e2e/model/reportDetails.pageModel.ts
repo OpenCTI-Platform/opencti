@@ -54,6 +54,6 @@ export default class ReportDetailsPage {
     .filter({ hasText: 'Update' })
     .click();
     await this.page.getByRole('button', { name: 'Delete' }).click();
-    return this.page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
+    return this.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
   }
 }
