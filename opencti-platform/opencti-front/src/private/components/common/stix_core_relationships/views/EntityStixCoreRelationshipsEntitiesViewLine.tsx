@@ -319,6 +319,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
                 variant="inList"
                 markingDefinitions={stixCoreObject.objectMarking ?? []}
                 limit={1}
+                onClick={undefined}
               />
             </div>
           </div>

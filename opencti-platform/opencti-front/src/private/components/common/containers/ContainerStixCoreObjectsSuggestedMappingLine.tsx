@@ -152,6 +152,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
                 variant="inList"
                 markingDefinitions={matchedEntity.objectMarking ?? []}
                 limit={1}
+                onClick={undefined}
               />
             </div>
             <div

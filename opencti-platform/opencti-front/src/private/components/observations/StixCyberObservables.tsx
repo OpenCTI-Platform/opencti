@@ -158,6 +158,9 @@ const StixCyberObservables: FunctionComponent = () => {
                   open={false}
                   speeddial={false}
                   controlledDialStyles={{ marginLeft: 1 }}
+                  type={undefined}
+                  defaultCreatedBy={undefined}
+                  inputValue=''
                 />
               </Security>
             }
@@ -171,6 +174,9 @@ const StixCyberObservables: FunctionComponent = () => {
               contextual={false}
               open={false}
               speeddial={false}
+              type={undefined}
+              defaultCreatedBy={undefined}
+              inputValue=''
             />
           </Security>
         )}

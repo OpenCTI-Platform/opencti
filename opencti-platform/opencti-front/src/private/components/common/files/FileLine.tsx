@@ -25,7 +25,7 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { ListItemButton } from '@mui/material';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useTheme } from '@mui/styles';
-import { OverridableStringUnion } from '@mui/types';
+import type { OverridableStringUnion } from '@mui/types';
 import useAuth from '../../../../utils/hooks/useAuth';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
@@ -311,7 +311,12 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         </Tooltip>
         <ListItemSecondaryAction style={{ display: 'flex', alignItems: 'center' }}>
           {!isProgress && !isFail && !isOutdated && (
-            <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1} />
+            <ItemMarkings
+              variant="inList"
+              markingDefinitions={fileMarkings}
+              limit={1}
+              onClick={undefined}
+            />
           )}
           {!disableImport && (
             <Tooltip title={t_i18n('Launch an import of this file')}>

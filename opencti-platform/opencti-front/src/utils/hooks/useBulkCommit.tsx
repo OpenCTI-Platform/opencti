@@ -35,7 +35,7 @@ function useBulkCommit<M extends MutationParameters>({
   const [currentCount, setCurrentCount] = useState(0);
   const [inError, setInError] = useState<[VariablesOf<M>, Error][]>([]);
 
-  const onBulkCompleted = useRef<UseBulkCommit_commits<M>['onCompleted']>();
+  const onBulkCompleted = useRef<UseBulkCommit_commits<M>['onCompleted']>(undefined);
 
   const resetBulk = () => {
     setCount(0);

@@ -410,6 +410,7 @@ EntityDetailsComponentProps
         <ItemMarkings
           markingDefinitions={stixCoreObject.objectMarking}
           limit={2}
+          onClick={undefined}
         />
         ) : (
           '-'
