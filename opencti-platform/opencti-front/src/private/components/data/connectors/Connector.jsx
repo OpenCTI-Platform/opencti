@@ -44,6 +44,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -688,6 +689,9 @@ const ConnectorComponent = ({ connector, relay }) => {
         TransitionComponent={Transition}
         onClose={handleCloseResetState}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
@@ -708,7 +712,7 @@ const ConnectorComponent = ({ connector, relay }) => {
             color="secondary"
             disabled={resetting}
           >
-            {t_i18n('Reset')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -719,6 +723,9 @@ const ConnectorComponent = ({ connector, relay }) => {
         TransitionComponent={Transition}
         onClose={handleCloseClearWorks}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to clear the works of this connector?')}
@@ -736,7 +743,7 @@ const ConnectorComponent = ({ connector, relay }) => {
             color="secondary"
             disabled={clearing}
           >
-            {t_i18n('Clear')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
