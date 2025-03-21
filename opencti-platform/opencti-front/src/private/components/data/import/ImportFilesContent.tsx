@@ -24,6 +24,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { deleteNode } from '../../../../utils/store';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { getFileUri } from '../../../../utils/utils';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
   mutation ImportFilesContentFileLineDeleteMutation($fileName: String) {
@@ -126,6 +128,8 @@ const ImportFilesContent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Upload Files | Import | Data'));
+  const { isFeatureEnable } = useHelper();
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   const [displayDelete, setDisplayDelete] = useState<string>('');
 
   const initialValues = {
@@ -135,7 +139,11 @@ const ImportFilesContent = () => {
     orderAsc: false,
   };
 
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ImportFilesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<ImportFilesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
   const { filters } = viewStorage;
   const finalFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['InternalFile']);
   const queryPaginationOptions = {
@@ -197,9 +205,17 @@ const ImportFilesContent = () => {
   };
 
   return (
-    <div style={{ height: '100%', paddingRight: 200 }} className="break">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]} />
-      <ImportMenu />
+    <div style={{ height: '100%', paddingRight: isNewImportScreensEnabled ? 0 : 200 }} className="break">
+      {isNewImportScreensEnabled ? (
+        <>
+          <Breadcrumbs
+            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+          />
+          <ImportMenu/>
+        </>
+      ) : (
+        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]}/>
+      )}
       <Dialog
         PaperProps={{ elevation: 1 }}
         open={!!displayDelete}
@@ -251,6 +267,13 @@ const ImportFilesContent = () => {
           initialValues={initialValues}
           preloadedPaginationProps={preloadedPaginationProps}
           taskScope={'IMPORT'}
+          onLineClick={(file: ImportFilesContentFileLine_file$data) => {
+            const { id, metaData, uploadStatus } = file;
+            const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
+            if (!isProgress && !(metaData?.errors && metaData?.errors.length > 0)) {
+              window.location.pathname = getFileUri(id);
+            }
+          }}
           actions={(file: ImportFilesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
@@ -260,7 +283,11 @@ const ImportFilesContent = () => {
                   <Tooltip title={t_i18n('Download this file')}>
                     <IconButton
                       disabled={isProgress}
-                      href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(id)}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        event.preventDefault();
+                        window.location.pathname = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(id)}`;
+                      }}
                       aria-haspopup="true"
                       color={'primary'}
                       size="small"
@@ -273,7 +300,11 @@ const ImportFilesContent = () => {
                   <IconButton
                     disabled={isProgress}
                     color={'primary'}
-                    onClick={() => setDisplayDelete(id)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      event.preventDefault();
+                      setDisplayDelete(id);
+                    }}
                     size="small"
                   >
                     <DeleteOutlined fontSize="small" />
