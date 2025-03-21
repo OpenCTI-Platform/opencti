@@ -3506,7 +3506,7 @@
   "You are about to disable the \"Enterprise Edition\" mode. Please note that this action will disable access to certain advanced features (organization segregation, automation, file indexing etc.).": "엔터프라이즈 에디션 모드를 비활성화하려고 합니다. 이 작업을 수행하면 특정 고급 기능(조직 분리, 자동화, 파일 인덱싱 등)에 대한 액세스가 비활성화된다는 점에 유의하세요.",
   "You are about to disable the \"Enterprise Edition\" mode. Please note that this action will disable access to certain advanced features (Organization segregation, Automation, File indexing, Activity monitoring...). However, your existing data will remain intact and will not be lost.": "엔터프라이즈 에디션 모드를 비활성화하려고 합니다. 이 작업을 수행하면 특정 고급 기능(조직 분리, 자동화, 파일 인덱싱, 활동 모니터링...)에 액세스할 수 없게 된다는 점에 유의하세요. 하지만 기존 데이터는 그대로 유지되며 손실되지 않습니다.",
   "You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: \"infected\") in order to protect your workstation and share it safely.": "아티팩트(또는 바이너리)와 관련된 파일을 다운로드하려고 합니다. 악성 파일일 수 있습니다. 워크스테이션을 보호하고 안전하게 공유하기 위해 암호화된 아카이브로 다운로드할 수 있습니다(암호: &``감염된&``).",
-  "You are about to switch to Draft mode. All your OpenCTI Plateform will be in draft. The selected Draft will be the draft by default.": "초안 모드로 전환하려고 합니다. 모든 OpenCTI 플레이트폼이 초안 상태가 됩니다. 선택한 초안이 기본적으로 초안이 됩니다.",
+  "You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.": "초안 모드로 전환하려고 합니다. 모든 OpenCTI 플레이트폼이 초안 상태가 됩니다. 선택한 초안이 기본적으로 초안이 됩니다.",
   "You are about to validate this mapping, it will add suggested entities to your container.": "이 매핑의 유효성을 검사하려고 하며, 컨테이너에 제안된 엔티티를 추가합니다.",
   "You are not allowed to do this.": "이 작업을 수행할 수 없습니다.",
   "You are not authorized to see this data.": "이 데이터를 볼 권한이 없습니다.",
