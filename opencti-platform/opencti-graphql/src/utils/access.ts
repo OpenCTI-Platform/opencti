@@ -46,6 +46,7 @@ export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
+export const EXPIRATION_MANAGER_USER_UUID = '21763151-f598-4f49-97c5-9051b2d25a5c';
 export const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
 export const AUTOMATION_MANAGER_USER_UUID = 'c49fe040-2dad-412d-af07-ce639204ad55';
 export const DECAY_MANAGER_USER_UUID = '7f176d74-9084-4d23-8138-22ac78549547';
@@ -337,6 +338,40 @@ export const TELEMETRY_MANAGER_USER: AuthUser = {
   no_creators: false,
   restrict_delete: false,
 };
+
+export const EXPIRATION_MANAGER_USER: AuthUser = {
+  entity_type: 'User',
+  id: EXPIRATION_MANAGER_USER_UUID,
+  internal_id: EXPIRATION_MANAGER_USER_UUID,
+  individual_id: undefined,
+  name: 'EXPIRATION MANAGER',
+  user_email: 'EXPIRATION MANAGER',
+  inside_platform_organization: true,
+  origin: { user_id: EXPIRATION_MANAGER_USER_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_marking: [],
+  max_shareable_marking: [],
+  default_marking: [],
+  all_marking: [],
+  api_token: '',
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
+  effective_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  user_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  no_creators: false,
+  restrict_delete: false,
+};
+
 export interface AuthorizedMember { id: string, access_right: string }
 
 class TracingContext {
@@ -374,7 +409,8 @@ export const INTERNAL_USERS = {
   [RULE_MANAGER_USER.id]: RULE_MANAGER_USER,
   [AUTOMATION_MANAGER_USER.id]: AUTOMATION_MANAGER_USER,
   [DECAY_MANAGER_USER.id]: DECAY_MANAGER_USER,
-  [REDACTED_USER.id]: REDACTED_USER
+  [EXPIRATION_MANAGER_USER.id]: EXPIRATION_MANAGER_USER,
+  [REDACTED_USER.id]: REDACTED_USER,
 };
 
 export const INTERNAL_USERS_WITHOUT_REDACTED = {
@@ -382,6 +418,7 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [RETENTION_MANAGER_USER.id]: RETENTION_MANAGER_USER,
   [RULE_MANAGER_USER.id]: RULE_MANAGER_USER,
   [AUTOMATION_MANAGER_USER.id]: AUTOMATION_MANAGER_USER,
+  [EXPIRATION_MANAGER_USER.id]: EXPIRATION_MANAGER_USER,
   [DECAY_MANAGER_USER.id]: DECAY_MANAGER_USER,
 };
 
