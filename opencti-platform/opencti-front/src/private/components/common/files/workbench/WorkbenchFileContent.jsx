@@ -65,7 +65,6 @@ import Transition from '../../../../../components/Transition';
 import { markingDefinitionsLinesSearchQuery } from '../../../settings/MarkingDefinitionsQuery';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
-import useHelper from '../../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -330,8 +329,6 @@ const WorkbenchFileContentComponent = ({
     vocabularyAttributes,
   } = useAttributes();
   const { fieldToCategory, getFieldDefinition } = useVocabularyCategory();
-  const { isFeatureEnable } = useHelper();
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const classes = useStyles();
@@ -4184,7 +4181,6 @@ const WorkbenchFileContentComponent = ({
       </div>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <div style={{ float: 'right', display: 'flex', gap: 10 }}>
-          {isDraftFeatureEnabled && (
           <Button
             variant="outlined"
             color="primary"
@@ -4193,7 +4189,6 @@ const WorkbenchFileContentComponent = ({
           >
             {t_i18n('Convert to draft')}
           </Button>
-          )}
           <Button
             variant="contained"
             onClick={handleOpenValidate}
