@@ -25,7 +25,6 @@ let nlqModel: ChatOpenAI | ChatMistralAI | null = null;
 
 if (AI_ENABLED && AI_TOKEN) {
   switch (AI_TYPE) {
-
     case 'mistralai':
       client = new Mistral({
         serverURL: isEmptyField(AI_ENDPOINT) ? undefined : AI_ENDPOINT,
@@ -70,7 +69,7 @@ if (AI_ENABLED && AI_TOKEN) {
         apiKey: AI_TOKEN,
         temperature: 0,
         configuration: {
-          baseURL: AI_ENDPOINT ? AI_ENDPOINT : undefined,
+          baseURL: AI_ENDPOINT || undefined,
         },
       });
 
