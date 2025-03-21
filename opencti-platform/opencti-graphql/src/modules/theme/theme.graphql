@@ -43,5 +43,5 @@ type Mutation {
     commitMessage: String,
     references: [String],
   ): Theme @auth(for: [KNOWLEDGE_KNUPDATE])
-  themeImport(file: Upload!): String! @auth(for: [KNOWLEDGE_KNUPDATE])
+  themeImport(file: Upload!): Theme @auth(for: [KNOWLEDGE_KNUPDATE])
 }

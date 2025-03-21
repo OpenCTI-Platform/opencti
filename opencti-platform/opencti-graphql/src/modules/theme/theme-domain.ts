@@ -1,3 +1,5 @@
+import { toBase64 } from 'openai/core';
+import type { FileHandle } from 'fs/promises';
 import { BUS_TOPICS } from '../../config/conf';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { listEntitiesPaginated, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
@@ -10,8 +12,6 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
 import { type BasicStoreEntityTheme } from './theme-types';
 import pjson from '../../../package.json';
-import { toBase64 } from 'openai/core';
-import type { FileHandle } from 'fs/promises';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { checkConfigurationImport } from '../workspace/workspace-domain';
 
@@ -190,5 +190,5 @@ export const themeImport = async (
     },
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_THEME].ADDED_TOPIC, importThemeCreation, user);
-  return themeId;
+  return importThemeCreation;
 };

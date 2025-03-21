@@ -13970,7 +13970,7 @@ export type Mutation = {
   themeAdd?: Maybe<Theme>;
   themeDelete?: Maybe<Scalars['ID']['output']>;
   themeFieldPatch?: Maybe<Theme>;
-  themeImport: Scalars['String']['output'];
+  themeImport?: Maybe<Theme>;
   threatActorGroupAdd?: Maybe<ThreatActorGroup>;
   threatActorGroupEdit?: Maybe<ThreatActorGroupEditMutations>;
   threatActorIndividualAdd?: Maybe<ThreatActorIndividual>;
@@ -38036,7 +38036,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   themeAdd?: Resolver<Maybe<ResolversTypes['Theme']>, ParentType, ContextType, RequireFields<MutationThemeAddArgs, 'input'>>;
   themeDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationThemeDeleteArgs, 'id'>>;
   themeFieldPatch?: Resolver<Maybe<ResolversTypes['Theme']>, ParentType, ContextType, RequireFields<MutationThemeFieldPatchArgs, 'id' | 'input'>>;
-  themeImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationThemeImportArgs, 'file'>>;
+  themeImport?: Resolver<Maybe<ResolversTypes['Theme']>, ParentType, ContextType, RequireFields<MutationThemeImportArgs, 'file'>>;
   threatActorGroupAdd?: Resolver<Maybe<ResolversTypes['ThreatActorGroup']>, ParentType, ContextType, RequireFields<MutationThreatActorGroupAddArgs, 'input'>>;
   threatActorGroupEdit?: Resolver<Maybe<ResolversTypes['ThreatActorGroupEditMutations']>, ParentType, ContextType, RequireFields<MutationThreatActorGroupEditArgs, 'id'>>;
   threatActorIndividualAdd?: Resolver<Maybe<ResolversTypes['ThreatActorIndividual']>, ParentType, ContextType, RequireFields<MutationThreatActorIndividualAddArgs, 'input'>>;

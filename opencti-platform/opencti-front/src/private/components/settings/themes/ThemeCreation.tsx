@@ -85,6 +85,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
     theme_logo: '',
     theme_logo_collapsed: '',
     theme_logo_login: '',
+    system_default: false,
   };
 
   const handleSubmit = (

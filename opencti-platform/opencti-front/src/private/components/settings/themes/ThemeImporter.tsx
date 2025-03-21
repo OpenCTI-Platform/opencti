@@ -11,7 +11,7 @@ import { ThemeImporterImportMutation } from './__generated__/ThemeImporterImport
 
 const importMutation = graphql`
   mutation ThemeImporterImportMutation($file: Upload!) {
-    themeImport(file: $file)
+    themeImport(file: $file) { id }
   }
 `;
 
@@ -39,24 +39,16 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
     const file = inputElement.files?.[0];
     if (!file) return;
     commit({
-      variables: { file: file },
-      updater: (store: RecordSourceSelectorProxy) => insertNode(
-        store,
-        'Pagination_themes',
-        paginationOptions,
-        /* TODO: Why is this failing? Cannot find root field `themeImport`, no
-         * such field is defined on GraphQL document
-         * `ThemeImporterImportMutation`.
-         */
-        'themeImport',
-      ),
-      onCompleted: (data) => {
-        console.log("Completed import", { data });
-        handleRefetch();
+      variables: { file },
+      updater: (store: RecordSourceSelectorProxy) => {
+        return insertNode(
+          store,
+          'Pagination_themes',
+          paginationOptions,
+          'themeImport',
+        );
       },
-      onError: (error) => {
-        console.log("Error on import", { error });
-      },
+      onCompleted: () => { handleRefetch(); },
     });
   };
 

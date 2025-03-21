@@ -9026,7 +9026,7 @@ type Mutation {
   themeAdd(input: ThemeAddInput!): Theme
   themeDelete(id: ID!): ID
   themeFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Theme
-  themeImport(file: Upload!): String!
+  themeImport(file: Upload!): Theme
   aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format, language: String): String
   aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String
   aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String

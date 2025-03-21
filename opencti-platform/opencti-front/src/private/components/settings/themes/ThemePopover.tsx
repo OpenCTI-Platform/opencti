@@ -31,7 +31,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     id: themeData.id,
     name: themeData.name,
     ...deserializeThemeManifest(themeData.manifest),
-  }
+  };
 
   const handleOpen = (event: React.UIEvent) => {
     setAnchorEl(event.currentTarget);
