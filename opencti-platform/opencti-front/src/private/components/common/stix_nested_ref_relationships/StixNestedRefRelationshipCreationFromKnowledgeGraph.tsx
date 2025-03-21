@@ -58,7 +58,6 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraph: FunctionComponent<Sti
             <IconButton
               color="primary"
               disabled={true}
-              size="large"
             >
               <ReadMoreOutlined />
             </IconButton>
