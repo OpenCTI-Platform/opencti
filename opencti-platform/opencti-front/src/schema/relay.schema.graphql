@@ -721,6 +721,7 @@ type SubType {
   id: ID!
   label: String!
   statuses: [Status!]!
+  statusesRequestAccess: [Status!]!
   workflowEnabled: Boolean
   settings: EntitySetting
 }
@@ -754,6 +755,11 @@ enum StatusOrdering {
   _score
 }
 
+enum StatusScope {
+  GLOBAL
+  REQUEST_ACCESS
+}
+
 type Status {
   id: ID!
   template_id: String!
@@ -761,6 +767,7 @@ type Status {
   type: String!
   order: Int!
   disabled: Boolean
+  scope: StatusScope
 }
 
 type StatusConnection {
@@ -776,6 +783,7 @@ type StatusEdge {
 input StatusAddInput {
   template_id: String!
   order: Int!
+  scope: StatusScope!
 }
 
 input StatusTemplateAddInput {
@@ -1447,6 +1455,7 @@ type Settings implements InternalObject & BasicObject {
   messages_administration: [SettingsMessage!]
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
+  request_access_enabled: Boolean!
   editContext: [EditUserContext!]
 }
 
@@ -7933,8 +7942,9 @@ type Query {
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): StreamCollectionConnection!
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
+  statusTemplatesByStatusScope(search: String, scope: StatusScope): [StatusTemplate]
   status(id: String!): Status
-  statuses(first: Int, after: ID, orderBy: StatusOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StatusConnection
+  statuses(first: Int, after: ID, orderBy: StatusOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, scope: StatusScope): StatusConnection
   backgroundTask(id: String!): BackgroundTask
   backgroundTasks(first: Int, after: ID, orderBy: BackgroundTasksOrdering, orderMode: OrderingMode, includeAuthorities: Boolean, filters: FilterGroup, search: String): BackgroundTaskConnection
   rule(id: String!): Rule
@@ -8934,6 +8944,8 @@ type Mutation {
   caseIncidentDelete(id: ID!): ID
   caseRfiAdd(input: CaseRfiAddInput!): CaseRfi
   caseRfiDelete(id: ID!): ID
+  caseRfiApprove(id: ID!): CaseRfi
+  caseRfiDecline(id: ID!): CaseRfi
   caseRftAdd(input: CaseRftAddInput!): CaseRft
   caseRftDelete(id: ID!): ID
   feedbackAdd(input: FeedbackAddInput!): Feedback
@@ -9062,6 +9074,8 @@ type Mutation {
   disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
   savedFilterAdd(input: SavedFilterAddInput!): SavedFilter
   savedFilterDelete(id: ID!): ID
+  requestAccessAdd(input: RequestAccessAddInput!): ID
+  requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -10638,6 +10652,9 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   information_types: [String!]
   severity: String
   priority: String
+  x_opencti_request_access: String
+  requestAccessConfiguration: RequestAccessConfiguration
+  x_opencti_workflow_id: String
 }
 
 enum CaseRfisOrdering {
@@ -10696,6 +10713,7 @@ input CaseRfiAddInput {
   information_types: [String!]
   caseTemplates: [String!]
   authorized_members: [MemberAccessInput!]
+  x_opencti_request_access: String
 }
 
 type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -10994,6 +11012,7 @@ type EntitySetting implements InternalObject & BasicObject {
   updated_at: DateTime!
   overview_layout_customization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
+  requestAccessConfiguration: RequestAccessConfiguration
 }
 
 enum EntitySettingsOrdering {
@@ -12710,4 +12729,45 @@ input SavedFilterAddInput {
   name: String!
   filters: String!
   scope: String
+}
+
+enum RequestAccessType {
+  organization_sharing
+}
+
+type RequestAccessMember {
+  id: ID!
+  name: String!
+}
+
+type RequestAccessConfiguration {
+  id: ID!
+  approved_status: Status
+  declined_status: Status
+  approval_admin: [RequestAccessMember]
+}
+
+type RequestAccessWorkflow {
+  approved_workflow_id: String
+  declined_workflow_id: String
+  approval_admin: [ID]
+}
+
+type RequestAccessStatus {
+  id: ID!
+  template_id: String
+  statusTemplate: [StatusTemplate]
+}
+
+input RequestAccessAddInput {
+  request_access_reason: String
+  request_access_entities: [ID!]!
+  request_access_members: [ID!]!
+  request_access_type: RequestAccessType
+}
+
+input RequestAccessConfigureInput {
+  approved_status_id: ID
+  declined_status_id: ID
+  approval_admin: [ID]
 }

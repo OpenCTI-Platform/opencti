@@ -166,6 +166,9 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   information_types: [String!]
   severity: String
   priority: String
+  x_opencti_request_access: String
+  requestAccessConfiguration: RequestAccessConfiguration
+  x_opencti_workflow_id: String
 }
 
 # Ordering
@@ -242,9 +245,12 @@ input CaseRfiAddInput {
   information_types: [String!]
   caseTemplates: [String!]
   authorized_members: [MemberAccessInput!]
+  x_opencti_request_access: String
 }
 
 type Mutation {
   caseRfiAdd(input: CaseRfiAddInput!): CaseRfi @auth
   caseRfiDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  caseRfiApprove(id: ID!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  caseRfiDecline(id: ID!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
 }

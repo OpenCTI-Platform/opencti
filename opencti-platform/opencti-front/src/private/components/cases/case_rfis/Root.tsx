@@ -59,6 +59,7 @@ const caseRfiQuery = graphql`
       name
       x_opencti_graph_data
       ...CaseUtils_case
+      ...CaseRfi_caseRfi
       ...CaseRfiKnowledge_case
       ...FileImportViewer_entity
       ...FileExportViewer_entity

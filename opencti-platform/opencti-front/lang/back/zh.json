@@ -633,6 +633,8 @@
   "Representation": "代表",
   "Representations": "表述",
   "Representative": "代表",
+  "Request access data as json field": "请求以 json 字段形式访问数据",
+  "Request access workflow": "请求访问工作流程",
   "Resolves to": "解析为",
   "Resource level": "资源水平",
   "Restrict delete to its own entities": "仅限于删除自己的实体",

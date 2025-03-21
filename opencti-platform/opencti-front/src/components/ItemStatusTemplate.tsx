@@ -1,74 +1,89 @@
 import React from 'react';
 import Chip from '@mui/material/Chip';
-import makeStyles from '@mui/styles/makeStyles';
 import { ArrowRightAltOutlined } from '@mui/icons-material';
-import { SubTypeQuery$data } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
+import Box from '@mui/material/Box';
 import { useFormatter } from './i18n';
 import { hexToRGB } from '../utils/Colors';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
-    marginRight: 7,
-    textTransform: 'uppercase',
-    borderRadius: 4,
-    width: 100,
-  },
-  arrow: {
-    marginRight: 7,
-  },
-  statuses: {
-    display: 'inline-flex',
-    flexWrap: 'wrap',
-  },
-  status: {
-    display: 'inline-flex',
-  },
-}));
+export interface StatusTemplateType {
+  id: string,
+  color: string,
+  name: string,
+}
+
+export interface StatusType {
+  template: StatusTemplateType,
+  id: string,
+  order: number
+}
 
 interface ItemStatusTemplateProps {
-  statuses: NonNullable<SubTypeQuery$data['subType']>['statuses'],
-  disabled: boolean
+  statuses: StatusType[],
+  disabled: boolean,
 }
 
 const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
-  if (disabled || statuses.length === 0) {
+
+  if (disabled) {
     return (
       <Chip
-        classes={{ root: classes.chip }}
+        style={{ fontSize: 12,
+          lineHeight: '12px',
+          height: 25,
+          marginRight: 7,
+          textTransform: 'uppercase',
+          borderRadius: 4,
+          width: 100 }}
         variant="outlined"
-        label={disabled ? t_i18n('Disabled') : t_i18n('Unknown')}
+        label={t_i18n('Disabled')}
       />
     );
   }
 
+  const statusByOrder = Object.values(Object.groupBy(statuses, (({ order }) => order)));
   return (
-    <div className={classes.statuses}>
-      {statuses.map((status, idx) => (
-        <div key={status.id} className={classes.status}>
-          <Chip
-            classes={{ root: classes.chip }}
-            variant="outlined"
-            label={status.template?.name}
-            style={{
-              color: status.template?.color,
-              borderColor: status.template?.color,
-              backgroundColor: hexToRGB(
-                status.template?.color ?? '#000000',
-              ),
-            }}
-          />
-          {idx < statuses.length - 1
-            && (
-              <div className={classes.arrow}>
-                <ArrowRightAltOutlined />
-              </div>
+    <div style={{
+      display: 'inline-flex',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+    }}
+    >
+      {statusByOrder.map((statusesForIndex, order) => (
+        <div key={`statuses-order-${order}`}
+          style={{ display: 'inline-flex', alignItems: 'center', marginBottom: 8 }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {
+              statusesForIndex?.map((status) => (
+                <div key={status.id}>
+                  <Chip
+                    variant="outlined"
+                    label={status.template?.name}
+                    style={{
+                      fontSize: 12,
+                      lineHeight: '12px',
+                      height: 25,
+                      marginRight: 7,
+                      textTransform: 'uppercase',
+                      borderRadius: 4,
+                      width: 100,
+                      color: status.template?.color,
+                      borderColor: status.template?.color,
+                      backgroundColor: hexToRGB(
+                        status.template?.color ?? '#000000',
+                      ),
+                    }}
+                  />
+                </div>
+              ))
+            }
+          </div>
+          {
+            order < statusByOrder.length - 1 && (
+              <Box sx={{ display: 'flex', marginRight: 1 }}>
+                <ArrowRightAltOutlined/>
+              </Box>
             )
           }
         </div>
@@ -76,5 +91,4 @@ const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => 
     </div>
   );
 };
-
 export default ItemStatusTemplate;

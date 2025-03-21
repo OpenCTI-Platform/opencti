@@ -633,6 +633,8 @@
   "Representation": "表現",
   "Representations": "スキップ行文字",
   "Representative": "代表者",
+  "Request access data as json field": "アクセスデータをjsonフィールドでリクエスト",
+  "Request access workflow": "リクエストアクセスワークフロー",
   "Resolves to": "に解決する",
   "Resource level": "主な動機",
   "Restrict delete to its own entities": "削除を自身のエンティティに制限する",

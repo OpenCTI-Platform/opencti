@@ -682,6 +682,7 @@ type SubType {
   id: ID!
   label: String!
   statuses: [Status!]!
+  statusesRequestAccess: [Status!]!
   workflowEnabled: Boolean
   settings: EntitySetting # Simpler before moving workflow
 }
@@ -711,6 +712,12 @@ enum StatusOrdering {
   order
   _score
 }
+
+enum StatusScope {
+  GLOBAL
+  REQUEST_ACCESS
+}
+
 type Status {
   id: ID!
   template_id: String!
@@ -718,6 +725,7 @@ type Status {
   type: String!
   order: Int!
   disabled: Boolean
+  scope: StatusScope
 }
 type StatusConnection {
   pageInfo: PageInfo!
@@ -730,6 +738,7 @@ type StatusEdge {
 input StatusAddInput {
   template_id: String!
   order: Int!
+  scope: StatusScope!
 }
 input StatusTemplateAddInput {
   name: String! @constraint(minLength:2, format: "not-blank")
@@ -1369,6 +1378,7 @@ type Settings implements InternalObject & BasicObject {
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
   analytics_google_analytics_v4: String @auth
   playground_enabled: Boolean!
+  request_access_enabled: Boolean! @auth
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
 }
@@ -12877,6 +12887,10 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): StatusTemplateConnection @auth
+  statusTemplatesByStatusScope(
+    search: String
+    scope: StatusScope
+  ): [StatusTemplate] @auth
   status(id: String!): Status @auth
   statuses(
     first: Int
@@ -12885,6 +12899,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
+    scope: StatusScope
   ): StatusConnection @auth
   backgroundTask(id: String!): BackgroundTask @auth(for: [KNOWLEDGE])
   backgroundTasks(

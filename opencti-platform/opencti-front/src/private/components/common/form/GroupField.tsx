@@ -49,7 +49,7 @@ export const groupsQuery = graphql`
   }
 `;
 
-type GroupFieldOption = {
+export type GroupFieldOption = {
   label: string,
   value: string,
 };

@@ -633,6 +633,8 @@
   "Representation": "Vertretung",
   "Representations": "Vertretungen",
   "Representative": "Repräsentativ",
+  "Request access data as json field": "Zugangsdaten als json-Feld anfordern",
+  "Request access workflow": "Arbeitsablauf zur Beantragung des Zugangs",
   "Resolves to": "Löst sich auf in",
   "Resource level": "Ressourcenniveau",
   "Restrict delete to its own entities": "Löschen auf eigene Entitäten beschränken",
