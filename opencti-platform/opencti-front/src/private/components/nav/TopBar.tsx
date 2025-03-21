@@ -287,7 +287,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
           padding: 0,
-          borderBottom: !!draftContext ? `1px solid ${draftModeColor}` : 'initial',
+          borderBottom: draftContext ? `1px solid ${draftModeColor}` : 'initial',
         }}
       >
         <div className={classes.logoContainer} style={navOpen ? { width: OPEN_BAR_WIDTH } : {}}>
