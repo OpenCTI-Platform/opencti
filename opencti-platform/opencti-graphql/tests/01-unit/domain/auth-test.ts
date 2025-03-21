@@ -1,18 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { askResetPassword, generateCode, getEmail } from '../../../src/modules/auth/auth-domain';
+import { askResetPassword, generateCode, getUser } from '../../../src/modules/auth/auth-domain';
 import { AuthenticationFailure } from '../../../src/config/errors';
 
-describe('getEmail', () => {
-  it('Should be able to return user email', async () => {
-    const result = await getEmail('anais@opencti.io');
-    expect(result).toEqual('anais@opencti.io');
+describe('getUser', () => {
+  it('Should be able to return a user with an email', async () => {
+    const user = await getUser('anais@opencti.io');
+    expect(user.user_email).toEqual('anais@opencti.io');
+  });
+  it('Should be able to return a user with a name', async () => {
+    const user = await getUser('anais@opencti.io');
+    expect(user.name).toEqual('anais@opencti.io');
   });
   it('Should throw an error if no user founded', async () => {
-    expect(async () => await getEmail('noResul@opencti.io')).rejects.toThrow(AuthenticationFailure());
+    expect(async () => await getUser('noResul@opencti.io')).rejects.toThrow(AuthenticationFailure());
   });
   it('Should throw an error if user is external', async () => {
     // admin is external
-    expect(async () => await getEmail('admin@opencti.io')).rejects.toThrow('External user');
+    expect(async () => await getUser('admin@opencti.io')).rejects.toThrow('External user');
   });
 });
 
@@ -28,8 +32,12 @@ describe('generateCode', () => {
 });
 
 describe('askResetPassword', () => {
-  it('Should return true', () => {
-    const result = askResetPassword('francois.grunert@filigran.io');
+  it('Should return true with an existed user', () => {
+    const result = askResetPassword('anais@opencti.io');
+    expect(result).toBeTruthy();
+  });
+  it('Should return true with an wrong email', () => {
+    const result = askResetPassword('noResul@opencti.io');
     expect(result).toBeTruthy();
   });
 });
