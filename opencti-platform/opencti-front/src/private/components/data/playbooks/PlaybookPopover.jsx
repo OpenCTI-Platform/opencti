@@ -34,6 +34,7 @@ import Transition from '../../../../components/Transition';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
+import DialogTitle from '@mui/material/DialogTitle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -209,6 +210,9 @@ const PlaybookPopover = (props) => {
         slots={{ transition: Transition }}
         onClose={() => setDisplayStart(false)}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to start this playbook?')}
@@ -219,7 +223,7 @@ const PlaybookPopover = (props) => {
             {t_i18n('Cancel')}
           </Button>
           <Button onClick={submitStart} color="secondary" disabled={starting}>
-            {t_i18n('Start')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -230,6 +234,9 @@ const PlaybookPopover = (props) => {
         slots={{ transition: Transition }}
         onClose={() => setDisplayStop(false)}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to stop this playbook?')}
@@ -240,7 +247,7 @@ const PlaybookPopover = (props) => {
             {t_i18n('Cancel')}
           </Button>
           <Button onClick={submitStop} color="secondary" disabled={stopping}>
-            {t_i18n('Stop')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -22,6 +22,7 @@ import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const ingestionCsvPopoverDeletionMutation = graphql`
   mutation IngestionCsvPopoverDeletionMutation($id: ID!) {
@@ -239,6 +240,9 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           slots={{ transition: Transition }}
           onClose={handleCloseResetState}
         >
+          <DialogTitle>
+            {t_i18n('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t_i18n('Do you want to reset the state of this CSV ingester?')}
@@ -256,7 +260,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
               onClick={submitResetState}
               disabled={resetting}
             >
-              {t_i18n('Reset state')}
+              {t_i18n('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -267,6 +271,9 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           slots={{ transition: Transition }}
           onClose={handleCloseStart}
         >
+          <DialogTitle>
+            {t_i18n('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t_i18n('Do you want to start this CSV ingester?')}
@@ -284,7 +291,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
               color="secondary"
               disabled={starting}
             >
-              {t_i18n('Start')}
+              {t_i18n('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -295,6 +302,9 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           slots={{ transition: Transition }}
           onClose={handleCloseStop}
         >
+          <DialogTitle>
+            {t_i18n('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t_i18n('Do you want to stop this CSV ingester?')}
@@ -312,7 +322,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
               color="secondary"
               disabled={stopping}
             >
-              {t_i18n('Stop')}
+              {t_i18n('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

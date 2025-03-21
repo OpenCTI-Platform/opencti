@@ -34,6 +34,7 @@ import type { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import SortConnectorsHeader from './SortConnectorsHeader';
+import DialogTitle from '@mui/material/DialogTitle';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 const interval$ = interval(FIVE_SECONDS);
@@ -291,6 +292,9 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
         slots={{ transition: Transition }}
         onClose={() => setConnectorIdToReset(undefined)}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
@@ -313,7 +317,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             color="secondary"
             disabled={resetting}
           >
-            {t_i18n('Reset')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

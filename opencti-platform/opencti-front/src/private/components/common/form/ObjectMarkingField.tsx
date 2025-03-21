@@ -20,6 +20,7 @@ import { Option } from './ReferenceField';
 import { filterMarkingsOutFor } from '../../../../utils/markings/markingsFiltering';
 import { isEmptyField } from '../../../../utils/utils';
 import { fetchQuery } from '../../../../relay/environment';
+import DialogTitle from '@mui/material/DialogTitle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -273,18 +274,18 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         slots={{ transition: Transition }}
         onClose={handleCancellation}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('You are about to change the marking with another rank.')}
-          </DialogContentText>
-          <DialogContentText>
-            {t_i18n('Are you sure you want to make the change?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancellation}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={submitUpdate}>
-            {t_i18n('Replace')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

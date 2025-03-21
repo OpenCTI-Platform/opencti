@@ -497,6 +497,9 @@ StixCoreObjectExternalReferencesLinesContainerProps
         slots={{ transition: Transition }}
         onClose={handleCloseExternalLink}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to browse this external link?')}
@@ -505,7 +508,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         <DialogActions>
           <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={handleBrowseExternalLink}>
-            {t_i18n('Browse the link')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
