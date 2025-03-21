@@ -50,6 +50,7 @@ import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import ItemCopy from '../../../../components/ItemCopy';
 import { maskString } from '../../../../utils/String';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -786,6 +787,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         slots={{ transition: Transition }}
         onClose={handleCloseKillSession}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to kill this session?')}
@@ -800,7 +804,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             color="secondary"
             disabled={killing}
           >
-            {t_i18n('Kill')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -811,6 +815,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         slots={{ transition: Transition }}
         onClose={handleCloseKillSessions}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to kill all the sessions of this user?')}
@@ -825,7 +832,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             color="secondary"
             disabled={killing}
           >
-            {t_i18n('Kill all')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -836,6 +843,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         slots={{ transition: Transition }}
         onClose={handleCloseRenewToken}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to revoke this user token ? Once the token is revoked all access are forbidden, please verify that the token is not used by connectors or other API calls before revoking.')}
@@ -849,7 +859,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             onClick={submitRenewToken}
             color="secondary"
           >
-            {t_i18n('Revoke')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
