@@ -1,3 +1,5 @@
+import { z, ZodLiteral, ZodNever, ZodType } from 'zod';
+import type { ZodTypeDef } from 'zod';
 import {
   modeDescription,
   modeKeys,
@@ -9,9 +11,7 @@ import {
   relationshipDescription,
   filterKeysSmall,
   FilterEnum,
-} from "./ai-nlq-values";
-import { z, ZodLiteral, ZodNever, ZodType } from "zod";
-import type { ZodTypeDef } from "zod";
+} from './ai-nlq-values';
 
 /**
  * Creates an array of Zod literal schemas with descriptions, based on the provided filter keys and filter definitions.
@@ -26,7 +26,7 @@ export function createZodLiteralList(
 ): Array<z.ZodLiteral<string>> {
   return filterKeys.map((key: string) => {
     // Extract the description from the FilterObject's definition.
-    return z.literal(key).describe(FilterObject[key]["description"]);
+    return z.literal(key).describe(FilterObject[key].description);
   });
 }
 
@@ -60,7 +60,7 @@ export function createZodLiteralUnion(
   if (literalList.length === 0) {
     resultUnion = z.never();
   } else if (literalList.length === 1) {
-    resultUnion = literalList[0];
+    [resultUnion] = literalList;
   } else {
     // z.union requires a tuple with at least two schemas.
     resultUnion = z.union(
@@ -86,7 +86,7 @@ export function createZodLiteralUnion(
 const operatorKeysWithDescription = createZodLiteralUnion(
   operatorKeys,
   operatorDescription,
-  "The operator used to filter results."
+  'The operator used to filter results.'
 );
 
 // =======================
@@ -96,7 +96,7 @@ const operatorKeysWithDescription = createZodLiteralUnion(
 const modeKeysWithDescriptsions = createZodLiteralUnion(
   modeKeys,
   modeDescription,
-  "The logical mode (or/and) used to filter results."
+  'The logical mode (or/and) used to filter results.'
 );
 
 // =======================
@@ -106,42 +106,42 @@ const modeKeysWithDescriptsions = createZodLiteralUnion(
 const RelationshipKeysSmallWithDescriptions = createZodLiteralUnion(
   relationshipKeysSmall,
   relationshipDescription,
-  "List of STIX relationship types recognized by OpenCTI."
+  'List of STIX relationship types recognized by OpenCTI.'
 );
 
 const RegaringOfRelationshipSchema = z.object({
   key: z
-    .literal("relationship_type")
+    .literal('relationship_type')
     .describe(
       "The key of a 'regardingOf' relationship type filter, always 'relationship_type'."
     ),
   values: z
     .array(RelationshipKeysSmallWithDescriptions)
-    .describe("A list of relationship type filter values."),
+    .describe('A list of relationship type filter values.'),
 });
 
 const RegaringOfEntityNameSchema = z.object({
   key: z
-    .literal("id")
+    .literal('id')
     .describe("The key of a 'regardingOf' entity name filter, always 'id'."),
-  values: z.array(z.string()).describe("A list of entity name filter values."),
+  values: z.array(z.string()).describe('A list of entity name filter values.'),
 });
 
 const RegardingOfFilterItem = z
   .object({
     key: z
-      .literal("regardingOf")
+      .literal('regardingOf')
       .describe("The key of the 'regardingOf' filter, always 'regardingOf'."),
     values: z
       .array(
         z.union([RegaringOfRelationshipSchema, RegaringOfEntityNameSchema])
       )
-      .describe("A list of entity name or relationship type filter values."),
+      .describe('A list of entity name or relationship type filter values.'),
     operator: operatorKeysWithDescription,
     mode: modeKeysWithDescriptsions,
   })
   .describe(
-    "A filter used to further refine entity filtering based on associated entities and/or relationships."
+    'A filter used to further refine entity filtering based on associated entities and/or relationships.'
   );
 
 // =======================
@@ -151,22 +151,22 @@ const RegardingOfFilterItem = z
 const entityObservableKeysWithDescriprition = createZodLiteralUnion(
   entityObservableKeys,
   entityObservableDescription,
-  "List of STIX/OpenCTI entity types recognized by OpenCTI."
+  'List of STIX/OpenCTI entity types recognized by OpenCTI.'
 );
 
 const EntityTypeFilterItem = z
   .object({
     key: z
-      .literal("entity_type")
+      .literal('entity_type')
       .describe("The key of the entity type filter, always 'entity_type'."),
     values: z
       .array(entityObservableKeysWithDescriprition)
-      .describe("A list of entity type filter values."),
+      .describe('A list of entity type filter values.'),
     operator: operatorKeysWithDescription,
     mode: modeKeysWithDescriptsions,
   })
   .describe(
-    "A filter used to filter entities by their type as defined by the STIX standard."
+    'A filter used to filter entities by their type as defined by the STIX standard.'
   );
 
 // =======================
@@ -180,8 +180,8 @@ const filterKeys = filterKeysSmall.filter(
 const GenericFilterItem = z.object({
   key: z
     .enum(filterKeys as [string, ...string[]])
-    .describe("The key of the filter."),
-  values: z.array(z.string()).describe("A list of filter values."),
+    .describe('The key of the filter.'),
+  values: z.array(z.string()).describe('A list of filter values.'),
   operator: operatorKeysWithDescription,
   mode: modeKeysWithDescriptsions,
 });
@@ -195,6 +195,6 @@ export const OutputSchema = z.object({
     .array(
       z.union([EntityTypeFilterItem, RegardingOfFilterItem, GenericFilterItem])
     )
-    .describe("The list of filters applied to refine the OpenCTI query."),
+    .describe('The list of filters applied to refine the OpenCTI query.'),
   mode: modeKeysWithDescriptsions,
 });

@@ -1,9 +1,6 @@
-import {
-  ChatPromptTemplate,
-  FewShotChatMessagePromptTemplate,
-} from "@langchain/core/prompts";
-import { jsonFewShotExamples } from "./ai-nlq-few-shot-examples";
-import { OutputSchema } from "./ai-nlq-schema";
+import { ChatPromptTemplate, FewShotChatMessagePromptTemplate } from '@langchain/core/prompts';
+import { jsonFewShotExamples } from './ai-nlq-few-shot-examples';
+import { OutputSchema } from './ai-nlq-schema';
 
 // =======================
 // Few Shot Examples Formatting
@@ -22,8 +19,8 @@ const examples = jsonFewShotExamples.map((item) => ({
 // =======================
 
 const examplePrompt = ChatPromptTemplate.fromMessages([
-  ["human", "{input}"],
-  ["ai", "{output}"],
+  ['human', '{input}'],
+  ['ai', '{output}'],
 ]);
 
 const fewShotPrompt = new FewShotChatMessagePromptTemplate({
@@ -81,8 +78,6 @@ export const systemPrompt = `You are an expert in Cyber Threat Intelligence (CTI
       "operator": "eq",
       "mode": "or"
     }}
-  - Ensure numerical values are correctly parsed and use the appropriate comparison operator
-    (e.g., \"gt\" for greater than, \"lt\" for less than).
   
   #### If filtering data by TLP classification (e.g., "TLP:RED", "TLP:AMBER"):
   - Ensure the **correct entity type is included**:
@@ -154,7 +149,7 @@ export const systemPrompt = `You are an expert in Cyber Threat Intelligence (CTI
   `;
 
 export const NLQPromptTemplate = ChatPromptTemplate.fromMessages([
-  ["system", systemPrompt],
+  ['system', systemPrompt],
   fewShotPrompt as unknown as ChatPromptTemplate,
-  ["human", "{text}"],
+  ['human', '{text}'],
 ]);
