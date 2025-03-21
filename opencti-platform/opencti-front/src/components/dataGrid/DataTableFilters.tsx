@@ -19,6 +19,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
+import SavedFilterButton from 'src/components/saved_filters/SavedFilterButton';
 import FilterIconButton from '../FilterIconButton';
 import { useFormatter } from '../i18n';
 import { DataTableDisplayFiltersProps, DataTableFiltersProps, DataTableVariant } from './dataTableTypes';
@@ -31,6 +32,7 @@ import Transition from '../Transition';
 import DataTablePagination from './DataTablePagination';
 import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 import { useDataTableContext } from './components/DataTableContext';
+import SavedFiltersInput from '../saved_filters/SavedFiltersInput';
 
 export const DataTableDisplayFilters = ({
   availableFilterKeys,
@@ -51,7 +53,7 @@ export const DataTableDisplayFilters = ({
   }
 
   return (
-    <div id="filter-container" style={{ minHeight: 10 }}>
+    <div id="filter-container" style={{ minHeight: 10, display: 'flex', alignItems: 'center' }}>
       <FilterIconButton
         helpers={helpers}
         availableFilterKeys={availableFilterKeys}
@@ -67,6 +69,7 @@ export const DataTableDisplayFilters = ({
         }}
         redirection
       />
+      <SavedFilterButton />
     </div>
   );
 };
@@ -135,6 +138,7 @@ const DataTableFilters = ({
               availableRelationFilterTypes={availableRelationFilterTypes}
             />
           )}
+          <SavedFiltersInput/>
         </div>
         <div style={{ display: 'flex' }}>
           {(variant === DataTableVariant.default) && (
