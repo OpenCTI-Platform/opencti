@@ -41,16 +41,23 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
   // Select all
   await dataTable.getCheckAll().click();
   await taskPopup.launchAddLabel('background-task-filter-add-label', true);
+
+  // Need to wait after click on "Launch" that the popup goes away.
+  await expect(taskPopup.getPage().getByText('Launch a background task')).not.toBeVisible({ timeout: 3000 });
+
   await expect(incidentPage.getPage()).toBeVisible();
 
-  // Clear filter on label
+  // Clear filter on label 'background-task'
   await filter.removeLastFilter();
 
   // Filter with a search
-  await search.addSearch('"Find this incident in test please"');
-  await expect(dataTable.getNumberElements(1)).toBeVisible();
+  await search.addSearch('findMeWithSearchID');
+  await expect(dataTable.getNumberElements(1), 'An exact search with no label should match only one incident.').toBeVisible();
   await dataTable.getCheckAll().click();
   await taskPopup.launchAddLabel('background-task-search-add-label', false);
+  // Need to wait after click on "Launch" that the popup goes away.
+  await expect(taskPopup.getPage().getByText('Launch a background task')).not.toBeVisible({ timeout: 3000 });
+
   await sleep(3000); // Wait 3 secs for task creation
   await tasksPage.goto();
   await expect(tasksPage.getPage()).toBeVisible();
