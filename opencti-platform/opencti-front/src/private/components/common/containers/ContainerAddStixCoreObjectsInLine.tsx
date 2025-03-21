@@ -231,7 +231,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
           alignItems: 'center',
         }}
       >
-        <Typography variant='subtitle2'>
+        <Typography variant="h2" style={{ textWrap: 'nowrap', margin: 0 }}>
           {showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
         </Typography>
         <div style={{ marginRight: '10px' }}>
