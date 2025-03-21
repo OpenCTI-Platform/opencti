@@ -216,6 +216,9 @@ const LeftBar = () => {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
     settings: { platform_whitemark },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -911,7 +914,7 @@ const LeftBar = () => {
                 ],
               )}
             </Security>
-            {!draftContext && (
+            {!draftContext && !isNewImportScreensEnabled && (
               <Security needs={[KNOWLEDGE]}>
                 <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
                   <MenuItem
