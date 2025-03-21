@@ -132,4 +132,5 @@ import './disseminationList/disseminationList-graphql';
 import './savedFilter/savedFilter-graphql';
 import './requestAccess/requestAccess-graphql';
 import './fintelDesign/fintelDesign-graphql';
+import './auth/auth-graphql';
 // endregion

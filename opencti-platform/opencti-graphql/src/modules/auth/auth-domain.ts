@@ -3,8 +3,12 @@ import { UnsupportedError } from '../../config/errors';
 import ejs from 'ejs';
 import { BASIC_EMAIL_TEMPLATE } from '../../utils/emailTemplates/basicEmailTemplate';
 import { sendMail } from '../../database/smtp';
-import type { AuthUser } from '../../types/user';
-import type { User, UserAccount } from '../../generated/graphql';
+import type { AuthContext } from '../../types/user';
+import type { User } from '../../generated/graphql';
+import { getEntityFromCache } from '../../database/cache';
+import type { BasicStoreSettings } from '../../types/settings';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { ADMIN_USER } from '../../../tests/utils/testQuery';
 
 export const getUser = async (email: string): Promise<User> => {
   const user: any = await getUserByEmail(email);
@@ -28,10 +32,11 @@ interface SendMailArgs {
   html: string;
 }
 
-export const askResetPassword = async (email: string) => {
+export const askSendToken = async (context: AuthContext, email: string) => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
+  const resetToken = generateCode();
   try {
     const { user_email, name } = await getUser(email);
-    const resetToken = generateCode();
     const body = 'Hi '
       + name
       + ',</br>'
@@ -40,7 +45,7 @@ export const askResetPassword = async (email: string) => {
       + resetToken;
 
     const sendMailArgs: SendMailArgs = {
-      from: 'admin@opencti.io', // TODO : get the platform email
+      from: settings.platform_email,
       to: user_email,
       subject: resetToken + ' is your recovery code of your OpenCTI account',
       html: ejs.render(BASIC_EMAIL_TEMPLATE, { body: body }),
