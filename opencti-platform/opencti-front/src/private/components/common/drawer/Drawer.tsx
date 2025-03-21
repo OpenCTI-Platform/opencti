@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useState, forwardRef } from 'react';
+import React, { CSSProperties, useEffect, useState, forwardRef, ReactNode } from 'react';
 import DrawerMUI from '@mui/material/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
@@ -73,7 +73,7 @@ export interface DrawerControlledDialProps {
 export type DrawerControlledDialType = ({ onOpen, onClose }: DrawerControlledDialProps) => React.ReactElement;
 
 interface DrawerProps {
-  title: string;
+  title: ReactNode;
   children?:
   | ((props: { onClose: () => void }) => React.ReactElement)
   | React.ReactElement
@@ -178,7 +178,7 @@ const Drawer = forwardRef(({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>{title}</Typography>
+          <Typography variant="h2" style={{ textWrap: 'nowrap', margin: 0 }}>{title}</Typography>
           {context && <SubscriptionAvatars context={context} />}
           {header}
         </div>

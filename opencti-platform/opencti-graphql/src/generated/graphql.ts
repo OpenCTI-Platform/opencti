@@ -3761,6 +3761,11 @@ export type Connector = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
+  manager_contract_configuration?: Maybe<Array<ManagerContractConfiguration>>;
+  manager_contract_image?: Maybe<Scalars['String']['output']>;
+  manager_current_status?: Maybe<Scalars['String']['output']>;
+  manager_id?: Maybe<Scalars['ID']['output']>;
+  manager_requested_status?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   only_contextual?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -13248,6 +13253,12 @@ export type ManagerConfiguration = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
 };
 
+export type ManagerContractConfiguration = {
+  __typename?: 'ManagerContractConfiguration';
+  key?: Maybe<Scalars['String']['output']>;
+  value?: Maybe<Scalars['String']['output']>;
+};
+
 export type MappedEntity = {
   __typename?: 'MappedEntity';
   isEntityInContainer: Scalars['Boolean']['output'];
@@ -19760,8 +19771,8 @@ export type Query = {
   city?: Maybe<City>;
   connector?: Maybe<Connector>;
   connectorManager: ConnectorManager;
-  connectorManagers?: Maybe<Array<ConnectorManager>>;
-  connectors?: Maybe<Array<Connector>>;
+  connectorManagers: Array<ConnectorManager>;
+  connectors: Array<Connector>;
   connectorsForAnalysis?: Maybe<Array<Maybe<Connector>>>;
   connectorsForExport?: Maybe<Array<Maybe<Connector>>>;
   connectorsForImport?: Maybe<Array<Maybe<Connector>>>;
@@ -31827,6 +31838,7 @@ export type ResolversTypes = ResolversObject<{
   MalwaresOrdering: MalwaresOrdering;
   ManagedConnector: ResolverTypeWrapper<Omit<ManagedConnector, 'connector_user'> & { connector_user?: Maybe<ResolversTypes['User']> }>;
   ManagerConfiguration: ResolverTypeWrapper<BasicStoreEntityManagerConfiguration>;
+  ManagerContractConfiguration: ResolverTypeWrapper<ManagerContractConfiguration>;
   MappedEntity: ResolverTypeWrapper<Omit<MappedEntity, 'matchedEntity'> & { matchedEntity: ResolversTypes['StixCoreObject'] }>;
   MappedEntityInput: MappedEntityInput;
   MappingAnalysis: ResolverTypeWrapper<Omit<MappingAnalysis, 'mappedEntities'> & { mappedEntities?: Maybe<Array<ResolversTypes['MappedEntity']>> }>;
@@ -32652,6 +32664,7 @@ export type ResolversParentTypes = ResolversObject<{
   MalwareEditMutations: Omit<MalwareEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Malware']>, contextPatch?: Maybe<ResolversParentTypes['Malware']>, fieldPatch?: Maybe<ResolversParentTypes['Malware']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Malware']> };
   ManagedConnector: Omit<ManagedConnector, 'connector_user'> & { connector_user?: Maybe<ResolversParentTypes['User']> };
   ManagerConfiguration: BasicStoreEntityManagerConfiguration;
+  ManagerContractConfiguration: ManagerContractConfiguration;
   MappedEntity: Omit<MappedEntity, 'matchedEntity'> & { matchedEntity: ResolversParentTypes['StixCoreObject'] };
   MappedEntityInput: MappedEntityInput;
   MappingAnalysis: Omit<MappingAnalysis, 'mappedEntities'> & { mappedEntities?: Maybe<Array<ResolversParentTypes['MappedEntity']>> };
@@ -34252,6 +34265,11 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ManagerContractConfiguration']>>, ParentType, ContextType>;
+  manager_contract_image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  manager_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  manager_requested_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   only_contextual?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -37507,6 +37525,12 @@ export type ManagerConfigurationResolvers<ContextType = any, ParentType extends 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ManagerContractConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ManagerContractConfiguration'] = ResolversParentTypes['ManagerContractConfiguration']> = ResolversObject<{
+  key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MappedEntityResolvers<ContextType = any, ParentType extends ResolversParentTypes['MappedEntity'] = ResolversParentTypes['MappedEntity']> = ResolversObject<{
   isEntityInContainer?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   matchedEntity?: Resolver<ResolversTypes['StixCoreObject'], ParentType, ContextType>;
@@ -39335,8 +39359,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
-  connectorManagers?: Resolver<Maybe<Array<ResolversTypes['ConnectorManager']>>, ParentType, ContextType>;
-  connectors?: Resolver<Maybe<Array<ResolversTypes['Connector']>>, ParentType, ContextType>;
+  connectorManagers?: Resolver<Array<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
+  connectors?: Resolver<Array<ResolversTypes['Connector']>, ParentType, ContextType>;
   connectorsForAnalysis?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForExport?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForImport?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
@@ -42853,6 +42877,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MalwareEditMutations?: MalwareEditMutationsResolvers<ContextType>;
   ManagedConnector?: ManagedConnectorResolvers<ContextType>;
   ManagerConfiguration?: ManagerConfigurationResolvers<ContextType>;
+  ManagerContractConfiguration?: ManagerContractConfigurationResolvers<ContextType>;
   MappedEntity?: MappedEntityResolvers<ContextType>;
   MappingAnalysis?: MappingAnalysisResolvers<ContextType>;
   MarkingDefinition?: MarkingDefinitionResolvers<ContextType>;
