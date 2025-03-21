@@ -3103,6 +3103,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@langchain/mistralai@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@langchain/mistralai@npm:0.2.0"
+  dependencies:
+    "@mistralai/mistralai": "npm:^1.3.1"
+    uuid: "npm:^10.0.0"
+    zod: "npm:^3.23.8"
+    zod-to-json-schema: "npm:^3.22.4"
+  peerDependencies:
+    "@langchain/core": ">=0.3.7 <0.4.0"
+  checksum: 10/4eef5208b3bfa8f37e74458fce4d5fe9ca5a8a39043c574c82d39807a7a154a4e385deeeef6dfcbbe5c937d6ac6a1d5d033fc920247a27e040c21035722fa3d3
+  languageName: node
+  linkType: hard
+
 "@langchain/openai@npm:0.4.4":
   version: 0.4.4
   resolution: "@langchain/openai@npm:0.4.4"
@@ -3134,6 +3148,17 @@ __metadata:
   peerDependencies:
     zod: ">= 3"
   checksum: 10/ff5869f5c829b050b2ec10338270e3c9b916ea0e84064ee0cabf47b91f4b34f8810a2b7495c21fe8c192ffa1f5f015344d23dff4112f20c5a6f488777dac1ad9
+  languageName: node
+  linkType: hard
+
+"@mistralai/mistralai@npm:^1.3.1":
+  version: 1.5.2
+  resolution: "@mistralai/mistralai@npm:1.5.2"
+  dependencies:
+    zod-to-json-schema: "npm:^3.24.1"
+  peerDependencies:
+    zod: ">= 3"
+  checksum: 10/3398739e7d1337263e526d530271bc7a58786ccb1e1d59253a39969f9d7a65459b1817d8f654fbdefec4d5182dad12a06e498c23306c9bd5c78a2541e24cb417
   languageName: node
   linkType: hard
 
@@ -11569,6 +11594,7 @@ __metadata:
     "@graphql-tools/utils": "npm:10.8.4"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:0.3.40"
+    "@langchain/mistralai": "npm:^0.2.0"
     "@langchain/openai": "npm:0.4.4"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:1.3.6"
@@ -15084,7 +15110,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.24.2, zod@npm:^3.22.4":
+"zod-to-json-schema@npm:^3.22.4, zod-to-json-schema@npm:^3.24.1":
+  version: 3.24.4
+  resolution: "zod-to-json-schema@npm:3.24.4"
+  peerDependencies:
+    zod: ^3.24.1
+  checksum: 10/ff4d67add8090f915c28476116ded009a25d23eee0947f7d0b7e41cc90643a0c6f6c3e2a9793f5d334499521d678fcd5a7bfc403af6d120d7619e3f187e42e58
+  languageName: node
+  linkType: hard
+
+"zod@npm:3.24.2, zod@npm:^3.22.4, zod@npm:^3.23.8":
   version: 3.24.2
   resolution: "zod@npm:3.24.2"
   checksum: 10/604c62a8cf8e330d78b106a557f4b44f5d14845d20b1360a423ccc09b58cb8525ccf7e4b40cf1bd4852d22393d2c67774b5817ec5a2fedab25f543b36ed15943

@@ -46,8 +46,8 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
 import { NLQPromptTemplate } from './ai-nlq-utils';
-import { FunctionalError, UnknownError } from '../../config/errors';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { FunctionalError, UnknownError } from '../../config/errors';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../../schema/stixMetaObject';
 
@@ -423,7 +423,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   } catch (error) {
     throw UnknownError('Error when calling the NLQ model', { error, promptValue });
   }
-  const parsedResponse = rawResponse as unknown as FilterGroup;
+  const parsedResponse = { ...rawResponse as Record<string, unknown>, filterGroups: [] } as unknown as FilterGroup;
 
   // 02. check the filters validity
   try {
@@ -431,6 +431,8 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   } catch (error) {
     throw FunctionalError(`The NLQ filters response format is not correct: ${JSON.stringify(parsedResponse)}`, { error, data: parsedResponse });
   }
+  // Log structured parsedResponse
+  // console.log('---parsedResponse--\n', JSON.stringify(parsedResponse, null, 2));
 
   // 03. map entities ids
   const { filters: filtersResult, notResolvedValues } = await filtersEntityIdsMapping(context, user, parsedResponse);
