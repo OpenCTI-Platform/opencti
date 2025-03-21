@@ -1,7 +1,8 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
+import { Option } from '@components/common/form/ReferenceField';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
 import { graphql, UseMutationConfig, usePreloadedQuery } from 'react-relay';
@@ -33,7 +34,7 @@ import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { RelayError } from '../../../../../relay/relayTypes';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
-import { FieldOption } from '../../../../../utils/field';
+import useHelper from '../../../../../utils/hooks/useHelper';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -104,7 +105,7 @@ interface ImportFilesDialogProps {
 }
 
 export type OptionsFormValues = {
-  fileMarkings: FieldOption[];
+  fileMarkings: Option[];
   associatedEntity: AssociatedEntityOption | null;
   validationMode?: 'draft' | 'workbench';
   name: string;
@@ -112,6 +113,9 @@ export type OptionsFormValues = {
 
 const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
+
+  const { isFeatureEnable } = useHelper();
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
 
   const draftContext = useDraftContext();
   const {
@@ -321,7 +325,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   const optionsContext = useFormik<OptionsFormValues>({
     enableReinitialize: true,
     initialValues: {
-      fileMarkings: [] as FieldOption[],
+      fileMarkings: [] as Option[],
       associatedEntity: entity ? { value: entity.id, label: entity.name || entity.id, type: entity.entity_type } : null,
       validationMode: importMode === 'manual' ? 'draft' : undefined,
       name: '',
@@ -371,13 +375,26 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
         // If already in draft do show redirect
         if (inDraftContext) return (<></>);
 
+        if (optionsContext.values.associatedEntity?.value) {
+          return (
+            <Button
+              color="secondary"
+              onClick={() => setDraftContext()}
+              component={Link}
+              to={`${resolveLink(optionsContext.values.associatedEntity.type)}/${optionsContext.values.associatedEntity.value}/files`}
+            >
+              {t_i18n('Navigate to entity')}
+            </Button>
+          );
+        }
+
         return (
           // Switch to draft mode and navigate to files draft
           <Button
             color="secondary"
             onClick={() => setDraftContext()}
             component={Link}
-            to={`/dashboard/drafts/${draftId}/files`}
+            to={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/files` : `/dashboard/drafts/${draftId}/files`}
           >
             {t_i18n('Navigate to draft')}
           </Button>
@@ -403,7 +420,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
                 color="secondary"
                 onClick={() => handleClose()}
                 component={Link}
-                to={'/dashboard/data/import'}
+                to={'/dashboard/data/import/file'}
               >
                 {t_i18n('Navigate to import')}
               </Button>
@@ -478,8 +495,17 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
 };
 
 const ImportFilesDialog = ({ open, entityId, handleClose }: ImportFilesDialogProps) => {
+  const [dialogKey, setDialogKey] = useState(0);
+
+  useEffect(() => {
+    // Resets all dialog state on close by forcing a complete component remount via key change
+    if (!open) {
+      setDialogKey((prev) => prev + 1);
+    }
+  }, [open]);
+
   return (
-    <ImportFilesProvider initialValue={{ entityId }}>
+    <ImportFilesProvider key={`import-files-${dialogKey}`} initialValue={{ entityId }}>
       <ImportFiles open={open} handleClose={handleClose}></ImportFiles>
     </ImportFilesProvider>
   );

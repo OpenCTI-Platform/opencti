@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
+import { Add, ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
@@ -17,9 +17,9 @@ import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
+import Fab from '@mui/material/Fab';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import ImportMenu from '../ImportMenu';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
 import { TEN_SECONDS } from '../../../../utils/Time';
@@ -158,7 +158,6 @@ const ImportContentComponent = ({
   relay,
   importFiles,
   pendingFiles,
-  isNewImportScreensEnabled,
   inDraftOverview,
 }) => {
   const theme = useTheme();
@@ -306,7 +305,7 @@ const ImportContentComponent = ({
   const buttonValue = t_i18n('Create Workbench');
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
   return (
-    <div style={{ paddingRight: isNewImportScreensEnabled && !inDraftOverview ? 200 : 0 }}>
+    <div>
       {!inDraftOverview && (<>
         <Breadcrumbs
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
@@ -322,7 +321,6 @@ const ImportContentComponent = ({
           {buttonValue}
         </Button>
       </>)}
-      {isNewImportScreensEnabled && !inDraftOverview && <ImportMenu/>}
       <Grid
         container={true}
         spacing={3}
@@ -348,12 +346,12 @@ const ImportContentComponent = ({
               {importFilesEdges.length ? (
                 <List>
                   {importFilesEdges.map((file) => file?.node && (
-                  <FileLine
-                    key={file.node.id}
-                    file={file.node}
-                    connectors={ importConnsPerFormat[file.node.metaData.mimetype] }
-                    handleOpenImport={handleOpenImport}
-                  />
+                    <FileLine
+                      key={file.node.id}
+                      file={file.node}
+                      connectors={importConnsPerFormat[file.node.metaData.mimetype]}
+                      handleOpenImport={handleOpenImport}
+                    />
                   ))}
                 </List>
               ) : (
@@ -427,7 +425,7 @@ const ImportContentComponent = ({
               </List>
             </Paper>
           </div>
-        </Grid>)}
+          </Grid>)}
       </Grid>
       <div>
         <Formik
@@ -607,13 +605,24 @@ const ImportContentComponent = ({
           )}
         </Formik>
         {!inDraftOverview && (
-        <WorkbenchFileCreator
-          handleCloseCreate={handleCloseCreate}
-          openCreate={displayCreate}
-          onCompleted={onCreateWorkbenchCompleted}
-        />
+          <WorkbenchFileCreator
+            handleCloseCreate={handleCloseCreate}
+            openCreate={displayCreate}
+            onCompleted={onCreateWorkbenchCompleted}
+          />
         )}
       </div>
+      {!inDraftOverview && (
+        <Fab
+          onClick={handleOpenCreate}
+          color="primary"
+          aria-label="Add"
+          className={classes.createButton}
+          style={{ right: 30 }}
+        >
+          <Add/>
+        </Fab>
+      )}
     </div>
   );
 };

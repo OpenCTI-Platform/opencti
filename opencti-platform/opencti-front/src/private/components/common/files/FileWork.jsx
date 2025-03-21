@@ -20,6 +20,7 @@ import inject18n, { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -67,8 +68,11 @@ const FileWorkComponent = (props) => {
   const deletion = useDeletion({});
   const { handleOpenDelete, handleCloseDelete, setDeleting } = deletion;
 
+  const { isFeatureEnable } = useHelper();
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
+
   const navigateToDraft = (draftId) => {
-    navigate(`/dashboard/drafts/${draftId}`);
+    navigate(isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}` : `/dashboard/drafts/${draftId}`);
   };
 
   const handleDelete = (id) => {

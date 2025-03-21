@@ -7,6 +7,7 @@ import { Drafts_node$data } from '@components/drafts/__generated__/Drafts_node.g
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import ImportMenu from '@components/data/ImportMenu';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -15,6 +16,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
+import useHelper from '../../../utils/hooks/useHelper';
 import DraftPopover from './DraftPopover';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -118,6 +120,8 @@ const Drafts: React.FC = () => {
   const draftColor = getDraftModeColor(theme);
   const validatedDraftColor = theme.palette.success.main;
   const draftContext = useDraftContext();
+  const { isFeatureEnable } = useHelper();
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Drafts'));
 
@@ -170,6 +174,7 @@ const Drafts: React.FC = () => {
       isSortable: true,
     },
     draft_status: {
+      id: 'draft_status',
       label: 'Status',
       percentWidth: 10,
       isSortable: true,
@@ -193,6 +198,7 @@ const Drafts: React.FC = () => {
       ),
     },
     draft_validation_progress: {
+      id: 'draft_validation_progress',
       label: 'Validation progress',
       percentWidth: 10,
       isSortable: false,
@@ -202,29 +208,38 @@ const Drafts: React.FC = () => {
 
   return (
     <span data-testid="draft-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Drafts'), current: true }]} />
-      {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        toolbarFilters={contextFilters}
-        preloadedPaginationProps={preloadedPaginationProps}
-        lineFragment={DraftLineFragment}
-        exportContext={{ entity_type: 'DraftWorkspace' }}
-        redirectionModeEnabled
-        createButton={!draftContext && (
-          <DraftCreation paginationOptions={queryPaginationOptions} />
-        )}
-        actions={(row) => (
-          <DraftPopover
-            draftId={row.id}
-            draftLocked={row.draft_status !== 'open'}
-            paginationOptions={queryPaginationOptions}
+      {isNewImportScreensEnabled ? (
+        <>
+          <Breadcrumbs
+            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
           />
-        )}
-      />
+          <ImportMenu/>
+        </>
+      ) : (
+        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Drafts'), current: true }]}/>
+      )}
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={DraftLineFragment}
+          exportContext={{ entity_type: 'DraftWorkspace' }}
+          redirectionModeEnabled
+          createButton={!draftContext && (
+            <DraftCreation paginationOptions={queryPaginationOptions}/>
+          )}
+          actions={(row) => (
+            <DraftPopover
+              draftId={row.id}
+              draftLocked={row.draft_status !== 'open'}
+              paginationOptions={queryPaginationOptions}
+            />
+          )}
+        />
       )}
     </span>
   );

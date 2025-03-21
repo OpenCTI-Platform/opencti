@@ -1,6 +1,5 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
@@ -17,7 +16,7 @@ import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
-import inject18n, { useFormatter } from '../../../../../components/i18n';
+import { useFormatter } from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import { toB64 } from '../../../../../utils/String';
 import useAuth from '../../../../../utils/hooks/useAuth';
@@ -104,9 +103,9 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, nested, nsdt }) => {
+const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nested }) => {
+  const { t_i18n, nsdt } = useFormatter();
   const { me } = useAuth();
-  const { t_i18n } = useFormatter();
   const deletion = useDeletion({});
   const { handleOpenDelete, handleCloseDelete } = deletion;
 
@@ -125,7 +124,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
         fileStore.setValue('progress', 'uploadStatus');
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess(t('File successfully removed'));
+        MESSAGING$.notifySuccess(t_i18n('File successfully removed'));
       },
     });
   };
@@ -151,7 +150,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
         secondaryAction={
           <>
             {!directDownload && !isFail && (
-            <Tooltip title={t('Download this file')}>
+            <Tooltip title={t_i18n('Download this file')}>
               <span>
                 <IconButton
                   disabled={isProgress}
@@ -167,7 +166,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
               </span>
             </Tooltip>
             )}
-            <Tooltip title={t('Delete this workbench')}>
+            <Tooltip title={t_i18n('Delete this workbench')}>
               <span>
                 <IconButton
                   disabled={isProgress}
@@ -186,7 +185,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
           classes={{ root: nested ? classes.itemNested : classes.item }}
           component={isOutdated ? null : Link}
           disabled={isProgress}
-          to={`/dashboard/data/import/pending/${toB64(file.id)}`}
+          to={`/dashboard/data/import/workbench/${toB64(file.id)}`}
         >
           <ListItemIcon>
             {isProgress && (
@@ -212,7 +211,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
                   {file.name.replace('.json', '')}
                 </div>
                 <div className={classes.bodyItem} style={inlineStyles.creator_name}>
-                  {file.metaData.creator?.name || t('Unknown')}
+                  {file.metaData.creator?.name || t_i18n('Unknown')}
                 </div>
                 <div className={classes.bodyItem} style={inlineStyles.labels}>
                   {file.metaData.labels_text ? file.metaData.labels_text.split(';').map((label, index) => (
@@ -262,4 +261,4 @@ const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
   file: workbenchLineFragment,
 });
 
-export default compose(inject18n, withStyles(styles))(WorkbenchFileLine);
+export default withStyles(styles)(WorkbenchFileLine);

@@ -7,6 +7,7 @@ import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 interface DraftBlockProps {
   title?: string
@@ -20,9 +21,16 @@ const DraftBlock: FunctionComponent<DraftBlockProps> = ({ title, body, sx }) => 
   const draftColor = getDraftModeColor(theme);
   const draftContext = useDraftContext();
 
+  const { isFeatureEnable } = useHelper();
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
+
   return (
     <Link
-      to={`/dashboard/drafts/${draftContext?.id}`}
+      to={
+        isNewImportScreensEnabled
+          ? `/dashboard/data/import/draft/${draftContext?.id}`
+          : `/dashboard/drafts/${draftContext?.id}`
+      }
       style={{
         border: `1px solid ${hexToRGB(draftColor, 0.5)}`,
         color: draftColor,
