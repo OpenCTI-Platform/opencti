@@ -2,7 +2,6 @@ import React from 'react';
 import { Box } from '@mui/material';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { OptionsFormValues } from '@components/common/files/import_files/ImportFilesDialog';
-import { OptionsFormValues } from '@components/common/files/import_files/ImportFilesDialog';
 import { Field, FormikContextType, FormikProvider } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import StixCoreObjectsField from '@components/common/form/StixCoreObjectsField';
