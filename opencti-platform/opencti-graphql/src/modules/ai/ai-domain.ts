@@ -47,7 +47,6 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
 import { NLQPromptTemplate } from './ai-nlq-utils';
-import { FunctionalError, UnknownError } from '../../config/errors';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../../schema/stixMetaObject';
