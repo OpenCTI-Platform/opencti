@@ -170,7 +170,7 @@ const createHttpServer = async () => {
         }
 
         // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
-        if (!!executeContext.draft_context) {
+        if (executeContext.draft_context) {
           const draftWorkspaces = await getEntitiesMapFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
           const draftWorkspace = draftWorkspaces.get(executeContext.draft_context);
           if (!draftWorkspace) {
