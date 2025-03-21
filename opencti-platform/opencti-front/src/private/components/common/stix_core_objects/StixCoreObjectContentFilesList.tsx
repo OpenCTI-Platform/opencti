@@ -25,6 +25,7 @@ import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EETooltip from '../entreprise_edition/EETooltip';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -76,6 +77,7 @@ const StixCoreObjectContentFilesList = ({
 }: StixCoreObjectContentFilesListProps) => {
   const theme = useTheme<Theme>();
   const { fld, t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
   const deletion = useDeletion({});
   const isEnterpriseEdition = useEnterpriseEdition();
 
@@ -128,7 +130,7 @@ const StixCoreObjectContentFilesList = ({
       {files.length === 0 && <ListItem dense={true} divider={true} />}
       {files.map((file) => {
         const fileMimeType = file.metaData?.mimetype ?? '';
-        const canDisseminate = ['application/pdf', 'text/html'].includes(fileMimeType);
+        const canDisseminate = !draftContext && ['application/pdf', 'text/html'].includes(fileMimeType);
 
         return (
           <Fragment key={file.id}>
@@ -228,7 +230,7 @@ const StixCoreObjectContentFilesList = ({
           {t_i18n('Download file')}
         </MenuItem>
         )}
-        {canDownloadAsPdf && (
+        {!draftContext && canDownloadAsPdf && (
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
           <StixCoreObjectFileExport
             onClose={() => setAnchorEl(null)}

@@ -6,7 +6,7 @@ import { executionContext } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { consumeQueue, registerConnectorQueues } from '../../database/rabbitmq';
 import { downloadFile } from '../../database/file-storage';
-import { reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
+import { addDraftContext, reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
 import { bundleProcess, type CsvBundlerIngestionOpts, generateAndSendBundleProcess } from '../../parser/csv-bundler';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { resolveUserByIdFromCache } from '../../domain/user';
@@ -179,6 +179,7 @@ const processValidateBeforeImport = async (context: AuthContext, validationMode:
     await processCSVforWorkers(contextInDraft, fileId, { ...opts, draftId });
   } else if (validationMode === 'draft') {
     const { id } = await addDraftWorkspace(context, opts.applicantUser, { name: fileId, entity_id: opts.entity?.id ?? '' });
+    await addDraftContext(context, opts.applicantUser, opts.workId, id);
     const contextInDraft = { ...context, draft_context: id };
     await processCSVforWorkers(contextInDraft, fileId, { ...opts, draftId: id });
   } else {
@@ -214,7 +215,7 @@ const consumeQueueCallback = async (context: AuthContext, message: string) => {
     const { validation_mode } = messageParsed.event;
     const { draft_id } = messageParsed.internal;
     const validateBeforeImport = connectorConfig.config.validate_before_import;
-    if (validateBeforeImport) {
+    if (draft_id || validateBeforeImport) {
       await processValidateBeforeImport(context, validation_mode, draft_id, fileId, opts);
     } else {
       await processCSVforWorkers(context, fileId, opts);

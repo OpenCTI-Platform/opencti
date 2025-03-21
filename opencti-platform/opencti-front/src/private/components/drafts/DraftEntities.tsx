@@ -103,6 +103,7 @@ export const draftEntitiesLinesFragment = graphql`
         ) @connection(key: "Pagination_draftWorkspaceEntities") {
             edges {
                 node {
+                    id
                     ...DraftEntities_node
                 }
             }

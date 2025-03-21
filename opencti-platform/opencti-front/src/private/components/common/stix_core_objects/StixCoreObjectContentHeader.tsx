@@ -6,6 +6,7 @@ import { DifferenceOutlined } from '@mui/icons-material';
 import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useFormatter } from '../../../../components/i18n';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface StixCoreObjectContentHeaderProps {
   currentMode?: string;
@@ -19,6 +20,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
   disabled,
 }) => {
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
 
   return (
     <div style={{
@@ -49,7 +51,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
             to='mapping'
             selected={currentMode === 'mapping'}
             value={'mapping'}
-            disabled={disabled}
+            disabled={disabled || !!draftContext}
           >
             <DifferenceOutlined
               fontSize="small"
