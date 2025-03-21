@@ -34,8 +34,8 @@ import type { BasicStoreSettings } from '../../types/settings';
 import { emailChecker } from '../../utils/syntax';
 import type { BasicStoreCommon } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
-import { addDisseminationCount } from '../../manager/telemetryManager';
 import { BASIC_EMAIL_TEMPLATE } from '../../utils/emailTemplates/basicEmailTemplate';
+import { addDisseminationCount } from '../../manager/telemetryManager';
 
 const MAX_DISSEMINATION_LIST_SIZE = conf.get('app:dissemination_list:max_list_size') || 500;
 
@@ -120,7 +120,7 @@ export const sendDisseminationEmail = async (
     attachments: attachmentListForSendMail,
   };
   await sendMail(sendMailArgs);
-  addDisseminationCount();
+  await addDisseminationCount();
   return sentFiles;
 };
 

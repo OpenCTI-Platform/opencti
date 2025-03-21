@@ -8,6 +8,8 @@ import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspa
 import { fileToReadStream } from '../../../src/database/file-storage-helper';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from '../../../src/modules/draftWorkspace/draftStatuses';
+import { addCreateInCounter, addDeleteInCounter } from '../../utils/testCountHelper';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../src/modules/draftWorkspace/draftWorkspace-types';
 
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
     mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
@@ -206,7 +208,7 @@ describe('Drafts workspace resolver testing', () => {
       query: CREATE_DRAFT_WORKSPACE_QUERY,
       variables: { input: { name: draftName, entity_id: draftEntityId } },
     });
-
+    addCreateInCounter(ENTITY_TYPE_DRAFT_WORKSPACE);
     expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
     expect(createdDraft.data?.draftWorkspaceAdd.name).toEqual(draftName);
     expect(createdDraft.data?.draftWorkspaceAdd.entity_id).toEqual(draftEntityId);
@@ -381,7 +383,7 @@ describe('Drafts workspace resolver testing', () => {
       query: DELETE_DRAFT_WORKSPACE_QUERY,
       variables: { id: addedDraftId },
     });
-
+    addDeleteInCounter(ENTITY_TYPE_DRAFT_WORKSPACE);
     const { data } = await queryAsAdmin({
       query: LIST_DRAFT_WORKSPACES_QUERY,
     });
@@ -399,6 +401,7 @@ describe('Drafts workspace resolver testing', () => {
       query: CREATE_DRAFT_WORKSPACE_QUERY,
       variables: { input: { name: draftName } },
     });
+    addCreateInCounter(ENTITY_TYPE_DRAFT_WORKSPACE);
     expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
     addedDraftId = createdDraft.data?.draftWorkspaceAdd.id;
     addedDraftName = createdDraft.data?.draftWorkspaceAdd.name;
@@ -471,6 +474,7 @@ describe('Drafts workspace resolver testing', () => {
       query: CREATE_DRAFT_WORKSPACE_QUERY,
       variables: { input: { name: draftName } },
     });
+    addCreateInCounter(ENTITY_TYPE_DRAFT_WORKSPACE);
     expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
     addedDraftId = createdDraft.data?.draftWorkspaceAdd.id;
     addedDraftName = createdDraft.data?.draftWorkspaceAdd.name;

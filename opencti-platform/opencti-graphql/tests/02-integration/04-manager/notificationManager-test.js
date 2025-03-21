@@ -18,6 +18,8 @@ import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../src/schema/gene
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import { addCreateInCounter } from '../../utils/testCountHelper';
+import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 
 // !!!!
 // These tests enable to protect the notificationManager code, and especially the instance trigger notification system behavior.
@@ -220,6 +222,7 @@ describe('Notification manager behaviors test', async () => {
       },
     },
   });
+  addCreateInCounter(ENTITY_TYPE_USER);
   const greenUserId = greenUserAddResult.data.userAdd.id;
   const greenGroupAddResult = await queryAsAdmin({ // create a group with only green marking allowed
     query: CREATE_GROUP_QUERY,

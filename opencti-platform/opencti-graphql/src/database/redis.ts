@@ -949,3 +949,42 @@ export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]
 };
 
 // endregion - exclusion list cache handling
+
+// region - telemetry gauges
+const TELEMETRY_EVENT_KEY = 'telemetry_events';
+/**
+ * Increment a gauge by its name
+ * @param gaugeName
+ * @param countToAdd: 1 or more to be added in count
+ */
+export const redisSetTelemetryAdd = async (gaugeName: string, countToAdd: number) => {
+  const currentCountStr = await getClientBase().hget(TELEMETRY_EVENT_KEY, gaugeName);
+  if (currentCountStr) {
+    const currentCount: number = +currentCountStr;
+    if (!Number.isNaN(currentCount) && countToAdd > 0) {
+      await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, currentCount + countToAdd);
+    } else {
+      await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
+    }
+  } else {
+    await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
+  }
+};
+
+/**
+ * Get gauge value by name or 0 if not present in redis.
+ * @param gaugeName
+ */
+export const redisGetTelemetry = async (gaugeName: string) => {
+  const gaugeAsStr = await getClientBase().hget(TELEMETRY_EVENT_KEY, gaugeName);
+  const gaugeCount: number = gaugeAsStr ? +gaugeAsStr : 0;
+  return Number.isNaN(gaugeCount) ? 0 : gaugeCount;
+};
+
+/**
+ * delete the telemetry hset totally
+ */
+export const redisClearTelemetry = async () => {
+  return getClientBase().del(TELEMETRY_EVENT_KEY);
+};
+// endregion - telemetry gauges
