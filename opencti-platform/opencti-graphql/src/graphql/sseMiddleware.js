@@ -147,7 +147,7 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
   }
   // Access is restricted, check the current user
   const userAccessIds = computeUserMemberAccessIds(user);
-  const collectionAccessIds = (collection.authorized_members ?? []).map((a) => a.id);
+  const collectionAccessIds = (collection.restricted_members ?? []).map((a) => a.id);
   if (collectionAccessIds.length > 0) { // If restrictions have been setup
     if (!isUserHasCapability(user, BYPASS) && !collectionAccessIds.some((accessId) => userAccessIds.includes(accessId))) {
       res.statusMessage = 'You are not authorized, please check your credentials';

@@ -33,6 +33,7 @@ import {
 } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { publishUserAction } from '../listener/UserActionListener';
+import { authorizedMembers } from '../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
@@ -858,7 +859,7 @@ export const deleteAllWorkspaceForUser = async (context, authUser, userId) => {
   const workspacesToDelete = await listAllEntities(context, userToDeleteAuth, [ENTITY_TYPE_WORKSPACE], { connectionFormat: false });
 
   const workspaceToDeleteIds = workspacesToDelete
-    .filter((workspaceEntity) => isUserTheLastAdmin(userId, workspaceEntity.authorized_members))
+    .filter((workspaceEntity) => isUserTheLastAdmin(userId, workspaceEntity.restricted_members))
     .map((workspaceEntity) => workspaceEntity.internal_id);
 
   if (workspaceToDeleteIds.length > 0) {
@@ -891,7 +892,14 @@ export const deleteAllTriggerAndDigestByUser = async (userId) => {
         bool: {
           must: [
             { term: { 'entity_type.keyword': { value: 'Trigger' } } },
-            { term: { 'authorized_members.id.keyword': { value: userId } } }
+            {
+              nested: {
+                path: authorizedMembers.name,
+                query: {
+                  term: { [`${authorizedMembers.name}.id.keyword`]: { value: userId } }
+                }
+              }
+            }
           ]
         }
       }

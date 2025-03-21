@@ -16,6 +16,7 @@ import {
 import { adminQueryWithSuccess, disableEE, enableCEAndUnSetOrganization, enableEE, enableEEAndSetOrganization, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 import conf from '../../../src/config/conf';
+import { authorizedMembers } from '../../../src/schema/attribute-definition';
 
 const CREATE_QUERY = gql`
   mutation CaseIncidentAdd($input: CaseIncidentAddInput!) {
@@ -197,7 +198,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
   });
   it('should SECURITY user not edit authorized members because missing capa', async () => {
     userEditorId = await getUserIdByEmail(USER_EDITOR.email);
-    const authorizedMembers = {
+    const restrictedMembers = {
       id: caseIncident.id,
       input: [
         {
@@ -208,7 +209,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     };
     await queryAsUserIsExpectedForbidden(USER_SECURITY.client, {
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
-      variables: authorizedMembers,
+      variables: restrictedMembers,
     });
   });
   it('should Admin user edit authorized members', async () => {
@@ -413,7 +414,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     // Activate authorized members for IR
     const authorizedMembersConfiguration = JSON.stringify([
       {
-        name: 'authorized_members',
+        name: authorizedMembers.name,
         default_values: [
           JSON.stringify({
             id: ADMIN_USER.id,
@@ -445,7 +446,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     ]);
     caseIncidentResponseAuthorizedMembersFromSettings = caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd;
     // Clean
-    const cleanAuthorizedMembersConfiguration = JSON.stringify([{ name: 'authorized_members', default_values: null }]);
+    const cleanAuthorizedMembersConfiguration = JSON.stringify([{ name: authorizedMembers.name, default_values: null }]);
     const cleanEntitySettingsResult = await adminQuery({
       query: ENTITY_SETTINGS_UPDATE_QUERY,
       variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [cleanAuthorizedMembersConfiguration] } },
@@ -805,7 +806,7 @@ describe('Restricted entities listing', () => {
       query: DELETE_QUERY,
       variables: { id: caseIrId },
     });
-    // Verify is no longer found
+    // Verify that it is no longer found
     const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();

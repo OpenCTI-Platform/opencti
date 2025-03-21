@@ -1,5 +1,6 @@
 import {
   aliases,
+  authorizedMembers,
   baseType,
   createdAt,
   creators,
@@ -58,7 +59,7 @@ export const INTERNAL_ATTRIBUTES = [
   'default_dashboard',
   'default_hidden_types',
   'grantable_groups',
-  'authorized_members',
+  authorizedMembers.name,
   'authorized_authorities',
   'precision',
   'pattern_version',
