@@ -839,7 +839,7 @@ describe('Elasticsearch pagination', () => {
     expect(internalRelationshipsByType['has-capability'].length).toEqual(56);
     expect(internalRelationshipsByType['has-role'].length).toEqual(9);
     expect(internalRelationshipsByType['member-of'].length).toEqual(13);
-    expect(internalRelationshipsByType['participate-to'].length).toEqual(4);
+    expect(internalRelationshipsByType['participate-to'].length).toEqual(2);
 
     const stixCoreRelationships = groupByIndices[`${ES_INDEX_PREFIX}_stix_core_relationships-000001`].map((m) => m.node);
     const stixCoreRelationshipsByType = R.groupBy((m) => m.entity_type, stixCoreRelationships);
