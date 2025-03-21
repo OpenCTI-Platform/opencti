@@ -24,8 +24,8 @@ export default class InvestigationDetailsPage {
     return this.page.getByRole('menuitem', { name: 'Delete' });
   }
 
-  getDelete() {
-    return this.page.getByRole('button', { name: 'Delete' });
+  getConfirmButton() {
+    return this.page.getByRole('button', { name: 'Confirm' });
   }
 
   addNewInvestigationTag() {

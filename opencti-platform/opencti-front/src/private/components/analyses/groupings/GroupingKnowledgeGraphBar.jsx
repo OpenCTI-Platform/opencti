@@ -38,13 +38,14 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import { Form, Formik } from 'formik';
-import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { ToggleButtonGroup } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContentText from '@mui/material/DialogContentText';
 import CommitMessage from '../../common/form/CommitMessage';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import inject18n from '../../../../components/i18n';
@@ -1137,12 +1138,15 @@ class GroupingKnowledgeGraphBar extends Component {
                       TransitionComponent={Transition}
                       onClose={this.handleCloseRemove.bind(this)}
                     >
+                      <DialogTitle>
+                        {t('Are you sure?')}
+                      </DialogTitle>
                       <DialogContent>
-                        <Typography variant="body">
+                        <DialogContentText>
                           {t(
                             'Do you want to remove these elements from this grouping?',
                           )}
-                        </Typography>
+                        </DialogContentText>
                         <Alert
                           severity="warning"
                           variant="outlined"
@@ -1174,7 +1178,7 @@ class GroupingKnowledgeGraphBar extends Component {
                           onClick={this.handleSubmitRemoveElements.bind(this)}
                           color="secondary"
                         >
-                          {t('Remove')}
+                          {t('Confirm')}
                         </Button>
                       </DialogActions>
                     </Dialog>
