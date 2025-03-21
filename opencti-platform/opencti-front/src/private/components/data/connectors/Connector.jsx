@@ -25,6 +25,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Alert from '@mui/material/Alert';
 import UpdateIcon from '@mui/icons-material/Update';
+import DialogTitle from '@mui/material/DialogTitle';
 import DangerZoneBlock from '../../common/danger_zone/DangerZoneBlock';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -45,7 +46,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import DialogTitle from '@mui/material/DialogTitle';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 const interval$ = interval(FIVE_SECONDS);

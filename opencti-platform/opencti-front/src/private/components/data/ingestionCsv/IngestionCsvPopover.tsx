@@ -15,6 +15,7 @@ import { ingestionCsvEditionPatch } from '@components/data/ingestionCsv/Ingestio
 import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
+import DialogTitle from '@mui/material/DialogTitle';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
@@ -22,7 +23,6 @@ import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import DialogTitle from '@mui/material/DialogTitle';
 
 const ingestionCsvPopoverDeletionMutation = graphql`
   mutation IngestionCsvPopoverDeletionMutation($id: ID!) {

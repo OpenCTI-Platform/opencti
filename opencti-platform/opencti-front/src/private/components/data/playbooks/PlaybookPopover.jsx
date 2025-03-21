@@ -26,6 +26,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
+import DialogTitle from '@mui/material/DialogTitle';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import PlaybookEdition, { playbookMutationFieldPatch } from './PlaybookEdition';
 import { deleteNode } from '../../../../utils/store';
@@ -34,7 +35,6 @@ import Transition from '../../../../components/Transition';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
-import DialogTitle from '@mui/material/DialogTitle';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
