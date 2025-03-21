@@ -9,7 +9,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 
 const Root = () => {
   const { isFeatureEnable } = useHelper();
-  const isNewImportScreensEnables = isFeatureEnable('NEW_IMPORT_SCREENS');
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
 
   return (
@@ -19,19 +19,19 @@ const Root = () => {
         path="/pending/:fileId"
         element={<WorkbenchFile />}
       />
-      {isNewImportScreensEnables && (
+      {isNewImportScreensEnabled && (
         <Route
           path="/file"
           element={<ImportFilesContent />}
         />
       )}
-      {isNewImportScreensEnables && isDraftFeatureEnabled && (
+      {isNewImportScreensEnabled && isDraftFeatureEnabled && (
         <Route
           path="/draft"
           element={<Drafts />}
         />
       )}
-      {isNewImportScreensEnables && (
+      {isNewImportScreensEnabled && (
         <Route
           path="/workbench"
           element={<ImportWorkbenchesContent />}

@@ -20,7 +20,8 @@ import Slide from '@mui/material/Slide';
 import Chip from '@mui/material/Chip';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
-import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
+import { importActionsPopoverDeleteMutation } from '../ImportActionsPopover';
+import { workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
 import inject18n from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/environment';
@@ -140,7 +141,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
   };
 
   const handleRemoveFile = (name) => {
-    executeRemove(WorkbenchFileLineDeleteMutation, { fileName: name });
+    executeRemove(importActionsPopoverDeleteMutation, { fileName: name });
     setDisplayDelete(false);
   };
 
