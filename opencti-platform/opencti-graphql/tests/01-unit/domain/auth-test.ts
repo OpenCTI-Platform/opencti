@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { askResetPassword, generateCode, getUser } from '../../../src/modules/auth/auth-domain';
+import { askSendToken, generateCode, getUser } from '../../../src/modules/auth/auth-domain';
 import { AuthenticationFailure } from '../../../src/config/errors';
+import { testContext } from '../../utils/testQuery';
 
 describe('getUser', () => {
   it('Should be able to return a user with an email', async () => {
@@ -31,13 +32,13 @@ describe('generateCode', () => {
   });
 });
 
-describe('askResetPassword', () => {
+describe('askSendToken', () => {
   it('Should return true with an existed user', () => {
-    const result = askResetPassword('anais@opencti.io');
+    const result = askSendToken(testContext, 'anais@opencti.io');
     expect(result).toBeTruthy();
   });
   it('Should return true with an wrong email', () => {
-    const result = askResetPassword('noResul@opencti.io');
+    const result = askSendToken(testContext, 'noResul@opencti.io');
     expect(result).toBeTruthy();
   });
 });
