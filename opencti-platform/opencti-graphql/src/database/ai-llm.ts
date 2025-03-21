@@ -21,7 +21,7 @@ const AI_MODEL = conf.get('ai:model');
 const AI_MAX_TOKENS = conf.get('ai:max_tokens');
 
 let client: Mistral | OpenAI | null = null;
-let nlqModel: ChatOpenAI | ChatMistralAI | null = null;
+let nlqChat: ChatOpenAI | ChatMistralAI | null = null;
 
 if (AI_ENABLED && AI_TOKEN) {
   switch (AI_TYPE) {
@@ -39,14 +39,14 @@ if (AI_ENABLED && AI_TOKEN) {
 
       if (AI_ENDPOINT.includes('https://api.mistral.ai')) {
         // Official MistralAI API
-        nlqModel = new ChatMistralAI({
+        nlqChat = new ChatMistralAI({
           model: AI_MODEL,
           apiKey: AI_TOKEN,
           temperature: 0,
         });
       } else {
         // Mistral model deployed via vLLM (OpenAI-compatible)
-        nlqModel = new ChatOpenAI({
+        nlqChat = new ChatOpenAI({
           model: AI_MODEL,
           apiKey: AI_TOKEN,
           temperature: 0,
@@ -64,7 +64,7 @@ if (AI_ENABLED && AI_TOKEN) {
         ...(isEmptyField(AI_ENDPOINT) ? {} : { baseURL: AI_ENDPOINT }),
       });
 
-      nlqModel = new ChatOpenAI({
+      nlqChat = new ChatOpenAI({
         model: AI_MODEL,
         apiKey: AI_TOKEN,
         temperature: 0,
@@ -172,7 +172,7 @@ export const queryAi = async (busId: string | null, developerMessage: string | n
 
 // NLQ AI Query with LangChain's Chat Models
 export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
-  if (!nlqModel) {
+  if (!nlqChat) {
     throw UnsupportedError('Incorrect AI configuration for NLQ', {
       enabled: AI_ENABLED,
       type: AI_TYPE,
@@ -183,10 +183,9 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
 
   try {
     logApp.info('[NLQ] Querying AI model for structured output');
-    return await nlqModel.withStructuredOutput(OutputSchema).invoke(promptValue);
+    return await nlqChat.withStructuredOutput(OutputSchema).invoke(promptValue);
   } catch (err) {
     logApp.error('[NLQ] Error querying AI model', { cause: err });
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    return `An error occurred while processing NLQ: ${errorMessage}`;
+    throw err instanceof Error ? err : new Error(String(err));
   }
 };
