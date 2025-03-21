@@ -9049,6 +9049,7 @@ type Mutation {
   disseminationListDelete(id: ID!): ID
   disseminationListFieldPatch(id: ID!, input: [EditInput!]!): DisseminationList
   disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
+  askSendToken(email: String!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
