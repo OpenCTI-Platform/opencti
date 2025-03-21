@@ -93,6 +93,11 @@ const SearchInput = (props) => {
       setDisplayEEDialog(true);
     }
   };
+  const handleRemoveAskAI = () => {
+    if (isEnterpriseEdition && askAI) {
+      setAskAI(false);
+    }
+  };
   const isAIEnabled = variant === 'topBar' && isEnterpriseEdition && askAI;
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const { settings: { id: settingsId } } = useAuth();
@@ -170,26 +175,29 @@ const SearchInput = (props) => {
             }
             <Tooltip title={t_i18n('Advanced search')}>
               <IconButton
+                onClick={handleRemoveAskAI}
                 component={Link}
                 to="/dashboard/search"
                 size="medium"
                 color={
-                   location.pathname.includes('/dashboard/search')
-                    && !location.pathname.includes('/dashboard/search_bulk')
-                     ? 'primary'
-                     : 'inherit'
-                    }
+                  location.pathname.includes('/dashboard/search')
+                   && !location.pathname.includes('/dashboard/search_bulk')
+                   && !askAI
+                    ? 'primary'
+                    : 'inherit'
+                  }
               >
                 <BiotechOutlined fontSize='medium'/>
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('Bulk search')}>
               <IconButton
+                onClick={handleRemoveAskAI}
                 component={Link}
                 to="/dashboard/search_bulk"
                 size="medium"
                 color={
-                location.pathname.includes('/dashboard/search_bulk')
+                location.pathname.includes('/dashboard/search_bulk') && !askAI
                   ? 'primary'
                   : 'inherit'
               }
