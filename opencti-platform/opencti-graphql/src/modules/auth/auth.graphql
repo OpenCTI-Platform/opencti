@@ -1,0 +1,4 @@
+## Mutations
+type Mutation {
+  askSendToken(email: String!): Boolean @public
+}

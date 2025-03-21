@@ -13685,6 +13685,7 @@ export type Mutation = {
   aiVictimGenerateReport?: Maybe<Scalars['String']['output']>;
   artifactImport?: Maybe<Artifact>;
   askJobImport?: Maybe<File>;
+  askSendToken?: Maybe<Scalars['Boolean']['output']>;
   attackPatternAdd?: Maybe<AttackPattern>;
   attackPatternEdit?: Maybe<AttackPatternEditMutations>;
   bookmarkAdd?: Maybe<StixDomainObject>;
@@ -14197,6 +14198,11 @@ export type MutationAskJobImportArgs = {
   connectorId?: InputMaybe<Scalars['String']['input']>;
   fileName: Scalars['ID']['input'];
   validationMode?: InputMaybe<ValidationMode>;
+};
+
+
+export type MutationAskSendTokenArgs = {
+  email: Scalars['String']['input'];
 };
 
 
@@ -37795,6 +37801,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   aiVictimGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiVictimGenerateReportArgs, 'id' | 'victimId'>>;
   artifactImport?: Resolver<Maybe<ResolversTypes['Artifact']>, ParentType, ContextType, RequireFields<MutationArtifactImportArgs, 'file'>>;
   askJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationAskJobImportArgs, 'fileName'>>;
+  askSendToken?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationAskSendTokenArgs, 'email'>>;
   attackPatternAdd?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<MutationAttackPatternAddArgs, 'input'>>;
   attackPatternEdit?: Resolver<Maybe<ResolversTypes['AttackPatternEditMutations']>, ParentType, ContextType, RequireFields<MutationAttackPatternEditArgs, 'id'>>;
   bookmarkAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationBookmarkAddArgs, 'id' | 'type'>>;
