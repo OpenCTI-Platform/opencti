@@ -2987,6 +2987,7 @@
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "現在、最大信頼度はユーザーレベルで定義されています。これはユーザーグループのMax Confidence Levelを上書きします。",
   "The Max Confidence Level is currently inherited from...": "最大信頼度は現在グループ{link}から継承されています。",
   "The min value cannot be greater than max value": "最小値を最大値より大きくすることはできません",
+  "The NLQ model didn't find filters corresponding to your question": "NLQモデルは、あなたの質問に対応するフィルタを見つけられませんでした。",
   "The number of results should be lower than 100": "結果の数は100以下でなければならない",
   "The operators and modes are restricted for these filters.": "これらのフィルタには演算子とモードの制限があります。",
   "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "意見には、あなたの語彙で定義された価値はありません。意見を追加できるようにするには、まずそれらを追加してください。",
