@@ -4,6 +4,7 @@ import stixBundle from '../../data/filters/DATA-TEST-FILTERS.json';
 import { isEmptyField } from '../../../src/database/utils';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
 import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/filtering/filtering-stix/stix-filtering';
+import { IS_INFERRED_FILTER } from '../../../src/utils/filtering/filtering-constants';
 
 const WHITE_TLP = { standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9', internal_id: null };
 
@@ -317,5 +318,50 @@ describe('Filters testing', () => {
     };
     const filteredObjectsNo = await applyFilters(filtersNo);
     expect(filteredObjectsNo.length).toBe(64);
+  });
+
+  // is_inferred filter
+
+  it('Should is_inferred filter correctly applied', async () => {
+    const inferredRelationshipNumber = 1;
+    // eq true
+    const filtersTrue = {
+      mode: 'and',
+      filters: [{
+        key: [IS_INFERRED_FILTER],
+        values: ['true'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    const filteredObjectsTrue = await applyFilters(filtersTrue);
+    expect(filteredObjectsTrue.length).toBe(inferredRelationshipNumber);
+    // eq false
+    const filtersFalse = {
+      mode: 'and',
+      filters: [{
+        key: [IS_INFERRED_FILTER],
+        values: ['false'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    const filteredObjectsFalse = await applyFilters(filtersFalse);
+    expect(filteredObjectsFalse).toBe(stixBundle.objects.length - inferredRelationshipNumber);
+    // not_eq false
+    const filtersNotEqFalse = {
+      mode: 'and',
+      filters: [{
+        key: [IS_INFERRED_FILTER],
+        values: ['false'],
+        operator: 'not_eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    const filteredObjectsNotEqFalse = await applyFilters(filtersNotEqFalse);
+    expect(filteredObjectsNotEqFalse).toBe(inferredRelationshipNumber);
   });
 });
