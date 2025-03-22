@@ -3461,17 +3461,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fontsource/geologica@npm:5.1.1":
-  version: 5.1.1
-  resolution: "@fontsource/geologica@npm:5.1.1"
-  checksum: 10/614508630da09e28ea89e3247f932f0fd3d7c04eb848c81e9c051ef14e8d2fc2830df020cc7af596f5d1ba376e2c4fba6f18ac88e9f9b62b698f07fea836d3be
+"@fontsource/geologica@npm:5.2.5":
+  version: 5.2.5
+  resolution: "@fontsource/geologica@npm:5.2.5"
+  checksum: 10/ff969760930991c04b9e59c1c779f7b417cdaa6d7d1a9487c899cf6a2a108bea9dd136574fc9842398cbf316e5d61e8ac5cfee6627d2ff1e494ed3c96df2fc5b
   languageName: node
   linkType: hard
 
-"@fontsource/ibm-plex-sans@npm:5.1.1":
-  version: 5.1.1
-  resolution: "@fontsource/ibm-plex-sans@npm:5.1.1"
-  checksum: 10/63feb5f5294e589a45ba08488fbafe8c5fe195d4ba7f17f4d23533b5d84b2e48df6704d629dc2af62967f6ddb8cdeb37b9bd756b14a18ba3b98e580447d2a12a
+"@fontsource/ibm-plex-sans@npm:5.2.5":
+  version: 5.2.5
+  resolution: "@fontsource/ibm-plex-sans@npm:5.2.5"
+  checksum: 10/85d99c33196897c9bb9e7dc7eb184590a582ebc4d5c3a51b856f3014a7eac2f757a339b36cdef9ea76c119abd629f4e9c6921e2834194d8b79c30f92ce34d22a
   languageName: node
   linkType: hard
 
@@ -16905,8 +16905,8 @@ __metadata:
     "@ckeditor/ckeditor5-react": "npm:9.5.0"
     "@date-fns/upgrade": "npm:1.0.3"
     "@date-io/date-fns": "npm:3.2.0"
-    "@fontsource/geologica": "npm:5.1.1"
-    "@fontsource/ibm-plex-sans": "npm:5.1.1"
+    "@fontsource/geologica": "npm:5.2.5"
+    "@fontsource/ibm-plex-sans": "npm:5.2.5"
     "@graphiql/toolkit": "npm:0.11.1"
     "@hello-pangea/dnd": "npm:16.6.0"
     "@mui/icons-material": "npm:5.16.14"
