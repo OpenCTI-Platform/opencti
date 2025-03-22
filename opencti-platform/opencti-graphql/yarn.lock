@@ -6209,10 +6209,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"canonicalize@npm:2.0.0":
-  version: 2.0.0
-  resolution: "canonicalize@npm:2.0.0"
-  checksum: 10/fb1101ba8bf4b46b4a3e77d020754803ed0520517c41ddebdc31af199b6a0b02f32cf72c2866aafd25fea28d893eaa9c15319253298cf1a25dafc2120792899b
+"canonicalize@npm:2.1.0":
+  version: 2.1.0
+  resolution: "canonicalize@npm:2.1.0"
+  bin:
+    canonicalize: bin/canonicalize.js
+  checksum: 10/6ab9b9c2b84e6a210e1d55f9f1194d69c1b955512f38cc53b0529c654807f469e21b5099750c76e2b8464650d829c01234c923526450fac263a1d89cf2bb61df
   languageName: node
   linkType: hard
 
@@ -11497,7 +11499,7 @@ __metadata:
     blocked-at: "npm:1.2.0"
     bluebird: "npm:3.7.2"
     body-parser: "npm:1.20.3"
-    canonicalize: "npm:2.0.0"
+    canonicalize: "npm:2.1.0"
     compression: "npm:1.8.0"
     content-disposition: "npm:0.5.4"
     cors: "npm:2.8.5"
