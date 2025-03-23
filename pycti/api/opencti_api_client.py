@@ -280,7 +280,7 @@ class OpenCTIApiClient:
                 if is_multiple_files:
                     # [(var_name + "." + i)] if is_multiple_files else
                     for _ in file_var_item["file"]:
-                        file_vars[str(map_index)] = [(var_name + "." + str(map_index))]
+                        file_vars[str(map_index)] = [var_name + "." + str(map_index)]
                         map_index += 1
                 else:
                     file_vars[str(map_index)] = [var_name]
