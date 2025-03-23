@@ -48,6 +48,7 @@ class Indicator:
         :param list customAttributes: (optional) list of attributes keys to return
         :param bool getAll: (optional) switch to return all entries (be careful to use this without any other filters)
         :param bool withPagination: (optional) switch to use pagination
+        :param bool toStix: (optional) get in STIX
 
         :return: List of Indicators
         :rtype: list
@@ -63,21 +64,26 @@ class Indicator:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         with_files = kwargs.get("withFiles", False)
+        to_stix = kwargs.get("toStix", False)
 
         self.opencti.app_logger.info(
             "Listing Indicators with filters", {"filters": json.dumps(filters)}
         )
         query = (
             """
-                query Indicators($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: IndicatorsOrdering, $orderMode: OrderingMode) {
-                    indicators(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                query Indicators($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: IndicatorsOrdering, $orderMode: OrderingMode, $toStix: Boolean) {
+                    indicators(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, toStix: $toStix) {
                         edges {
                             node {
                                 """
             + (
-                custom_attributes
-                if custom_attributes is not None
-                else (self.properties_with_files if with_files else self.properties)
+                "toStix"
+                if to_stix
+                else (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else (self.properties_with_files if with_files else self.properties)
+                )
             )
             + """
                         }
@@ -102,6 +108,7 @@ class Indicator:
                 "after": after,
                 "orderBy": order_by,
                 "orderMode": order_mode,
+                "toStix": to_stix,
             },
         )
         if get_all:

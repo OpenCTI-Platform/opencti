@@ -1,6 +1,4 @@
-"""These are the custom STIX properties and observation types used internally by OpenCTI.
-
-"""
+"""These are the custom STIX properties and observation types used internally by OpenCTI."""
 
 from enum import Enum
 
