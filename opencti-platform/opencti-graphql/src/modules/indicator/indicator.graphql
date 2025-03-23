@@ -248,6 +248,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
+    toStix: Boolean
   ): IndicatorConnection @auth(for: [KNOWLEDGE])
   indicatorsTimeSeries(
     objectId: String
