@@ -169,6 +169,14 @@ const useStyles = makeStyles((theme) => createStyles({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    padding: '1px 0 0 0px',
+    fontWeight: 500,
+    fontSize: 12,
+  },
+  menuSubItemTextWithoutIconCollapseOpen: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     padding: '1px 0 0 20px',
     fontWeight: 500,
     fontSize: 12,
@@ -389,7 +397,7 @@ const LeftBar = () => {
                     </ListItemIcon>
                   )}
                   <ListItemText
-                    classes={{ primary: (submenu_show_icons && entry.icon) ? classes.menuSubItemText : classes.menuSubItemTextWithoutIcon }}
+                    classes={{ primary: (submenu_show_icons && entry.icon) ? classes.menuSubItemText : classes.menuSubItemTextWithoutIconCollapseOpen }}
                     primary={t_i18n(entry.label)}
                   />
                 </MenuItem>
