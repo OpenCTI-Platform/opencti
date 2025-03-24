@@ -26,6 +26,7 @@ import {
 } from './notifier-statics';
 import type { BasicStoreEntityNotifier } from './notifier-types';
 import { ENTITY_TYPE_NOTIFIER } from './notifier-types';
+import { authorizedMembers } from '../../schema/attribute-definition';
 
 const ajv = new Ajv();
 
@@ -109,7 +110,7 @@ export const notifierEdit = async (context: AuthContext, user: AuthUser, notifie
   validateNotifier(fieldsToValidate);
   const finalInput = input.map(({ key, value }) => {
     const item: { key: string, value: unknown } = { key, value };
-    if (key === 'authorized_members') {
+    if (key === authorizedMembers.name) {
       item.value = value.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
     }
     return item;

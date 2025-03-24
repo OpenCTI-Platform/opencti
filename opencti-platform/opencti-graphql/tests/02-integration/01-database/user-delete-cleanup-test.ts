@@ -9,7 +9,6 @@ import { addUser, assignGroupToUser, findById as findUserById, isUserTheLastAdmi
 import { addWorkspace, workspaceEditAuthorizedMembers, findById as findWorkspaceById } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { TriggerEventType, TriggerType } from '../../../src/generated/graphql';
-import { logApp } from '../../../src/config/conf';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.
@@ -51,102 +50,98 @@ const createNotificationForUser = async (context: AuthContext, user: AuthUser) =
 
 describe('Testing user delete on cascade [issue/3720]', () => {
   it('should [trigger, digest, notifications, investigation, dashboard] owned by user1 and only user1, be cleaned-up when user1 is deleted', async () => {
-    try {
-      // ***********************************
-      // GIVEN a user
-      // AND an admin ADMIN_USER having rights to create/delete users
-      const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'integration-test', otp_mandatory: false, user_inside_platform_organization: false };
-      const userToDeletedAuth = await createUserForTest(adminContext, ADMIN_USER, 'iwillbedeletedsoon3');
-      const userToDeleteContext: AuthContext = { user: userToDeletedAuth, tracing: undefined, source: 'integration-test', otp_mandatory: false, user_inside_platform_organization: false };
+    // ***********************************
+    // GIVEN a user
+    // AND an admin ADMIN_USER having rights to create/delete users
+    const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'integration-test', otp_mandatory: false, user_inside_platform_organization: false };
+    const userToDeletedAuth = await createUserForTest(adminContext, ADMIN_USER, 'iwillbegonesoon');
+    const userToDeleteContext: AuthContext = { user: userToDeletedAuth, tracing: undefined, source: 'integration-test', otp_mandatory: false, user_inside_platform_organization: false };
 
-      // AND user having a Trigger
-      const newTrigger = await createTriggerForUser(userToDeleteContext, userToDeletedAuth);
-      expect(newTrigger.trigger_type, 'There is an issue with Trigger creation.').toBe('live');
+    // AND user having a Trigger
+    const newTrigger = await createTriggerForUser(userToDeleteContext, userToDeletedAuth);
+    expect(newTrigger.trigger_type, 'There is an issue with Trigger creation.').toBe('live');
 
-      // AND user having a Notification
-      const newNotification = await createNotificationForUser(userToDeleteContext, userToDeletedAuth);
-      expect(newNotification).toBeDefined();
+    // AND user having a Notification
+    const newNotification = await createNotificationForUser(userToDeleteContext, userToDeletedAuth);
+    expect(newNotification).toBeDefined();
 
-      // AND user having an Investigation not shared at all
-      const privateInvestigationInput: WorkspaceAddInput = {
-        name: 'investigation-not-shared',
-        description: 'this investigation is not shared to other users.',
-        type: 'investigation'
-      };
+    // AND user having an Investigation not shared at all
+    const privateInvestigationInput: WorkspaceAddInput = {
+      name: 'investigation-not-shared',
+      description: 'this investigation is not shared to other users.',
+      type: 'investigation'
+    };
 
-      const privateInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, privateInvestigationInput);
-      expect(privateInvestigationData.authorized_members.length).toBe(1);
+    const privateInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, privateInvestigationInput);
+    expect(privateInvestigationData.restricted_members.length).toBe(1);
 
-      // AND user having an Investigation shared to ALL with admin rights
-      const sharedWithAdminRightsInvestigationInput: WorkspaceAddInput = {
-        name: 'investigation-shared-with-admin-rights',
-        description: 'this investigation will be shared to another user with admin rights.',
-        type: 'investigation'
-      };
-      let sharedWithAdminRightsInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationInput);
-      const sharedIAuthMembers: MemberAccessInput[] = sharedWithAdminRightsInvestigationData.authorized_members;
-      sharedIAuthMembers.push({ id: 'ALL', access_right: 'admin' });
+    // AND user having an Investigation shared to ALL with admin rights
+    const sharedWithAdminRightsInvestigationInput: WorkspaceAddInput = {
+      name: 'investigation-shared-with-admin-rights',
+      description: 'this investigation will be shared to another user with admin rights.',
+      type: 'investigation'
+    };
+    let sharedWithAdminRightsInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationInput);
+    const sharedIAuthMembers: MemberAccessInput[] = sharedWithAdminRightsInvestigationData.restricted_members;
+    sharedIAuthMembers.push({ id: 'ALL', access_right: 'admin' });
 
-      await workspaceEditAuthorizedMembers(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id, sharedIAuthMembers);
-      sharedWithAdminRightsInvestigationData = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id);
-      expect(sharedWithAdminRightsInvestigationData.authorized_members.length).toBe(2);
+    await workspaceEditAuthorizedMembers(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id, sharedIAuthMembers);
+    sharedWithAdminRightsInvestigationData = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id);
+    expect(sharedWithAdminRightsInvestigationData.restricted_members.length).toBe(2);
 
-      // AND an investigation shared but the user is the last admin
-      const sharedReadOnlyInvestigationInput: WorkspaceAddInput = {
-        name: 'investigation-shared-read-only',
-        description: 'this investigation will be shared to another user with view rights.',
-        type: 'investigation'
-      };
-      let sharedInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedReadOnlyInvestigationInput);
-      const sharedInvestigationAuthMembers: MemberAccessInput[] = sharedInvestigationData.authorized_members;
-      sharedInvestigationAuthMembers.push({ id: 'ALL', access_right: 'view' });
+    // AND an investigation shared but the user is the last admin
+    const sharedReadOnlyInvestigationInput: WorkspaceAddInput = {
+      name: 'investigation-shared-read-only',
+      description: 'this investigation will be shared to another user with view rights.',
+      type: 'investigation'
+    };
+    let sharedInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedReadOnlyInvestigationInput);
+    const sharedInvestigationAuthMembers: MemberAccessInput[] = sharedInvestigationData.restricted_members;
+    sharedInvestigationAuthMembers.push({ id: 'ALL', access_right: 'view' });
 
-      await workspaceEditAuthorizedMembers(adminContext, ADMIN_USER, sharedInvestigationData.id, sharedInvestigationAuthMembers);
-      sharedInvestigationData = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedInvestigationData.id);
-      expect(sharedInvestigationData.authorized_members.length).toBe(2);
+    await workspaceEditAuthorizedMembers(adminContext, ADMIN_USER, sharedInvestigationData.id, sharedInvestigationAuthMembers);
+    sharedInvestigationData = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedInvestigationData.id);
+    expect(sharedInvestigationData.restricted_members.length).toBe(2);
 
-      // AND user having a workspace with view only rights
-      const adminInvestigationInput: WorkspaceAddInput = {
-        name: 'investigation-owned-by-admin',
-        description: 'this investigation is owned by the admin, do not delete.',
-        type: 'investigation'
-      };
+    // AND user having a workspace with view only rights
+    const adminInvestigationInput: WorkspaceAddInput = {
+      name: 'investigation-owned-by-admin',
+      description: 'this investigation is owned by the admin, do not delete.',
+      type: 'investigation'
+    };
 
-      const adminInvestigationData = await addWorkspace(adminContext, ADMIN_USER, adminInvestigationInput);
-      const adminInvestigationAuthMembers: MemberAccessInput[] = adminInvestigationData.authorized_members;
-      adminInvestigationAuthMembers.push({ id: userToDeletedAuth.id, access_right: 'view' });
-      await workspaceEditAuthorizedMembers(adminContext, ADMIN_USER, adminInvestigationData.id, adminInvestigationAuthMembers);
-      expect(adminInvestigationData.authorized_members.length).toBe(2);
+    const adminInvestigationData = await addWorkspace(adminContext, ADMIN_USER, adminInvestigationInput);
+    const adminInvestigationAuthMembers: MemberAccessInput[] = adminInvestigationData.restricted_members;
+    adminInvestigationAuthMembers.push({ id: userToDeletedAuth.id, access_right: 'view' });
+    await workspaceEditAuthorizedMembers(adminContext, ADMIN_USER, adminInvestigationData.id, adminInvestigationAuthMembers);
+    expect(adminInvestigationData.restricted_members.length).toBe(2);
 
-      // ******************************************
-      // WHEN the user is deleted
-      await userDelete(adminContext, ADMIN_USER, userToDeletedAuth.id);
+    // ******************************************
+    // WHEN the user is deleted
+    await userDelete(adminContext, ADMIN_USER, userToDeletedAuth.id);
 
-      const deletedUser = await findUserById(adminContext, ADMIN_USER, userToDeletedAuth.id);
-      expect(deletedUser).toBeUndefined();
+    const deletedUser = await findUserById(adminContext, ADMIN_USER, userToDeletedAuth.id);
+    expect(deletedUser).toBeUndefined();
 
-      // *****************************
-      // THEN the user's trigger is deleted too
-      const getTriggerFromElastic = await triggerGet(userToDeleteContext, userToDeletedAuth, newTrigger.id);
-      expect(getTriggerFromElastic, `The user ${userToDeletedAuth.id} trigger should not exists anymore after user deletion.`).toBeUndefined();
-      const getNotificationFromElastic = await myNotificationsFind(userToDeleteContext, userToDeletedAuth, newNotification.id);
-      expect(getNotificationFromElastic.pageInfo.globalCount, `The user ${userToDeletedAuth.id} notification should not exists anymore after user deletion.`).toBe(0);
+    // *****************************
+    // THEN the user's trigger is deleted too
+    const getTriggerFromElastic = await triggerGet(adminContext, ADMIN_USER, newTrigger.id);
+    expect(getTriggerFromElastic, `The user ${userToDeletedAuth.id} trigger should not exists anymore after user deletion. ${JSON.stringify(getTriggerFromElastic)}`).toBeUndefined();
+    const getNotificationFromElastic = await myNotificationsFind(userToDeleteContext, userToDeletedAuth, newNotification.id);
+    expect(getNotificationFromElastic.pageInfo.globalCount, `The user ${userToDeletedAuth.id} notification should not exists anymore after user deletion.`).toBe(0);
 
-      // THEN the user's private Investigation is deleted, but not the shared one
-      const investigationThatStay = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id);
-      expect(investigationThatStay, 'Other user have admin access to this Investigation, it should not be deleted with the user.').toBeDefined();
+    // THEN the user's private Investigation is deleted, but not the shared one
+    const investigationThatStay = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationData.id);
+    expect(investigationThatStay, 'Other user have admin access to this Investigation, it should not be deleted with the user.').toBeDefined();
 
-      const investigationThatShouldBeGone = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, privateInvestigationData.id);
-      expect(investigationThatShouldBeGone, 'This Investigation was for the deleted user only, should be cleaned-up').toBeUndefined();
+    const investigationThatShouldBeGone = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, privateInvestigationData.id);
+    expect(investigationThatShouldBeGone, 'This Investigation was for the deleted user only, should be cleaned-up').toBeUndefined();
 
-      const sharedInvestigationThatShouldBeGone = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedInvestigationData.id);
-      expect(sharedInvestigationThatShouldBeGone, 'This Investigation was shared but no one else is admin, should be cleaned-up').toBeUndefined();
+    const sharedInvestigationThatShouldBeGone = await findWorkspaceById(userToDeleteContext, userToDeletedAuth, sharedInvestigationData.id);
+    expect(sharedInvestigationThatShouldBeGone, 'This Investigation was shared but no one else is admin, should be cleaned-up').toBeUndefined();
 
-      const adminInvestigationThatStay = await findWorkspaceById(adminContext, ADMIN_USER, adminInvestigationData.id);
-      expect(adminInvestigationThatStay, 'User is view only on this investigation owned by admin, it should not be deleted with the user.').toBeDefined();
-    } catch (e) {
-      logApp.error(JSON.stringify(e));
-    }
+    const adminInvestigationThatStay = await findWorkspaceById(adminContext, ADMIN_USER, adminInvestigationData.id);
+    expect(adminInvestigationThatStay, 'User is view only on this investigation owned by admin, it should not be deleted with the user.').toBeDefined();
   });
   it('should data without authorized_member not throw exception during user deletion.', async () => {
     // for some reason this can happend, see https://github.com/OpenCTI-Platform/opencti/issues/5580

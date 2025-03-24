@@ -354,7 +354,7 @@ export const EXPIRATION_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
-export interface AuthorizedMember { id: string, access_right: string }
+export interface AuthorizedMember { id: string, access_right: string, groups_restriction_ids?: string[] | null }
 
 class TracingContext {
   ctx: Context | undefined;
@@ -440,13 +440,15 @@ export const computeUserMemberAccessIds = (user: AuthUser) => {
 
 // region entity access by user
 
-export const getUserAccessRight = (user: AuthUser, element: any) => {
-  if (!element.authorized_members || element.authorized_members.length === 0) { // no restricted user access on element
+export const getUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+  if (!element.restricted_members || element.restricted_members.length === 0) { // no restricted user access on element
     return MEMBER_ACCESS_RIGHT_ADMIN;
   }
-  const accessMembers = [...element.authorized_members];
+  const accessMembers = [...element.restricted_members];
   const userMemberAccessIds = computeUserMemberAccessIds(user);
-  const foundAccessMembers = accessMembers.filter((u) => u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id));
+  const userGroupsIds = user.groups.map((group) => group.internal_id);
+  const foundAccessMembers = accessMembers.filter((u) => (u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id))
+    && (!u.groups_restriction_ids || u.groups_restriction_ids.length === 0 || u.groups_restriction_ids.some((g) => userGroupsIds.includes(g))));
   // If user have extended capabilities, is an admin
   if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
@@ -466,7 +468,7 @@ export const getUserAccessRight = (user: AuthUser, element: any) => {
   }
   return MEMBER_ACCESS_RIGHT_VIEW;
 };
-export const hasAuthorizedMemberAccess = (user: AuthUser, element: { authorized_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+export const hasAuthorizedMemberAccess = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
   const userAccessRight = getUserAccessRight(user, element);
   return !!userAccessRight;
 };
@@ -560,9 +562,9 @@ export const checkUserFilterStoreElements = (
     return true;
   }
   // Check restricted elements
-  // either allowed by orga sharing or has authorized members access if authorized_members are defined (bypass orga sharing)
+  // either allowed by orga sharing or has authorized members access if restricted_members are defined (bypass orga sharing)
   return isOrganizationAllowed(context, element, user, hasPlatformOrg)
-    || (element.authorized_members && element.authorized_members.length > 0 && hasAuthorizedMemberAccess(user, element));
+    || (element.restricted_members && element.restricted_members.length > 0 && hasAuthorizedMemberAccess(user, element));
 };
 
 export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
@@ -604,8 +606,8 @@ export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUs
       return false;
     }
   }
-  const authorized_members = instance.extensions?.[STIX_EXT_OCTI]?.authorized_members ?? [];
-  const authorizedMemberAllowed = hasAuthorizedMemberAccess(user, { authorized_members });
+  const restricted_members = instance.extensions?.[STIX_EXT_OCTI]?.authorized_members ?? [];
+  const authorizedMemberAllowed = hasAuthorizedMemberAccess(user, { restricted_members });
   // 2. check authorized members
   if (!authorizedMemberAllowed) {
     return false;
@@ -620,7 +622,7 @@ export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUs
   const elementOrganizations = instance.extensions?.[STIX_EXT_OCTI]?.granted_refs ?? [];
   const organizationAllowed = isEntityOrganizationsAllowed(context, instance.id, elementOrganizations, user, hasPlatformOrg);
   // either allowed by organization or authorized members
-  return organizationAllowed || (authorized_members.length > 0 && authorizedMemberAllowed);
+  return organizationAllowed || (restricted_members.length > 0 && authorizedMemberAllowed);
 };
 
 export const isUserCanAccessStixElement = async (context: AuthContext, user: AuthUser, instance: StixObject) => {
@@ -634,7 +636,7 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
 
 // user access methods
 export const isDirectAdministrator = (user: AuthUser, element: any) => {
-  const elementAccessIds = element.authorized_members
+  const elementAccessIds = element.restricted_members
     .filter((u: AuthorizedMember) => u.access_right === MEMBER_ACCESS_RIGHT_ADMIN)
     .map((u: AuthorizedMember) => u.id);
   const userMemberAccessIds = computeUserMemberAccessIds(user);

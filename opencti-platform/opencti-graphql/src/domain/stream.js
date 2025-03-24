@@ -1,18 +1,14 @@
 /* eslint-disable camelcase */
-import { elIndex } from '../database/engine';
-import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
-import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
-import { deleteElementById, updateAttribute, } from '../database/middleware';
+import { createEntity, deleteElementById, updateAttribute, } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { BASE_TYPE_ENTITY } from '../schema/general';
-import { getParentTypes } from '../schema/schemaUtils';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
+import { authorizedMembers } from '../schema/attribute-definition';
 
 // Stream graphQL handlers
 export const createStreamCollection = async (context, user, input) => {
@@ -21,28 +17,23 @@ export const createStreamCollection = async (context, user, input) => {
     validateFilterGroupForStixMatch(JSON.parse(input.filters));
   }
 
-  const collectionId = generateInternalId();
   // Insert the collection
   const data = {
-    id: collectionId,
-    internal_id: collectionId,
-    standard_id: generateStandardId(ENTITY_TYPE_STREAM_COLLECTION, input),
-    entity_type: ENTITY_TYPE_STREAM_COLLECTION,
-    parent_types: getParentTypes(ENTITY_TYPE_STREAM_COLLECTION),
-    base_type: BASE_TYPE_ENTITY,
     authorized_authorities: [TAXIIAPI_SETCOLLECTIONS],
     ...input
   };
-  await elIndex(INDEX_INTERNAL_OBJECTS, data);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'administration',
-    message: `creates live stream \`${data.name}\``,
-    context_data: { id: collectionId, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].ADDED_TOPIC, data, user);
+  const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_STREAM_COLLECTION, { complete: true });
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_access: 'administration',
+      message: `creates live stream \`${data.name}\``,
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
+    });
+  }
+  return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].ADDED_TOPIC, element, user);
 };
 export const findById = async (context, user, collectionId) => {
   return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
@@ -68,7 +59,7 @@ export const streamCollectionEditField = async (context, user, collectionId, inp
 
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
-    if (key === 'authorized_members') {
+    if (key === authorizedMembers.name) {
       item.value = value.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_VIEW }));
     }
     return item;

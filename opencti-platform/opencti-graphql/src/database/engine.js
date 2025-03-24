@@ -163,6 +163,7 @@ import {
 } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
 import {
+  authorizedMembers,
   booleanMapping,
   dateMapping,
   iAliasedIds,
@@ -577,19 +578,41 @@ const buildUserMemberAccessFilter = (user, opts) => {
   }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
-  const emptyAuthorizedMembers = { bool: { must_not: { exists: { field: 'authorized_members' } } } };
+  const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: { } } } } } };
+  // condition on authorizedMembers id
+  const authorizedMembersIdsTerms = { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } };
+  // condition on group restriction ids
+  const userGroupsIds = user.groups.map((group) => group.internal_id);
+  const groupRestrictionCondition = {
+    bool: {
+      should: [
+        { bool: { must_not: [{ exists: { field: `${authorizedMembers.name}.groups_restriction_ids` } }] } },
+        { terms: { [`${authorizedMembers.name}.groups_restriction_ids.keyword`]: userGroupsIds } }
+      ]
+    }
+  };
   const authorizedFilters = [
-    { terms: { 'authorized_members.id.keyword': [MEMBER_ACCESS_ALL, ...userAccessIds] } },
+    { bool: { must: [authorizedMembersIdsTerms, groupRestrictionCondition] } }
   ];
-  if (!excludeEmptyAuthorizedMembers) {
-    authorizedFilters.push(emptyAuthorizedMembers);
-  }
+  const shouldConditions = [];
   if (includeAuthorities) {
     const roleIds = user.roles.map((r) => r.id);
     const owners = [...userAccessIds, ...capabilities, ...roleIds];
-    authorizedFilters.push({ terms: { 'authorized_authorities.keyword': owners } });
+    shouldConditions.push({ terms: { 'authorized_authorities.keyword': owners } });
   }
-  return [{ bool: { should: authorizedFilters } }];
+  if (!excludeEmptyAuthorizedMembers) {
+    shouldConditions.push(emptyAuthorizedMembers);
+  }
+  const nestedQuery = {
+    nested: {
+      path: authorizedMembers.name,
+      query: {
+        bool: { should: authorizedFilters }
+      }
+    }
+  };
+  shouldConditions.push(nestedQuery);
+  return [{ bool: { should: shouldConditions } }];
 };
 
 export const elIndexExists = async (indexName) => {
@@ -2882,6 +2905,10 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         const nested = [{ key: 'role', operator: filter.operator, values }];
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
+      if (filterKey === 'authorized_members.id' || filterKey === 'restricted_members.id') {
+        const nested = [{ key: 'id', operator: filter.operator, values: filter.values }];
+        finalFilters.push({ key: authorizedMembers.name, nested, mode: filter.mode });
+      }
       if (filterKey === ALIAS_FILTER) {
         finalFilterGroups.push({
           mode: filter.operator === 'nil' || (filter.operator.startsWith('not_') && filter.operator !== 'not_nil')
@@ -3160,7 +3187,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
     });
 };
 
-const extractNestedQueriesFromBool = (boolQueryArray) => {
+const extractNestedQueriesFromBool = (boolQueryArray, nestedPath = 'connections') => {
   let result = [];
   for (let i = 0; i < boolQueryArray.length; i += 1) {
     const boolQuery = boolQueryArray[i];
@@ -3168,7 +3195,7 @@ const extractNestedQueriesFromBool = (boolQueryArray) => {
     const nestedQueries = [];
     for (let j = 0; j < shouldArray.length; j += 1) {
       const queryElement = shouldArray[j];
-      if (queryElement.nested) nestedQueries.push(queryElement.nested.query);
+      if (queryElement.nested && queryElement.nested.path === nestedPath) nestedQueries.push(queryElement.nested.query);
       if (queryElement.bool?.should) { // case nested is in an imbricated filterGroup (not possible for the moment)
         const nestedBoolResult = extractNestedQueriesFromBool([queryElement]);
         if (nestedBoolResult.length > 0) {

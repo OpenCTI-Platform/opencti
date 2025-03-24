@@ -231,7 +231,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     granted_refs_ids: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.internal_id),
     assignee_ids: (instance[INPUT_ASSIGNEE] ?? []).map((m) => m.internal_id),
     participant_ids: (instance[INPUT_PARTICIPANT] ?? []).map((m) => m.internal_id),
-    authorized_members: instance.authorized_members ?? undefined,
+    authorized_members: instance.restricted_members ?? undefined,
     workflow_id: instance.x_opencti_workflow_id,
     labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,

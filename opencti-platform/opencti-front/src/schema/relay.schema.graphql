@@ -1615,16 +1615,23 @@ type Member {
   group_confidence_level: ConfidenceLevel
 }
 
+type MemberGroupRestriction {
+  id: String!
+  name: String!
+}
+
 type MemberAccess {
   id: ID!
   name: String!
   entity_type: String!
   access_right: String!
+  groups_restriction: [MemberGroupRestriction!]
 }
 
 input MemberAccessInput {
   id: ID!
   access_right: String!
+  groups_restriction_ids: [ID!]
 }
 
 type OtpElement {

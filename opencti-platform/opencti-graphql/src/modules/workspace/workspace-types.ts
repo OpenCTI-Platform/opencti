@@ -14,7 +14,7 @@ export interface BasicStoreEntityWorkspace extends BasicStoreEntity {
   manifest: string;
   tags: Array<string>;
   type: string;
-  authorized_members: Array<AuthorizedMember>;
+  restricted_members: Array<AuthorizedMember>;
   object_refs: Array<string>;
   investigated_entities_ids: Array<string>;
 }
@@ -26,7 +26,7 @@ export interface StoreEntityWorkspace extends StoreEntity {
   manifest: string;
   tags: Array<string>;
   type: string;
-  authorized_members: Array<AuthorizedMember>;
+  restricted_members: Array<AuthorizedMember>;
   object_refs: Array<string>;
 }
 // endregion

@@ -7,7 +7,7 @@ import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, isNotEmptyField } from './utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FROM_START_STR, truncate, UNTIL_END_STR } from '../utils/format';
-import { creators } from '../schema/attribute-definition';
+import { authorizedMembers, creators } from '../schema/attribute-definition';
 
 export const generateMergeMessage = (instance, sources) => {
   const name = extractEntityRepresentativeName(instance);
@@ -73,7 +73,7 @@ export const generateUpdatePatchMessage = (patchElements, entityType, data = {})
           message = values.map((val) => truncate(extractEntityRepresentativeName(val), 250)).join(', ');
         } else if (key === creators.name) {
           message = 'itself'; // Creator special case
-        } else if (key === 'authorized_members') {
+        } else if (key === authorizedMembers.name) {
           message = value.map(({ id, access_right }) => {
             const member = members.find(({ internal_id }) => internal_id === id);
             return `${member?.name ?? id} (${access_right})`;
