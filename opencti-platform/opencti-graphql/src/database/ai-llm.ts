@@ -5,7 +5,7 @@ import { Mistral } from '@mistralai/mistralai';
 import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
 import OpenAI from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
-import { UnsupportedError } from '../config/errors';
+import { UnknownError, UnsupportedError } from '../config/errors';
 import { OutputSchema } from '../modules/ai/ai-nlq-schema';
 import { AI_BUS } from '../modules/ai/ai-types';
 import type { AuthUser } from '../types/user';
@@ -181,11 +181,10 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
     });
   }
 
+  logApp.info('[NLQ] Querying AI model for structured output');
   try {
-    logApp.info('[NLQ] Querying AI model for structured output');
     return await nlqChat.withStructuredOutput(OutputSchema).invoke(promptValue);
   } catch (err) {
-    logApp.error('[NLQ] Error querying AI model', { cause: err });
-    throw err instanceof Error ? err : new Error(String(err));
+    throw UnknownError('[NLQ] Error querying AI model', { cause: err });
   }
 };

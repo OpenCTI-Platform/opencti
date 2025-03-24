@@ -423,7 +423,7 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   } catch (error) {
     throw UnknownError('Error when calling the NLQ model', { error, promptValue });
   }
-  const parsedResponse = { ...rawResponse as Record<string, unknown>, filterGroups: [] } as unknown as FilterGroup;
+  const parsedResponse = { ...rawResponse, filterGroups: [] } as unknown as FilterGroup;
 
   // 02. check the filters validity
   try {

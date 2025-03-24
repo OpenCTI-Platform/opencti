@@ -148,7 +148,7 @@ const RegardingOfFilterItem = z
 // Entities & Observables
 // =======================
 
-const entityObservableKeysWithDescriprition = createZodLiteralUnion(
+const entityObservableKeysWithDescription = createZodLiteralUnion(
   entityObservableKeys,
   entityObservableDescription,
   'List of STIX/OpenCTI entity types recognized by OpenCTI.'
@@ -160,7 +160,7 @@ const EntityTypeFilterItem = z
       .literal('entity_type')
       .describe("The key of the entity type filter, always 'entity_type'."),
     values: z
-      .array(entityObservableKeysWithDescriprition)
+      .array(entityObservableKeysWithDescription)
       .describe('A list of entity type filter values.'),
     operator: operatorKeysWithDescription,
     mode: modeKeysWithDescriptsions,
