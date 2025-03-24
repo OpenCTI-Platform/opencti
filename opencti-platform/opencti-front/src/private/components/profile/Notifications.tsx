@@ -30,28 +30,29 @@ import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { hexToRGB } from '../../../utils/Colors';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import Transition from '../../../components/Transition';
+import { deleteNode } from '../../../utils/store';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
 export const notificationLineNotificationMarkReadMutation = graphql`
-    mutation NotificationsNotificationMarkReadMutation(
-        $id: ID!
-        $read: Boolean!
-    ) {
-        notificationMarkRead(id: $id, read: $read) {
-            ...NotificationLine_node
-        }
+  mutation NotificationsNotificationMarkReadMutation(
+    $id: ID!
+    $read: Boolean!
+  ) {
+    notificationMarkRead(id: $id, read: $read) {
+      ...NotificationLine_node
     }
+  }
 `;
 
 const notificationLineNotificationDeleteMutation = graphql`
-    mutation NotificationsNotificationDeleteMutation($id: ID!) {
-        notificationDelete(id: $id)
-    }
+  mutation NotificationsNotificationDeleteMutation($id: ID!) {
+    notificationDelete(id: $id)
+  }
 `;
 
 const Notifications: FunctionComponent = () => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Notifications'));
@@ -59,6 +60,24 @@ const Notifications: FunctionComponent = () => {
     me,
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'created',
+    orderAsc: false,
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['is_read', 'trigger_id'], ['Notification']),
+    },
+    numberOfElements: {
+      number: 0,
+      symbol: '',
+    },
+  };
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NotificationsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
+
   const [commitMarkRead] = useApiMutation(
     notificationLineNotificationMarkReadMutation,
   );
@@ -76,7 +95,12 @@ const Notifications: FunctionComponent = () => {
       variables: {
         id,
       },
+      updater: (store) => {
+        console.log({ store, id });
+        deleteNode(store, 'Pagination_myNotifications', paginationOptions, id);
+      },
       onCompleted: () => {
+        handleCloseDelete();
       },
     });
   };
@@ -171,31 +195,58 @@ const Notifications: FunctionComponent = () => {
       label: 'Original creation date',
       percentWidth: 20,
       isSortable: isRuntimeSort,
+      // render: ({ notification_content }) => {
+      //   console.log('NOTIFICATION', fldt(notification_content));
+      //   return (<div style={{ height: 20,
+      //     fontSize: 13,
+      //     float: 'left',
+      //     whiteSpace: 'nowrap',
+      //     overflow: 'hidden',
+      //     textOverflow: 'ellipsis',
+      //     paddingRight: 10 }}
+      //           >
+      //     {fldt(notification_content.map((n: any) => n.creationDate))}
+      //   </div>);
+      // },
     },
     name: {
       label: 'Trigger name',
       percentWidth: 12,
       isSortable: isRuntimeSort,
+      // render: ({ notification_content }) => {
+      //   <div style={{ height: 20,
+      //     fontSize: 13,
+      //     float: 'left',
+      //     whiteSpace: 'nowrap',
+      //     overflow: 'hidden',
+      //     textOverflow: 'ellipsis',
+      //     paddingRight: 10 }}
+      //   >
+      //     <Tooltip title={data.name}>
+      //       <Chip
+      //         style={{     fontSize: 12,
+      //           height: 20,
+      //           float: 'left',
+      //           width: 100,
+      //           marginRight: 10,}
+      //         color={
+      //           data.notification_type === 'live'
+      //             ? 'warning'
+      //             : 'secondary'
+      //         }
+      //         variant="outlined"
+      //         label={data.name}
+      //         onClick={(e) => {
+      //           e.preventDefault();
+      //           e.stopPropagation();
+      //           onLabelClick('name', data.name, 'eq', e);
+      //         }}
+      //       />
+      //     </Tooltip>
+      //   </div>;
+      // },
     },
   };
-  const initialValues = {
-    searchTerm: '',
-    sortBy: 'created',
-    orderAsc: false,
-    filters: {
-      ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['is_read', 'trigger_id'], ['Notification']),
-    },
-    numberOfElements: {
-      number: 0,
-      symbol: '',
-    },
-  };
-
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NotificationsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Notification']);
   const contextFilters = {
@@ -255,19 +306,19 @@ const Notifications: FunctionComponent = () => {
     };
 
     return (
-      <>
-        {/* <IconButton */}
-        {/*  disabled={updating} */}
-        {/*  onClick={(event) => { */}
-        {/*    event.stopPropagation(); */}
-        {/*    event.preventDefault(); */}
-        {/*    handleRead(data.id, !data.is_read); */}
-        {/*  }} */}
-        {/*  size="large" */}
-        {/*  color={data.is_read ? 'success' : 'warning'} */}
-        {/* > */}
-        {/*  {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />} */}
-        {/* </IconButton> */}
+      <div style={{ marginLeft: -30 }}>
+        <IconButton
+          disabled={updating}
+          onClick={(event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            handleRead(data.id, !data.is_read);
+          }}
+          size="small"
+          color={data.is_read ? 'success' : 'warning'}
+        >
+          {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />}
+        </IconButton>
         <Tooltip title={t_i18n('Delete this notification')}>
           <span>
             <IconButton
@@ -277,14 +328,14 @@ const Notifications: FunctionComponent = () => {
                 event.preventDefault();
                 handleOpenDelete();
               }}
-              size="large"
+              size="small"
               color="primary"
             >
               <DeleteOutlined/>
             </IconButton>
           </span>
         </Tooltip>
-      </>
+      </div>
     );
   };
   return (
