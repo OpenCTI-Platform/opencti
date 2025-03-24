@@ -88,7 +88,6 @@ import {
   ATTRIBUTE_EXPLANATION,
   ATTRIBUTE_NAME,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
@@ -99,15 +98,7 @@ import {
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
-import {
-  isStixCoreRelationship,
-  RELATION_INDICATES,
-  RELATION_LOCATED_AT,
-  RELATION_PUBLISHES,
-  RELATION_RELATED_TO,
-  RELATION_TARGETS,
-  STIX_CORE_RELATIONSHIPS
-} from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_INDICATES, RELATION_LOCATED_AT, RELATION_PUBLISHES, RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { generateInternalId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
@@ -253,9 +244,10 @@ export const isSpecialNonImpactedCases = (relationshipType, fromType, toType, si
     return true;
   }
   // Rel on the "to" side with targets from any threat to region / country / sector
-  if (side === ROLE_TO && relationshipType === RELATION_TARGETS && [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_IDENTITY_SECTOR].includes(toType)) {
-    return true;
-  }
+  // Adding March 2025: For the NLQ, we now re-index those relationships for "in regards of threat victimology"
+  // if (side === ROLE_TO && relationshipType === RELATION_TARGETS && [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_IDENTITY_SECTOR].includes(toType)) {
+  //   return true;
+  // }
   return false;
 };
 export const isImpactedTypeAndSide = (type, fromType, toType, side) => {

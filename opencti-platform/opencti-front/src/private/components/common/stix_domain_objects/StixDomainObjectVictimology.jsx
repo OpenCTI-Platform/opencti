@@ -32,7 +32,7 @@ class StixDomainObjectVictimology extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      viewMode: 'relationships',
+      viewMode: 'entities',
     };
   }
 
@@ -145,7 +145,7 @@ class StixDomainObjectVictimology extends Component {
               currentView={viewMode}
               handleChangeView={this.handleChangeView.bind(this)}
               enableNestedView={true}
-              enableEntitiesView={false}
+              enableEntitiesView={true}
               defaultStartTime={defaultStartTime}
               defaultStopTime={defaultStopTime}
             />
