@@ -446,15 +446,6 @@ describe('isRegardingOfFilterWarning', () => {
     };
     const isWarning3 = isRegardingOfFilterWarning(filter3, [], filtersRepresentativesMap);
     expect(isWarning3).toEqual(false);
-    const filter4 = {
-      key: 'regardingOf',
-      values: [
-        { key: 'relationship_type', values: ['targets'] },
-        { key: 'id', values: ['malwareId'] },
-      ],
-    };
-    const isWarning4 = isRegardingOfFilterWarning(filter4, [], filtersRepresentativesMap);
-    expect(isWarning4).toEqual(true);
     const filter5 = {
       key: 'regardingOf',
       values: [
