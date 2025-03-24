@@ -485,68 +485,25 @@ export const jsonFewShotExamples: {
   },
   {
     _comment: '',
-    input: 'What are the vulnerabilities related with google?',
-    output: {
-      mode: 'and',
-      filters: [
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'id',
-              values: ['google'],
-            },
-          ],
-          mode: 'or',
-        },
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: ['Vulnerability'],
-          mode: 'or',
-        },
-      ],
-      filterGroups: [],
-    },
-  },
-  {
-    _comment: '',
-    input: 'Show me vulnerabilities with a CVSS score > 10.',
+    input: 'Show me vulnerabilities with a CVSS score > 3.5 and <= to 7.',
     output: {
       mode: 'and',
       filters: [
         {
           key: 'x_opencti_cvss_base_score',
-          values: ['10'],
-          operator: 'gt',
+          values: ['3.5'],
+          operator: 'gt', // strictly greater than 2
+          mode: 'or',
+        },
+        {
+          key: 'x_opencti_cvss_base_score',
+          values: ['7'],
+          operator: 'lte', // less than or equal to 7
           mode: 'or',
         },
         {
           key: 'entity_type',
           values: ['Vulnerability'],
-          operator: 'eq',
-          mode: 'or',
-        },
-      ],
-      filterGroups: [],
-    },
-  },
-  {
-    _comment: '',
-    input: 'Show me all reports labeled as TLP:GREEN and TLP:WHITE.',
-    output: {
-      mode: 'and',
-      filters: [
-        {
-          key: 'objectMarking',
-          values: ['TLP:GREEN', 'TLP:WHITE'],
-          operator: 'eq',
-          mode: 'or',
-        },
-        {
-          key: 'entity_type',
-          values: ['Report'],
           operator: 'eq',
           mode: 'or',
         },
@@ -572,36 +529,14 @@ export const jsonFewShotExamples: {
   },
   {
     _comment: '',
-    input: 'Find all geographical regions.',
+    input: 'Find all geographical cities.',
     output: {
       mode: 'and',
       filters: [
         {
           key: 'entity_type',
-          values: ['Region'],
+          values: ['City'],
           operator: 'eq',
-          mode: 'or',
-        },
-      ],
-      filterGroups: [],
-    },
-  },
-  {
-    _comment: '',
-    input: 'Tell me everything you have on fancy bear.',
-    output: {
-      mode: 'and',
-      filters: [
-        {
-          key: 'name',
-          operator: 'eq',
-          values: ['fancy bear'],
-          mode: 'or',
-        },
-        {
-          key: 'alias',
-          operator: 'eq',
-          values: ['fancy bear'],
           mode: 'or',
         },
       ],
@@ -642,63 +577,6 @@ export const jsonFewShotExamples: {
               values: ['Europe'],
             },
           ],
-          mode: 'or',
-        },
-      ],
-      filterGroups: [],
-    },
-  },
-  {
-    _comment: '',
-    input: 'Which threats are targeting the Healthcare sector?',
-    output: {
-      mode: 'and',
-      filters: [
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: [
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-            'Intrusion-Set',
-          ],
-          mode: 'or',
-        },
-        {
-          key: 'regardingOf',
-          operator: 'eq',
-          values: [
-            {
-              key: 'relationship_type',
-              values: ['targets'],
-            },
-            {
-              key: 'id',
-              values: ['Healthcare'],
-            },
-          ],
-          mode: 'or',
-        },
-      ],
-      filterGroups: [],
-    },
-  },
-  {
-    _comment: '',
-    input: 'Show all incident responses assigned to Marc Martin.',
-    output: {
-      mode: 'and',
-      filters: [
-        {
-          key: 'entity_type',
-          operator: 'eq',
-          values: ['Case-Incident'],
-          mode: 'or',
-        },
-        {
-          key: 'objectAssignee',
-          operator: 'eq',
-          values: ['Marc Martin'],
           mode: 'or',
         },
       ],
