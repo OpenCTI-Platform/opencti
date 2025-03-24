@@ -15,14 +15,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { callWithTimeout } from '@opentelemetry/sdk-metrics/build/esnext/utils';
 import { logApp } from '../../config/conf';
+import { FunctionalError, UnknownError } from '../../config/errors';
 import { queryAi, queryNLQAi } from '../../database/ai-llm';
 import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
 import { isEmptyField } from '../../database/utils';
 import { generateFilterKeysSchema } from '../../domain/filterKeysSchema';
 import { findAll as findAllScos } from '../../domain/stixCoreObject';
-import { findAll as findAllUsers } from '../../domain/user';
 import { findAll as findAllSmos } from '../../domain/stixMetaObject';
+import { findAll as findAllUsers } from '../../domain/user';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type {
   FilterGroup,
@@ -35,7 +36,10 @@ import type {
 } from '../../generated/graphql';
 import { Format, Tone } from '../../generated/graphql';
 import { ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../../schema/stixMetaObject';
 import { RELATION_EXTERNAL_REFERENCE } from '../../schema/stixRefRelationship';
 import type { BasicStoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -46,10 +50,6 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
 import { NLQPromptTemplate } from './ai-nlq-utils';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { FunctionalError, UnknownError } from '../../config/errors';
-import { isStixCoreObject } from '../../schema/stixCoreObject';
-import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../../schema/stixMetaObject';
 
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
@@ -431,8 +431,6 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   } catch (error) {
     throw FunctionalError(`The NLQ filters response format is not correct: ${JSON.stringify(parsedResponse)}`, { error, data: parsedResponse });
   }
-  // Log structured parsedResponse
-  // console.log('---parsedResponse--\n', JSON.stringify(parsedResponse, null, 2));
 
   // 03. map entities ids
   const { filters: filtersResult, notResolvedValues } = await filtersEntityIdsMapping(context, user, parsedResponse);
