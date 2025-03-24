@@ -187,8 +187,8 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
-        { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
-        { label: t_i18n('Platforms'), value: 'platform', isMultiple: true },
+        { label: t_i18n('Indicator types'), value: 'indicator_types', isMultiple: true },
+        { label: t_i18n('Platforms'), value: 'x_mitre_platforms', isMultiple: true },
         {
           label: t_i18n('Status'),
           value: 'x_opencti_workflow_id',
@@ -211,8 +211,8 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Severity'), value: 'severity', isMultiple: false },
         { label: t_i18n('Priority'), value: 'priority', isMultiple: false },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
-        { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
-        { label: t_i18n('Platforms'), value: 'platform', isMultiple: true },
+        { label: t_i18n('Indicator types'), value: 'indicator_types', isMultiple: true },
+        { label: t_i18n('Platforms'), value: 'x_mitre_platforms', isMultiple: true },
         {
           label: t_i18n('Detection'),
           value: 'x_opencti_detection',
@@ -235,8 +235,8 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
-        { label: t_i18n('Indicator types'), value: 'indicatorType', isMultiple: true },
-        { label: t_i18n('Platforms'), value: 'platform', isMultiple: true },
+        { label: t_i18n('Indicator types'), value: 'indicator_types', isMultiple: true },
+        { label: t_i18n('Platforms'), value: 'x_mitre_platforms', isMultiple: true },
         {
           label: t_i18n('Status'),
           value: 'x_opencti_workflow_id',
@@ -392,7 +392,7 @@ const PlaybookAddComponentsContent = ({
             ])}
           />
         );
-      case 'indicatorType':
+      case 'indicator_types':
         return (
           <OpenVocabField
             name={`actions-${i}-value`}
@@ -412,7 +412,7 @@ const PlaybookAddComponentsContent = ({
             }}
           />
         );
-      case 'platform':
+      case 'x_mitre_platforms':
         return (
           <OpenVocabField
             name={`actions-${i}-value`}
