@@ -2972,6 +2972,7 @@
   "The value must be greater than or equal to 0": "Der Wert muss größer als oder gleich 0 sein",
   "The value must be greater than or equal to 1": "Der Wert muss größer oder gleich 1 sein",
   "The value must be less than or equal to 100": "Der Wert muss kleiner als oder gleich 100 sein",
+  "The value should be between 0 and 100": "Der Wert sollte zwischen 0 und 100 liegen",
   "The values do not match": "Die Werte stimmen nicht überein",
   "The variable name should not contain spaces": "Der Variablenname sollte keine Leerzeichen enthalten",
   "The variable name should not contain special characters": "Der Variablenname sollte keine Sonderzeichen enthalten",
