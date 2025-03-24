@@ -173,7 +173,6 @@ const Themes: FunctionComponent<ThemesProps> = ({
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
-            canToggleLine={false}
             disableLineSelection
             disableNavigation
             hideSearch

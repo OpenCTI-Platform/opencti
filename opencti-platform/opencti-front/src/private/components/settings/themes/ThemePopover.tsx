@@ -58,6 +58,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
         <IconButton
           onClick={handleOpen}
           aria-haspopup="true"
+          data-testid={`${theme.name}-popover`}
           size="large"
           color="primary"
         >
@@ -70,14 +71,29 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
         onClose={handleClose}
       >
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+          <MenuItem
+            onClick={handleOpenUpdate}
+            aria-label={t_i18n('Update')}
+          >
+            {t_i18n('Update')}
+          </MenuItem>
         </Security>
         <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
-          <MenuItem onClick={handleExport}>{t_i18n('Export')}</MenuItem>
+          <MenuItem
+            onClick={handleExport}
+            aria-label={t_i18n('Export')}
+          >
+            {t_i18n('Export')}
+          </MenuItem>
         </Security>
         {!theme.system_default && (
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+            <MenuItem
+              onClick={deletion.handleOpenDelete}
+              aria-label={t_i18n('Delete')}
+            >
+              {t_i18n('Delete')}
+            </MenuItem>
           </Security>
         )}
       </Menu>
