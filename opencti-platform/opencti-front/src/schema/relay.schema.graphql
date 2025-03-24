@@ -8181,7 +8181,7 @@ type Query {
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
   indicator(id: String!): Indicator
-  indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): IndicatorConnection
+  indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IndicatorConnection
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
   indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number
   indicatorsDistribution(objectId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]

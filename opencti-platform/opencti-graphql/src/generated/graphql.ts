@@ -20821,6 +20821,7 @@ export type QueryIndicatorsArgs = {
   orderBy?: InputMaybe<IndicatorsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+  toStix?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 

@@ -41,6 +41,7 @@ const ThemeDark = (
     success: { main: '#03a847' },
     primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
+    gradient: { main: '#00f1bd' },
     border: {
       primary: hexToRGB((primary || THEME_DARK_DEFAULT_PRIMARY), 0.3),
       secondary: hexToRGB((secondary || THEME_DARK_DEFAULT_SECONDARY), 0.3),
@@ -51,7 +52,6 @@ const ThemeDark = (
     },
     chip: { main: '#ffffff' },
     ai: { main: '#9575cd', light: '#d1c4e9', dark: '#673ab7', contrastText: 'black', text: { primary: '#9575cd' } },
-    xtmhub: { main: '#0FBCFF', light: '#00F1BD' },
     ee: {
       main: EE_COLOR,
       contrastText: '#ffffff',

@@ -378,6 +378,7 @@ export interface IndicatorPatch {
   x_opencti_score?: number,
   decay_history?: DecayHistory[],
   decay_next_reaction_date?: Date,
+  x_opencti_detection?: boolean,
 }
 
 export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator) => {
@@ -398,7 +399,7 @@ export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator)
       decay_history: decayHistory,
     };
     if (newStableScore <= model.decay_revoke_score) {
-      patch = { ...patch, revoked: true };
+      patch = { ...patch, revoked: true, x_opencti_detection: false };
     } else {
       const nextScoreReactionDate = computeNextScoreReactionDate(indicator.decay_base_score, newStableScore, model, moment(indicator.valid_from));
       if (nextScoreReactionDate) {
