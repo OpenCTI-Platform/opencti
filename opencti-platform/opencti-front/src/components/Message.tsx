@@ -32,10 +32,12 @@ const Message = () => {
   const [_, setError] = useState(false);
   const [fullError, setFullError] = useState<FullError | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const isEnterpriseEdition = useEnterpriseEdition();
-
+  let isEnterpriseEdition = false;
   let isRequestAccessFeatureEnabled = false;
+
   try {
+    // if you move anything oustide of this try/catch, please check that /public/graphql is still working.
+    isEnterpriseEdition = useEnterpriseEdition();
     const { isRequestAccessEnabled, isFeatureEnable } = useHelper();
     isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF') && isRequestAccessEnabled() && isEnterpriseEdition;
   } catch (e) {
