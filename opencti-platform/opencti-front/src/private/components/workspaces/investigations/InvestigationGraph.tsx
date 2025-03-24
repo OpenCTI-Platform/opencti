@@ -447,7 +447,7 @@ const InvestigationGraphComponent = ({
   const titleHeight = 44;
   const totalHeight = bannerHeight + headerHeight + paddingHeight + titleHeight;
   const graphContainerStyle: CSSProperties = {
-    margin: `-${theme.spacing(3)}`,
+    margin: `0 -${theme.spacing(3)}`,
     height: `calc(100vh - ${totalHeight}px)`,
   };
 
@@ -502,24 +502,26 @@ const InvestigationGraphComponent = ({
   };
 
   return (
-    <div style={graphContainerStyle} ref={ref}>
+    <div style={{ display: 'flex', flexFlow: 'column' }}>
       <WorkspaceHeader
         workspace={investigation}
         variant="investigation"
         widgetActions={undefined}
         handleAddWidget={undefined}
       />
-      <Graph parentRef={ref} onPositionsChanged={savePositions}>
-        <GraphToolbar
-          stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
-          relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
-          entity={investigation}
-          onAddRelation={addRelationInGraph}
-          onRemove={removeInGraph}
-          onInvestigationExpand={addInGraph}
-          onInvestigationRollback={replaceInGraph}
-        />
-      </Graph>
+      <div style={graphContainerStyle} ref={ref}>
+        <Graph parentRef={ref} onPositionsChanged={savePositions}>
+          <GraphToolbar
+            stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
+            relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
+            entity={investigation}
+            onAddRelation={addRelationInGraph}
+            onRemove={removeInGraph}
+            onInvestigationExpand={addInGraph}
+            onInvestigationRollback={replaceInGraph}
+          />
+        </Graph>
+      </div>
     </div>
   );
 };
