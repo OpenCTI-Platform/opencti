@@ -45,7 +45,7 @@ import type { BasicStoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
 import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
-import { addFilter, checkFiltersValidity, extractFilterGroupValues, filtersEntityIdsMappingResult } from '../../utils/filtering/filtering-utils';
+import { addFilter, checkFiltersValidity, emptyFilterGroup, extractFilterGroupValues, filtersEntityIdsMappingResult } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
@@ -423,7 +423,9 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   } catch (error) {
     throw UnknownError('Error when calling the NLQ model', { error, promptValue });
   }
-  const parsedResponse = { ...rawResponse, filterGroups: [] } as unknown as FilterGroup;
+  const parsedResponse = rawResponse
+    ? { ...rawResponse, filterGroups: [] } as unknown as FilterGroup
+    : emptyFilterGroup;
 
   // 02. check the filters validity
   try {
