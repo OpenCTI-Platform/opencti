@@ -142,7 +142,10 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
         return !valid_from || !value || value > valid_from;
       }),
     x_mitre_platforms: Yup.array().nullable(),
-    x_opencti_score: Yup.number().nullable(),
+    x_opencti_score: Yup.number()
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
     description: Yup.string().nullable(),
     x_opencti_detection: Yup.boolean().nullable(),
     createObservables: Yup.boolean().nullable(),

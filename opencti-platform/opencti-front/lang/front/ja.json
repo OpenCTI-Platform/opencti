@@ -3083,6 +3083,7 @@
   "The value must be greater than or equal to 0": "値は 0 以上である必要があります",
   "The value must be greater than or equal to 1": "値は 1 以上である必要があります",
   "The value must be less than or equal to 100": "値は 100 以下である必要があります",
+  "The value should be between 0 and 100": "値は0から100の間でなければならない。",
   "The value must not be empty": "値は空であってはならない",
   "The value must not be empty.": "値は空であってはならない。",
   "The values do not match": "値が一致しません",

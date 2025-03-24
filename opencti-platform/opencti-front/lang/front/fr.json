@@ -3085,6 +3085,7 @@
   "The value must be less than or equal to 100": "La valeur doit être inférieure ou égale à 100",
   "The value must not be empty": "La valeur ne doit pas être vide",
   "The value must not be empty.": "La valeur ne doit pas être vide.",
+  "The value should be between 0 and 100": "La valeur doit être comprise entre 0 et 100",
   "The values do not match": "Les valeurs ne correspondent pas",
   "The values must be different.": "Les valeurs doivent être différentes.",
   "The variable name should not contain spaces": "Le nom de la variable ne doit pas contenir d'espaces",
