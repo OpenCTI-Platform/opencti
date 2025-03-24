@@ -2603,7 +2603,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       updatePatch.valid_from = element.valid_from;
       updatePatch.valid_until = element.valid_until;
       // don't reset decay attributes
-      updatePatch.decay_base_score = element.decay_base_score;
+      // updatePatch.decay_base_score = element.decay_base_score; // no need since it's the same score
       updatePatch.revoked = element.revoked;
       updatePatch.decay_base_score_date = element.decay_base_score_date;
       updatePatch.decay_applied_rule = element.decay_applied_rule;
