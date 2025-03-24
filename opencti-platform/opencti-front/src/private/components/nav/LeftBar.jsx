@@ -169,7 +169,7 @@ const useStyles = makeStyles((theme) => createStyles({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    padding: '1px 0 0 0',
+    padding: '1px 0 0 20px',
     fontWeight: 500,
     fontSize: 12,
   },
