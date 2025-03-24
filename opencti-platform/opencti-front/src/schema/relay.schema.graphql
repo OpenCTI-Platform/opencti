@@ -8112,7 +8112,7 @@ type Query {
   vocabularyCategories: [VocabularyDefinition!]!
   vocabularies(category: VocabularyCategory, first: Int, after: ID, orderBy: VocabularyOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): VocabularyConnection
   administrativeArea(id: String!): AdministrativeArea
-  administrativeAreas(first: Int, after: ID, orderBy: AdministrativeAreasOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AdministrativeAreaConnection
+  administrativeAreas(first: Int, after: ID, orderBy: AdministrativeAreasOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): AdministrativeAreaConnection
   task(id: String!): Task
   tasks(first: Int, after: ID, orderBy: TasksOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): TaskConnection
   taskContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean

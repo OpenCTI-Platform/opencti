@@ -19909,6 +19909,7 @@ export type QueryAdministrativeAreasArgs = {
   orderBy?: InputMaybe<AdministrativeAreasOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+  toStix?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
