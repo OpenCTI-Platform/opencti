@@ -37,7 +37,6 @@ const subscription = graphql`
     stixDomainObject(id: $id) {
       ... on Grouping {
         ...Grouping_grouping
-        ...GroupingKnowledgeGraph_grouping
         ...GroupingEditionContainer_grouping
         ...StixCoreObjectContent_stixCoreObject
       }

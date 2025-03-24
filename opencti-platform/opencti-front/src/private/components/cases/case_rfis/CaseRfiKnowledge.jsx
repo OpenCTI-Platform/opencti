@@ -337,7 +337,8 @@ class CaseRfiKnowledgeComponent extends Component {
                   if (props && props.caseRfi) {
                     return (
                       <CaseRfiKnowledgeGraph
-                        caseData={props.caseRfi}
+                        id={caseData.id}
+                        data={props.caseRfi}
                         mode={mode}
                         enableReferences={enableReferences}
                       />
@@ -411,7 +412,10 @@ class CaseRfiKnowledgeComponent extends Component {
                 render={({ props }) => {
                   if (props && props.caseRfi) {
                     return (
-                      <CaseRfiKnowledgeCorrelation caseData={props.caseRfi} />
+                      <CaseRfiKnowledgeCorrelation
+                        id={caseData.id}
+                        data={props.caseRfi}
+                      />
                     );
                   }
                   return (

@@ -49,7 +49,6 @@ const GraphControlledDial = ({ onOpen }: { onOpen: () => void }) => {
         color="primary"
         aria-label={t_i18n('Add')}
         onClick={() => onOpen()}
-        size="large"
       >
         <Add/>
       </IconButton>

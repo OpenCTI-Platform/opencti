@@ -652,7 +652,7 @@ class StixSightingRelationshipCreation extends Component {
 
 StixSightingRelationshipCreation.propTypes = {
   open: PropTypes.bool,
-  fromObjects: PropTypes.object,
+  fromObjects: PropTypes.array,
   toObjects: PropTypes.array,
   handleResult: PropTypes.func,
   classes: PropTypes.object,
@@ -662,8 +662,8 @@ StixSightingRelationshipCreation.propTypes = {
   firstSeen: PropTypes.string,
   lastSeen: PropTypes.string,
   confidence: PropTypes.number,
-  defaultCreatedBy: PropTypes.object,
-  defaultMarkingDefinitions: PropTypes.object,
+  defaultCreatedBy: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+  defaultMarkingDefinitions: PropTypes.array,
   handleClose: PropTypes.func,
   handleReverseSighting: PropTypes.func,
 };
