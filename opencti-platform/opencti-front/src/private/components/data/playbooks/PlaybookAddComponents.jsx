@@ -189,11 +189,6 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
         { label: t_i18n('Indicator types'), value: 'indicator_types', isMultiple: true },
         { label: t_i18n('Platforms'), value: 'x_mitre_platforms', isMultiple: true },
-        {
-          label: t_i18n('Status'),
-          value: 'x_opencti_workflow_id',
-          isMultiple: false,
-        },
       ];
     } else if (actionsInputs[i]?.op === 'replace') {
       options = [
@@ -237,11 +232,6 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
         { label: t_i18n('Indicator types'), value: 'indicator_types', isMultiple: true },
         { label: t_i18n('Platforms'), value: 'x_mitre_platforms', isMultiple: true },
-        {
-          label: t_i18n('Status'),
-          value: 'x_opencti_workflow_id',
-          isMultiple: false,
-        },
       ];
     }
     return (
