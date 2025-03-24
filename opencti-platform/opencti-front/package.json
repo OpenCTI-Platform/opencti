@@ -150,7 +150,7 @@
     "typescript": "5.7.3",
     "vite": "5.4.14",
     "vite-plugin-relay": "2.1.0",
-    "vite-plugin-static-copy": "2.2.0",
+    "vite-plugin-static-copy": "2.3.0",
     "vitest": "2.0.5"
   },
   "engines": {
