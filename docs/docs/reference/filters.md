@@ -390,13 +390,6 @@ filters = {
 
         1.1.1.1 would be returned when using filter "In regard of" located at France
 
-    - the relationships of type ``targets`` with a ``Region``, ``Country`` or ``Sector`` as target type.
-
-        Example: given the relationship "0mega (Malware) targets Energy (Sector)" present in the platform
-
-        Energy would not be returned when using filter "In regards of" targets 0mega
-
-        0mega will be returned when using filter "In regards of" targets Energy
 
 If a values combination may not return all the results because one of the above relationships is involved, a warning icon is displayed before the filter icon :
 
