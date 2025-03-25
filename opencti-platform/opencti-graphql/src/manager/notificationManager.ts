@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { head } from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
@@ -7,7 +6,7 @@ import { createStreamProcessor, fetchRangeNotifications, storeNotificationEvent,
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
-import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
+import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
@@ -24,13 +23,8 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { extractStixRepresentative } from '../database/stix-representative';
-import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import type { BasicStoreCommon } from '../types/store';
+import { extractStixRepresentative, extractStixRepresentativeForUser } from '../database/stix-representative';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { replaceFilterKey } from '../utils/filtering/filtering-utils';
 import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER } from '../utils/filtering/filtering-constants';
@@ -89,55 +83,6 @@ export interface DigestEvent extends StreamNotifEvent {
   playbook_source?: string
   data: Array<{ notification_id: string, instance: StixObject, type: string, message: string }>
 }
-
-// region: user access information extractors
-// extract information from a sighting to have all the elements to check if a user has access to the from/to of the sighting
-const extractUserAccessPropertiesFromSighting = (sighting: StixSighting) => {
-  return [
-    {
-      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs,
-      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_granted_refs,
-      entity_type: sighting.extensions[STIX_EXT_OCTI].sighting_of_type,
-    } as BasicStoreCommon,
-    {
-      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs,
-      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_granted_refs,
-      entity_type: head(sighting.extensions[STIX_EXT_OCTI].where_sighted_types),
-    } as BasicStoreCommon
-  ];
-};
-
-// extract information from a relationship to have all the elements to check if a user has access to the from/to of the relationship
-const extractUserAccessPropertiesFromRelationship = (relation: StixRelation) => {
-  return [
-    {
-      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs,
-      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].source_ref_granted_refs,
-      entity_type: relation.extensions[STIX_EXT_OCTI].source_type,
-    } as BasicStoreCommon,
-    {
-      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs,
-      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].target_ref_granted_refs,
-      entity_type: relation.extensions[STIX_EXT_OCTI].target_type,
-    } as BasicStoreCommon
-  ];
-};
-
-// extract information from a stix object to have all the elements to check if a user has access to the object
-const extractUserAccessPropertiesFromStixObject = (
-  instance: StixObject | StixRelationshipObject
-) => {
-  if (isStixSightingRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
-    const sighting = instance as StixSighting;
-    return extractUserAccessPropertiesFromSighting(sighting);
-  }
-  if (isStixCoreRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
-    const relation = instance as StixRelation;
-    return extractUserAccessPropertiesFromRelationship(relation);
-  }
-  return [];
-};
-// endregion
 
 export const isLiveKnowledge = (n: ResolvedTrigger): n is ResolvedLive => {
   return n.trigger.trigger_scope === 'knowledge' && n.trigger.trigger_type === 'live';
@@ -359,10 +304,7 @@ export const generateNotificationMessageForInstance = async (
   user: AuthUser,
   instance: StixObject | StixRelationshipObject,
 ) => {
-  const [from, to] = extractUserAccessPropertiesFromStixObject(instance);
-  const fromRestricted = from ? !(await isUserCanAccessStoreElement(context, user, from)) : false;
-  const toRestricted = to ? !(await isUserCanAccessStoreElement(context, user, to)) : false;
-  const instanceRepresentative = extractStixRepresentative(instance, { fromRestricted, toRestricted });
+  const instanceRepresentative = await extractStixRepresentativeForUser(context, user, instance);
   return `[${instance.type.toLowerCase()}] ${instanceRepresentative}`;
 };
 
