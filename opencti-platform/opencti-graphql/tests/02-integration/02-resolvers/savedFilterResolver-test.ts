@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
+import { queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 
 const GET_SAVED_FILTERS_QUERY = gql`
@@ -90,7 +90,16 @@ describe('Saved Filter Resolver', () => {
         const savedFilters = result.data?.savedFilters.edges;
         expect(savedFilters).toBeDefined();
         expect(savedFilters.length).toEqual(1);
-        expect(savedFilters.length).toEqual(1);
+      });
+      it('gives the list of saved filters with restricted members', async () => {
+        const result = await queryAsUserWithSuccess(USER_EDITOR.client, {
+          query: GET_SAVED_FILTERS_QUERY,
+          variables: {},
+        });
+
+        const savedFilters = result.data?.savedFilters.edges;
+        expect(savedFilters).toBeDefined();
+        expect(savedFilters.length).toEqual(0);
       });
     });
   });
