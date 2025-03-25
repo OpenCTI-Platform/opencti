@@ -124,7 +124,7 @@ const extractUserAccessPropertiesFromRelationship = (relation: StixRelation) => 
 };
 
 // extract information from a stix object to have all the elements to check if a user has access to the object
-const extractUserAccessPropertiesFromStixObject = (
+export const extractUserAccessPropertiesFromStixObject = (
   instance: StixObject | StixRelationshipObject
 ) => {
   if (isStixSightingRelationship(instance.extensions[STIX_EXT_OCTI].type)) {

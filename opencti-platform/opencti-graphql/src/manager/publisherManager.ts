@@ -165,6 +165,26 @@ const processNotificationEvent = async (
   }
 };
 
+// replace the To and the From of a stream message concerning a relationship
+// by Restricted if the user has not the right to see the from/to
+export const restrictedStreamMessageForRelationship = (streamMessage: string, notificationMessage: string) => {
+  const splittedStreamBuiltMessage = streamMessage.split('`');
+  if (splittedStreamBuiltMessage.length > 5) {
+    const from = splittedStreamBuiltMessage[3];
+    const to = splittedStreamBuiltMessage[5];
+    const fromRestricted = !notificationMessage.includes(from);
+    const toRestricted = !notificationMessage.includes(to);
+    if (fromRestricted && toRestricted) {
+      return `\`${splittedStreamBuiltMessage[1]}\`${splittedStreamBuiltMessage[2]}\`Restricted\` to \`Restricted\``;
+    } if (fromRestricted) {
+      return `\`${splittedStreamBuiltMessage[1]}\`${splittedStreamBuiltMessage[2]}\`Restricted\` to \`${splittedStreamBuiltMessage[5]}\`${splittedStreamBuiltMessage[6]}`;
+    } if (toRestricted) {
+      return `\`${splittedStreamBuiltMessage[1]}\`${splittedStreamBuiltMessage[2]}\`${splittedStreamBuiltMessage[3]}\`${splittedStreamBuiltMessage[4]}\`Restricted\``;
+    }
+  }
+  return streamMessage;
+};
+
 const processLiveNotificationEvent = async (
   context: AuthContext,
   notificationMap: Map<string, BasicStoreEntityTrigger>,
@@ -177,8 +197,12 @@ const processLiveNotificationEvent = async (
     let notificationMessage = message;
     if (streamUser && (event as KnowledgeNotificationEvent).streamMessage) {
       const { streamMessage } = event as KnowledgeNotificationEvent;
-      const streamBuiltMessage = `\`${streamUser.name}\` ${streamMessage}`;
+      let streamBuiltMessage = `\`${streamUser.name}\` ${streamMessage}`;
       if (streamBuiltMessage !== notificationMessage) {
+        // for relationships, modify the stream message to keep the parts the stream user has the right to see
+        if ('type' in event.data && event.data.type && event.data.type === 'relationship') {
+          streamBuiltMessage = restrictedStreamMessageForRelationship(streamBuiltMessage, message);
+        }
         notificationMessage = `${message} - ${streamBuiltMessage}`;
       }
     }
