@@ -52,7 +52,7 @@ const notificationLineNotificationDeleteMutation = graphql`
 `;
 
 const Notifications: FunctionComponent = () => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Notifications'));
@@ -78,6 +78,31 @@ const Notifications: FunctionComponent = () => {
     initialValues,
   );
 
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Notification']);
+  const contextFilters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'entity_type',
+        values: ['Notification'],
+        operator: 'eq',
+        mode: 'or',
+      },
+      {
+        key: 'user_id',
+        values: [me.id],
+        operator: 'eq',
+        mode: 'or',
+      },
+    ],
+    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+  };
+
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as NotificationsLinesPaginationQuery$variables;
+
   const [commitMarkRead] = useApiMutation(
     notificationLineNotificationMarkReadMutation,
   );
@@ -97,7 +122,7 @@ const Notifications: FunctionComponent = () => {
       },
       updater: (store) => {
         console.log({ store, id });
-        deleteNode(store, 'Pagination_myNotifications', paginationOptions, id);
+        deleteNode(store, 'Pagination_myNotifications', queryPaginationOptions, id);
       },
       onCompleted: () => {
         handleCloseDelete();
@@ -248,30 +273,6 @@ const Notifications: FunctionComponent = () => {
     },
   };
 
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Notification']);
-  const contextFilters = {
-    mode: 'and',
-    filters: [
-      {
-        key: 'entity_type',
-        values: ['Notification'],
-        operator: 'eq',
-        mode: 'or',
-      },
-      {
-        key: 'user_id',
-        values: [me.id],
-        operator: 'eq',
-        mode: 'or',
-      },
-    ],
-    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
-  };
-
-  const queryPaginationOptions = {
-    ...paginationOptions,
-    filters: contextFilters,
-  } as unknown as NotificationsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<NotificationsLinesPaginationQuery>(
     notificationsLinesQuery,
     queryPaginationOptions,

@@ -31,7 +31,7 @@ export const notificationsLinesFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
-  @refetchable(queryName: "AlertsLinesRefetchQuery") {
+  @refetchable(queryName: "NotificationsLinesRefetchQuery") {
     myNotifications(
       search: $search
       first: $count
