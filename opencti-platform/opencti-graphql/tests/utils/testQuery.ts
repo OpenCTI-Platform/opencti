@@ -4,7 +4,7 @@ import { CookieJar } from 'tough-cookie';
 import { print } from 'graphql';
 import axios, { type AxiosInstance } from 'axios';
 import createSchema from '../../src/graphql/schema';
-import conf, { ACCOUNT_STATUS_ACTIVE, logApp, PORT } from '../../src/config/conf';
+import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
 
 // region static graphql modules
@@ -604,7 +604,6 @@ const createUser = async (user: UserTestData) => {
 };
 // Create all testing users
 export const createTestUsers = async () => {
-  logApp.info('[TEST] creating test users.');
   for (let index = 0; index < TESTING_USERS.length; index += 1) {
     const user = TESTING_USERS[index];
     await createUser(user);

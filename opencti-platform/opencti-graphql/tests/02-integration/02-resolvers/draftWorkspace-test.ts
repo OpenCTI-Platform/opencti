@@ -206,6 +206,7 @@ describe('Drafts workspace resolver testing', () => {
       query: CREATE_DRAFT_WORKSPACE_QUERY,
       variables: { input: { name: draftName, entity_id: draftEntityId } },
     });
+
     expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
     expect(createdDraft.data?.draftWorkspaceAdd.name).toEqual(draftName);
     expect(createdDraft.data?.draftWorkspaceAdd.entity_id).toEqual(draftEntityId);
@@ -380,6 +381,7 @@ describe('Drafts workspace resolver testing', () => {
       query: DELETE_DRAFT_WORKSPACE_QUERY,
       variables: { id: addedDraftId },
     });
+
     const { data } = await queryAsAdmin({
       query: LIST_DRAFT_WORKSPACES_QUERY,
     });
@@ -397,6 +399,7 @@ describe('Drafts workspace resolver testing', () => {
       query: CREATE_DRAFT_WORKSPACE_QUERY,
       variables: { input: { name: draftName } },
     });
+    expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
     addedDraftId = createdDraft.data?.draftWorkspaceAdd.id;
     addedDraftName = createdDraft.data?.draftWorkspaceAdd.name;
     await modifyAdminDraftContext(addedDraftId);
