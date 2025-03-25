@@ -3,21 +3,24 @@ import SpriteText from 'three-spritetext';
 import { ForceGraphProps } from 'react-force-graph-3d';
 import type { Theme } from '../../Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
-import { useGraphContext } from '../GraphContext';
 
 interface PaintOptions {
   showNbConnectedElements?: boolean
 }
 
-const useGraphPainter = () => {
+interface UseGraphPainterArgs {
+  selectedLinks: GraphLink[]
+  selectedNodes: GraphNode[]
+  search: string | undefined
+}
+
+const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const theme = useTheme<Theme>();
   const {
-    graphState: {
-      selectedLinks,
-      selectedNodes,
-      search,
-    },
-  } = useGraphContext();
+    selectedLinks = [],
+    selectedNodes = [],
+    search,
+  } = args ?? {};
 
   const DEFAULT_COLOR = '#0fbcff'; // Normally never used (all colors are defined).
   const colors = {
@@ -129,7 +132,7 @@ const useGraphPainter = () => {
 
     if (!selected && search) return colors.disabled;
     if (selected) return colors.selected;
-    if (link.isNestedInferred) return colors.inferred;
+    if (link.isNestedInferred || link.inferred) return colors.inferred;
     if (link.disabled) return colors.disabled;
     return theme.palette.primary.main;
   };

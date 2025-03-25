@@ -18,7 +18,7 @@ import GraphLoadingAlert from './components/GraphLoadingAlert';
 
 export interface GraphProps {
   parentRef: MutableRefObject<HTMLDivElement | null>
-  onPositionsChanged: (positions: OctiGraphPositions) => void
+  onPositionsChanged?: (positions: OctiGraphPositions) => void
   children?: ReactNode
 }
 
@@ -45,16 +45,6 @@ const Graph = ({
   } = useGraphInteractions();
 
   const {
-    nodePaint,
-    nodePointerAreaPaint,
-    nodeThreePaint,
-    linkLabelPaint,
-    linkColorPaint,
-    linkThreePaint,
-    linkThreeLabelPosition,
-  } = useGraphPainter();
-
-  const {
     graphRef2D,
     graphRef3D,
     graphData,
@@ -69,8 +59,23 @@ const Graph = ({
       selectedLinks,
       loadingCurrent,
       loadingTotal,
+      search,
     },
   } = useGraphContext();
+
+  const {
+    nodePaint,
+    nodePointerAreaPaint,
+    nodeThreePaint,
+    linkLabelPaint,
+    linkColorPaint,
+    linkThreePaint,
+    linkThreeLabelPosition,
+  } = useGraphPainter({
+    selectedLinks,
+    selectedNodes,
+    search,
+  });
 
   useGraphFilter();
 
@@ -84,17 +89,19 @@ const Graph = ({
       [id]: { id, x, y },
     }), {});
     setRawPositions(newPositions);
-    onPositionsChanged(newPositions);
+    onPositionsChanged?.(newPositions);
   };
 
   const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
 
   return (
-    <>
-      <div style={{ position: 'relative' }}>
+    <RectangleSelection
+      graphId={graphId}
+      disabled={!selectFreeRectangle}
+      onSelection={selectFromFreeRectangle}
+    >
+      <div style={{ position: 'relative' }} id={graphId}>
         {isLoadingData && <GraphLoadingAlert />}
-      </div>
-      <div id={graphId}>
         {selectedEntities.length > 0 && (
           <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
         )}
@@ -145,44 +152,41 @@ const Graph = ({
                 setIsAddRelationOpen(true);
               }}
             />
-            <RectangleSelection
-              graphId={graphId}
-              disabled={!selectFreeRectangle}
-              onSelection={selectFromFreeRectangle}
-            >
-              <ForceGraph2D<GraphNode, GraphLink>
-                ref={graphRef2D}
-                width={width}
-                height={height}
-                graphData={graphData}
-                dagMode={modeTree ?? undefined}
-                dagLevelDistance={50}
-                cooldownTicks={(!withForces || isLoadingData) ? 0 : 100}
-                enablePanInteraction={!selectFree && !selectFreeRectangle}
-                linkDirectionalArrowLength={3}
-                linkDirectionalArrowRelPos={0.99}
-                linkCanvasObjectMode={() => 'after'}
-                linkCanvasObject={(link, ctx) => (shouldDisplayLinks ? linkLabelPaint(link, ctx) : null)}
-                linkLineDash={(link) => (link.inferred || link.isNestedInferred ? [2, 1] : null)}
-                linkColor={linkColorPaint}
-                nodePointerAreaPaint={nodePointerAreaPaint} // What's for?
-                nodeCanvasObject={(node, ctx) => nodePaint(node, ctx, {
-                  showNbConnectedElements: context === 'investigation',
-                })}
-                onZoomEnd={saveZoom}
-                onLinkClick={toggleLink}
-                onBackgroundClick={clearSelection}
-                onNodeClick={toggleNode}
-                onNodeDrag={moveSelection}
-                onNodeDragEnd={onNodeDragEnd}
-              />
-            </RectangleSelection>
+
+            <ForceGraph2D<GraphNode, GraphLink>
+              ref={graphRef2D}
+              width={width}
+              height={height}
+              graphData={graphData}
+              dagMode={modeTree ?? undefined}
+              dagLevelDistance={50}
+              cooldownTicks={(!withForces || isLoadingData) ? 0 : 100}
+              enablePanInteraction={!selectFree && !selectFreeRectangle}
+              linkDirectionalArrowLength={3}
+              linkDirectionalArrowRelPos={0.99}
+              linkCanvasObjectMode={() => 'after'}
+              linkCanvasObject={(link, ctx) => (shouldDisplayLinks ? linkLabelPaint(link, ctx) : null)}
+              linkLineDash={(link) => (link.isNestedInferred ? [2, 1] : null)}
+              linkDirectionalParticles={(link) => (link.inferred ? 20 : 0)}
+              linkDirectionalParticleWidth={2}
+              linkDirectionalParticleSpeed={() => 0.002}
+              linkColor={linkColorPaint}
+              nodePointerAreaPaint={nodePointerAreaPaint} // What's for?
+              nodeCanvasObject={(node, ctx) => nodePaint(node, ctx, {
+                showNbConnectedElements: context === 'investigation',
+              })}
+              onZoomEnd={saveZoom}
+              onLinkClick={toggleLink}
+              onBackgroundClick={clearSelection}
+              onNodeClick={toggleNode}
+              onNodeDrag={moveSelection}
+              onNodeDragEnd={onNodeDragEnd}
+            />
           </>
         )}
-
         {children}
       </div>
-    </>
+    </RectangleSelection>
   );
 };
 

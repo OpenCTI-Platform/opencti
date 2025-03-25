@@ -22,9 +22,9 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
-import { encodeMappingData } from '../../../../utils/Graph';
 import { deleteElementByValue } from '../../../../utils/utils';
 import Transition from '../../../../components/Transition';
+import { serializeObjectB64 } from '../../../../utils/object';
 
 const styles = (theme) => ({
   container: {
@@ -169,7 +169,7 @@ class ContainerStixCoreObjectPopover extends Component {
         id: containerId,
         input: {
           key: 'content_mapping',
-          value: encodeMappingData(newMappingData),
+          value: serializeObjectB64(newMappingData),
         },
         commitMessage,
         references,
