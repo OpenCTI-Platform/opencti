@@ -20,6 +20,7 @@ import Dialog from '@mui/material/Dialog';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import SavedFilterButton from 'src/components/saved_filters/SavedFilterButton';
+import SavedFilters from 'src/components/saved_filters/SavedFilters';
 import FilterIconButton from '../FilterIconButton';
 import { useFormatter } from '../i18n';
 import { DataTableDisplayFiltersProps, DataTableFiltersProps, DataTableVariant } from './dataTableTypes';
@@ -32,7 +33,6 @@ import Transition from '../Transition';
 import DataTablePagination from './DataTablePagination';
 import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
 import { useDataTableContext } from './components/DataTableContext';
-import SavedFiltersInput from '../saved_filters/SavedFiltersInput';
 
 export const DataTableDisplayFilters = ({
   availableFilterKeys,
@@ -138,7 +138,7 @@ const DataTableFilters = ({
               availableRelationFilterTypes={availableRelationFilterTypes}
             />
           )}
-          <SavedFiltersInput/>
+          <SavedFilters />
         </div>
         <div style={{ display: 'flex' }}>
           {(variant === DataTableVariant.default) && (
