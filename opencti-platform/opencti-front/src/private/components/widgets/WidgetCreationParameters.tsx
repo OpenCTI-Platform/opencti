@@ -41,7 +41,7 @@ const WidgetCreationParameters = () => {
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const runtimeSortByValues = [ // values sortable only if runtime sorting is enabled
+  const runtimeSortByValues = [ // values sortable only if runtime mapping is enabled
     'createdBy',
     'creator',
     'objectMarking',
