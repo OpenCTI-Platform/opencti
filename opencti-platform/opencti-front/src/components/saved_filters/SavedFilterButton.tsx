@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import { SaveOutlined } from '@mui/icons-material';
 import { useFormatter } from 'src/components/i18n';
-import SavedFilterDialog from './SavedFilterDialog';
+import Tooltip from '@mui/material/Tooltip';
+import SavedFilterCreateDialog from 'src/components/saved_filters/SavedFilterCreateDialog';
 
 const SavedFilterButton = () => {
   const { t_i18n } = useFormatter();
@@ -14,17 +15,19 @@ const SavedFilterButton = () => {
 
   return (
     <>
-      <IconButton
-        color="primary"
-        onClick={handleOpenDialog}
-        size="medium"
-        aria-label={t_i18n('Save')}
-      >
-        <SaveOutlined />
-      </IconButton>
+      <Tooltip title={t_i18n('Save filter')}>
+        <IconButton
+          color="primary"
+          onClick={handleOpenDialog}
+          size="small"
+          aria-label={t_i18n('Save')}
+        >
+          <SaveOutlined />
+        </IconButton>
+      </Tooltip>
 
       {isSavedDialogOpen && (
-        <SavedFilterDialog
+        <SavedFilterCreateDialog
           isOpen={isSavedDialogOpen}
           onClose={handleCloseDialog}
         />

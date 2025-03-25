@@ -7,6 +7,8 @@ import Dialog from '@mui/material/Dialog';
 import { graphql } from 'react-relay';
 import { useFormatter } from 'src/components/i18n';
 import { deleteNode } from 'src/utils/store';
+import DialogContentText from '@mui/material/DialogContentText';
+import getSavedFilterScopeFilter from 'src/components/saved_filters/getSavedFilterScopeFilter';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 
 const savedFilterDeleteDialogMutation = graphql`
@@ -18,17 +20,17 @@ const savedFilterDeleteDialogMutation = graphql`
 type SavedFilterDeleteDialogProps = {
   savedFilterToDelete: string;
   onClose: () => void;
+  onReset: () => void;
 };
 
-const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose }: SavedFilterDeleteDialogProps) => {
+const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset }: SavedFilterDeleteDialogProps) => {
   const { t_i18n } = useFormatter();
 
   const [commit] = useApiMutation(
     savedFilterDeleteDialogMutation,
     undefined,
     {
-      successMessage: 'Saved filter deleted with success',
-      errorMessage: 'Something went wrong while deleting saved filter',
+      successMessage: t_i18n('Saved filter successfully removed'),
     },
   );
 
@@ -38,9 +40,11 @@ const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose }: SavedFilterDe
         id: savedFilterToDelete,
       },
       updater: (store) => {
-        deleteNode(store, 'SavedFilters__savedFilters', {}, savedFilterToDelete);
+        const filters = getSavedFilterScopeFilter(localStorageKey);
+        deleteNode(store, 'SavedFilters__savedFilters', { filters }, savedFilterToDelete);
       },
       onCompleted: () => {
+        onReset();
         onClose();
       },
       onError: () => {
@@ -51,14 +55,17 @@ const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose }: SavedFilterDe
 
   return (
     <Dialog
-      open
+      open={true}
       PaperProps={{ elevation: 1 }}
       onClose={onClose}
       fullWidth
       maxWidth="xs"
     >
-      <DialogTitle>{t_i18n('Confirmation')}</DialogTitle>
-      <DialogContent></DialogContent>
+      <DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to delete this saved filter ?')}
+        </DialogContentText>
+      </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{t_i18n('Cancel')}</Button>
         <Button onClick={handleSubmitDeleteFilter} color="secondary">{t_i18n('Validate')}</Button>

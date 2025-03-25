@@ -2,11 +2,13 @@ import React from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { SavedFiltersQuery } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
+import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
+import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSelection from './SavedFilterSelection';
 
 const savedFiltersQuery = graphql`
-  query SavedFiltersQuery {
-    savedFilters(first: 100) @connection(key: "SavedFilters__savedFilters") {
+  query SavedFiltersQuery($filters: FilterGroup) {
+    savedFilters(first: 100, filters: $filters) @connection(key: "SavedFilters__savedFilters") {
       edges {
         node {
           id
@@ -37,7 +39,15 @@ const SavedFiltersComponent = ({ queryRef }: SavedFiltersComponentProps) => {
 };
 
 const SavedFilters = () => {
-  const queryRef = useQueryLoading<SavedFiltersQuery>(savedFiltersQuery);
+  const {
+    useDataTablePaginationLocalStorage: {
+      localStorageKey,
+    },
+  } = useDataTableContext();
+
+  const filters = getSavedFilterScopeFilter(localStorageKey);
+
+  const queryRef = useQueryLoading<SavedFiltersQuery>(savedFiltersQuery, { filters });
 
   return (
     <>

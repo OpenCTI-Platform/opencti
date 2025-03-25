@@ -12,6 +12,7 @@ import { Filter, FilterGroup, handleFilterHelpers } from '../../../../utils/filt
 
 interface FiltersProps {
   variant?: string;
+  isDatatable?: boolean;
   disabled?: boolean;
   size?: number;
   fontSize?: number;
@@ -32,6 +33,7 @@ interface FiltersProps {
 
 const Filters: FunctionComponent<FiltersProps> = ({
   variant,
+  isDatatable,
   disabled,
   size,
   fontSize,
@@ -143,6 +145,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
           helpers={helpers}
           required={required}
           entityTypes={entityTypes}
+          isDatatable={isDatatable}
         />
       ) : (
         <ListFiltersWithoutLocalStorage

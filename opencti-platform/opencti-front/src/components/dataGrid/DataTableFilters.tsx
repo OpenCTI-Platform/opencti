@@ -19,8 +19,6 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
-import SavedFilterButton from 'src/components/saved_filters/SavedFilterButton';
-import SavedFilters from 'src/components/saved_filters/SavedFilters';
 import FilterIconButton from '../FilterIconButton';
 import { useFormatter } from '../i18n';
 import { DataTableDisplayFiltersProps, DataTableFiltersProps, DataTableVariant } from './dataTableTypes';
@@ -69,7 +67,6 @@ export const DataTableDisplayFilters = ({
         }}
         redirection
       />
-      <SavedFilterButton />
     </div>
   );
 };
@@ -125,6 +122,7 @@ const DataTableFilters = ({
         >
           {hasFilters && (
             <Filters
+              isDatatable
               helpers={helpers}
               searchContext={searchContextFinal}
               availableFilterKeys={availableFilterKeys}
@@ -138,7 +136,6 @@ const DataTableFilters = ({
               availableRelationFilterTypes={availableRelationFilterTypes}
             />
           )}
-          <SavedFilters />
         </div>
         <div style={{ display: 'flex' }}>
           {(variant === DataTableVariant.default) && (
