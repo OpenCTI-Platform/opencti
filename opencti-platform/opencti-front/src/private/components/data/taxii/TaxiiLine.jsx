@@ -86,6 +86,7 @@ class TaxiiLineLineComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
+        disablePadding
         secondaryAction={
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <TaxiiPopover

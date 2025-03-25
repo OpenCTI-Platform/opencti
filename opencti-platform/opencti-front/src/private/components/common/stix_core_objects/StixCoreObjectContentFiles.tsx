@@ -182,6 +182,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
             <ListItem
               dense={true}
               divider={true}
+              disablePadding
               secondaryAction={!draftContext && (
                 <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
                   <IconButton

@@ -76,8 +76,8 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
     const link = `${entityLink}/relations/${node.id}`;
     return (
       <ListItem
-        classes={{ root: classes.item }}
         divider={true}
+        disablePadding
         secondaryAction={node.is_inferred ? (
           <Tooltip
             title={t('Inferred knowledge based on the rule ') + R.head(node.x_opencti_inferences).rule.name}
@@ -93,6 +93,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
         )}
       >
         <ListItemButton
+          classes={{ root: classes.item }}
           component={Link}
           to={link}
           disabled={restricted}

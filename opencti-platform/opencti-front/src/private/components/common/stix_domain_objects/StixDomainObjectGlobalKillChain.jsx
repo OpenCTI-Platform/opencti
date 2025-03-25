@@ -117,6 +117,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
               <div key={stixRelationship.id}>
                 <ListItem
                   divider={true}
+                  disablePadding
                   secondaryAction={
                     <IconButton
                       onClick={this.handleToggleLine.bind(
@@ -161,6 +162,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                             key={stixDomainObject.id}
                             divider={true}
                             dense={true}
+                            disablePadding
                             secondaryAction={
                               <StixCoreRelationshipPopover
                                 stixCoreRelationshipId={stixDomainObject.id}

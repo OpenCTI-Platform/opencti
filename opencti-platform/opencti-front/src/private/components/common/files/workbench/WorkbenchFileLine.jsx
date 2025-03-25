@@ -156,7 +156,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
       <ListItem
         divider={true}
         dense={dense === true}
-        classes={{ root: nested ? classes.itemNested : classes.item }}
+        disablePadding
         secondaryAction={
           <>
             {!directDownload && !isFail && (
@@ -192,6 +192,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
           }
       >
         <ListItemButton
+          classes={{ root: nested ? classes.itemNested : classes.item }}
           component={isOutdated ? null : Link}
           disabled={isProgress}
           to={`/dashboard/data/import/pending/${toB64(file.id)}`}

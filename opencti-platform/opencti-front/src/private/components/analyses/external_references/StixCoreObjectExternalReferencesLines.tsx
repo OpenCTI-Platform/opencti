@@ -297,6 +297,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                       <ListItem
                         dense={true}
                         divider={true}
+                        disablePadding
                         secondaryAction={
                           <>
                             <Tooltip title={t_i18n('Browse the link')}>
@@ -384,6 +385,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                     <ListItem
                       dense={true}
                       divider={true}
+                      disablePadding
                       secondaryAction={
                         <>
                           {!isFileAttached && (

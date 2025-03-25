@@ -375,8 +375,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             {sortedConnectors && sortedConnectors.map((connector) => (
               <ListItem
                 key={connector.id}
-                classes={{ root: classes.item }}
                 divider={true}
+                disablePadding
                 secondaryAction={
                   <Security needs={[MODULES_MODMANAGE]}>
                     <>
@@ -411,10 +411,11 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                       </Tooltip>
                     </>
                   </Security>
-              }
+                }
               >
                 <ListItemButton
                   component={Link}
+                  classes={{ root: classes.item }}
                   to={`/dashboard/data/ingestion/connectors/${connector.id}`}
                 >
                   <ListItemIcon>

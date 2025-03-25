@@ -3218,10 +3218,13 @@ const WorkbenchFileContentComponent = ({
           <ListItem
             classes={{ root: classes.itemHead }}
             divider={false}
+            disablePadding
             style={{ paddingTop: 0 }}
             secondaryAction={<>&nbsp;</>}
           >
-            <ListItemButton>
+            <ListItemButton
+              classes={{ root: classes.itemHead }}
+            >
               <ListItemIcon
                 style={{
                   minWidth: 38,
@@ -3694,6 +3697,7 @@ const WorkbenchFileContentComponent = ({
             <ListItem
               key={object.id}
               divider
+              disablePadding
               secondaryAction={
                 <IconButton
                   onClick={() => handleDeleteObject(object)}
@@ -3848,6 +3852,7 @@ const WorkbenchFileContentComponent = ({
             <ListItem
               key={object.id}
               divider
+              disablePadding
               secondaryAction={
                 <IconButton
                   onClick={() => handleDeleteObject(object)}

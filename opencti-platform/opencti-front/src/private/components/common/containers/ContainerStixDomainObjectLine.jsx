@@ -1,7 +1,7 @@
 import React from 'react';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -92,8 +92,8 @@ const ContainerStixDomainObjectLineComponent = (props) => {
   const linkAnalyses = `${link}/analyses`;
   return (
     <ListItem
-      classes={{ root: classes.item }}
       divider={true}
+      disablePadding
       secondaryAction={isOnlyThroughInference ? (
         <Tooltip title={t_i18n('Inferred knowledge')}>
           <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
@@ -114,6 +114,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
     >
       <ListItemButton
         component={Link}
+        classes={{ root: classes.item }}
         to={link}
       >
         <ListItemIcon

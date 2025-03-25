@@ -96,6 +96,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
     <>
       <ListItem
         divider={true}
+        disablePadding
         secondaryAction={
           <TaskPopover
             id={task.id}

@@ -93,6 +93,7 @@ class IntrusionSetLocationsComponent extends Component {
                   key={location.id}
                   dense={true}
                   divider={true}
+                  disablePadding
                   secondaryAction={
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton

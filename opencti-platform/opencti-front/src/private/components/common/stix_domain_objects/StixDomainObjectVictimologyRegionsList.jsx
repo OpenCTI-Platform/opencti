@@ -277,6 +277,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
             <div key={region.id}>
               <ListItem
                 divider={true}
+                disablePadding
                 secondaryAction={
                   <IconButton
                     onClick={this.handleToggleLine.bind(this, region.id)}
@@ -309,6 +310,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                         key={stixCoreRelationship.id}
                         divider={true}
                         dense={true}
+                        disablePadding
                         secondaryAction={stixCoreRelationship.is_inferred ? (
                           <Tooltip
                             title={
@@ -392,6 +394,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                       <div key={country.id}>
                         <ListItem
                           divider={true}
+                          disablePadding
                           secondaryAction={
                             <IconButton
                               onClick={this.handleToggleLine.bind(
@@ -431,6 +434,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                   key={stixCoreRelationship.id}
                                   divider={true}
                                   dense={true}
+                                  disablePadding
                                   secondaryAction={stixCoreRelationship.is_inferred ? (
                                     <Tooltip
                                       title={
@@ -531,6 +535,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                           key={stixCoreRelationship.id}
                                           divider={true}
                                           dense={true}
+                                          disablePadding
                                           secondaryAction={stixCoreRelationship.is_inferred ? (
                                             <Tooltip
                                               title={

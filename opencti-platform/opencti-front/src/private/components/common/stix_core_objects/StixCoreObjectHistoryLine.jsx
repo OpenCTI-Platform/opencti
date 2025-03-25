@@ -358,6 +358,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
                             key={externalReference.id}
                             dense={true}
                             divider={true}
+                            disablePadding
                             secondaryAction={
                               <Tooltip title={t('Browse the link')}>
                                 <IconButton

@@ -262,6 +262,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
   return (
     <ListItem
       divider={true}
+      disablePadding
       secondaryAction={data.is_inferred ? (
         <Tooltip
           title={

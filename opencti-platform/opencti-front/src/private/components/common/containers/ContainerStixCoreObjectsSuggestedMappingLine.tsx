@@ -107,6 +107,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
+      disablePadding
       secondaryAction={
         <IconButton
           onClick={() => handleRemoveSuggestedMappingLine(matchedEntity)}
@@ -117,6 +118,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
     >
       <ListItemButton
         component={Link}
+        classes={{ root: classes.item }}
         to={`${resolveLink(matchedEntity.entity_type)}/${matchedEntity.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>

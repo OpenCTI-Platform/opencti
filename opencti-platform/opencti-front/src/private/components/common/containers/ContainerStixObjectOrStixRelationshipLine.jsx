@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -67,8 +67,8 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
     : `${resolveLink(node.entity_type)}/${node.id}`;
   return (
     <ListItem
-      classes={{ root: classes.item }}
       divider={true}
+      disablePadding
       secondaryAction={
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerStixCoreObjectPopover
@@ -85,6 +85,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
     >
       <ListItemButton
         component={Link}
+        classes={{ root: classes.item }}
         to={link}
         disabled={node.relationship_type && restrictedWithFrom}
       >

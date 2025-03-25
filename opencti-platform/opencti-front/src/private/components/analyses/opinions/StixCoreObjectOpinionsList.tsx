@@ -80,6 +80,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
               <ListItem
                 key={opinion?.id}
                 divider={true}
+                disablePadding
                 secondaryAction={opinion
                   && <OpinionPopover
                     opinion={opinion}

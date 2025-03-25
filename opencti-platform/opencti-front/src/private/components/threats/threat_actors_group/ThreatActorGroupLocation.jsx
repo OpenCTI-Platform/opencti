@@ -78,8 +78,8 @@ class ThreatActorGroupLocationsComponent extends Component {
                   key={location.id}
                   dense={true}
                   divider={true}
+                  disablePadding
                   secondaryAction={types.includes('manual') && (
-
                   <Security needs={[KNOWLEDGE_KNUPDATE]}>
                     <IconButton
                       aria-label="Remove"
@@ -89,7 +89,6 @@ class ThreatActorGroupLocationsComponent extends Component {
                       <LinkOff />
                     </IconButton>
                   </Security>
-
                   )}
                 >
                   <ListItemButton

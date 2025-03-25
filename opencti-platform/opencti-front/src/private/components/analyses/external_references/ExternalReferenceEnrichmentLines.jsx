@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { interval } from 'rxjs';
 import * as R from 'ramda';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { CheckCircle, Delete, Extension, Refresh, Warning } from '@mui/icons-material';
@@ -156,6 +156,7 @@ const ExternalReferenceEnrichment = (props) => {
             <div key={connector.id}>
               <ListItem
                 divider={true}
+                disablePadding
                 secondaryAction={
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                     <div style={{ right: 0 }}>

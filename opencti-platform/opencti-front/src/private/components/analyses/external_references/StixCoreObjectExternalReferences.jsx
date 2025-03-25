@@ -68,7 +68,6 @@ class StixCoreObjectExternalReferences extends Component {
                       key={i}
                       dense={true}
                       divider={true}
-
                     >
                       <ListItemIcon>
                         <Avatar classes={{ root: classes.avatarDisabled }}>

@@ -78,6 +78,7 @@ const SearchIndexedFileLineComponent: FunctionComponent<SearchIndexedFileLineCom
   return (
     <ListItem
       divider={true}
+      disablePadding
       secondaryAction={node.entity && entityLink && (
         <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
           <IconButton

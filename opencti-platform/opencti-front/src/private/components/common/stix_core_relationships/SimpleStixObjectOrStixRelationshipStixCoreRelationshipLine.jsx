@@ -79,6 +79,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
     return (
       <ListItem
         divider={true}
+        disablePadding
         secondaryAction={node.is_inferred ? (
           <Tooltip
             title={

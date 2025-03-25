@@ -223,6 +223,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                         <ListItem
                           dense={true}
                           divider={true}
+                          disablePadding
                           secondaryAction={
                             <>
                               <Tooltip title={t('Browse the link')}>

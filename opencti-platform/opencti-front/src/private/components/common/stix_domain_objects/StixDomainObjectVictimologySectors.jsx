@@ -384,6 +384,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
               <div key={sector.id}>
                 <ListItem
                   divider={true}
+                  disablePadding
                   secondaryAction={
                     <IconButton
                       onClick={this.handleToggleLine.bind(this, sector.id)}
@@ -414,6 +415,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                           key={stixCoreRelationship.id}
                           divider={true}
                           dense={true}
+                          disablePadding
                           secondaryAction={stixCoreRelationship.is_inferred ? (
                             <Tooltip
                               title={
@@ -492,6 +494,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                         <div key={subsector.id}>
                           <ListItem
                             divider={true}
+                            disablePadding
                             secondaryAction={
                               <IconButton
                                 onClick={this.handleToggleLine.bind(
@@ -535,6 +538,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                       key={stixCoreRelationship.id}
                                       divider={true}
                                       dense={true}
+                                      disablePadding
                                       secondaryAction={stixCoreRelationship.is_inferred ? (
                                         <Tooltip
                                           title={

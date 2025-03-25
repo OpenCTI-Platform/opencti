@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { interval } from 'rxjs';
 import * as R from 'ramda';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { CheckCircleOutlined, DeleteOutlined, ExtensionOutlined, RefreshOutlined, WarningOutlined } from '@mui/icons-material';
@@ -153,6 +153,7 @@ const StixCoreObjectEnrichment = ({
             <div key={connector.id}>
               <ListItem
                 divider={true}
+                disablePadding
                 secondaryAction={
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                     <div style={{ right: 0 }}>
@@ -223,6 +224,7 @@ const StixCoreObjectEnrichment = ({
                       <ListItem
                         dense={true}
                         divider={true}
+                        disablePadding
                         secondaryAction={
                           <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                             <div style={{ right: 0 }}>

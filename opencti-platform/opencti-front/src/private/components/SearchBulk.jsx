@@ -537,14 +537,13 @@ const SearchBulk = () => {
                 return (
                   <ListItem
                     key={entity.id}
-                    classes={{ root: classes.item }}
                     divider
                     component={inPlatform ? Link : 'div'}
                     to={inPlatform ? link : undefined}
                     disablePadding
                   >
                     {inPlatform ? (
-                      <ListItemButton component={Link} to={link}>
+                      <ListItemButton component={Link} classes={{ root: classes.item }} to={link}>
                         <ListItemIcon classes={{ root: classes.itemIcon }}>
                           <ItemIcon type={entity.type} />
                         </ListItemIcon>

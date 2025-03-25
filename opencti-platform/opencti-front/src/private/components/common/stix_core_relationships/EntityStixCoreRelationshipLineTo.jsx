@@ -74,6 +74,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
     return (
       <ListItem
         divider={true}
+        disablePadding
         secondaryAction={node.is_inferred ? (
           <Tooltip
             title={

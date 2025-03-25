@@ -235,6 +235,7 @@ NotificationLineProps
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
+        disablePadding
         secondaryAction={
           <>
             <IconButton

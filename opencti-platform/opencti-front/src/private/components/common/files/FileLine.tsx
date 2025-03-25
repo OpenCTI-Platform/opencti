@@ -269,6 +269,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       <ListItem
         divider={true}
         dense={dense}
+        disablePadding
         secondaryAction={
           <div style={{ display: 'flex', alignItems: 'center' }}>
             {!isProgress && !isFail && !isOutdated && (

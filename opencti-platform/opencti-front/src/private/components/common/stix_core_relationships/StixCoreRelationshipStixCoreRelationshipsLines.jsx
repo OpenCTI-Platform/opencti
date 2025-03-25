@@ -85,6 +85,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                     key={stixCoreRelationship.id}
                     dense={true}
                     divider={true}
+                    disablePadding
                     secondaryAction={stixCoreRelationship.is_inferred ? (
                       <Tooltip
                         title={

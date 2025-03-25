@@ -127,6 +127,7 @@ class StixDomainObjectsContainer extends Component {
                         <ListItem
                           key={stixDomainObject.id}
                           divider={true}
+                          disablePadding
                           secondaryAction={
                             <StixCoreObjectLabels
                               labels={stixDomainObject.objectLabel}

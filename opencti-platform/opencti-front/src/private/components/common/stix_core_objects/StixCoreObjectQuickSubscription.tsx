@@ -443,6 +443,7 @@ StixCoreObjectQuickSubscriptionContentProps
             <List>
               <ListItem
                 divider={true}
+                disablePadding
                 secondaryAction={
                   <IconButton
                     onClick={handleToggleLine}

@@ -122,6 +122,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
           {sortedAttackPatternsElement.map((element) => (
             <div key={element.id}>
               <ListItem
+                disablePadding
                 secondaryAction={
                   <IconButton
                     onClick={() => handleToggleLine(element.id)}
@@ -159,6 +160,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                           <ListItem
                             divider={true}
                             dense={true}
+                            disablePadding
                             secondaryAction={
                               <div
                                 style={{

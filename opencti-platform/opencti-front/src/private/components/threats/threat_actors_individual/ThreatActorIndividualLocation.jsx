@@ -81,6 +81,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                   key={location.id}
                   dense={true}
                   divider={true}
+                  disablePadding
                   secondaryAction={
                     types.includes('manual') && (
                       <div style={{ right: 0 }} >

@@ -46,6 +46,7 @@ const ImportConnectors = ({ connectors }: { connectors: ImportContentContainer_c
                   key={connector.id}
                   dense
                   divider
+                  disablePadding
                   classes={{ root: classes.item }}
                   secondaryAction={connector.updated_at && (<ListItemText primary={nsdt(connector.updated_at)} />)}
                 >
