@@ -16,7 +16,6 @@ The left side panel allows the user to navigate through different windows and ac
   ![Menu](assets/menu.png)
 </figure>
 
-
 ## Structure
 
 ### The "hot knowledge"
@@ -48,13 +47,35 @@ In the `Settings > Parameters`, it is possible for the platform administrator to
 
 ![Hide categories globally](assets/hide-global.png)
 
-### Hide categories in roles
+#### Hide categories in roles
 
 In OpenCTI, the different roles are highly customizable. It is possible to defined default dashboards, triggers, etc. but also be able to hide categories in the roles:
 
 ![Hide categories in roles](assets/hide-roles.png)
 
-## Presentation of a typical page in OpenCTI
+### Entities lists
+
+In each knowledge category, you can view, order, filter, modify the list of the entities of the category.
+![Reports list](assets/reports-list.png)
+
+Several actions can be performed from there:
+
+- Click on a line to display a specific entity information,
+- Click on a column name to order the list by this column,
+
+!!! note "Sortable columns"
+
+    Some columns are always sortable (like dates or names columns).
+    Some are never sortable (like labels).
+
+    Some columns are only sortable if runtime mapping is enabled, i.e. if the platform is with Elastic v >= 7.12 (not working with OpenSearch for instance). It is the case for columns whose content is calculated at runtime and not stored in the database: author, creator, observable value, markings, kill chain phases, assignee, participant, place of birth, ethnicity.
+    Indeed all those fields are not stored in the database and requires a resolution to fetch additional information useful for the sorting (like the creator name) from an id.
+
+- Modify filters to display entities corresponding to given criteria,
+- Select entities via the checkboxes to perform specific actions on them (merge, update, delete, enrich, share entities).
+
+
+## Presentation of a typical entity page in OpenCTI
 
 While OpenCTI features numerous entities and tabs, many of them share similarities, with only minor differences arising from specific characteristics. These differences may involve the inclusion or exclusion of certain fields, depending on the nature of the entity.
 
