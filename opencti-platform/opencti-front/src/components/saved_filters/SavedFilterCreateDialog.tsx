@@ -10,9 +10,10 @@ import { graphql } from 'react-relay';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import { insertNode } from 'src/utils/store';
 import useApiMutation from '../../utils/hooks/useApiMutation';
+import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 
-const savedFilterDialogCreateMutation = graphql`
-  mutation SavedFilterDialogCreateMutation($input: SavedFilterAddInput!) {
+const savedFilterCreateDialogMutation = graphql`
+  mutation SavedFilterCreateDialogMutation($input: SavedFilterAddInput!) {
     savedFilterAdd(input: $input) {
       id
       name
@@ -27,7 +28,7 @@ type SavedFilterDialogProps = {
   isOpen: boolean;
 };
 
-const SavedFilterDialog = ({ isOpen, onClose }: SavedFilterDialogProps) => {
+const SavedFilterCreateDialog = ({ isOpen, onClose }: SavedFilterDialogProps) => {
   const { t_i18n } = useFormatter();
 
   const {
@@ -43,8 +44,7 @@ const SavedFilterDialog = ({ isOpen, onClose }: SavedFilterDialogProps) => {
     savedFilterDialogCreateMutation,
     undefined,
     {
-      successMessage: 'Saved filter created with success',
-      errorMessage: 'Something went wrong while creating saved filter',
+      successMessage: t_i18n('Saved filter successfully created'),
     },
   );
 
@@ -62,7 +62,8 @@ const SavedFilterDialog = ({ isOpen, onClose }: SavedFilterDialogProps) => {
         },
       },
       updater: (store) => {
-        insertNode(store, 'SavedFilters__savedFilters', {}, 'savedFilterAdd');
+        const scopeFilter = getSavedFilterScopeFilter(localStorageKey);
+        insertNode(store, 'SavedFilters__savedFilters', { filters: scopeFilter }, 'savedFilterAdd');
       },
       onCompleted: () => {
         onClose();
@@ -99,4 +100,4 @@ const SavedFilterDialog = ({ isOpen, onClose }: SavedFilterDialogProps) => {
   );
 };
 
-export default SavedFilterDialog;
+export default SavedFilterCreateDialog;

@@ -2,7 +2,6 @@ import React, { useState, SyntheticEvent, useEffect } from 'react';
 import { Autocomplete } from '@mui/material';
 import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import TextField from '@mui/material/TextField';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { DeleteOutlined } from '@mui/icons-material';
@@ -30,6 +29,7 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
   const {
     useDataTablePaginationLocalStorage: {
       helpers,
+      viewStorage: { filters },
     },
   } = useDataTableContext();
 
@@ -41,11 +41,19 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
     value: item,
   }));
 
+  const handleResetInput = () => setSelectedSavedFilter('');
+
   useEffect(() => {
     if (isDisabled && !!selectedSavedFilter) {
-      setSelectedSavedFilter('');
+      handleResetInput();
     }
   }, [isDisabled]);
+
+  useEffect(() => {
+    if (!filters.filters.length && !filters.filterGroups.length) {
+      handleResetInput();
+    }
+  }, [filters]);
 
   const handleSelect = (selectionOption: SavedFiltersSelectionData) => {
     setSelectedSavedFilter(selectionOption.name);
@@ -62,7 +70,7 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
 
   const renderOption = (params: React.HTMLAttributes<HTMLLIElement> & { key: string }, option: AutocompleteOptionType) => {
     return (
-      <Box key={params.key} {...params}>
+      <Box {...params} key={params.key}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Typography>{option.label}</Typography>
           <Tooltip title={t_i18n('Delete this saved filter')}>
@@ -86,21 +94,24 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
         autoHighlight
         disabled={isDisabled}
         options={options}
+        sx={{ width: 200 }}
         noOptionsText={t_i18n('No available options')}
         disablePortal
         disableClearable
         onChange={(_, selectedOption) => handleSelect(selectedOption.value)}
         renderOption={renderOption}
-        renderInput={(params) => {
-          return (
-            <TextField
-              sx={{ minWidth: '200px' }}
-              {...params}
-            />
-          );
-        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            variant="outlined"
+            size="small"
+            label={t_i18n('Select saved filters')}
+          />
+        )}
       />
-      {!!savedFilterToDelete && <SavedFilterDeleteDialog savedFilterToDelete={savedFilterToDelete} onClose={resetSavedFilterToDelete} />}
+      {!!savedFilterToDelete && (
+        <SavedFilterDeleteDialog savedFilterToDelete={savedFilterToDelete} onClose={resetSavedFilterToDelete} onReset={handleResetInput} />
+      )}
     </>
   );
 };
