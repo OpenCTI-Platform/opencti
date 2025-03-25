@@ -1,6 +1,6 @@
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import ObjectMembersField from '@components/common/form/ObjectMembersField';
+import ObjectMembersField, { OptionMember } from '@components/common/form/ObjectMembersField';
 import FormHelperText from '@mui/material/FormHelperText';
 import { Field, FieldArray, FieldProps, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
@@ -13,12 +13,15 @@ import { Option } from '@components/common/form/ReferenceField';
 import * as Yup from 'yup';
 import { FormikHelpers } from 'formik/dist/types';
 import AuthorizedMembersFieldListItem from '@components/common/form/AuthorizedMembersFieldListItem';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Creator, CREATOR_AUTHORIZED_CONFIG } from '../../../../utils/authorizedMembers';
 import SwitchField from '../../../../components/fields/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 /**
  * Returns true if the authorized member option is generic.
@@ -53,6 +56,7 @@ interface AuthorizedMembersFieldInternalValue {
   newAccessRight: AccessRight;
   allAccessRight: AccessRight;
   creatorAccessRight: AccessRight;
+  groupsRestriction: OptionMember[];
 }
 
 // Validation for the internal formik form.
@@ -131,10 +135,12 @@ const AuthorizedMembersField = ({
         {
           ...data.newAccessMember,
           accessRight: data.newAccessRight,
+          groupsRestriction: data.groupsRestriction,
         },
       ]);
       helpers.setFieldValue('newAccessMember', null);
       helpers.setFieldValue('newAccessRight', 'view');
+      helpers.setFieldValue('groupsRestriction', []);
     }
   };
 
@@ -162,6 +168,7 @@ const AuthorizedMembersField = ({
           newAccessRight: 'view',
           allAccessRight: 'none',
           creatorAccessRight: 'none',
+          groupsRestriction: [],
         },
       });
     } else {
@@ -265,6 +272,7 @@ const AuthorizedMembersField = ({
           newAccessRight: 'view',
           allAccessRight: accessForAllMembers?.accessRight ?? 'none',
           creatorAccessRight: accessForCreator?.accessRight ?? 'none',
+          groupsRestriction: [],
         }}
         onSubmit={addAuthorizedMembers}
       >
@@ -364,6 +372,24 @@ const AuthorizedMembersField = ({
                     <Add fontSize="small" />
                   </IconButton>
                 </div>
+                {values.newAccessMember && values.newAccessMember.type === 'Organization' && (
+                  <div style={fieldSpacingContainerStyle}>
+                    <Accordion>
+                      <AccordionSummary id="accordion-panel">
+                        <Typography>{t_i18n('Advanced options')}</Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <ObjectMembersField
+                          name="groupsRestriction"
+                          label={'Groups'}
+                          disabled={!values.applyAccesses}
+                          entityTypes={['Group']}
+                          multiple
+                        />
+                      </AccordionDetails>
+                    </Accordion>
+                  </div>
+                )}
               </Alert>
             )}
             {applyAccesses && (

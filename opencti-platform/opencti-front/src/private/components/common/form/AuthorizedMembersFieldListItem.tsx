@@ -1,4 +1,3 @@
-import { Option } from '@components/common/form/ReferenceField';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -8,6 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import { Delete } from '@mui/icons-material';
 import React from 'react';
 import { isGenericOption } from '@components/common/form/AuthorizedMembersField';
+import { Option } from '@components/common/form/ReferenceField';
 import SelectField from '../../../../components/fields/SelectField';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
