@@ -182,8 +182,8 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
             <ListItem
               dense={true}
               divider={true}
-              secondaryAction={
-                {!draftContext && (<Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
+              secondaryAction={!draftContext && (
+                <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
                   <IconButton
                     onClick={(e) => {
                       e.stopPropagation();
@@ -196,6 +196,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                     <MoreVert />
                   </IconButton>
                 </Security>
+              )
               }
             >
               <ListItemButton
@@ -209,8 +210,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                   primary={t_i18n('Description & Main content')}
                   secondary={t_i18n('Description and content of the entity')}
                 />
-              )}</ListItemButton>
-
+              </ListItemButton>
             </ListItem>
           </List>
           <Menu

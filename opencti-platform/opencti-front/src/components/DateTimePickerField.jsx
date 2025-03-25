@@ -99,7 +99,7 @@ const DateTimePickerField = (props) => {
   return (
     <DateTimePicker
       {...fieldToDateTimePicker(props)}
-      value={typeof field.value === 'string' ? new Date(field.value) : field.value} // Ensuring Date type
+      value={parsedValue} // Ensuring Date type
       variant="inline"
       required={required}
       disableToolbar={false}

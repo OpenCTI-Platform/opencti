@@ -180,11 +180,10 @@ const SearchInput = (props) => {
                 to="/dashboard/search"
                 size="medium"
                 color={
-                        location.pathname.includes('/dashboard/search')
-                        && !location.pathname.includes('/dashboard/search_bulk')
-                        && !askAI  ? 'primary'
-                          : 'inherit'
-                      }
+                  location.pathname.includes('/dashboard/search')
+                  && !location.pathname.includes('/dashboard/search_bulk')
+                  && !askAI ? 'primary' : 'inherit'
+                }
               >
                 <BiotechOutlined fontSize='medium'/>
               </IconButton>
@@ -196,10 +195,10 @@ const SearchInput = (props) => {
                 to="/dashboard/search_bulk"
                 size="medium"
                 color={
-                        location.pathname.includes('/dashboard/search_bulk') && !askAI
-                          ? 'primary'
-                          : 'inherit'
-                      }
+                  location.pathname.includes('/dashboard/search_bulk') && !askAI
+                    ? 'primary'
+                    : 'inherit'
+                }
               >
                 <ContentPasteSearchOutlined fontSize="medium"/>
               </IconButton>

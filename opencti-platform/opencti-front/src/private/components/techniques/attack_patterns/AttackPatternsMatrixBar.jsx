@@ -47,7 +47,7 @@ class AttackPatternsMatrixBar extends Component {
             variant="permanent"
             classes={{ paper: classes.bottomNav }}
             slotProps={{
-              desktopPaper: {
+              paper: {
                 variant: 'elevation',
                 elevation: 1,
                 style: {
