@@ -32013,10 +32013,10 @@ export type ResolversTypes = ResolversObject<{
   Representative: ResolverTypeWrapper<Representative>;
   RepresentativeWithId: ResolverTypeWrapper<RepresentativeWithId>;
   RequestAccessAddInput: RequestAccessAddInput;
-  RequestAccessConfiguration: ResolverTypeWrapper<RequestAccessConfiguration>;
+  RequestAccessConfiguration: ResolverTypeWrapper<Omit<RequestAccessConfiguration, 'approval_admin' | 'approved_status' | 'declined_status'> & { approval_admin?: Maybe<Array<Maybe<ResolversTypes['RequestAccessMember']>>>, approved_status?: Maybe<ResolversTypes['Status']>, declined_status?: Maybe<ResolversTypes['Status']> }>;
   RequestAccessConfigureInput: RequestAccessConfigureInput;
   RequestAccessMember: ResolverTypeWrapper<RequestAccessMember>;
-  RequestAccessStatus: ResolverTypeWrapper<RequestAccessStatus>;
+  RequestAccessStatus: ResolverTypeWrapper<Omit<RequestAccessStatus, 'statusTemplate'> & { statusTemplate?: Maybe<Array<Maybe<ResolversTypes['StatusTemplate']>>> }>;
   RequestAccessType: RequestAccessType;
   RequestAccessWorkflow: ResolverTypeWrapper<RequestAccessWorkflow>;
   ResolvedInstanceFilter: ResolverTypeWrapper<ResolvedInstanceFilter>;
@@ -32159,7 +32159,7 @@ export type ResolversTypes = ResolversObject<{
   StreamCollectionEditMutations: ResolverTypeWrapper<StreamCollectionEditMutations>;
   StreamCollectionOrdering: StreamCollectionOrdering;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
-  SubType: ResolverTypeWrapper<Omit<SubType, 'settings' | 'statuses'> & { settings?: Maybe<ResolversTypes['EntitySetting']>, statuses: Array<ResolversTypes['Status']> }>;
+  SubType: ResolverTypeWrapper<Omit<SubType, 'settings' | 'statuses' | 'statusesRequestAccess'> & { settings?: Maybe<ResolversTypes['EntitySetting']>, statuses: Array<ResolversTypes['Status']>, statusesRequestAccess: Array<ResolversTypes['Status']> }>;
   SubTypeConnection: ResolverTypeWrapper<Omit<SubTypeConnection, 'edges'> & { edges: Array<ResolversTypes['SubTypeEdge']> }>;
   SubTypeEdge: ResolverTypeWrapper<Omit<SubTypeEdge, 'node'> & { node: ResolversTypes['SubType'] }>;
   SubTypeEditMutations: ResolverTypeWrapper<Omit<SubTypeEditMutations, 'statusAdd' | 'statusDelete' | 'statusFieldPatch'> & { statusAdd?: Maybe<ResolversTypes['SubType']>, statusDelete?: Maybe<ResolversTypes['SubType']>, statusFieldPatch?: Maybe<ResolversTypes['SubType']> }>;
@@ -32824,10 +32824,10 @@ export type ResolversParentTypes = ResolversObject<{
   Representative: Representative;
   RepresentativeWithId: RepresentativeWithId;
   RequestAccessAddInput: RequestAccessAddInput;
-  RequestAccessConfiguration: RequestAccessConfiguration;
+  RequestAccessConfiguration: Omit<RequestAccessConfiguration, 'approval_admin' | 'approved_status' | 'declined_status'> & { approval_admin?: Maybe<Array<Maybe<ResolversParentTypes['RequestAccessMember']>>>, approved_status?: Maybe<ResolversParentTypes['Status']>, declined_status?: Maybe<ResolversParentTypes['Status']> };
   RequestAccessConfigureInput: RequestAccessConfigureInput;
   RequestAccessMember: RequestAccessMember;
-  RequestAccessStatus: RequestAccessStatus;
+  RequestAccessStatus: Omit<RequestAccessStatus, 'statusTemplate'> & { statusTemplate?: Maybe<Array<Maybe<ResolversParentTypes['StatusTemplate']>>> };
   RequestAccessWorkflow: RequestAccessWorkflow;
   ResolvedInstanceFilter: ResolvedInstanceFilter;
   RetentionRule: RetentionRule;
@@ -32945,7 +32945,7 @@ export type ResolversParentTypes = ResolversObject<{
   StreamCollectionEdge: StreamCollectionEdge;
   StreamCollectionEditMutations: StreamCollectionEditMutations;
   String: Scalars['String']['output'];
-  SubType: Omit<SubType, 'settings' | 'statuses'> & { settings?: Maybe<ResolversParentTypes['EntitySetting']>, statuses: Array<ResolversParentTypes['Status']> };
+  SubType: Omit<SubType, 'settings' | 'statuses' | 'statusesRequestAccess'> & { settings?: Maybe<ResolversParentTypes['EntitySetting']>, statuses: Array<ResolversParentTypes['Status']>, statusesRequestAccess: Array<ResolversParentTypes['Status']> };
   SubTypeConnection: Omit<SubTypeConnection, 'edges'> & { edges: Array<ResolversParentTypes['SubTypeEdge']> };
   SubTypeEdge: Omit<SubTypeEdge, 'node'> & { node: ResolversParentTypes['SubType'] };
   SubTypeEditMutations: Omit<SubTypeEditMutations, 'statusAdd' | 'statusDelete' | 'statusFieldPatch'> & { statusAdd?: Maybe<ResolversParentTypes['SubType']>, statusDelete?: Maybe<ResolversParentTypes['SubType']>, statusFieldPatch?: Maybe<ResolversParentTypes['SubType']> };
