@@ -74,7 +74,7 @@ const StixCoreRelationshipInference = ({ stixRelationship, inference }) => {
         .map((n) => [n.from, n.to])
         .flat(),
     ], {});
-  });
+  }, [stixRelationship, inference]);
 
   return (
     <Paper
