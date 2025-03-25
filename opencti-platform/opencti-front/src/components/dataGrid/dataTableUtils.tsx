@@ -241,7 +241,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Original creation date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ created }, helpers) => defaultRender(helpers.fd(created)),
+    render: ({ created }, helpers) => defaultRender(helpers.fldt(created)),
   },
   created_at: {
     id: 'created_at',

@@ -53,7 +53,6 @@ const notificationLineNotificationDeleteMutation = graphql`
 
 const Notifications: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Notifications'));
   const {
@@ -220,56 +219,47 @@ const Notifications: FunctionComponent = () => {
       label: 'Original creation date',
       percentWidth: 20,
       isSortable: isRuntimeSort,
-      // render: ({ notification_content }) => {
-      //   console.log('NOTIFICATION', fldt(notification_content));
-      //   return (<div style={{ height: 20,
-      //     fontSize: 13,
-      //     float: 'left',
-      //     whiteSpace: 'nowrap',
-      //     overflow: 'hidden',
-      //     textOverflow: 'ellipsis',
-      //     paddingRight: 10 }}
-      //           >
-      //     {fldt(notification_content.map((n: any) => n.creationDate))}
-      //   </div>);
-      // },
     },
     name: {
+      id: 'trigger_name',
       label: 'Trigger name',
       percentWidth: 12,
       isSortable: isRuntimeSort,
-      // render: ({ notification_content }) => {
-      //   <div style={{ height: 20,
-      //     fontSize: 13,
-      //     float: 'left',
-      //     whiteSpace: 'nowrap',
-      //     overflow: 'hidden',
-      //     textOverflow: 'ellipsis',
-      //     paddingRight: 10 }}
-      //   >
-      //     <Tooltip title={data.name}>
-      //       <Chip
-      //         style={{     fontSize: 12,
-      //           height: 20,
-      //           float: 'left',
-      //           width: 100,
-      //           marginRight: 10,}
-      //         color={
-      //           data.notification_type === 'live'
-      //             ? 'warning'
-      //             : 'secondary'
-      //         }
-      //         variant="outlined"
-      //         label={data.name}
-      //         onClick={(e) => {
-      //           e.preventDefault();
-      //           e.stopPropagation();
-      //           onLabelClick('name', data.name, 'eq', e);
-      //         }}
-      //       />
-      //     </Tooltip>
-      //   </div>;
-      // },
+      render: ({ notification_content, notification_type }, { storageHelpers: { handleAddFilter } }) => {
+        console.log({ notification_content, notification_type });
+        return (
+          <div style={{ height: 20,
+            fontSize: 13,
+            float: 'left',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            paddingRight: 10 }}
+          >
+            <Tooltip title={notification_content[0].title ?? '-'}>
+              <Chip
+                style={{ fontSize: 12,
+                  height: 20,
+                  float: 'left',
+                  width: 100,
+                  marginRight: 10 }}
+                color={
+                notification_type === 'live'
+                  ? 'warning'
+                  : 'secondary'
+              }
+                variant="outlined"
+                label={notification_content[0].title ?? '-'}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleAddFilter('name', notification_content[0].title, 'eq');
+                }}
+              />
+            </Tooltip>
+          </div>
+        );
+      },
     },
   };
 
