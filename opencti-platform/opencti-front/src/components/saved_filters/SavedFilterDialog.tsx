@@ -8,6 +8,7 @@ import { useFormatter } from 'src/components/i18n';
 import TextField from '@mui/material/TextField';
 import { graphql } from 'react-relay';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
+import { insertNode } from 'src/utils/store';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 
 const savedFilterDialogCreateMutation = graphql`
@@ -38,7 +39,14 @@ const SavedFilterDialog = ({ isOpen, onClose }: SavedFilterDialogProps) => {
 
   const [filterName, setFilterName] = useState<string>();
 
-  const [commit] = useApiMutation(savedFilterDialogCreateMutation);
+  const [commit] = useApiMutation(
+    savedFilterDialogCreateMutation,
+    undefined,
+    {
+      successMessage: 'Saved filter created with success',
+      errorMessage: 'Something went wrong while creating saved filter',
+    },
+  );
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.value === '') setFilterName(undefined);
@@ -52,6 +60,9 @@ const SavedFilterDialog = ({ isOpen, onClose }: SavedFilterDialogProps) => {
           filters: JSON.stringify(filters),
           scope: localStorageKey,
         },
+      },
+      updater: (store) => {
+        insertNode(store, 'SavedFilters__savedFilters', {}, 'savedFilterAdd');
       },
       onCompleted: () => {
         onClose();
