@@ -536,7 +536,7 @@ const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = 
   },
   required: ['organizations'],
 };
-const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
+export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   id: 'PLAYBOOK_SHARING_COMPONENT',
   name: 'Share with organizations',
   description: 'Share with organizations within the platform',
@@ -862,17 +862,22 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       // DATE_SEEN_RULE is only triggered on report creation / update
       if (isStixDomainObjectContainer(type)) {
         // Handle first seen synchro for reports creation / modification
+        logApp.info('executing rule ============', { type });
         const container = baseData as StixContainer;
         const objectRefsToResolve = [];
         if (container.object_refs && container.object_refs.length > 0) {
+          logApp.info('executing rule ============ objects ref');
           objectRefsToResolve.push(...container.object_refs);
         }
         if (inferences && container.extensions[STIX_EXT_OCTI].object_refs_inferred && container.extensions[STIX_EXT_OCTI].object_refs_inferred.length > 0) {
+          logApp.info('executing rule ============ objects ref inferred');
           objectRefsToResolve.push(...container.extensions[STIX_EXT_OCTI].object_refs_inferred);
         }
         const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, objectRefsToResolve);
+        logApp.info('executing rule ============ elements', { elements });
         if (elements.length > 0) {
           bundle.objects.push(...elements);
+          logApp.info('executing rule ============ bundle', { bundle });
           return { output_port: 'out', bundle };
         }
       }
