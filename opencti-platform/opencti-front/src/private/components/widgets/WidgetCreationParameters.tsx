@@ -41,13 +41,13 @@ const WidgetCreationParameters = () => {
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const runtimeSortByValues = [ // values sortable only if runtime mapping is enabled
+  const runtimeSortByValues = isRuntimeSort ? [ // values sortable only if runtime mapping is enabled
     'createdBy',
     'creator',
     'objectMarking',
     'observable_value',
-  ];
-  let sortByValues = [
+  ] : [];
+  const sortByValues = [
     'created',
     'created_at',
     'modified',
@@ -56,6 +56,7 @@ const WidgetCreationParameters = () => {
     'valid_from',
     'valid_until',
     'entity_type',
+    ...runtimeSortByValues,
     'value',
     'x_opencti_workflow_id',
     'opinions_metrics_mean',
@@ -63,9 +64,6 @@ const WidgetCreationParameters = () => {
     'opinions_metrics_min',
     'opinions_metrics_total',
   ];
-  if (isRuntimeSort) {
-    sortByValues = sortByValues.concat(runtimeSortByValues);
-  }
 
   const {
     config,
