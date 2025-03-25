@@ -28,6 +28,7 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
   INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
+  INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_PARTICIPANT
@@ -49,7 +50,7 @@ import {
   isStixDomainObjectContainer
 } from '../../schema/stixDomainObject';
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-common';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
+import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { internalFindByIds, listAllRelations, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
@@ -603,6 +604,15 @@ const attributePathMapping: any = {
   },
   priority: {
     [ENTITY_TYPE_CONTAINER_CASE]: '/priority',
+  },
+  indicator_types: {
+    [ENTITY_TYPE_INDICATOR]: '/indicator_types',
+  },
+  [INPUT_KILLCHAIN]: {
+    [ENTITY_TYPE_INDICATOR]: '/kill_chain_phases',
+  },
+  x_mitre_platforms: {
+    [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_MITRE}/platforms`
   },
 };
 interface UpdateValueConfiguration {
