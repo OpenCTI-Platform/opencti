@@ -125,6 +125,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
           </Typography>
           {!isFABReplaced && <div className={classes.popover}>
             <UserPopover
+              userId={data.id}
               userEditionData={userEditionData}
               disabled={data.id === me.id}
             />
