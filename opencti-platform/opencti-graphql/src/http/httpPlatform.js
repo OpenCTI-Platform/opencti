@@ -189,6 +189,7 @@ const createApp = async (app) => {
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
     try {
       const executeContext = executionContext('storage_get');
+      executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
       const auth = await authenticateUserFromRequest(executeContext, req);
       if (!auth) {
         res.sendStatus(403);
@@ -212,6 +213,7 @@ const createApp = async (app) => {
   app.get(`${basePath}/storage/view/:file(*)`, async (req, res) => {
     try {
       const executeContext = executionContext('storage_view');
+      executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
       const auth = await authenticateUserFromRequest(executeContext, req);
       if (!auth) {
         res.sendStatus(403);
