@@ -2262,7 +2262,7 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
     if (operation !== 'add') return true;
     return shouldCheckConfidenceOnRefRelationship(key);
   });
-  if (checkConfidence) {
+  if (checkConfidence && !opts.bypassIndividualUpdate) {
     controlUserConfidenceAgainstElement(user, initial);
   }
   const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
