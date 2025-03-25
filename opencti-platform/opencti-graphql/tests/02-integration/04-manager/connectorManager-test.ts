@@ -7,11 +7,10 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { RegisterConnectorInput } from '../../../src/generated/graphql';
 import { ConnectorType } from '../../../src/generated/graphql';
 import { elIndex } from '../../../src/database/engine';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_WORK } from '../../../src/schema/internalObject';
 import { INDEX_HISTORY } from '../../../src/database/utils';
 import { deleteCompletedWorks } from '../../../src/manager/connectorManager';
 import type { BasicStoreEntityConnector } from '../../../src/types/connector';
-import { addCreateInCounter } from '../../utils/testCountHelper';
 
 describe('Old work of connector cleanup test', () => {
   let testConnector: BasicStoreEntityConnector;
@@ -23,7 +22,6 @@ describe('Old work of connector cleanup test', () => {
       type: ConnectorType.ExternalImport
     };
     testConnector = await registerConnector(testContext, ADMIN_USER, connectorData);
-    addCreateInCounter(ENTITY_TYPE_CONNECTOR);
     expect(testConnector.id).toBeDefined();
   };
 

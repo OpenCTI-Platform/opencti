@@ -5,7 +5,6 @@ import { searchEngineInit } from '../../src/database/engine';
 import { initializeFileStorageClient } from '../../src/database/file-storage';
 import { initExclusionListCache } from '../../src/database/exclusionListCache';
 import { initLockFork } from '../../src/lock/master-lock';
-import { initTestCounters } from './testCountHelper';
 
 await initializeRedisClients();
 await searchEngineInit();
@@ -13,4 +12,3 @@ await initializeFileStorageClient();
 cacheManager.init();
 await initExclusionListCache();
 initLockFork();
-initTestCounters();

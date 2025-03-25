@@ -17,6 +17,7 @@ import {
   TEST_ORGANIZATION,
   testContext,
   TESTING_GROUPS,
+  TESTING_USERS,
   USER_DISINFORMATION_ANALYST,
   USER_EDITOR
 } from '../../utils/testQuery';
@@ -25,8 +26,6 @@ import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import { adminQueryWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member } from '../../../src/generated/graphql';
-import { addCreateInCounter, addDeleteInCounter, getCounterTotal } from '../../utils/testCountHelper';
-import { logApp } from '../../../src/config/conf';
 
 const LIST_QUERY = gql`
   query users(
@@ -228,7 +227,6 @@ describe('User resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: USER_TO_CREATE,
     });
-    addCreateInCounter(ENTITY_TYPE_USER);
     expect(user).not.toBeNull();
     expect(user.data.userAdd).not.toBeNull();
     userInternalId = user.data.userAdd.id;
@@ -257,7 +255,6 @@ describe('User resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: USER_TO_CREATE_WITH_CONFIDENCE,
     });
-    addCreateInCounter(ENTITY_TYPE_USER);
     expect(user2.data.userAdd.user_confidence_level).toEqual({
       max_confidence: 50,
       overrides: [{ entity_type: 'Report', max_confidence: 80 }],
@@ -295,8 +292,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should list users', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    logApp.info('ANGIE user queryResult that fail -1-: ', { result: queryResult.data?.users });
-    expect(queryResult.data?.users.edges.length).toEqual(getCounterTotal(ENTITY_TYPE_USER));
+    expect(queryResult.data?.users.edges.length).toEqual(TESTING_USERS.length + 3);
   });
   it('should update user', async () => {
     const UPDATE_QUERY = gql`
@@ -632,7 +628,6 @@ describe('User resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: USER_TO_CREATE,
     });
-    addCreateInCounter(ENTITY_TYPE_USER);
     expect(userAddResult.data?.userAdd.groups.edges.length).toEqual(1);
     expect(userAddResult.data?.userAdd.groups.edges[0].node.name).toEqual(GREEN_GROUP.name);
     userToDeleteIds.push(userAddResult.data?.userAdd.id);
@@ -652,7 +647,6 @@ describe('User resolver standard behavior', () => {
     });
     expect(userAddResult.data?.userAdd.groups.edges.length).toEqual(1);
     expect(userAddResult.data?.userAdd.groups.edges[0].node.name).toEqual('Default');
-    addCreateInCounter(ENTITY_TYPE_USER);
     userToDeleteIds.push(userAddResult.data?.userAdd.id);
   });
   it('should delete relation in user', async () => {
@@ -701,7 +695,6 @@ describe('User resolver standard behavior', () => {
       const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: userId } });
       expect(queryResult).not.toBeNull();
       expect(queryResult.data.user).toBeNull();
-      addDeleteInCounter(ENTITY_TYPE_USER);
     }
   });
 });
@@ -710,7 +703,7 @@ describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY });
     const usersEdges = queryResult.data.members.edges as { node: Member }[];
-    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(getCounterTotal(ENTITY_TYPE_USER));
+    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 3);
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(TESTING_GROUPS.length + 3); // 3 built-in groups
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(8);
     expect(usersEdges.length).toEqual(24);
@@ -774,7 +767,6 @@ describe('User has no capability query behavior', () => {
       query: CREATE_QUERY,
       variables: USER_TO_CREATE,
     });
-    addCreateInCounter(ENTITY_TYPE_USER);
     userWithoutRoleInternalId = userAddResult.data?.userAdd.id;
   });
 
@@ -788,7 +780,6 @@ describe('User has no capability query behavior', () => {
       query: DELETE_QUERY,
       variables: { id: userWithoutRoleInternalId },
     });
-    addDeleteInCounter(ENTITY_TYPE_USER);
     await queryAsAdmin({
       query: GROUP_UPDATE_QUERY,
       variables: {
@@ -941,7 +932,6 @@ describe('User has no settings capability and is organization admin query behavi
       query: CREATE_QUERY,
       variables: USER_TO_CREATE,
     });
-    addCreateInCounter(ENTITY_TYPE_USER);
     expect(user).not.toBeNull();
     expect(user.data.userAdd).not.toBeNull();
     expect(user.data.userAdd.name).toEqual('User');
@@ -1051,7 +1041,6 @@ describe('User has no settings capability and is organization admin query behavi
       query: DELETE_QUERY,
       variables: { id: userInternalId },
     });
-    addDeleteInCounter(ENTITY_TYPE_USER);
     // Verify is no longer found
     const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult.data.user).toBeNull();
