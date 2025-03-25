@@ -197,7 +197,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     return draftWorkspaceAdd?.id;
   }, [commitCreationMutation, commitContextMutation]);
 
-  const getDraftContext = () => {
+  const setDraftContext = () => {
     commitContextMutation({
       variables: {
         input: [
@@ -351,7 +351,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
           // Switch to draft mode and navigate to files draft
           <Button
             color="secondary"
-            onClick={() => getDraftContext()}
+            onClick={() => setDraftContext()}
             component={Link}
             to={`/dashboard/drafts/${draftId}/files`}
           >

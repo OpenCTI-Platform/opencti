@@ -691,7 +691,13 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
 
   if (connectors) {
     await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
-      askJobImport(contextInDraft, user, { fileName: uploadedFile.id, connectorId, configuration, validationMode, manualValidation: true })
+      askJobImport(contextInDraft, user, {
+        fileName: uploadedFile.id,
+        connectorId,
+        configuration,
+        validationMode,
+        forceValidation: true
+      })
     )));
   }
 

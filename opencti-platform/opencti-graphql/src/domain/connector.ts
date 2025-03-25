@@ -19,13 +19,13 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
 import {
   ConnectorType,
-  ValidationMode,
   type EditContext,
   type EditInput,
   type MutationSynchronizerTestArgs,
   type RegisterConnectorInput,
   type SynchronizerAddInput,
   type SynchronizerFetchInput,
+  ValidationMode,
 } from '../generated/graphql';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
@@ -389,7 +389,7 @@ export const askJobImport = async (
     bypassEntityId?: string;
     bypassValidation?: boolean;
     validationMode?: ValidationMode;
-    manualValidation?: boolean;
+    forceValidation?: boolean;
   },
 ) => {
   const {
@@ -399,7 +399,7 @@ export const askJobImport = async (
     bypassEntityId = null,
     bypassValidation = false,
     validationMode = defaultValidationMode,
-    manualValidation = false,
+    forceValidation = false,
   } = args;
   logApp.info(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);
   const file = await loadFile(context, user, fileName);
@@ -409,7 +409,7 @@ export const askJobImport = async (
   }
   logApp.info('[JOBS] ask import, file found:', file);
   const entityId = bypassEntityId || file?.metaData.entity_id;
-  const opts = { manual: true, connectorId, configuration, bypassValidation, validationMode, manualValidation };
+  const opts = { manual: true, connectorId, configuration, bypassValidation, validationMode, forceValidation };
   const entity = await internalLoadById(context, user, entityId) as BasicStoreCommon;
   // This is a manual request for import, we have to check confidence and throw on error
   if (entity) {
