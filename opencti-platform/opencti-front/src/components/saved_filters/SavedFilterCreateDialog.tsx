@@ -41,7 +41,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose }: SavedFilterDialogProps) =>
   const [filterName, setFilterName] = useState<string>();
 
   const [commit] = useApiMutation(
-    savedFilterDialogCreateMutation,
+    savedFilterCreateDialogMutation,
     undefined,
     {
       successMessage: t_i18n('Saved filter successfully created'),

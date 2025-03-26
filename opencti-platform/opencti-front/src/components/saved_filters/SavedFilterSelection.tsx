@@ -1,6 +1,5 @@
 import React, { useState, SyntheticEvent, useEffect } from 'react';
 import { Autocomplete } from '@mui/material';
-import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
@@ -10,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import SavedFilterDeleteDialog from 'src/components/saved_filters/SavedFilterDeleteDialog';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
+import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 
 type SavedFiltersSelectionData = SavedFiltersQuery$data['savedFilters']['edges']['node'];
 
@@ -33,7 +33,7 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
     },
   } = useDataTableContext();
 
-  const [selectedSavedFilter, setSelectedSavedFilter] = useState<string>('');
+  const [selectedSavedFilter, setSelectedSavedFilter] = useState<AutocompleteOptionType>();
   const [savedFilterToDelete, setSavedFilterToDelete] = useState<string>();
 
   const options = data.map((item) => ({
@@ -41,7 +41,7 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
     value: item,
   }));
 
-  const handleResetInput = () => setSelectedSavedFilter('');
+  const handleResetInput = () => setSelectedSavedFilter(undefined);
 
   useEffect(() => {
     if (isDisabled && !!selectedSavedFilter) {
@@ -50,14 +50,14 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
   }, [isDisabled]);
 
   useEffect(() => {
-    if (!filters.filters.length && !filters.filterGroups.length) {
+    if (!filters?.filters.length && !filters?.filterGroups.length) {
       handleResetInput();
     }
   }, [filters]);
 
-  const handleSelect = (selectionOption: SavedFiltersSelectionData) => {
-    setSelectedSavedFilter(selectionOption.name);
-    helpers.handleSetFilters(JSON.parse(selectionOption.filters));
+  const handleSelect = (selectionOption: AutocompleteOptionType) => {
+    setSelectedSavedFilter(selectionOption);
+    helpers.handleSetFilters(JSON.parse(selectionOption.value.filters));
   };
 
   const resetSavedFilterToDelete = () => setSavedFilterToDelete(undefined);
@@ -70,7 +70,7 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
 
   const renderOption = (params: React.HTMLAttributes<HTMLLIElement> & { key: string }, option: AutocompleteOptionType) => {
     return (
-      <Box {...params} key={params.key}>
+      <li {...params} key={params.key}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <Typography>{option.label}</Typography>
           <Tooltip title={t_i18n('Delete this saved filter')}>
@@ -83,7 +83,7 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
             </IconButton>
           </Tooltip>
         </div>
-      </Box>
+      </li>
     );
   };
 
@@ -98,7 +98,7 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
         noOptionsText={t_i18n('No available options')}
         disablePortal
         disableClearable
-        onChange={(_, selectedOption) => handleSelect(selectedOption.value)}
+        onChange={(_, selectedOption) => handleSelect(selectedOption)}
         renderOption={renderOption}
         renderInput={(params) => (
           <TextField
