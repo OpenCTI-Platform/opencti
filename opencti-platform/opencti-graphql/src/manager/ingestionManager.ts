@@ -7,7 +7,6 @@ import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
 import * as JSONPath from 'jsonpath-plus';
-import ejs from 'ejs';
 import { AxiosError } from 'axios';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
@@ -607,11 +606,13 @@ const testIngestion: BasicStoreEntityIngestionJson = {
   uri: 'http://localhost:8080/v1/statement',
   verb: 'post',
   // body: 'select * from customer',
-  body: 'select * from customer OFFSET <?- offset -?> LIMIT 10',
+  body: 'select * from customer OFFSET $offset LIMIT 10',
   json_parser_id: 'parser4',
+  // ==== Specific for api that require sub queries (like trino)
   pagination_with_sub_page: true,
   pagination_with_sub_page_attribute_path: '$.nextUri',
   pagination_with_sub_page_query_verb: 'get',
+  // ======================================
   confidence_to_score: true,
   authentication_type: IngestionAuthType.None,
   authentication_value: '',
@@ -620,15 +621,16 @@ const testIngestion: BasicStoreEntityIngestionJson = {
   last_execution_date: undefined,
   query_attributes: [
     {
-      type: 'data',
-      as_query_param: false,
-      data_operation: 'count',
-      state_operation: 'sum',
-      from_path: '$.data',
-      to_name: 'offset',
-      default: 0
+      type: 'data', // If attribute need to be built from the response data.
+      data_operation: 'count', // If data is an array, choose to get the size
+      state_operation: 'sum', // How to manage the parameter in the state.
+      from_path: '$.data', // Json path the get the data from the response
+      to_name: 'offset', // Name of the final param
+      default: 0, // Default value for the param
+      as_query_param: false, // Attribute will also be exposed in query params. Default is to replace body variable
     }
   ],
+  // Specific headers for the query
   headers: [
     { key: 'X-Trino-User', value: 'admin' },
     { key: 'X-Trino-Schema', value: 'sf1' },
@@ -639,9 +641,7 @@ const testIngestion: BasicStoreEntityIngestionJson = {
 let ingestionState = {}; /* TODO GET STATE */
 
 const getValueFromPath = (path: string, json: any) => {
-  const value = JSONPath.JSONPath({ path, json, wrap: false, flatten: true });
-  // console.log(json, path, value);
-  return value;
+  return JSONPath.JSONPath({ path, json, wrap: false, flatten: true });
 };
 const buildQueryObject = (queryParamsAttributes: Array<HeaderParam | DataParam> | undefined, requestData: Record<string, any>, withDefault = true) => {
   const params: Record<string, string | number> = {};
@@ -658,13 +658,10 @@ const buildQueryObject = (queryParamsAttributes: Array<HeaderParam | DataParam> 
       } else {
         attrValue = requestData[queryParamsAttribute.from_name];
       }
-      // console.log('------------>', queryParamsAttribute, attrValue, isNotEmptyField(attrValue));
       if (isNotEmptyField(attrValue)) {
         params[queryParamsAttribute.to_name] = attrValue;
-        // console.log('isNotEmptyField', params);
       } else if (isNotEmptyField(queryParamsAttribute.default) && withDefault) {
         params[queryParamsAttribute.to_name] = queryParamsAttribute.default;
-        // console.log('default', params);
       }
     }
   }
@@ -676,7 +673,6 @@ const mergeQueryState = (queryParamsAttributes: Array<HeaderParam | DataParam> |
   for (let attrIndex = 0; attrIndex < queryParams.length; attrIndex += 1) {
     const queryParamsAttribute = queryParams[attrIndex];
     if (queryParamsAttribute.state_operation === 'sum') {
-      // console.log('------------->', previousState[queryParamsAttribute.to_name], newState[queryParamsAttribute.to_name]);
       state[queryParamsAttribute.to_name] = previousState[queryParamsAttribute.to_name] + newState[queryParamsAttribute.to_name];
     } else {
       state[queryParamsAttribute.to_name] = newState[queryParamsAttribute.to_name];
@@ -693,8 +689,19 @@ const buildQueryParams = (queryParamsAttributes: Array<HeaderParam | DataParam> 
   }
   return params;
 };
-
-export const jsonExecutor = async (_context: AuthContext) => {
+const replaceVariables = (body: string, variables: Record<string, object>) => {
+  const regex = /\$\w+/g;
+  return body.replace(regex, (match) => {
+    const variableName = match.substring(1);
+    if (Object.prototype.hasOwnProperty.call(variables, variableName)) {
+      // If found, return the corresponding value
+      // Ensure the returned value is converted to a string if it's not already
+      return String(variables[variableName]);
+    }
+    return match;
+  });
+};
+export const jsonExecutor = async (context: AuthContext) => {
   // console.log('ingestionState', ingestionState);
   // const filters = {
   //   mode: 'and',
@@ -728,13 +735,11 @@ export const jsonExecutor = async (_context: AuthContext) => {
     const httpClient = getHttpClient(httpClientOptions);
     // Execute the http query
     // const ingestionState = {}; /* TODO GET STATE */
-    // const params = buildQueryObject({}, ingestion.query_attributes, ingestionState);
     const variables = isEmptyField(ingestionState) ? buildQueryObject(ingestion.query_attributes, {}) : ingestionState;
     const params = buildQueryParams(ingestion.query_attributes, variables);
     // console.log('variables', variables);
-    const parsedBody = await ejs.render(ingestion.body, variables, { delimiter: '?', async: true });
-    // console.log('parsedBody', parsedBody);
-    console.log('query', parsedBody);
+    const parsedBody = replaceVariables(ingestion.body, variables);
+    console.log(`> Main query: ${ingestion.uri}`, parsedBody);
     const { data: requestData, headers: responseHeaders } = await httpClient.call({ method: ingestion.verb, url: ingestion.uri, data: parsedBody, params });
     const bundle = await jsonMappingExecution({}, requestData, jsonParsers[ingestion.json_parser_id]);
     let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
@@ -743,7 +748,7 @@ export const jsonExecutor = async (_context: AuthContext) => {
       // console.log(requestData);
       let url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData);
       while (isNotEmptyField(url)) {
-        console.log(url);
+        console.log(`> Sub query: ${url}`);
         await wait(100); // Wait 100 ms between 2 calls
         const { data: paginationData } = await httpClient.call({ method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb, url, data: ingestion.body, params });
         const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
@@ -757,12 +762,12 @@ export const jsonExecutor = async (_context: AuthContext) => {
     }
     // endregion
     console.log('dataBundle', bundle.objects.length);
-    // console.log('nextExecutionState', ingestionState);
     // Push the bundle to absorption queue
-    // await pushBundleToConnectorQueue(context, ingestion, bundle);
+    await pushBundleToConnectorQueue(context, ingestion, bundle);
     // Save new state for next execution
-    console.log('----------------------------------------------');
     ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
+    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
+    console.log('----------------------------------------------');
   }
 };
 // endregion
