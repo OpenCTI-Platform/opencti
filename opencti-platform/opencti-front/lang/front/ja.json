@@ -2318,6 +2318,7 @@
   "Paste your Filigran OpenCTI Enterprise Edition license": "あなたのFiligran OpenCTI Enterprise Editionのライセンスを貼り付けてください。",
   "Pattern": "パターン",
   "pattern": "インジケータパターン",
+  "Pattern export (just the entity pattern field)": "パターンエクスポート（エンティティパターンフィールドのみ）",
   "Pattern type": "パターンタイプ",
   "Pattern_type": "Pattern type",
   "pattern_type": "パターンタイプ",

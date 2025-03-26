@@ -8,7 +8,7 @@ import {
 } from './__generated__/StixDomainObjectsExportsContentRefetchQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
-import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { addFilter, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 
 interface StixDomainObjectsExportsProps {
   exportContext: { entity_id?: string; entity_type: string };
@@ -24,6 +24,13 @@ StixDomainObjectsExportsProps
   return (
     <ExportContext.Consumer>
       {({ selectedIds }) => {
+        let tempSelectedIds = selectedIds;
+        if (tempSelectedIds === undefined || tempSelectedIds === null || tempSelectedIds.length === 0) {
+          tempSelectedIds = [''];
+        }
+
+        const filters = addFilter(emptyFilterGroup, 'id', tempSelectedIds);
+
         return (
           <Drawer
             open={open}
@@ -35,16 +42,7 @@ StixDomainObjectsExportsProps
               variables={{
                 count: 25,
                 exportContext,
-                filters: {
-                  ...emptyFilterGroup,
-                  // This should not be hard coded, should an existing filtersUtils
-                  filters: [
-                    {
-                      key: 'id',
-                      values: selectedIds,
-                    },
-                  ],
-                },
+                filters,
               }}
               render={({
                 props,
