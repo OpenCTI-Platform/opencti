@@ -212,10 +212,10 @@ const consumeQueueCallback = async (context: AuthContext, message: string) => {
       connectorId: connector.internal_id,
     };
     await updateReceivedTime(context, applicantUser, workId, 'Connector ready to process the operation');
-    const { validation_mode } = messageParsed.event;
+    const { validation_mode, force_validation } = messageParsed.event;
     const { draft_id } = messageParsed.internal;
     const validateBeforeImport = connectorConfig.config.validate_before_import;
-    if (draft_id || validateBeforeImport) {
+    if (draft_id || validateBeforeImport || force_validation) {
       await processValidateBeforeImport(context, validation_mode, draft_id, fileId, opts);
     } else {
       await processCSVforWorkers(context, fileId, opts);
