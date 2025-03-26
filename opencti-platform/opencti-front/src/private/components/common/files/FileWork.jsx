@@ -22,7 +22,6 @@ import Slide from '@mui/material/Slide';
 import { useNavigate } from 'react-router-dom';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -67,8 +66,6 @@ const FileWorkComponent = (props) => {
   const [deleting, setDeleting] = useState(false);
   const [displayDelete, setDisplayDelete] = useState(null);
   const navigate = useNavigate();
-  const { isFeatureEnable } = useHelper();
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const draftContext = useDraftContext();
 
   const navigateToDraft = (draftId) => {
@@ -180,7 +177,7 @@ const FileWorkComponent = (props) => {
                     <span className={classes.itemText}>{secondaryLabel}</span>
                   }
                 />
-                {!!work.draft_context && isDraftFeatureEnabled && !draftContext && (
+                {!!work.draft_context && !draftContext && (
                 <Tooltip title={t('Navigate to draft')}>
                   <span>
                     <IconButton

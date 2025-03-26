@@ -36,7 +36,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const interval$ = interval(TEN_SECONDS);
@@ -170,9 +169,7 @@ const ImportContentComponent = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  const { isFeatureEnable } = useHelper();
   const draftContext = useDraftContext();
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   setTitle(t_i18n('Import | Import | Data'));
 
   const [fileToImport, setFileToImport] = useState(null);
@@ -474,7 +471,7 @@ const ImportContentComponent = ({
                       );
                     })}
                   </Field>
-                  {!draftContext && isDraftFeatureEnabled && (
+                  {!draftContext && (
                     <Field
                       component={SelectField}
                       variant="standard"

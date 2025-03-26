@@ -28,7 +28,6 @@ import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer'
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const styles = (theme) => ({
@@ -137,9 +136,7 @@ const StixCoreObjectFilesAndHistory = ({
   bypassEntityId,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const draftContext = useDraftContext();
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
@@ -334,7 +331,7 @@ const StixCoreObjectFilesAndHistory = ({
                     );
                   })}
                 </Field>
-                {!draftContext && isDraftFeatureEnabled && (
+                {!draftContext && (
                   <Field
                     component={SelectField}
                     variant="standard"

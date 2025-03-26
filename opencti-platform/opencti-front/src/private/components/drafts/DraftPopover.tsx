@@ -188,7 +188,7 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
         >
           <DialogTitle>{t_i18n('Switch to Draft Mode')}</DialogTitle>
           <DialogContent>
-            <DialogContentText>{t_i18n('You are about to switch to Draft mode. All your OpenCTI Plateform will be in draft. The selected Draft will be the draft by default.')}</DialogContentText>
+            <DialogContentText>{t_i18n('You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.')}</DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseSwitch}>{t_i18n('Cancel')}</Button>

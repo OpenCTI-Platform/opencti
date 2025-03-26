@@ -21,6 +21,10 @@ const LOCAL_STORAGE_KEY = 'search';
 const searchLineFragment = graphql`
   fragment SearchStixCoreObjectLine_node on StixCoreObject {
     id
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     parent_types
     entity_type
     created_at
@@ -93,6 +97,10 @@ export const searchStixCoreObjectsLinesSearchQuery = graphql`
           entity_type
           created_at
           updated_at
+          draftVersion {
+            draft_id
+            draft_operation
+          }
           ... on StixObject {
             representative {
               main

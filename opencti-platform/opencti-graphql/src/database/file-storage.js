@@ -8,7 +8,7 @@ import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
 import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import nconf from 'nconf';
-import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, isFeatureEnabled, logApp, logS3Debug } from '../config/conf';
+import conf, { booleanConf, ENABLED_FILE_INDEX_MANAGER, logApp, logS3Debug } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile } from '../domain/work';
@@ -430,7 +430,6 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
 
 export const uploadJobImport = async (context, user, file, entityId, opts = {}) => {
   const { manual = false, connectorId = null, configuration = null, bypassValidation = false, validationMode = defaultValidationMode } = opts;
-  const validationModeToUse = isFeatureEnabled('DRAFT_WORKSPACE') ? validationMode : 'workbench';
   const draftContext = getDraftContext(context, user);
   let connectors = await connectorsForImport(context, user, file.metaData.mimetype, true, !manual);
   if (connectorId) {
@@ -463,7 +462,7 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
           file_markings: file.metaData.file_markings ?? [],
           file_fetch: `/storage/get/${file.id}`, // Path to get the file
           entity_id: entityId, // Context of the upload*
-          validation_mode: draftContext ? 'draft' : validationModeToUse, // Force to draft if we are in draft
+          validation_mode: draftContext ? 'draft' : validationMode, // Force to draft if we are in draft
           bypass_validation: draftContext ? true : bypassValidation, // Force no validation: always force it when in draft
         },
         configuration: connectorConfiguration

@@ -11,7 +11,7 @@ import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import passport from 'passport/lib';
-import conf, { basePath, booleanConf, isFeatureEnabled, loadCert, logApp, PORT } from '../config/conf';
+import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
@@ -141,16 +141,14 @@ const createHttpServer = async () => {
         const settings = await getEntityFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
         executeContext.otp_mandatory = settings.otp_mandatory ?? false;
         executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
-        if (isFeatureEnabled('DRAFT_WORKSPACE')) {
-          executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
-        }
+        executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
         executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
         executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
         executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
         try {
           const user = await authenticateUserFromRequest(executeContext, req);
           if (user) {
-            if (isFeatureEnabled('DRAFT_WORKSPACE') && !Object.keys(req.headers).some((k) => k === 'opencti-draft-id')) {
+            if (!Object.keys(req.headers).some((k) => k === 'opencti-draft-id')) {
               executeContext.draft_context = user.draft_context;
             }
             executeContext.user = userWithOrigin(req, user);
@@ -172,7 +170,7 @@ const createHttpServer = async () => {
         }
 
         // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
-        if (isFeatureEnabled('DRAFT_WORKSPACE') && !!executeContext.draft_context) {
+        if (executeContext.draft_context) {
           const draftWorkspaces = await getEntitiesMapFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
           const draftWorkspace = draftWorkspaces.get(executeContext.draft_context);
           if (!draftWorkspace) {

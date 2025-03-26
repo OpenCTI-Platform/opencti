@@ -108,7 +108,6 @@ export const draftIds: AttributeDefinition = {
   upsert: false,
   isFilterable: false,
   entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
-  featureFlag: 'DRAFT_WORKSPACE'
 };
 
 export const draftContext: AttributeDefinition = {
@@ -121,7 +120,6 @@ export const draftContext: AttributeDefinition = {
   editDefault: false,
   upsert: false,
   isFilterable: true,
-  featureFlag: 'DRAFT_WORKSPACE'
 };
 
 export const draftChange: AttributeDefinition = {
@@ -135,7 +133,6 @@ export const draftChange: AttributeDefinition = {
   multiple: false,
   upsert: false,
   isFilterable: true,
-  featureFlag: 'DRAFT_WORKSPACE',
   mappings: [
     { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'enum', values: getDraftOperations(), mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'draft_updates_patch', label: 'Draft update patch', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
