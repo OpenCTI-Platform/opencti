@@ -465,7 +465,7 @@ const StixSightingRelationshipCreationFromEntity = ({
     switch (variant) {
       case 'controlledDial':
         return (
-          <CreateEntityControlledDial entityType='Sighting' onOpen={handleOpen} />
+          <CreateEntityControlledDial entityType='Sighting' onOpen={handleOpen} size="medium"/>
         );
       case 'inLine':
         return (
