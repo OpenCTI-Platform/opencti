@@ -109,6 +109,11 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
     };
   }, []);
 
+  // If me user is not yet updated to be in draft, display loader
+  if (!isDraftReadOnly && !draftContext) {
+    return (<Loader/>);
+  }
+
   return (
     <>
       {isDraftReadOnly && (
