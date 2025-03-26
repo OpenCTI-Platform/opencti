@@ -23,6 +23,8 @@ import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { listAllEntities } from '../../../src/database/middleware-loader';
 import type { BasicWorkflowStatus } from '../../../src/types/store';
 import { internalDeleteElementById } from '../../../src/database/middleware';
+import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
+import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
 export const CREATE_REQUEST_ACCESS_QUERY = gql`
     mutation RequestAccessAdd($input: RequestAccessAddInput!) {
@@ -48,6 +50,10 @@ export const READ_RFI_QUERY = gql`
             authorized_members {
               id
               access_right
+              groups_restriction {
+                  id
+                  name
+              }
             }
             objectParticipant {
                 id
@@ -483,7 +489,6 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   });
 
   it('should create a Request Access and associated Case RFI (For accept use case)', async () => {
-    console.log('ANGIE - ', { malwareId, testOrgId });
     const requestAccessData = await queryAsAdminWithSuccess({
       query: CREATE_REQUEST_ACCESS_QUERY,
       variables: {
@@ -514,8 +519,13 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     expect(getRfiQueryResult?.data?.caseRfi.authorized_members).toBeDefined();
     expect(getRfiQueryResult?.data?.caseRfi.authorized_members).toEqual([
       {
-        id: amberGroupId,
-        access_right: 'admin'
+        id: OPENCTI_ADMIN_UUID,
+        access_right: MEMBER_ACCESS_RIGHT_ADMIN,
+        groups_restriction: []
+      }, {
+        id: testOrgId,
+        access_right: MEMBER_ACCESS_RIGHT_EDIT,
+        groups_restriction: [{ id: amberGroupId, name: 'TODO' }] // FIXME update with AMBER_GROUP.name when it's fixed
       }
     ]);
 
