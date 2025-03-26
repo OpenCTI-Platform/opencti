@@ -38,6 +38,7 @@ const ImportFilesOptions = ({
         justifySelf: 'center',
         gap: 2,
         width: '50%',
+        marginInline: 'auto',
       }}
       >
         <ObjectMarkingField
