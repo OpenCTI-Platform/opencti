@@ -11,7 +11,7 @@ import SavedFilterDeleteDialog from 'src/components/saved_filters/SavedFilterDel
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 
-type SavedFiltersSelectionData = SavedFiltersQuery$data['savedFilters']['edges']['node'];
+type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']>[0]['node'];
 
 type SavedFilterSelectionProps = {
   isDisabled: boolean;
