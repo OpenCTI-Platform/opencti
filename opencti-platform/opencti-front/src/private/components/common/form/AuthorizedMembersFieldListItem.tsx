@@ -12,7 +12,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
-import { AccessRight } from '../../../../utils/authorizedMembers';
+import { AccessRight, AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 
 // Common style applied in JSX.
 const smallText = {
@@ -21,7 +21,7 @@ const smallText = {
 };
 
 interface AuthorizedMembersFieldListItemProps {
-  authorizedMember: Option
+  authorizedMember: AuthorizedMemberOption
   name: string
   accessRights: { label: string, value: string }[]
   onRemove?: () => void
@@ -86,6 +86,11 @@ const AuthorizedMembersFieldListItem = ({
             {authorizedMember.value === ownerId && (
               <span style={smallText}>
                 {' '}({t_i18n('Creator')})
+              </span>
+            )}
+            {authorizedMember.groupsRestriction && authorizedMember.groupsRestriction.length > 0 && (
+              <span style={smallText}>
+                {' '}({t_i18n('Groups restriction')})
               </span>
             )}
           </>

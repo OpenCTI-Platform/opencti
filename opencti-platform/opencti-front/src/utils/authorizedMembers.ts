@@ -27,6 +27,10 @@ export type AuthorizedMembers = ReadonlyArray<{
   readonly entity_type: string;
   readonly id: string;
   readonly name: string;
+  readonly groups_restriction: ReadonlyArray<{
+    readonly id: string;
+    readonly name: string;
+  }> | null | undefined;
 }> | null;
 
 export type Creator = {
@@ -52,7 +56,7 @@ export const authorizedMembersToOptions = (
         type: member.entity_type,
         value: member.id,
         accessRight: member.access_right as AccessRight,
-        groupsRestriction: [], // TODO get from backend if groupsRestriction or not
+        groupsRestriction: member.groups_restriction,
       };
     });
 };
