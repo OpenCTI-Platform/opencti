@@ -174,28 +174,35 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
   });
 
   const createDraft = useCallback(async (name: string, selectedEntityId?: string) => {
-    const { draftWorkspaceAdd } = await new Promise<DraftCreationMutation$data>((resolve, reject) => {
-      commitCreationMutation({
-        variables: {
-          input: {
-            name,
-            entity_id: selectedEntityId,
+    try {
+      const { draftWorkspaceAdd } = await new Promise<DraftCreationMutation$data>((resolve, reject) => {
+        commitCreationMutation({
+          variables: {
+            input: {
+              name,
+              entity_id: selectedEntityId,
+            },
           },
-        },
-        onCompleted: (response, errors) => {
-          if (errors) {
-            reject(errors);
-          } else {
-            resolve(response);
-          }
-        },
-        onError: (error) => {
-          reject(error);
-        },
+          onCompleted: (response, errors) => {
+            if (errors) {
+              reject(errors);
+            } else {
+              resolve(response);
+            }
+          },
+          onError: (error) => {
+            reject(error);
+          },
+        });
       });
-    });
-    setDraftId(draftWorkspaceAdd?.id);
-    return draftWorkspaceAdd?.id;
+
+      setDraftId(draftWorkspaceAdd?.id);
+      return draftWorkspaceAdd?.id;
+    } catch (error) {
+      const { errors } = (error as unknown as RelayError).res;
+      MESSAGING$.notifyError(errors.at(0)?.message);
+      return undefined;
+    }
   }, [commitCreationMutation, commitContextMutation]);
 
   const setDraftContext = () => {
@@ -285,12 +292,12 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
   };
 
   const onSubmit: FormikConfig<OptionsFormValues>['onSubmit'] = async (values, { setErrors }) => {
-    setUploadStatus('uploading');
     const selectedEntityId = entityId ?? (values.associatedEntity?.value || undefined);
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
 
     const { validationMode, name } = values;
     if (validationMode === 'workbench') {
+      setUploadStatus('uploading');
       importFiles({ selectedEntityId, fileMarkingIds, validationMode }, setErrors);
     } else {
       const newDraftId = await createDraft(name, selectedEntityId);
@@ -299,6 +306,7 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
         setUploadStatus(undefined);
         throw new Error(t_i18n('Failed to create draft workspace.'));
       }
+      setUploadStatus('uploading');
       importFiles({ selectedEntityId, fileMarkingIds, validationMode, newDraftId }, setErrors);
     }
   };
