@@ -25,6 +25,7 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
+  ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_THREAT_ACTOR,
   INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
@@ -51,7 +52,7 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { internalFindByIds, listAllRelations, storeLoadById } from '../../database/middleware-loader';
+import { internalFindByIds, listAllEntities, listAllRelations, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
@@ -80,7 +81,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types'
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
-import { EditOperation } from '../../generated/graphql';
+import { EditOperation, FilterMode } from '../../generated/graphql';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
@@ -743,6 +744,8 @@ const RESOLVE_CONTAINER = 'resolve_container';
 const RESOLVE_NEIGHBORS = 'resolve_neighbors';
 const RESOLVE_INDICATORS = 'resolve_indicators';
 const RESOLVE_OBSERVABLES = 'resolve_observables';
+const RESOLVE_CONTAINER_CONTAINING = 'resolve_containers_containing';
+
 type StixWithSeenDates = StixThreatActor | StixCampaign | StixIncident | StixInfrastructure | StixMalware;
 const ENTITIES_DATE_SEEN_PREFIX = ['threat-actor--', 'campaign--', 'incident--', 'infrastructure--', 'malware--'];
 type SeenFilter = { element: StixWithSeenDates, isImpactedBefore: boolean, isImpactedAfter: boolean };
@@ -762,6 +765,7 @@ const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
         { const: RESOLVE_OBSERVABLES, title: 'Resolve observables an indicator is based on (add in bundle)' },
         { const: RESOLVE_CONTAINER, title: 'Resolve container references (add in bundle)' },
         { const: RESOLVE_NEIGHBORS, title: 'Resolve neighbors relations and entities (add in bundle)' },
+        { const: RESOLVE_CONTAINER_CONTAINING, title: 'Resolve containers containing the entity (add in bundle)' },
       ]
     },
     inferences: { type: 'boolean', $ref: 'Include inferred objects', default: false },
@@ -861,6 +865,20 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
           bundle.objects.push(...elements);
           return { output_port: 'out', bundle };
         }
+      }
+    }
+    if (rule === RESOLVE_CONTAINER_CONTAINING) {
+      const filters = {
+        mode: FilterMode.And,
+        filters: [{ key: ['objects'], values: [id], }],
+        filterGroups: []
+      };
+      const containers = await listAllEntities(context, AUTOMATION_MANAGER_USER, [ENTITY_TYPE_CONTAINER], { filters, connectionFormat: false, baseData: true });
+      const containersToResolve = containers.map((container) => container.id);
+      const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, containersToResolve);
+      if (elements.length > 0) {
+        bundle.objects.push(...elements);
+        return { output_port: 'out', bundle };
       }
     }
     if (rule === RESOLVE_NEIGHBORS) {
