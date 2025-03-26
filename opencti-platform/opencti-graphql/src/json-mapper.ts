@@ -1,7 +1,6 @@
 import * as JSONPath from 'jsonpath-plus';
 
 import './modules';
-import fs from 'node:fs';
 import { v4 as uuidv4 } from 'uuid';
 import ejs from 'ejs';
 import {
@@ -235,7 +234,6 @@ const addResult = (representation: JsonMapperRepresentation, results: Map<string
 };
 
 const jsonMappingExecution = async (meta: Record<string, any>, data: string | object, mapper: JsonMapperParsed) => {
-  const start = new Date().getTime();
   const context = executionContext('JsonMapper');
   const refEntities = await handleRefEntities(context, SYSTEM_USER, mapper);
   const results = new Map<string, Record<string, InputType>[]>();
@@ -273,7 +271,6 @@ const jsonMappingExecution = async (meta: Record<string, any>, data: string | ob
           }
           const attributeDef = schemaAttributesDefinition.getAttribute(entity_type, attributeKey);
           const refDef = schemaRelationsRefDefinition.getRelationRef(entity_type, attributeKey);
-          // console.log(hashesNames, test);
           if (attributeDef) {
             if (hashesNames.includes(attribute.key)) {
               const definitionHash = (attributeDef as ObjectAttribute).mappings.find((definition) => (definition.name === attribute.key));
@@ -290,11 +287,9 @@ const jsonMappingExecution = async (meta: Record<string, any>, data: string | ob
           } else if (attribute.key === 'to') {
             await handleBasedOnAttribute(baseJson, dataVars, attribute, input, baseDatum, toDef, results, refEntities);
           } else {
-            console.log('Unknown schema for attribute:', { attribute });
             throw UnsupportedError('Unknown schema for attribute:', { attribute });
           }
         }
-        // console.log(input);
         // Take care of explicit relations cardinality
         if (input.__froms && input.__tos) {
           for (let fromIndex = 0; fromIndex < input.__froms.length; fromIndex += 1) {
