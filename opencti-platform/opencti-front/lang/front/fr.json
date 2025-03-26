@@ -2303,6 +2303,7 @@
   "Paste your Filigran OpenCTI Enterprise Edition license": "Collez votre licence Filigran OpenCTI Enterprise Edition",
   "Pattern": "Motif",
   "pattern": "Motif de l'indicateur",
+  "Pattern export (just the entity pattern field)": "Exportation de motif (uniquement le champ de motif d'entité)",
   "Pattern type": "Type de motif",
   "Pattern_type": "Pattern type",
   "pattern_type": "Type de motif",

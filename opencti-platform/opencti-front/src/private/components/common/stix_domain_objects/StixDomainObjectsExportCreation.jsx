@@ -160,24 +160,12 @@ class StixDomainObjectsExportCreationComponent extends Component {
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
-          console.log('selectedIds is: ', selectedIds);
-          console.log('idAndPatternTypes is: ', idAndPatternTypes);
-
           const selectedIndicators = idAndPatternTypes.filter((indicator) => selectedIds?.includes(indicator.id));
-          console.log('selectedIndicators is ', selectedIndicators);
           const selectedPatternTypes = selectedIndicators.map((indicator) => indicator.pattern_type);
-          console.log('selectedPatternTypes is ', selectedPatternTypes);
           const uniquePatternTypes = [...new Set(selectedPatternTypes)];
-          // const hasSinglePatternType = uniquePatternTypes.length === 1;
-          // const hasMultipleSelectedIds = selectedIds.length > 1;
-          // const showPatternExport = hasMultipleSelectedIds && hasSinglePatternType;
-          console.log('uniquePatternTypes is ', uniquePatternTypes);
           const hasSinglePatternType = uniquePatternTypes.length === 1;
-          console.log('hasSinglePatternType is ', hasSinglePatternType);
           const hasMultipleSelectedIds = selectedIds.length > 1;
-          console.log('hasMultipleSelectedIds is ', hasMultipleSelectedIds);
           const showPatternExport = hasMultipleSelectedIds && hasSinglePatternType;
-          console.log('showPatternExport is ', showPatternExport);
 
           return (
             <>
@@ -213,7 +201,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                 onSubmit={this.onSubmit.bind(this, selectedIds)}
                 onReset={this.handleClose.bind(this)}
               >
-                {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
+                {({ values, submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
                   <Form>
                     <Dialog
                       slotProps={{ paper: { elevation: 1 } }}
@@ -258,7 +246,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                           <MenuItem value="simple">
                             {t('Simple export (just the entity)')}
                           </MenuItem>
-                          {showPatternExport && <MenuItem value="pattern">
+                          {showPatternExport && values.format === 'text/plain' && <MenuItem value="pattern">
                             {t('Pattern export (just the entity pattern field)')}
                           </MenuItem>}
                           <MenuItem value="full">
@@ -270,7 +258,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                         <ObjectMarkingField
                           name="contentMaxMarkings"
                           label={t(CONTENT_MAX_MARKINGS_TITLE)}
-                          onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
+                          onChange={(_, valuesTemp) => this.handleSelectedContentMaxMarkingsChange(valuesTemp)}
                           style={fieldSpacingContainerStyle}
                           setFieldValue={setFieldValue}
                           limitToMaxSharing
