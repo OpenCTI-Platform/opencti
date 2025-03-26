@@ -173,12 +173,13 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     type: 'files',
   });
 
-  const createDraft = useCallback(async (name: string) => {
+  const createDraft = useCallback(async (name: string, selectedEntityId?: string) => {
     const { draftWorkspaceAdd } = await new Promise<DraftCreationMutation$data>((resolve, reject) => {
       commitCreationMutation({
         variables: {
           input: {
             name,
+            entity_id: selectedEntityId,
           },
         },
         onCompleted: (response, errors) => {
@@ -292,7 +293,12 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
     if (validationMode === 'workbench') {
       importFiles({ selectedEntityId, fileMarkingIds, validationMode }, setErrors);
     } else {
-      const newDraftId = await createDraft(name);
+      const newDraftId = await createDraft(name, selectedEntityId);
+      if (!newDraftId) {
+        setActiveStep(1);
+        setUploadStatus(undefined);
+        throw new Error(t_i18n('Failed to create draft workspace.'));
+      }
       importFiles({ selectedEntityId, fileMarkingIds, validationMode, newDraftId }, setErrors);
     }
   };
@@ -401,13 +407,15 @@ const ImportFilesDialog = ({ open, handleClose, entityId }: ImportFilesDialogPro
   return (
     <Dialog
       open={open}
-      TransitionComponent={Transition}
+      slots={{ transition: Transition }}
       fullWidth
       maxWidth={false}
-      PaperProps={{
-        elevation: 1,
-        style: {
-          height: '100vh',
+      slotProps={{
+        paper: {
+          elevation: 1,
+          style: {
+            height: '100vh',
+          },
         },
       }}
     >
