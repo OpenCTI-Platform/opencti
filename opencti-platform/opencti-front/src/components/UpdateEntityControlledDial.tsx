@@ -14,7 +14,7 @@ export const UpdateEntityControlledDial: FunctionComponent<UpdateEntityControlle
   onOpen,
   color = 'primary',
   size = 'medium',
-  variant = 'outlined',
+  variant = 'contained',
   style,
 }) => {
   const { t_i18n } = useFormatter();

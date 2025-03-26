@@ -9,7 +9,7 @@ const EditEntityControlledDial = ({
   onOpen,
   color = 'primary',
   size = 'small',
-  variant = 'outlined',
+  variant = 'contained',
   style,
 }: ButtonOwnProps & CommonProps & DrawerControlledDialProps) => {
   const { t_i18n } = useFormatter();

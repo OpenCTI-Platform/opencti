@@ -82,7 +82,7 @@ StixSightingRelationshipProps
                 {isFABReplaced && (
                   <Security needs={[KNOWLEDGE_KNUPDATE]}>
                     <Button
-                      variant='outlined'
+                      variant='contained'
                       size='small'
                       aria-label={t_i18n('Update')}
                       onClick={handleOpenEdit}
