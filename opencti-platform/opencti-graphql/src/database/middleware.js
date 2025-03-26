@@ -2594,14 +2594,16 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   }
   if (type === ENTITY_TYPE_INDICATOR) {
     // Do not compute decay again when base score does not change
-    if (updatePatch.decay_applied_rule && (updatePatch.decay_base_score === element.decay_base_score || updatePatch.decay_base_score === element.x_opencti_score)) {
+    // if the element was revoked, we need to update the score to reactivate the indicator
+    if (!element.revoked && updatePatch.decay_applied_rule
+      && (updatePatch.decay_base_score === element.decay_base_score && updatePatch.decay_base_score === element.x_opencti_score)) {
       logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { element, basePatch });
       // don't reset score, valid_from & valid_until
       updatePatch.x_opencti_score = element.x_opencti_score; // don't change the score
       updatePatch.valid_from = element.valid_from;
       updatePatch.valid_until = element.valid_until;
       // don't reset decay attributes
-      updatePatch.decay_base_score = element.decay_base_score;
+      // updatePatch.decay_base_score = element.decay_base_score; // no need since it's the same score
       updatePatch.revoked = element.revoked;
       updatePatch.decay_base_score_date = element.decay_base_score_date;
       updatePatch.decay_applied_rule = element.decay_applied_rule;
