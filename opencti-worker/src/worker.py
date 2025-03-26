@@ -26,13 +26,14 @@ from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from pika.adapters.blocking_connection import BlockingChannel
 from prometheus_client import start_http_server
+from requests import RequestException, Timeout
+
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
 from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
 )
 from pycti.utils.opencti_logger import logger
-from requests import RequestException, Timeout
 
 ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
 ERROR_TYPE_TIMEOUT = "Request timed out"
@@ -92,7 +93,6 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
     execution_pool: ThreadPoolExecutor
     connector: Dict[str, Any] = field(hash=False)
     config: Dict[str, Any] = field(hash=False)
-    opencti_token: str
     listen_api_ssl_verify: bool
     listen_api_http_proxy: str
     listen_api_https_proxy: str
@@ -103,8 +103,8 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
         super().__init__()
         self.logger_class = logger(self.log_level.upper(), self.json_logging)
         self.worker_logger = self.logger_class("worker")
-
         self.queue_name = self.connector["config"]["listen"]
+        self.connector_token = self.connector["connector_user"]["api_token"]
         self.pika_credentials = pika.PlainCredentials(
             self.connector["config"]["connection"]["user"],
             self.connector["config"]["connection"]["pass"],
@@ -205,9 +205,9 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             callback_uri = self.connector["config"].get("listen_callback_uri")
             request_headers = {
                 "User-Agent": "pycti/" + __version__,
-                "Authorization": "Bearer " + self.opencti_token,
+                "Authorization": "Bearer " + self.connector_token,
             }
-            requests.post(
+            response = requests.post(
                 callback_uri,
                 data=data,
                 headers=request_headers,
@@ -218,11 +218,16 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
                 },
                 timeout=300,
             )
-            # Ack the message
-            cb = functools.partial(self.ack_message, channel, delivery_tag)
-            connection.add_callback_threadsafe(cb)
+            if response.status_code != 202:
+                raise RequestException(response.status_code, response.text)
+            else:
+                # Ack the message
+                cb = functools.partial(self.ack_message, channel, delivery_tag)
+                connection.add_callback_threadsafe(cb)
         except (RequestException, Timeout):
-            self.worker_logger.warning("A connection error or timeout occurred")
+            self.worker_logger.error(
+                "Error executing listen handling, a connection error or timeout occurred"
+            )
             # Platform is under heavy load: wait for unlock & retry almost indefinitely.
             sleep_jitter = round(random.uniform(10, 30), 2)
             time.sleep(sleep_jitter)
@@ -708,7 +713,6 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                     self.listen_api_execution_pool,
                                     connector,
                                     self.config,
-                                    self.opencti_token,
                                     self.listen_api_ssl_verify,
                                     self.listen_api_http_proxy,
                                     self.listen_api_https_proxy,
@@ -721,7 +725,6 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.listen_api_execution_pool,
                                 connector,
                                 self.config,
-                                self.opencti_token,
                                 self.listen_api_ssl_verify,
                                 self.listen_api_http_proxy,
                                 self.listen_api_https_proxy,
