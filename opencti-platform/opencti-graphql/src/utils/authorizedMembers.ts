@@ -54,7 +54,7 @@ export const getAuthorizedMembers = async (
     let groups_restriction: MemberGroupRestriction[] = [];
     if (currentAuthMember.groups_restriction_ids) {
       groups_restriction = currentAuthMember.groups_restriction_ids.map((groupId: string) => {
-        return { id: groupId, name: 'TODO' };
+        return { id: groupId, name: 'TODO' }; // TODO FIX TODO
       });
     }
     return { id: currentAuthMember.id, name: member?.name ?? '', entity_type: member?.entity_type ?? '', access_right: currentAuthMember.access_right, groups_restriction };
