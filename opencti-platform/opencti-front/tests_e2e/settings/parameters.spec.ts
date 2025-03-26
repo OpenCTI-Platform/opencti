@@ -18,8 +18,9 @@ test('Check Logo replacement', async ({ page }) => {
   await leftBarPage.open();
   await leftBarPage.clickOnMenu('Settings', 'Parameters');
 
-  // Expect platform theme to be Dark
-  await expect(page.locator('input[name="platform_theme"]')).toHaveText('Dark');
+  // Set platform theme to be Dark
+  await page.locator("#mui-component-select-platform_theme").click();
+  await page.locator('li[data-value="Dark"]').click();
 
   let logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
   expect(logoSrc).toContain('static/images/logo');
