@@ -18,11 +18,14 @@ test('Check Logo replacement', async ({ page }) => {
   await leftBarPage.open();
   await leftBarPage.clickOnMenu('Settings', 'Parameters');
 
+  // Expect platform theme to be Dark
+  await expect(page.locator('input[name="platform_theme"]')).toHaveText('Dark');
+
   let logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
   expect(logoSrc).toContain('static/images/logo');
 
-  // Set light theme logo to the Google logo
-  openThemeEditMenu('Light', page);
+  // Set Dark theme logo to the Google logo
+  openThemeEditMenu('Dark', page);
   await page
     .locator('input[name="theme_logo"]')
     .fill('https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png');
@@ -39,7 +42,7 @@ test('Check Logo replacement', async ({ page }) => {
     .click();
   
   // Reset logo
-  openThemeEditMenu('Light', page);
+  openThemeEditMenu('Dark', page);
   await page
     .locator('input[name="theme_logo"]')
     .fill('');
