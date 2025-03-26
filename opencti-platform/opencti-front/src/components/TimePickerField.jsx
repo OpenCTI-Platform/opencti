@@ -29,7 +29,7 @@ const timeFormatsMapWithSeconds = {
 const TimePickerField = (props) => {
   const {
     form: { setFieldValue, setFieldTouched },
-    field: { name },
+    field: { name, value },
     onChange,
     onFocus,
     onSubmit,
@@ -38,7 +38,8 @@ const TimePickerField = (props) => {
     withSeconds = false,
   } = props;
   const intl = useIntl();
-  const [field, meta] = useField(name);
+  const [_field, meta] = useField(name);
+  const parsedValue = typeof value === 'string' ? new Date(value) : value; // Convert string to Date (MUI v6)
   const internalOnAccept = React.useCallback(
     (date) => {
       setFieldTouched(name, true);
@@ -64,7 +65,6 @@ const TimePickerField = (props) => {
   }, [onFocus, name]);
   const internalOnBlur = React.useCallback(() => {
     setFieldTouched(name, true);
-    const { value } = field;
     if (typeof onSubmit === 'function') {
       onSubmit(name, value ? parse(value).toISOString() : null);
     }
@@ -81,13 +81,14 @@ const TimePickerField = (props) => {
   return (
     <TimePicker
       {...fieldToTimePicker(props)}
+      value={parsedValue}
       disableToolbar={false}
       autoOk={true}
       allowKeyboardControl={true}
       onAccept={internalOnAccept}
       onChange={internalOnChange}
       views={views}
-      inputFormat={inputFormat}
+      format={inputFormat}
       slotProps={{
         textField: {
           ...textFieldProps,

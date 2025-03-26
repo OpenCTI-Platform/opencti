@@ -46,12 +46,14 @@ class AttackPatternsMatrixBar extends Component {
             anchor="bottom"
             variant="permanent"
             classes={{ paper: classes.bottomNav }}
-            PaperProps={{
-              variant: 'elevation',
-              elevation: 1,
-              style: {
-                paddingLeft: navOpen ? 190 : 70,
-                bottom: bannerSettings.bannerHeightNumber,
+            slotProps={{
+              paper: {
+                variant: 'elevation',
+                elevation: 1,
+                style: {
+                  paddingLeft: navOpen ? 190 : 70,
+                  bottom: bannerSettings.bannerHeightNumber,
+                },
               },
             }}
           >

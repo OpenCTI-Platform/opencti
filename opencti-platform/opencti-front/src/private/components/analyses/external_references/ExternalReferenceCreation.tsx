@@ -314,7 +314,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
           </Fab>
         )}
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={isFABReplaced || handleCloseContextual ? openContextual : open}
           onClose={isFABReplaced || handleCloseContextual ? handleCloseContextual : handleClose}
         >

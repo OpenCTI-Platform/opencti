@@ -21,7 +21,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import DialogContentText from '@mui/material/DialogContentText';
 import { DataColumns } from '../../../../components/list_lines';
@@ -229,106 +228,110 @@ NotificationLineProps
   };
   const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
   const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
-  const isClickableLine = isDigest || isLinkAvailable;
   return (
     <div>
       {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
       {/* @ts-ignore */}
-      <ListItem classes={{ root: classes.item }} divider={true} button={isClickableLine}
-        component={isLinkAvailable ? Link : 'div'}
-        to={isLinkAvailable ? `/dashboard/id/${firstEvent?.instance_id}` : undefined}
-        onClick={() => { if (isDigest) { setOpen(true); } }}
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        disablePadding
+        secondaryAction={
+          <>
+            <IconButton
+              disabled={updating}
+              onClick={() => handleRead(!data.is_read)}
+              size="large"
+              color={data.is_read ? 'success' : 'warning'}
+            >
+              {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />}
+            </IconButton>
+            <Tooltip title={t_i18n('Delete this notification')}>
+              <span>
+                <IconButton
+                  disabled={updating}
+                  onClick={() => handleOpenDelete()}
+                  size="large"
+                  color="primary"
+                >
+                  <DeleteOutlined/>
+                </IconButton>
+              </span>
+            </Tooltip>
+          </>
+        }
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }} style={{ minWidth: 40 }}
-          onClick={(event) => (event.shiftKey ? onToggleShiftEntity(index, data, event) : onToggleEntity(data, event))}
+        <ListItemButton
+          component={isLinkAvailable ? Link : 'div'}
+          to={isLinkAvailable ? `/dashboard/id/${firstEvent?.instance_id}` : undefined}
+          onClick={() => { if (isDigest) { setOpen(true); } }}
         >
-          <Checkbox edge="start"
-            checked={(selectAll && !(data.id in (deSelectedElements || {}))) || data.id in (selectedElements || {})}
-            disableRipple={true}
-          />
-        </ListItemIcon>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Badge color="warning" variant="dot" invisible={data.is_read}>
-            {iconSelector(firstOperation)}
-          </Badge>
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.operation.width }}>
-                <Chip
-                  classes={{ root: classes.chipInList2 }}
-                  style={{
-                    backgroundColor: hexToRGB(colors[firstOperation] ?? indigo[500], 0.08),
-                    color: colors[firstOperation] ?? indigo[500],
-                    border: `1px solid ${colors[firstOperation] ?? indigo[500]}`,
-                  }}
-                  label={
-                    events.length > 1
-                      ? t_i18n('Multiple')
-                      : (eventTypes[firstEvent?.operation ?? 'none'] ?? firstEvent?.operation)
-                  }
-                />
-              </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
-                {events.length > 1 ? (
-                  <i>{t_i18n('Digest with multiple notifiers')}</i>
-                ) : (
-                  <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin commonmark removeLinks/>
-                )}
-              </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
-                {fldt(data.created)}
-              </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
-                <Tooltip title={data.name}>
-                  <Chip
-                    classes={{ root: classes.chipInList }}
-                    color={
-                      data.notification_type === 'live'
-                        ? 'warning'
-                        : 'secondary'
-                    }
-                    variant="outlined"
-                    label={data.name}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onLabelClick('name', data.name, 'eq', e);
-                    }}
-                  />
-                </Tooltip>
-              </div>
-            </div>
-          }
-        />
-        <ListItemSecondaryAction>
-          <IconButton
-            disabled={updating}
-            onClick={() => handleRead(!data.is_read)}
-            size="large"
-            color={data.is_read ? 'success' : 'warning'}
+          <ListItemIcon classes={{ root: classes.itemIcon }} style={{ minWidth: 40 }}
+            onClick={(event) => (event.shiftKey ? onToggleShiftEntity(index, data, event) : onToggleEntity(data, event))}
           >
-            {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />}
-          </IconButton>
-          <Tooltip title={t_i18n('Delete this notification')}>
-            <span>
-              <IconButton
-                disabled={updating}
-                onClick={() => handleOpenDelete()}
-                size="large"
-                color="primary"
-              >
-                <DeleteOutlined/>
-              </IconButton>
-            </span>
-          </Tooltip>
-        </ListItemSecondaryAction>
+            <Checkbox edge="start"
+              checked={(selectAll && !(data.id in (deSelectedElements || {}))) || data.id in (selectedElements || {})}
+              disableRipple={true}
+            />
+          </ListItemIcon>
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <Badge color="warning" variant="dot" invisible={data.is_read}>
+              {iconSelector(firstOperation)}
+            </Badge>
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <div>
+                <div className={classes.bodyItem} style={{ width: dataColumns.operation.width }}>
+                  <Chip
+                    classes={{ root: classes.chipInList2 }}
+                    style={{
+                      backgroundColor: hexToRGB(colors[firstOperation] ?? indigo[500], 0.08),
+                      color: colors[firstOperation] ?? indigo[500],
+                      border: `1px solid ${colors[firstOperation] ?? indigo[500]}`,
+                    }}
+                    label={
+                      events.length > 1
+                        ? t_i18n('Multiple')
+                        : (eventTypes[firstEvent?.operation ?? 'none'] ?? firstEvent?.operation)
+                    }
+                  />
+                </div>
+                <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
+                  {events.length > 1 ? (
+                    <i>{t_i18n('Digest with multiple notifiers')}</i>
+                  ) : (
+                    <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin commonmark removeLinks/>
+                  )}
+                </div>
+                <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
+                  {fldt(data.created)}
+                </div>
+                <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+                  <Tooltip title={data.name}>
+                    <Chip
+                      classes={{ root: classes.chipInList }}
+                      color={data.notification_type === 'live' ? 'warning' : 'secondary'}
+                      variant="outlined"
+                      label={data.name}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onLabelClick('name', data.name, 'eq', e);
+                      }}
+                    />
+                  </Tooltip>
+                </div>
+              </div>
+            }
+          />
+        </ListItemButton>
       </ListItem>
+
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayDelete}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>
@@ -350,8 +353,8 @@ NotificationLineProps
       </Dialog>
       <Dialog
         open={open}
-        TransitionComponent={Transition}
-        PaperProps={{ elevation: 1 }}
+        slots={{ transition: Transition }}
+        slotProps={{ paper: { elevation: 1 } }}
         fullWidth={true}
         maxWidth="md"
         onClose={() => setOpen(false)}

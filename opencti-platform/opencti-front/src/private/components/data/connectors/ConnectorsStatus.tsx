@@ -13,7 +13,6 @@ import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, PlaylistRemo
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
@@ -21,6 +20,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
 import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
+import { ListItemButton } from '@mui/material';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -285,10 +285,10 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   return (
     <>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={!!connectorIdToReset}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={() => setConnectorIdToReset(undefined)}
       >
         <DialogContent>
@@ -329,6 +329,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
               classes={{ root: classes.itemHead }}
               divider={false}
               style={{ paddingTop: 0 }}
+              secondaryAction={<> &nbsp; </>}
             >
               <ListItemIcon>
                 <span
@@ -369,72 +370,14 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                   </div>
                 }
               />
-              <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
             </ListItem>
 
             {sortedConnectors && sortedConnectors.map((connector) => (
               <ListItem
                 key={connector.id}
-                classes={{ root: classes.item }}
                 divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/data/ingestion/connectors/${connector.id}`}
-              >
-                <ListItemIcon>
-                  {connector.built_in ? <DeveloperBoardOutlined /> : <ExtensionOutlined />}
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.name}
-                      >
-                        {connector.name}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.connector_type}
-                      >
-                        {t_i18n(connector.connector_type)}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.auto}
-                      >
-                        <ItemBoolean
-                          label={connector.connectorTriggerStatus.label}
-                          status={connector.connectorTriggerStatus.status}
-                          variant="inList"
-                        />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.messages}
-                      >
-                        {n(connector.messages)}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.active}
-                      >
-                        <ItemBoolean
-                          status={connector.active}
-                          label={connector.active ? t_i18n('Active') : t_i18n('Inactive')}
-                          variant="inList"
-                        />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.updated_at}
-                      >
-                        {nsdt(connector.updated_at)}
-                      </div>
-                    </div>
-                  }
-                />
-                <ListItemSecondaryAction>
+                disablePadding
+                secondaryAction={
                   <Security needs={[MODULES_MODMANAGE]}>
                     <>
                       {!isSensitive && (
@@ -468,7 +411,67 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                       </Tooltip>
                     </>
                   </Security>
-                </ListItemSecondaryAction>
+                }
+              >
+                <ListItemButton
+                  component={Link}
+                  classes={{ root: classes.item }}
+                  to={`/dashboard/data/ingestion/connectors/${connector.id}`}
+                >
+                  <ListItemIcon>
+                    {connector.built_in ? <DeveloperBoardOutlined /> : <ExtensionOutlined />}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.name}
+                        >
+                          {connector.name}
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.connector_type}
+                        >
+                          {t_i18n(connector.connector_type)}
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.auto}
+                        >
+                          <ItemBoolean
+                            label={connector.connectorTriggerStatus.label}
+                            status={connector.connectorTriggerStatus.status}
+                            variant="inList"
+                          />
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.messages}
+                        >
+                          {n(connector.messages)}
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.active}
+                        >
+                          <ItemBoolean
+                            status={connector.active}
+                            label={connector.active ? t_i18n('Active') : t_i18n('Inactive')}
+                            variant="inList"
+                          />
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.updated_at}
+                        >
+                          {nsdt(connector.updated_at)}
+                        </div>
+                      </div>
+                  }
+                  />
+                </ListItemButton>
               </ListItem>
             ))}
           </List>

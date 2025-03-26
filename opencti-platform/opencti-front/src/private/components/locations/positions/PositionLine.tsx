@@ -8,6 +8,7 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
@@ -77,10 +78,9 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
   const { fd } = useFormatter();
   const data = useFragment(positionLineFragment, node);
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/locations/positions/${data.id}`}
     >
@@ -115,7 +115,7 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

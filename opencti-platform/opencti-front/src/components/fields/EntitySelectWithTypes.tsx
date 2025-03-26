@@ -50,21 +50,23 @@ const EntitySelectWithTypes: FunctionComponent<EntitySelectWithTypesProps> = ({
       renderInput={(paramsInput) => (
         <TextField
           {...paramsInput}
-          InputProps={{
-            ...paramsInput.InputProps,
-            sx: { gap: 1 },
-            startAdornment: value
-              ? <ItemIcon type={value.type} color={value.color} />
-              : null,
-            endAdornment: (
-              <SearchScopeElement
-                name={'id'}
-                disabled={disabled}
-                searchScope={searchScope}
-                setSearchScope={setSearchScope}
-                availableRelationFilterTypes={undefined}
-              />
-            ),
+          slotProps={{
+            input: {
+              ...paramsInput.InputProps,
+              sx: { gap: 1 },
+              startAdornment: value
+                ? <ItemIcon type={value.type} color={value.color}/>
+                : null,
+              endAdornment: (
+                <SearchScopeElement
+                  name={'id'}
+                  disabled={disabled}
+                  searchScope={searchScope}
+                  setSearchScope={setSearchScope}
+                  availableRelationFilterTypes={undefined}
+                />
+              ),
+            },
           }}
           label={label}
           size="small"

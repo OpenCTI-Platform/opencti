@@ -105,21 +105,23 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         }}
         error={generateErrorMessage(dateInput) !== undefined}
         helperText={generateErrorMessage(dateInput)}
-        InputProps={{
-          endAdornment: <Button
-            size="small"
-            sx={{
-              marginLeft: -1,
-              marginRight: -3,
-              color: theme.palette.text.primary,
-              ':hover': {
-                backgroundColor: 'transparent',
-              },
-            }}
-            onClick={() => setIsDatePickerOpen(true)}
-                        >
-            <DateRangeOutlined/>
-          </Button>,
+        slotProps={{
+          input: {
+            endAdornment: <Button
+              size="small"
+              sx={{
+                marginLeft: -1,
+                marginRight: -3,
+                color: theme.palette.text.primary,
+                ':hover': {
+                  backgroundColor: 'transparent',
+                },
+              }}
+              onClick={() => setIsDatePickerOpen(true)}
+                          >
+              <DateRangeOutlined/>
+            </Button>,
+          },
         }}
       />
     </div>

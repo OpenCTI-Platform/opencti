@@ -5,7 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { ListItemButton } from '@mui/material';
 import { MoreVert } from '@mui/icons-material';
 import { DatabaseExportOutline } from 'mdi-material-ui';
 import { compose } from 'ramda';
@@ -86,58 +86,61 @@ class TaxiiLineLineComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
-        component="a"
-        href={`/taxii2/root/collections/${node.id}/objects`}
-        target={'_blank'} // open in new tab
-      >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <DatabaseExportOutline />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {node.name}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
-              >
-                <FieldOrEmpty source={node.description}>{node.description}</FieldOrEmpty>
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.id.width, paddingRight: 10 }}
-              >
-                <ItemCopy content={node.id} variant="inLine" />
-              </div>
-              <div
-                className={classes.filtersItem}
-                style={{ width: dataColumns.filters.width }}
-              >
-                {isFilterGroupNotEmpty(filters)
-                  ? <FilterIconButton
-                      filters={filters}
-                      dataColumns={dataColumns}
-                      styleNumber={3}
-                    />
-                  : '-'}
-              </div>
-            </>
-          }
-        />
-        <ListItemSecondaryAction>
+        disablePadding
+        secondaryAction={
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <TaxiiPopover
               taxiiCollectionId={node.id}
               paginationOptions={paginationOptions}
             />
           </Security>
-        </ListItemSecondaryAction>
+        }
+      >
+        <ListItemButton
+          component="a"
+          href={`/taxii2/root/collections/${node.id}/objects`}
+          target={'_blank'}
+        >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <DatabaseExportOutline />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.name.width }}
+                >
+                  {node.name}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.description.width }}
+                >
+                  <FieldOrEmpty source={node.description}>{node.description}</FieldOrEmpty>
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.id.width, paddingRight: 10 }}
+                >
+                  <ItemCopy content={node.id} variant="inLine" />
+                </div>
+                <div
+                  className={classes.filtersItem}
+                  style={{ width: dataColumns.filters.width }}
+                >
+                  {isFilterGroupNotEmpty(filters)
+                    ? <FilterIconButton
+                        filters={filters}
+                        dataColumns={dataColumns}
+                        styleNumber={3}
+                      />
+                    : '-'}
+                </div>
+              </>
+          }
+          />
+        </ListItemButton>
       </ListItem>
     );
   }
@@ -172,7 +175,11 @@ class TaxiiDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        secondaryAction={<MoreVert classes={classes.itemIconDisabled } />}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton
             animation="wave"
@@ -231,9 +238,6 @@ class TaxiiDummyComponent extends Component {
             </>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
-        </ListItemSecondaryAction>
       </ListItem>
     );
   }

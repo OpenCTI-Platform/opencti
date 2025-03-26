@@ -1,11 +1,10 @@
 import React from 'react';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
@@ -14,6 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
@@ -92,131 +92,132 @@ const ContainerStixDomainObjectLineComponent = (props) => {
   const linkAnalyses = `${link}/analyses`;
   return (
     <ListItem
-      classes={{ root: classes.item }}
       divider={true}
-      button={true}
-      component={Link}
-      to={link}
+      disablePadding
+      secondaryAction={isOnlyThroughInference ? (
+        <Tooltip title={t_i18n('Inferred knowledge')}>
+          <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+        </Tooltip>
+      ) : (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ContainerStixCoreObjectPopover
+            containerId={containerId}
+            toId={node.id}
+            toStandardId={node.standard_id}
+            relationshipType="object"
+            paginationKey="Pagination_objects"
+            paginationOptions={paginationOptions}
+            enableReferences={enableReferences}
+          />
+        </Security>
+      )}
     >
-      <ListItemIcon
-        classes={{ root: classes.itemIcon }}
-        style={{ minWidth: 40 }}
-        onClick={(event) => !isOnlyThroughInference
+      <ListItemButton
+        component={Link}
+        classes={{ root: classes.item }}
+        to={link}
+      >
+        <ListItemIcon
+          classes={{ root: classes.itemIcon }}
+          style={{ minWidth: 40 }}
+          onClick={(event) => !isOnlyThroughInference
           && (event.shiftKey
             ? onToggleShiftEntity(index, node, event)
             : onToggleEntity(node, event))
         }
-      >
-        <Checkbox
-          edge="start"
-          disabled={isOnlyThroughInference}
-          checked={
+        >
+          <Checkbox
+            edge="start"
+            disabled={isOnlyThroughInference}
+            checked={
             (selectAll
               && !isOnlyThroughInference
               && !(node.id in (deSelectedElements || {})))
             || node.id in (selectedElements || {})
           }
-          disableRipple={true}
-        />
-      </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={node.entity_type} />
-      </ListItemIcon>
-      <ListItemText
-        primary={
-          <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <ItemEntityType entityType={node.entity_type} />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              {node.x_mitre_id
-                ? `[${node.x_mitre_id}] ${node.name}`
-                : getMainRepresentative(node)}
-              {node.draftVersion && (<DraftChip/>)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
-              <StixCoreObjectLabels
-                variant="inList"
-                labels={node.objectLabel}
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
-              {R.pathOr('', ['createdBy', 'name'], node)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
-              {fd(node.created_at)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.analyses.width }}
-            >
-              {[
-                'Note',
-                'Opinion',
-                'Course-Of-Action',
-                'Data-Component',
-                'Data-Source',
-              ].includes(node.entity_type) ? (
-                <Chip
-                  classes={{ root: classes.chipNoLink }}
-                  label={n(node.containersNumber.total)}
+            disableRipple={true}
+          />
+        </ListItemIcon>
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type={node.entity_type} />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.entity_type.width }}
+              >
+                <ItemEntityType entityType={node.entity_type} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {node.x_mitre_id
+                  ? `[${node.x_mitre_id}] ${node.name}`
+                  : getMainRepresentative(node)}
+                {node.draftVersion && (<DraftChip/>)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
+              >
+                <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.objectLabel}
                 />
-                ) : (
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                {R.pathOr('', ['createdBy', 'name'], node)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created_at.width }}
+              >
+                {fd(node.created_at)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.analyses.width }}
+              >
+                {[
+                  'Note',
+                  'Opinion',
+                  'Course-Of-Action',
+                  'Data-Component',
+                  'Data-Source',
+                ].includes(node.entity_type) ? (
                   <Chip
-                    classes={{ root: classes.chip }}
+                    classes={{ root: classes.chipNoLink }}
                     label={n(node.containersNumber.total)}
-                    component={Link}
-                    to={linkAnalyses}
                   />
-                )}
+                  ) : (
+                    <Chip
+                      classes={{ root: classes.chip }}
+                      label={n(node.containersNumber.total)}
+                      component={Link}
+                      to={linkAnalyses}
+                    />
+                  )}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectMarking.width }}
+              >
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitions={node.objectMarking ?? []}
+                  limit={1}
+                />
+              </div>
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <ItemMarkings
-                variant="inList"
-                markingDefinitions={node.objectMarking ?? []}
-                limit={1}
-              />
-            </div>
-          </div>
         }
-      />
-      <ListItemSecondaryAction>
-        {isOnlyThroughInference ? (
-          <Tooltip title={t_i18n('Inferred knowledge')}>
-            <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-          </Tooltip>
-        ) : (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ContainerStixCoreObjectPopover
-              containerId={containerId}
-              toId={node.id}
-              toStandardId={node.standard_id}
-              relationshipType="object"
-              paginationKey="Pagination_objects"
-              paginationOptions={paginationOptions}
-              enableReferences={enableReferences}
-            />
-          </Security>
-        )}
-      </ListItemSecondaryAction>
+        />
+      </ListItemButton>
     </ListItem>
   );
 };
@@ -370,7 +371,15 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
   const classes = useStyles();
   const { dataColumns } = props;
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <IconButton disabled={true} aria-haspopup="true" size="large" classes={classes.itemIconDisabled}>
+          <MoreVert />
+        </IconButton>
+      }
+    >
       <ListItemIcon
         classes={{ root: classes.itemIconDisabled }}
         style={{ minWidth: 40 }}
@@ -463,11 +472,6 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
           </div>
         }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <IconButton disabled={true} aria-haspopup="true" size="large">
-          <MoreVert />
-        </IconButton>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

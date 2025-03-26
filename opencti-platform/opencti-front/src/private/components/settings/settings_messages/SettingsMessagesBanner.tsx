@@ -52,7 +52,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     zIndex: 1202,
     backgroundColor: '#ffecb3',
     borderLeft: '8px solid #ffc107',
-    color: 'black',
+    color: '#000000',
     width: '100%',
     padding: 4,
   },

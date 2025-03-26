@@ -6,10 +6,10 @@ import { Link } from 'react-router-dom';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
+import { ListItemButton } from '@mui/material';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../Loader';
 import { useFormatter } from '../../i18n';
@@ -422,10 +422,9 @@ RelationshipDetailsComponentProps
               const report = reportEdge?.node;
               if (report) {
                 return (
-                  <ListItem
+                  <ListItemButton
                     key={report.id}
                     dense={true}
-                    button={true}
                     classes={{ root: classes.item }}
                     divider={true}
                     component={Link}
@@ -446,7 +445,7 @@ RelationshipDetailsComponentProps
                         </div>
                       }
                     />
-                  </ListItem>
+                  </ListItemButton>
                 );
               }
               return '';
@@ -482,12 +481,11 @@ RelationshipDetailsComponentProps
                 }
                 return (
                   <React.Fragment key={externalReference.node.id}>
-                    <ListItem
+                    <ListItemButton
                       component={Link}
                       to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
                       dense={true}
                       divider={true}
-                      button={true}
                     >
                       <ListItemIcon>
                         <ItemIcon type="External-Reference" />
@@ -504,7 +502,7 @@ RelationshipDetailsComponentProps
                           </div>
                         }
                       />
-                    </ListItem>
+                    </ListItemButton>
                   </React.Fragment>
                 );
               })}

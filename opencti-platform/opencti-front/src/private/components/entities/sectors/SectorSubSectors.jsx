@@ -3,11 +3,10 @@ import * as PropTypes from 'prop-types';
 import { compose, filter } from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { ListItemButton, ListItem } from '@mui/material';
 import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { Domain, LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
@@ -64,27 +63,24 @@ class SectorSubSectorsComponent extends Component {
                 key={subSector.id}
                 dense={true}
                 divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/entities/sectors/${subSector.id}`}
-              >
-                <ListItemIcon>
-                  <Domain color="primary" />
-                </ListItemIcon>
-                <ListItemText primary={subSector.name} />
-                {types.includes('manual') ? (
-                  <ListItemSecondaryAction>
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <IconButton
-                        aria-label="Remove"
-                        onClick={this.removeSubSector.bind(this, subSectorEdge)}
-                        size="large"
-                      >
-                        <LinkOff />
-                      </IconButton>
-                    </Security>
-                  </ListItemSecondaryAction>
+                secondaryAction={types.includes('manual') ? (
+                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <IconButton
+                      aria-label="Remove"
+                      onClick={this.removeSubSector.bind(this, subSectorEdge)}
+                      size="large"
+                    >
+                      <LinkOff />
+                    </IconButton>
+                  </Security>
                 ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
+              >
+                <ListItemButton component={Link} to={`/dashboard/entities/sectors/${subSector.id}`} >
+                  <ListItemIcon>
+                    <Domain color="primary" />
+                  </ListItemIcon>
+                  <ListItemText primary={subSector.name} />
+                </ListItemButton>
               </ListItem>
             );
           })}

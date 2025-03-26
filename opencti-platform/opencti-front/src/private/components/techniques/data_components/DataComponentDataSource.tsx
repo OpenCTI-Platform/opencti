@@ -2,13 +2,13 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ListItemSecondaryAction } from '@mui/material';
+import { ListItemButton } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff, StreamOutlined } from '@mui/icons-material';
+import ListItem from '@mui/material/ListItem';
 import { useFormatter } from '../../../../components/i18n';
 import AddDataSources from './AddDataSources';
 import { DataComponentDataSources_dataComponent$data, DataComponentDataSources_dataComponent$key } from './__generated__/DataComponentDataSources_dataComponent.graphql';
@@ -79,17 +79,7 @@ DataComponentDataSourcesProps
             key={data.dataSource?.id}
             dense={true}
             divider={true}
-            button={true}
-            component={Link}
-            to={`/dashboard/techniques/data_sources/${dataSourceId}`}
-          >
-            <ListItemIcon>
-              <ListItemIcon>
-                <StreamOutlined color="primary" />
-              </ListItemIcon>
-            </ListItemIcon>
-            <ListItemText primary={data.dataSource?.name} />
-            <ListItemSecondaryAction>
+            secondaryAction={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <IconButton
                   aria-label="Remove"
@@ -99,7 +89,19 @@ DataComponentDataSourcesProps
                   <LinkOff />
                 </IconButton>
               </Security>
-            </ListItemSecondaryAction>
+            }
+          >
+            <ListItemButton
+              component={Link}
+              to={`/dashboard/techniques/data_sources/${dataSourceId}`}
+            >
+              <ListItemIcon>
+                <ListItemIcon>
+                  <StreamOutlined color="primary" />
+                </ListItemIcon>
+              </ListItemIcon>
+              <ListItemText primary={data.dataSource?.name} />
+            </ListItemButton>
           </ListItem>
         )}
       </List>

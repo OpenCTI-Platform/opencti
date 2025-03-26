@@ -6,8 +6,6 @@ import Checkbox from '@mui/material/Checkbox';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -27,7 +25,8 @@ import {
   stixCoreObjectTriggersUtilsPaginationQuery$variables,
 } from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtilsPaginationQuery.graphql';
 import { stixCoreObjectTriggersUtils_triggers$key as FragmentKey } from '@components/common/stix_core_objects/__generated__/stixCoreObjectTriggersUtils_triggers.graphql';
-import { SvgIconPropsColorOverrides } from '@mui/material';
+import { ListItemButton, SvgIconPropsColorOverrides } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
@@ -443,17 +442,9 @@ StixCoreObjectQuickSubscriptionContentProps
           {otherInstanceTriggersToDisplay.length > 0 && (
             <List>
               <ListItem
-                button={true}
                 divider={true}
-                classes={{ root: classes.nested }}
-                onClick={handleToggleLine}
-              >
-                <ListItemText
-                  primary={`${otherInstanceTriggersToDisplay.length} ${t_i18n(
-                    'other trigger(s) related to this entity',
-                  )}`}
-                />
-                <ListItemSecondaryAction>
+                disablePadding
+                secondaryAction={
                   <IconButton
                     onClick={handleToggleLine}
                     aria-haspopup="true"
@@ -461,7 +452,18 @@ StixCoreObjectQuickSubscriptionContentProps
                   >
                     {expandedLines ? <ExpandLess /> : <ExpandMore />}
                   </IconButton>
-                </ListItemSecondaryAction>
+              }
+              >
+                <ListItemButton
+                  classes={{ root: classes.nested }}
+                  onClick={handleToggleLine}
+                >
+                  <ListItemText
+                    primary={`${otherInstanceTriggersToDisplay.length} ${t_i18n(
+                      'other trigger(s) related to this entity',
+                    )}`}
+                  />
+                </ListItemButton>
               </ListItem>
               <Collapse in={expandedLines}>
                 {otherInstanceTriggersToDisplay.map((instanceTrigger) => updateInstanceTriggerContent(

@@ -235,8 +235,8 @@ const DataTableFilters = ({
       {redirectionModeEnabled && (
         <Dialog
           open={openSettings}
-          PaperProps={{ elevation: 1 }}
-          TransitionComponent={Transition}
+          slotProps={{ paper: { elevation: 1 } }}
+          slots={{ transition: Transition }}
           onClose={() => setOpenSettings(false)}
           maxWidth="xs"
           fullWidth

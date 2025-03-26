@@ -170,10 +170,10 @@ const StixCoreObjectContainer = ({ elementId }) => {
         </ToggleButton>
       </Tooltip>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         fullWidth={true}
         maxWidth="sm"
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         open={displayAddInContainer}
         onClose={() => setDisplayAddInContainer(false)}
       >

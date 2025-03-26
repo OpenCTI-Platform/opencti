@@ -7,6 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import { CheckCircleOutlined, CircleOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import { ListItemButton } from '@mui/material';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -47,10 +48,9 @@ const ContainerAddStixCoreObjectsLineComponent = ({
 }) => {
   const classes = useStyles();
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       onClick={(event) => onToggleEntity(node, event)}
     >
       <ListItemIcon style={{ paddingLeft: 10 }}>
@@ -111,7 +111,7 @@ const ContainerAddStixCoreObjectsLineComponent = ({
           </div>
         }
       />
-    </ListItem>
+    </ListItemButton>
   );
 };
 

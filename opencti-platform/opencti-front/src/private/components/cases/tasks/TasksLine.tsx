@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
+import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { TasksLine_node$data, TasksLine_node$key } from './__generated__/TasksLine_node.graphql';
@@ -167,10 +168,9 @@ export const TasksLine: FunctionComponent<TasksLineProps> = ({
   const data = useFragment(TaskFragment, node);
 
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/cases/tasks/${data.id}`}
     >
@@ -212,7 +212,7 @@ export const TasksLine: FunctionComponent<TasksLineProps> = ({
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

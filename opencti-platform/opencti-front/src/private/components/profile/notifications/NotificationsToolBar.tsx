@@ -293,10 +293,10 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
             </Tooltip>
           </Toolbar>
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ paper: { elevation: 1 } }}
             open={displayTask}
             keepMounted={true}
-            TransitionComponent={Transition}
+            slots={{ transition: Transition }}
             onClose={handleCloseTask}
             fullWidth={true}
             maxWidth="md"

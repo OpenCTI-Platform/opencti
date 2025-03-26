@@ -26,7 +26,6 @@ import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
 import WorkspaceShareButton from './WorkspaceShareButton';
@@ -35,7 +34,7 @@ import handleExportJson from './workspaceExportHandler';
 import WorkspaceTurnToContainerDialog from './WorkspaceTurnToContainerDialog';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import { nowUTC } from '../../../utils/Time';
+import { buildDate, nowUTC } from '../../../utils/Time';
 import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import WorkspacePopover from './WorkspacePopover';
 import ExportButtons from '../../../components/ExportButtons';
@@ -255,14 +254,14 @@ const WorkspaceHeader = ({
                 </Select>
               </FormControl>
               <DatePicker
-                value={R.propOr(null, 'startDate', config)}
+                value={buildDate(R.propOr(null, 'startDate', config))}
                 disableToolbar={true}
                 autoOk={true}
                 label={t_i18n('Start date')}
                 clearable={true}
                 disableFuture={true}
                 disabled={!!relativeDate}
-                onChange={(value, context) => !context.validationError && handleDateChange('startDate', value)}
+                onChange={(value, context) => !context.validationError && handleDateChange('startDate', value.toString())}
                 slotProps={{
                   textField: {
                     style: { marginRight: 20 },
@@ -272,13 +271,13 @@ const WorkspaceHeader = ({
                 }}
               />
               <DatePicker
-                value={R.propOr(null, 'endDate', config)}
+                value={buildDate(R.propOr(null, 'endDate', config))}
                 autoOk={true}
                 label={t_i18n('End date')}
                 clearable={true}
                 disabled={!!relativeDate}
                 disableFuture={true}
-                onChange={(value, context) => !context.validationError && handleDateChange('endDate', value)}
+                onChange={(value, context) => !context.validationError && handleDateChange('endDate', value.toString())}
                 slotProps={{
                   textField: {
                     style: { marginRight: 20 },
@@ -435,9 +434,9 @@ const WorkspaceHeader = ({
               </div>
             </Slide>
             <Dialog
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               open={openTags}
-              TransitionComponent={Transition}
+              slots={{ transition: Transition }}
               onClose={handleToggleOpenTags}
               fullWidth={true}
             >
@@ -477,9 +476,7 @@ const WorkspaceHeader = ({
                       key={label}
                       disableGutters={true}
                       dense={true}
-                    >
-                      <ListItemText primary={label} />
-                      <ListItemSecondaryAction>
+                      secondaryAction={
                         <IconButton
                           edge="end"
                           aria-label="delete"
@@ -488,7 +485,9 @@ const WorkspaceHeader = ({
                         >
                           <Delete />
                         </IconButton>
-                      </ListItemSecondaryAction>
+                      }
+                    >
+                      <ListItemText primary={label} />
                     </ListItem>
                     ),
                   )}

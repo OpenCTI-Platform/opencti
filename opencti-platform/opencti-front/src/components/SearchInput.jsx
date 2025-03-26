@@ -169,10 +169,10 @@ const SearchInput = (props) => {
           endAdornment: variant === 'topBar' && (
           <InputAdornment position="end">
             {isNLQLoading
-              && <div>
-                <Loader variant="inline" />
-              </div>
-            }
+                    && <div>
+                      <Loader variant="inline" />
+                    </div>
+                }
             <Tooltip title={t_i18n('Advanced search')}>
               <IconButton
                 onClick={handleRemoveAskAI}
@@ -181,11 +181,9 @@ const SearchInput = (props) => {
                 size="medium"
                 color={
                   location.pathname.includes('/dashboard/search')
-                   && !location.pathname.includes('/dashboard/search_bulk')
-                   && !askAI
-                    ? 'primary'
-                    : 'inherit'
-                  }
+                  && !location.pathname.includes('/dashboard/search_bulk')
+                  && !askAI ? 'primary' : 'inherit'
+                }
               >
                 <BiotechOutlined fontSize='medium'/>
               </IconButton>
@@ -197,10 +195,10 @@ const SearchInput = (props) => {
                 to="/dashboard/search_bulk"
                 size="medium"
                 color={
-                location.pathname.includes('/dashboard/search_bulk') && !askAI
-                  ? 'primary'
-                  : 'inherit'
-              }
+                  location.pathname.includes('/dashboard/search_bulk') && !askAI
+                    ? 'primary'
+                    : 'inherit'
+                }
               >
                 <ContentPasteSearchOutlined fontSize="medium"/>
               </IconButton>

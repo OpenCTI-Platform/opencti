@@ -3,7 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import { AccessPoint } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
@@ -78,7 +77,20 @@ export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiL
   const data = useFragment(ingestionTaxiiLineFragment, node);
   const [stateValue, setStateValue] = useState(data.current_state_cursor ? data.current_state_cursor : '-');
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <Security needs={[INGESTION_SETINGESTIONS]}>
+          <IngestionTaxiiPopover
+            ingestionTaxiiId={data.id}
+            paginationOptions={paginationOptions}
+            running={data.ingestion_running}
+            setStateValue={setStateValue}
+          />
+        </Security>
+    }
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <AccessPoint />
       </ListItemIcon>
@@ -128,16 +140,6 @@ export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiL
           </div>
           }
       />
-      <ListItemSecondaryAction>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          <IngestionTaxiiPopover
-            ingestionTaxiiId={data.id}
-            paginationOptions={paginationOptions}
-            running={data.ingestion_running}
-            setStateValue={setStateValue}
-          />
-        </Security>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };
@@ -145,7 +147,11 @@ export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiL
 export const IngestionTaxiiLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton
           animation="wave"
@@ -226,9 +232,6 @@ export const IngestionTaxiiLineDummy = ({ dataColumns }: { dataColumns: DataColu
           </div>
           }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert />
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

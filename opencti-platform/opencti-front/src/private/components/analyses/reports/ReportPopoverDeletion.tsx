@@ -69,8 +69,8 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
   return (
     <Dialog
       open={displayDelete}
-      TransitionComponent={Transition}
-      PaperProps={{ elevation: 1 }}
+      slots={{ transition: Transition }}
+      slotProps={{ paper: { elevation: 1 } }}
       onClose={handleCloseDelete}
     >
       <DialogContent>

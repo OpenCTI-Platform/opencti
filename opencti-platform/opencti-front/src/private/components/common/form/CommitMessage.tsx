@@ -97,7 +97,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
       )}
       <Dialog
         data-testid="commit-message-page"
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={handleClose ? open : controlOpen}
         onClose={handleClose ?? handleCloseControl}
         fullWidth

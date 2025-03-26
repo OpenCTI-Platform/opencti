@@ -112,9 +112,9 @@ const FintelTemplatePopover = ({
       </Menu>
 
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayDelete}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={onHandleCloseDelete}
       >
         <DialogContent>
