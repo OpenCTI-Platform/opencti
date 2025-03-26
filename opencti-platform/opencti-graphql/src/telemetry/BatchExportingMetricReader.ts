@@ -76,12 +76,12 @@ export class BatchExportingMetricReader extends MetricReader {
             metric.dataPoints.push(...newDataPoints);
           });
         });
-        logApp.info('[TELEMETRY] metrics collected.', { metrics });
+        logApp.debug('[TELEMETRY] metrics collected.', { metrics });
         if (this._collectCallback) {
           this._collectCallback();
         }
       } else {
-        logApp.info('[TELEMETRY] resource empty, metrics not collected.');
+        logApp.debug('[TELEMETRY] resource empty, metrics not collected.');
         this._resourceMetrics = resourceMetrics;
       }
     };

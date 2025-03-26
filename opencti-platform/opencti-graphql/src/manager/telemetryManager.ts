@@ -53,7 +53,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   const context = executionContext('telemetry_manager');
   const filigranMetricReaders = [];
   const collectorCallback = async () => {
-    logApp.info('[TELEMETRY] clearing all telemetry data in Redis.');
+    logApp.debug('[TELEMETRY] clearing all telemetry data in Redis.');
     await redisClearTelemetry();
   };
   // region File exporter
@@ -158,7 +158,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
     manager.setDisseminationCount(disseminationCountInRedis);
     // end region Telemetry user events
-    logApp.info('[TELEMETRY] fetching telemetry data successfully.');
+    logApp.debug('[TELEMETRY] fetching telemetry data successfully.');
   } catch (e) {
     logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
   }
