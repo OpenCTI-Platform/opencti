@@ -10,7 +10,7 @@ import type { StixId, StixObject } from '../types/stix-2-1-common';
 import type { StixReport } from '../types/stix-2-1-sdo';
 import type { StixRelation } from '../types/stix-2-1-sro';
 import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../types/store';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import type { RelationCreation, UpdateEvent } from '../types/event';
 import { READ_DATA_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';

@@ -1,7 +1,7 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixContainer } from '../../types/stix-2-1-sdo';
 import type { StixOpenctiExtension } from '../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 export const ENTITY_TYPE_CONTAINER_GROUPING = 'Grouping';
 

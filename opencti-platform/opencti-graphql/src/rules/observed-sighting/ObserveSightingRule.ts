@@ -13,7 +13,7 @@ import type { StixDomainObject, StixObject } from '../../types/stix-2-1-common';
 import type { StixObservedData } from '../../types/stix-2-1-sdo';
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import type { BasicStoreEntity, BasicStoreRelation, StoreObject } from '../../types/store';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { internalLoadById, listAllRelations } from '../../database/middleware-loader';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';

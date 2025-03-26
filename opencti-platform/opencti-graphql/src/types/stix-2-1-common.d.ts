@@ -1,5 +1,5 @@
 import { v4, v5 } from 'uuid';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from './stix-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from './stix-2-1-extensions';
 import type { StixRelation, StixSighting } from './stix-2-1-sro';
 import type { StixInternalExternalReference } from './stix-2-1-smo';
 import { AuthorizedMember } from '../utils/access';

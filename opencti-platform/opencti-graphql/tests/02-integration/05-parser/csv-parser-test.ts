@@ -18,7 +18,7 @@ import type { StixRelation, StixSighting } from '../../../src/types/stix-2-1-sro
 import { csvMapperDynamicIpAndUrl } from './dynamic-url-and-ip/mapper-url-ip';
 import type { StixDomainName, StixEmailAddress, StixFile, StixIPv4Address, StixIPv6Address, StixURL } from '../../../src/types/stix-2-1-sco';
 import { csvMapperMockFileHashHack } from './dynamic-file-hash/csv-mapper-mock-file-hash-hack';
-import { STIX_EXT_OCTI_SCO } from '../../../src/types/stix-extensions';
+import { STIX_EXT_OCTI_SCO } from '../../../src/types/stix-2-1-extensions';
 import { csvMapperDynamicChar } from './dynamic-url-ip-character/csv-mapper-mock-url-ip-char';
 
 describe('CSV-PARSER', () => {

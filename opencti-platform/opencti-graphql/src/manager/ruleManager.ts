@@ -21,7 +21,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import type { BaseEvent, DataEvent, DeleteEvent, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { getActivatedRules } from '../domain/rules';

@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import def from './SightingIndicatorDefinition';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import type { StixRelation, StixSighting } from '../../types/stix-2-1-sro';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';

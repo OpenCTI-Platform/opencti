@@ -1,5 +1,5 @@
 import { head } from 'ramda';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { getStixRepresentativeConverters } from './stix-2-1-converter';
 import type * as SRO from '../types/stix-2-1-sro';
 import type * as S from '../types/stix-2-1-common';

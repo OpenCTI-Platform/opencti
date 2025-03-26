@@ -43,7 +43,7 @@ import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
 import { findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { getParentTypes } from '../schema/schemaUtils';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { listAllRelations } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { getEntitiesListFromCache } from '../database/cache';

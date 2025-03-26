@@ -105,7 +105,7 @@ import {
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
   isStixCyberObservable
 } from '../schema/stixCyberObservable';
-import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
+import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-2-1-extensions';
 import {
   INPUT_ASSIGNEE,
   INPUT_CREATED_BY,

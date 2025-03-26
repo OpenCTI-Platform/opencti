@@ -1,6 +1,6 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixId, StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 export const ENTITY_TYPE_LANGUAGE = 'Language';
 

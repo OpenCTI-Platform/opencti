@@ -1,5 +1,5 @@
 import { buildStixDomain, cleanObject } from '../../../database/stix-2-1-converter';
-import { STIX_EXT_OCTI } from '../../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import type { StixTaskTemplate, StoreEntityTaskTemplate } from './task-template-types';
 
 const convertCaseTaskToStix = (instance: StoreEntityTaskTemplate): StixTaskTemplate => {

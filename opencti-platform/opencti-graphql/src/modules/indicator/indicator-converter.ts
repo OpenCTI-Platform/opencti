@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { getObservableValuesFromPattern } from './indicator-domain';
 import { buildKillChainPhases, buildMITREExtensions, buildStixDomain, cleanObject, convertToStixDate } from '../../database/stix-2-1-converter';
-import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixIndicator, StoreEntityIndicator } from './indicator-types';
 import { isNotEmptyField } from '../../database/utils';
 

@@ -1,6 +1,6 @@
 import type { StixExclusionList, StoreEntityExclusionList } from './exclusionList-types';
 import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 const convertExclusionListToStix = (instance: StoreEntityExclusionList): StixExclusionList => {
   const stixObject = buildStixObject(instance);

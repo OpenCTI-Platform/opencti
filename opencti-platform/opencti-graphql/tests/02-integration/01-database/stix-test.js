@@ -14,7 +14,7 @@ import {
 import { isStixRelationship } from '../../../src/schema/stixRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import { convertTypeToStixType } from '../../../src/database/stix-2-1-converter';
-import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 describe('Stix 2.1 opencti converter', () => {
   const dataMap = new Map(data.objects.map((obj) => [obj.id, obj]));

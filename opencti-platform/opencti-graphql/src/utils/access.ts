@@ -7,7 +7,7 @@ import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import type { BasicStoreCommon } from '../types/store';
 import type { StixObject } from '../types/stix-2-1-common';

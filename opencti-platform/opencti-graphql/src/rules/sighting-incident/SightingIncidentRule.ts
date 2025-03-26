@@ -9,7 +9,7 @@ import { generateInternalType } from '../../schema/schemaUtils';
 import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import { listAllRelations } from '../../database/middleware-loader';
 import type { StixSighting } from '../../types/stix-2-1-sro';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
