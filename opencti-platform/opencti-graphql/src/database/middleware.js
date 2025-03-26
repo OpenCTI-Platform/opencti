@@ -2655,7 +2655,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       const isOutDatedModification = isOutdatedUpdate(context, element, attributeKey);
       const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creators.name; // Ids and creators consolidation is always granted
       const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
-      const isInputWithData = isNotEmptyField(inputData);
+      const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
       // Field can be upsert if:
       // 1. Confidence is correct
