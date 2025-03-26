@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton';
 import { DeleteOutlined } from '@mui/icons-material';
 import { useFormatter } from 'src/components/i18n';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
 import SavedFilterDeleteDialog from 'src/components/saved_filters/SavedFilterDeleteDialog';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
