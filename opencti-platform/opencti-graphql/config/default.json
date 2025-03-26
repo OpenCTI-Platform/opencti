@@ -202,6 +202,7 @@
     "endpoint": "",
     "token": "",
     "model": "",
+    "version": "",
     "model_images": "",
     "max_tokens": 30000,
     "insights_refresh_timeout": 60
