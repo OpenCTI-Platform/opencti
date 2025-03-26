@@ -10,7 +10,6 @@ import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined,
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
@@ -209,7 +208,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const computeConnectorStatus = useComputeConnectorStatus();
 
   const data = usePreloadedFragment<ConnectorsStatusQuery,
-    ConnectorsStatus_data$key>({
+  ConnectorsStatus_data$key>({
     queryDef: connectorsStatusQuery,
     fragmentDef: connectorsStatusFragment,
     queryRef,
@@ -497,98 +496,9 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
               return (
                 <ListItem
                   key={connector.id}
-
                   divider={true}
                   disablePadding
-                secondaryAction={
-                  <Security needs={[MODULES_MODMANAGE]}>
-                    <>
-                      {!isSensitive && (
-                        <Tooltip title={t_i18n('Reset the connector state')}>
-                          <IconButton
-                            onClick={() => {
-                              setConnectorIdToReset(connector.id);
-                              setConnectorMessages(connector.messages);
-                            }}
-                            aria-haspopup="true"
-                  color="primary"
-                            size="large"
-                            disabled={!!connector.built_in}
-                          >
-                            <PlaylistRemoveOutlined />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      <Tooltip title={t_i18n('Clear this connector')}>
-                        <IconButton
-                          onClick={() => {
-                            if (connector.id) handleDelete(connector.id);
-                          }}
-                          aria-haspopup="true"
-                          color="primary"
-                          disabled={!!connector.active || !!connector.built_in}
-                          size="large"
-                        >
-                          <DeleteOutlined />
-                        </IconButton>
-                      </Tooltip>
-                    </>
-                  </Security>
-                }
-              >
-                <ListItemButtoncomponent={Link}
-                  classes={{ root: classes.item }}to={`/dashboard/data/ingestion/connectors/${connector.id}`}
-                >
-                  <ListItemIcon>
-                    <ConnectorIcon />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.name}
-                        >
-                          {connector.name}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.connector_type}
-                        >
-                          {t_i18n(connector.connector_type)}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.auto}
-                        >
-                          <ItemBoolean
-                            label={connector.connectorTriggerStatus.label}
-                            status={connector.connectorTriggerStatus.status}
-                            variant="inList"
-                          />
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.messages}
-                        >
-                          {n(connector.messages)}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.active}
-                        >
-                          {computeConnectorStatus(connector)}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.updated_at}
-                        >
-                          {nsdt(connector.updated_at)}
-                        </div>
-                      </div>
-                    }
-                  />
-                  <ListItemSecondaryAction>
+                  secondaryAction={
                     <Security needs={[MODULES_MODMANAGE]}>
                       <>
                         {connector.is_managed && <Tooltip title={t_i18n('Update connector')}>
@@ -603,28 +513,30 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                             <SettingsOutlined />
                           </IconButton>
                         </Tooltip>}
-                        {!isSensitive && (<Tooltip title={t_i18n('Reset the connector state')}>
-                          <IconButton
-                            onClick={() => {
-                              setConnectorIdToReset(connector.id);
-                              setConnectorMessages(connector.messages);
-                            }}
-                            aria-haspopup="true"
-                            color="primary"
-                            size="large"
-                            disabled={!!connector.built_in}
-                          >
-                            <PlaylistRemoveOutlined />
-                          </IconButton>
-                        </Tooltip>)}
-                          <Tooltip title={t_i18n('Clear this connector')}>
+                        {!isSensitive && (
+                          <Tooltip title={t_i18n('Reset the connector state')}>
+                            <IconButton
+                              onClick={() => {
+                                setConnectorIdToReset(connector.id);
+                                setConnectorMessages(connector.messages);
+                              }}
+                              aria-haspopup="true"
+                              color="primary"
+                              size="large"
+                              disabled={!!connector.built_in}
+                            >
+                              <PlaylistRemoveOutlined />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        <Tooltip title={t_i18n('Clear this connector')}>
                           <IconButton
                             onClick={() => {
                               if (connector.id) handleDelete(connector.id);
                             }}
                             aria-haspopup="true"
                             color="primary"
-                            disabled={!connector.is_managed && (!!connector.active || !!connector.built_in)}
+                            disabled={!!connector.active || !!connector.built_in}
                             size="large"
                           >
                             <DeleteOutlined />
@@ -632,7 +544,63 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                         </Tooltip>
                       </>
                     </Security>
-                  </ListItemSecondaryAction></ListItemButton>
+                  }
+                >
+                  <ListItemButton
+                    component={Link}
+                    classes={{ root: classes.item }}
+                    to={`/dashboard/data/ingestion/connectors/${connector.id}`}
+                  >
+                    <ListItemIcon>
+                      <ConnectorIcon />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.name}
+                          >
+                            {connector.name}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.connector_type}
+                          >
+                            {t_i18n(connector.connector_type)}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.auto}
+                          >
+                            <ItemBoolean
+                              label={connector.connectorTriggerStatus.label}
+                              status={connector.connectorTriggerStatus.status}
+                              variant="inList"
+                            />
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.messages}
+                          >
+                            {n(connector.messages)}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.active}
+                          >
+                            {computeConnectorStatus(connector)}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.updated_at}
+                          >
+                            {nsdt(connector.updated_at)}
+                          </div>
+                        </div>
+                      }
+                    />
+                  </ListItemButton>
                 </ListItem>
               );
             })}
