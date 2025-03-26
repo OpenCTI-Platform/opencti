@@ -180,15 +180,17 @@ const StixSightingRelationshipCreationForm = ({
                   </div>
                 </div>
                 <div className={classes.content}>
-                  <Tooltip title={getMainRepresentative(fromEntity)}>
+                  {isMultipleFrom ? (
                     <span className={classes.name}>
-                      {isMultipleFrom
-                        ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                        : (
-                          truncate(getMainRepresentative(fromEntity), 20)
-                        )}
+                      <em>{t_i18n('Multiple entities selected')}</em>
                     </span>
-                  </Tooltip>
+                  ) : (
+                    <Tooltip title={getMainRepresentative(fromEntity)}>
+                      <span className={classes.name}>
+                        {truncate(getMainRepresentative(fromEntity), 20)}
+                      </span>
+                    </Tooltip>
+                  )}
                 </div>
               </div>
               <div className={classes.middle} style={{ paddingTop: 25 }}>
@@ -233,13 +235,17 @@ const StixSightingRelationshipCreationForm = ({
                   </div>
                 </div>
                 <div className={classes.content}>
-                  <Tooltip title={getMainRepresentative(toEntity)}>
+                  {isMultipleTo ? (
                     <span className={classes.name}>
-                      {isMultipleTo
-                        ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                        : (truncate(getMainRepresentative(toEntity), 20))}
+                      <em>{t_i18n('Multiple entities selected')}</em>
                     </span>
-                  </Tooltip>
+                  ) : (
+                    <Tooltip title={getMainRepresentative(toEntity)}>
+                      <span className={classes.name}>
+                        {truncate(getMainRepresentative(toEntity), 20)}
+                      </span>
+                    </Tooltip>
+                  )}
                 </div>
 
               </div>
