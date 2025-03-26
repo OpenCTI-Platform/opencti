@@ -13,7 +13,6 @@ import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
 import useAuth from '../utils/hooks/useAuth';
 import EnterpriseEditionAgreement from '../private/components/common/entreprise_edition/EnterpriseEditionAgreement';
 import FeedbackCreation from '../private/components/cases/feedbacks/FeedbackCreation';
-import useHelper from '../utils/hooks/useHelper';
 import Loader from './Loader';
 
 // Deprecated - https://mui.com/system/styles/basics/
