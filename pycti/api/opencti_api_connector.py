@@ -61,6 +61,9 @@ class OpenCTIApiConnector:
                 connectorsForWorker {
                     id
                     name
+                    connector_user {
+                      api_token
+                    }
                     config {
                         connection {
                             host
