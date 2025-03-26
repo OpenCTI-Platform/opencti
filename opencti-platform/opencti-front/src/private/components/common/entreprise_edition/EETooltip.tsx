@@ -104,7 +104,7 @@ const EETooltip = ({
   return (
     <>
       <Tooltip title={title ? t_i18n(title) : undefined}>
-        <span onClick={(e) => {
+        <span onClickCapture={(e) => {
           setFeedbackCreation(true);
           e.preventDefault();
           e.stopPropagation();
