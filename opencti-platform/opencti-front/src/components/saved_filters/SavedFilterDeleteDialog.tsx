@@ -1,5 +1,4 @@
 import React from 'react';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
@@ -9,6 +8,7 @@ import { useFormatter } from 'src/components/i18n';
 import { deleteNode } from 'src/utils/store';
 import DialogContentText from '@mui/material/DialogContentText';
 import getSavedFilterScopeFilter from 'src/components/saved_filters/getSavedFilterScopeFilter';
+import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 
 const savedFilterDeleteDialogMutation = graphql`
@@ -25,6 +25,12 @@ type SavedFilterDeleteDialogProps = {
 
 const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset }: SavedFilterDeleteDialogProps) => {
   const { t_i18n } = useFormatter();
+
+  const {
+    useDataTablePaginationLocalStorage: {
+      localStorageKey,
+    },
+  } = useDataTableContext();
 
   const [commit] = useApiMutation(
     savedFilterDeleteDialogMutation,

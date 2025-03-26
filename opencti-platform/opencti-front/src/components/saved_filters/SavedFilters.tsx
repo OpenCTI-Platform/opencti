@@ -1,7 +1,7 @@
 import React from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
-import { SavedFiltersQuery } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
+import { SavedFiltersQuery, SavedFiltersQuery$variables } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSelection from './SavedFilterSelection';
@@ -31,8 +31,8 @@ const SavedFiltersComponent = ({ queryRef }: SavedFiltersComponentProps) => {
   return (
     <>
       <SavedFilterSelection
-        isDisabled={!savedFilters?.edges.length}
-        data={savedFilters?.edges.map(({ node }) => node) ?? []}
+        isDisabled={!savedFilters?.edges?.length}
+        data={savedFilters?.edges?.map(({ node }) => node) ?? []}
       />
     </>
   );
@@ -46,8 +46,9 @@ const SavedFilters = () => {
   } = useDataTableContext();
 
   const filters = getSavedFilterScopeFilter(localStorageKey);
+  const queryOptions = { filters } as unknown as SavedFiltersQuery$variables;
 
-  const queryRef = useQueryLoading<SavedFiltersQuery>(savedFiltersQuery, { filters });
+  const queryRef = useQueryLoading<SavedFiltersQuery>(savedFiltersQuery, queryOptions);
 
   return (
     <>
