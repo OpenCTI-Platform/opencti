@@ -1,26 +1,25 @@
 import React, { useMemo } from 'react';
-import { Alert, Collapse, Grid, IconButton, List, ListItem, Box, Select, MenuItem, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Collapse, Grid, IconButton, List, ListItem, MenuItem, Select, Tooltip, Typography } from '@mui/material';
 import { TransitionGroup } from 'react-transition-group';
 import { DeleteOutlined, UploadFileOutlined } from '@mui/icons-material';
-import { FileWithConnectors } from '@components/common/files/import_files/ImportFilesUploader';
 import { CSV_MAPPER_NAME } from '@components/common/files/import_files/ImportFilesDialog';
 import { useTheme } from '@mui/styles';
+import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { useFormatter } from '../../../../../components/i18n';
 import { ImportFilesDialogQuery$data } from './__generated__/ImportFilesDialogQuery.graphql';
 import type { Theme } from '../../../../../components/Theme';
 
 interface ImportFilesListProps {
-  files: FileWithConnectors[];
   connectorsForImport: ImportFilesDialogQuery$data['connectorsForImport'];
-  onChange: (updatedFiles: FileWithConnectors[]) => void;
 }
 
-const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForImport, onChange }) => {
+const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }) => {
   const theme = useTheme<Theme>();
+  const { files, setFiles, importMode } = useImportFilesContext();
   const { t_i18n } = useFormatter();
 
   const removeFile = (fileName: string) => {
-    onChange(files.filter(({ file }) => file.name !== fileName));
+    setFiles(files.filter(({ file }) => file.name !== fileName));
   };
 
   const handleConnectorChange = (fileName: string, selectedConnectorIds: string[]) => {
@@ -35,7 +34,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForI
       }
       return { file, connectors, configuration };
     });
-    onChange(updatedFiles);
+    setFiles(updatedFiles);
   };
 
   const handleMapperChange = (fileName: string, selectedMapper: string) => {
@@ -49,7 +48,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForI
       }
       return { file, connectors, configuration };
     });
-    onChange(updatedFiles);
+    setFiles(updatedFiles);
   };
 
   const isConfigurationColumn = useMemo(() => {
@@ -57,6 +56,12 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForI
       return connectors?.some((connector) => connector?.name === CSV_MAPPER_NAME);
     });
   }, [files]);
+
+  const fileNameColumnSize = useMemo(() => {
+    if (importMode === 'auto') return 11;
+    if (isConfigurationColumn) return 5;
+    return 8;
+  }, [importMode, isConfigurationColumn]);
 
   return (
     <List>
@@ -66,26 +71,28 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForI
             <ListItem divider>
               <Grid container columnSpacing={2}>
                 <Grid item xs={0.5}></Grid>
-                <Grid item xs={isConfigurationColumn ? 5 : 8}>
+                <Grid item xs={fileNameColumnSize}>
                   <Typography fontWeight="bold">
                     {t_i18n('Files')}
                   </Typography>
                 </Grid>
+                {importMode !== 'auto' && (
+                  <>
+                    <Grid item xs={3}>
+                      <Typography fontWeight="bold">
+                        {t_i18n('Connectors')}
+                      </Typography>
+                    </Grid>
 
-                <Grid item xs={3}>
-                  <Typography fontWeight="bold">
-                    {t_i18n('Connectors')}
-                  </Typography>
-                </Grid>
-
-                {isConfigurationColumn && (
-                  <Grid item xs={3}>
-                    <Typography fontWeight="bold">
-                      {t_i18n('Configuration')}
-                    </Typography>
-                  </Grid>
+                    {isConfigurationColumn && (
+                      <Grid item xs={3}>
+                        <Typography fontWeight="bold">
+                          {t_i18n('Configuration')}
+                        </Typography>
+                      </Grid>
+                    )}
+                  </>
                 )}
-
                 <Grid item xs={0.5}></Grid>
               </Grid>
             </ListItem>
@@ -106,99 +113,103 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ files, connectorsForI
                   </Grid>
 
                   {/* Column 2: File Name */}
-                  <Grid item xs={isConfigurationColumn ? 5 : 8}>
+                  <Grid item xs={fileNameColumnSize}>
                     <Tooltip title={file.name}>
                       <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
                         {file.name}
                       </Box>
                     </Tooltip>
                   </Grid>
-
-                  {canSelectConnectors ? (
+                  {importMode !== 'auto' && (
                     <>
-                      {/* Column 3: Select - Show all connectors but disable those that haven't matching file type */}
-                      <Grid item xs={3}>
-                        <Select
-                          variant="standard"
-                          fullWidth
-                          multiple
-                          displayEmpty
-                          renderValue={(selectedIds) => {
-                            if (selectedIds.length === 0) {
-                              return canSelectConnectors ? t_i18n('No active connectors') : t_i18n('Select a connector');
-                            }
-
-                            // Displays connectors name
-                            return selectedIds
-                              .map((id) => connectorsForImport?.find((c) => c?.id === id)?.name)
-                              .join(', ');
-                          }}
-                          value={connectors?.map((c) => c?.id)}
-                          onChange={(e) => handleConnectorChange(file.name, e.target.value as string[])}
-                        >
-                          <MenuItem value="" disabled>
-                            {t_i18n('Select a connector')}
-                          </MenuItem>
-                          {connectorsForImport?.map((connector) => (
-                            <MenuItem key={connector?.id} value={connector?.id}
-                              disabled={!connector?.active || !connector?.connector_scope?.includes(file.type)}
-                            >
-                              {connector?.name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </Grid>
-
-                      {/* Column 4: Select - CSV Mapper */}
-                      {isConfigurationColumn
-                        && (
-                          <Grid item xs={3}>
-                            {!!connectors.filter((c) => c?.name === CSV_MAPPER_NAME).length && (
+                      {
+                        canSelectConnectors ? (
+                          <>
+                            {/* Column 3: Select - Show all connectors but disable those that haven't matching file type */}
+                            <Grid item xs={3}>
                               <Select
                                 variant="standard"
                                 fullWidth
-                                value={configuration || ''}
-                                onChange={(e) => handleMapperChange(file.name, e.target.value as string)}
-                                error={!configuration} // ✅ Adds red border on error
+                                multiple
                                 displayEmpty
-                                sx={{
-                                  '& .MuiSelect-select': {
-                                    color: !configuration ? theme.palette.error.main : 'inherit',
-                                  },
+                                renderValue={(selectedIds) => {
+                                  if (selectedIds.length === 0) {
+                                    return canSelectConnectors ? t_i18n('No active connectors') : t_i18n('Select a connector');
+                                  }
+
+                                  // Displays connectors name
+                                  return selectedIds
+                                    .map((id) => connectorsForImport?.find((c) => c?.id === id)?.name)
+                                    .join(', ');
                                 }}
+                                value={connectors?.map((c) => c?.id)}
+                                onChange={(e) => handleConnectorChange(file.name, e.target.value as string[])}
                               >
                                 <MenuItem value="" disabled>
-                                  {t_i18n('Select a configuration')}
+                                  {t_i18n('Select a connector')}
                                 </MenuItem>
-                                {connectorsForImport
-                                  ?.find((connector) => connector?.name === CSV_MAPPER_NAME)
-                                  ?.configurations?.map((mapper) => (
-                                    <MenuItem key={mapper?.id} value={mapper?.configuration}>
-                                      {mapper?.name}
-                                    </MenuItem>
-                                  ))}
+                                {connectorsForImport?.map((connector) => (
+                                  <MenuItem key={connector?.id} value={connector?.id}
+                                    disabled={!connector?.active || !connector?.connector_scope?.includes(file.type)}
+                                  >
+                                    {connector?.name}
+                                  </MenuItem>
+                                ))}
                               </Select>
-                            )}
-                          </Grid>
-                        )}
-                    </>
-                  ) : (
-                    <Grid item xs={isConfigurationColumn ? 6 : 3}>
-                      <Alert
-                        variant="outlined"
-                        severity="warning"
-                        sx={{
-                          border: 'none',
-                          padding: 0,
-                          backgroundColor: 'transparent',
-                          boxShadow: 'none',
-                        }}
-                      >
-                        {t_i18n('No connector was found to process this file type')}
-                      </Alert>
-                    </Grid>
-                  )}
+                            </Grid>
 
+                            {/* Column 4: Select - CSV Mapper */}
+                            {isConfigurationColumn
+                              && (
+                                <Grid item xs={3}>
+                                  {!!connectors.filter((c) => c?.name === CSV_MAPPER_NAME).length && (
+                                    <Select
+                                      variant="standard"
+                                      fullWidth
+                                      value={configuration || ''}
+                                      onChange={(e) => handleMapperChange(file.name, e.target.value as string)}
+                                      error={!configuration} // ✅ Adds red border on error
+                                      displayEmpty
+                                      sx={{
+                                        '& .MuiSelect-select': {
+                                          color: !configuration ? theme.palette.error.main : 'inherit',
+                                        },
+                                      }}
+                                    >
+                                      <MenuItem value="" disabled>
+                                        {t_i18n('Select a configuration')}
+                                      </MenuItem>
+                                      {connectorsForImport
+                                        ?.find((connector) => connector?.name === CSV_MAPPER_NAME)
+                                        ?.configurations?.map((mapper) => (
+                                          <MenuItem key={mapper?.id} value={mapper?.configuration}>
+                                            {mapper?.name}
+                                          </MenuItem>
+                                        ))}
+                                    </Select>
+                                  )}
+                                </Grid>
+                              )}
+                          </>
+                        ) : (
+                          <Grid item xs={isConfigurationColumn ? 6 : 3}>
+                            <Alert
+                              variant="outlined"
+                              severity="warning"
+                              sx={{
+                                border: 'none',
+                                padding: 0,
+                                backgroundColor: 'transparent',
+                                boxShadow: 'none',
+                              }}
+                            >
+                              {t_i18n('No connector was found to process this file type')}
+                            </Alert>
+                          </Grid>
+                        )
+                      }
+                    </>
+                  )}
                   {/* Column 5: Delete Button */}
                   <Grid item xs={0.5}>
                     <IconButton edge="end" onClick={() => removeFile(file.name)} color="primary">
