@@ -29,7 +29,6 @@ type FormValuesType = {
 const CreateRoleControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
     entityType='Role'
-    entityPrefix={false}
     size='medium'
     {...props}
   />
