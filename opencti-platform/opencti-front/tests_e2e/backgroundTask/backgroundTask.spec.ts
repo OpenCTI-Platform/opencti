@@ -36,11 +36,10 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
   // Filter on label
   await filter.addFilter('Label', 'background-task', true);
   await expect(dataTable.getNumberElements(2)).toBeVisible();
-  await incidentPage.goto();
 
   // Select all
   await dataTable.getCheckAll().click();
-  await taskPopup.launchAddLabel('background-task-filter-add-label', true);
+  await taskPopup.launchAddLabel('background-task-filter-add-label');
 
   // Need to wait after click on "Launch" that the popup goes away.
   await expect(taskPopup.getPage().getByText('Launch a background task')).not.toBeVisible({ timeout: 3000 });
@@ -54,28 +53,37 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
   await search.addSearch('findMeWithSearchID');
   await expect(dataTable.getNumberElements(1), 'An exact search with no label should match only one incident.').toBeVisible();
   await dataTable.getCheckAll().click();
-  await taskPopup.launchAddLabel('background-task-search-add-label', false);
+  await taskPopup.launchAddLabel('background-task-search-add-label');
   // Need to wait after click on "Launch" that the popup goes away.
   await expect(taskPopup.getPage().getByText('Launch a background task')).not.toBeVisible({ timeout: 3000 });
 
+  // Region Background task page
   await sleep(3000); // Wait 3 secs for task creation
   await tasksPage.goto();
   await expect(tasksPage.getPage()).toBeVisible();
 
-  // Wait until no task are in status "Waiting" in the page
-  // Max 5 times 5s
-  let loopCount = 5;
-  let isTaskProcessing = true;
-  while (loopCount > 0 && isTaskProcessing) {
-    // eslint-disable-next-line no-await-in-loop
+  // Wait until at least one is complete
+  await expect(page.getByText('Complete').first()).toBeVisible();
+  const loopCount = 10; // 10*5000 = 50s max
+  let loopCurrent = 0;
+
+  const isOneWaitingTaskPresent = async () => {
     await sleep(5000);
+    await tasksPage.goto();
+    await expect(tasksPage.getPage()).toBeVisible();
+    const isOneOrMoreWaitingVisible = await page.getByText('Waiting').first().isVisible();
+    return isOneOrMoreWaitingVisible;
+  };
+
+  let isWaitingVisible = await isOneWaitingTaskPresent();
+  while (isWaitingVisible && loopCurrent < loopCount) {
     // eslint-disable-next-line no-await-in-loop
-    await tasksPage.goto(); // we need to force refresh page
-    // eslint-disable-next-line no-await-in-loop
-    isTaskProcessing = await page.getByText('Waiting').first().isVisible({ timeout: 200 });
-    loopCount -= 1;
+    isWaitingVisible = await isOneWaitingTaskPresent();
+    loopCurrent += 1;
   }
-  await expect(page.getByText('Waiting')).toBeHidden({ timeout: 200 });
+  await expect(page.getByText('Waiting')).toBeHidden();
+  await expect(page.getByText('Complete')).toBeVisible();
+  // END Region Background task page
 
   // Go on the general Data > entities
   const entitiesPage = new DataEntitiesPage(page);
