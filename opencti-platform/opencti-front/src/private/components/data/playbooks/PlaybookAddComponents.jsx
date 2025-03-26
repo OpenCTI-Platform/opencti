@@ -394,9 +394,9 @@ const PlaybookAddComponentsContent = ({
                 i,
                 'value',
                 value.map((n) => ({
-                  label: n.label,
-                  value: n.value,
-                  patch_value: n.value,
+                  label: n,
+                  value: n,
+                  patch_value: n,
                 })),
               );
             }}
@@ -414,9 +414,9 @@ const PlaybookAddComponentsContent = ({
                 i,
                 'value',
                 value.map((n) => ({
-                  label: n.label,
-                  value: n.value,
-                  patch_value: n.value,
+                  label: n,
+                  value: n,
+                  patch_value: n,
                 })),
               );
             }}
