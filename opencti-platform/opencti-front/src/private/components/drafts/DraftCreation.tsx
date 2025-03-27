@@ -16,7 +16,7 @@ import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useHelper from '../../../utils/hooks/useHelper';
 
-const draftCreationMutation = graphql`
+export const draftCreationMutation = graphql`
     mutation DraftCreationMutation($input: DraftWorkspaceAddInput!) {
         draftWorkspaceAdd(input: $input) {
             id

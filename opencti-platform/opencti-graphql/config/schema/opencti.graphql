@@ -14106,7 +14106,7 @@ type StixCoreObjectEditMutations {
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
-  uploadAndAskJobImport(file: Upload!, connectors: [ConnectorWithConfig!], fileMarkings: [String!], validationMode: ValidationMode): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  uploadAndAskJobImport(file: Upload!, connectors: [ConnectorWithConfig!], fileMarkings: [String!], validationMode: ValidationMode, draftId: String): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(input: ExportAskInput!): [File!]  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
   removeFromDraft: ID @auth(for: [KNOWLEDGE])
@@ -14406,7 +14406,7 @@ type Mutation {
   ###### INTERNAL
   deleteImport(fileName: String): ID @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!, fileMarkings: [String]): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode, draftId: String): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, file_markings: [String!], refreshEntity: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode): File
   @auth(for: [KNOWLEDGE_KNASKIMPORT])

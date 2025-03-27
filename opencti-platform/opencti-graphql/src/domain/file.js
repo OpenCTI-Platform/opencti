@@ -145,12 +145,20 @@ export const uploadAndAskJobImport = async (context, user, args = {}) => {
     fileMarkings,
     connectors,
     validationMode = defaultValidationMode,
+    draftId,
   } = args;
-  const uploadedFile = await uploadImport(context, user, { file, fileMarkings, noTriggerImport: true });
+  const contextInDraft = { ...context, draft_context: draftId };
+  const uploadedFile = await uploadImport(contextInDraft, user, { file, fileMarkings, noTriggerImport: true });
 
   if (connectors) {
     await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
-      askJobImport(context, user, { fileName: uploadedFile.id, connectorId, configuration, validationMode })
+      askJobImport(contextInDraft, user, {
+        fileName: uploadedFile.id,
+        connectorId,
+        configuration,
+        validationMode,
+        forceValidation: true
+      })
     )));
   }
 
