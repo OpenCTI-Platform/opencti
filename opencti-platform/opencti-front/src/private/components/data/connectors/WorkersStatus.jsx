@@ -107,7 +107,7 @@ class WorkersStatusComponent extends Component {
             <Grid item xs={2} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
-                  {n(pathOr(0, ['queue_totals', 'messages'], overview))}
+                  {n(pathOr(0, ['messages'], overview))}
                 </div>
                 <div className={classes.title}>{t('Queued bundles')}</div>
               </div>
@@ -192,11 +192,9 @@ const WorkersStatus = createRefetchContainer(
         rabbitMQMetrics {
           consumers
           overview {
-            queue_totals {
-              messages
-              messages_ready
-              messages_unacknowledged
-            }
+            messages
+            messages_ready
+            messages_unacknowledged
             message_stats {
               ack
               ack_details {
