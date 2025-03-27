@@ -76,6 +76,7 @@ export const MEMBERS_USER_FILTER = 'members_user';
 export const MEMBERS_GROUP_FILTER = 'members_group';
 export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
 export const ALIAS_FILTER = 'alias'; // handle both 'aliases' and 'x_opencti_aliases' attributes
+export const IS_INFERRED_FILTER = 'is_inferred'; // if an entity or relationship is inferred
 
 export const complexConversionFilterKeys = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
@@ -96,6 +97,7 @@ export const complexConversionFilterKeys = [
   RELATION_FROM_ROLE_FILTER, // nested relation for the from role of a relationship
   RELATION_TO_ROLE_FILTER, // nested relation for the to role of a relationship
   ALIAS_FILTER, // key that target both the 'aliases' and 'x_opencti_aliases' attributes
+  IS_INFERRED_FILTER, // if an entity or relationship is inferred
 ];
 
 // list of the special filtering keys
