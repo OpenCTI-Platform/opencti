@@ -2972,6 +2972,7 @@
   "The value must be greater than or equal to 0": "値は 0 以上である必要があります",
   "The value must be greater than or equal to 1": "値は 1 以上である必要があります",
   "The value must be less than or equal to 100": "値は 100 以下である必要があります",
+  "The value should be between 0 and 100": "値は0から100の間でなければならない。",
   "The values do not match": "値が一致しません",
   "The variable name should not contain spaces": "変数名にスペースを含んではならない",
   "The variable name should not contain special characters": "変数名に特殊文字を含んではならない",
