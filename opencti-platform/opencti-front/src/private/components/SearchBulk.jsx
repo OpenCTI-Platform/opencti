@@ -63,6 +63,7 @@ const useStyles = makeStyles((theme) => ({
   bodyItem: {
     height: '100%',
     fontSize: 13,
+    color: theme.palette.common.white,
   },
   itemIcon: {
     color: theme.palette.primary.main,
