@@ -1,4 +1,4 @@
-import { buildStixObject, } from '../../database/stix-converter';
+import { buildStixObject, } from '../../database/stix-2-1-converter';
 import type { StixDraftWorkspace, StoreEntityDraftWorkspace } from './draftWorkspace-types';
 
 const convertDraftWorkspaceToStix = (instance: StoreEntityDraftWorkspace): StixDraftWorkspace => {

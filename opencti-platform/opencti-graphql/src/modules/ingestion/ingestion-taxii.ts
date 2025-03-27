@@ -57,7 +57,7 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxii, StixInge
   representative: (stix: StixIngestionTaxii) => {
     return stix.name;
   },
-  converter: convertIngestionTaxiiToStix
+  converter_2_1: convertIngestionTaxiiToStix
 };
 
 registerDefinition(INGESTION_DEFINITION);

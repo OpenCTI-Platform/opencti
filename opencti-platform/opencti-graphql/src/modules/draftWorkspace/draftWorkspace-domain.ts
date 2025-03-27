@@ -23,7 +23,7 @@ import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { usersSessionRefresh } from '../../domain/user';
 import { elAggregationCount, elList } from '../../database/engine';
-import { buildStixBundle } from '../../database/stix-converter';
+import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { SYSTEM_USER } from '../../utils/access';
 import { buildUpdateFieldPatch } from '../../database/draft-utils';

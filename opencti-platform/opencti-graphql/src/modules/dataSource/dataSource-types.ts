@@ -1,5 +1,5 @@
-import type { StixDomainObject, StixOpenctiExtension } from '../../types/stix-common';
-import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { StixDomainObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
+import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { DataComponent } from '../../generated/graphql';
 

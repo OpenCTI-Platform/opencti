@@ -1,6 +1,6 @@
-import type { StixDate, StixOpenctiExtensionSDO } from '../../types/stix-common';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import type { StixContainer } from '../../types/stix-sdo';
+import type { StixDate, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type { StixContainer } from '../../types/stix-2-1-sdo';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 
 export const ENTITY_TYPE_CONTAINER_TASK = 'Task';

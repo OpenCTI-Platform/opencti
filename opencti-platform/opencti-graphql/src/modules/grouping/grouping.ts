@@ -51,7 +51,7 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
   representative: (stix: StixGrouping) => {
     return stix.name;
   },
-  converter: convertGroupingToStix
+  converter_2_1: convertGroupingToStix
 };
 
 registerDefinition(GROUPING_DEFINITION);

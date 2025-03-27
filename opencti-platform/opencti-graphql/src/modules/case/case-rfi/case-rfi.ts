@@ -50,7 +50,7 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
   representative: (stix: StixCaseRfi) => {
     return stix.name;
   },
-  converter: convertCaseRfiToStix
+  converter_2_1: convertCaseRfiToStix
 };
 
 registerDefinition(CASE_RFI_DEFINITION);

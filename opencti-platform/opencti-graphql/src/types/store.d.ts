@@ -50,9 +50,9 @@ import {
   INPUT_OBJECTS,
   INPUT_PARTICIPANT
 } from '../schema/general';
-import type { StixId } from './stix-common';
+import type { StixId } from './stix-2-1-common';
 import type { EditOperation, PageInfo } from '../generated/graphql';
-import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-sco';
+import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-2-1-sco';
 import { RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { AuthorizedMember } from '../utils/access';
 

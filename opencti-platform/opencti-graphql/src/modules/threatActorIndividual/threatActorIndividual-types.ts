@@ -1,7 +1,7 @@
 import type { DateTime } from '@elastic/elasticsearch/lib/api/types';
-import type { StixDate, StixOpenctiExtension } from '../../types/stix-common';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import type { StixContainer } from '../../types/stix-sdo';
+import type { StixDate, StixOpenctiExtension } from '../../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type { StixContainer } from '../../types/stix-2-1-sdo';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { Country, Measure } from '../../generated/graphql';
 import type { RELATION_BORN_IN, RELATION_ETHNICITY } from '../../schema/stixRefRelationship';

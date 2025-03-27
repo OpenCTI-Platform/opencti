@@ -45,6 +45,6 @@ const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCa
   representative: (stix: StixCaseTemplate) => {
     return stix.name;
   },
-  converter: convertCaseTemplateToStix
+  converter_2_1: convertCaseTemplateToStix
 };
 registerDefinition(CASE_TEMPLATE_DEFINITION);

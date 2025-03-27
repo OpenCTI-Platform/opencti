@@ -58,7 +58,7 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
   representative: (stix: StixNarrative) => {
     return stix.name;
   },
-  converter: convertNarrativeToStix
+  converter_2_1: convertNarrativeToStix
 };
 
 registerDefinition(NARRATIVE_DEFINITION);
