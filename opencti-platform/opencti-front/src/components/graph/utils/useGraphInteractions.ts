@@ -70,6 +70,10 @@ const useGraphInteractions = () => {
     setGraphStateProp('withForces', !withForces);
   };
 
+  const selectDetailsPreviewObject = (object: GraphNode | GraphLink) => {
+    setGraphStateProp('detailsPreviewSelected', object);
+  };
+
   const zoomToFit = () => {
     graphRef2D.current?.zoomToFit(400, 100);
     graphRef3D.current?.zoomToFit(400, 0);
@@ -256,6 +260,7 @@ const useGraphInteractions = () => {
     setSelectedNodes([]);
     setSelectedLinks([]);
     setGraphStateProp('search', undefined);
+    setGraphStateProp('detailsPreviewSelected', undefined);
   };
 
   /**
@@ -432,6 +437,7 @@ const useGraphInteractions = () => {
     setSelectedNodes,
     toggleLink,
     toggleNode,
+    selectDetailsPreviewObject,
     clearSelection,
     moveSelection,
     fixPositionsOnDragEnd,

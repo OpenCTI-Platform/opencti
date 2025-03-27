@@ -60,6 +60,7 @@ const Graph = ({
       loadingCurrent,
       loadingTotal,
       search,
+      detailsPreviewSelected,
     },
   } = useGraphContext();
 
@@ -75,6 +76,7 @@ const Graph = ({
     selectedLinks,
     selectedNodes,
     search,
+    detailsPreviewSelected,
   });
 
   useGraphFilter();
@@ -102,9 +104,7 @@ const Graph = ({
     >
       <div style={{ position: 'relative' }} id={graphId}>
         {isLoadingData && <GraphLoadingAlert />}
-        {selectedEntities.length > 0 && (
-          <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
-        )}
+        {selectedEntities.length > 0 && <EntitiesDetailsRightsBar />}
         {mode3D ? (
           <ForceGraph3D<GraphNode, GraphLink>
             ref={graphRef3D}

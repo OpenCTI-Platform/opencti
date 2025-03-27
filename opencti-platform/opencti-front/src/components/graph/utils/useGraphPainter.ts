@@ -11,6 +11,7 @@ interface PaintOptions {
 interface UseGraphPainterArgs {
   selectedLinks: GraphLink[]
   selectedNodes: GraphNode[]
+  detailsPreviewSelected: GraphLink | GraphNode | undefined
   search: string | undefined
 }
 
@@ -19,6 +20,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const {
     selectedLinks = [],
     selectedNodes = [],
+    detailsPreviewSelected,
     search,
   } = args ?? {};
 
@@ -45,18 +47,21 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     ctx: CanvasRenderingContext2D,
     opts: PaintOptions = {},
   ) => {
-    const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred } = data;
+    const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred, id } = data;
     const { showNbConnectedElements } = opts;
+
+    const hasSelection = selectedNodes.length > 0;
+    const previewSelected = detailsPreviewSelected?.id === id;
     const selected = !!selectedNodes.find((n) => n.id === data.id);
 
-    ctx.globalAlpha = !selected && search ? 0.4 : 1;
+    ctx.globalAlpha = hasSelection && !selected ? 0.3 : 1;
 
     ctx.beginPath();
     ctx.fillStyle = disabled ? colors.disabled : color;
     ctx.arc(x, y, 5, 0, 2 * Math.PI, false);
     ctx.fill();
 
-    if (selected) {
+    if (previewSelected) {
       ctx.lineWidth = 0.8;
       ctx.strokeStyle = colors.selected;
       ctx.stroke();
