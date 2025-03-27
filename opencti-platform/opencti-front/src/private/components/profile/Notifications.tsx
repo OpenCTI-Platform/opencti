@@ -54,6 +54,15 @@ const notificationLineNotificationDeleteMutation = graphql`
 const Notifications: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+
+  const [commitMarkRead] = useApiMutation(
+    notificationLineNotificationMarkReadMutation,
+  );
+  const [commitDelete] = useApiMutation(
+    notificationLineNotificationDeleteMutation,
+  );
+  const [notificationToDelete, setNotificationToDelete] = useState<NotificationLine_node$data>();
+
   setTitle(t_i18n('Notifications'));
   const {
     me,
@@ -102,15 +111,6 @@ const Notifications: FunctionComponent = () => {
     filters: contextFilters,
   } as unknown as NotificationsLinesPaginationQuery$variables;
 
-  const [commitMarkRead] = useApiMutation(
-    notificationLineNotificationMarkReadMutation,
-  );
-  const [commitDelete] = useApiMutation(
-    notificationLineNotificationDeleteMutation,
-  );
-  // const [displayDelete, setDisplayDelete] = useState(false);
-  // const [open, setOpen] = useState<boolean>(false);
-  const [notificationToDelete, setNotificationToDelete] = useState<NotificationLine_node$data>();
   const handleCloseDelete = () => {
     setNotificationToDelete(undefined);
   };
@@ -120,7 +120,6 @@ const Notifications: FunctionComponent = () => {
         id,
       },
       updater: (store) => {
-        console.log({ store, id });
         deleteNode(store, 'Pagination_myNotifications', queryPaginationOptions, id);
       },
       onCompleted: () => {
@@ -225,8 +224,7 @@ const Notifications: FunctionComponent = () => {
       label: 'Trigger name',
       percentWidth: 12,
       isSortable: isRuntimeSort,
-      render: ({ notification_content, notification_type, name }, { storageHelpers: { handleAddFilter } }) => {
-        console.log({ notification_content, notification_type });
+      render: ({ notification_type, name }, { storageHelpers: { handleAddFilter } }) => {
         return (
           <div style={{ height: 20,
             fontSize: 13,
@@ -354,7 +352,7 @@ const Notifications: FunctionComponent = () => {
       {notificationToDelete && (
         <Dialog
           PaperProps={{ elevation: 1 }}
-          open={notificationToDelete}
+          open={!!notificationToDelete}
           TransitionComponent={Transition}
           onClose={handleCloseDelete}
         >
