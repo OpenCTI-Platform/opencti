@@ -200,8 +200,8 @@ const Notifications: FunctionComponent = () => {
       label: 'Message',
       percentWidth: 48,
       isSortable: isRuntimeSort,
-      render: ({ notification_content }) => {
-        const events = notification_content.map((n: any) => n.events).flat();
+      render: ({ notification_content }: NotificationLine_node$data) => {
+        const events = notification_content.map((n) => n.events).flat();
         const firstEvent = events.at(0);
 
         return (<div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
