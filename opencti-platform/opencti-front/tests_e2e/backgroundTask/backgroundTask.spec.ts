@@ -82,7 +82,7 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
     loopCurrent += 1;
   }
   await expect(page.getByText('Waiting')).toBeHidden();
-  await expect(page.getByText('Complete')).toBeVisible();
+  await expect(page.getByText('Complete').first()).toBeVisible();
   // END Region Background task page
 
   // Go on the general Data > entities
