@@ -47,7 +47,7 @@ const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset }: Save
       },
       updater: (store) => {
         const filters = getSavedFilterScopeFilter(localStorageKey);
-        deleteNode(store, 'SavedFilters__savedFilters', { filters }, savedFilterToDelete);
+        deleteNode(store, 'SavedFilters_savedFilters', { filters }, savedFilterToDelete);
       },
       onCompleted: () => {
         onReset();
@@ -69,7 +69,7 @@ const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset }: Save
     >
       <DialogContent>
         <DialogContentText>
-          {t_i18n('Do you want to delete this saved filter ?')}
+          {t_i18n('Do you want to delete this saved filter?')}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
