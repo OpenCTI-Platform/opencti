@@ -64,10 +64,7 @@ const Notifications: FunctionComponent = () => {
   const [notificationToDelete, setNotificationToDelete] = useState<NotificationLine_node$data>();
 
   setTitle(t_i18n('Notifications'));
-  const {
-    me,
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+
   const initialValues = {
     searchTerm: '',
     sortBy: 'created',
@@ -81,6 +78,12 @@ const Notifications: FunctionComponent = () => {
       symbol: '',
     },
   };
+
+  const {
+    me,
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
+
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NotificationsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
@@ -135,7 +138,7 @@ const Notifications: FunctionComponent = () => {
     multiple: indigo[500],
   };
   const getFirstOperation = ({ notification_content, notification_type }: Pick<NotificationLine_node$data, 'notification_content' | 'notification_type'>) => {
-    const events = notification_content.map((n: any) => n.events).flat();
+    const events = notification_content.map((n) => n.events).flat();
     const firstEvent = events.at(0);
     const isDigest = notification_type === 'digest';
     return isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
