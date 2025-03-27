@@ -763,10 +763,10 @@ export const jsonExecutor = async (context: AuthContext) => {
     // endregion
     console.log('dataBundle', bundle.objects.length);
     // Push the bundle to absorption queue
-    await pushBundleToConnectorQueue(context, ingestion, bundle);
+    // await pushBundleToConnectorQueue(context, ingestion, bundle);
     // Save new state for next execution
     ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
-    await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
+    // await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
     console.log('----------------------------------------------');
   }
 };
