@@ -1,7 +1,17 @@
 import { expect, it, describe } from 'vitest';
 import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
-import { delEditContext, delUserContext, fetchEditContext, getRedisVersion, lockResource, setEditContext } from '../../../src/database/redis';
+import {
+  delEditContext,
+  delUserContext,
+  fetchEditContext,
+  getRedisVersion,
+  lockResource,
+  redisClearTelemetry,
+  redisGetTelemetry,
+  redisSetTelemetryAdd,
+  setEditContext
+} from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
 describe('Redis basic and utils', () => {
@@ -9,6 +19,20 @@ describe('Redis basic and utils', () => {
     // Just wait one second to let redis client initialize
     const redisVersion = await getRedisVersion();
     expect(redisVersion).toEqual(expect.stringMatching(/^7\./g));
+  });
+
+  it('should redis telemetry add, get and clean work', async () => {
+    await redisClearTelemetry();
+    expect(await redisGetTelemetry('notExistingGaugeInRedis'), 'Calling telemetry data before redis has numbers should not crash').toBe(0);
+
+    await redisSetTelemetryAdd('fakeGaugeforUnitTest', 3);
+    expect(await redisGetTelemetry('fakeGaugeforUnitTest')).toBe(3);
+
+    await redisSetTelemetryAdd('fakeGaugeforUnitTest', 2);
+    expect(await redisGetTelemetry('fakeGaugeforUnitTest')).toBe(5);
+
+    await redisClearTelemetry();
+    expect(await redisGetTelemetry('fakeGaugeforUnitTest')).toBe(0);
   });
 });
 
