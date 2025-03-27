@@ -159,9 +159,7 @@ ExternalReferencesFieldProps
             value: n.node.id,
             entity: n.node,
           }));
-        console.log('newExternalReferences', newExternalReferences);
         setExternalReferences((o) => union(take(50, o), newExternalReferences));
-        console.log('externalReferences', externalReferences);
       });
   };
 
