@@ -1160,7 +1160,6 @@ export const userAddIndividual = async (context, user) => {
   const individualInput = { name: targetUser.name, contact_information: targetUser.user_email };
   // We need to bypass validation here has we maybe not setup all require fields
   const individual = await addIndividual(context, targetUser, individualInput, { bypassValidation: true });
-  // await refreshCacheForEntity(targetUser); // Auto add must reset the local cache directly
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user).then(() => individual);
 };
 
