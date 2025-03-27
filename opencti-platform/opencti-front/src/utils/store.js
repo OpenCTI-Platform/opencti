@@ -68,7 +68,6 @@ export const deleteNodeFromId = (store, containerId, key, filters, id) => {
   delete params.id;
   const conn = ConnectionHandler.getConnection(record, key, params);
   if (conn) {
-    console.log({ conn, params });
     ConnectionHandler.deleteNode(conn, id);
   } else {
     throw new Error(`Delete node ${id} connection ${key} not found`);
