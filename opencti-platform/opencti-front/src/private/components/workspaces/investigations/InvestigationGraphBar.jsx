@@ -38,6 +38,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import React, { Component } from 'react';
 import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
+import DialogTitle from '@mui/material/DialogTitle';
 import { getPreExpansionStateList } from './utils/investigationStorage';
 import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import inject18n from '../../../../components/i18n';
@@ -954,6 +955,9 @@ class InvestigationGraphBar extends Component {
                         TransitionComponent={Transition}
                         onClose={this.handleCloseRemove.bind(this)}
                       >
+                        <DialogTitle>
+                          {t('Are you sure?')}
+                        </DialogTitle>
                         <DialogContent>
                           <DialogContentText>
                             {t(
@@ -972,7 +976,7 @@ class InvestigationGraphBar extends Component {
                             }}
                             color="secondary"
                           >
-                            {t('Remove')}
+                            {t('Confirm')}
                           </Button>
                         </DialogActions>
                       </Dialog>

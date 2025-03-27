@@ -23,6 +23,7 @@ import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import { UserUserRenewTokenMutation } from '@components/settings/users/__generated__/UserUserRenewTokenMutation.graphql';
 import Tooltip from '@mui/material/Tooltip';
+import DialogTitle from '@mui/material/DialogTitle';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import UserEdition from './UserEdition';
@@ -803,6 +804,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         TransitionComponent={Transition}
         onClose={handleCloseKillSession}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to kill this session?')}
@@ -817,7 +821,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             color="secondary"
             disabled={killing}
           >
-            {t_i18n('Kill')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -828,6 +832,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         TransitionComponent={Transition}
         onClose={handleCloseKillSessions}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to kill all the sessions of this user?')}
@@ -842,7 +849,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             color="secondary"
             disabled={killing}
           >
-            {t_i18n('Kill all')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -853,6 +860,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         TransitionComponent={Transition}
         onClose={handleCloseRenewToken}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to revoke this user token ? Once the token is revoked all access are forbidden, please verify that the token is not used by connectors or other API calls before revoking.')}
@@ -866,7 +876,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             onClick={submitRenewToken}
             color="secondary"
           >
-            {t_i18n('Revoke')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
