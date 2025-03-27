@@ -259,6 +259,7 @@ class ListenQueue(threading.Thread):
             entity_id = event_data.get("entity_id")
             entity_type = event_data.get("entity_type")
             validation_mode = event_data.get("validation_mode", "workbench")
+            force_validation = event_data.get("force_validation", False)
             # Set the API headers
             internal_data = json_data["internal"]
             work_id = internal_data["work_id"]
@@ -266,6 +267,8 @@ class ListenQueue(threading.Thread):
             self.helper.work_id = work_id
 
             self.helper.validation_mode = validation_mode
+            self.helper.force_validation = force_validation
+
             self._set_draft_id(draft_id)
 
             self.helper.playbook = None
@@ -969,6 +972,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         self.work_id = None
         self.validation_mode = "workbench"
+        self.force_validation = False
         self.draft_id = None
         self.playbook = None
         self.enrichment_shared_organizations = None
@@ -1595,6 +1599,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         update = kwargs.get("update", False)
         event_version = kwargs.get("event_version", None)
         bypass_validation = kwargs.get("bypass_validation", False)
+        force_validation = kwargs.get("force_validation", self.force_validation)
         entity_id = kwargs.get("entity_id", None)
         file_markings = kwargs.get("file_markings", None)
         file_name = kwargs.get("file_name", None)
@@ -1657,7 +1662,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         if not file_name and work_id:
             file_name = f"{work_id}.json"
 
-        if self.connect_validate_before_import and not bypass_validation and file_name:
+        if (
+            (self.connect_validate_before_import or force_validation)
+            and not bypass_validation
+            and file_name
+        ):
             if validation_mode == "workbench":
                 self.api.upload_pending_file(
                     file_name=file_name,
