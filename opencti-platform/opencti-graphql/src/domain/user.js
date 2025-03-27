@@ -729,9 +729,9 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
-  if (refreshUserNeeded) {
+  /* if (refreshUserNeeded) { // TODO remove ?
     await refreshCacheForEntity(element); // Me edit must reset the local cache directly
-  }
+  } */
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
