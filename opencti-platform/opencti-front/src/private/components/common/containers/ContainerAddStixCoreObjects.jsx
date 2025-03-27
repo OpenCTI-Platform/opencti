@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
@@ -8,7 +8,6 @@ import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
-import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
@@ -20,6 +19,7 @@ import Drawer from '../drawer/Drawer';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { removeEmptyFields } from '../../../../utils/utils';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -158,6 +158,23 @@ const ContainerAddStixCoreObjects = (props) => {
   } else {
     keyword = !mappingSearch ? selectedText : mappingSearch;
   }
+
+  const handleSearch = useMemo(() => {
+    return mapping ? setMappingSearch : helpers.handleSearch;
+  }, [mapping]);
+
+  const { count: _, ...paginationOptionsNoCount } = addObjectsPaginationOptions;
+  const searchPaginationOptions = removeEmptyFields({
+    ...paginationOptionsNoCount,
+    search: keyword,
+    filters: contextFilters,
+  });
+
+  const queryRef = useQueryLoading(
+    containerAddStixCoreObjectsLinesQuery,
+    { count: 100, ...searchPaginationOptions },
+  );
+
   const handleOpenCreateEntity = () => {
     setOpenCreateEntity(true);
     setOpenSpeedDial(false);
@@ -174,7 +191,8 @@ const ContainerAddStixCoreObjects = (props) => {
     setOpenCreateObservable(false);
     setOpenSpeedDial(false);
   };
-  const renderDomainObjectCreation = (searchPaginationOptions) => {
+
+  const renderDomainObjectCreation = () => {
     return (
       <StixDomainObjectCreation
         display={open}
@@ -192,7 +210,8 @@ const ContainerAddStixCoreObjects = (props) => {
       />
     );
   };
-  const renderObservableCreation = (searchPaginationOptions) => {
+
+  const renderObservableCreation = () => {
     return (
       <StixCyberObservableCreation
         display={open}
@@ -205,7 +224,8 @@ const ContainerAddStixCoreObjects = (props) => {
       />
     );
   };
-  const renderStixCoreObjectCreation = (searchPaginationOptions) => {
+
+  const renderStixCoreObjectCreation = () => {
     return (
       <>
         <SpeedDial
@@ -270,7 +290,8 @@ const ContainerAddStixCoreObjects = (props) => {
       </>
     );
   };
-  const renderEntityCreation = (searchPaginationOptions) => {
+
+  const renderEntityCreation = () => {
     if (
       targetStixCoreObjectTypes
             && isTypeDomainObject(targetStixCoreObjectTypes)
@@ -294,6 +315,7 @@ const ContainerAddStixCoreObjects = (props) => {
     }
     return null;
   };
+
   const buildColumns = () => {
     return {
       entity_type: {
@@ -323,14 +345,15 @@ const ContainerAddStixCoreObjects = (props) => {
       },
     };
   };
-  const renderSearchResults = (searchPaginationOptions) => {
+
+  const renderSearchResults = () => {
     return (
       <ListLines
         helpers={helpers}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={buildColumns()}
-        handleSearch={mapping ? setMappingSearch : helpers.handleSearch}
+        handleSearch={handleSearch}
         keyword={keyword}
         handleSort={helpers.handleSort}
         handleAddFilter={helpers.handleAddFilter}
@@ -350,38 +373,26 @@ const ContainerAddStixCoreObjects = (props) => {
           filterKeys: ['entity_type'],
         }}
       >
-        <QueryRenderer
-          query={containerAddStixCoreObjectsLinesQuery}
-          variables={{ count: 100, ...searchPaginationOptions }}
-          render={({ props: renderProps }) => (
-            <ContainerAddStixCoreObjectsLines
-              data={renderProps}
-              containerId={containerId}
-              paginationOptions={paginationOptions}
-              dataColumns={buildColumns()}
-              initialLoading={renderProps === null}
-              knowledgeGraph={knowledgeGraph}
-              containerStixCoreObjects={containerStixCoreObjects}
-              onAdd={onAdd}
-              onDelete={onDelete}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-              mapping={mapping}
-              containerRef={containerRef}
-              enableReferences={enableReferences}
-              onLabelClick={helpers.handleAddFilter}
-            />
-          )}
-        />
+        {containerRef && queryRef && (
+          <ContainerAddStixCoreObjectsLines
+            queryRef={queryRef}
+            containerId={containerId}
+            paginationOptions={paginationOptions}
+            dataColumns={buildColumns()}
+            knowledgeGraph={knowledgeGraph}
+            containerStixCoreObjects={containerStixCoreObjects}
+            onAdd={onAdd}
+            onDelete={onDelete}
+            setNumberOfElements={helpers.handleSetNumberOfElements}
+            containerRef={containerRef}
+            enableReferences={enableReferences}
+            onLabelClick={helpers.handleAddFilter}
+          />
+        )}
       </ListLines>
     );
   };
 
-  const { count: _, ...paginationOptionsNoCount } = addObjectsPaginationOptions;
-  const searchPaginationOptions = removeEmptyFields({
-    ...paginationOptionsNoCount,
-    search: keyword,
-    filters: contextFilters,
-  });
   const renderButton = () => {
     if (knowledgeGraph) {
       return (
@@ -421,6 +432,7 @@ const ContainerAddStixCoreObjects = (props) => {
       </Fab>
     );
   };
+
   return (
     <>
       {!mapping && renderButton()}
