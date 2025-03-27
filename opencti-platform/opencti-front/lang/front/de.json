@@ -2647,6 +2647,7 @@
   "Restrict to specific entity types": "Beschränkung auf bestimmte Entitätstypen",
   "Restricted": "Eingeschränkt",
   "Restricted entities": "Eingeschränkte Einheiten",
+  "Restricted entity already exists, user can request access": "Eingeschränktes Objekt existiert bereits, Benutzer kann Zugang beantragen",
   "Restriction": "Einschränkung",
   "Restriction | Data": "Einschränkung | Daten",
   "Restriction Date": "Einschränkung Datum",

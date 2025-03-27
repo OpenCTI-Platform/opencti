@@ -15,7 +15,7 @@ import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-d
 import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT, SYSTEM_USER } from '../../utils/access';
 import { listAllEntities } from '../../database/middleware-loader';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS } from '../../schema/internalObject';
-import { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
 import { storeLoadByIdWithRefs, updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
@@ -26,7 +26,6 @@ import { extractEntityRepresentativeName } from '../../database/entity-represent
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../database/cache';
-import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { BasicStoreSettings } from '../../types/settings';
 import { entitySettingEditField, findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
 import { findById as findStatusById } from '../../domain/status';
@@ -35,6 +34,7 @@ import { findById as findGroupById } from '../../domain/group';
 import { getDraftContext } from '../../utils/draftContext';
 import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { verifyRequestAccessEnabled } from './requestAccessUtils';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -71,57 +71,18 @@ export const getRfiEntitySettings = async (context: AuthContext, user: AuthUser)
   return findEntitySettingsByType(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
 };
 
-export const verifyRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
-  let message = '';
-  if (!isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
-    return { enabled: false };
-  }
-  // 1. EE must be enabled
-  const isEEConfigured: boolean = await isEnterpriseEdition(context);
-  if (!isEEConfigured) {
-    message += 'Enterprise edition must be enabled.';
-  }
-  // 2. Platform organization should be set up
-  const platformOrgValue = await getPlatformOrganizationId(context, user);
-  const isPlatformOrgSetup: boolean = platformOrgValue !== undefined && platformOrgValue !== '';
-  if (!isPlatformOrgSetup) {
-    message += 'Platform organization must be setup.';
-  }
-  const rfiEntitySettings = await getRfiEntitySettings(context, user);
-
-  // 3. Request access status should be configured
-  const areRequestAccessStatusConfigured: boolean = rfiEntitySettings?.request_access_workflow !== undefined
-    && rfiEntitySettings.request_access_workflow.declined_workflow_id !== undefined
-    && rfiEntitySettings.request_access_workflow.approved_workflow_id !== undefined;
-  if (!areRequestAccessStatusConfigured) {
-    message += 'RFI status for decline and approval must be configured in entity settings.';
-  }
-
-  // 4. At least one auth member admin should be configured.
-  const isRequestAccesApprovalAdminConfigured: boolean = rfiEntitySettings?.request_access_workflow?.approval_admin !== undefined
-    && rfiEntitySettings?.request_access_workflow?.approval_admin.length >= 1;
-  if (!isRequestAccesApprovalAdminConfigured) {
-    message += 'At least one approval administrator must be configured in entity settings.';
-  }
-
-  const isEnabled: boolean = isEEConfigured
-    && isPlatformOrgSetup
-    && areRequestAccessStatusConfigured
-    && isRequestAccesApprovalAdminConfigured;
-
-  return {
-    enabled: isEnabled,
-    message
-  };
-};
-
+// shortcut for entitySettings resolver
 export const isRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
-  const result = await verifyRequestAccessEnabled(context, user);
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS) as BasicStoreSettings;
+  const rfiEntitySettings = await getRfiEntitySettings(context, user);
+  const result = await verifyRequestAccessEnabled(context, user, settings, rfiEntitySettings);
   return result.enabled;
 };
 
 export const checkRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
-  const result = await verifyRequestAccessEnabled(context, user);
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS) as BasicStoreSettings;
+  const rfiEntitySettings = await getRfiEntitySettings(context, user);
+  const result = await verifyRequestAccessEnabled(context, user, settings, rfiEntitySettings);
   if (!result.enabled) {
     throw FunctionalError(`Request access feature is missing configuration: ${result.message}`, { message: result.message, doc_code: 'REQUEST_ACCESS_CONFIGURATION' });
   }
@@ -214,24 +175,20 @@ export const computeAuthorizedMembersForRequestAccess = async (context: AuthCont
     access_right: MEMBER_ACCESS_RIGHT_ADMIN,
   });
 
+  let organizationIdsToUse: string[];
   if (element.granted && element.granted.length > 0) {
-    // Build auth member intersection will all organizations
-    const organizationIds = element.granted;
-    for (let orgI = 0; orgI < organizationIds.length; orgI += 1) {
-      for (let adminI = 0; adminI < approvalAdmins.length; adminI += 1) {
-        authorizedMembers.push({
-          id: organizationIds[orgI],
-          access_right: MEMBER_ACCESS_RIGHT_EDIT,
-          groups_restriction_ids: [approvalAdmins[adminI]]
-        });
-      }
-    }
+    organizationIdsToUse = element.granted;
   } else {
-    // Fallback to platform organization
+    // on knowledge without organization restriction, fallback to platform org.
     const platformOrganizationId = await getPlatformOrganizationId(context, user);
+    organizationIdsToUse = [platformOrganizationId];
+  }
+
+  // Build auth member intersection will all organizations
+  for (let orgI = 0; orgI < organizationIdsToUse.length; orgI += 1) {
     for (let adminI = 0; adminI < approvalAdmins.length; adminI += 1) {
       authorizedMembers.push({
-        id: platformOrganizationId,
+        id: organizationIdsToUse[orgI],
         access_right: MEMBER_ACCESS_RIGHT_EDIT,
         groups_restriction_ids: [approvalAdmins[adminI]]
       });
@@ -364,7 +321,7 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
 
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.debug('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
-  await checkRequestAccessEnabled(context, user);
+  await checkRequestAccessEnabled(context, user,);
   const draftContext = getDraftContext(context, user);
   if (draftContext) {
     throw ValidationError('You cannot request access to an entity when in draft mode');

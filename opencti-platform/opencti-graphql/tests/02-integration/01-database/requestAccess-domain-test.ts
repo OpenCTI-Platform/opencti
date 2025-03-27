@@ -29,6 +29,8 @@ import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../sr
 import type { BasicStoreEntityEntitySetting } from '../../../src/modules/entitySetting/entitySetting-types';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import { verifyRequestAccessEnabled } from '../../../src/modules/requestAccess/requestAccessUtils';
+import type { BasicStoreSettings } from '../../../src/types/settings';
 
 describe('Request access domain  - initialized status', async () => {
   it('should initial data be created', async () => {
@@ -244,5 +246,88 @@ describe('Request access domain  - compute RFI retricted members', async () => {
       access_right: MEMBER_ACCESS_RIGHT_EDIT,
       groups_restriction_ids: [greenGroupId]
     });
+  });
+});
+
+describe('Request access domain  - conditions for request access activated', async () => {
+  it('should CE be forbidden to use request access', async () => {
+    const settings: Partial<BasicStoreSettings> = {
+      valid_enterprise_edition: false,
+      platform_organization: TEST_ORGANIZATION.id
+    };
+
+    const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+    };
+
+    const isRequestAccessEnabled = await verifyRequestAccessEnabled(testContext, ADMIN_USER, settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    expect(isRequestAccessEnabled.enabled).toBeFalsy();
+    expect(isRequestAccessEnabled.message).toBe('');
+  });
+
+  it('should request access be disabled when there is no platform organization', async () => {
+    const settings: Partial<BasicStoreSettings> = {
+      valid_enterprise_edition: true
+    };
+
+    const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+    };
+
+    const isRequestAccessEnabled = await verifyRequestAccessEnabled(testContext, ADMIN_USER, settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    expect(isRequestAccessEnabled.enabled).toBeFalsy();
+    expect(isRequestAccessEnabled.message).toBe('');
+  });
+
+  it('should request access be disabled when admin group is not setup', async () => {
+    const settings: Partial<BasicStoreSettings> = {
+      valid_enterprise_edition: true,
+      platform_organization: TEST_ORGANIZATION.id
+    };
+
+    const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+      request_access_workflow: {
+        approval_admin: [],
+        approved_workflow_id: '1234',
+        declined_workflow_id: '5678'
+      }
+    };
+
+    const isRequestAccessEnabled = await verifyRequestAccessEnabled(testContext, ADMIN_USER, settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    expect(isRequestAccessEnabled.enabled).toBeFalsy();
+    expect(isRequestAccessEnabled.message).toBe('');
+  });
+
+  it('should request access be disabled when approved_workflow_id or declined_workflow_id is not setup', async () => {
+    const settings: Partial<BasicStoreSettings> = {
+      valid_enterprise_edition: true,
+      platform_organization: TEST_ORGANIZATION.id
+    };
+
+    const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+      request_access_workflow: {
+        approval_admin: [GREEN_GROUP.id],
+      }
+    };
+
+    const isRequestAccessEnabled = await verifyRequestAccessEnabled(testContext, ADMIN_USER, settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    expect(isRequestAccessEnabled.enabled).toBeFalsy();
+    expect(isRequestAccessEnabled.message).toBe('');
+  });
+
+  it('should request access be enabled when everything is configured', async () => {
+    const settings: Partial<BasicStoreSettings> = {
+      valid_enterprise_edition: true,
+      platform_organization: TEST_ORGANIZATION.id
+    };
+
+    const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+      request_access_workflow: {
+        approval_admin: [GREEN_GROUP.id],
+        approved_workflow_id: '1234',
+        declined_workflow_id: '5678'
+      }
+    };
+
+    const isRequestAccessEnabled = await verifyRequestAccessEnabled(testContext, ADMIN_USER, settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    expect(isRequestAccessEnabled.enabled).toBeTruthy();
   });
 });

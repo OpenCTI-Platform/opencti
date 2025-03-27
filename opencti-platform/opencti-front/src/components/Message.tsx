@@ -40,6 +40,10 @@ const Message = () => {
     isEnterpriseEdition = useEnterpriseEdition();
     const { isRequestAccessEnabled, isFeatureEnable } = useHelper();
     isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF') && isRequestAccessEnabled() && isEnterpriseEdition;
+    console.log(`isRequestAccessEnabled:${isRequestAccessEnabled}`);
+    console.log(`isFeatureEnable('ORGA_SHARING_REQUEST_FF'):${isFeatureEnable('ORGA_SHARING_REQUEST_FF')}`);
+    console.log(`isEnterpriseEdition:${isEnterpriseEdition}`);
+    console.log(`===> isRequestAccessFeatureEnabled:${isRequestAccessFeatureEnabled}`);
   } catch (e) {
     // When called being unauthenticated there is no useAuth()
   }
@@ -90,7 +94,7 @@ const Message = () => {
   const entityIds = fullError?.extensions?.data?.entityIds || [];
 
   const displayAlert = () => {
-    if (fullError?.extensions?.code === 'ACCESS_REQUIRED') {
+    if (isRequestAccessFeatureEnabled && fullError?.extensions?.code === 'ACCESS_REQUIRED') {
       return (
         <Alert
           severity="error"
