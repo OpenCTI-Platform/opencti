@@ -102,11 +102,11 @@ ExternalReferencesFieldProps
     value: string;
     entity?: {
       created?: string;
-      description?: string | null;
-      external_id?: string | null;
+      description: string | null;
+      external_id: string | null;
       id: string;
-      source_name?: string;
-      url?: string | null;
+      source_name: string;
+      url: string | null;
     };
   }[]
   >([]);
@@ -130,7 +130,6 @@ ExternalReferencesFieldProps
         filterGroups: [],
       };
     }
-    console.log('event:', event);
     fetchQuery(externalReferencesQueriesSearchQuery, {
       search: event && event.target.value,
       filters,
@@ -161,14 +160,11 @@ ExternalReferencesFieldProps
             entity: n.node,
           }));
         console.log('newExternalReferences', newExternalReferences);
-        setExternalReferences(newExternalReferences);
+        setExternalReferences((o) => union(take(50, o), newExternalReferences));
         console.log('externalReferences', externalReferences);
       });
   };
-  const getExternalReferences = () => {
-    console.log('get externalReferences', externalReferences);
-    return externalReferences;
-  };
+
   return (
     <>
       <Field
@@ -186,7 +182,7 @@ ExternalReferencesFieldProps
           required,
         }}
         noOptionsText={t_i18n('No available options')}
-        options={getExternalReferences()}
+        options={externalReferences}
         onInputChange={searchExternalReferences}
         openCreate={handleOpenExternalReferenceCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
