@@ -229,7 +229,6 @@ export const computeAuthorizedMembersForRequestAccess = async (context: AuthCont
   } else {
     // Fallback to platform organization
     const platformOrganizationId = await getPlatformOrganizationId(context, user);
-    logApp.info(`ANGIE platformOrganizationId = ${platformOrganizationId}`);
     for (let adminI = 0; adminI < approvalAdmins.length; adminI += 1) {
       authorizedMembers.push({
         id: platformOrganizationId,
