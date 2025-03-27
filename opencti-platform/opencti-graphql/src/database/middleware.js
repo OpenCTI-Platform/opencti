@@ -225,6 +225,8 @@ import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -3100,7 +3102,9 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
       // If nothing accessible for this user, throw ForbiddenAccess
       if (filteredEntities.length === 0) {
-        if (isFeatureEnabled(ORGA_SHARING_REQUEST_FF)) {
+        const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+        const rfiSetting = await getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
+        if (isFeatureEnabled(ORGA_SHARING_REQUEST_FF) && isRequestAccessEnabled(context, user, settings, rfiSetting)) {
           const entitiesThatRequiresAccess = await canRequestAccess(context, user, existingEntities);
           if (entitiesThatRequiresAccess.length > 0) {
             throw AccessRequiredError('Restricted entity already exists, user can request access', { entityIds: entitiesThatRequiresAccess.map((value) => value.internal_id) });
