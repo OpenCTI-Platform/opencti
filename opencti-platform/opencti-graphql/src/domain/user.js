@@ -5,7 +5,7 @@ import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { ACCOUNT_STATUS_ACTIVE, ACCOUNT_STATUS_EXPIRED, ACCOUNT_STATUSES, BUS_TOPICS, DEFAULT_ACCOUNT_STATUS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, refreshCacheForEntity } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
@@ -671,7 +671,6 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       throw ForbiddenAccess();
     }
   }
-  let refreshUserNeeded = false;
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (input.key === 'password') {
@@ -694,10 +693,6 @@ export const userEditField = async (context, user, userId, rawInputs) => {
       inputs.push({ key: 'account_status', value: [ACCOUNT_STATUS_EXPIRED] });
       await killUserSessions(userId);
     }
-    if (input.key === 'user_confidence_level') {
-      // user's effective level might have changed, we need to refresh session info
-      refreshUserNeeded = true;
-    }
     if (input.key === 'draft_context') {
       // draft context might have changed, we need to check draft context exists and refresh session info
       const draftContext = R.head(input.value)?.toString();
@@ -707,7 +702,6 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         if (!draftWorkspace) throw DraftLockedError('Could not find draft workspace');
         if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) throw DraftLockedError('Can not move to a draft not in an open state');
       }
-      refreshUserNeeded = true;
     }
     if (input.key === 'unit_system') {
       const unit = R.head(input.value).toString();
@@ -729,9 +723,6 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
-  /* if (refreshUserNeeded) { // TODO remove ?
-    await refreshCacheForEntity(element); // Me edit must reset the local cache directly
-  } */
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
@@ -1169,7 +1160,7 @@ export const userAddIndividual = async (context, user) => {
   const individualInput = { name: targetUser.name, contact_information: targetUser.user_email };
   // We need to bypass validation here has we maybe not setup all require fields
   const individual = await addIndividual(context, targetUser, individualInput, { bypassValidation: true });
-  await refreshCacheForEntity(targetUser); // Auto add must reset the local cache directly
+  // await refreshCacheForEntity(targetUser); // Auto add must reset the local cache directly
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user).then(() => individual);
 };
 
