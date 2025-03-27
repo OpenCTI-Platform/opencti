@@ -225,7 +225,7 @@ const Notifications: FunctionComponent = () => {
       label: 'Trigger name',
       percentWidth: 12,
       isSortable: isRuntimeSort,
-      render: ({ notification_content, notification_type }, { storageHelpers: { handleAddFilter } }) => {
+      render: ({ notification_content, notification_type, name }, { storageHelpers: { handleAddFilter } }) => {
         console.log({ notification_content, notification_type });
         return (
           <div style={{ height: 20,
@@ -236,7 +236,7 @@ const Notifications: FunctionComponent = () => {
             textOverflow: 'ellipsis',
             paddingRight: 10 }}
           >
-            <Tooltip title={notification_content[0].title ?? '-'}>
+            <Tooltip title={name ?? '-'}>
               <Chip
                 style={{ fontSize: 12,
                   height: 20,
@@ -249,11 +249,11 @@ const Notifications: FunctionComponent = () => {
                   : 'secondary'
               }
                 variant="outlined"
-                label={notification_content[0].title ?? '-'}
+                label={name ?? '-'}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  handleAddFilter('name', notification_content[0].title, 'eq');
+                  handleAddFilter('name', name, 'eq');
                 }}
               />
             </Tooltip>
