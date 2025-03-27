@@ -45,7 +45,7 @@ describe('Telemetry manager test coverage', () => {
     expect(filigranTelemetryMeterManager.disseminationCount).toBe(DISSEMINATION_EVENT_NODE1 + DISSEMINATION_EVENT_NODE2);
     expect(filigranTelemetryMeterManager.instancesCount).toBe(1);
     expect(filigranTelemetryMeterManager.isEEActivated).toBe(1); // 1 mean true
-    // filigranTelemetryMeterManager.activeConnectorsCount : count cannot be verify there are many ways to create internal connectors.
+    // filigranTelemetryMeterManager.activeConnectorsCount : count cannot be verified since there are many ways to create internal connectors.
     // expect(filigranTelemetryMeterManager.draftCount).toBe(getCounterTotal(ENTITY_TYPE_DRAFT_WORKSPACE));
     // expect(filigranTelemetryMeterManager.workbenchCount).toBe(getCounterTotal(ENTITY_TYPE_WORKSPACE));
   });
