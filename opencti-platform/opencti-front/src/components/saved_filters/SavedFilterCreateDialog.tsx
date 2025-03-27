@@ -63,7 +63,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose }: SavedFilterDialogProps) =>
       },
       updater: (store) => {
         const scopeFilter = getSavedFilterScopeFilter(localStorageKey);
-        insertNode(store, 'SavedFilters__savedFilters', { filters: scopeFilter }, 'savedFilterAdd');
+        insertNode(store, 'SavedFilters_savedFilters', { filters: scopeFilter }, 'savedFilterAdd');
       },
       onCompleted: () => {
         onClose();
@@ -86,7 +86,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose }: SavedFilterDialogProps) =>
       <DialogContent>
         <TextField
           label={t_i18n('Name')}
-          placeholder={t_i18n('my saved filter')}
+          placeholder={t_i18n('My saved filter')}
           fullWidth
           value={filterName}
           onChange={handleChange}

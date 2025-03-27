@@ -8,7 +8,7 @@ import SavedFilterSelection from './SavedFilterSelection';
 
 const savedFiltersQuery = graphql`
   query SavedFiltersQuery($filters: FilterGroup) {
-    savedFilters(first: 100, filters: $filters) @connection(key: "SavedFilters__savedFilters") {
+    savedFilters(first: 100, filters: $filters) @connection(key: "SavedFilters_savedFilters") {
       edges {
         node {
           id

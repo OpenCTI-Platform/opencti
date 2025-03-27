@@ -89,6 +89,7 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
   return (
     <>
       <Autocomplete
+        key={selectedSavedFilter?.label}
         value={selectedSavedFilter}
         autoHighlight
         disabled={isDisabled}
@@ -104,7 +105,7 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
             {...params}
             variant="outlined"
             size="small"
-            label={t_i18n('Select saved filters')}
+            label={t_i18n('Select saved filter')}
           />
         )}
       />
