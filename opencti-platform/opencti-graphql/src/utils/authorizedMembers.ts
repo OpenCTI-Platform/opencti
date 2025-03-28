@@ -31,12 +31,11 @@ export const getAuthorizedMembers = async (
   user: AuthUser,
   entity: BasicStoreEntity
 ): Promise<MemberAccess[]> => {
-  let authorizedMembers: MemberAccess[] = [];
   if (isEmptyField(entity.restricted_members)) {
-    return authorizedMembers;
+    return [];
   }
   if (!validateUserAccessOperation(user, entity, 'manage-access')) {
-    return authorizedMembers; // return empty if user doesn't have the right access_right
+    return []; // return empty if user doesn't have the right access_right
   }
   const membersIds = (entity.restricted_members ?? []).map((e) => e.id);
   const args = {
@@ -49,17 +48,25 @@ export const getAuthorizedMembers = async (
     },
   };
   const members = await findAllMembers(context, user, args);
-  authorizedMembers = (entity.restricted_members ?? []).map((currentAuthMember) => {
+  return Promise.all((entity.restricted_members ?? []).map(async (currentAuthMember) => {
     const member = members.find((m) => (m as BasicStoreEntity).id === currentAuthMember.id) as BasicStoreEntity;
     let groups_restriction: MemberGroupRestriction[] = [];
     if (currentAuthMember.groups_restriction_ids) {
-      groups_restriction = currentAuthMember.groups_restriction_ids.map((groupId: string) => {
-        return { id: groupId, name: 'TODO' }; // TODO FIX TODO
-      });
+      groups_restriction = await Promise.all(
+        currentAuthMember.groups_restriction_ids.map(async (groupId: string) => {
+          const group = (await findGroup(context, user, groupId)) as unknown as BasicGroupEntity;
+          return { id: groupId, name: group.name };
+        })
+      );
     }
-    return { id: currentAuthMember.id, name: member?.name ?? '', entity_type: member?.entity_type ?? '', access_right: currentAuthMember.access_right, groups_restriction };
-  });
-  return authorizedMembers;
+    return {
+      id: currentAuthMember.id,
+      name: member?.name ?? '',
+      entity_type: member?.entity_type ?? '',
+      access_right: currentAuthMember.access_right,
+      groups_restriction
+    };
+  }));
 };
 
 export const containsValidAdmin = async (

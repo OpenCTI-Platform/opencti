@@ -375,12 +375,18 @@ const AuthorizedMembersField = ({
                         <Typography>{t_i18n('Advanced options')}</Typography>
                       </AccordionSummary>
                       <AccordionDetails>
+                        <Alert
+                          severity="info"
+                        >
+                          {t_i18n('Restrict access by selecting groups to intersect with the organization\'s access rights')}
+                        </Alert>
                         <ObjectMembersField
                           name="groupsRestriction"
-                          label={'Groups'}
+                          label={t_i18n('Groups restriction')}
                           disabled={!values.applyAccesses}
                           entityTypes={['Group']}
                           multiple
+                          style={fieldSpacingContainerStyle}
                         />
                       </AccordionDetails>
                     </Accordion>
