@@ -185,7 +185,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         selectAll={selectAll}
         numberOfElements={numberOfElements}
         filters={filters}
-        availableEntityTypes={stixCoreObjectTypes}
+        availableEntityTypes={relationshipTypes}
         availableRelationshipTypes={relationshipTypes}
         handleToggleExports={storageHelpers.handleToggleExports}
         openExports={openExports}
