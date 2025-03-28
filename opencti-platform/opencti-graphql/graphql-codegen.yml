@@ -45,9 +45,11 @@ generates:
         IngestionTaxiiCollection: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionTaxiiCollection
         Indicator: ../modules/indicator/indicator-types#BasicStoreEntityIndicator
         IngestionCsv: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionCsv
+        IngestionJson: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionJson
         DecayRule: ../modules/decayRule/decayRule-types#BasicStoreEntityDecayRule
         Organization: ../modules/organization/organization-types#BasicStoreEntityOrganization
         CsvMapper: ../modules/internal/csvMapper/csvMapper-types#BasicStoreEntityCsvMapper
+        JsonMapper: ../modules/internal/jsonMapper/jsonMapper-types#BasicStoreEntityJsonMapper
         Playbook: ../modules/playbook/playbook-types#BasicStoreEntityPlaybook
         PublicDashboard: ../modules/publicDashboard/publicDashboard-types#BasicStoreEntityPublicDashboard
         DeleteOperation: ../modules/deleteOperation/deleteOperation-types#BasicStoreEntityDeleteOperation
