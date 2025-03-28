@@ -107,6 +107,11 @@ const Stream = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
+        createButton={
+          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+            <StreamCollectionCreation paginationOptions={paginationOptions} />
+          </Security>
+        }
       >
         <QueryRenderer
           query={StreamLinesQuery}
@@ -133,9 +138,6 @@ const Stream = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('Live streams'), current: true }]} />
       <SharingMenu/>
       {streamState.view === 'lines' ? renderLines(paginationOptions) : ''}
-      <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-        <StreamCollectionCreation paginationOptions={paginationOptions} />
-      </Security>
     </div>
   );
 };
