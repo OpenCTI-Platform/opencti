@@ -8,7 +8,6 @@ import { type BasicStoreEntityOrganization } from '../../../src/modules/organiza
 import { addThreatActorIndividual } from '../../../src/modules/threatActorIndividual/threatActorIndividual-domain';
 import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { isFeatureEnabled, ORGA_SHARING_REQUEST_FF } from '../../../src/config/conf';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { DEFAULT_ROLE } from '../../../src/utils/access';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
