@@ -48,6 +48,5 @@ export const verifyRequestAccessEnabled = (settings: BasicStoreSettings, rfiEnti
 // This one has no dependency on request access domain and can be used in middleware
 export const isRequestAccessEnabled = (settings: BasicStoreSettings, rfiEntitySettings: BasicStoreEntityEntitySetting) => {
   const result = verifyRequestAccessEnabled(settings, rfiEntitySettings);
-  logApp.info('[REQUEST ACCESS] Request access enabled: ', { result });
   return result.enabled === true;
 };

@@ -52,12 +52,11 @@ const Message = () => {
       next: (messages) => {
         if (messages && messages.length > 0 && messages[0]) {
           const firstMessage = messages[0] as { text: string | ReactElement, type: string, fullError: FullError | null };
-          console.log(`firstMessage.text:${firstMessage.text}`);
-          const translatedText = firstMessage.text instanceof String
-            ? t_i18n(firstMessage.text)
-            : firstMessage.text;
+          const textPart = firstMessage.text;
+          const translatedText = (typeof textPart === 'string' || textPart instanceof String)
+            ? t_i18n(textPart)
+            : textPart;
           const firstMessageError = firstMessage.type === 'error';
-          console.log(`translatedText:${translatedText}`);
           setOpen(true);
           setFullError(firstMessage.fullError || null);
           setError(firstMessageError);
