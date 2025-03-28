@@ -13,7 +13,6 @@ import './attributes/stixSightingRelationship-registrationAttributes';
 import './attributes/stixCyberObservable-registrationAttributes';
 import './attributes/stixMetaObject-registrationAttributes';
 // endregion
-
 // region registration ref, need to be imported before any other modules
 import './relationsRef/stixCoreObject-registrationRef';
 import './relationsRef/stixDomainObject-registrationRef';
@@ -23,7 +22,6 @@ import './relationsRef/internalObject-registrationRef';
 import './relationsRef/stixMetaObject-registrationRef';
 import './relationsRef/stixCyberObservable-registrationRef';
 // endregion
-
 // region registration modules, need to be imported before graphql code registration
 import './channel/channel';
 import './language/language';
@@ -53,11 +51,13 @@ import './playbook/playbook';
 import './ingestion/ingestion-rss';
 import './ingestion/ingestion-taxii';
 import './ingestion/ingestion-csv';
+import './ingestion/ingestion-json';
 import './ingestion/ingestion-taxii-collection';
 import './indicator/indicator';
 import './decayRule/decayRule';
 import './organization/organization';
 import './internal/csvMapper/csvMapper';
+import './internal/jsonMapper/jsonMapper';
 import './internal/document/document';
 import './publicDashboard/publicDashboard';
 import './deleteOperation/deleteOperation';
@@ -85,7 +85,6 @@ import './vulnerability/vulnerability';
 import './attackPattern/attackPattern';
 import './courseOfAction/courseOfAction';
 // endregion
-
 // region graphql registration
 import './channel/channel-graphql';
 import './language/language-graphql';
@@ -116,10 +115,12 @@ import './ingestion/ingestion-rss-graphql';
 import './ingestion/ingestion-taxii-graphql';
 import './ingestion/ingestion-taxii-collection-graphql';
 import './ingestion/ingestion-csv-graphql';
+import './ingestion/ingestion-json-graphql';
 import './indicator/indicator-graphql';
 import './decayRule/decayRule-graphql';
 import './organization/organization-graphql';
 import './internal/csvMapper/csvMapper-graphql';
+import './internal/jsonMapper/jsonMapper-graphql';
 import './publicDashboard/publicDashboard-graphql';
 import './ai/ai-graphql';
 import './xtm/xtm-graphql';
