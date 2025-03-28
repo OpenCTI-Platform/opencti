@@ -607,7 +607,7 @@ const testIngestion: BasicStoreEntityIngestionJson = {
   verb: 'post',
   // body: 'select * from customer',
   body: 'select * from customer OFFSET $offset LIMIT 10',
-  json_parser_id: 'parser4',
+  json_mapper_id: 'parser4',
   // ==== Specific for api that require sub queries (like trino)
   pagination_with_sub_page: true,
   pagination_with_sub_page_attribute_path: '$.nextUri',
@@ -701,7 +701,7 @@ const replaceVariables = (body: string, variables: Record<string, object>) => {
     return match;
   });
 };
-export const jsonExecutor = async (context: AuthContext) => {
+export const jsonExecutor = async (_context: AuthContext) => {
   // console.log('ingestionState', ingestionState);
   // const filters = {
   //   mode: 'and',
@@ -741,7 +741,7 @@ export const jsonExecutor = async (context: AuthContext) => {
     const parsedBody = replaceVariables(ingestion.body, variables);
     console.log(`> Main query: ${ingestion.uri}`, parsedBody);
     const { data: requestData, headers: responseHeaders } = await httpClient.call({ method: ingestion.verb, url: ingestion.uri, data: parsedBody, params });
-    const bundle = await jsonMappingExecution({}, requestData, jsonParsers[ingestion.json_parser_id]);
+    const bundle = await jsonMappingExecution({}, requestData, jsonParsers[ingestion.json_mapper_id]);
     let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
     // region Try to paginate with next page style
     if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
@@ -753,7 +753,7 @@ export const jsonExecutor = async (context: AuthContext) => {
         const { data: paginationData } = await httpClient.call({ method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb, url, data: ingestion.body, params });
         const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
         nextExecutionState = { ...nextExecutionState, ...paginationVariables };
-        const paginationBundle = await jsonMappingExecution({}, paginationData, jsonParsers[ingestion.json_parser_id]);
+        const paginationBundle = await jsonMappingExecution({}, paginationData, jsonParsers[ingestion.json_mapper_id]);
         if (paginationBundle.objects.length > 0) {
           bundle.objects = bundle.objects.concat(paginationBundle.objects);
         }

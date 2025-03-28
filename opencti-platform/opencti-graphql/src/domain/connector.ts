@@ -19,13 +19,13 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../types/connector';
 import {
   ConnectorType,
-  ValidationMode,
   type EditContext,
   type EditInput,
   type MutationSynchronizerTestArgs,
   type RegisterConnectorInput,
   type SynchronizerAddInput,
   type SynchronizerFetchInput,
+  ValidationMode,
 } from '../generated/graphql';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
@@ -233,7 +233,7 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
 // region syncs
 interface ConnectorIngestionInput {
   id: string,
-  type: 'RSS' | 'CSV' | 'TAXII' | 'TAXII-PUSH',
+  type: 'RSS' | 'CSV' | 'TAXII' | 'TAXII-PUSH' | 'JSON',
   name: string,
   connector_user_id?: string | null,
   is_running: boolean
