@@ -1145,6 +1145,7 @@
   "entity_Indicator": "Indicator",
   "entity_Individual": "Individual",
   "entity_Infrastructure": "Infrastructure",
+  "entity_IngestionTaxii": "Taxii Ingester",
   "entity_InternalFile": "File",
   "entity_Intrusion-Set": "Intrusion Set",
   "entity_Investigation": "Investigation",

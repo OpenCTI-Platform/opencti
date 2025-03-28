@@ -19,6 +19,8 @@ import SelectField from '../../../../components/fields/SelectField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const styles = (theme) => ({
   buttons: {
@@ -58,8 +60,20 @@ const ingestionTaxiiCreationValidation = (t) => Yup.object().shape({
   confidence_to_score: Yup.bool().nullable(),
 });
 
+const CreateIngestionTaxiiControlledDial = (props) => (
+  <CreateEntityControlledDial
+    entityType='IngestionTaxii'
+    size='medium'
+    {...props}
+  />
+);
+
 const IngestionTaxiiCreation = (props) => {
   const { t, classes } = props;
+
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const authentifcationValueResolved = getAuthenticationValue(values);
 
@@ -99,7 +113,8 @@ const IngestionTaxiiCreation = (props) => {
   return (
     <Drawer
       title={t('Create a TAXII ingester')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced ? CreateIngestionTaxiiControlledDial : undefined}
     >
       {({ onClose }) => (
         <Formik
