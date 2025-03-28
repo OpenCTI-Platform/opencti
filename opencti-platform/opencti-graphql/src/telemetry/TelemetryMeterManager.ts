@@ -27,6 +27,9 @@ export class TelemetryMeterManager {
   // Number of active workbenches
   workbenchCount = 0;
 
+  // Number of NLQ query call
+  nlqQueryCount = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -63,6 +66,10 @@ export class TelemetryMeterManager {
     this.workbenchCount = n;
   }
 
+  setNlqQueryCount(n: number) {
+    this.nlqQueryCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
@@ -84,5 +91,6 @@ export class TelemetryMeterManager {
     this.registerGauge('call_dissemination', 'dissemination feature usage', 'disseminationCount');
     this.registerGauge('active_drafts_count', 'number of active drafts', 'draftCount');
     this.registerGauge('active_workbenches_count', 'number of active workbenches', 'workbenchCount');
+    this.registerGauge('call_nlq', 'NLQ feature usage', 'nlqQueryCount');
   }
 }

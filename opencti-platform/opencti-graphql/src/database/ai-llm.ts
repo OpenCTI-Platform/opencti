@@ -12,6 +12,7 @@ import type { AuthUser } from '../types/user';
 import { truncate } from '../utils/format';
 import { notify } from './redis';
 import { isEmptyField } from './utils';
+import { addNlqQueryCount } from '../manager/telemetryManager';
 
 const AI_ENABLED = conf.get('ai:enabled');
 const AI_TYPE = conf.get('ai:type');
@@ -180,6 +181,8 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
       model: AI_MODEL,
     });
   }
+
+  await addNlqQueryCount();
 
   logApp.info('[NLQ] Querying AI model for structured output');
   try {
