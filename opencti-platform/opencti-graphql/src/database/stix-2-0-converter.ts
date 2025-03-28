@@ -1,0 +1,79 @@
+import type { StoreEntity, StoreObject, StoreRelation } from '../types/store';
+import type * as S from '../types/stix-2-0-common';
+import type * as SDO from '../types/stix-2-0-sdo';
+import type * as SMO from '../types/stix-2-0-smo';
+import { assertType, convertToStixDate, convertTypeToStixType, cleanObject } from './stix-converter';
+import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
+import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_MALWARE } from '../schema/stixDomainObject';
+
+// Meta
+const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Array<SMO.StixInternalKillChainPhase> => {
+  return (instance[INPUT_KILLCHAIN] ?? []).map((k) => {
+    const data: SMO.StixInternalKillChainPhase = {
+      kill_chain_name: k.kill_chain_name,
+      phase_name: k.phase_name,
+      x_opencti_order: k.x_opencti_order, // TODO external_id and hashes ?
+    };
+    return cleanObject(data);
+  });
+};
+
+const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalExternalReference> => {
+  return (instance[INPUT_EXTERNAL_REFS] ?? []).map((e) => {
+    const data: SMO.StixInternalExternalReference = {
+      source_name: e.source_name,
+      description: e.description,
+      url: e.url,
+    };
+    return cleanObject(data);
+  });
+};
+
+// Builders
+const buildStixObject = (instance: StoreObject): S.StixObject2 => {
+  return {
+    id: instance.standard_id,
+    x_opencti_id: instance.id,
+    spec_version: '2.0',
+    x_opencti_type: ENTITY_TYPE_MALWARE,
+    type: convertTypeToStixType(instance.entity_type),
+    x_opencti_granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id)
+  };
+};
+
+// General
+const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject2 => {
+  return {
+    ...buildStixObject(instance),
+    created: convertToStixDate(instance.created),
+    modified: convertToStixDate(instance.modified),
+    revoked: instance.revoked,
+    confidence: instance.confidence,
+    // lang: instance.lang,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    object_marking_refs: (instance[INPUT_MARKINGS] ?? []).map((m) => m.standard_id),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+  };
+};
+
+export const convertMalwareToStix2 = (instance: StoreEntity, type: string): SDO.StixMalware2 => {
+  assertType(ENTITY_TYPE_MALWARE, type);
+  return {
+    ...buildStixDomain(instance),
+    name: instance.name,
+    description: instance.description,
+    malware_types: instance.malware_types,
+    is_family: instance.is_family,
+    aliases: instance.aliases,
+    kill_chain_phases: buildKillChainPhases(instance),
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
+    architecture_execution_envs: instance.architecture_execution_envs,
+    implementation_languages: instance.implementation_languages,
+    capabilities: instance.capabilities,
+    operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
+    sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
+  };
+};

@@ -5,7 +5,7 @@ import type { StixInternalExternalReference } from './stix-smo';
 import { AuthorizedMember } from '../utils/access';
 
 export type StixDate = string | undefined;
-type StixId = `${string}--${v4 | v5}`;
+export type StixId = `${string}--${v4 | v5}`;
 
 export type StixKillChainPhase = {
   kill_chain_name: string;
