@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -19,6 +19,8 @@ import { isStixNestedRefRelationship } from '../../../utils/Relation';
 import StixMetaObjectDetails from './StixMetaObjectDetails';
 import BasicRelationshipDetails from './BasicRelationshipDetails';
 import { GraphLink, GraphNode, isGraphLink, isGraphNode } from '../graph.types';
+import { useGraphContext } from '../GraphContext';
+import useGraphInteractions from '../utils/useGraphInteractions';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -42,15 +44,24 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
-interface EntityDetailsRightsBarProps {
-  selectedEntities: (GraphNode | GraphLink)[];
-}
-const EntitiesDetailsRightsBar: FunctionComponent<
-EntityDetailsRightsBarProps
-> = ({ selectedEntities }) => {
+const EntitiesDetailsRightsBar = () => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { selectDetailsPreviewObject } = useGraphInteractions();
+
+  const {
+    graphState: {
+      selectedNodes,
+      selectedLinks,
+      detailsPreviewSelected,
+    },
+  } = useGraphContext();
+
+  const selectedEntities = useMemo(() => {
+    return [...selectedLinks, ...selectedNodes];
+  }, [selectedLinks, selectedNodes]);
+
   const uniqSelectedEntities = selectedEntities
     .map((n) => {
       if (
@@ -69,28 +80,36 @@ EntityDetailsRightsBarProps
       }
       return n;
     });
-  const [selectedEntity, setSelectedEntity] = useState(uniqSelectedEntities[0]);
+
   useEffect(() => {
-    if (uniqSelectedEntities[0] !== selectedEntity) {
-      setSelectedEntity(uniqSelectedEntities[0]);
+    if (uniqSelectedEntities[0].id !== detailsPreviewSelected?.id) {
+      selectDetailsPreviewObject(uniqSelectedEntities[0]);
     }
   }, [selectedEntities]);
+
   const handleSelectEntity = (event: SelectChangeEvent) => {
     const { value } = event.target;
     const entity = selectedEntities.find((el) => el.id === value);
     if (!entity) {
-      setSelectedEntity(uniqSelectedEntities[0]);
+      selectDetailsPreviewObject(uniqSelectedEntities[0]);
     } else {
-      setSelectedEntity(entity);
+      selectDetailsPreviewObject(entity);
     }
   };
-  const hasOverviewPage = !selectedEntity.parent_types.some((el) => isStixNestedRefRelationship(el))
-    && (!selectedEntity.parent_types.includes('Stix-Meta-Object')
-      || selectedEntity.entity_type === 'External-Reference')
-    && selectedEntity.entity_type !== 'basic-relationship';
-  const entityUrl = selectedEntity.entity_type === 'External-Reference'
-    ? `/dashboard/analyses/external_references/${selectedEntity.id}`
-    : `/dashboard/id/${selectedEntity.id}`;
+
+  if (!detailsPreviewSelected) {
+    return null;
+  }
+
+  const hasOverviewPage = !detailsPreviewSelected.parent_types.some((el) => isStixNestedRefRelationship(el))
+    && (!detailsPreviewSelected.parent_types.includes('Stix-Meta-Object')
+      || detailsPreviewSelected.entity_type === 'External-Reference')
+    && detailsPreviewSelected.entity_type !== 'basic-relationship';
+
+  const entityUrl = detailsPreviewSelected.entity_type === 'External-Reference'
+    ? `/dashboard/analyses/external_references/${detailsPreviewSelected.id}`
+    : `/dashboard/id/${detailsPreviewSelected.id}`;
+
   return (
     <Drawer
       open={true}
@@ -118,7 +137,7 @@ EntityDetailsRightsBarProps
             label={t_i18n('Object')}
             fullWidth={true}
             onChange={handleSelectEntity}
-            value={selectedEntity.id}
+            value={detailsPreviewSelected.id}
             variant="outlined"
           >
             {uniqSelectedEntities.map((entity) => (
@@ -153,18 +172,18 @@ EntityDetailsRightsBarProps
           paddingRight: 20,
         }}
       >
-        {selectedEntity.entity_type === 'basic-relationship' && (
-          <BasicRelationshipDetails relation={selectedEntity as GraphLink} />
+        {detailsPreviewSelected.entity_type === 'basic-relationship' && (
+          <BasicRelationshipDetails relation={detailsPreviewSelected as GraphLink} />
         )}
-        {selectedEntity.parent_types.includes('stix-relationship')
-          && selectedEntity.entity_type !== 'basic-relationship' && (
-            <RelationshipDetails relation={selectedEntity as GraphLink} />
+        {detailsPreviewSelected.parent_types.includes('stix-relationship')
+          && detailsPreviewSelected.entity_type !== 'basic-relationship' && (
+            <RelationshipDetails relation={detailsPreviewSelected as GraphLink} />
         )}
-        {selectedEntity.parent_types.includes('Stix-Core-Object') && (
-          <EntityDetails entity={selectedEntity as GraphNode} />
+        {detailsPreviewSelected.parent_types.includes('Stix-Core-Object') && (
+          <EntityDetails entity={detailsPreviewSelected as GraphNode} />
         )}
-        {selectedEntity.parent_types.includes('Stix-Meta-Object') && (
-          <StixMetaObjectDetails entity={selectedEntity as GraphNode} />
+        {detailsPreviewSelected.parent_types.includes('Stix-Meta-Object') && (
+          <StixMetaObjectDetails entity={detailsPreviewSelected as GraphNode} />
         )}
       </div>
     </Drawer>

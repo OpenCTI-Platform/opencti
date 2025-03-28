@@ -11,7 +11,7 @@ import { graphStateToLocalStorage } from './utils/graphUtils';
 
 type Setter<T> = Dispatch<SetStateAction<T>>;
 
-type GraphRef2D = graph2d.ForceGraphMethods<graph2d.NodeObject<GraphNode>, graph2d.LinkObject<GraphNode, GraphLink>>;
+export type GraphRef2D = graph2d.ForceGraphMethods<graph2d.NodeObject<GraphNode>, graph2d.LinkObject<GraphNode, GraphLink>>;
 type GraphRef3D = graph3d.ForceGraphMethods<graph3d.NodeObject<GraphNode>, graph3d.LinkObject<GraphNode, GraphLink>>;
 
 interface GraphContextValue {
@@ -41,10 +41,10 @@ const GraphContext = createContext<GraphContextValue | undefined>(undefined);
 
 interface GraphProviderProps {
   children: ReactNode
-  localStorageKey: string
-  context?: string
   objects: ObjectToParse[]
-  positions: OctiGraphPositions
+  localStorageKey?: string
+  context?: string
+  positions?: OctiGraphPositions
 }
 
 export const GraphProvider = ({
@@ -82,14 +82,18 @@ export const GraphProvider = ({
 
   const [graphState, setGraphState] = useState<GraphState>(() => {
     // Load initial state for URL and local storage.
-    const params = buildViewParamsFromUrlAndStorage(navigate, location, localStorageKey);
+    const params = localStorageKey
+      ? buildViewParamsFromUrlAndStorage(navigate, location, localStorageKey)
+      : {};
     return { ...DEFAULT_STATE, ...params };
   });
 
   useEffect(() => {
-    // On state change, update URL and local storage.
-    const stateToSave = graphStateToLocalStorage(graphState);
-    saveViewParameters(navigate, location, localStorageKey, stateToSave);
+    if (localStorageKey) {
+      // On state change, update URL and local storage.
+      const stateToSave = graphStateToLocalStorage(graphState);
+      saveViewParameters(navigate, location, localStorageKey, stateToSave);
+    }
   }, [graphState]);
 
   useEffect(() => {
@@ -100,9 +104,9 @@ export const GraphProvider = ({
     }));
   }, [graphState.selectedNodes]);
 
-  const [rawPositions, setRawPositions] = useState(positions);
+  const [rawPositions, setRawPositions] = useState(positions ?? {});
   useEffect(() => {
-    setRawPositions(positions);
+    setRawPositions(positions ?? {});
   }, [positions]);
 
   const [graphData, setGraphData] = useState<LibGraphProps['graphData']>();

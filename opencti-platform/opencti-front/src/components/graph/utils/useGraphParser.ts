@@ -5,7 +5,6 @@ import { defaultDate, getMainRepresentative } from '../../../utils/defaultRepres
 import type { OctiGraphPositions, GraphLink, GraphNode } from '../graph.types';
 import { truncate } from '../../../utils/String';
 import GRAPH_IMAGES from './graphImages';
-import { graphImages } from '../../../utils/Graph';
 import { itemColor } from '../../../utils/Colors';
 
 export interface ObjectToParse {
@@ -105,7 +104,7 @@ const useGraphParser = () => {
     const key = data.parent_types.includes('basic-relationship')
       ? 'relationship'
       : data.entity_type;
-    return GRAPH_IMAGES[key] || graphImages.Unknown;
+    return GRAPH_IMAGES[key] || GRAPH_IMAGES.Unknown;
   };
 
   const getNodeName = (data: ObjectToParse) => {

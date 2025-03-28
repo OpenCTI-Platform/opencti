@@ -3,21 +3,26 @@ import SpriteText from 'three-spritetext';
 import { ForceGraphProps } from 'react-force-graph-3d';
 import type { Theme } from '../../Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
-import { useGraphContext } from '../GraphContext';
 
 interface PaintOptions {
   showNbConnectedElements?: boolean
 }
 
-const useGraphPainter = () => {
+interface UseGraphPainterArgs {
+  selectedLinks: GraphLink[]
+  selectedNodes: GraphNode[]
+  detailsPreviewSelected: GraphLink | GraphNode | undefined
+  search: string | undefined
+}
+
+const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const theme = useTheme<Theme>();
   const {
-    graphState: {
-      selectedLinks,
-      selectedNodes,
-      search,
-    },
-  } = useGraphContext();
+    selectedLinks = [],
+    selectedNodes = [],
+    detailsPreviewSelected,
+    search,
+  } = args ?? {};
 
   const DEFAULT_COLOR = '#0fbcff'; // Normally never used (all colors are defined).
   const colors = {
@@ -42,18 +47,21 @@ const useGraphPainter = () => {
     ctx: CanvasRenderingContext2D,
     opts: PaintOptions = {},
   ) => {
-    const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred } = data;
+    const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred, id } = data;
     const { showNbConnectedElements } = opts;
+
+    const hasSelection = selectedNodes.length > 0;
+    const previewSelected = detailsPreviewSelected?.id === id;
     const selected = !!selectedNodes.find((n) => n.id === data.id);
 
-    ctx.globalAlpha = !selected && search ? 0.4 : 1;
+    ctx.globalAlpha = hasSelection && !selected ? 0.3 : 1;
 
     ctx.beginPath();
     ctx.fillStyle = disabled ? colors.disabled : color;
     ctx.arc(x, y, 5, 0, 2 * Math.PI, false);
     ctx.fill();
 
-    if (selected) {
+    if (previewSelected) {
       ctx.lineWidth = 0.8;
       ctx.strokeStyle = colors.selected;
       ctx.stroke();
@@ -129,7 +137,7 @@ const useGraphPainter = () => {
 
     if (!selected && search) return colors.disabled;
     if (selected) return colors.selected;
-    if (link.isNestedInferred) return colors.inferred;
+    if (link.isNestedInferred || link.inferred) return colors.inferred;
     if (link.disabled) return colors.disabled;
     return theme.palette.primary.main;
   };

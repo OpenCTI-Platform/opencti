@@ -13,6 +13,8 @@ const useStyles = makeStyles({
   canvas: {
     position: 'absolute',
     overflow: 'hidden',
+    top: 0,
+    left: 0,
   },
 });
 
