@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
 import { UsersLinesSearchQuery, UsersLinesSearchQuery$variables } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
@@ -25,7 +25,7 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import SearchInput from '../../../../components/SearchInput';
 import { useDataTablePaginationLocalStorage } from '../../../../components/dataGrid/dataTableHooks';
 import useHelper from '../../../../utils/hooks/useHelper';
-import UpdateGroupControlledDial from '../../../../components/UpdateEntityControlledDial';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const groupEditionContainerQuery = graphql`
   query GroupEditionContainerQuery($id: String!) {
@@ -71,6 +71,14 @@ interface GroupEditionContainerProps {
   open?: boolean
   disabled?: boolean
 }
+
+const UpdateGroupControlledDial = (props: DrawerControlledDialProps) => (
+  <EditEntityControlledDial
+    size={'medium'}
+    style={{ float: 'right' }}
+    {...props}
+  />
+);
 
 const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   groupQueryRef,

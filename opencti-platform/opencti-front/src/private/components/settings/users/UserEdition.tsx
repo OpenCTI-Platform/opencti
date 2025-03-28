@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import UserEditionConfidence from './edition/UserEditionConfidence';
 import UserEditionOrganizationsAdmin from './edition/UserEditionOrganizationsAdmin';
@@ -16,7 +16,7 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEditionQuery.graphql';
 import Loader from '../../../../components/Loader';
 import useHelper from '../../../../utils/hooks/useHelper';
-import UpdateUserControlledDial from '../../../../components/UpdateEntityControlledDial';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const UserEditionFragment = graphql`
   fragment UserEdition_user on User
@@ -96,6 +96,14 @@ interface UserEditionDrawerProps {
   userRef: UserPopoverEditionQuery$data['user'];
   open?: boolean;
 }
+
+const UpdateUserControlledDial = (props: DrawerControlledDialProps) => (
+  <EditEntityControlledDial
+    size={'medium'}
+    style={{ float: 'right' }}
+    {...props}
+  />
+);
 
 const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
   handleClose = () => {},
