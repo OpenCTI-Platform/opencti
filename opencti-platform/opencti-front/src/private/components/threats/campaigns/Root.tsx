@@ -146,7 +146,8 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   <CampaignEdition campaignId={campaign.id} />
                 </Security>
               )}
-              enableEnricher={isFABReplaced}
+              enableEnricher={true}
+              enableEnrollPlaybook={true}
               enableQuickSubscription={true}
             />
             <Box
