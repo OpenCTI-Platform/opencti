@@ -4,7 +4,9 @@ import { askSendToken } from './auth-domain';
 const authResolvers: Resolvers = {
   Query: {},
   Mutation: {
-    askSendToken: (_, { email }, context) => askSendToken(context, email)
+    askSendToken: (_, { email }, context) => {
+      return askSendToken(context, email);
+    }
   },
 };
 
