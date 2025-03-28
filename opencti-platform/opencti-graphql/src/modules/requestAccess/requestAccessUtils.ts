@@ -1,16 +1,14 @@
-import type { AuthContext, AuthUser } from '../../types/user';
 import { isFeatureEnabled, logApp } from '../../config/conf';
-import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 
-export const verifyRequestAccessEnabled = async (context: AuthContext, user: AuthUser, settings: BasicStoreSettings, rfiEntitySettings: BasicStoreEntityEntitySetting) => {
+export const verifyRequestAccessEnabled = (settings: BasicStoreSettings, rfiEntitySettings: BasicStoreEntityEntitySetting) => {
   let message = '';
   if (!isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
     return { enabled: false };
   }
   // 1. EE must be enabled
-  const isEEConfigured: boolean = await isEnterpriseEdition(context);
+  const isEEConfigured: boolean = settings.valid_enterprise_edition === true;
   if (!isEEConfigured) {
     message += 'Enterprise edition must be enabled.';
   }
@@ -47,9 +45,9 @@ export const verifyRequestAccessEnabled = async (context: AuthContext, user: Aut
   };
 };
 
-// This one has no dependency on request access domain and can be use in middleware
-export const isRequestAccessEnabled = async (context: AuthContext, user: AuthUser, settings: BasicStoreSettings, rfiEntitySettings: BasicStoreEntityEntitySetting) => {
-  const result = await verifyRequestAccessEnabled(context, user, settings, rfiEntitySettings);
+// This one has no dependency on request access domain and can be used in middleware
+export const isRequestAccessEnabled = (settings: BasicStoreSettings, rfiEntitySettings: BasicStoreEntityEntitySetting) => {
+  const result = verifyRequestAccessEnabled(settings, rfiEntitySettings);
   logApp.info('[REQUEST ACCESS] Request access enabled: ', { result });
   return result.enabled === true;
 };

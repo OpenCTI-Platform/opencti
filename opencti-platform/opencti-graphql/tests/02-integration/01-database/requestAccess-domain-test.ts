@@ -249,7 +249,7 @@ describe('Request access domain  - compute RFI retricted members', async () => {
   });
 });
 
-describe('Request access domain  - conditions for request access activated', async () => {
+describe.only('Request access domain  - conditions for request access activated', async () => {
   it('should CE be forbidden to use request access', async () => {
     const settings: Partial<BasicStoreSettings> = {
       valid_enterprise_edition: false,
@@ -257,11 +257,16 @@ describe('Request access domain  - conditions for request access activated', asy
     };
 
     const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+      request_access_workflow: {
+        approval_admin: [GREEN_GROUP.id],
+        approved_workflow_id: '1234',
+        declined_workflow_id: '5678'
+      }
     };
 
-    const isRequestAccessEnabled = await verifyRequestAccessEnabled(testContext, ADMIN_USER, settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
     expect(isRequestAccessEnabled.enabled).toBeFalsy();
-    expect(isRequestAccessEnabled.message).toBe('');
+    expect(isRequestAccessEnabled.message).toBe('Enterprise edition must be enabled.');
   });
 
   it('should request access be disabled when there is no platform organization', async () => {
@@ -270,11 +275,16 @@ describe('Request access domain  - conditions for request access activated', asy
     };
 
     const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+      request_access_workflow: {
+        approval_admin: [GREEN_GROUP.id],
+        approved_workflow_id: '1234',
+        declined_workflow_id: '5678'
+      }
     };
 
-    const isRequestAccessEnabled = await verifyRequestAccessEnabled(testContext, ADMIN_USER, settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
     expect(isRequestAccessEnabled.enabled).toBeFalsy();
-    expect(isRequestAccessEnabled.message).toBe('');
+    expect(isRequestAccessEnabled.message).toBe('Platform organization must be setup.');
   });
 
   it('should request access be disabled when admin group is not setup', async () => {
@@ -291,9 +301,9 @@ describe('Request access domain  - conditions for request access activated', asy
       }
     };
 
-    const isRequestAccessEnabled = await verifyRequestAccessEnabled(testContext, ADMIN_USER, settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
     expect(isRequestAccessEnabled.enabled).toBeFalsy();
-    expect(isRequestAccessEnabled.message).toBe('');
+    expect(isRequestAccessEnabled.message).toBe('At least one approval administrator must be configured in entity settings.');
   });
 
   it('should request access be disabled when approved_workflow_id or declined_workflow_id is not setup', async () => {
@@ -308,9 +318,9 @@ describe('Request access domain  - conditions for request access activated', asy
       }
     };
 
-    const isRequestAccessEnabled = await verifyRequestAccessEnabled(testContext, ADMIN_USER, settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
     expect(isRequestAccessEnabled.enabled).toBeFalsy();
-    expect(isRequestAccessEnabled.message).toBe('');
+    expect(isRequestAccessEnabled.message).toBe('RFI status for decline and approval must be configured in entity settings.');
   });
 
   it('should request access be enabled when everything is configured', async () => {
@@ -327,7 +337,7 @@ describe('Request access domain  - conditions for request access activated', asy
       }
     };
 
-    const isRequestAccessEnabled = await verifyRequestAccessEnabled(testContext, ADMIN_USER, settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
     expect(isRequestAccessEnabled.enabled).toBeTruthy();
   });
 });

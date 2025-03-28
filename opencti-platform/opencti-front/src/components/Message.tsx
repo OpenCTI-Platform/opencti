@@ -40,10 +40,6 @@ const Message = () => {
     isEnterpriseEdition = useEnterpriseEdition();
     const { isRequestAccessEnabled, isFeatureEnable } = useHelper();
     isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF') && isRequestAccessEnabled() && isEnterpriseEdition;
-    console.log(`isRequestAccessEnabled:${isRequestAccessEnabled}`);
-    console.log(`isFeatureEnable('ORGA_SHARING_REQUEST_FF'):${isFeatureEnable('ORGA_SHARING_REQUEST_FF')}`);
-    console.log(`isEnterpriseEdition:${isEnterpriseEdition}`);
-    console.log(`===> isRequestAccessFeatureEnabled:${isRequestAccessFeatureEnabled}`);
   } catch (e) {
     // When called being unauthenticated there is no useAuth()
   }
@@ -56,10 +52,12 @@ const Message = () => {
       next: (messages) => {
         if (messages && messages.length > 0 && messages[0]) {
           const firstMessage = messages[0] as { text: string | ReactElement, type: string, fullError: FullError | null };
+          console.log(`firstMessage.text:${firstMessage.text}`);
           const translatedText = firstMessage.text instanceof String
             ? t_i18n(firstMessage.text)
             : firstMessage.text;
           const firstMessageError = firstMessage.type === 'error';
+          console.log(`translatedText:${translatedText}`);
           setOpen(true);
           setFullError(firstMessage.fullError || null);
           setError(firstMessageError);
@@ -112,7 +110,7 @@ const Message = () => {
                   sx={{ marginLeft: 2 }}
                   onClick={handleDialogOpen}
                 >
-                  Request Access
+                  {t_i18n('Request Access')}
                 </Button>
               </Form>
             </Formik>
