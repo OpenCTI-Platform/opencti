@@ -88,6 +88,7 @@ export interface DataTableProps {
   dataQueryArgs: any
   availableFilterKeys?: string[] | undefined;
   redirectionModeEnabled?: boolean
+  additionalFilters?: FilterGroup
   additionalFilterKeys?: string[]
   entityTypes?: string[]
   settingsMessagesBannerHeight?: number
@@ -163,6 +164,7 @@ export interface DataTableDisplayFiltersProps {
 }
 
 export interface DataTableFiltersProps {
+  additionalFilters?: DataTableProps['additionalFilters'];
   availableFilterKeys?: string[] | undefined;
   availableRelationFilterTypes?: Record<string, string[]> | undefined
   availableEntityTypes?: string[]
