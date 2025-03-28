@@ -1118,6 +1118,7 @@
   "entity_Credential": "Credential",
   "entity_Cryptocurrency-Wallet": "Cryptocurrency wallet",
   "entity_Cryptographic-Key": "Cryptographic key",
+  "entity_CsvMapper": "CSV Mapper",
   "entity_Dashboard": "Dashboard",
   "entity_Data-Component": "Data Component",
   "entity_Data-Source": "Data Source",
