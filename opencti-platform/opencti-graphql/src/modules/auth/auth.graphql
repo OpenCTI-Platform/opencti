@@ -1,4 +1,8 @@
+input AskSendOtpInput {
+  email: String!
+}
+
 ## Mutations
 type Mutation {
-  askSendToken(email: String!): Boolean @public
+  askSendOtp(input: AskSendOtpInput!): Boolean @public
 }

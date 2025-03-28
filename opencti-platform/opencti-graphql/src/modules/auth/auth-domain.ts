@@ -3,7 +3,7 @@ import { getUserByEmail } from '../../domain/user';
 import { UnsupportedError } from '../../config/errors';
 import { sendMail } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
-import type { User } from '../../generated/graphql';
+import type { AskSendOtpInput, User } from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -16,13 +16,13 @@ export const getUser = async (email: string): Promise<User> => {
   return user;
 };
 
-export const generateCode = () => {
-  let code = '';
+export const generateOtp = () => {
+  let otp = '';
   for (let i = 0; i < 8; i += 1) {
     const random = Math.floor(Math.random() * 10);
-    code += random;
+    otp += random;
   }
-  return code;
+  return otp;
 };
 
 interface SendMailArgs {
@@ -32,22 +32,22 @@ interface SendMailArgs {
   html: string;
 }
 
-export const askSendToken = async (context: AuthContext, email: string) => {
+export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
-  const resetToken = generateCode();
+  const resetOtp = generateOtp();
   try {
-    const { user_email, name } = await getUser(email);
+    const { user_email, name } = await getUser(input.email);
     const body = `Hi ${
       name
     },</br>`
       + 'A request has been made to reset your OpenCTI password.</br>'
       + `Enter the following password recovery code: ${
-        resetToken}`;
+        resetOtp}`;
 
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: user_email,
-      subject: `${resetToken} is your recovery code of your OpenCTI account`,
+      subject: `${resetOtp} is your recovery code of your OpenCTI account`,
       html: ejs.render(OCTI_EMAIL_TEMPLATE, { body }),
     };
     await sendMail(sendMailArgs);
