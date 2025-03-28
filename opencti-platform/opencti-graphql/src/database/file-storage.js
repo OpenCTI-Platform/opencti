@@ -436,7 +436,6 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
     bypassValidation = false,
     validationMode = defaultValidationMode,
     forceValidation = false
-
   } = opts;
   const draftContext = getDraftContext(context, user);
   let connectors = await connectorsForImport(context, user, file.metaData.mimetype, true, !manual);
