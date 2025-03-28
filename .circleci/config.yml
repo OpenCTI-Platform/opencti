@@ -637,7 +637,16 @@ jobs:
     steps:
       - checkout
       - kubernetes/install-kubectl
+      - add_ssh_keys:
+          fingerprints:
+            - "SHA256:rGXZiucEsmWBwyXk6zoamHLHKKA0BXj/P8rCmy7B3ZA"
       - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_PRE_RELEASE -n customer-prerelease rollout restart deployment -l app=opencti
+      - run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H 51.44.124.32 >> ~/.ssh/known_hosts
+          cat ~/.ssh/known_hosts
+          ssh admin@51.44.124.32 "kubectl -n customer-prerelease rollout restart deployment -l app=opencti"
 
   deploy_dev:
     docker:
