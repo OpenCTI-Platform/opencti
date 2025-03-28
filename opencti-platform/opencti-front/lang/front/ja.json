@@ -2644,7 +2644,7 @@
   "Restrict to specific entity types": "特定のエンティティ・タイプに制限する",
   "Restricted": "制限",
   "Restricted entities": "制限のある団体",
-  "Restricted entity already exists, user can request access": "制限されたエンティティは既に存在します。",
+  "Restricted entity already exists, you request access": "制限されたエンティティは既に存在するが、ユーザはアクセスを要求できる。",
   "Restriction": "制限",
   "Restriction | Data": "制限｜データ",
   "Restriction Date": "制限日",

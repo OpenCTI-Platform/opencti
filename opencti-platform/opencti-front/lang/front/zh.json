@@ -2644,7 +2644,7 @@
   "Restrict to specific entity types": "仅限于特定实体类型",
   "Restricted": "限制",
   "Restricted entities": "受限实体",
-  "Restricted entity already exists, user can request access": "受限实体已经存在，用户可以申请访问",
+  "Restricted entity already exists, you request access": "受限实体已存在，用户可申请访问",
   "Restriction": "限制",
   "Restriction | Data": "限制 | 数据",
   "Restriction Date": "限制日期",

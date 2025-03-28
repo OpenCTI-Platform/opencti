@@ -3108,7 +3108,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         if (isRequestAccessConfigured === true) {
           const entitiesThatRequiresAccess = await canRequestAccess(context, user, existingEntities);
           if (entitiesThatRequiresAccess.length > 0) {
-            throw AccessRequiredError('Restricted entity already exists, you request access', { entityIds: entitiesThatRequiresAccess.map((value) => value.internal_id) });
+            throw AccessRequiredError('Restricted entity already exists, you can request access', { entityIds: entitiesThatRequiresAccess.map((value) => value.internal_id) });
           }
           throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
         } else {
