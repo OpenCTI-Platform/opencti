@@ -4,7 +4,7 @@ import { Badge } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, AlarmOnOutlined, AppsOutlined, NotificationsOutlined, CloudUploadOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AlarmOnOutlined, AppsOutlined, CloudUploadOutlined, NotificationsOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
@@ -326,7 +326,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                 { ee.license_type === 'nfr' && <ItemBoolean variant="large" label={'EE DEV LICENSE'} status={false}/> }
                 { isImportWorkflowEnabled && (
                   <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT]}>
-                    <Tooltip title={t_i18n('Import a file')} aria-label="Import a file">
+                    <Tooltip title={t_i18n('Import files')} aria-label="Import files">
                       <IconButton
                         size="medium"
                         aria-haspopup="true"
