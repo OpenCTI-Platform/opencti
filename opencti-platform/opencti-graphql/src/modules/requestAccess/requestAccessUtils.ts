@@ -1,4 +1,4 @@
-import { isFeatureEnabled, logApp } from '../../config/conf';
+import { isFeatureEnabled } from '../../config/conf';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 

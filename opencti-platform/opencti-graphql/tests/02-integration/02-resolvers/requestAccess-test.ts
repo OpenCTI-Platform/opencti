@@ -156,15 +156,6 @@ export const QUERY_REQUEST_ACCESS_SETTINGS = gql`
         }
     }`;
 
-const READ_SETTINGS_QUERY = gql`
-    query settings {
-        settings {
-            id
-            request_access_enabled
-        }
-    }
-`;
-
 export const QUERY_ROOT_SETTINGS = gql`
     query RootPrivateQuery {
         settings {
