@@ -244,9 +244,10 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
         storageKey={localStorageKey}
         initialValues={initialValues}
         toolbarFilters={contextFilters}
+        additionalFilters={contextFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment}
-        exportContext={{ entity_type: 'Indicator' }}
+        exportContext={{ entity_id: entityId, entity_type: 'Indicator' }}
         additionalHeaderButtons={[...viewButtons]}
       />
       )}
