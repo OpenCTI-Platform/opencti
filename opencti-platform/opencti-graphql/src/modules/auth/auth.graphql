@@ -2,7 +2,13 @@ input AskSendOtpInput {
   email: String!
 }
 
+input VerifyOtpInput {
+  email: String!
+  otp : String!
+}
+
 ## Mutations
 type Mutation {
   askSendOtp(input: AskSendOtpInput!): Boolean @public
+  verifyOtp(input: VerifyOtpInput!): Boolean @public
 }
