@@ -9083,7 +9083,7 @@ type Mutation {
   savedFilterDelete(id: ID!): ID
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
-  askSendToken(email: String!): Boolean
+  askSendOtp(input: AskSendOtpInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12778,4 +12778,8 @@ input RequestAccessConfigureInput {
   approved_status_id: ID
   declined_status_id: ID
   approval_admin: [ID]
+}
+
+input AskSendOtpInput {
+  email: String!
 }
