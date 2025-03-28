@@ -1203,6 +1203,7 @@
   "entity_stix-sighting-relationship": "Sightings",
   "entity_StixFile": "File",
   "entity_Stixfile": "File",
+  "entity_Synchronizer": "OpenCTI Stream",
   "entity_System": "System",
   "entity_Task": "Tasks",
   "entity_Techniques": "Techniques",
