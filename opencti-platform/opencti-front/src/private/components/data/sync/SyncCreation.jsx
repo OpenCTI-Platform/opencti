@@ -29,6 +29,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { deserializeFilterGroupForFrontend } from '../../../../utils/filters/filtersUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -96,11 +98,24 @@ export const syncStreamCollectionQuery = graphql`
   }
 `;
 
+const CreateSynchronizerControlledDial = (props) => (
+  <CreateEntityControlledDial
+    entityType='Synchronizer'
+    entityPrefix={false}
+    size='medium'
+    {...props}
+  />
+);
+
 const SyncCreation = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const classes = useStyles();
+
   const [verified, setVerified] = useState(false);
   const [streams, setStreams] = useState([]);
+
   const handleVerify = (values, setErrors) => {
     const input = { ...values, user_id: values.user_id?.value };
     commitMutation({
@@ -118,6 +133,7 @@ const SyncCreation = ({ paginationOptions }) => {
       },
     });
   };
+
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const input = { ...values, user_id: values.user_id?.value };
     commitMutation({
@@ -183,7 +199,11 @@ const SyncCreation = ({ paginationOptions }) => {
   return (
     <Drawer
       title={t_i18n('Create a synchronizer')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced
+        ? CreateSynchronizerControlledDial
+        : undefined
+      }
     >
       {({ onClose }) => (
         <Formik
