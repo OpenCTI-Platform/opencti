@@ -13,7 +13,6 @@ import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
 import useAuth from '../utils/hooks/useAuth';
 import EnterpriseEditionAgreement from '../private/components/common/entreprise_edition/EnterpriseEditionAgreement';
 import FeedbackCreation from '../private/components/cases/feedbacks/FeedbackCreation';
-import useHelper from '../utils/hooks/useHelper';
 import Loader from './Loader';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -83,8 +82,6 @@ const SearchInput = (props) => {
     isNLQLoading,
     ...otherProps
   } = props;
-  const { isFeatureEnable } = useHelper();
-  const isNLQEnabled = isFeatureEnable('NLQ');
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const handleChangeAskAI = () => {
     if (isEnterpriseEdition) {
@@ -203,7 +200,7 @@ const SearchInput = (props) => {
                 <ContentPasteSearchOutlined fontSize="medium"/>
               </IconButton>
             </Tooltip>
-            {isNLQEnabled && <Tooltip title={t_i18n('Ask AI')}>
+            <Tooltip title={t_i18n('Ask AI')}>
               <IconButton
                 size="medium"
                 style={{ color: theme.palette.ai.main }}
@@ -211,7 +208,7 @@ const SearchInput = (props) => {
               >
                 <AutoAwesomeOutlined fontSize='medium'/>
               </IconButton>
-            </Tooltip>}
+            </Tooltip>
           </InputAdornment>
           ),
           classes: {
