@@ -249,7 +249,7 @@ describe('Request access domain  - compute RFI retricted members', async () => {
   });
 });
 
-describe.only('Request access domain  - conditions for request access activated', async () => {
+describe('Request access domain  - conditions for request access activated', async () => {
   it('should CE be forbidden to use request access', async () => {
     const settings: Partial<BasicStoreSettings> = {
       valid_enterprise_edition: false,
