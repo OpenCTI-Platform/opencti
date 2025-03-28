@@ -113,6 +113,22 @@ type CsvMapperSchemaAttributes {
   attributes: [CsvMapperSchemaAttribute!]!
 }
 
+# Ordering
+enum JsonMapperOrdering {
+  name
+  _score
+}
+
+# Relay connections
+type JsonMapperConnection {
+  pageInfo: PageInfo!
+  edges: [JsonMapperEdge!]!
+}
+type JsonMapperEdge {
+  cursor: String!
+  node: JsonMapper!
+}
+
 # Queries
 type Query {
   csvMapper(id: ID!): CsvMapper @auth(for: [CSVMAPPERS])

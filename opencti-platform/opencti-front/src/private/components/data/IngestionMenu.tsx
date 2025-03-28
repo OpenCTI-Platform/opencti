@@ -1,6 +1,6 @@
 import React from 'react';
 import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMenu';
-import useGranted, { MODULES, INGESTION } from '../../../utils/hooks/useGranted';
+import useGranted, { INGESTION, MODULES } from '../../../utils/hooks/useGranted';
 
 const IngestionMenu = () => {
   const isConnectorReader = useGranted([MODULES]);
@@ -25,6 +25,10 @@ const IngestionMenu = () => {
     {
       path: '/dashboard/data/ingestion/csv',
       label: 'CSV Feeds',
+    },
+    {
+      path: '/dashboard/data/ingestion/json',
+      label: 'JSON Feeds',
     },
   ];
   const entries: MenuEntry[] = isGrantedIngestion ? [...settingsEntries] : [];
