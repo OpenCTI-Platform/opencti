@@ -1147,6 +1147,7 @@
   "entity_Infrastructure": "Infrastructure",
   "entity_IngestionTaxii": "Taxii Ingester",
   "entity_IngestionTaxiiCollection": "Taxii Push Ingester",
+  "entity_IngestionRss": "RSS Ingester",
   "entity_InternalFile": "File",
   "entity_Intrusion-Set": "Intrusion Set",
   "entity_Investigation": "Investigation",
