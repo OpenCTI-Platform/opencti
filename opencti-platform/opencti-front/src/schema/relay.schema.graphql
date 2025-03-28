@@ -82,6 +82,7 @@ enum Capabilities {
   INGESTION
   INGESTION_SETINGESTIONS
   CSVMAPPERS
+  JSONMAPPERS
   VIRTUAL_ORGANIZATION_ADMIN
 }
 
@@ -8189,6 +8190,8 @@ type Query {
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
+  ingestionJson(id: String!): IngestionJson
+  ingestionJsons(first: Int, after: ID, orderBy: IngestionJsonOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionJsonConnection
   indicator(id: String!): Indicator
   indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IndicatorConnection
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
@@ -8202,6 +8205,8 @@ type Query {
   csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
   csvMapperAddInputFromImport(file: Upload!): CsvMapperAddInputFromImport!
+  jsonMapper(id: ID!): JsonMapper
+  jsonMappers(first: Int, after: ID, orderBy: JsonMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): JsonMapperConnection
   publicDashboard(id: String!): PublicDashboard
   publicDashboards(first: Int, after: ID, orderBy: PublicDashboardsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PublicDashboardConnection
   publicDashboardByUriKey(uri_key: String!): PublicDashboard
@@ -9017,6 +9022,11 @@ type Mutation {
   ingestionCsvResetState(id: ID!): IngestionCsv
   ingestionCsvDelete(id: ID!): ID
   ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
+  ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult
+  ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson
+  ingestionJsonResetState(id: ID!): IngestionJson
+  ingestionJsonDelete(id: ID!): ID
+  ingestionJsonFieldPatch(id: ID!, input: [EditInput!]!): IngestionJson
   indicatorAdd(input: IndicatorAddInput!): Indicator
   indicatorDelete(id: ID!): ID
   indicatorFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Indicator
@@ -11785,6 +11795,60 @@ input IngestionCsvAddInput {
   markings: [String!]
 }
 
+type IngestionJson implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String]!
+  created_at: DateTime
+  updated_at: DateTime
+  name: String!
+  description: String
+  uri: String!
+  jsonMapper: JsonMapper!
+  authentication_type: IngestionAuthType!
+  authentication_value: String
+  user_id: String!
+  user: Creator
+  ingestion_running: Boolean
+  current_state_hash: String
+  current_state_date: DateTime
+  last_execution_date: DateTime
+  markings: [String!]
+}
+
+enum IngestionJsonOrdering {
+  name
+  created_at
+  updated_at
+  uri
+  mapper
+  _score
+}
+
+type IngestionJsonConnection {
+  pageInfo: PageInfo!
+  edges: [IngestionJsonEdge!]!
+}
+
+type IngestionJsonEdge {
+  cursor: String!
+  node: IngestionJson!
+}
+
+input IngestionJsonAddInput {
+  name: String!
+  description: String
+  authentication_type: IngestionAuthType!
+  authentication_value: String
+  current_state_date: DateTime
+  uri: String!
+  json_mapper_id: String!
+  ingestion_running: Boolean
+  user_id: String!
+  markings: [String!]
+}
+
 enum IndicatorsOrdering {
   pattern_type
   pattern_version
@@ -12257,6 +12321,21 @@ type CsvMapperSchemaAttributes {
   attributes: [CsvMapperSchemaAttribute!]!
 }
 
+enum JsonMapperOrdering {
+  name
+  _score
+}
+
+type JsonMapperConnection {
+  pageInfo: PageInfo!
+  edges: [JsonMapperEdge!]!
+}
+
+type JsonMapperEdge {
+  cursor: String!
+  node: JsonMapper!
+}
+
 input AttributeColumnConfigurationInput {
   separator: String
   pattern_date: String
@@ -12311,6 +12390,35 @@ input CsvMapperAddInput {
   separator: String!
   representations: String!
   skipLineChar: String
+}
+
+enum JsonMapperRepresentationType {
+  entity
+  relationship
+}
+
+type JsonMapperRepresentation {
+  id: ID!
+  type: JsonMapperRepresentationType!
+  from: String
+  to: String
+}
+
+type JsonMapper implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  name: String!
+  representations: [JsonMapperRepresentation!]!
+  errors: String
+  toConfigurationExport: String!
+}
+
+type JsonMapperTestResult {
+  objects: String!
+  nbRelationships: Int!
+  nbEntities: Int!
 }
 
 type PublicDashboard implements InternalObject & BasicObject {

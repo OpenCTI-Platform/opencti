@@ -1,0 +1,42 @@
+enum JsonMapperRepresentationType {
+    entity
+    relationship
+}
+
+type JsonMapperRepresentation {
+    id: ID!
+    type: JsonMapperRepresentationType!
+    from: String
+    to: String
+}
+
+type JsonMapper implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String! @auth
+    standard_id: String! @auth
+    parent_types: [String!]! @auth
+    # JsonMapper
+    name: String! @auth
+    representations: [JsonMapperRepresentation!]! @auth
+    errors: String
+    toConfigurationExport: String!
+}
+
+type JsonMapperTestResult {
+    objects: String!
+    nbRelationships: Int!
+    nbEntities: Int!
+}
+
+# Queries
+type Query {
+    jsonMapper(id: ID!): JsonMapper @auth(for: [JSONMAPPERS])
+    jsonMappers(
+        first: Int
+        after: ID
+        orderBy: JsonMapperOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): JsonMapperConnection @auth(for: [JSONMAPPERS, INGESTION_SETINGESTIONS])
+}

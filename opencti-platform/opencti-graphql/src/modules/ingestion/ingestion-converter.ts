@@ -2,10 +2,12 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
 import type {
   StixIngestionCsv,
+  StixIngestionJson,
   StixIngestionRss,
   StixIngestionTaxii,
   StixIngestionTaxiiCollection,
   StoreEntityIngestionCsv,
+  StoreEntityIngestionJson,
   StoreEntityIngestionRss,
   StoreEntityIngestionTaxii,
   StoreEntityIngestionTaxiiCollection
@@ -72,6 +74,24 @@ export const convertIngestionCsvToStix = (instance: StoreEntityIngestionCsv): St
     description: instance.description,
     uri: instance.uri,
     csv_mapper_id: instance.csv_mapper_id,
+    ingestion_running: instance.ingestion_running,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...stixObject.extensions[STIX_EXT_OCTI],
+        extension_type: 'new-sdo',
+      })
+    }
+  };
+};
+
+export const convertIngestionJsonToStix = (instance: StoreEntityIngestionJson): StixIngestionJson => {
+  const stixObject = buildStixObject(instance);
+  return {
+    ...stixObject,
+    name: instance.name,
+    description: instance.description,
+    uri: instance.uri,
+    json_mapper_id: instance.json_mapper_id,
     ingestion_running: instance.ingestion_running,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
