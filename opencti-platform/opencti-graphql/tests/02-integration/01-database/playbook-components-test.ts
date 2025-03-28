@@ -36,6 +36,20 @@ const bundle = {
       published: '2025-03-25T09:59:10.000Z',
       spec_version: '2.1',
       type: 'report'
+    },
+    {
+      id: 'campaign--fdcacc8e-de4d-5a13-8886-401d363664fd',
+      spec_version: '2.1',
+      revoked: false,
+      confidence: 100,
+      created: '2015-05-15T09:12:16.432Z',
+      modified: '2025-03-26T10:00:10.363Z',
+      name: 'admin@338',
+      description: 'description',
+      first_seen: '2008-01-07T00:00:00.000Z',
+      x_opencti_id: '683e5146-1022-4f69-9fbf-f12101934573',
+      x_opencti_type: 'Campaign',
+      type: 'campaign',
     }
   ],
   spec_version: '2.1',
