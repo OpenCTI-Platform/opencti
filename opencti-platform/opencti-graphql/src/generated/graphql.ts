@@ -14063,6 +14063,7 @@ export type Mutation = {
   userNoteAdd?: Maybe<Note>;
   userOpinionAdd?: Maybe<Opinion>;
   userSessionsKill?: Maybe<Array<Maybe<Scalars['ID']['output']>>>;
+  verifyOtp?: Maybe<Scalars['Boolean']['output']>;
   vocabularyAdd?: Maybe<Vocabulary>;
   vocabularyDelete?: Maybe<Scalars['ID']['output']>;
   vocabularyFieldPatch?: Maybe<Vocabulary>;
@@ -16138,6 +16139,11 @@ export type MutationUserOpinionAddArgs = {
 
 export type MutationUserSessionsKillArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationVerifyOtpArgs = {
+  input: VerifyOtpInput;
 };
 
 
@@ -30100,6 +30106,11 @@ export enum ValidationMode {
   Workbench = 'workbench'
 }
 
+export type VerifyOtpInput = {
+  email: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
+};
+
 export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   __typename?: 'Vocabulary';
   aliases?: Maybe<Array<Scalars['String']['output']>>;
@@ -32382,6 +32393,7 @@ export type ResolversTypes = ResolversObject<{
   UserStatus: ResolverTypeWrapper<UserStatus>;
   UsersOrdering: UsersOrdering;
   ValidationMode: ValidationMode;
+  VerifyOtpInput: VerifyOtpInput;
   Vocabulary: ResolverTypeWrapper<BasicStoreEntityVocabulary>;
   VocabularyAddInput: VocabularyAddInput;
   VocabularyCategory: VocabularyCategory;
@@ -33155,6 +33167,7 @@ export type ResolversParentTypes = ResolversObject<{
   UserOTPLoginInput: UserOtpLoginInput;
   UserSession: UserSession;
   UserStatus: UserStatus;
+  VerifyOtpInput: VerifyOtpInput;
   Vocabulary: BasicStoreEntityVocabulary;
   VocabularyAddInput: VocabularyAddInput;
   VocabularyConnection: Omit<VocabularyConnection, 'edges'> & { edges: Array<ResolversParentTypes['VocabularyEdge']> };
@@ -38276,6 +38289,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
   userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;
+  verifyOtp?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerifyOtpArgs, 'input'>>;
   vocabularyAdd?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyAddArgs, 'input'>>;
   vocabularyDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationVocabularyDeleteArgs, 'id'>>;
   vocabularyFieldPatch?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyFieldPatchArgs, 'id' | 'input'>>;
