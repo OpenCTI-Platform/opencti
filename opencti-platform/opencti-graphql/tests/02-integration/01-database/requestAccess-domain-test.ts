@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { findByType as findEntitySettingsByType } from '../../../src/modules/entitySetting/entitySetting-domain';
+import { beforeAll, afterAll, describe, expect, it } from 'vitest';
+import { ADMIN_USER, getGroupIdByName, getOrganizationIdByName, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { entitySettingEditField, findByType as findEntitySettingsByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 import {
   createStatus,
@@ -11,6 +11,7 @@ import {
   findTemplateById
 } from '../../../src/domain/status';
 import {
+  type EditInput,
   FilterMode,
   OrderingMode,
   type QueryStatusesArgs,
@@ -19,10 +20,17 @@ import {
   StatusScope,
   type StatusTemplate,
 } from '../../../src/generated/graphql';
-import type { BasicStoreEntity } from '../../../src/types/store';
+import type { BasicStoreCommon, BasicStoreEntity } from '../../../src/types/store';
 import { logApp } from '../../../src/config/conf';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
+import { computeAuthorizedMembersForRequestAccess, getRfiEntitySettings } from '../../../src/modules/requestAccess/requestAccess-domain';
+import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
+import type { BasicStoreEntityEntitySetting } from '../../../src/modules/entitySetting/entitySetting-types';
+import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
+import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import { verifyRequestAccessEnabled } from '../../../src/modules/requestAccess/requestAccessUtils';
+import type { BasicStoreSettings } from '../../../src/types/settings';
 
 describe('Request access domain  - initialized status', async () => {
   it('should initial data be created', async () => {
@@ -124,5 +132,212 @@ describe('Request access domain  - initialized status', async () => {
     logApp.info('[TEST] requestAccessTemplates', { requestAccessTemplates });
     expect(requestAccessTemplates?.some((template) => template?.name === 'GLOBAL_RFI')).toBeFalsy();
     expect(requestAccessTemplates?.some((template) => template?.name === 'REQUEST_ACCESS_SCOPE')).toBeTruthy();
+  });
+});
+
+describe('Request access domain  - compute RFI retricted members', async () => {
+  let greenGroupId: string;
+  let rfiEntitySettings: BasicStoreEntityEntitySetting;
+  let platformOrganizationId: string;
+  let testOrganizationId: string;
+
+  beforeAll(async () => {
+    await enableEEAndSetOrganization(PLATFORM_ORGANIZATION);
+    platformOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
+    testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
+  });
+
+  afterAll(async () => {
+    await enableCEAndUnSetOrganization();
+  });
+
+  it('should configure request access settings', async () => {
+    greenGroupId = await getGroupIdByName(GREEN_GROUP.name);
+    rfiEntitySettings = await getRfiEntitySettings(testContext, ADMIN_USER);
+    logApp.info('[TEST RA] rfiEntitySettings BEFORE', { rfiEntitySettings });
+    const raConfig = { ...rfiEntitySettings.request_access_workflow };
+    raConfig.approval_admin = [greenGroupId];
+
+    const editInput: EditInput[] = [
+      { key: 'request_access_workflow', value: [raConfig] }
+    ];
+    await entitySettingEditField(testContext, ADMIN_USER, rfiEntitySettings.id, editInput);
+
+    rfiEntitySettings = await getRfiEntitySettings(testContext, ADMIN_USER);
+    logApp.info('[TEST RA] rfiEntitySettings AFTER', { rfiEntitySettings });
+  });
+
+  it('should knowledge sharing request on entity with restricted members be refused', async () => {
+    const someEntity: Partial<BasicStoreCommon> = {
+      restricted_members: [
+        {
+          id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+          access_right: 'admin'
+        },
+        {
+          id: '55ec0c6a-13ce-5e39-b486-354fe4a7084f',
+          access_right: 'view'
+        },
+      ],
+      granted: [PLATFORM_ORGANIZATION.id]
+    };
+
+    await expect(async () => {
+      await computeAuthorizedMembersForRequestAccess(testContext, ADMIN_USER, someEntity as BasicStoreCommon);
+    }).rejects.toThrowError('This entity is restricted with authorized member and cannot be requested for sharing.');
+  });
+
+  it('should knowledge sharing request on entity without any organisation sharing use platform organization', async () => {
+    // No granted part
+    const someEntity: Partial<BasicStoreCommon> = {
+
+    };
+
+    const authorizedMembers = await computeAuthorizedMembersForRequestAccess(testContext, ADMIN_USER, someEntity as BasicStoreCommon);
+    expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_ADMIN)).toStrictEqual({
+      id: OPENCTI_ADMIN_UUID,
+      access_right: MEMBER_ACCESS_RIGHT_ADMIN
+    });
+    expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_EDIT)).toStrictEqual({
+      id: platformOrganizationId,
+      access_right: MEMBER_ACCESS_RIGHT_EDIT,
+      groups_restriction_ids: [greenGroupId]
+    });
+  });
+
+  it('should knowledge sharing request on entity with organisation sharing use it', async () => {
+    // No granted part
+    const someEntity: Partial<BasicStoreCommon> = {
+      granted: [testOrganizationId]
+    };
+
+    const authorizedMembers = await computeAuthorizedMembersForRequestAccess(testContext, ADMIN_USER, someEntity as BasicStoreCommon);
+    expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_ADMIN)).toStrictEqual({
+      id: OPENCTI_ADMIN_UUID,
+      access_right: MEMBER_ACCESS_RIGHT_ADMIN
+    });
+    expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_EDIT)).toStrictEqual({
+      id: testOrganizationId,
+      access_right: MEMBER_ACCESS_RIGHT_EDIT,
+      groups_restriction_ids: [greenGroupId]
+    });
+  });
+
+  it('should knowledge sharing request on entity with several organisation sharing use them', async () => {
+    // No granted part
+    const someEntity: Partial<BasicStoreCommon> = {
+      granted: [testOrganizationId, platformOrganizationId]
+    };
+
+    const authorizedMembers = await computeAuthorizedMembersForRequestAccess(testContext, ADMIN_USER, someEntity as BasicStoreCommon);
+    expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_ADMIN)).toStrictEqual({
+      id: OPENCTI_ADMIN_UUID,
+      access_right: MEMBER_ACCESS_RIGHT_ADMIN
+    });
+    expect(authorizedMembers.filter((member) => member.access_right === MEMBER_ACCESS_RIGHT_EDIT).length).toBe(2);
+    expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_EDIT && member.id === testOrganizationId)).toStrictEqual({
+      id: testOrganizationId,
+      access_right: MEMBER_ACCESS_RIGHT_EDIT,
+      groups_restriction_ids: [greenGroupId]
+    });
+
+    expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_EDIT && member.id === platformOrganizationId)).toStrictEqual({
+      id: platformOrganizationId,
+      access_right: MEMBER_ACCESS_RIGHT_EDIT,
+      groups_restriction_ids: [greenGroupId]
+    });
+  });
+});
+
+describe('Request access domain  - conditions for request access activated', async () => {
+  it('should CE be forbidden to use request access', async () => {
+    const settings: Partial<BasicStoreSettings> = {
+      valid_enterprise_edition: false,
+      platform_organization: TEST_ORGANIZATION.id
+    };
+
+    const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+      request_access_workflow: {
+        approval_admin: [GREEN_GROUP.id],
+        approved_workflow_id: '1234',
+        declined_workflow_id: '5678'
+      }
+    };
+
+    const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    expect(isRequestAccessEnabled.enabled).toBeFalsy();
+    expect(isRequestAccessEnabled.message).toBe('Enterprise edition must be enabled.');
+  });
+
+  it('should request access be disabled when there is no platform organization', async () => {
+    const settings: Partial<BasicStoreSettings> = {
+      valid_enterprise_edition: true
+    };
+
+    const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+      request_access_workflow: {
+        approval_admin: [GREEN_GROUP.id],
+        approved_workflow_id: '1234',
+        declined_workflow_id: '5678'
+      }
+    };
+
+    const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    expect(isRequestAccessEnabled.enabled).toBeFalsy();
+    expect(isRequestAccessEnabled.message).toBe('Platform organization must be setup.');
+  });
+
+  it('should request access be disabled when admin group is not setup', async () => {
+    const settings: Partial<BasicStoreSettings> = {
+      valid_enterprise_edition: true,
+      platform_organization: TEST_ORGANIZATION.id
+    };
+
+    const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+      request_access_workflow: {
+        approval_admin: [],
+        approved_workflow_id: '1234',
+        declined_workflow_id: '5678'
+      }
+    };
+
+    const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    expect(isRequestAccessEnabled.enabled).toBeFalsy();
+    expect(isRequestAccessEnabled.message).toBe('At least one approval administrator must be configured in entity settings.');
+  });
+
+  it('should request access be disabled when approved_workflow_id or declined_workflow_id is not setup', async () => {
+    const settings: Partial<BasicStoreSettings> = {
+      valid_enterprise_edition: true,
+      platform_organization: TEST_ORGANIZATION.id
+    };
+
+    const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+      request_access_workflow: {
+        approval_admin: [GREEN_GROUP.id],
+      }
+    };
+
+    const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    expect(isRequestAccessEnabled.enabled).toBeFalsy();
+    expect(isRequestAccessEnabled.message).toBe('RFI status for decline and approval must be configured in entity settings.');
+  });
+
+  it('should request access be enabled when everything is configured', async () => {
+    const settings: Partial<BasicStoreSettings> = {
+      valid_enterprise_edition: true,
+      platform_organization: TEST_ORGANIZATION.id
+    };
+
+    const rfiSettings: Partial<BasicStoreEntityEntitySetting> = {
+      request_access_workflow: {
+        approval_admin: [GREEN_GROUP.id],
+        approved_workflow_id: '1234',
+        declined_workflow_id: '5678'
+      }
+    };
+
+    const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
+    expect(isRequestAccessEnabled.enabled).toBeTruthy();
   });
 });
