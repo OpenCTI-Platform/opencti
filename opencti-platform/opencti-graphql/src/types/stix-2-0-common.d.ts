@@ -1,11 +1,13 @@
 import type { StixDate, StixId } from './stix-common';
-import type { StixInternalExternalReference } from './stix-smo';
+import type { StixInternalExternalReference } from './stix-2-0-smo';
 
 export interface StixObject2 {
   id: StixId;
+  x_opencti_id: string;
   spec_version: string;
   x_opencti_granted_refs?: string[]
   x_opencti_type: string;
+  type: string;
 }
 
 // --- STIX Core Objects
