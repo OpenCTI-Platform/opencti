@@ -65,10 +65,10 @@ const useStyles = makeStyles((theme) => ({
 
 const StixDomainObjectOverview = ({
   stixDomainObject,
-  withoutMarking,
+  withoutMarking = false,
   withPattern = false,
-  displayAssignees,
-  displayParticipants,
+  displayAssignees = false,
+  displayParticipants = false,
   displayConfidence = true,
   displayReliability = true,
   displayOpinions = true,

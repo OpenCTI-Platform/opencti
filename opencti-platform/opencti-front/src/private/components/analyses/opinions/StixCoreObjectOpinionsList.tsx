@@ -131,6 +131,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                       variant="inList"
                       markingDefinitions={opinion?.objectMarking ?? []}
                       limit={1}
+                      onClick={undefined}
                     />
                   </div>
                 </ListItemButton>

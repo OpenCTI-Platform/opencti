@@ -25,6 +25,8 @@ const EEField: FunctionComponent<EEFieldProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const component = React.cloneElement(children, {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     label: <>{t_i18n(children.props.label)}<EEChip feature={featureLabel} /></>,
   });
   return (

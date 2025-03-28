@@ -146,6 +146,8 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
           parameters={{ title: t_i18n('Observables distribution') }}
           variant="inEntity"
           height={300}
+          startDate={undefined}
+          endDate={undefined}
         />
       </Paper>
     </div>

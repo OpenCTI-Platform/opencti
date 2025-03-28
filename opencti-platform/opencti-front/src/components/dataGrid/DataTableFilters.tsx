@@ -218,6 +218,7 @@ const DataTableFilters = ({
               handleToggle={helpers.handleToggleExports}
               paginationOptions={paginationOptions}
               exportContext={exportContext}
+              exportType={undefined}
             />
           </Security>
       )}

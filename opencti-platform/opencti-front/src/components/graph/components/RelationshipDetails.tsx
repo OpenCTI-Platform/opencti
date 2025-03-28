@@ -394,7 +394,11 @@ RelationshipDetailsComponentProps
           {t_i18n('Marking')}
         </Typography>
         {stixRelationship.objectMarking && stixRelationship.objectMarking.length > 0 ? (
-          <ItemMarkings markingDefinitions={stixRelationship.objectMarking} limit={2}/>
+          <ItemMarkings
+            markingDefinitions={stixRelationship.objectMarking}
+            limit={2}
+            onClick={undefined}
+          />
         ) : ('-')}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
           {t_i18n('Author')}

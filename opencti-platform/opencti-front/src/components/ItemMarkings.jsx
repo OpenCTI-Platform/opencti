@@ -98,7 +98,12 @@ const StyledBadge = styled(Badge)(() => ({
   },
 }));
 
-const ItemMarkings = ({ variant, markingDefinitions, limit, onClick }) => {
+const ItemMarkings = ({
+  variant = '',
+  markingDefinitions,
+  limit = 0,
+  onClick,
+}) => {
   const markings = markingDefinitions ?? [];
   const classes = useStyles();
   const theme = useTheme();

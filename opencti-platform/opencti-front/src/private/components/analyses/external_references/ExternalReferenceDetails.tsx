@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -32,9 +32,9 @@ interface ExternalReferenceDetailsComponentProps {
   externalReference: ExternalReferenceDetails_externalReference$data;
 }
 
-const ExternalReferenceDetailsComponent: FunctionComponent<
-ExternalReferenceDetailsComponentProps
-> = ({ externalReference }) => {
+const ExternalReferenceDetailsComponent = ({
+  externalReference,
+}: ExternalReferenceDetailsComponentProps) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);

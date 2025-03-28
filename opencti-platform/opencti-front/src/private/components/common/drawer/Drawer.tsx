@@ -126,6 +126,8 @@ const Drawer = forwardRef(({
       component = children({ onClose: handleClose });
     } else {
       component = React.cloneElement(children as React.ReactElement, {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         onClose: handleClose,
       });
     }
