@@ -9,7 +9,7 @@ import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { ADMIN_USER } from '../../../tests/utils/testQuery';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
-import { redisSetForgotPasswordOtp } from '../../database/redis';
+import { redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../database/redis';
 
 export const getUser = async (email: string): Promise<User> => {
   const user: any = await getUserByEmail(email);
@@ -58,6 +58,17 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     // Prevent wrong email address, but return true too if it fails
     // logApp.error('Error occurred while sending password reset email:', { cause: e });
     console.error('Error occurred while sending password reset email:', e);
+  }
+  return true;
+};
+
+export const verifyOtp = async (context: AuthContext, input: { email: string, otp: string }) => {
+  const storedOtp = await redisGetForgotPasswordOtp(input.email);
+  if (!storedOtp) {
+    throw UnsupportedError('OTP expired or not found. Please request a new one.');
+  }
+  if (storedOtp !== input.otp) {
+    throw UnsupportedError('Invalid OTP. Please check the code and try again.');
   }
   return true;
 };
