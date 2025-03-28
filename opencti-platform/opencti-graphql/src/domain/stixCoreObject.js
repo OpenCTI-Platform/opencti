@@ -684,10 +684,16 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
     draftId,
     version,
     importContextEntities,
+    noTriggerImport,
   } = args;
 
   const contextInDraft = { ...context, draft_context: draftId };
-  const uploadedFile = await stixCoreObjectImportPush(contextInDraft, user, id, file, { version, fileMarkings, importContextEntities, noTriggerImport: true });
+  const uploadedFile = await stixCoreObjectImportPush(contextInDraft, user, id, file, {
+    version,
+    fileMarkings,
+    importContextEntities,
+    noTriggerImport
+  });
 
   if (connectors) {
     await Promise.all(connectors.map(async ({ connectorId, configuration }) => (

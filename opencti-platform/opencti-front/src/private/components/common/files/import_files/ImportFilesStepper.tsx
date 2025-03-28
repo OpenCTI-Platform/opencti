@@ -5,7 +5,7 @@ import { useFormatter } from '../../../../../components/i18n';
 
 const ImportFilesStepper = () => {
   const { t_i18n } = useFormatter();
-  const { canSelectImportMode, activeStep, setActiveStep, files } = useImportFilesContext();
+  const { canSelectImportMode, activeStep, setActiveStep, files, importMode } = useImportFilesContext();
   const hasSelectedFiles = files.length > 0;
 
   return (
@@ -15,7 +15,7 @@ const ImportFilesStepper = () => {
           {t_i18n('Import mode')}
         </StepButton>
       </Step>)}
-      <Step key={'select_file'}>
+      <Step key={'select_file'} disabled={!importMode}>
         <StepButton color="inherit" onClick={() => setActiveStep(1)}>
           {t_i18n('Select files')}
         </StepButton>

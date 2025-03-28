@@ -70,17 +70,17 @@ const ImportFilesOptions = ({
                 containerstyle={{ marginTop: 20, width: '100%' }}
               >
                 <MenuItem
+                  key={'draft'}
+                  value={'draft'}
+                >
+                  {'Draft'}
+                </MenuItem>
+                <MenuItem
                   key={'workbench'}
                   value={'workbench'}
                   disabled={!isWorkbenchEnabled}
                 >
                   {'Workbench'}
-                </MenuItem>
-                <MenuItem
-                  key={'draft'}
-                  value={'draft'}
-                >
-                  {'Draft'}
                 </MenuItem>
               </Field>
             )}

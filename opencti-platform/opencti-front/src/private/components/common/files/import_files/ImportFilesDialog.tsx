@@ -42,6 +42,7 @@ const importFilesDialogGlobalMutation = graphql`
     $connectors: [ConnectorWithConfig!],
     $validationMode: ValidationMode,
     $draftId: String,
+    $noTriggerImport: Boolean,
   ) {
     uploadAndAskJobImport(
       file: $file,
@@ -49,6 +50,7 @@ const importFilesDialogGlobalMutation = graphql`
       fileMarkings: $fileMarkings,
       validationMode: $validationMode
       draftId: $draftId,
+      noTriggerImport: $noTriggerImport,
     ) {
       id
       ...FileLine_file
@@ -64,6 +66,7 @@ const importFilesDialogEntityMutation = graphql`
     $connectors: [ConnectorWithConfig!],
     $validationMode: ValidationMode,
     $draftId: String,
+    $noTriggerImport: Boolean,
   ) {
     stixCoreObjectEdit(id: $id) {
       uploadAndAskJobImport(
@@ -72,6 +75,7 @@ const importFilesDialogEntityMutation = graphql`
         fileMarkings: $fileMarkings,
         validationMode: $validationMode
         draftId: $draftId,
+        noTriggerImport: $noTriggerImport,
       ) {
         id
         ...FileLine_file
@@ -260,6 +264,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           fileMarkings: fileMarkingIds,
           validationMode,
           draftId: newDraftId,
+          noTriggerImport: importMode === 'manual',
         } as ImportFilesDialogEntityMutation$variables
       ) : (
         {
@@ -271,6 +276,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           fileMarkings: fileMarkingIds,
           validationMode,
           draftId: newDraftId,
+          noTriggerImport: importMode === 'manual',
         } as ImportFilesDialogGlobalMutation$variables
       )
     ));
@@ -329,19 +335,12 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     }
   };
 
-  const validationModeValue = useMemo(() => {
-    if (importMode !== 'auto') {
-      return draftContext || files.length > 1 ? 'draft' : 'workbench';
-    }
-    return undefined;
-  }, [importMode, draftContext, files]);
-
   const optionsContext = useFormik<OptionsFormValues>({
     enableReinitialize: true,
     initialValues: {
       fileMarkings: [] as Option[],
       associatedEntity: null,
-      validationMode: validationModeValue,
+      validationMode: importMode === 'manual' ? 'draft' : undefined,
       name: '',
     },
     onSubmit,
