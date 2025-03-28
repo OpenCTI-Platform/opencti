@@ -1,12 +1,14 @@
+import { OptionMember } from '@components/common/form/ObjectMembersField';
 import { Option } from '@components/common/form/ReferenceField';
 
 export const INPUT_AUTHORIZED_MEMBERS = 'restricted_members';
 
 export type AccessRight = 'none' | 'view' | 'edit' | 'admin';
 
-export interface AuthorizedMemberOption extends Option {
+export type AuthorizedMemberOption = Option & {
   accessRight: AccessRight
-}
+  groupsRestriction: OptionMember[]
+};
 
 export const ALL_MEMBERS_AUTHORIZED_CONFIG = {
   id: 'ALL',
@@ -25,6 +27,10 @@ export type AuthorizedMembers = ReadonlyArray<{
   readonly entity_type: string;
   readonly id: string;
   readonly name: string;
+  readonly groups_restriction: ReadonlyArray<{
+    readonly id: string;
+    readonly name: string;
+  }> | null | undefined;
 }> | null;
 
 export type Creator = {
@@ -50,6 +56,7 @@ export const authorizedMembersToOptions = (
         type: member.entity_type,
         value: member.id,
         accessRight: member.access_right as AccessRight,
+        groupsRestriction: member.groups_restriction,
       };
     });
 };

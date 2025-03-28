@@ -52,6 +52,9 @@ const FormAuthorizedMembersDialog = ({
             .map((member) => ({
               id: member.value,
               access_right: member.accessRight,
+              groups_restriction_ids: member.groupsRestriction?.length > 0
+                ? member.groupsRestriction.map((group) => group.value)
+                : undefined,
             })),
       },
       onCompleted: () => {

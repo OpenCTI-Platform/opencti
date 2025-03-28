@@ -1,18 +1,18 @@
-import { Option } from '@components/common/form/ReferenceField';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
-import { Delete } from '@mui/icons-material';
+import { Delete, InfoOutlined } from '@mui/icons-material';
 import React from 'react';
 import { isGenericOption } from '@components/common/form/AuthorizedMembersField';
+import { Tooltip } from '@mui/material';
 import SelectField from '../../../../components/fields/SelectField';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
-import { AccessRight } from '../../../../utils/authorizedMembers';
+import { AccessRight, AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 
 // Common style applied in JSX.
 const smallText = {
@@ -21,7 +21,7 @@ const smallText = {
 };
 
 interface AuthorizedMembersFieldListItemProps {
-  authorizedMember: Option
+  authorizedMember: AuthorizedMemberOption
   name: string
   accessRights: { label: string, value: string }[]
   onRemove?: () => void
@@ -43,6 +43,8 @@ const AuthorizedMembersFieldListItem = ({
   // Used for artificial rows for ALL and CREATOR if they have
   // no access.
   const noAccess = { label: t_i18n('no access'), value: 'none' };
+
+  const groupsLabel = authorizedMember.groupsRestriction.map((n) => n.name);
 
   // Construct the list of available access levels based on
   // if generic option or not.
@@ -67,7 +69,6 @@ const AuthorizedMembersFieldListItem = ({
       <ListItemIcon>
         <ItemIcon type={authorizedMember.type} />
       </ListItemIcon>
-
       <ListItemText
         primary={
           <>
@@ -87,6 +88,18 @@ const AuthorizedMembersFieldListItem = ({
               <span style={smallText}>
                 {' '}({t_i18n('Creator')})
               </span>
+            )}
+            {authorizedMember.groupsRestriction && authorizedMember.groupsRestriction.length > 0 && (
+              <>
+                <span style={smallText}>
+                  {' '}({t_i18n('Groups restriction')})
+                </span>
+                <Tooltip title={`Groups restriction: ${groupsLabel}`}>
+                  <IconButton size="small" color="primary">
+                    <InfoOutlined fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </>
             )}
           </>
         }

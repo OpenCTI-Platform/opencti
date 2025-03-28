@@ -745,6 +745,10 @@ export default createFragmentContainer(ContainerHeader, {
         name
         entity_type
         access_right
+        groups_restriction {
+          id
+          name
+        }
       }
       ... on Report {
         name
