@@ -1212,6 +1212,7 @@
   "entity_Synchronizer": "OpenCTI Stream",
   "entity_System": "System",
   "entity_Task": "Tasks",
+  "entity_TaxiiCollection": "TAXII Collection",
   "entity_Techniques": "Techniques",
   "entity_Text": "Text",
   "entity_Threat-Actor": "Threat Actor",
