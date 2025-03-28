@@ -9087,6 +9087,7 @@ type Mutation {
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   askSendOtp(input: AskSendOtpInput!): Boolean
+  verifyOtp(input: VerifyOtpInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12792,4 +12793,9 @@ input RequestAccessConfigureInput {
 
 input AskSendOtpInput {
   email: String!
+}
+
+input VerifyOtpInput {
+  email: String!
+  otp: String!
 }
