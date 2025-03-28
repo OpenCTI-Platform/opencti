@@ -1,13 +1,12 @@
-import { useFormatter } from '../../components/i18n';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Button, Paper } from '@mui/material';
-import { useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { TextField } from 'formik-mui';
 import * as R from 'ramda';
 import { useCookies } from 'react-cookie';
+import { useFormatter } from '../../components/i18n';
 
 interface ResetProps {
   onCancel: () => void;
@@ -75,7 +74,8 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
       textAlign: 'center',
       margin: '0 auto',
       width: 400,
-    }}>
+    }}
+    >
       <Paper variant="outlined">
         <div style={{ padding: 15 }}>
           {step === STEP_ASK_RESET && (
@@ -113,7 +113,8 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
               initialTouched={{ code: !R.isEmpty(flashError) }}
               initialErrors={{ code: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
               validationSchema={tokenValidation(t_i18n)}
-              initialValues={{ code: '' }}>
+              initialValues={{ code: '' }}
+            >
               {({ isSubmitting, isValid }) => (
                 <Form>
                   <Field
