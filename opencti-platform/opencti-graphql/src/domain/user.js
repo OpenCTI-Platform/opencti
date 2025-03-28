@@ -1148,10 +1148,15 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   return { ...user, provider_metadata: userInfo.provider_metadata };
 };
 
-export const login = async (email, password) => {
+export const getUserByEmail = async (email) => {
   const context = executionContext('login');
   const user = await elLoadBy(context, SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
   if (!user) throw AuthenticationFailure();
+  return user;
+};
+
+export const login = async (email, password) => {
+  const user = await getUserByEmail(email);
   const dbPassword = user.password;
   const match = bcrypt.compareSync(password, dbPassword);
   if (!match) throw AuthenticationFailure();
