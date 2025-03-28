@@ -1145,6 +1145,7 @@
   "entity_Indicator": "Indicator",
   "entity_Individual": "Individual",
   "entity_Infrastructure": "Infrastructure",
+  "entity_IngestionCsv": "CSV Ingester",
   "entity_IngestionTaxii": "Taxii Ingester",
   "entity_IngestionTaxiiCollection": "Taxii Push Ingester",
   "entity_IngestionRss": "RSS Ingester",
