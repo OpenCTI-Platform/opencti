@@ -51,7 +51,7 @@ export const DataTableDisplayFilters = ({
   }
 
   return (
-    <div id="filter-container" style={{ minHeight: 10 }}>
+    <div id="filter-container" style={{ minHeight: 10, display: 'flex', alignItems: 'center' }}>
       <FilterIconButton
         helpers={helpers}
         availableFilterKeys={availableFilterKeys}
@@ -122,6 +122,7 @@ const DataTableFilters = ({
         >
           {hasFilters && (
             <Filters
+              isDatatable
               helpers={helpers}
               searchContext={searchContextFinal}
               availableFilterKeys={availableFilterKeys}

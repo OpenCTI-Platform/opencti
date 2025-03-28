@@ -6,7 +6,7 @@ type SavedFilter implements InternalObject & BasicObject {
     # SavedFilters
     name: String!
     filters: String!
-    scope: String
+    scope: String!
 }
 
 type SavedFilterEdge {
@@ -27,7 +27,7 @@ enum SavedFilterOrdering {
 input SavedFilterAddInput {
     name: String!
     filters: String!
-    scope: String
+    scope: String!
 }
 
 
