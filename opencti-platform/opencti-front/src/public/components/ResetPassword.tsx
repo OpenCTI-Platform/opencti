@@ -6,11 +6,20 @@ import { FormikConfig } from 'formik/dist/types';
 import { TextField } from 'formik-mui';
 import * as R from 'ramda';
 import { useCookies } from 'react-cookie';
+import { graphql } from 'react-relay';
 import { useFormatter } from '../../components/i18n';
+import useApiMutation from '../../utils/hooks/useApiMutation';
+import { handleErrorInForm } from '../../relay/environment';
 
 interface ResetProps {
   onCancel: () => void;
 }
+
+export const AskSendOtpMutation = graphql`
+mutation ResetPasswordMutation($input: AskSendOtpInput!){
+  askSendOtp(input: $input)
+}
+`;
 
 const resetValidation = (t: (v: string) => string) => Yup.object().shape({
   email: Yup.string()
@@ -53,10 +62,35 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
+  const [commitMutation] = useApiMutation(
+    AskSendOtpMutation,
+    undefined,
+    {
+      successMessage: t_i18n('If your e-mail address is correct, an e-mail will be sent to you.'),
+    },
+  );
 
-  const onSubmitAskToken: FormikConfig<ResetFormValues>['onSubmit'] = () => {
-    console.log('ASK TOKEN');
-    setStep(STEP_VALIDATE_TOKEN);
+  const onSubmitAskToken: FormikConfig<ResetFormValues>['onSubmit'] = async (
+    values,
+    { setSubmitting, resetForm, setErrors },
+  ) => {
+    setSubmitting(true);
+    commitMutation({
+      variables: {
+        input: {
+          email: values.email,
+        },
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        setStep(STEP_VALIDATE_TOKEN);
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
+    });
   };
 
   const onSubmitValidateToken: FormikConfig<ValidateTokenFormValues>['onSubmit'] = () => {
