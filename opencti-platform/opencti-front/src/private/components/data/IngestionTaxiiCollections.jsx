@@ -65,6 +65,11 @@ const IngestionTaxiiCollections = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
+        createButton={
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <IngestionTaxiiCollectionCreation paginationOptions={paginationOptions} />
+          </Security>
+        }
       >
         <QueryRenderer
           query={IngestionTaxiiCollectionLinesQuery}
@@ -80,9 +85,6 @@ const IngestionTaxiiCollections = () => {
           )}
         />
       </ListLines>
-      <Security needs={[INGESTION_SETINGESTIONS]}>
-        <IngestionTaxiiCollectionCreation paginationOptions={paginationOptions} />
-      </Security>
     </div>
   );
 };
