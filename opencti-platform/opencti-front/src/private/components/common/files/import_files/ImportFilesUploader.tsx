@@ -4,8 +4,9 @@ import ImportFilesDropzone from '@components/common/files/import_files/ImportFil
 import ImportFilesFreeText from '@components/common/files/import_files/ImportFilesFreeText';
 import ImportFilesList from '@components/common/files/import_files/ImportFilesList';
 import { importFilesDialogQuery } from '@components/common/files/import_files/ImportFilesDialog';
-import { usePreloadedQuery, PreloadedQuery } from 'react-relay';
+import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ImportFilesDialogQuery } from '@components/common/files/import_files/__generated__/ImportFilesDialogQuery.graphql';
+import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 
 export type FileWithConnectors = {
   file: File;
@@ -14,14 +15,12 @@ export type FileWithConnectors = {
 };
 
 interface ImportFilesUploaderProps {
-  files?: FileWithConnectors[];
-  onChange: (files: FileWithConnectors[]) => void;
   queryRef: PreloadedQuery<ImportFilesDialogQuery>;
 }
 
-const ImportFilesUploader = ({ files = [], onChange, queryRef }: ImportFilesUploaderProps) => {
+const ImportFilesUploader = ({ queryRef }: ImportFilesUploaderProps) => {
+  const { files, setFiles } = useImportFilesContext();
   const [isTextView, setIsTextView] = useState(false);
-
   const { connectorsForImport } = usePreloadedQuery<ImportFilesDialogQuery>(importFilesDialogQuery, queryRef);
 
   const updateFiles = (newFiles: File[]) => {
@@ -36,7 +35,7 @@ const ImportFilesUploader = ({ files = [], onChange, queryRef }: ImportFilesUplo
       return connectors && connectors.length > 0 ? { file, connectors } : { file };
     });
 
-    onChange([...files, ...extendedFiles]);
+    setFiles([...files, ...extendedFiles]);
   };
 
   return (
@@ -59,7 +58,7 @@ const ImportFilesUploader = ({ files = [], onChange, queryRef }: ImportFilesUplo
       </Grid>
 
       <Grid item xs={12}>
-        <ImportFilesList files={files} onChange={onChange} connectorsForImport={connectorsForImport} />
+        <ImportFilesList connectorsForImport={connectorsForImport}/>
       </Grid>
     </Grid>
   );
