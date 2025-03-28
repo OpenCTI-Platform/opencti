@@ -608,7 +608,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </Security>
                 <div className="clearfix" />
                 <FieldOrEmpty source={orderedSessions}>
-                  <List style={{ marginTop: -2 }}>
+                  <List style={{ marginTop: -2, width: '100%', maxHeight: 400, overflowY: 'auto' }}>
                     {orderedSessions
                       && orderedSessions.map((session: Session) => (
                         <ListItem
@@ -669,7 +669,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </Grid>
         <Triggers recipientId={user.id} filterKey="authorized_members.id" />
         <Grid item xs={6} style={{ marginTop: 10 }}>
-          <Typography variant="h4" gutterBottom={true}>
+          <Typography variant="h4" gutterBottom={true} style={{ paddingBottom: '22px' }}>
             {t_i18n('Operations')}
           </Typography>
           <Paper
