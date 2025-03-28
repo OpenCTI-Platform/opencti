@@ -62,7 +62,6 @@ const userValidation = (t) => Yup.object().shape({
 const CreateUserControlledDial = (props) => (
   <CreateEntityControlledDial
     entityType='User'
-    entityPrefix={false}
     size='medium'
     {...props}
   />

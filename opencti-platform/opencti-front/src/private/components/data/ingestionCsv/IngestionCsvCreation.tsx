@@ -20,7 +20,7 @@ import { ingestionCsvEditionFragment } from '@components/data/ingestionCsv/Inges
 import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatorField from '../../common/form/CreatorField';
@@ -37,6 +37,8 @@ import { convertMapper, convertUser } from '../../../../utils/edition';
 import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
 import PasswordTextField from '../../../../components/PasswordTextField';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -104,16 +106,25 @@ const resolveHasUserChoiceCsvMapper = (option: Option & {
   );
 };
 
+const CreateIngestionCsvControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial
+    entityType='IngestionCsv'
+    size='medium'
+    {...props}
+  />
+);
+
 const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ paginationOptions, isDuplicated, handleClose, ingestionCsv }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const [open, setOpen] = useState(false);
+  const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
+  const { me } = useAuth();
   const ingestionCsvData = useFragment(ingestionCsvEditionFragment, ingestionCsv);
+
+  const [open, setOpen] = useState(false);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
   const [creatorId, setCreatorId] = useState('');
-  const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
-  const { me } = useAuth();
 
   const onCreatorSelection = async (option: Option) => {
     setCreatorId(option.value);
@@ -442,6 +453,8 @@ export const IngestionCsvCreationContainer: FunctionComponent<IngestionCsvCreati
   isDuplicated,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const ingestionCsv = queryRef
     ? usePreloadedQuery(ingestionCsvEditionContainerQuery, queryRef).ingestionCsv
@@ -451,7 +464,8 @@ export const IngestionCsvCreationContainer: FunctionComponent<IngestionCsvCreati
       title={isDuplicated ? t_i18n('Duplicate a CSV ingester') : t_i18n('Create a CSV ingester')}
       open={open}
       onClose={handleClose}
-      variant={isDuplicated ? undefined : DrawerVariant.createWithPanel}
+      variant={isFABReplaced || isDuplicated ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced ? CreateIngestionCsvControlledDial : undefined}
     >
       {({ onClose }) => (
         <IngestionCsvCreation

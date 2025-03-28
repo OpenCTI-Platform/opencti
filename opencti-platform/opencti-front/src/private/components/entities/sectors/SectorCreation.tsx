@@ -332,7 +332,11 @@ const SectorCreation = ({
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_sectors', paginationOptions, 'sectorAdd');
 
   const CreateSectorControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Sector' {...props} />
+    <CreateEntityControlledDial
+      entityType='Sector'
+      size='medium'
+      {...props}
+    />
   );
   return (
     <Drawer

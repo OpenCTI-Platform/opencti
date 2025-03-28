@@ -68,8 +68,7 @@ const RetentionCreationValidation = (t: (text: string) => string) => Yup.object(
 
 const CreateRetentionControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='Retention policy'
-    entityPrefix={false}
+    entityType='RetentionRule'
     size='medium'
     {...props}
   />
