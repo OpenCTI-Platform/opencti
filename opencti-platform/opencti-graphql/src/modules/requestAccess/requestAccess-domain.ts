@@ -75,14 +75,14 @@ export const getRfiEntitySettings = async (context: AuthContext, user: AuthUser)
 export const isRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS) as BasicStoreSettings;
   const rfiEntitySettings = await getRfiEntitySettings(context, user);
-  const result = await verifyRequestAccessEnabled(context, user, settings, rfiEntitySettings);
-  return result.enabled;
+  const result = verifyRequestAccessEnabled(settings, rfiEntitySettings);
+  return result.enabled === true;
 };
 
 export const checkRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS) as BasicStoreSettings;
   const rfiEntitySettings = await getRfiEntitySettings(context, user);
-  const result = await verifyRequestAccessEnabled(context, user, settings, rfiEntitySettings);
+  const result = verifyRequestAccessEnabled(settings, rfiEntitySettings);
   if (!result.enabled) {
     throw FunctionalError(`Request access feature is missing configuration: ${result.message}`, { message: result.message, doc_code: 'REQUEST_ACCESS_CONFIGURATION' });
   }

@@ -2647,7 +2647,7 @@
   "Restrict to specific entity types": "특정 엔터티 유형으로 제한",
   "Restricted": "제한됨",
   "Restricted entities": "제한된 법인",
-  "Restricted entity already exists, user can request access": "제한된 개체가 이미 존재하며 사용자가 액세스를 요청할 수 있습니다",
+  "Restricted entity already exists, you request access": "제한된 엔티티가 이미 존재하며 사용자가 액세스를 요청할 수 있습니다",
   "Restriction": "제한 사항",
   "Restriction | Data": "제한 | 데이터",
   "Restriction Date": "제한 날짜",

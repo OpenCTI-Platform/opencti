@@ -12,7 +12,7 @@ import {
   USER_EDITOR
 } from '../../utils/testQuery';
 import { findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
-import { enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { ActionStatus, type RequestAccessAction } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
@@ -242,16 +242,6 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   let amberGroupId: string;
   let greenGroupId: string;
 
-  it.todo('Request access feature must be disabled when platform orga is not set', async () => {
-    const platformSettings = await queryAsAdminWithSuccess({
-      query: QUERY_ROOT_SETTINGS,
-      variables: {}
-    });
-    // If default configuration for test changes and platform_organization is setup, this it step has no meaning anymore.
-    expect(platformSettings?.data?.settings.platform_organization).toBeNull();
-    expect(platformSettings?.data?.settings.request_access_enabled).toBeFalsy();
-  });
-
   it('should enable platform organization', async () => {
     await enableEEAndSetOrganization(TEST_ORGANIZATION);
 
@@ -274,30 +264,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     logApp.info('[TEST] requestAccessWorkflowSettings:', { requestAccessWorkflowSettings });
   });
 
-  it.todo('should throw error when configuration is missing for Request Access feature', async () => {
-    // this will only be true the first time, if you re-run tests without init data you might have this step fail.
-    const platformSettings = await queryAsAdminWithSuccess({
-      query: READ_SETTINGS_QUERY,
-      variables: {},
-    });
-    expect(platformSettings?.data?.settings.request_access_enabled).toBeDefined();
-    expect(platformSettings?.data?.settings.request_access_enabled).toBeFalsy();
-
-    // Calling Add access request should throw exception
-    await queryAsUserIsExpectedError(USER_EDITOR.client, {
-      query: CREATE_REQUEST_ACCESS_QUERY,
-      variables: {
-        input: {
-          request_access_reason: 'This is going to fail',
-          request_access_entities: ['1234'],
-          request_access_members: ['1234'],
-          request_access_type: 'organization_sharing',
-        },
-      },
-    });
-  });
-
-  it.todo('should request access have more status and be configurable', async () => {
+  it('should request access have more status and be configurable', async () => {
     // ADD 2 status in the list of request access available status
     const allTemplates = await findAllTemplates(testContext, ADMIN_USER, {});
     const pendingTemplate = allTemplates.edges.find((template) => template.node.name === 'PENDING');
@@ -362,7 +329,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     logApp.info('[TEST] closedStatus:', { closedStatus });
   });
 
-  it.todo('should request access be configurable', async () => {
+  it('should request access be configurable', async () => {
     const allTemplates = await findAllTemplates(testContext, ADMIN_USER, {});
 
     // All of them are created in data initialization
@@ -407,14 +374,15 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     expect(requestAccessConfiguration.declined_status.template.name).toBe('CLOSED');
 
     // Back to "Normal" status
+    const inputBackToNormal: RequestAccessConfigureInput = {
+      approved_status_id: approvedTemplate?.node.id,
+      declined_status_id: declinedTemplate?.node.id,
+      approval_admin: [amberGroupId]
+    };
     await queryAsAdminWithSuccess({
       query: CONFIGURE_REQUEST_ACCESS_MUTATION,
       variables: {
-        input: {
-          approve_status_template_id: approvedTemplate?.node.id,
-          decline_status_template_id: declinedTemplate?.node.id,
-          approval_admin: [amberGroupId]
-        }
+        input: inputBackToNormal
       },
     });
 

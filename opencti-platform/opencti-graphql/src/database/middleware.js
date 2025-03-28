@@ -3102,12 +3102,13 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
       // If nothing accessible for this user, throw ForbiddenAccess
       if (filteredEntities.length === 0) {
-        const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+        const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
         const rfiSetting = await getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
-        if (isFeatureEnabled(ORGA_SHARING_REQUEST_FF) && isRequestAccessEnabled(context, user, settings, rfiSetting)) {
+        const isRequestAccessConfigured = isRequestAccessEnabled(settings, rfiSetting);
+        if (isRequestAccessConfigured === true) {
           const entitiesThatRequiresAccess = await canRequestAccess(context, user, existingEntities);
           if (entitiesThatRequiresAccess.length > 0) {
-            throw AccessRequiredError('Restricted entity already exists, user can request access', { entityIds: entitiesThatRequiresAccess.map((value) => value.internal_id) });
+            throw AccessRequiredError('Restricted entity already exists, you request access', { entityIds: entitiesThatRequiresAccess.map((value) => value.internal_id) });
           }
           throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
         } else {

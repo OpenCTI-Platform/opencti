@@ -2647,7 +2647,7 @@
   "Restrict to specific entity types": "Restreindre à des types d'entités spécifiques",
   "Restricted": "Restreint",
   "Restricted entities": "Entités restreintes",
-  "Restricted entity already exists, user can request access": "L'entité restreinte existe déjà, l'utilisateur peut demander l'accès",
+  "Restricted entity already exists, you request access": "L'entité restreinte existe déjà, l'utilisateur peut en demander l'accès",
   "Restriction": "Restriction",
   "Restriction | Data": "Restriction | Données",
   "Restriction Date": "Date de restriction",
