@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
 import {
@@ -8,10 +8,8 @@ import {
   getRedisVersion,
   lockResource,
   redisClearTelemetry,
-  redisGetForgotPasswordCode,
   redisGetForgotPasswordOtp,
   redisGetTelemetry,
-  redisSetForgotPasswordCode,
   redisSetForgotPasswordOtp,
   redisSetTelemetryAdd,
   setEditContext
