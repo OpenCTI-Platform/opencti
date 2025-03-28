@@ -950,6 +950,20 @@ export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]
 
 // endregion - exclusion list cache handling
 
+// region - forgot password handling
+
+const OTP_TTL = conf.get('app:forgot_password:otp_ttl');
+export const redisSetForgotPasswordOtp = async (user_email: string, otp: string, ttl: number = OTP_TTL) => {
+  const forgotPasswordOtpKeyName = `forgot_password_otp_${user_email}`;
+  await getClientBase().setex(forgotPasswordOtpKeyName, ttl, otp);
+};
+export const redisGetForgotPasswordOtp = async (user_email: string) => {
+  const forgotPasswordOtpKeyName = `forgot_password_otp_${user_email}`;
+  return getClientBase().get(forgotPasswordOtpKeyName);
+};
+
+// endregion - forgot password handling
+
 // region - telemetry gauges
 const TELEMETRY_EVENT_KEY = 'telemetry_events';
 /**
