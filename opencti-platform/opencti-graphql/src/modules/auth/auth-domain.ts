@@ -9,7 +9,7 @@ import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { ADMIN_USER } from '../../../tests/utils/testQuery';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
-import { logApp } from '../../config/conf';
+import { redisSetForgotPasswordOtp } from '../../database/redis';
 
 export const getUser = async (email: string): Promise<User> => {
   const user: any = await getUserByEmail(email);
@@ -38,6 +38,8 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   const resetOtp = generateOtp();
   try {
     const { user_email, name } = await getUser(input.email);
+    const email = user_email.toLowerCase();
+    await redisSetForgotPasswordOtp(email, resetOtp);
     const body = `Hi ${
       name
     },</br>`
