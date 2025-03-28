@@ -3,7 +3,7 @@ import { FormikConfig } from 'formik/dist/types';
 import React from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import GroupField from '@components/common/form/GroupField';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import OpenVocabField from '@components/common/form/OpenVocabField';
@@ -23,7 +23,7 @@ import { SettingsOrganization_organization$data } from './__generated__/Settings
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
-import UpdateOrganizationControlledDial from '../../../../components/UpdateEntityControlledDial';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const organizationMutationFieldPatch = graphql`
   mutation SettingsOrganizationEditionMutation(
@@ -100,6 +100,14 @@ export const convertGrantableGroups = (organization: SettingsOrganization_organi
   label: n.name,
   value: n.id,
 }));
+
+const UpdateSettingsOrganizationControlledDial = (props: DrawerControlledDialProps) => (
+  <EditEntityControlledDial
+    size={'medium'}
+    style={{ float: 'right' }}
+    {...props}
+  />
+);
 
 const SettingsOrganizationEdition = ({
   organization,
@@ -194,7 +202,7 @@ const SettingsOrganizationEdition = ({
       variant={isFABReplaced ? undefined : DrawerVariant.updateWithPanel}
       context={context}
       controlledDial={isFABReplaced
-        ? UpdateOrganizationControlledDial
+        ? UpdateSettingsOrganizationControlledDial
         : undefined
       }
     >
