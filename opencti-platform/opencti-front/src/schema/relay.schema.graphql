@@ -9092,6 +9092,7 @@ type Mutation {
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
   askSendToken(email: String!): Boolean
+  askSendOtp(input: AskSendOtpInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12832,4 +12833,8 @@ type FintelDesignConnection {
 
 enum FintelDesignOrdering {
   name
+}
+
+input AskSendOtpInput {
+  email: String!
 }

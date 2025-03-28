@@ -1,11 +1,11 @@
 import type { Resolvers } from '../../generated/graphql';
-import { askSendToken } from './auth-domain';
+import { askSendOtp } from './auth-domain';
 
 const authResolvers: Resolvers = {
   Query: {},
   Mutation: {
-    askSendToken: (_, { email }, context) => {
-      return askSendToken(context, email);
+    askSendOtp: (_, { input }, context) => {
+      return askSendOtp(context, input);
     }
   },
 };
