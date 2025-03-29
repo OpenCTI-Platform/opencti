@@ -28,7 +28,6 @@ import type {
   BasicStoreEntityIngestionTaxii,
   BasicStoreEntityIngestionTaxiiCollection,
   DataParam,
-  HeaderParam
 } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
@@ -600,12 +599,12 @@ const csvExecutor = async (context: AuthContext) => {
 const jsonParsers: Record<string, JsonMapperParsed> = { parser4: mapper4 as JsonMapperParsed };
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-const testIngestion: BasicStoreEntityIngestionJson = {
+export const testIngestion: BasicStoreEntityIngestionJson = {
+  id: '8f271994-a6ab-4103-97c5-561723d0a723',
   name: 'test',
   description: 'test',
   uri: 'http://localhost:8080/v1/statement',
   verb: 'post',
-  // body: 'select * from customer',
   body: 'select * from customer OFFSET $offset LIMIT 10',
   json_mapper_id: 'parser4',
   // ==== Specific for api that require sub queries (like trino)
@@ -622,12 +621,12 @@ const testIngestion: BasicStoreEntityIngestionJson = {
   query_attributes: [
     {
       type: 'data', // If attribute need to be built from the response data.
+      from: '$.data', // Json path the get the data from the response
+      to: 'offset', // Name of the final param
       data_operation: 'count', // If data is an array, choose to get the size
       state_operation: 'sum', // How to manage the parameter in the state.
-      from_path: '$.data', // Json path the get the data from the response
-      to_name: 'offset', // Name of the final param
       default: 0, // Default value for the param
-      as_query_param: false, // Attribute will also be exposed in query params. Default is to replace body variable
+      exposed: 'body', // Where attribute must be exposed
     }
   ],
   // Specific headers for the query
@@ -643,49 +642,49 @@ let ingestionState = {}; /* TODO GET STATE */
 const getValueFromPath = (path: string, json: any) => {
   return JSONPath.JSONPath({ path, json, wrap: false, flatten: true });
 };
-const buildQueryObject = (queryParamsAttributes: Array<HeaderParam | DataParam> | undefined, requestData: Record<string, any>, withDefault = true) => {
+const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, requestData: Record<string, any>, withDefault = true) => {
   const params: Record<string, string | number> = {};
   if (queryParamsAttributes) {
     for (let attrIndex = 0; attrIndex < queryParamsAttributes.length; attrIndex += 1) {
       const queryParamsAttribute = queryParamsAttributes[attrIndex];
       let attrValue;
       if (queryParamsAttribute.type === 'data') {
-        let valueFromPath = getValueFromPath(queryParamsAttribute.from_path, requestData);
+        let valueFromPath = getValueFromPath(queryParamsAttribute.from, requestData);
         if (queryParamsAttribute.data_operation === 'count' && valueFromPath) {
           valueFromPath = Array.isArray(valueFromPath) ? valueFromPath.length : 1;
         }
         attrValue = valueFromPath;
       } else {
-        attrValue = requestData[queryParamsAttribute.from_name];
+        attrValue = requestData[queryParamsAttribute.from];
       }
       if (isNotEmptyField(attrValue)) {
-        params[queryParamsAttribute.to_name] = attrValue;
+        params[queryParamsAttribute.to] = attrValue;
       } else if (isNotEmptyField(queryParamsAttribute.default) && withDefault) {
-        params[queryParamsAttribute.to_name] = queryParamsAttribute.default;
+        params[queryParamsAttribute.to] = queryParamsAttribute.default;
       }
     }
   }
   return params;
 };
-const mergeQueryState = (queryParamsAttributes: Array<HeaderParam | DataParam> | undefined, previousState: Record<string, any>, newState: Record<string, any>) => {
+const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, previousState: Record<string, any>, newState: Record<string, any>) => {
   const state: Record<string, any> = {};
   const queryParams = queryParamsAttributes ?? [];
   for (let attrIndex = 0; attrIndex < queryParams.length; attrIndex += 1) {
     const queryParamsAttribute = queryParams[attrIndex];
     if (queryParamsAttribute.state_operation === 'sum') {
-      state[queryParamsAttribute.to_name] = previousState[queryParamsAttribute.to_name] + newState[queryParamsAttribute.to_name];
+      state[queryParamsAttribute.to] = previousState[queryParamsAttribute.to] + newState[queryParamsAttribute.to];
     } else {
-      state[queryParamsAttribute.to_name] = newState[queryParamsAttribute.to_name];
+      state[queryParamsAttribute.to] = newState[queryParamsAttribute.to];
     }
   }
   return state;
 };
-const buildQueryParams = (queryParamsAttributes: Array<HeaderParam | DataParam> | undefined, variables: Record<string, any>) => {
+const buildQueryParams = (queryParamsAttributes: Array<DataParam> | undefined, variables: Record<string, any>) => {
   const params: Record<string, string | number> = {};
-  const paramAttributes = (queryParamsAttributes ?? []).filter((query) => query.as_query_param === true);
+  const paramAttributes = (queryParamsAttributes ?? []).filter((query) => query.exposed === 'query_param');
   for (let attrIndex = 0; attrIndex < paramAttributes.length; attrIndex += 1) {
     const queryParamsAttribute = paramAttributes[attrIndex];
-    params[queryParamsAttribute.to_name] = variables[queryParamsAttribute.to_name];
+    params[queryParamsAttribute.to] = variables[queryParamsAttribute.to];
   }
   return params;
 };
