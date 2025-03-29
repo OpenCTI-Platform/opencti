@@ -16,6 +16,8 @@ import IngestionJsonMapperTestDialog from '@components/data/ingestionJson/Ingest
 import makeStyles from '@mui/styles/makeStyles';
 import { IngestionJsonEditionFragment_ingestionJson$key } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionFragment_ingestionJson.graphql';
 import { JsonMapperFieldSearchQuery } from '@components/common/form/__generated__/JsonMapperFieldSearchQuery.graphql';
+import { QueryAttributeFieldAdd } from '@components/common/form/QueryAttributeField';
+import { HeaderFieldAdd } from '@components/common/form/HeaderField';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -58,6 +60,24 @@ export const ingestionJsonEditionFragment = graphql`
     name
     description
     uri
+    body
+    verb
+    headers {
+      name
+      value
+    }
+    query_attributes {
+      type
+      data_operation
+      default
+      exposed
+      from
+      to
+      state_operation
+    }
+    pagination_with_sub_page
+    pagination_with_sub_page_attribute_path
+    pagination_with_sub_page
     authentication_type
     authentication_value
     ingestion_running
@@ -229,6 +249,9 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
     name: ingestionJsonData.name,
     description: ingestionJsonData.description,
     uri: ingestionJsonData.uri,
+    verb: ingestionJsonData.verb,
+    headers: ingestionJsonData.headers,
+    query_attributes: ingestionJsonData.query_attributes,
     authentication_type: ingestionJsonData.authentication_type,
     authentication_value: ingestionJsonData.authentication_type === BEARER_AUTH ? ingestionJsonData.authentication_value : undefined,
     username: ingestionJsonData.authentication_type === BASIC_AUTH ? extractUsername(ingestionJsonData.authentication_value) : undefined,
@@ -303,11 +326,39 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             component={TextField}
             variant="standard"
             name="uri"
-            label={t_i18n('JSON URL')}
+            label={t_i18n('HTTP JSON URL')}
             fullWidth={true}
             onSubmit={handleSubmitField}
             style={fieldSpacingContainerStyle}
           />
+          <Field
+            component={SelectField}
+            variant="standard"
+            name="verb"
+            label={t_i18n('HTTP VERB')}
+            fullWidth={true}
+            containerstyle={{ width: '100%', marginTop: 20 }}
+          >
+            <MenuItem value="GET">{t_i18n('Get')}</MenuItem>
+            <MenuItem value="POST">{t_i18n('Post')}</MenuItem>
+          </Field>
+
+          <QueryAttributeFieldAdd
+            id="query_attributes"
+            name="query_attributes"
+            values={values?.query_attributes}
+            containerStyle={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+          />
+
+          <HeaderFieldAdd
+            id="headers"
+            name="headers"
+            values={values?.headers}
+            containerStyle={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+          />
+
           <CreatorField
             name="user_id"
             label={t_i18n('User responsible for data creation (empty = System)')}
