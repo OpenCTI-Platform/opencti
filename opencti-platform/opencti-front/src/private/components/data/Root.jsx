@@ -7,6 +7,7 @@ import useGranted, {
   CSVMAPPERS,
   INGESTION,
   INGESTION_SETINGESTIONS,
+  JSONMAPPERS,
   KNOWLEDGE,
   KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNUPDATE,
@@ -17,6 +18,7 @@ import useGranted, {
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
+const JsonMappers = lazy(() => import('./JsonMappers'));
 const Security = lazy(() => import('../../../utils/Security'));
 const Connectors = lazy(() => import('./Connectors'));
 const IngestionCsv = lazy(() => import('./IngestionCsv'));
@@ -188,6 +190,17 @@ const Root = () => {
               <CsvMappers/>
             </Security>
           }
+        />
+        <Route
+          path="/processing/json_mapper"
+          element={
+            <Security
+              needs={[JSONMAPPERS]}
+              placeholder={<Navigate to="/dashboard" />}
+            >
+              <JsonMappers/>
+            </Security>
+            }
         />
         <Route
           path="/processing/tasks"

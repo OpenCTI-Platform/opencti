@@ -9,7 +9,7 @@ import EEMenu from '../common/entreprise_edition/EEMenu';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
-import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS } from '../../../utils/hooks/useGranted';
+import useGranted, { CSVMAPPERS, JSONMAPPERS, KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -35,6 +35,7 @@ const ProcessingMenu = () => {
   const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isCsvMapperUpdater = useGranted([CSVMAPPERS]);
+  const isJsonMapperUpdater = useGranted([JSONMAPPERS]);
   return (
     <Drawer
       variant="permanent"
@@ -79,6 +80,18 @@ const ProcessingMenu = () => {
             dense={false}
           >
             <ListItemText primary={t_i18n('CSV Mappers')} />
+          </MenuItem>
+        )}
+        {isJsonMapperUpdater && (
+          <MenuItem
+            component={Link}
+            to={'/dashboard/data/processing/json_mapper'}
+            selected={location.pathname.includes(
+              '/dashboard/data/processing/json_mapper',
+            )}
+            dense={false}
+          >
+            <ListItemText primary={t_i18n('JSON Mappers')} />
           </MenuItem>
         )}
       </MenuList>

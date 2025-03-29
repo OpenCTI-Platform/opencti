@@ -32,7 +32,8 @@ import type {
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
-import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
+import { findById as findCsvMapperById } from '../modules/internal/csvMapper/csvMapper-domain';
+import { findById as findJsonMapperById } from '../modules/internal/jsonMapper/jsonMapper-domain';
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
 import { createWork, reportExpectation, updateExpectationsNumber } from '../domain/work';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
@@ -46,7 +47,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import jsonMappingExecution from '../json-mapper';
-import { mapper4 } from '../json-mapper-test4';
+import { findAllJsonIngestions, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
 import type { JsonMapperParsed } from '../modules/internal/jsonMapper/jsonMapper-types';
 
 // Ingestion manager responsible to cleanup old data
@@ -544,7 +545,7 @@ export const processCsvLines = async (
 
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const user = context.user ?? SYSTEM_USER;
-  const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
+  const csvMapper = await findCsvMapperById(context, user, ingestion.csv_mapper_id);
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
   try {
@@ -596,54 +597,11 @@ const csvExecutor = async (context: AuthContext) => {
 // endregion
 
 // region json ingestion
-const jsonParsers: Record<string, JsonMapperParsed> = { parser4: mapper4 as JsonMapperParsed };
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-export const testIngestion: BasicStoreEntityIngestionJson = {
-  id: '8f271994-a6ab-4103-97c5-561723d0a723',
-  name: 'test',
-  description: 'test',
-  uri: 'http://localhost:8080/v1/statement',
-  verb: 'post',
-  body: 'select * from customer OFFSET $offset LIMIT 10',
-  json_mapper_id: 'parser4',
-  // ==== Specific for api that require sub queries (like trino)
-  pagination_with_sub_page: true,
-  pagination_with_sub_page_attribute_path: '$.nextUri',
-  pagination_with_sub_page_query_verb: 'get',
-  // ======================================
-  confidence_to_score: true,
-  authentication_type: IngestionAuthType.None,
-  authentication_value: '',
-  user_id: undefined,
-  ingestion_running: true,
-  last_execution_date: undefined,
-  query_attributes: [
-    {
-      type: 'data', // If attribute need to be built from the response data.
-      from: '$.data', // Json path the get the data from the response
-      to: 'offset', // Name of the final param
-      data_operation: 'count', // If data is an array, choose to get the size
-      state_operation: 'sum', // How to manage the parameter in the state.
-      default: 0, // Default value for the param
-      exposed: 'body', // Where attribute must be exposed
-    }
-  ],
-  // Specific headers for the query
-  headers: [
-    { key: 'X-Trino-User', value: 'admin' },
-    { key: 'X-Trino-Schema', value: 'sf1' },
-    { key: 'X-Trino-Catalog', value: 'tpcds' }
-  ]
-};
-
-let ingestionState = {}; /* TODO GET STATE */
-
 const getValueFromPath = (path: string, json: any) => {
   return JSONPath.JSONPath({ path, json, wrap: false, flatten: true });
 };
 const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, requestData: Record<string, any>, withDefault = true) => {
-  const params: Record<string, string | number> = {};
+  const params: Record<string, object> = {};
   if (queryParamsAttributes) {
     for (let attrIndex = 0; attrIndex < queryParamsAttributes.length; attrIndex += 1) {
       const queryParamsAttribute = queryParamsAttributes[attrIndex];
@@ -672,7 +630,7 @@ const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, pr
   for (let attrIndex = 0; attrIndex < queryParams.length; attrIndex += 1) {
     const queryParamsAttribute = queryParams[attrIndex];
     if (queryParamsAttribute.state_operation === 'sum') {
-      state[queryParamsAttribute.to] = previousState[queryParamsAttribute.to] + newState[queryParamsAttribute.to];
+      state[queryParamsAttribute.to] = parseInt(previousState[queryParamsAttribute.to] ?? 0, 10) + parseInt(newState[queryParamsAttribute.to] ?? 0, 10);
     } else {
       state[queryParamsAttribute.to] = newState[queryParamsAttribute.to];
     }
@@ -700,73 +658,91 @@ const replaceVariables = (body: string, variables: Record<string, object>) => {
     return match;
   });
 };
-export const jsonExecutor = async (_context: AuthContext) => {
-  // console.log('ingestionState', ingestionState);
-  // const filters = {
-  //   mode: 'and',
-  //   filters: [{ key: 'ingestion_running', values: [true] }],
-  //   filterGroups: [],
-  // };
-  // const opts = { filters, connectionFormat: false, noFiltersChecking: true };
-  // const ingestions = await findAllJsonIngestions(context, SYSTEM_USER, opts);
-  const ingestions = [testIngestion];
+export const jsonExecutor = async (context: AuthContext) => {
+  const filters = {
+    mode: 'and',
+    filters: [{ key: 'ingestion_running', values: [true] }],
+    filterGroups: [],
+  };
+  const opts = { filters, connectionFormat: false, noFiltersChecking: true };
+  const ingestions = await findAllJsonIngestions(context, SYSTEM_USER, opts);
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
-    let certificates;
-    const headers = new OpenCTIHeaders();
-    headers.Accept = 'application/json';
-    const headerOptions = ingestion.headers ?? [];
-    for (let index = 0; index < headerOptions.length; index += 1) {
-      const h = headerOptions[index];
-      headers[h.key] = h.value;
-    }
-    if (ingestion.authentication_type === IngestionAuthType.Basic) {
-      const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
-      headers.Authorization = `Basic ${auth}`;
-    }
-    if (ingestion.authentication_type === IngestionAuthType.Bearer) {
-      headers.Authorization = `Bearer ${ingestion.authentication_value}`;
-    }
-    if (ingestion.authentication_type === IngestionAuthType.Certificate) {
-      certificates = { cert: ingestion.authentication_value.split(':')[0], key: ingestion.authentication_value.split(':')[1], ca: ingestion.authentication_value.split(':')[2] };
-    }
-    const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
-    const httpClient = getHttpClient(httpClientOptions);
-    // Execute the http query
-    // const ingestionState = {}; /* TODO GET STATE */
-    const variables = isEmptyField(ingestionState) ? buildQueryObject(ingestion.query_attributes, {}) : ingestionState;
-    const params = buildQueryParams(ingestion.query_attributes, variables);
-    // console.log('variables', variables);
-    const parsedBody = replaceVariables(ingestion.body, variables);
-    console.log(`> Main query: ${ingestion.uri}`, parsedBody);
-    const { data: requestData, headers: responseHeaders } = await httpClient.call({ method: ingestion.verb, url: ingestion.uri, data: parsedBody, params });
-    const bundle = await jsonMappingExecution({}, requestData, jsonParsers[ingestion.json_mapper_id]);
-    let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
-    // region Try to paginate with next page style
-    if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
-      // console.log(requestData);
-      let url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData);
-      while (isNotEmptyField(url)) {
-        console.log(`> Sub query: ${url}`);
-        await wait(100); // Wait 100 ms between 2 calls
-        const { data: paginationData } = await httpClient.call({ method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb, url, data: ingestion.body, params });
-        const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
-        nextExecutionState = { ...nextExecutionState, ...paginationVariables };
-        const paginationBundle = await jsonMappingExecution({}, paginationData, jsonParsers[ingestion.json_mapper_id]);
-        if (paginationBundle.objects.length > 0) {
-          bundle.objects = bundle.objects.concat(paginationBundle.objects);
-        }
-        url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData);
+    const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
+    if (messages_number === 0) {
+      let certificates;
+      const headers = new OpenCTIHeaders();
+      headers.Accept = 'application/json';
+      const headerOptions = ingestion.headers ?? [];
+      for (let index = 0; index < headerOptions.length; index += 1) {
+        const h = headerOptions[index];
+        headers[h.name] = h.value;
       }
+      if (ingestion.authentication_type === IngestionAuthType.Basic) {
+        const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
+        headers.Authorization = `Basic ${auth}`;
+      }
+      if (ingestion.authentication_type === IngestionAuthType.Bearer) {
+        headers.Authorization = `Bearer ${ingestion.authentication_value}`;
+      }
+      if (ingestion.authentication_type === IngestionAuthType.Certificate) {
+        certificates = {
+          cert: ingestion.authentication_value.split(':')[0],
+          key: ingestion.authentication_value.split(':')[1],
+          ca: ingestion.authentication_value.split(':')[2]
+        };
+      }
+      const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
+      const httpClient = getHttpClient(httpClientOptions);
+      // Execute the http query
+      const variables = isEmptyField(ingestion.ingestion_json_state) ? buildQueryObject(ingestion.query_attributes, {}) : ingestion.ingestion_json_state;
+      const params = buildQueryParams(ingestion.query_attributes, variables);
+      const parsedBody = replaceVariables(ingestion.body, variables);
+      logApp.info(`> Main query: ${ingestion.uri}`, parsedBody);
+      const { data: requestData, headers: responseHeaders } = await httpClient.call({
+        method: ingestion.verb,
+        url: ingestion.uri,
+        data: parsedBody,
+        params
+      });
+      const jsonMapper = await findJsonMapperById(context, SYSTEM_USER, ingestion.json_mapper_id);
+      const jsonMapperParsed: JsonMapperParsed = { ...jsonMapper, representations: JSON.parse(jsonMapper.representations), variables: JSON.parse(jsonMapper.variables) };
+      const bundle = await jsonMappingExecution({}, requestData, jsonMapperParsed);
+      let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
+      // region Try to paginate with next page style
+      if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
+        let url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData);
+        while (isNotEmptyField(url)) {
+          logApp.info(`> Sub query: ${url}`);
+          await wait(100); // Wait 100 ms between 2 calls
+          const { data: paginationData } = await httpClient.call({
+            method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb,
+            url,
+            data: ingestion.body,
+            params
+          });
+          const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
+          nextExecutionState = { ...nextExecutionState, ...paginationVariables };
+          const paginationBundle = await jsonMappingExecution({}, paginationData, jsonMapperParsed);
+          if (paginationBundle.objects.length > 0) {
+            bundle.objects = bundle.objects.concat(paginationBundle.objects);
+          }
+          url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData);
+        }
+      }
+      // endregion
+      logApp.info('pushBundleToConnectorQueue', bundle.objects.length);
+      // Push the bundle to absorption queue
+      await pushBundleToConnectorQueue(context, ingestion, bundle);
+      // Save new state for next execution
+      const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
+      const state = { ingestion_json_state: ingestionState, last_execution_date: now() };
+      await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
+    } else {
+      // Update the state
+      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
     }
-    // endregion
-    console.log('dataBundle', bundle.objects.length);
-    // Push the bundle to absorption queue
-    // await pushBundleToConnectorQueue(context, ingestion, bundle);
-    // Save new state for next execution
-    ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
-    // await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
-    console.log('----------------------------------------------');
   }
 };
 // endregion
