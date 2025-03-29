@@ -5,17 +5,6 @@ __metadata:
   version: 8
   cacheKey: 10
 
-"@acuminous/bitsyntax@npm:^0.1.2":
-  version: 0.1.2
-  resolution: "@acuminous/bitsyntax@npm:0.1.2"
-  dependencies:
-    buffer-more-ints: "npm:~1.0.0"
-    debug: "npm:^4.3.4"
-    safe-buffer: "npm:~5.1.2"
-  checksum: 10/abdc4313ae08e52fb8eeaebf53759c3b9a38983a696d77c46c24de1c065247355a1b5c02ad3618700d3fb3628ccf3ec39227a080bd1fe7adc864144ccf84b0cc
-  languageName: node
-  linkType: hard
-
 "@ampproject/remapping@npm:^2.2.0, @ampproject/remapping@npm:^2.3.0":
   version: 2.3.0
   resolution: "@ampproject/remapping@npm:2.3.0"
@@ -5397,14 +5386,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"amqplib@npm:0.10.5":
-  version: 0.10.5
-  resolution: "amqplib@npm:0.10.5"
+"amqplib@npm:0.10.7":
+  version: 0.10.7
+  resolution: "amqplib@npm:0.10.7"
   dependencies:
-    "@acuminous/bitsyntax": "npm:^0.1.2"
     buffer-more-ints: "npm:~1.0.0"
     url-parse: "npm:~1.5.10"
-  checksum: 10/bcf4bda790f8a356ba4c7d3054ae3ee397a48d6c4d51f1015f703dd7205c097ba9772577567a06eb470d13e0becdc4163c857299e50eb5a4bc888e3007832f87
+  checksum: 10/d670133a36dcf062636215e3bd23b0631159a9f00c90a50a265a9fe75de713f5f71a4f4d86bcdd30c975bc38e22dbbba60b2f1bd2f44e3328931df6f98662aa6
   languageName: node
   linkType: hard
 
@@ -11498,7 +11486,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:7.3.1"
     "@vitest/coverage-v8": "npm:2.0.5"
     ajv: "npm:8.17.1"
-    amqplib: "npm:0.10.5"
+    amqplib: "npm:0.10.7"
     antlr4: "npm:4.13.2"
     apollo-server-errors: "npm:3.3.1"
     archiver: "npm:7.0.1"
@@ -12723,7 +12711,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safe-buffer@npm:~5.1.0, safe-buffer@npm:~5.1.1, safe-buffer@npm:~5.1.2":
+"safe-buffer@npm:~5.1.0, safe-buffer@npm:~5.1.1":
   version: 5.1.2
   resolution: "safe-buffer@npm:5.1.2"
   checksum: 10/7eb5b48f2ed9a594a4795677d5a150faa7eb54483b2318b568dc0c4fc94092a6cce5be02c7288a0500a156282f5276d5688bce7259299568d1053b2150ef374a
