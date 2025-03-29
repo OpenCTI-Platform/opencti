@@ -1,9 +1,9 @@
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { CsvMapper } from '../../generated/graphql';
-import { IngestionAuthType } from '../../generated/graphql';
-import type { AuthorizedMember } from '../../utils/access';
+import type {StixObject, StixOpenctiExtensionSDO} from '../../types/stix-2-1-common';
+import {STIX_EXT_OCTI} from '../../types/stix-2-1-extensions';
+import type {BasicStoreEntity, StoreEntity} from '../../types/store';
+import type {CsvMapper} from '../../generated/graphql';
+import {IngestionAuthType} from '../../generated/graphql';
+import type {AuthorizedMember} from '../../utils/access';
 
 // region Rss ingestion
 export const ENTITY_TYPE_INGESTION_RSS = 'IngestionRss';
@@ -145,7 +145,7 @@ export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
   pagination_with_sub_page: boolean
   pagination_with_sub_page_attribute_path: string
   pagination_with_sub_page_query_verb?: 'get' | 'post'
-  query_attributes?: Array<HeaderParam | DataParam>
+  query_attributes?: Array<DataParam>
 }
 
 export interface StoreEntityIngestionJson extends StoreEntity {
@@ -200,22 +200,14 @@ export interface StixIngestionTaxiiCollection extends StixObject {
 // endregion
 
 // region Taxii ingestion
-export interface HeaderParam {
-  type: 'header'
-  from_name: string // header name or path for data
-  to_name: string
-  default: string
-  state_operation: 'replace' | 'sum'
-  as_query_param: boolean
-}
 
 export interface DataParam {
-  type: 'data'
-  from_path: string // header name or path for data
-  to_name: string
-  data_operation: 'count' | 'data'
-  state_operation: 'replace' | 'sum'
+  type: 'data' | 'header'
+  from: string // path for data or header name
+  to: string // target variable
   default: string | number,
-  as_query_param: boolean
+  state_operation: 'replace' | 'sum'
+  data_operation: 'count' | 'data'
+  exposed: 'body' | 'query_param' | 'header'
 }
 // endregion

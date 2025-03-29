@@ -11,6 +11,7 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { StixObject } from '../../types/stix-common';
+import { testIngestion } from '../../manager/ingestionManager';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionJson>(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON);
@@ -25,6 +26,9 @@ export const findAllJsonIngestions = async (context: AuthContext, user: AuthUser
 };
 
 export const findJsonMapperForIngestionById = (context: AuthContext, user: AuthUser, jsonMapperId: string) => {
+  if (jsonMapperId === testIngestion.id) {
+    return testIngestion;
+  }
   return storeLoadById<BasicStoreEntityJsonMapper>(context, user, jsonMapperId, ENTITY_TYPE_INGESTION_JSON);
 };
 
