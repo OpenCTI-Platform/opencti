@@ -11,6 +11,7 @@ import {
   ingestionJsonResetState,
   testJsonIngestionMapping
 } from './ingestion-json-domain';
+import { connectorIdFromIngestId } from '../../domain/connector';
 
 const creatorLoader = batchLoader(batchCreator);
 
@@ -21,6 +22,7 @@ const ingestionJsonResolvers: Resolvers = {
   },
   IngestionJson: {
     user: (ingestionJson, _, context) => creatorLoader.load(ingestionJson.user_id, context, context.user),
+    connector_id: (ingestionJson) => connectorIdFromIngestId(ingestionJson.id),
     jsonMapper: (ingestionJson, _, context) => findJsonMapperForIngestionById(context, context.user, ingestionJson.json_mapper_id),
   },
   Mutation: {
