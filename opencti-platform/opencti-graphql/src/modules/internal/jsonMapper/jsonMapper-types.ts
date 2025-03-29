@@ -57,39 +57,16 @@ export interface JsonMapperRepresentation {
   to?: string
 }
 
-export interface JsonMapperRepresentationAttributeResolved {
-  key: string
-  json_path?: AttributePath
-  based_on?: AttributeBasedOn
-  default_values?: { id:string, name:string }[]
-  ref?: AttributeRef
-}
-export interface JsonMapperRepresentationResolved {
-  id: string
-  type: JsonMapperRepresentationType
-  target: JsonMapperRepresentationTarget
-  attributes: JsonMapperRepresentationAttributeResolved[]
-  from?: string
-  to?: string
-}
-
-export type JsonMapperParsed = Omit<BasicStoreEntityJsonMapper, 'representations'> & {
-  variables: {
-    name: string,
-    path: ComplexPath
-  }[]
+export type JsonMapperParsed = Omit<BasicStoreEntityJsonMapper, 'representations' | 'variables'> & {
+  variables: { name: string, path: ComplexPath }[]
   representations: JsonMapperRepresentation[]
   user_chosen_markings?: string[]
 };
 
-export type JsonMapperResolved = Omit<BasicStoreEntityJsonMapper, 'representations'> & {
-  representations: JsonMapperRepresentationResolved[]
-  user_chosen_markings?: string[]
-};
-
 export interface BasicStoreEntityJsonMapper extends BasicStoreEntity {
-  name: string
+  variables: string
   representations: string
+  user_chosen_markings?: string[]
 }
 
 export interface StoreEntityJsonMapper extends BasicStoreEntityJsonMapper, StoreEntity {}

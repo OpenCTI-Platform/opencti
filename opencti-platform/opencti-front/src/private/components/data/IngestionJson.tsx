@@ -74,8 +74,8 @@ const IngestionJson = () => {
         width: '15%',
         isSortable: false,
       },
-      current_state_hash: {
-        label: 'Current state',
+      connector: {
+        label: 'Connector',
         isSortable: false,
         width: '15%',
       },
@@ -140,8 +140,7 @@ const IngestionJson = () => {
       <Security needs={[INGESTION_SETINGESTIONS]}>
         <IngestionJsonCreationContainer
           open={false}
-          handleClose={() => {
-          }}
+          handleClose={() => {}}
           paginationOptions={paginationOptions}
           isDuplicated={false}
         />
