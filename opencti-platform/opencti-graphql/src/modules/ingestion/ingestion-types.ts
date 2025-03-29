@@ -1,9 +1,9 @@
-import type {StixObject, StixOpenctiExtensionSDO} from '../../types/stix-2-1-common';
-import {STIX_EXT_OCTI} from '../../types/stix-2-1-extensions';
-import type {BasicStoreEntity, StoreEntity} from '../../types/store';
-import type {CsvMapper} from '../../generated/graphql';
-import {IngestionAuthType} from '../../generated/graphql';
-import type {AuthorizedMember} from '../../utils/access';
+import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type { BasicStoreEntity, StoreEntity } from '../../types/store';
+import type { CsvMapper } from '../../generated/graphql';
+import { IngestionAuthType } from '../../generated/graphql';
+import type { AuthorizedMember } from '../../utils/access';
 
 // region Rss ingestion
 export const ENTITY_TYPE_INGESTION_RSS = 'IngestionRss';
@@ -138,9 +138,10 @@ export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
   authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate
   authentication_value: string
   user_id: string | undefined
+  ingestion_json_state: Record<string, object>
   ingestion_running: boolean
   last_execution_date: Date | undefined
-  headers?: { key: string, value: string }[]
+  headers?: { name: string, value: string }[]
   // pagination
   pagination_with_sub_page: boolean
   pagination_with_sub_page_attribute_path: string
@@ -205,7 +206,7 @@ export interface DataParam {
   type: 'data' | 'header'
   from: string // path for data or header name
   to: string // target variable
-  default: string | number,
+  default: string,
   state_operation: 'replace' | 'sum'
   data_operation: 'count' | 'data'
   exposed: 'body' | 'query_param' | 'header'

@@ -14,6 +14,7 @@ import { extractRepresentative } from '../../../database/entity-representative';
 import type { MandatoryType, ObjectAttribute } from '../../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { idsValuesRemap } from '../../../database/stix-2-1-converter';
+import type { JsonMapperRepresentation } from '../jsonMapper/jsonMapper-types';
 
 export interface CsvMapperSchemaAttribute {
   name: string
@@ -238,7 +239,7 @@ export const getHashesNames = (entityType: string) => {
 // csv mapper representatives converter for default values ids
 // Export => ids must be converted to standard id
 // Import => ids must be converted back to internal id
-export const convertRepresentationsIds = async (context: AuthContext, user: AuthUser, representations: CsvMapperRepresentation[], from: 'internal' | 'stix') => {
+export const convertRepresentationsIds = async (context: AuthContext, user: AuthUser, representations: CsvMapperRepresentation[] | JsonMapperRepresentation[], from: 'internal' | 'stix') => {
   // First iteration to resolve all ids to translate
   const resolvingIds: string[] = [];
   representations.forEach((representation) => {
