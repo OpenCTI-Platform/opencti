@@ -1,3 +1,17 @@
+type IngestionHeader {
+    name: String!
+    value: String!
+}
+
+type IngestionQueryAttribute {
+    type: String
+    from: String
+    to: String
+    data_operation: String
+    state_operation: String
+    default: String
+    exposed: String
+}
 
 type IngestionJson implements InternalObject & BasicObject {
     id: ID!
@@ -9,6 +23,13 @@ type IngestionJson implements InternalObject & BasicObject {
     name: String!
     description: String
     uri: String!
+    verb: String!
+    body: String
+    pagination_with_sub_page: Boolean
+    pagination_with_sub_page_attribute_path: String
+    pagination_with_sub_page_query_verb: String
+    headers: [IngestionHeader!]
+    query_attributes: [IngestionQueryAttribute!]
     jsonMapper: JsonMapper!
     authentication_type: IngestionAuthType!
     authentication_value: String
@@ -55,6 +76,21 @@ type Query {
 }
 
 # Mutations
+input HeaderInput {
+    name: String!
+    value: String!
+}
+
+input QueryAttribute {
+    type: String
+    from: String
+    to: String
+    data_operation: String
+    state_operation: String
+    default: String
+    exposed: String
+}
+
 input IngestionJsonAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
@@ -62,6 +98,13 @@ input IngestionJsonAddInput {
     authentication_value: String
     current_state_date: DateTime
     uri: String! @constraint(minLength: 5)
+    verb: String!
+    body: String
+    pagination_with_sub_page: Boolean
+    pagination_with_sub_page_attribute_path: String
+    pagination_with_sub_page_query_verb: String
+    headers: [HeaderInput!]
+    query_attributes: [QueryAttribute!]
     json_mapper_id: String!
     ingestion_running: Boolean
     user_id: String!

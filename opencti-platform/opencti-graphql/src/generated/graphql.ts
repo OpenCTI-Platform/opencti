@@ -9022,6 +9022,11 @@ export type HashedObservableStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+export type HeaderInput = {
+  name: Scalars['String']['input'];
+  value: Scalars['String']['input'];
+};
+
 export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Hostname';
   cases?: Maybe<CaseConnection>;
@@ -11188,40 +11193,60 @@ export enum IngestionCsvOrdering {
   Uri = 'uri'
 }
 
+export type IngestionHeader = {
+  __typename?: 'IngestionHeader';
+  name: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
 export type IngestionJson = BasicObject & InternalObject & {
   __typename?: 'IngestionJson';
   authentication_type: IngestionAuthType;
   authentication_value?: Maybe<Scalars['String']['output']>;
+  body?: Maybe<Scalars['String']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   current_state_hash?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
+  headers?: Maybe<Array<IngestionHeader>>;
   id: Scalars['ID']['output'];
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   jsonMapper: JsonMapper;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   markings?: Maybe<Array<Scalars['String']['output']>>;
   name: Scalars['String']['output'];
+  pagination_with_sub_page?: Maybe<Scalars['Boolean']['output']>;
+  pagination_with_sub_page_attribute_path?: Maybe<Scalars['String']['output']>;
+  pagination_with_sub_page_query_verb?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
+  query_attributes?: Maybe<Array<IngestionQueryAttribute>>;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
   user?: Maybe<Creator>;
   user_id: Scalars['String']['output'];
+  verb: Scalars['String']['output'];
 };
 
 export type IngestionJsonAddInput = {
   authentication_type: IngestionAuthType;
   authentication_value?: InputMaybe<Scalars['String']['input']>;
+  body?: InputMaybe<Scalars['String']['input']>;
   current_state_date?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
+  headers?: InputMaybe<Array<HeaderInput>>;
   ingestion_running?: InputMaybe<Scalars['Boolean']['input']>;
   json_mapper_id: Scalars['String']['input'];
   markings?: InputMaybe<Array<Scalars['String']['input']>>;
   name: Scalars['String']['input'];
+  pagination_with_sub_page?: InputMaybe<Scalars['Boolean']['input']>;
+  pagination_with_sub_page_attribute_path?: InputMaybe<Scalars['String']['input']>;
+  pagination_with_sub_page_query_verb?: InputMaybe<Scalars['String']['input']>;
+  query_attributes?: InputMaybe<Array<QueryAttribute>>;
   uri: Scalars['String']['input'];
   user_id: Scalars['String']['input'];
+  verb: Scalars['String']['input'];
 };
 
 export type IngestionJsonConnection = {
@@ -11244,6 +11269,17 @@ export enum IngestionJsonOrdering {
   UpdatedAt = 'updated_at',
   Uri = 'uri'
 }
+
+export type IngestionQueryAttribute = {
+  __typename?: 'IngestionQueryAttribute';
+  data_operation?: Maybe<Scalars['String']['output']>;
+  default?: Maybe<Scalars['String']['output']>;
+  exposed?: Maybe<Scalars['String']['output']>;
+  from?: Maybe<Scalars['String']['output']>;
+  state_operation?: Maybe<Scalars['String']['output']>;
+  to?: Maybe<Scalars['String']['output']>;
+  type?: Maybe<Scalars['String']['output']>;
+};
 
 export type IngestionRss = BasicObject & InternalObject & {
   __typename?: 'IngestionRss';
@@ -22922,6 +22958,16 @@ export type QueryWorkspacesArgs = {
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type QueryAttribute = {
+  data_operation?: InputMaybe<Scalars['String']['input']>;
+  default?: InputMaybe<Scalars['String']['input']>;
+  exposed?: InputMaybe<Scalars['String']['input']>;
+  from?: InputMaybe<Scalars['String']['input']>;
+  state_operation?: InputMaybe<Scalars['String']['input']>;
+  to?: InputMaybe<Scalars['String']['input']>;
+  type?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type QueryTask = BackgroundTask & {
   __typename?: 'QueryTask';
   actions?: Maybe<Array<Maybe<BackgroundTaskAction>>>;
@@ -31974,6 +32020,7 @@ export type ResolversTypes = ResolversObject<{
   Hash: ResolverTypeWrapper<Hash>;
   HashInput: HashInput;
   HashedObservable: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['HashedObservable']>;
+  HeaderInput: HeaderInput;
   Hostname: ResolverTypeWrapper<Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   HostnameAddInput: HostnameAddInput;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
@@ -32027,11 +32074,13 @@ export type ResolversTypes = ResolversObject<{
   IngestionCsvConnection: ResolverTypeWrapper<Omit<IngestionCsvConnection, 'edges'> & { edges: Array<ResolversTypes['IngestionCsvEdge']> }>;
   IngestionCsvEdge: ResolverTypeWrapper<Omit<IngestionCsvEdge, 'node'> & { node: ResolversTypes['IngestionCsv'] }>;
   IngestionCsvOrdering: IngestionCsvOrdering;
+  IngestionHeader: ResolverTypeWrapper<IngestionHeader>;
   IngestionJson: ResolverTypeWrapper<BasicStoreEntityIngestionJson>;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonConnection: ResolverTypeWrapper<Omit<IngestionJsonConnection, 'edges'> & { edges: Array<ResolversTypes['IngestionJsonEdge']> }>;
   IngestionJsonEdge: ResolverTypeWrapper<Omit<IngestionJsonEdge, 'node'> & { node: ResolversTypes['IngestionJson'] }>;
   IngestionJsonOrdering: IngestionJsonOrdering;
+  IngestionQueryAttribute: ResolverTypeWrapper<IngestionQueryAttribute>;
   IngestionRss: ResolverTypeWrapper<BasicStoreEntityIngestionRss>;
   IngestionRssAddInput: IngestionRssAddInput;
   IngestionRssConnection: ResolverTypeWrapper<Omit<IngestionRssConnection, 'edges'> & { edges: Array<ResolversTypes['IngestionRssEdge']> }>;
@@ -32248,6 +32297,7 @@ export type ResolversTypes = ResolversObject<{
   PublicDashboardsOrdering: PublicDashboardsOrdering;
   PublicDistribution: ResolverTypeWrapper<Omit<PublicDistribution, 'breakdownDistribution' | 'entity'> & { breakdownDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, entity?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']> }>;
   Query: ResolverTypeWrapper<{}>;
+  QueryAttribute: QueryAttribute;
   QueryTask: ResolverTypeWrapper<QueryTask>;
   QueryTaskAddInput: QueryTaskAddInput;
   QueueArguments: ResolverTypeWrapper<QueueArguments>;
@@ -32841,6 +32891,7 @@ export type ResolversParentTypes = ResolversObject<{
   Hash: Hash;
   HashInput: HashInput;
   HashedObservable: ResolversInterfaceTypes<ResolversParentTypes>['HashedObservable'];
+  HeaderInput: HeaderInput;
   Hostname: Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   HostnameAddInput: HostnameAddInput;
   ID: Scalars['ID']['output'];
@@ -32885,10 +32936,12 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionCsvAddInput: IngestionCsvAddInput;
   IngestionCsvConnection: Omit<IngestionCsvConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionCsvEdge']> };
   IngestionCsvEdge: Omit<IngestionCsvEdge, 'node'> & { node: ResolversParentTypes['IngestionCsv'] };
+  IngestionHeader: IngestionHeader;
   IngestionJson: BasicStoreEntityIngestionJson;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonConnection: Omit<IngestionJsonConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionJsonEdge']> };
   IngestionJsonEdge: Omit<IngestionJsonEdge, 'node'> & { node: ResolversParentTypes['IngestionJson'] };
+  IngestionQueryAttribute: IngestionQueryAttribute;
   IngestionRss: BasicStoreEntityIngestionRss;
   IngestionRssAddInput: IngestionRssAddInput;
   IngestionRssConnection: Omit<IngestionRssConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionRssEdge']> };
@@ -33076,6 +33129,7 @@ export type ResolversParentTypes = ResolversObject<{
   PublicDashboardEdge: Omit<PublicDashboardEdge, 'node'> & { node: ResolversParentTypes['PublicDashboard'] };
   PublicDistribution: Omit<PublicDistribution, 'breakdownDistribution' | 'entity'> & { breakdownDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, entity?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> };
   Query: {};
+  QueryAttribute: QueryAttribute;
   QueryTask: QueryTask;
   QueryTaskAddInput: QueryTaskAddInput;
   QueueArguments: QueueArguments;
@@ -37058,26 +37112,39 @@ export type IngestionCsvEdgeResolvers<ContextType = any, ParentType extends Reso
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type IngestionHeaderResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHeader'] = ResolversParentTypes['IngestionHeader']> = ResolversObject<{
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type IngestionJsonResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionJson'] = ResolversParentTypes['IngestionJson']> = ResolversObject<{
   authentication_type?: Resolver<ResolversTypes['IngestionAuthType'], ParentType, ContextType>;
   authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  body?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   current_state_hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  headers?: Resolver<Maybe<Array<ResolversTypes['IngestionHeader']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jsonMapper?: Resolver<ResolversTypes['JsonMapper'], ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   markings?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pagination_with_sub_page?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  pagination_with_sub_page_attribute_path?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  pagination_with_sub_page_query_verb?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  query_attributes?: Resolver<Maybe<Array<ResolversTypes['IngestionQueryAttribute']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  verb?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -37090,6 +37157,17 @@ export type IngestionJsonConnectionResolvers<ContextType = any, ParentType exten
 export type IngestionJsonEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionJsonEdge'] = ResolversParentTypes['IngestionJsonEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['IngestionJson'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type IngestionQueryAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionQueryAttribute'] = ResolversParentTypes['IngestionQueryAttribute']> = ResolversObject<{
+  data_operation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  default?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  exposed?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  from?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  state_operation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  to?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -43246,9 +43324,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionCsv?: IngestionCsvResolvers<ContextType>;
   IngestionCsvConnection?: IngestionCsvConnectionResolvers<ContextType>;
   IngestionCsvEdge?: IngestionCsvEdgeResolvers<ContextType>;
+  IngestionHeader?: IngestionHeaderResolvers<ContextType>;
   IngestionJson?: IngestionJsonResolvers<ContextType>;
   IngestionJsonConnection?: IngestionJsonConnectionResolvers<ContextType>;
   IngestionJsonEdge?: IngestionJsonEdgeResolvers<ContextType>;
+  IngestionQueryAttribute?: IngestionQueryAttributeResolvers<ContextType>;
   IngestionRss?: IngestionRssResolvers<ContextType>;
   IngestionRssConnection?: IngestionRssConnectionResolvers<ContextType>;
   IngestionRssEdge?: IngestionRssEdgeResolvers<ContextType>;

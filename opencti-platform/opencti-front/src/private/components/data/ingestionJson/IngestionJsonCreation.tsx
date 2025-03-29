@@ -20,6 +20,10 @@ import { IngestionJsonEditionFragment_ingestionJson$key } from '@components/data
 import { IngestionJsonEditionContainerQuery } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionContainerQuery.graphql';
 import { IngestionAuthType } from '@components/data/ingestionJson/__generated__/IngestionJsonCreationMutation.graphql';
 import { JsonMapperFieldSearchQuery } from '@components/common/form/__generated__/JsonMapperFieldSearchQuery.graphql';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import { HeaderFieldAdd } from '@components/common/form/HeaderField';
+import { QueryAttributeFieldAdd } from '@components/common/form/QueryAttributeField';
 import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -37,6 +41,7 @@ import { convertMapper, convertUser } from '../../../../utils/edition';
 import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
 import PasswordTextField from '../../../../components/PasswordTextField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -68,6 +73,20 @@ interface IngestionJsonCreationContainerProps {
 
 export interface IngestionJsonAddInput {
   name: string
+  verb: string
+  pagination_with_sub_page: boolean
+  pagination_with_sub_page_query_verb: string
+  pagination_with_sub_page_attribute_path: string
+  headers: { name: string, value: string }[]
+  query_attributes: {
+    type: string,
+    from: string,
+    to: string,
+    data_operation: string,
+    state_operation: string,
+    default: string,
+    exposed: string
+  }[]
   message?: string | null
   references?: ExternalReferencesValues
   description?: string | null
@@ -172,6 +191,12 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
       name: values.name,
       description: values.description,
       uri: values.uri,
+      verb: values.verb,
+      headers: values.headers,
+      query_attributes: values.query_attributes,
+      pagination_with_sub_page: values.pagination_with_sub_page,
+      pagination_with_sub_page_query_verb: values.pagination_with_sub_page_query_verb,
+      pagination_with_sub_page_attribute_path: values.pagination_with_sub_page_attribute_path,
       json_mapper_id: typeof values.json_mapper_id === 'string' ? values.json_mapper_id : values.json_mapper_id?.value,
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
@@ -202,6 +227,12 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     name: `${ingestionJsonData.name} - copy`,
     description: ingestionJsonData.description,
     uri: ingestionJsonData.uri,
+    verb: 'GET',
+    headers: [],
+    query_attributes: [],
+    pagination_with_sub_page: false,
+    pagination_with_sub_page_query_verb: '',
+    pagination_with_sub_page_attribute_path: '',
     json_mapper_id: convertMapper(ingestionJsonData, 'jsonMapper'),
     authentication_type: ingestionJsonData.authentication_type,
     authentication_value: ingestionJsonData.authentication_value,
@@ -222,6 +253,12 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     name: '',
     description: '',
     uri: '',
+    verb: 'GET',
+    pagination_with_sub_page: false,
+    pagination_with_sub_page_query_verb: 'GET',
+    pagination_with_sub_page_attribute_path: '',
+    headers: [],
+    query_attributes: [],
     json_mapper_id: '',
     authentication_type: 'none',
     authentication_value: '',
@@ -266,6 +303,90 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
+          <Field
+            component={SelectField}
+            variant="standard"
+            name="verb"
+            label={t_i18n('HTTP VERB')}
+            fullWidth={true}
+            containerstyle={{ width: '100%', marginTop: 20 }}
+          >
+            <MenuItem value="GET">{t_i18n('Get')}</MenuItem>
+            <MenuItem value="POST">{t_i18n('Post')}</MenuItem>
+          </Field>
+          {values.verb === 'POST' && (
+          <>
+            <Field
+              component={MarkdownField}
+              name="body"
+              label={t_i18n('HTTP BODY POST')}
+              required={values.verb === 'POST'}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={fieldSpacingContainerStyle}
+              askAi={false}
+            />
+          </>
+          )}
+          <QueryAttributeFieldAdd
+            id="query_attributes"
+            name="query_attributes"
+            values={values?.query_attributes}
+            containerStyle={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+          />
+          <HeaderFieldAdd
+            id="headers"
+            name="headers"
+            values={values?.headers}
+            containerStyle={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+          />
+          <Alert severity="info" variant="outlined" style={{ position: 'relative', marginTop: 20, marginBottom: 20, padding: '0px 10px 10px 10px' }}>
+            <div>
+              {t_i18n(
+                'For specific api (like Trino), sometimes it required to have sub pagination. To activate only for this specific use cases',
+              )}
+            </div>
+            <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+              <FormControlLabel
+                control={<Switch />}
+                style={{ marginLeft: 1 }}
+                name="pagination_with_sub_page"
+                onChange={(_, checked) => setFieldValue('pagination_with_sub_page', checked)}
+                label={t_i18n('Sub pagination')}
+              />
+            </Box>
+            {!!values.pagination_with_sub_page && (
+            <>
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="pagination_with_sub_page_query_verb"
+                label={t_i18n('Sub pagination verb')}
+                fullWidth={true}
+                containerstyle={{
+                  width: '100%',
+                  marginTop: 20,
+                }}
+              >
+                <MenuItem value="GET">{t_i18n('Get')}</MenuItem>
+                <MenuItem value="POST">{t_i18n('Post')}</MenuItem>
+              </Field>
+
+              <Field
+                component={TextField}
+                variant="standard"
+                name="pagination_with_sub_page_attribute_path"
+                label={t_i18n('Attribute path to get next uri')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+            </>
+            )}
+          </Alert>
+
           <CreatorField
             name="user_id"
             label={t_i18n('User responsible for data creation (empty = System)')}
@@ -416,7 +537,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 variant="contained"
                 color="secondary"
                 onClick={submitForm}
-                disabled={isSubmitting || isCreateDisabled}
+                disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
                 {t_i18n('Create')}
