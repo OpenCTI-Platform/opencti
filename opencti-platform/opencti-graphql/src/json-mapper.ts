@@ -28,6 +28,7 @@ import { BundleBuilder } from './parser/bundle-creator';
 import { handleInnerType } from './domain/stixDomainObject';
 import { createStixPatternSync } from './python/pythonBridge';
 import { from as fromDef, to as toDef } from './schema/stixRefRelationship';
+import { logApp } from './config/conf';
 
 export const isComplexPath = (attribute: AttributePath | ComplexPath): attribute is ComplexPath => 'complex' in attribute;
 
@@ -183,7 +184,7 @@ const handleBasedOnAttribute = async (
         .map((id) => otherEntities.get(id)).flat()
         .filter((e) => e !== undefined && compareValues.includes(e.__identifier as string)) as Record<string, InputType>[];
       if (entities.length === 0) {
-        console.log('EMPTY BASED_ON', attribute.based_on, compareValues, definition);
+        logApp.info('EMPTY BASED_ON', { based_on: attribute.based_on, compareValues, definition });
       }
     } else {
       entities = (attribute.based_on.representations ?? [])

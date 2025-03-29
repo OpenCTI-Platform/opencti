@@ -1,5 +1,5 @@
 import { graphql, useQueryLoader } from 'react-relay';
-import React, { Dispatch, FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { PopoverProps } from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
@@ -36,17 +36,15 @@ const ingestionJsonPopoverResetStateMutation = graphql`
 `;
 
 interface IngestionJsonPopoverProps {
-  ingestionJsonId: string;
-  running?: boolean | null;
-  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined;
-  setStateHash: Dispatch<string>;
+  ingestionJsonId: string
+  running?: boolean | null
+  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined
 }
 
 const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
   ingestionJsonId,
   paginationOptions,
   running,
-  setStateHash,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -140,7 +138,6 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
       },
       onCompleted: () => {
         setResetting(false);
-        setStateHash('-'); // would be great to update relay store instead, I haven't find how.
         handleCloseResetState();
       },
     });

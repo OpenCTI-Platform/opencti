@@ -16,6 +16,7 @@ type IngestionQueryAttribute {
 type IngestionJson implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
+    connector_id: String!
     standard_id: String!
     parent_types: [String]!
     created_at: DateTime
@@ -36,8 +37,6 @@ type IngestionJson implements InternalObject & BasicObject {
     user_id: String!
     user: Creator
     ingestion_running: Boolean
-    current_state_hash: String
-    current_state_date: DateTime
     last_execution_date: DateTime
     markings: [String!]
 }

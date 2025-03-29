@@ -9051,6 +9051,8 @@ type Mutation {
   csvMapperTest(configuration: String!, file: Upload!): CsvMapperTestResult
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
+  jsonMapperDelete(id: ID!): ID
+  jsonMapperImport(file: Upload!): String!
   publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
   publicDashboardDelete(id: ID!): ID
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard
@@ -11813,6 +11815,7 @@ type IngestionQueryAttribute {
 type IngestionJson implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  connector_id: String!
   standard_id: String!
   parent_types: [String]!
   created_at: DateTime
@@ -11833,8 +11836,6 @@ type IngestionJson implements InternalObject & BasicObject {
   user_id: String!
   user: Creator
   ingestion_running: Boolean
-  current_state_hash: String
-  current_state_date: DateTime
   last_execution_date: DateTime
   markings: [String!]
 }
@@ -12448,12 +12449,40 @@ type JsonMapperRepresentation {
   to: String
 }
 
+interface JsonAttributeColumnConfiguration {
+  separator: String
+  pattern_date: String
+  timezone: String
+}
+
+type JsonComplexPathVariable {
+  path: String
+  variable: String
+  independent: Boolean
+}
+
+type JsonComplexPathConfiguration {
+  complex: JsonComplexPathConfiguration
+  formula: String
+}
+
+type JsonComplexPath {
+  complex: JsonComplexPathConfiguration
+  configuration: JsonAttributeColumnConfiguration
+}
+
+type JsonMapperVariable {
+  name: String!
+  path: JsonComplexPath
+}
+
 type JsonMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
   name: String!
+  variables: [JsonMapperVariable!]
   representations: [JsonMapperRepresentation!]!
   errors: String
   toConfigurationExport: String!
@@ -12463,6 +12492,11 @@ type JsonMapperTestResult {
   objects: String!
   nbRelationships: Int!
   nbEntities: Int!
+}
+
+type JsonMapperAddInputFromImport {
+  name: String!
+  representations: [JsonMapperRepresentation!]!
 }
 
 type PublicDashboard implements InternalObject & BasicObject {

@@ -10,6 +10,33 @@ type JsonMapperRepresentation {
     to: String
 }
 
+interface JsonAttributeColumnConfiguration {
+    separator: String
+    pattern_date: String
+    timezone: String
+}
+
+type JsonComplexPathVariable {
+    path: String
+    variable: String
+    independent: Boolean
+}
+
+type JsonComplexPathConfiguration {
+    complex: JsonComplexPathConfiguration
+    formula: String
+}
+
+type JsonComplexPath {
+    complex: JsonComplexPathConfiguration
+    configuration: JsonAttributeColumnConfiguration
+}
+
+type JsonMapperVariable {
+    name: String!
+    path: JsonComplexPath
+}
+
 type JsonMapper implements InternalObject & BasicObject {
     id: ID!
     entity_type: String! @auth
@@ -17,6 +44,7 @@ type JsonMapper implements InternalObject & BasicObject {
     parent_types: [String!]! @auth
     # JsonMapper
     name: String! @auth
+    variables: [JsonMapperVariable!] @auth
     representations: [JsonMapperRepresentation!]! @auth
     errors: String
     toConfigurationExport: String!
@@ -26,6 +54,11 @@ type JsonMapperTestResult {
     objects: String!
     nbRelationships: Int!
     nbEntities: Int!
+}
+
+type JsonMapperAddInputFromImport {
+    name: String!
+    representations: [JsonMapperRepresentation!]!
 }
 
 # Queries
@@ -39,4 +72,9 @@ type Query {
         filters: FilterGroup
         search: String
     ): JsonMapperConnection @auth(for: [JSONMAPPERS, INGESTION_SETINGESTIONS])
+}
+
+type Mutation {
+    jsonMapperDelete(id: ID!): ID @auth(for: [JSONMAPPERS])
+    jsonMapperImport(file: Upload!): String! @auth(for: [JSONMAPPERS])
 }

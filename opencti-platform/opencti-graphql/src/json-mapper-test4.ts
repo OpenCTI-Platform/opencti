@@ -1,5 +1,47 @@
 import { type JsonMapperParsed, JsonMapperRepresentationType } from './modules/internal/jsonMapper/jsonMapper-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './modules/organization/organization-types';
+import { IngestionAuthType } from './generated/graphql';
+
+// const jsonParsers: Record<string, JsonMapperParsed> = { parser4: mapper4 as JsonMapperParsed };
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+export const testIngestion: BasicStoreEntityIngestionJson = {
+  id: '8f271994-a6ab-4103-97c5-561723d0a723',
+  name: 'test',
+  description: 'test',
+  uri: 'http://localhost:8080/v1/statement',
+  verb: 'post',
+  body: 'select * from customer OFFSET $offset LIMIT 10',
+  json_mapper_id: 'parser4',
+  // ==== Specific for api that require sub queries (like trino)
+  pagination_with_sub_page: true,
+  pagination_with_sub_page_attribute_path: '$.nextUri',
+  pagination_with_sub_page_query_verb: 'get',
+  // ======================================
+  confidence_to_score: true,
+  authentication_type: IngestionAuthType.None,
+  authentication_value: '',
+  user_id: undefined,
+  ingestion_running: true,
+  last_execution_date: undefined,
+  query_attributes: [
+    {
+      type: 'data', // If attribute need to be built from the response data.
+      from: '$.data', // Json path the get the data from the response
+      to: 'offset', // Name of the final param
+      data_operation: 'count', // If data is an array, choose to get the size
+      state_operation: 'sum', // How to manage the parameter in the state.
+      default: '0', // Default value for the param
+      exposed: 'body', // Where attribute must be exposed
+    }
+  ],
+  // Specific headers for the query
+  headers: [
+    { name: 'X-Trino-User', value: 'admin' },
+    { name: 'X-Trino-Schema', value: 'sf1' },
+    { name: 'X-Trino-Catalog', value: 'tpcds' }
+  ]
+};
 
 export const mapper4: Partial<JsonMapperParsed> = {
   id: 'trino-json-mapper',

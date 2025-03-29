@@ -5,13 +5,12 @@ import { verifyIngestionAuthenticationContent } from './ingestion-common';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { publishUserAction } from '../../listener/UserActionListener';
-import type { BasicStoreEntityJsonMapper } from '../internal/jsonMapper/jsonMapper-types';
+import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER } from '../internal/jsonMapper/jsonMapper-types';
 import type { EditInput, IngestionJsonAddInput, JsonMapperTestResult } from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { StixObject } from '../../types/stix-common';
-import { testIngestion } from '../../manager/ingestionManager';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionJson>(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON);
@@ -26,10 +25,7 @@ export const findAllJsonIngestions = async (context: AuthContext, user: AuthUser
 };
 
 export const findJsonMapperForIngestionById = (context: AuthContext, user: AuthUser, jsonMapperId: string) => {
-  if (jsonMapperId === testIngestion.id) {
-    return testIngestion;
-  }
-  return storeLoadById<BasicStoreEntityJsonMapper>(context, user, jsonMapperId, ENTITY_TYPE_INGESTION_JSON);
+  return storeLoadById<BasicStoreEntityJsonMapper>(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER);
 };
 
 export const deleteIngestionJson = async (context: AuthContext, user: AuthUser, ingestionId: string) => {

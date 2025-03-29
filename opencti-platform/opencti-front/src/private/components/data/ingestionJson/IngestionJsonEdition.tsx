@@ -18,6 +18,8 @@ import { IngestionJsonEditionFragment_ingestionJson$key } from '@components/data
 import { JsonMapperFieldSearchQuery } from '@components/common/form/__generated__/JsonMapperFieldSearchQuery.graphql';
 import { QueryAttributeFieldAdd } from '@components/common/form/QueryAttributeField';
 import { HeaderFieldAdd } from '@components/common/form/HeaderField';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -76,6 +78,7 @@ export const ingestionJsonEditionFragment = graphql`
       state_operation
     }
     pagination_with_sub_page
+    pagination_with_sub_page_query_verb
     pagination_with_sub_page_attribute_path
     pagination_with_sub_page
     authentication_type
@@ -100,12 +103,33 @@ interface IngestionJsonEditionProps {
   enableReferences?: boolean
 }
 
+interface JsonQueryAttribute {
+  type: string,
+  from: string,
+  to: string,
+  data_operation: string,
+  state_operation: string,
+  default: string,
+  exposed: string
+}
+
+interface JsonHeader {
+  name: string,
+  value: string
+}
+
 interface IngestionJsonEditionForm {
   message?: string | null
   references?: ExternalReferencesValues
   name: string,
   description?: string | null,
   uri: string,
+  verb: string
+  pagination_with_sub_page: boolean | null | undefined
+  pagination_with_sub_page_query_verb?: string | null | undefined
+  pagination_with_sub_page_attribute_path: string | null | undefined
+  headers: JsonHeader[] | null | undefined
+  query_attributes: JsonQueryAttribute[] | null | undefined
   authentication_type: string,
   authentication_value?: string | null,
   ingestion_running?: boolean | null,
@@ -250,8 +274,11 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
     description: ingestionJsonData.description,
     uri: ingestionJsonData.uri,
     verb: ingestionJsonData.verb,
-    headers: ingestionJsonData.headers,
-    query_attributes: ingestionJsonData.query_attributes,
+    headers: (ingestionJsonData.headers ?? []) as JsonHeader[],
+    pagination_with_sub_page: ingestionJsonData.pagination_with_sub_page,
+    pagination_with_sub_page_query_verb: ingestionJsonData.pagination_with_sub_page_query_verb,
+    pagination_with_sub_page_attribute_path: ingestionJsonData.pagination_with_sub_page_attribute_path,
+    query_attributes: (ingestionJsonData.query_attributes ?? []) as JsonQueryAttribute[],
     authentication_type: ingestionJsonData.authentication_type,
     authentication_value: ingestionJsonData.authentication_type === BEARER_AUTH ? ingestionJsonData.authentication_value : undefined,
     username: ingestionJsonData.authentication_type === BASIC_AUTH ? extractUsername(ingestionJsonData.authentication_value) : undefined,
@@ -346,7 +373,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
           <QueryAttributeFieldAdd
             id="query_attributes"
             name="query_attributes"
-            values={values?.query_attributes}
+            values={values?.query_attributes ?? []}
             containerStyle={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
@@ -354,10 +381,54 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
           <HeaderFieldAdd
             id="headers"
             name="headers"
-            values={values?.headers}
+            values={values?.headers ?? []}
             containerStyle={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
+
+          <Alert severity="info" variant="outlined" style={{ position: 'relative', marginTop: 20, marginBottom: 20, padding: '0px 10px 10px 10px' }}>
+            <div>
+              {t_i18n(
+                'For specific api (like Trino), sometimes it required to have sub pagination. To activate only for this specific use cases',
+              )}
+            </div>
+            <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
+              <FormControlLabel
+                control={<Switch defaultChecked={!!values.pagination_with_sub_page}/>}
+                style={{ marginLeft: 1 }}
+                name="pagination_with_sub_page"
+                onChange={(_, checked) => setFieldValue('pagination_with_sub_page', checked)}
+                label={t_i18n('Sub pagination')}
+              />
+            </Box>
+            {!!values.pagination_with_sub_page && (
+            <>
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="pagination_with_sub_page_query_verb"
+                label={t_i18n('Sub pagination verb')}
+                fullWidth={true}
+                containerstyle={{
+                  width: '100%',
+                  marginTop: 20,
+                }}
+              >
+                <MenuItem value="GET">{t_i18n('Get')}</MenuItem>
+                <MenuItem value="POST">{t_i18n('Post')}</MenuItem>
+              </Field>
+
+              <Field
+                component={TextField}
+                variant="standard"
+                name="pagination_with_sub_page_attribute_path"
+                label={t_i18n('Attribute path to get next uri')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+            </>
+            )}
+          </Alert>
 
           <CreatorField
             name="user_id"

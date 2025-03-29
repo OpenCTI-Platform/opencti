@@ -73,6 +73,7 @@ interface IngestionJsonCreationContainerProps {
 
 export interface IngestionJsonAddInput {
   name: string
+  body: string
   verb: string
   pagination_with_sub_page: boolean
   pagination_with_sub_page_query_verb: string
@@ -192,6 +193,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
       description: values.description,
       uri: values.uri,
       verb: values.verb,
+      body: values.body,
       headers: values.headers,
       query_attributes: values.query_attributes,
       pagination_with_sub_page: values.pagination_with_sub_page,
@@ -228,6 +230,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     description: ingestionJsonData.description,
     uri: ingestionJsonData.uri,
     verb: 'GET',
+    body: '',
     headers: [],
     query_attributes: [],
     pagination_with_sub_page: false,
@@ -253,6 +256,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     name: '',
     description: '',
     uri: '',
+    body: '',
     verb: 'GET',
     pagination_with_sub_page: false,
     pagination_with_sub_page_query_verb: 'GET',

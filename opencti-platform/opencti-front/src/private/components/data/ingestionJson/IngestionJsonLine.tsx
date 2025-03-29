@@ -1,6 +1,6 @@
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -10,6 +10,7 @@ import IngestionJsonPopover from '@components/data/ingestionJson/IngestionJsonPo
 import TableViewIcon from '@mui/icons-material/TableView';
 import { IngestionJsonLine_node$key } from '@components/data/ingestionJson/__generated__/IngestionJsonLine_node.graphql';
 import { IngestionJsonLinesPaginationQuery$variables } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
+import { Link } from 'react-router-dom';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
@@ -58,8 +59,8 @@ const ingestionJsonLineFragment = graphql`
     id
     name
     uri
+    connector_id
     ingestion_running
-    current_state_hash
     last_execution_date
   }
 `;
@@ -72,7 +73,6 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
   const data = useFragment(ingestionJsonLineFragment, node);
-  const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : '-');
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -83,7 +83,6 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
             ingestionJsonId={data.id}
             paginationOptions={paginationOptions}
             running={data.ingestion_running}
-            setStateHash={setStateHash}
           />
         </Security>
       }
@@ -118,14 +117,14 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.current_state_hash.width }}
+              style={{ width: dataColumns.connector.width }}
             >
               {fldt(data.last_execution_date) || '-'}
             </div>
             <div
               className={classes.bodyItem}
             >
-              {stateHash}
+              <Link to={`/dashboard/data/ingestion/connectors/${data.connector_id}`}>VIEW</Link>
             </div>
           </div>
         }
@@ -188,7 +187,7 @@ export const IngestionJsonLineDummy = ({ dataColumns }: { dataColumns: DataColum
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.current_state_hash.width }}
+              style={{ width: dataColumns.connector.width }}
             >
               <Skeleton
                 animation="wave"
