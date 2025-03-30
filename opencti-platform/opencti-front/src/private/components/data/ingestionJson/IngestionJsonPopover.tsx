@@ -11,7 +11,6 @@ import DialogContentText from '@mui/material/DialogContentText';
 import { Button } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import IngestionJsonEditionContainer, { ingestionJsonEditionContainerQuery } from '@components/data/ingestionJson/IngestionJsonEditionContainer';
-import { ingestionJsonEditionPatch } from '@components/data/ingestionJson/IngestionJsonEdition';
 import { IngestionJsonCreationContainer } from '@components/data/ingestionJson/IngestionJsonCreation';
 import { IngestionJsonLinesPaginationQuery$variables } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
 import { IngestionJsonEditionContainerQuery } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionContainerQuery.graphql';
@@ -20,6 +19,14 @@ import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+
+export const ingestionJsonPopoverEditionPatch = graphql`
+  mutation IngestionJsonPopoverPatchMutation($id: ID!, $input: [EditInput!]!) {
+    ingestionJsonFieldPatch(id: $id, input: $input) {
+      ...IngestionJsonEditionFragment_ingestionJson
+    }
+  }
+`;
 
 const ingestionJsonPopoverDeletionMutation = graphql`
   mutation IngestionJsonPopoverDeletionMutation($id: ID!) {
@@ -145,7 +152,7 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
   };
 
   // -- Running --
-  const [commitRunning] = useApiMutation(ingestionJsonEditionPatch);
+  const [commitRunning] = useApiMutation(ingestionJsonPopoverEditionPatch);
   const submitStart = () => {
     setStarting(true);
     commitRunning({

@@ -6,14 +6,13 @@ import { v4 as uuidv4 } from 'uuid';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
-import * as JSONPath from 'jsonpath-plus';
 import { AxiosError } from 'axios';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
-import { isEmptyField, isNotEmptyField, wait } from '../database/utils';
+import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { FROM_START_STR, now, sanitizeForMomentParsing, sinceNowInMinutes, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
@@ -33,7 +32,6 @@ import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestio
 import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
 import { findById as findCsvMapperById } from '../modules/internal/csvMapper/csvMapper-domain';
-import { findById as findJsonMapperById } from '../modules/internal/jsonMapper/jsonMapper-domain';
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
 import { createWork, reportExpectation, updateExpectationsNumber } from '../domain/work';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
@@ -46,9 +44,7 @@ import { connectorIdFromIngestId, queueDetails } from '../domain/connector';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
-import jsonMappingExecution from '../json-mapper';
-import { findAllJsonIngestions, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
-import type { JsonMapperParsed } from '../modules/internal/jsonMapper/jsonMapper-types';
+import { executeJsonQuery, findAllJsonIngestions, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -597,33 +593,6 @@ const csvExecutor = async (context: AuthContext) => {
 // endregion
 
 // region json ingestion
-const getValueFromPath = (path: string, json: any) => {
-  return JSONPath.JSONPath({ path, json, wrap: false, flatten: true });
-};
-const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, requestData: Record<string, any>, withDefault = true) => {
-  const params: Record<string, object> = {};
-  if (queryParamsAttributes) {
-    for (let attrIndex = 0; attrIndex < queryParamsAttributes.length; attrIndex += 1) {
-      const queryParamsAttribute = queryParamsAttributes[attrIndex];
-      let attrValue;
-      if (queryParamsAttribute.type === 'data') {
-        let valueFromPath = getValueFromPath(queryParamsAttribute.from, requestData);
-        if (queryParamsAttribute.data_operation === 'count' && valueFromPath) {
-          valueFromPath = Array.isArray(valueFromPath) ? valueFromPath.length : 1;
-        }
-        attrValue = valueFromPath;
-      } else {
-        attrValue = requestData[queryParamsAttribute.from];
-      }
-      if (isNotEmptyField(attrValue)) {
-        params[queryParamsAttribute.to] = attrValue;
-      } else if (isNotEmptyField(queryParamsAttribute.default) && withDefault) {
-        params[queryParamsAttribute.to] = queryParamsAttribute.default;
-      }
-    }
-  }
-  return params;
-};
 const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, previousState: Record<string, any>, newState: Record<string, any>) => {
   const state: Record<string, any> = {};
   const queryParams = queryParamsAttributes ?? [];
@@ -637,27 +606,7 @@ const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, pr
   }
   return state;
 };
-const buildQueryParams = (queryParamsAttributes: Array<DataParam> | undefined, variables: Record<string, any>) => {
-  const params: Record<string, string | number> = {};
-  const paramAttributes = (queryParamsAttributes ?? []).filter((query) => query.exposed === 'query_param');
-  for (let attrIndex = 0; attrIndex < paramAttributes.length; attrIndex += 1) {
-    const queryParamsAttribute = paramAttributes[attrIndex];
-    params[queryParamsAttribute.to] = variables[queryParamsAttribute.to];
-  }
-  return params;
-};
-const replaceVariables = (body: string, variables: Record<string, object>) => {
-  const regex = /\$\w+/g;
-  return body.replace(regex, (match) => {
-    const variableName = match.substring(1);
-    if (Object.prototype.hasOwnProperty.call(variables, variableName)) {
-      // If found, return the corresponding value
-      // Ensure the returned value is converted to a string if it's not already
-      return String(variables[variableName]);
-    }
-    return match;
-  });
-};
+
 export const jsonExecutor = async (context: AuthContext) => {
   const filters = {
     mode: 'and',
@@ -669,67 +618,8 @@ export const jsonExecutor = async (context: AuthContext) => {
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
     const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
-    if (messages_number === 0) {
-      let certificates;
-      const headers = new OpenCTIHeaders();
-      headers.Accept = 'application/json';
-      const headerOptions = ingestion.headers ?? [];
-      for (let index = 0; index < headerOptions.length; index += 1) {
-        const h = headerOptions[index];
-        headers[h.name] = h.value;
-      }
-      if (ingestion.authentication_type === IngestionAuthType.Basic) {
-        const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
-        headers.Authorization = `Basic ${auth}`;
-      }
-      if (ingestion.authentication_type === IngestionAuthType.Bearer) {
-        headers.Authorization = `Bearer ${ingestion.authentication_value}`;
-      }
-      if (ingestion.authentication_type === IngestionAuthType.Certificate) {
-        certificates = {
-          cert: ingestion.authentication_value.split(':')[0],
-          key: ingestion.authentication_value.split(':')[1],
-          ca: ingestion.authentication_value.split(':')[2]
-        };
-      }
-      const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
-      const httpClient = getHttpClient(httpClientOptions);
-      // Execute the http query
-      const variables = isEmptyField(ingestion.ingestion_json_state) ? buildQueryObject(ingestion.query_attributes, {}) : ingestion.ingestion_json_state;
-      const params = buildQueryParams(ingestion.query_attributes, variables);
-      const parsedBody = replaceVariables(ingestion.body, variables);
-      logApp.info(`> Main query: ${ingestion.uri}`, parsedBody);
-      const { data: requestData, headers: responseHeaders } = await httpClient.call({
-        method: ingestion.verb,
-        url: ingestion.uri,
-        data: parsedBody,
-        params
-      });
-      const jsonMapper = await findJsonMapperById(context, SYSTEM_USER, ingestion.json_mapper_id);
-      const jsonMapperParsed: JsonMapperParsed = { ...jsonMapper, representations: JSON.parse(jsonMapper.representations), variables: JSON.parse(jsonMapper.variables) };
-      const bundle = await jsonMappingExecution({}, requestData, jsonMapperParsed);
-      let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
-      // region Try to paginate with next page style
-      if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
-        let url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData);
-        while (isNotEmptyField(url)) {
-          logApp.info(`> Sub query: ${url}`);
-          await wait(100); // Wait 100 ms between 2 calls
-          const { data: paginationData } = await httpClient.call({
-            method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb,
-            url,
-            data: ingestion.body,
-            params
-          });
-          const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
-          nextExecutionState = { ...nextExecutionState, ...paginationVariables };
-          const paginationBundle = await jsonMappingExecution({}, paginationData, jsonMapperParsed);
-          if (paginationBundle.objects.length > 0) {
-            bundle.objects = bundle.objects.concat(paginationBundle.objects);
-          }
-          url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData);
-        }
-      }
+    if (messages_number === 0) { // If no more ingestion to do
+      const { bundle, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
       // endregion
       logApp.info('pushBundleToConnectorQueue', bundle.objects.length);
       // Push the bundle to absorption queue
