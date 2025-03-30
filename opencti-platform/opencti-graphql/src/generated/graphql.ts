@@ -14005,6 +14005,7 @@ export type Mutation = {
   ingestionCsvTester?: Maybe<CsvMapperTestResult>;
   ingestionJsonAdd?: Maybe<IngestionJson>;
   ingestionJsonDelete?: Maybe<Scalars['ID']['output']>;
+  ingestionJsonEdit?: Maybe<IngestionJson>;
   ingestionJsonFieldPatch?: Maybe<IngestionJson>;
   ingestionJsonResetState?: Maybe<IngestionJson>;
   ingestionJsonTester?: Maybe<JsonMapperTestResult>;
@@ -15104,6 +15105,12 @@ export type MutationIngestionJsonAddArgs = {
 
 export type MutationIngestionJsonDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationIngestionJsonEditArgs = {
+  id: Scalars['ID']['input'];
+  input: IngestionJsonAddInput;
 };
 
 
@@ -38449,6 +38456,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionCsvTester?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationIngestionCsvTesterArgs, 'input'>>;
   ingestionJsonAdd?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<MutationIngestionJsonAddArgs, 'input'>>;
   ingestionJsonDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionJsonDeleteArgs, 'id'>>;
+  ingestionJsonEdit?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<MutationIngestionJsonEditArgs, 'id' | 'input'>>;
   ingestionJsonFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<MutationIngestionJsonFieldPatchArgs, 'id' | 'input'>>;
   ingestionJsonResetState?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<MutationIngestionJsonResetStateArgs, 'id'>>;
   ingestionJsonTester?: Resolver<Maybe<ResolversTypes['JsonMapperTestResult']>, ParentType, ContextType, RequireFields<MutationIngestionJsonTesterArgs, 'input'>>;

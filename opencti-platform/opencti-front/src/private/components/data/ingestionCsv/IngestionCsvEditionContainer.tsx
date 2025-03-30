@@ -35,7 +35,7 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
   }
   return (
     <Drawer
-      title={t_i18n('Update a CSV Ingester')}
+      title={t_i18n('Update a CSV Feed')}
       variant={open == null ? DrawerVariant.update : undefined}
       onClose={handleClose}
       open={open}

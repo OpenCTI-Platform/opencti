@@ -7,8 +7,8 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import CodeBlock from '@components/common/CodeBlock';
 import Alert from '@mui/material/Alert';
-import { Option } from '@components/common/form/ReferenceField';
 import { IngestionJsonMapperTestDialogMutation$data } from '@components/data/ingestionJson/__generated__/IngestionJsonMapperTestDialogMutation.graphql';
+import { IngestionJsonAddInput } from '@components/data/ingestionJson/IngestionJsonCreation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { handleError } from '../../../../relay/environment';
@@ -28,17 +28,7 @@ const ingestionJsonMapperTestMutation = graphql`
 interface IngestionJsonMapperTestDialogProps {
   open: boolean
   onClose: () => void
-  values: {
-    name: string,
-    description?: string | null,
-    authentication_type: string,
-    authentication_value?: string | null,
-    uri: string,
-    ingestion_running?: boolean | null,
-    json_mapper_id: string | Option,
-    user_id: string | Option
-    markings: Option[]
-  }
+  values: IngestionJsonAddInput
   setIsCreateDisabled?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
@@ -58,7 +48,7 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
     onClose();
   };
 
-  const authentifcationValueResolved = getAuthenticationValue(values);
+  const authenticationValueResolved = getAuthenticationValue(values);
 
   const onTest = () => {
     setLoading(true);
@@ -68,9 +58,15 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
           name: values.name,
           description: values.description,
           authentication_type: values.authentication_type,
-          authentication_value: authentifcationValueResolved,
+          authentication_value: authenticationValueResolved,
           uri: values.uri,
-          ingestion_running: values.ingestion_running,
+          verb: values.verb,
+          body: values.body,
+          headers: values.headers,
+          query_attributes: values.query_attributes,
+          pagination_with_sub_page: values.pagination_with_sub_page,
+          pagination_with_sub_page_query_verb: values.pagination_with_sub_page_query_verb,
+          pagination_with_sub_page_attribute_path: values.pagination_with_sub_page_attribute_path,
           user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id.value,
           json_mapper_id: typeof values.json_mapper_id === 'string' ? values.json_mapper_id : values.json_mapper_id.value,
           markings: values.markings.map((marking) => marking.value),
@@ -95,7 +91,7 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
 
   return (
     <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
-      <DialogTitle>{t_i18n('Testing json mapper')}</DialogTitle>
+      <DialogTitle>{t_i18n('Testing JSON feed')}</DialogTitle>
       <DialogContent>
         <Box>
           <div style={{ width: '100%', marginTop: 10 }}>

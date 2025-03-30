@@ -4,6 +4,7 @@ import type { Resolvers } from '../../generated/graphql';
 import {
   addIngestionJson,
   deleteIngestionJson,
+  editIngestionJson,
   findAllPaginated,
   findById,
   findJsonMapperForIngestionById,
@@ -40,6 +41,9 @@ const ingestionJsonResolvers: Resolvers = {
     },
     ingestionJsonFieldPatch: (_, { id, input }, context) => {
       return ingestionJsonEditField(context, context.user, id, input);
+    },
+    ingestionJsonEdit: (_, { id, input }, context) => {
+      return editIngestionJson(context, context.user, id, input);
     },
   },
 };

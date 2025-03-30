@@ -9027,6 +9027,7 @@ type Mutation {
   ingestionJsonResetState(id: ID!): IngestionJson
   ingestionJsonDelete(id: ID!): ID
   ingestionJsonFieldPatch(id: ID!, input: [EditInput!]!): IngestionJson
+  ingestionJsonEdit(id: ID!, input: IngestionJsonAddInput!): IngestionJson
   indicatorAdd(input: IndicatorAddInput!): Indicator
   indicatorDelete(id: ID!): ID
   indicatorFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Indicator

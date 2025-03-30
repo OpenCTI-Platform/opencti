@@ -456,7 +456,7 @@ export const IngestionCsvCreationContainer: FunctionComponent<IngestionCsvCreati
     : null;
   return (
     <Drawer
-      title={isDuplicated ? t_i18n('Duplicate a CSV ingester') : t_i18n('Create a CSV ingester')}
+      title={isDuplicated ? t_i18n('Duplicate a CSV Feed') : t_i18n('Create a CSV Feed')}
       open={open}
       onClose={handleClose}
       controlledDial={CreateIngestionCsvControlledDial}

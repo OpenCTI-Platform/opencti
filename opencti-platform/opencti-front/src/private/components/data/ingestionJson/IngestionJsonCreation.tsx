@@ -14,7 +14,6 @@ import IngestionJsonMapperTestDialog from '@components/data/ingestionJson/Ingest
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { ingestionJsonEditionContainerQuery } from '@components/data/ingestionJson/IngestionJsonEditionContainer';
 import { ingestionJsonEditionFragment } from '@components/data/ingestionJson/IngestionJsonEdition';
-import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import { IngestionJsonLinesPaginationQuery$variables } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
 import { IngestionJsonEditionFragment_ingestionJson$key } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionFragment_ingestionJson.graphql';
 import { IngestionJsonEditionContainerQuery } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionContainerQuery.graphql';
@@ -70,27 +69,32 @@ interface IngestionJsonCreationContainerProps {
   isDuplicated: boolean,
 }
 
+export interface IngestionJsonHeader {
+  name: string
+  value: string
+}
+
+export interface IngestionJsonAttributes {
+  type: string,
+  from: string,
+  to: string,
+  data_operation: string,
+  state_operation: string,
+  default: string,
+  exposed: string
+}
+
 export interface IngestionJsonAddInput {
   name: string
-  body: string
-  verb: string
-  pagination_with_sub_page: boolean
-  pagination_with_sub_page_query_verb: string
-  pagination_with_sub_page_attribute_path: string
-  headers: { name: string, value: string }[]
-  query_attributes: {
-    type: string,
-    from: string,
-    to: string,
-    data_operation: string,
-    state_operation: string,
-    default: string,
-    exposed: string
-  }[]
-  message?: string | null
-  references?: ExternalReferencesValues
-  description?: string | null
   uri: string
+  verb: string
+  body: string | null | undefined
+  pagination_with_sub_page: boolean
+  pagination_with_sub_page_query_verb: string | null | undefined
+  pagination_with_sub_page_attribute_path: string | null | undefined
+  headers: IngestionJsonHeader[]
+  query_attributes: IngestionJsonAttributes[]
+  description?: string | null
   json_mapper_id: string | Option
   authentication_type: IngestionAuthType | string
   authentication_value?: string | null
@@ -228,13 +232,13 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     name: `${ingestionJsonData.name} - copy`,
     description: ingestionJsonData.description,
     uri: ingestionJsonData.uri,
-    verb: 'GET',
-    body: '',
-    headers: [],
-    query_attributes: [],
-    pagination_with_sub_page: false,
-    pagination_with_sub_page_query_verb: '',
-    pagination_with_sub_page_attribute_path: '',
+    verb: ingestionJsonData.verb ?? 'GET',
+    body: ingestionJsonData.body ?? '',
+    headers: (ingestionJsonData.headers ?? []) as IngestionJsonHeader[],
+    query_attributes: (ingestionJsonData.query_attributes ?? []) as IngestionJsonAttributes[],
+    pagination_with_sub_page: ingestionJsonData.pagination_with_sub_page ?? false,
+    pagination_with_sub_page_query_verb: ingestionJsonData.pagination_with_sub_page_query_verb ?? '',
+    pagination_with_sub_page_attribute_path: ingestionJsonData.pagination_with_sub_page_attribute_path ?? '',
     json_mapper_id: convertMapper(ingestionJsonData, 'jsonMapper'),
     authentication_type: ingestionJsonData.authentication_type,
     authentication_value: ingestionJsonData.authentication_value,
@@ -540,7 +544,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 variant="contained"
                 color="secondary"
                 onClick={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isCreateDisabled}
                 classes={{ root: classes.button }}
               >
                 {t_i18n('Create')}
