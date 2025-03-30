@@ -1,6 +1,6 @@
-import { type JsonMapperParsed, JsonMapperRepresentationType } from './modules/internal/jsonMapper/jsonMapper-types';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './modules/organization/organization-types';
-import { IngestionAuthType } from './generated/graphql';
+import { type JsonMapperParsed, JsonMapperRepresentationType } from '../modules/internal/jsonMapper/jsonMapper-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { IngestionAuthType } from '../generated/graphql';
 
 // const jsonParsers: Record<string, JsonMapperParsed> = { parser4: mapper4 as JsonMapperParsed };
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

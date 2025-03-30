@@ -29,6 +29,7 @@ const IngestionMenu = () => {
     {
       path: '/dashboard/data/ingestion/json',
       label: 'JSON Feeds',
+      isEE: true,
     },
   ];
   const entries: MenuEntry[] = isGrantedIngestion ? [...settingsEntries] : [];
