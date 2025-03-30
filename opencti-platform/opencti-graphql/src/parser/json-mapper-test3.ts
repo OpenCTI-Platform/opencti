@@ -1,8 +1,8 @@
-import { type JsonMapperParsed, JsonMapperRepresentationType } from './modules/internal/jsonMapper/jsonMapper-types';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './modules/organization/organization-types';
-import { ENTITY_TYPE_MARKING_DEFINITION } from './schema/stixMetaObject';
-import { ENTITY_TYPE_VULNERABILITY } from './schema/stixDomainObject';
-import { ENTITY_SOFTWARE } from './schema/stixCyberObservable';
+import { type JsonMapperParsed, JsonMapperRepresentationType } from '../modules/internal/jsonMapper/jsonMapper-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
+import { ENTITY_SOFTWARE } from '../schema/stixCyberObservable';
 
 export const mispJsonMapper3: Partial<JsonMapperParsed> = {
   id: 'misp-json-mapper',

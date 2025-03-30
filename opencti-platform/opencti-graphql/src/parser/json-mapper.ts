@@ -1,6 +1,21 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import * as JSONPath from 'jsonpath-plus';
 
-import './modules';
+import '../modules';
 import { v4 as uuidv4 } from 'uuid';
 import ejs from 'ejs';
 import {
@@ -10,25 +25,25 @@ import {
   type JsonMapperRepresentation,
   type JsonMapperRepresentationAttribute,
   JsonMapperRepresentationType
-} from './modules/internal/jsonMapper/jsonMapper-types';
-import { schemaAttributesDefinition } from './schema/schema-attributes';
-import { generateStandardId } from './schema/identifier';
-import { schemaRelationsRefDefinition } from './schema/schema-relationsRef';
-import { UnsupportedError } from './config/errors';
-import { type AttributeDefinition, entityType, id as idType, type ObjectAttribute, relationshipType } from './schema/attribute-definition';
-import { isEmptyField, isNotEmptyField } from './database/utils';
-import { computeDefaultValue, formatValue, handleRefEntities, type InputType } from './parser/csv-mapper';
-import { getHashesNames } from './modules/internal/csvMapper/csvMapper-utils';
-import { executionContext, SYSTEM_USER } from './utils/access';
-import type { BasicStoreObject, StoreCommon } from './types/store';
-import { INPUT_MARKINGS } from './schema/general';
-import { isStixRelationshipExceptRef } from './schema/stixRelationship';
-import { convertStoreToStix } from './database/stix-converter';
-import { BundleBuilder } from './parser/bundle-creator';
-import { handleInnerType } from './domain/stixDomainObject';
-import { createStixPatternSync } from './python/pythonBridge';
-import { from as fromDef, to as toDef } from './schema/stixRefRelationship';
-import { logApp } from './config/conf';
+} from '../modules/internal/jsonMapper/jsonMapper-types';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { generateStandardId } from '../schema/identifier';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { UnsupportedError } from '../config/errors';
+import { type AttributeDefinition, entityType, id as idType, type ObjectAttribute, relationshipType } from '../schema/attribute-definition';
+import { isEmptyField, isNotEmptyField } from '../database/utils';
+import { computeDefaultValue, formatValue, handleRefEntities, type InputType } from './csv-mapper';
+import { getHashesNames } from '../modules/internal/csvMapper/csvMapper-utils';
+import { executionContext, SYSTEM_USER } from '../utils/access';
+import type { BasicStoreObject, StoreCommon } from '../types/store';
+import { INPUT_MARKINGS } from '../schema/general';
+import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
+import { convertStoreToStix } from '../database/stix-converter';
+import { BundleBuilder } from './bundle-creator';
+import { handleInnerType } from '../domain/stixDomainObject';
+import { createStixPatternSync } from '../python/pythonBridge';
+import { from as fromDef, to as toDef } from '../schema/stixRefRelationship';
+import { logApp } from '../config/conf';
 
 export const isComplexPath = (attribute: AttributePath | ComplexPath): attribute is ComplexPath => 'complex' in attribute;
 

@@ -91,7 +91,7 @@ const ProcessingMenu = () => {
             )}
             dense={false}
           >
-            <ListItemText primary={t_i18n('JSON Mappers')} />
+            <ListItemText primary={<EEMenu>{t_i18n('JSON Mappers')}</EEMenu>} />
           </MenuItem>
         )}
       </MenuList>
