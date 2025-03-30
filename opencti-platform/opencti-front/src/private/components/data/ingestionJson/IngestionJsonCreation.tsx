@@ -41,7 +41,6 @@ import { convertMapper, convertUser } from '../../../../utils/edition';
 import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
 import PasswordTextField from '../../../../components/PasswordTextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -321,7 +320,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
           {values.verb === 'POST' && (
           <>
             <Field
-              component={MarkdownField}
+              component={TextField}
               name="body"
               label={t_i18n('HTTP BODY POST')}
               required={values.verb === 'POST'}
@@ -347,7 +346,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             containerStyle={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
-          <Alert severity="info" variant="outlined" style={{ position: 'relative', marginTop: 20, marginBottom: 20, padding: '0px 10px 10px 10px' }}>
+          <Alert severity="info" variant="standard" style={{ position: 'relative', marginTop: 20, marginBottom: 20, padding: '0px 10px 10px 10px' }}>
             <div>
               {t_i18n(
                 'For specific api (like Trino), sometimes it required to have sub pagination. To activate only for this specific use cases',

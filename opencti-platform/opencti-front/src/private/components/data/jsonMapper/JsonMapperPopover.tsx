@@ -46,14 +46,6 @@ const JsonMapperPopover: FunctionComponent<JsonMapperPopoverProps> = ({
   const handleOpen = (event: React.MouseEvent) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
-  // -- Duplication --
-  const [_displayDuplicate, setDisplayDuplicate] = useState(false);
-
-  const handleOpenDuplicate = () => {
-    setDisplayDuplicate(true);
-    handleClose();
-  };
-
   // -- Deletion --
   const [commit] = useApiMutation(jsonMapperPopoverDelete);
 
@@ -105,7 +97,6 @@ const JsonMapperPopover: FunctionComponent<JsonMapperPopoverProps> = ({
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
         <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
       </Menu>
