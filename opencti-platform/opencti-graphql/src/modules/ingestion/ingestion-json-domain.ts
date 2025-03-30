@@ -100,7 +100,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   const variables = isEmptyField(ingestion.ingestion_json_state) ? buildQueryObject(ingestion.query_attributes, {}) : ingestion.ingestion_json_state;
   const params = buildQueryParams(ingestion.query_attributes, variables);
   const parsedBody = replaceVariables(ingestion.body, variables);
-  logApp.info(`> Main query: ${ingestion.uri}`, parsedBody);
+  logApp.info(`> Main query: ${ingestion.uri}`, { body: parsedBody });
   const { data: requestData, headers: responseHeaders } = await httpClient.call({
     method: ingestion.verb,
     url: ingestion.uri,
@@ -241,7 +241,7 @@ export const patchJsonIngestion = async (context: AuthContext, user: AuthUser, i
 };
 
 export const ingestionJsonResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
-  await patchJsonIngestion(context, user, ingestionId, { current_state_hash: '' });
+  await patchJsonIngestion(context, user, ingestionId, { ingestion_json_state: null });
   const ingestionUpdated = await findById(context, user, ingestionId);
   await publishUserAction({
     user,
