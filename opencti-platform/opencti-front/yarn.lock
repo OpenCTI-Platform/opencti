@@ -13851,10 +13851,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-to-image@npm:1.11.11":
-  version: 1.11.11
-  resolution: "html-to-image@npm:1.11.11"
-  checksum: 10/099206c3aaa54ca36d0df91426fe2b05258fe73c913dca6874dd8250973d47f629d3f45e427d5d51cc416ee305b898ce8db0a71336b3700a059ef1116b64d944
+"html-to-image@npm:1.11.13":
+  version: 1.11.13
+  resolution: "html-to-image@npm:1.11.13"
+  checksum: 10/f5950a0221b4ed4e59853db09917606309ebe3ddd2051c2f89aed3e37026d1893880f76e61bc2ca2280e3f1bbc0ad5b9ea5325188ff339987c8eeccbe8284f3f
   languageName: node
   linkType: hard
 
@@ -17390,7 +17390,7 @@ __metadata:
     graphql: "npm:16.10.0"
     graphql-ws: "npm:5.16.2"
     html-react-parser: "npm:5.2.2"
-    html-to-image: "npm:1.11.11"
+    html-to-image: "npm:1.11.13"
     html-to-pdfmake: "npm:2.5.23"
     http-proxy-middleware: "npm:3.0.3"
     i18n-auto-translation: "npm:2.1.1"
