@@ -20,10 +20,10 @@ import { QueryAttributeFieldAdd } from '@components/common/form/QueryAttributeFi
 import { HeaderFieldAdd } from '@components/common/form/HeaderField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import { IngestionJsonAttributes, IngestionJsonHeader } from '@components/data/ingestionJson/IngestionJsonCreation';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import { adaptFieldValue } from '../../../../utils/String';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
@@ -48,9 +48,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const ingestionJsonEditionPatch = graphql`
-  mutation IngestionJsonEditionPatchMutation($id: ID!, $input: [EditInput!]!) {
-    ingestionJsonFieldPatch(id: $id, input: $input) {
+const ingestionJsonEditionPatch = graphql`
+  mutation IngestionJsonEditionPatchMutation($id: ID!, $input: IngestionJsonAddInput!) {
+    ingestionJsonEdit(id: $id, input: $input) {
       ...IngestionJsonEditionFragment_ingestionJson
     }
   } 
@@ -103,21 +103,6 @@ interface IngestionJsonEditionProps {
   enableReferences?: boolean
 }
 
-interface JsonQueryAttribute {
-  type: string,
-  from: string,
-  to: string,
-  data_operation: string,
-  state_operation: string,
-  default: string,
-  exposed: string
-}
-
-interface JsonHeader {
-  name: string,
-  value: string
-}
-
 interface IngestionJsonEditionForm {
   message?: string | null
   references?: ExternalReferencesValues
@@ -125,16 +110,22 @@ interface IngestionJsonEditionForm {
   description?: string | null,
   uri: string,
   verb: string
-  pagination_with_sub_page: boolean | null | undefined
-  pagination_with_sub_page_query_verb?: string | null | undefined
+  body: string | null | undefined
+  pagination_with_sub_page: boolean
+  pagination_with_sub_page_query_verb: string | null | undefined
   pagination_with_sub_page_attribute_path: string | null | undefined
-  headers: JsonHeader[] | null | undefined
-  query_attributes: JsonQueryAttribute[] | null | undefined
+  headers: IngestionJsonHeader[]
+  query_attributes: IngestionJsonAttributes[]
   authentication_type: string,
   authentication_value?: string | null,
   ingestion_running?: boolean | null,
   json_mapper_id: string | Option,
   user_id: string | Option,
+  username?: string
+  password?: string
+  cert?: string
+  key?: string
+  ca?: string
   markings: Option[],
 }
 
@@ -156,6 +147,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
+  const [isCreateDisabled, setIsCreateDisabled] = useState(true);
   const ingestionJsonData = useFragment(ingestionJsonEditionFragment, ingestionJson);
   // const [hasUserChoiceJsonMapper, setHasUserChoiceJsonMapper] = useState(ingestionJsonData.jsonMapper.representations.some(
   //   (representation) => representation.attributes.some(
@@ -190,19 +182,33 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
   const [commitUpdate] = useApiMutation(ingestionJsonEditionPatch);
 
   const onSubmit: FormikConfig<IngestionJsonEditionForm>['onSubmit'] = (values, { setSubmitting }) => {
-    const { message, references, ...otherValues } = values;
-    const commitMessage = message ?? '';
-    const commitReferences = (references ?? []).map(({ value }) => value);
-    const inputValues = Object.entries({
-      ...otherValues,
-    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
+    let authenticationValue = values.authentication_value;
+    if (values.authentication_type === 'basic') {
+      authenticationValue = `${values.username}:${values.password}`;
+    } else if (values.authentication_type === 'certificate') {
+      authenticationValue = `${values.cert}:${values.key}:${values.ca}`;
+    }
+    const markings = values.markings?.map((option) => option.value);
+    const input = {
+      name: values.name,
+      description: values.description,
+      uri: values.uri,
+      verb: values.verb,
+      body: values.body,
+      headers: values.headers,
+      query_attributes: values.query_attributes,
+      pagination_with_sub_page: values.pagination_with_sub_page,
+      pagination_with_sub_page_query_verb: values.pagination_with_sub_page_query_verb,
+      pagination_with_sub_page_attribute_path: values.pagination_with_sub_page_attribute_path,
+      json_mapper_id: typeof values.json_mapper_id === 'string' ? values.json_mapper_id : values.json_mapper_id?.value,
+      authentication_type: values.authentication_type,
+      authentication_value: authenticationValue,
+      user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
+      markings: markings ?? [],
+    };
+
     commitUpdate({
-      variables: {
-        id: ingestionJsonData.id,
-        input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references: commitReferences,
-      },
+      variables: { id: ingestionJsonData.id, input },
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -210,76 +216,17 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
     });
   };
 
-  const handleSubmitField = (
-    name: string,
-    value: Option | Option[] | JsonMapperFieldOption | string | string[] | number | number[] | null,
-  ) => {
-    let finalValue = value as string;
-    let finalName = name;
-
-    // region authentication -- If you change something here, please have a look at IngestionTaxiiEdition
-    const backendAuthValue = ingestionJsonData.authentication_value;
-    // re-compose username:password
-    if (name === 'username') {
-      finalName = 'authentication_value';
-      finalValue = `${value}:${extractPassword(backendAuthValue)}`;
-    }
-
-    if (name === 'password') {
-      finalName = 'authentication_value';
-      finalValue = `${extractUsername(backendAuthValue)}:${value}`;
-    }
-
-    // re-compose cert:key:ca
-    if (name === 'cert') {
-      finalName = 'authentication_value';
-      finalValue = `${value}:${extractKey(backendAuthValue)}:${extractCA(backendAuthValue)}`;
-    }
-
-    if (name === 'key') {
-      finalName = 'authentication_value';
-      finalValue = `${extractCert(backendAuthValue)}:${value}:${extractCA(backendAuthValue)}`;
-    }
-
-    if (name === 'ca') {
-      finalName = 'authentication_value';
-      finalValue = `${extractCert(backendAuthValue)}:${extractKey(backendAuthValue)}:${value}`;
-    }
-    // end region authentication
-
-    if (name === 'json_mapper_id' || name === 'user_id') {
-      finalValue = (value as Option).value;
-    }
-    // if (name === 'json_mapper_id') {
-    //   const hasUserChoiceJsonMapperRepresentations = resolveHasUserChoiceJsonMapper(value as JsonMapperFieldOption);
-    //   setHasUserChoiceJsonMapper(hasUserChoiceJsonMapperRepresentations);
-    // }
-    // if (name === 'user_id') {
-    //   onCreatorSelection(value as Option).then();
-    // }
-    ingestionJsonValidator
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitUpdate({
-          variables: {
-            id: ingestionJsonData.id,
-            input: [{ key: finalName, value: finalValue || '' }],
-          },
-        });
-      })
-      .catch(() => false);
-  };
   const initialValues = {
     name: ingestionJsonData.name,
     description: ingestionJsonData.description,
     uri: ingestionJsonData.uri,
     body: ingestionJsonData.body,
     verb: ingestionJsonData.verb,
-    headers: (ingestionJsonData.headers ?? []) as JsonHeader[],
-    pagination_with_sub_page: ingestionJsonData.pagination_with_sub_page,
+    headers: (ingestionJsonData.headers ?? []) as IngestionJsonHeader[],
+    pagination_with_sub_page: ingestionJsonData.pagination_with_sub_page ?? false,
     pagination_with_sub_page_query_verb: ingestionJsonData.pagination_with_sub_page_query_verb,
     pagination_with_sub_page_attribute_path: ingestionJsonData.pagination_with_sub_page_attribute_path,
-    query_attributes: (ingestionJsonData.query_attributes ?? []) as JsonQueryAttribute[],
+    query_attributes: (ingestionJsonData.query_attributes ?? []) as IngestionJsonAttributes[],
     authentication_type: ingestionJsonData.authentication_type,
     authentication_value: ingestionJsonData.authentication_type === BEARER_AUTH ? ingestionJsonData.authentication_value : undefined,
     username: ingestionJsonData.authentication_type === BASIC_AUTH ? extractUsername(ingestionJsonData.authentication_value) : undefined,
@@ -315,18 +262,19 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
   ) => {
     const markings = newHasUserChoiceJsonMapper ? values.markings : defaultMarkingOptions;
     await setFieldValue('markings', markings);
-    handleSubmitField('markings', markings.map(({ value }: Option) => value));
   };
   return (
     <Formik<IngestionJsonEditionForm>
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={ingestionJsonValidator}
+      onReset={handleClose}
       onSubmit={onSubmit}
     >
       {({
         values,
         submitForm,
+        handleReset,
         isSubmitting,
         setFieldValue,
         isValid,
@@ -339,7 +287,6 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
-            onSubmit={handleSubmitField}
           />
           <Field
             component={TextField}
@@ -348,7 +295,6 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             label={t_i18n('Description')}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
-            onSubmit={handleSubmitField}
           />
           <Field
             component={TextField}
@@ -356,7 +302,6 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             name="uri"
             label={t_i18n('HTTP JSON URL')}
             fullWidth={true}
-            onSubmit={handleSubmitField}
             style={fieldSpacingContainerStyle}
           />
           <Field
@@ -450,7 +395,6 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
           <CreatorField
             name="user_id"
             label={t_i18n('User responsible for data creation (empty = System)')}
-            onChange={handleSubmitField}
             containerStyle={fieldSpacingContainerStyle}
             showConfidence
           />
@@ -472,7 +416,6 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                   name="json_mapper_id"
                   isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value }
                   onChange={async (_, option) => {
-                    handleSubmitField('json_mapper_id', option);
                     await updateJsonMapper(setFieldValue, option);
                     const hasUserChoiceJsonMapperRepresentations = resolveHasUserChoiceJsonMapper(option as JsonMapperFieldOption);
                     await updateObjectMarkingField(setFieldValue, values, hasUserChoiceJsonMapperRepresentations);
@@ -482,29 +425,11 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               </React.Suspense>
             )
           }
-          {
-            // hasUserChoiceJsonMapper && (
-            //   <ObjectMarkingField
-            //     name="markings"
-            //     isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value}
-            //     label={t_i18n('Marking definition levels')}
-            //     style={fieldSpacingContainerStyle}
-            //     allowedMarkingOwnerId={isGranted ? creatorId : undefined}
-            //     setFieldValue={setFieldValue}
-            //     onChange={(name, value) => {
-            //       if (value.length) {
-            //         handleSubmitField(name, value.map((marking) => marking.value));
-            //       }
-            //     }}
-            //   />
-            // )
-          }
           <Field
             component={SelectField}
             variant="standard"
             name="authentication_type"
             label={t_i18n('Authentication type')}
-            onSubmit={handleSubmitField}
             fullWidth={true}
             containerstyle={{
               width: '100%',
@@ -525,14 +450,12 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                 variant="standard"
                 name="username"
                 label={t_i18n('Username')}
-                onSubmit={handleSubmitField}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
               <PasswordTextField
                 name="password"
                 label={t_i18n('Password')}
-                onSubmit={handleSubmitField}
               />
             </>
           )}
@@ -540,7 +463,6 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             <PasswordTextField
               name="authentication_value"
               label={t_i18n('Token')}
-              onSubmit={handleSubmitField}
             />
           )}
           {values.authentication_type === CERT_AUTH && (
@@ -550,21 +472,18 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                 variant="standard"
                 name="cert"
                 label={t_i18n('Certificate (base64)')}
-                onSubmit={handleSubmitField}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
               <PasswordTextField
                 name="key"
                 label={t_i18n('Key (base64)')}
-                onSubmit={handleSubmitField}
               />
               <Field
                 component={TextField}
                 variant="standard"
                 name="ca"
                 label={t_i18n('CA certificate (base64)')}
-                onSubmit={handleSubmitField}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
@@ -593,6 +512,14 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
           <div className={classes.buttons}>
             <Button
               variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
               color="secondary"
               onClick={() => setOpen(true)}
               classes={{ root: classes.button }}
@@ -600,11 +527,21 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             >
               {t_i18n('Verify')}
             </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting || isCreateDisabled}
+              classes={{ root: classes.button }}
+            >
+              {t_i18n('Save')}
+            </Button>
           </div>
           <IngestionJsonMapperTestDialog
             open={open}
             onClose={() => setOpen(false)}
             values={values}
+            setIsCreateDisabled={setIsCreateDisabled}
           />
         </Form>
       )}

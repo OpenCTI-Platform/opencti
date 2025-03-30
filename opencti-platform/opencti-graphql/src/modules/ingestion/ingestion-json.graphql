@@ -116,4 +116,5 @@ type Mutation {
     ingestionJsonResetState(id: ID!): IngestionJson @auth(for: [INGESTION_SETINGESTIONS])
     ingestionJsonDelete(id: ID!): ID @auth(for: [JSONMAPPERS, INGESTION_SETINGESTIONS])
     ingestionJsonFieldPatch(id: ID!, input: [EditInput!]!): IngestionJson @auth(for: [JSONMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionJsonEdit(id: ID!, input: IngestionJsonAddInput!): IngestionJson @auth(for: [JSONMAPPERS, INGESTION_SETINGESTIONS])
 }

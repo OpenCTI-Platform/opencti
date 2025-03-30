@@ -242,7 +242,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
         >
           <DialogContent>
             <DialogContentText>
-              {t_i18n('Do you want to delete this CSV ingester?')}
+              {t_i18n('Do you want to delete this CSV Feed?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -270,7 +270,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
         >
           <DialogContent>
             <DialogContentText>
-              {t_i18n('Do you want to reset the state of this CSV ingester?')}
+              {t_i18n('Do you want to reset the state of this CSV Feed?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -298,7 +298,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
         >
           <DialogContent>
             <DialogContentText>
-              {t_i18n('Do you want to start this CSV ingester?')}
+              {t_i18n('Do you want to start this CSV Feed?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -326,7 +326,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
         >
           <DialogContent>
             <DialogContentText>
-              {t_i18n('Do you want to stop this CSV ingester?')}
+              {t_i18n('Do you want to stop this CSV Feed?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
