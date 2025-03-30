@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 import { IconButton } from '@mui/material';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
+import Paper from '@mui/material/Paper';
 import {
   ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
 } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
@@ -215,9 +216,10 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
           <>
             <div id="total_attributes">
               {values?.map((_, index) => (
-                <div
+
+                <Paper className={'paper-for-grid'} variant="outlined"
                   key={index}
-                  style={{ marginTop: 20, padding: 10, border: '1px solid red', width: '100%', position: 'relative' }}
+                  style={{ marginTop: 20, padding: 20, width: '100%', position: 'relative' }}
                 >
                   <div
                     style={{
@@ -230,55 +232,18 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                     <Field component={SelectField}
                       variant="standard"
                       name={`${name}.${index}.type`}
-                      label={t_i18n('Type')}
+                      label={t_i18n('Resolve from')}
                       fullWidth={true}
                       containerstyle={{ width: '100%' }}
                     >
                       <MenuItem value="data">{t_i18n('Data')}</MenuItem>
                       <MenuItem value="header">{t_i18n('Header')}</MenuItem>
                     </Field>
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name={`${name}.${index}.from`}
-                      label={t_i18n('From')}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name={`${name}.${index}.to`}
-                      label={t_i18n('To')}
-                    />
-                    <Field component={SelectField}
-                      variant="standard"
-                      name={`${name}.${index}.data_operation`}
-                      label={t_i18n('data_operation')}
-                      fullWidth={true}
-                      containerstyle={{ width: '100%' }}
-                    >
-                      <MenuItem value="data">{t_i18n('Data')}</MenuItem>
-                      <MenuItem value="count">{t_i18n('Count')}</MenuItem>
-                    </Field>
-                    <Field component={SelectField}
-                      variant="standard"
-                      name={`${name}.${index}.state_operation`}
-                      label={t_i18n('state_operation')}
-                      fullWidth={true}
-                      containerstyle={{ width: '100%' }}
-                    >
-                      <MenuItem value="replace">{t_i18n('Replace')}</MenuItem>
-                      <MenuItem value="sum">{t_i18n('Sum')}</MenuItem>
-                    </Field>
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name={`${name}.${index}.default`}
-                      label={t_i18n('default')}
-                    />
+
                     <Field component={SelectField}
                       variant="standard"
                       name={`${name}.${index}.exposed`}
-                      label={t_i18n('exposed')}
+                      label={t_i18n('Exposed attribute to')}
                       fullWidth={true}
                       containerstyle={{ width: '100%' }}
                     >
@@ -286,6 +251,49 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                       <MenuItem value="query_param">{t_i18n('Query parameter')}</MenuItem>
                       <MenuItem value="header">{t_i18n('Header')}</MenuItem>
                     </Field>
+
+                    <Field component={SelectField}
+                      variant="standard"
+                      name={`${name}.${index}.data_operation`}
+                      label={t_i18n('Resolve operation')}
+                      fullWidth={true}
+                      containerstyle={{ width: '100%' }}
+                    >
+                      <MenuItem value="data">{t_i18n('Data')}</MenuItem>
+                      <MenuItem value="count">{t_i18n('Count')}</MenuItem>
+                    </Field>
+
+                    <Field component={SelectField}
+                      variant="standard"
+                      name={`${name}.${index}.state_operation`}
+                      label={t_i18n('State operation')}
+                      fullWidth={true}
+                      containerstyle={{ width: '100%' }}
+                    >
+                      <MenuItem value="replace">{t_i18n('Replace')}</MenuItem>
+                      <MenuItem value="sum">{t_i18n('Sum')}</MenuItem>
+                    </Field>
+
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name={`${name}.${index}.from`}
+                      label={t_i18n('Get from path')}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name={`${name}.${index}.to`}
+                      label={t_i18n('To attribute name')}
+                    />
+
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name={`${name}.${index}.default`}
+                      label={t_i18n('Default value')}
+                    />
+
                   </div>
                   <IconButton
                     id="deleteHeader"
@@ -294,11 +302,11 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                       arrayHelpers.remove(index);
                     }}
                     size="large"
-                    style={{ position: 'absolute', right: -10, top: 5 }}
+                    style={{ position: 'absolute', right: 0, top: 5 }}
                   >
                     <DeleteOutlined />
                   </IconButton>
-                </div>
+                </Paper>
               ))}
               <Button
                 size="small"
@@ -312,7 +320,7 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                     type: 'data',
                     from: '',
                     to: '',
-                    data_operation: 'count',
+                    data_operation: 'data',
                     state_operation: 'replace',
                     default: '',
                     exposed: 'body',
