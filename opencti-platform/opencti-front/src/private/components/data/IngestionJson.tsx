@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import React from 'react';
@@ -9,6 +24,7 @@ import {
 } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
 import { IngestionJsonLineDummy } from '@components/data/ingestionJson/IngestionJsonLine';
 import { IngestionJsonCreationContainer } from '@components/data/ingestionJson/IngestionJsonCreation';
+import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -19,6 +35,7 @@ import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 
 const LOCAL_STORAGE_KEY = 'ingestionJsons';
 
@@ -34,6 +51,7 @@ const useStyles = makeStyles(() => ({
 const IngestionJson = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Json Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
@@ -136,15 +154,20 @@ const IngestionJson = () => {
     <div className={classes.container}>
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('JSON feeds'), current: true }]} />
       <IngestionMenu/>
-      {renderLines()}
-      <Security needs={[INGESTION_SETINGESTIONS]}>
-        <IngestionJsonCreationContainer
-          open={false}
-          handleClose={() => {}}
-          paginationOptions={paginationOptions}
-          isDuplicated={false}
-        />
-      </Security>
+      {!isEnterpriseEdition ? (
+        <EnterpriseEdition feature="Dissemination lists" />
+      ) : (
+        <>
+          {renderLines()}
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <IngestionJsonCreationContainer
+              open={false}
+              handleClose={() => {}}
+              paginationOptions={paginationOptions}
+              isDuplicated={false}
+            />
+          </Security>
+        </>)}
     </div>
   );
 };
