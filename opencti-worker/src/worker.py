@@ -103,6 +103,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
         super().__init__()
         self.logger_class = logger(self.log_level.upper(), self.json_logging)
         self.worker_logger = self.logger_class("worker")
+        self.worker_logger.info(self.connector)
         self.queue_name = self.connector["config"]["listen"]
         self.connector_token = self.connector["connector_user"]["api_token"]
         self.pika_credentials = pika.PlainCredentials(
@@ -134,6 +135,8 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
 
+        self._is_interrupted = False
+
     @property
     def id(self) -> Any:  # pylint: disable=inconsistent-return-statements
         if hasattr(self, "_thread_id"):
@@ -143,19 +146,10 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             if thread is self:
                 return id_
 
-    def terminate(self) -> None:
-        thread_id = self.id
-        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
-            thread_id, ctypes.py_object(SystemExit)
-        )
-        if res > 1:
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
-            self.worker_logger.info("Unable to kill the thread")
-
-    def nack_message(self, channel: BlockingChannel, delivery_tag: int) -> None:
+    def nack_message(self, channel: BlockingChannel, delivery_tag: int, requeue=True) -> None:
         if channel.is_open:
             self.worker_logger.info("Message rejected", {"tag": delivery_tag})
-            channel.basic_nack(delivery_tag)
+            channel.basic_nack(delivery_tag, requeue=requeue)
         else:
             self.worker_logger.info(
                 "Message NOT rejected (channel closed)", {"tag": delivery_tag}
@@ -169,29 +163,6 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.worker_logger.info(
                 "Message NOT acknowledged (channel closed)", {"tag": delivery_tag}
             )
-
-    def stop_consume(self, channel: BlockingChannel) -> None:
-        if channel.is_open:
-            channel.stop_consuming()
-
-    # Callable for consuming a message
-    def _process_message(
-        self,
-        channel: BlockingChannel,
-        method: Any,
-        properties: None,  # pylint: disable=unused-argument
-        body: str,
-    ) -> None:
-        self.worker_logger.info(
-            "Processing a new message, launching a thread...",
-            {"tag": method.delivery_tag},
-        )
-        task_future = self.execution_pool.submit(
-            self.data_handler, self.pika_connection, channel, method.delivery_tag, body
-        )
-        while task_future.running():  # Loop while the thread is processing
-            self.pika_connection.sleep(0.05)
-        self.worker_logger.info("Message processed, thread terminated")
 
     # Data handling
     def data_handler(  # pylint: disable=too-many-statements, too-many-locals
@@ -246,9 +217,13 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
                 connection.add_callback_threadsafe(cb)
             else:
                 # Technical error, log and continue
-                # Ack the message
-                cb = functools.partial(self.ack_message, channel, delivery_tag)
+                # Reject the message
+                cb = functools.partial(self.nack_message, channel, delivery_tag, requeue=False)
                 connection.add_callback_threadsafe(cb)
+
+    def stop(self):
+        self.worker_logger.info('stop called')
+        self._is_interrupted = True
 
     def run(self) -> None:
         try:
@@ -256,13 +231,25 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.worker_logger.info(
                 "Thread for listen queue started", {"queue": self.queue_name}
             )
-            self.channel.basic_consume(
-                queue=self.queue_name,
-                on_message_callback=self._process_message,
-            )
-            self.channel.start_consuming()
+            for message in self.channel.consume(self.queue_name, inactivity_timeout=1):
+                if self._is_interrupted:
+                    break
+                if not all(message):
+                    continue
+                method, properties, body = message
+                self.worker_logger.info(
+                    "Processing a new message, launching a thread...",
+                    {"tag": method.delivery_tag},
+                )
+                task_future = self.execution_pool.submit(
+                    self.data_handler, self.pika_connection, channel, method.delivery_tag, body
+                )
+                while task_future.running():  # Loop while the thread is processing
+                    self.pika_connection.sleep(0.05)
+                self.worker_logger.info("Message processed, thread terminated")
+        except Exception as e:
+            self.worker_logger.error("Unhandled exception", {"exception": e})
         finally:
-            self.channel.stop_consuming()
             self.worker_logger.info(
                 "Thread for listen queue terminated", {"queue": self.queue_name}
             )
@@ -289,17 +276,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             json_logging=self.json_logging,
         )
         self.worker_logger = self.api.logger_class("worker")
-
-        # Start ping
-        self.ping_api = OpenCTIApiClient(
-            url=self.opencti_url,
-            token=self.opencti_token,
-            log_level=self.log_level,
-            ssl_verify=self.ssl_verify,
-            json_logging=self.json_logging,
-        )
-        self.ping = PingAlive(self.worker_logger, self.ping_api)
-        self.ping.start()
 
         self.queue_name = self.connector["config"]["push"]
         self.pika_credentials = pika.PlainCredentials(
@@ -331,6 +307,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
 
+        self._is_interrupted = False
+
     @property
     def id(self) -> Any:  # pylint: disable=inconsistent-return-statements
         if hasattr(self, "_thread_id"):
@@ -340,20 +318,10 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             if thread is self:
                 return id_
 
-    def terminate(self) -> None:
-        thread_id = self.id
-        self.ping.stop()
-        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
-            thread_id, ctypes.py_object(SystemExit)
-        )
-        if res > 1:
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
-            self.worker_logger.info("Unable to kill the thread")
-
-    def nack_message(self, channel: BlockingChannel, delivery_tag: int) -> None:
+    def nack_message(self, channel: BlockingChannel, delivery_tag: int, requeue=True) -> None:
         if channel.is_open:
             self.worker_logger.info("Message rejected", {"tag": delivery_tag})
-            channel.basic_nack(delivery_tag)
+            channel.basic_nack(delivery_tag, requeue=requeue)
         else:
             self.worker_logger.info(
                 "Message NOT rejected (channel closed)", {"tag": delivery_tag}
@@ -368,31 +336,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 "Message NOT acknowledged (channel closed)", {"tag": delivery_tag}
             )
 
-    def stop_consume(self, channel: BlockingChannel) -> None:
-        self.ping.stop()
-        if channel.is_open:
-            channel.stop_consuming()
-
-    # Callable for consuming a message
-    def _process_message(
-        self,
-        channel: BlockingChannel,
-        method: Any,
-        properties: None,  # pylint: disable=unused-argument
-        body: str,
-    ) -> None:
-        data = json.loads(body)
-        self.worker_logger.info(
-            "Processing a new message, launching a thread...",
-            {"tag": method.delivery_tag},
-        )
-        task_future = self.execution_pool.submit(
-            self.data_handler, self.pika_connection, channel, method.delivery_tag, data
-        )
-        while task_future.running():  # Loop while the thread is processing
-            self.pika_connection.sleep(0.05)
-        self.worker_logger.info("Message processed, thread terminated")
-
     # Data handling
     def data_handler(  # pylint: disable=too-many-statements, too-many-locals
         self,
@@ -401,26 +344,27 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         delivery_tag: str,
         data: Dict[str, Any],
     ) -> Optional[bool]:
-        start_processing = datetime.datetime.now()
-        # Set the API headers
-        self.api.set_applicant_id_header(data.get("applicant_id"))
-        self.api.set_playbook_id_header(data.get("playbook_id"))
-        self.api.set_event_id(data.get("event_id"))
-        self.api.set_draft_id(data.get("draft_id"))
-        work_id = data["work_id"] if "work_id" in data else None
-        synchronized = data["synchronized"] if "synchronized" in data else False
-        self.api.set_synchronized_upsert_header(synchronized)
-        previous_standard = data.get("previous_standard")
-        self.api.set_previous_standard_header(previous_standard)
-        # Execute the import
-        imported_items = []
-        event_type = data["type"] if "type" in data else "bundle"
-        types = (
-            data["entities_types"]
-            if "entities_types" in data and len(data["entities_types"]) > 0
-            else None
-        )
         try:
+            start_processing = datetime.datetime.now()
+            # Set the API headers
+            self.api.set_applicant_id_header(data.get("applicant_id"))
+            self.api.set_playbook_id_header(data.get("playbook_id"))
+            self.api.set_event_id(data.get("event_id"))
+            self.api.set_draft_id(data.get("draft_id"))
+            work_id = data["work_id"] if "work_id" in data else None
+            synchronized = data["synchronized"] if "synchronized" in data else False
+            self.api.set_synchronized_upsert_header(synchronized)
+            previous_standard = data.get("previous_standard")
+            self.api.set_previous_standard_header(previous_standard)
+            # Execute the import
+            imported_items = []
+            event_type = data["type"] if "type" in data else "bundle"
+            types = (
+                data["entities_types"]
+                if "entities_types" in data and len(data["entities_types"]) > 0
+                else None
+            )
+
             if event_type == "bundle":
                 content = base64.b64decode(data["content"]).decode("utf-8")
                 content_json = json.loads(content)
@@ -525,6 +469,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.worker_logger.error(
                 "Error executing data handling", {"reason": str(ex)}
             )
+            cb = functools.partial(self.nack_message, channel, delivery_tag)
+            connection.add_callback_threadsafe(cb)
         finally:
             bundles_global_counter.add(len(imported_items))
             processing_delta = datetime.datetime.now() - start_processing
@@ -534,19 +480,45 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             connection.add_callback_threadsafe(cb)
             return True
 
+
+    def stop(self):
+        self._is_interrupted = True
+
     def run(self) -> None:
         try:
-            # Consume the queue
             self.worker_logger.info(
                 "Thread for queue started", {"queue": self.queue_name}
             )
-            self.channel.basic_consume(
-                queue=self.queue_name,
-                on_message_callback=self._process_message,
-            )
-            self.channel.start_consuming()
+            for message in self.channel.consume(self.queue_name, inactivity_timeout=1):
+                if self._is_interrupted:
+                    break
+                if not all(message):
+                    continue
+                method, properties, body = message
+                try:
+                    data = json.loads(body)
+                    self.worker_logger.info(
+                        "Processing a new message, launching a thread...",
+                        {"queue": self.queue_name, "tag": method.delivery_tag},
+                    )
+                    task_future = self.execution_pool.submit(
+                        self.data_handler, self.pika_connection, self.channel, method.delivery_tag, data
+                    )
+                    while task_future.running():  # Loop while the thread is processing
+                        self.pika_connection.sleep(0.05)
+                    self.worker_logger.info("Message processed, thread terminated")
+                except ValueError as e:
+                    self.worker_logger.error("Could not process message, body is not a valid JSON. Discarding.", {"body": body, "exception": e})
+                    cb = functools.partial(self.nack_message, self.channel, method.delivery_tag, False)
+                    self.pika_connection.add_callback_threadsafe(cb)
+                except Exception as e:
+                    self.worker_logger.error("Could not process message. Will requeue", {"body": body, "exception": e})
+                    cb = functools.partial(self.nack_message, self.channel, method.delivery_tag)
+                    self.pika_connection.add_callback_threadsafe(cb)
+        except Exception as e:
+            self.worker_logger.error("Unhandled exception", {"exception": e})
         finally:
-            self.channel.stop_consuming()
+            self.stop()
             self.worker_logger.info(
                 "Thread for queue terminated", {"queue": self.queue_name}
             )
@@ -645,7 +617,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 
         # Telemetry
         if self.telemetry_enabled:
-            start_http_server(
+            self.prom_httpd, self.prom_t = start_http_server(
                 port=self.telemetry_prometheus_port, addr=self.telemetry_prometheus_host
             )
             provider = MeterProvider(
@@ -670,9 +642,27 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             max_workers=self.listen_pool_size
         )
 
+    def stop(self) -> None:
+        for thread in self.listen_api_threads:
+            self.listen_api_threads[thread].stop()
+        for thread in self.consumer_threads:
+            self.consumer_threads[thread].stop()
+        if self.telemetry_enabled:
+            self.prom_httpd.shutdown()
+            self.prom_httpd.server_close()
+            self.prom_t.join()
+        self.ping.stop()
+        self.execution_pool.shutdown(wait=False, cancel_futures=True)
+
     # Start the main loop
     def start(self) -> None:
         sleep_delay = 60
+
+        # Start ping
+        self.ping = PingAlive(self.worker_logger, self.api)
+        self.ping.name = 'PingAlive'
+        self.ping.start()
+
         while True:
             try:
                 # Fetch queue configuration from API
@@ -699,6 +689,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.opencti_ssl_verify,
                                 self.opencti_json_logging,
                             )
+                            self.consumer_threads[push_queue].name = push_queue
                             self.consumer_threads[push_queue].start()
                     else:
                         self.consumer_threads[push_queue] = Consumer(
@@ -711,6 +702,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.opencti_ssl_verify,
                             self.opencti_json_logging,
                         )
+                        self.consumer_threads[push_queue].name = push_queue
                         self.consumer_threads[push_queue].start()
                     # Listen for webhook message
                     if connector["config"].get("listen_callback_uri") is not None:
@@ -728,6 +720,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                     self.log_level,
                                     self.opencti_json_logging,
                                 )
+                                self.listen_api_threads[listen_queue].name = listen_queue
                                 self.listen_api_threads[listen_queue].start()
                         else:
                             self.listen_api_threads[listen_queue] = ApiConsumer(
@@ -740,6 +733,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.log_level,
                                 self.opencti_json_logging,
                             )
+                            self.listen_api_threads[listen_queue].name = listen_queue
                             self.listen_api_threads[listen_queue].start()
 
                 # Check if some threads must be stopped
@@ -750,7 +744,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             {"thread": thread},
                         )
                         try:
-                            self.consumer_threads[thread].terminate()
+                            self.consumer_threads[thread].stop()
                             self.consumer_threads.pop(thread, None)
                         except:
                             self.worker_logger.info(
@@ -758,20 +752,23 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 {"thread": thread},
                             )
                 time.sleep(sleep_delay)
-            except KeyboardInterrupt:
-                # Graceful stop
-                for thread in self.consumer_threads:
-                    if thread not in self.queues:
-                        self.consumer_threads[thread].terminate()
-                sys.exit(0)
             except Exception as e:  # pylint: disable=broad-except
                 self.worker_logger.error(type(e).__name__, {"reason": str(e)})
                 time.sleep(60)
 
+def exit_handler(signum, frame):
+    worker.stop()
+    sys.exit(0)
+
 
 if __name__ == "__main__":
     worker = Worker()
+    import signal
+    signal.signal(signal.SIGINT, exit_handler)
+    signal.signal(signal.SIGTERM, exit_handler)
     try:
         worker.start()
     except Exception as e:  # pylint: disable=broad-except
+        self.worker_logger.error('Got unhandled Exception in main loop, exiting. exception: %s' % e)
+        self.stop()
         sys.exit(1)
