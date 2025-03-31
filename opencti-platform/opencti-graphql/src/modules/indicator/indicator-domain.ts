@@ -26,33 +26,34 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
 import {
-  type IndicatorAddInput,
-  type QueryIndicatorsArgs,
-  type QueryIndicatorsNumberArgs,
   type EditInput,
-  type StixCyberObservable,
   FilterMode,
   FilterOperator,
-  OrderingMode
+  type IndicatorAddInput,
+  OrderingMode,
+  type QueryIndicatorsArgs,
+  type QueryIndicatorsNumberArgs,
+  type StixCyberObservable
 } from '../../generated/graphql';
 import type { BasicStoreCommon, NumberResult } from '../../types/store';
 import {
-  findDecayRuleForIndicator,
+  computeChartDecayAlgoSerie,
+  type ComputeDecayChartInput,
+  computeDecayPointReactionDate,
   computeNextScoreReactionDate,
+  computeScoreFromExpectedTime,
+  computeScoreList,
+  computeTimeFromExpectedScore,
+  type DecayChartData,
   type DecayHistory,
   type DecayLiveDetails,
-  computeScoreList,
-  computeChartDecayAlgoSerie,
-  type DecayChartData,
-  type ComputeDecayChartInput,
-  computeScoreFromExpectedTime,
-  computeTimeFromExpectedScore,
-  computeDecayPointReactionDate
+  findDecayRuleForIndicator
 } from '../decayRule/decayRule-domain';
 import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
+import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -211,7 +212,10 @@ export const promoteIndicatorToObservables = async (context: AuthContext, user: 
   return createObservablesFromIndicator(context, user, input, indicator);
 };
 
-export const getObservableValuesFromPattern = (pattern: string) => extractObservablesFromIndicatorPattern(pattern);
+export const getObservableValuesFromPattern = (pattern: string) => {
+  const observableValues = extractObservablesFromIndicatorPattern(pattern);
+  return observableValues.map((o) => (o.hashes ? { ...o, hashes: stixHashesToInput(o) } : o));
+};
 
 const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, patternType: string, patternValue: string) => {
   // check indicator syntax
