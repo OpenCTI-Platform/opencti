@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { BaseSyntheticEvent, Suspense, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import JsonMapperLines from '@components/data/jsonMapper/JsonMapperLines';
-import { CancelOutlined, CheckCircleOutlined, CloudUploadOutlined } from '@mui/icons-material';
+import { CancelOutlined, CheckCircleOutlined, CloudUploadOutlined, WidgetsOutlined } from '@mui/icons-material';
 import ProcessingMenu from '@components/data/ProcessingMenu';
 import JsonMappersProvider, { mappersQuery } from '@components/data/jsonMapper/jsonMappers.data';
 import { SpeedDialIcon } from '@mui/material';
@@ -26,6 +26,9 @@ import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { JsonMapperLine_jsonMapper$data } from '@components/data/jsonMapper/__generated__/JsonMapperLine_jsonMapper.graphql';
 import { graphql } from 'react-relay';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
+import JsonMapperCreationContainer from '@components/data/jsonMapper/JsonMapperCreationContainer';
+import { schemaAttributesQuery } from '@components/data/csvMapper/csvMappers.data';
+import { jsonMappers_SchemaAttributesQuery } from '@components/data/jsonMapper/__generated__/jsonMappers_SchemaAttributesQuery.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -77,12 +80,22 @@ const JsonMappers = () => {
       searchTerm: '',
     },
   );
-  const [_open, _setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const onClick = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const [commitImportMutation] = useApiMutation(importMutation);
   // const [importedFileData, setImportedFileData] = useState<JsonMappersImportQuery$data['jsonMapperAddInputFromImport'] | null>(null);
 
   const inputFileRef = useRef<HTMLInputElement>(null);
 
+  const queryRefSchemaAttributes = useQueryLoading<jsonMappers_SchemaAttributesQuery>(
+    schemaAttributesQuery,
+  );
   const queryRefMappers = useQueryLoading<jsonMappers_MappersQuery>(
     mappersQuery,
     paginationOptions,
@@ -136,10 +149,10 @@ const JsonMappers = () => {
     });
   };
 
-  return queryRefMappers
+  return queryRefMappers && queryRefSchemaAttributes
     && (
       <Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-        <JsonMappersProvider mappersQueryRef={queryRefMappers}>
+        <JsonMappersProvider mappersQueryRef={queryRefMappers} schemaAttributesQueryRef={queryRefSchemaAttributes}>
           <div className={classes.container}>
             <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('JSON mappers'), current: true }]} />
             <ProcessingMenu />
@@ -187,6 +200,13 @@ const JsonMappers = () => {
                   FabProps={{ color: 'primary' }}
                 >
                   <SpeedDialAction
+                    title={t_i18n('Create a JSON mapper')}
+                    icon={<WidgetsOutlined/>}
+                    tooltipTitle={t_i18n('Create a JSON mapper')}
+                    onClick={onClick}
+                    FabProps={{ classes: { root: classes.speedDialButton } }}
+                  />
+                  <SpeedDialAction
                     title={t_i18n('Import a JSON mapper')}
                     icon={<CloudUploadOutlined/>}
                     tooltipTitle={t_i18n('Import a JSON mapper')}
@@ -194,6 +214,11 @@ const JsonMappers = () => {
                     FabProps={{ classes: { root: classes.speedDialButton } }}
                   />
                 </SpeedDial>
+                <JsonMapperCreationContainer
+                  paginationOptions={paginationOptions}
+                  open={open}
+                  onClose={handleClose}
+                />
               </>
             )}
           </div>

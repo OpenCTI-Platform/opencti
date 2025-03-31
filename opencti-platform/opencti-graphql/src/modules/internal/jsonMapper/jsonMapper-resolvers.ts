@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { Resolvers } from '../../../generated/graphql';
-import { deleteJsonMapper, findAll, findById, jsonMapperExport, jsonMapperImport } from './jsonMapper-domain';
+import { createJsonMapper, deleteJsonMapper, fieldPatchJsonMapper, findAll, findById, jsonMapperExport, jsonMapperImport } from './jsonMapper-domain';
 import { getJsonMapperErrorMessage } from './jsonMapper-utils';
 
 const jsonMapperResolvers: Resolvers = {
@@ -28,11 +28,17 @@ const jsonMapperResolvers: Resolvers = {
     toConfigurationExport: (jsonMapper, _, context) => jsonMapperExport(context, context.user, jsonMapper),
   },
   Mutation: {
+    jsonMapperAdd: (_, { input }, context) => {
+      return createJsonMapper(context, context.user, input);
+    },
     jsonMapperImport: (_, { file }, context) => {
       return jsonMapperImport(context, context.user, file);
     },
     jsonMapperDelete: (_, { id }, context) => {
       return deleteJsonMapper(context, context.user, id);
+    },
+    jsonMapperFieldPatch: (_, { id, input }, context) => {
+      return fieldPatchJsonMapper(context, context.user, id, input);
     },
   }
 };
