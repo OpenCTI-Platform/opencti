@@ -207,7 +207,7 @@ export const batchInternalRels = async (context, user, elements, opts = {}) => {
 export const batchMarkingDefinitions = async (context, user, stixCoreObjects) => {
   const markingsFromCache = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
   return stixCoreObjects.map((s) => {
-    const markings = (s[RELATION_OBJECT_MARKING] ?? []).map((id) => markingsFromCache.get(id));
+    const markings = (s[RELATION_OBJECT_MARKING] ?? []).map((id) => markingsFromCache.get(id)).filter((m) => m);
     return R.sortWith([
       R.ascend(R.propOr('TLP', 'definition_type')),
       R.descend(R.propOr(0, 'x_opencti_order')),

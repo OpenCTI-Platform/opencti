@@ -53,7 +53,7 @@ const notifyMembersOfNewMarking = async (context, user, newMarking) => {
   }
 };
 
-const updateGroupsAfterAddingMarking = async (context, user, markingCreated) => {
+const updateGroupsAfterAddingMarking = async (context, markingCreated) => {
   // marking creation --> update the markings of the groups with auto_new_marking = true
   const filters = {
     mode: 'and',
@@ -101,7 +101,7 @@ export const addAllowedMarkingDefinition = async (context, user, markingDefiniti
   const { element, isCreation } = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION, { complete: true });
   if (isCreation && !getDraftContext(context, user)) {
     // marking creation --> update the markings of the groups with auto_new_marking = true
-    await updateGroupsAfterAddingMarking(context, user, element);
+    await updateGroupsAfterAddingMarking(context, element);
     // users of group impacted must be refreshed
     await notifyMembersOfNewMarking(context, user, element);
   }
