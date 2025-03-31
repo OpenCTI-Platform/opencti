@@ -1,6 +1,7 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { createContext, ReactNode, useContext } from 'react';
-import { jsonMappers_MappersQuery, jsonMappers_MappersQuery$data } from './__generated__/jsonMappers_MappersQuery.graphql';
+import { jsonMappers_MappersQuery, jsonMappers_MappersQuery$data } from '@components/data/jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
+import { jsonMappers_SchemaAttributesQuery, jsonMappers_SchemaAttributesQuery$data } from '@components/data/jsonMapper/__generated__/jsonMappers_SchemaAttributesQuery.graphql';
 
 export const mappersQuery = graphql`
   query jsonMappers_MappersQuery(
@@ -21,22 +22,33 @@ export const mappersQuery = graphql`
   }
 `;
 
+export const schemaAttributesQuery = graphql`
+  query jsonMappers_SchemaAttributesQuery {
+    ...JsonMapperRepresentationAttributesForm_allSchemaAttributes
+  }
+`;
+
 type JsonMappersContextType = {
   jsonMappers?: jsonMappers_MappersQuery$data,
+  schemaAttributes?: jsonMappers_SchemaAttributesQuery$data,
 };
 const JsonMappersContext = createContext<JsonMappersContextType>({});
 
 interface JsonMappersProviderProps {
   mappersQueryRef: PreloadedQuery<jsonMappers_MappersQuery>
+  schemaAttributesQueryRef: PreloadedQuery<jsonMappers_SchemaAttributesQuery>
   children: ReactNode
 }
 const JsonMappersProvider = ({
   mappersQueryRef,
+  schemaAttributesQueryRef,
   children,
 }: JsonMappersProviderProps) => {
   const jsonMappers = usePreloadedQuery(mappersQuery, mappersQueryRef);
+  const schemaAttributes = usePreloadedQuery(schemaAttributesQuery, schemaAttributesQueryRef);
+
   return (
-    <JsonMappersContext.Provider value={{ jsonMappers }}>
+    <JsonMappersContext.Provider value={{ jsonMappers, schemaAttributes }}>
       {children}
     </JsonMappersContext.Provider>
   );

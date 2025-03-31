@@ -1049,6 +1049,13 @@ export type AttributeEditMutationsFieldPatchArgs = {
   input: Array<InputMaybe<EditInput>>;
 };
 
+export type AttributePath = {
+  __typename?: 'AttributePath';
+  configuration?: Maybe<AttributeColumnConfiguration>;
+  independent?: Maybe<Scalars['Boolean']['output']>;
+  path: Scalars['String']['output'];
+};
+
 export type AttributeRef = {
   __typename?: 'AttributeRef';
   id?: Maybe<Scalars['String']['output']>;
@@ -3723,6 +3730,20 @@ export type CityEditMutationsRelationDeleteArgs = {
 export type Cluster = {
   __typename?: 'Cluster';
   instances_number: Scalars['Int']['output'];
+};
+
+export type ComplexPath = {
+  __typename?: 'ComplexPath';
+  configuration?: Maybe<AttributeColumnConfiguration>;
+  formula: Scalars['String']['output'];
+  variables?: Maybe<Array<ComplexVariable>>;
+};
+
+export type ComplexVariable = {
+  __typename?: 'ComplexVariable';
+  independent?: Maybe<Scalars['Boolean']['output']>;
+  path: Scalars['String']['output'];
+  variable: Scalars['String']['output'];
 };
 
 export type ConfidenceLevel = {
@@ -11790,6 +11811,11 @@ export type JsonMapper = BasicObject & InternalObject & {
   variables?: Maybe<Array<JsonMapperVariable>>;
 };
 
+export type JsonMapperAddInput = {
+  name: Scalars['String']['input'];
+  representations: Scalars['String']['input'];
+};
+
 export type JsonMapperAddInputFromImport = {
   __typename?: 'JsonMapperAddInputFromImport';
   name: Scalars['String']['output'];
@@ -11815,10 +11841,29 @@ export enum JsonMapperOrdering {
 
 export type JsonMapperRepresentation = {
   __typename?: 'JsonMapperRepresentation';
+  attributes: Array<JsonMapperRepresentationAttribute>;
   from?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  identifier?: Maybe<Array<Scalars['String']['output']>>;
+  target: JsonMapperRepresentationTarget;
   to?: Maybe<Scalars['String']['output']>;
   type: JsonMapperRepresentationType;
+};
+
+export type JsonMapperRepresentationAttribute = {
+  __typename?: 'JsonMapperRepresentationAttribute';
+  attr_path?: Maybe<AttributePath>;
+  based_on?: Maybe<AttributeBasedOn>;
+  complex_path?: Maybe<ComplexPath>;
+  default_values?: Maybe<Array<DefaultValue>>;
+  key: Scalars['String']['output'];
+  mode: Scalars['String']['output'];
+};
+
+export type JsonMapperRepresentationTarget = {
+  __typename?: 'JsonMapperRepresentationTarget';
+  entity_type: Scalars['String']['output'];
+  path: Scalars['String']['output'];
 };
 
 export enum JsonMapperRepresentationType {
@@ -14021,7 +14066,9 @@ export type Mutation = {
   ingestionTaxiiResetState?: Maybe<IngestionTaxii>;
   intrusionSetAdd?: Maybe<IntrusionSet>;
   intrusionSetEdit?: Maybe<IntrusionSetEditMutations>;
+  jsonMapperAdd?: Maybe<JsonMapper>;
   jsonMapperDelete?: Maybe<Scalars['ID']['output']>;
+  jsonMapperFieldPatch?: Maybe<JsonMapper>;
   jsonMapperImport: Scalars['String']['output'];
   killChainPhaseAdd?: Maybe<KillChainPhase>;
   killChainPhaseEdit?: Maybe<KillChainPhaseEditMutations>;
@@ -15193,8 +15240,19 @@ export type MutationIntrusionSetEditArgs = {
 };
 
 
+export type MutationJsonMapperAddArgs = {
+  input: JsonMapperAddInput;
+};
+
+
 export type MutationJsonMapperDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationJsonMapperFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
 };
 
 
@@ -31796,6 +31854,7 @@ export type ResolversTypes = ResolversObject<{
   AttributeConnection: ResolverTypeWrapper<AttributeConnection>;
   AttributeEdge: ResolverTypeWrapper<AttributeEdge>;
   AttributeEditMutations: ResolverTypeWrapper<AttributeEditMutations>;
+  AttributePath: ResolverTypeWrapper<AttributePath>;
   AttributeRef: ResolverTypeWrapper<AttributeRef>;
   AttributeRefInput: AttributeRefInput;
   AttributesOrdering: AttributesOrdering;
@@ -31868,6 +31927,8 @@ export type ResolversTypes = ResolversObject<{
   CityEdge: ResolverTypeWrapper<Omit<CityEdge, 'node'> & { node: ResolversTypes['City'] }>;
   CityEditMutations: ResolverTypeWrapper<Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['City']>, contextPatch?: Maybe<ResolversTypes['City']>, fieldPatch?: Maybe<ResolversTypes['City']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['City']> }>;
   Cluster: ResolverTypeWrapper<Cluster>;
+  ComplexPath: ResolverTypeWrapper<ComplexPath>;
+  ComplexVariable: ResolverTypeWrapper<ComplexVariable>;
   ConfidenceLevel: ResolverTypeWrapper<ConfidenceLevel>;
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ResolverTypeWrapper<ConfidenceLevelOverride>;
@@ -32169,11 +32230,14 @@ export type ResolversTypes = ResolversObject<{
   JsonComplexPathConfiguration: ResolverTypeWrapper<Omit<JsonComplexPathConfiguration, 'complex'> & { complex?: Maybe<ResolversTypes['JsonComplexPathConfiguration']> }>;
   JsonComplexPathVariable: ResolverTypeWrapper<JsonComplexPathVariable>;
   JsonMapper: ResolverTypeWrapper<BasicStoreEntityJsonMapper>;
-  JsonMapperAddInputFromImport: ResolverTypeWrapper<Omit<JsonMapperAddInputFromImport, 'representations'> & { representations: Array<ResolversTypes['JsonMapperRepresentation']> }>;
+  JsonMapperAddInput: JsonMapperAddInput;
+  JsonMapperAddInputFromImport: ResolverTypeWrapper<JsonMapperAddInputFromImport>;
   JsonMapperConnection: ResolverTypeWrapper<Omit<JsonMapperConnection, 'edges'> & { edges: Array<ResolversTypes['JsonMapperEdge']> }>;
   JsonMapperEdge: ResolverTypeWrapper<Omit<JsonMapperEdge, 'node'> & { node: ResolversTypes['JsonMapper'] }>;
   JsonMapperOrdering: JsonMapperOrdering;
   JsonMapperRepresentation: ResolverTypeWrapper<JsonMapperRepresentation>;
+  JsonMapperRepresentationAttribute: ResolverTypeWrapper<JsonMapperRepresentationAttribute>;
+  JsonMapperRepresentationTarget: ResolverTypeWrapper<JsonMapperRepresentationTarget>;
   JsonMapperRepresentationType: JsonMapperRepresentationType;
   JsonMapperTestResult: ResolverTypeWrapper<JsonMapperTestResult>;
   JsonMapperVariable: ResolverTypeWrapper<Omit<JsonMapperVariable, 'path'> & { path?: Maybe<ResolversTypes['JsonComplexPath']> }>;
@@ -32719,6 +32783,7 @@ export type ResolversParentTypes = ResolversObject<{
   AttributeConnection: AttributeConnection;
   AttributeEdge: AttributeEdge;
   AttributeEditMutations: AttributeEditMutations;
+  AttributePath: AttributePath;
   AttributeRef: AttributeRef;
   AttributeRefInput: AttributeRefInput;
   AuditsTimeSeriesParameters: AuditsTimeSeriesParameters;
@@ -32776,6 +32841,8 @@ export type ResolversParentTypes = ResolversObject<{
   CityEdge: Omit<CityEdge, 'node'> & { node: ResolversParentTypes['City'] };
   CityEditMutations: Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['City']>, contextPatch?: Maybe<ResolversParentTypes['City']>, fieldPatch?: Maybe<ResolversParentTypes['City']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['City']> };
   Cluster: Cluster;
+  ComplexPath: ComplexPath;
+  ComplexVariable: ComplexVariable;
   ConfidenceLevel: ConfidenceLevel;
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ConfidenceLevelOverride;
@@ -33032,10 +33099,13 @@ export type ResolversParentTypes = ResolversObject<{
   JsonComplexPathConfiguration: Omit<JsonComplexPathConfiguration, 'complex'> & { complex?: Maybe<ResolversParentTypes['JsonComplexPathConfiguration']> };
   JsonComplexPathVariable: JsonComplexPathVariable;
   JsonMapper: BasicStoreEntityJsonMapper;
-  JsonMapperAddInputFromImport: Omit<JsonMapperAddInputFromImport, 'representations'> & { representations: Array<ResolversParentTypes['JsonMapperRepresentation']> };
+  JsonMapperAddInput: JsonMapperAddInput;
+  JsonMapperAddInputFromImport: JsonMapperAddInputFromImport;
   JsonMapperConnection: Omit<JsonMapperConnection, 'edges'> & { edges: Array<ResolversParentTypes['JsonMapperEdge']> };
   JsonMapperEdge: Omit<JsonMapperEdge, 'node'> & { node: ResolversParentTypes['JsonMapper'] };
   JsonMapperRepresentation: JsonMapperRepresentation;
+  JsonMapperRepresentationAttribute: JsonMapperRepresentationAttribute;
+  JsonMapperRepresentationTarget: JsonMapperRepresentationTarget;
   JsonMapperTestResult: JsonMapperTestResult;
   JsonMapperVariable: Omit<JsonMapperVariable, 'path'> & { path?: Maybe<ResolversParentTypes['JsonComplexPath']> };
   KillChainPhase: Omit<KillChainPhase, 'editContext' | 'x_opencti_inferences'> & { editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -33875,6 +33945,13 @@ export type AttributeEditMutationsResolvers<ContextType = any, ParentType extend
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type AttributePathResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributePath'] = ResolversParentTypes['AttributePath']> = ResolversObject<{
+  configuration?: Resolver<Maybe<ResolversTypes['AttributeColumnConfiguration']>, ParentType, ContextType>;
+  independent?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type AttributeRefResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeRef'] = ResolversParentTypes['AttributeRef']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -34654,6 +34731,20 @@ export type CityEditMutationsResolvers<ContextType = any, ParentType extends Res
 
 export type ClusterResolvers<ContextType = any, ParentType extends ResolversParentTypes['Cluster'] = ResolversParentTypes['Cluster']> = ResolversObject<{
   instances_number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ComplexPathResolvers<ContextType = any, ParentType extends ResolversParentTypes['ComplexPath'] = ResolversParentTypes['ComplexPath']> = ResolversObject<{
+  configuration?: Resolver<Maybe<ResolversTypes['AttributeColumnConfiguration']>, ParentType, ContextType>;
+  formula?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  variables?: Resolver<Maybe<Array<ResolversTypes['ComplexVariable']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ComplexVariableResolvers<ContextType = any, ParentType extends ResolversParentTypes['ComplexVariable'] = ResolversParentTypes['ComplexVariable']> = ResolversObject<{
+  independent?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  variable?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -37504,10 +37595,29 @@ export type JsonMapperEdgeResolvers<ContextType = any, ParentType extends Resolv
 }>;
 
 export type JsonMapperRepresentationResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperRepresentation'] = ResolversParentTypes['JsonMapperRepresentation']> = ResolversObject<{
+  attributes?: Resolver<Array<ResolversTypes['JsonMapperRepresentationAttribute']>, ParentType, ContextType>;
   from?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  identifier?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  target?: Resolver<ResolversTypes['JsonMapperRepresentationTarget'], ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['JsonMapperRepresentationType'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type JsonMapperRepresentationAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperRepresentationAttribute'] = ResolversParentTypes['JsonMapperRepresentationAttribute']> = ResolversObject<{
+  attr_path?: Resolver<Maybe<ResolversTypes['AttributePath']>, ParentType, ContextType>;
+  based_on?: Resolver<Maybe<ResolversTypes['AttributeBasedOn']>, ParentType, ContextType>;
+  complex_path?: Resolver<Maybe<ResolversTypes['ComplexPath']>, ParentType, ContextType>;
+  default_values?: Resolver<Maybe<Array<ResolversTypes['DefaultValue']>>, ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  mode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type JsonMapperRepresentationTargetResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperRepresentationTarget'] = ResolversParentTypes['JsonMapperRepresentationTarget']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -38472,7 +38582,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionTaxiiResetState?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiResetStateArgs, 'id'>>;
   intrusionSetAdd?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<MutationIntrusionSetAddArgs, 'input'>>;
   intrusionSetEdit?: Resolver<Maybe<ResolversTypes['IntrusionSetEditMutations']>, ParentType, ContextType, RequireFields<MutationIntrusionSetEditArgs, 'id'>>;
+  jsonMapperAdd?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperAddArgs, 'input'>>;
   jsonMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationJsonMapperDeleteArgs, 'id'>>;
+  jsonMapperFieldPatch?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperFieldPatchArgs, 'id' | 'input'>>;
   jsonMapperImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationJsonMapperImportArgs, 'file'>>;
   killChainPhaseAdd?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseAddArgs, 'input'>>;
   killChainPhaseEdit?: Resolver<Maybe<ResolversTypes['KillChainPhaseEditMutations']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseEditArgs, 'id'>>;
@@ -43229,6 +43341,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AttributeConnection?: AttributeConnectionResolvers<ContextType>;
   AttributeEdge?: AttributeEdgeResolvers<ContextType>;
   AttributeEditMutations?: AttributeEditMutationsResolvers<ContextType>;
+  AttributePath?: AttributePathResolvers<ContextType>;
   AttributeRef?: AttributeRefResolvers<ContextType>;
   AutonomousSystem?: AutonomousSystemResolvers<ContextType>;
   BackgroundTask?: BackgroundTaskResolvers<ContextType>;
@@ -43270,6 +43383,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CityEdge?: CityEdgeResolvers<ContextType>;
   CityEditMutations?: CityEditMutationsResolvers<ContextType>;
   Cluster?: ClusterResolvers<ContextType>;
+  ComplexPath?: ComplexPathResolvers<ContextType>;
+  ComplexVariable?: ComplexVariableResolvers<ContextType>;
   ConfidenceLevel?: ConfidenceLevelResolvers<ContextType>;
   ConfidenceLevelOverride?: ConfidenceLevelOverrideResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
@@ -43464,6 +43579,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   JsonMapperConnection?: JsonMapperConnectionResolvers<ContextType>;
   JsonMapperEdge?: JsonMapperEdgeResolvers<ContextType>;
   JsonMapperRepresentation?: JsonMapperRepresentationResolvers<ContextType>;
+  JsonMapperRepresentationAttribute?: JsonMapperRepresentationAttributeResolvers<ContextType>;
+  JsonMapperRepresentationTarget?: JsonMapperRepresentationTargetResolvers<ContextType>;
   JsonMapperTestResult?: JsonMapperTestResultResolvers<ContextType>;
   JsonMapperVariable?: JsonMapperVariableResolvers<ContextType>;
   KillChainPhase?: KillChainPhaseResolvers<ContextType>;

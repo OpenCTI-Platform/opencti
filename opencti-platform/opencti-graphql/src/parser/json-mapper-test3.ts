@@ -20,9 +20,11 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'definition_type',
+          mode: 'simple',
           default_values: ['tlp'],
         }, {
           key: 'definition',
+          mode: 'simple',
           default_values: ['tlp:white']
         }
       ]
@@ -37,6 +39,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'name',
+          mode: 'simple',
           default_values: ['Cybersecurity and Infrastructure Security Agency']
         }
       ]
@@ -52,18 +55,21 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'name',
+          mode: 'simple',
           attr_path: {
             path: '$.cveID',
           },
         },
         {
           key: 'description',
+          mode: 'simple',
           attr_path: {
             path: '$.shortDescription',
           },
         },
         {
           key: 'created',
+          mode: 'simple',
           attr_path: {
             path: '$.dateAdded',
             independent: true,
@@ -75,6 +81,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
         },
         {
           key: 'modified',
+          mode: 'simple',
           attr_path: {
             path: '$.dateAdded',
             independent: true,
@@ -86,12 +93,14 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
         },
         {
           key: 'createdBy',
+          mode: 'base',
           based_on: {
             representations: ['orgRepresentation']
           },
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
@@ -109,12 +118,14 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'name',
+          mode: 'simple',
           attr_path: {
             path: '$.product',
           },
         },
         {
           key: 'vendor',
+          mode: 'simple',
           attr_path: {
             path: '$.vendorProject',
           },
@@ -131,6 +142,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.product', '$.vendorProject'],
             representations: [
@@ -140,6 +152,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             representations: [
               'orgRepresentation'
@@ -158,6 +171,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.product', '$.vendorProject'],
             representations: [
@@ -167,6 +181,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             identifier: ['$.cveID'],
             representations: [

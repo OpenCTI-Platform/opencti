@@ -9052,8 +9052,10 @@ type Mutation {
   csvMapperTest(configuration: String!, file: Upload!): CsvMapperTestResult
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
+  jsonMapperAdd(input: JsonMapperAddInput!): JsonMapper
   jsonMapperDelete(id: ID!): ID
   jsonMapperImport(file: Upload!): String!
+  jsonMapperFieldPatch(id: ID!, input: [EditInput!]!): JsonMapper
   publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
   publicDashboardDelete(id: ID!): ID
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard
@@ -12443,9 +12445,44 @@ enum JsonMapperRepresentationType {
   relationship
 }
 
+type AttributePath {
+  path: String!
+  independent: Boolean
+  configuration: AttributeColumnConfiguration
+}
+
+type ComplexVariable {
+  path: String!
+  variable: String!
+  independent: Boolean
+}
+
+type ComplexPath {
+  formula: String!
+  variables: [ComplexVariable!]
+  configuration: AttributeColumnConfiguration
+}
+
+type JsonMapperRepresentationAttribute {
+  key: String!
+  mode: String!
+  attr_path: AttributePath
+  complex_path: ComplexPath
+  based_on: AttributeBasedOn
+  default_values: [DefaultValue!]
+}
+
+type JsonMapperRepresentationTarget {
+  entity_type: String!
+  path: String!
+}
+
 type JsonMapperRepresentation {
   id: ID!
   type: JsonMapperRepresentationType!
+  target: JsonMapperRepresentationTarget!
+  identifier: [String!]
+  attributes: [JsonMapperRepresentationAttribute!]!
   from: String
   to: String
 }
@@ -12498,6 +12535,11 @@ type JsonMapperTestResult {
 type JsonMapperAddInputFromImport {
   name: String!
   representations: [JsonMapperRepresentation!]!
+}
+
+input JsonMapperAddInput {
+  name: String!
+  representations: String!
 }
 
 type PublicDashboard implements InternalObject & BasicObject {
