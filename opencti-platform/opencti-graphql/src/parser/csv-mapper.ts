@@ -20,14 +20,14 @@ import type { BasicStoreObject } from '../types/store';
 import { INPUT_MARKINGS } from '../schema/general';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { CsvMapperOperator } from '../generated/graphql';
-import { type AttributePath, type ComplexPath, type JsonMapperParsed } from '../modules/internal/jsonMapper/jsonMapper-types';
+import type { ComplexAttributePath, JsonMapperParsed, SimpleAttributePath } from '../modules/internal/jsonMapper/jsonMapper-types';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
 const USER_CHOICE_MARKING_CONFIG = 'user-choice';
 
 // -- HANDLE VALUE --
 
-export const formatValue = (value: string | boolean, type: AttrType, column: AttributeColumn | AttributePath | ComplexPath | undefined) => {
+export const formatValue = (value: string | boolean, type: AttrType, column: AttributeColumn | SimpleAttributePath | ComplexAttributePath | undefined) => {
   const pattern_date = column?.configuration?.pattern_date;
   const timezone = column?.configuration?.timezone;
   if ((type === 'string' || type === 'ref') && typeof value === 'string') {

@@ -58,6 +58,7 @@ export const mapper4: Partial<JsonMapperParsed> = {
     attributes: [
       {
         key: 'name',
+        mode: 'simple',
         attr_path: {
           path: '$[1]',
         },
