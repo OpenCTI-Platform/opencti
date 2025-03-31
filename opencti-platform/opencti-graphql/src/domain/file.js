@@ -8,7 +8,7 @@ import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { allFilesMimeTypeDistribution, allRemainingFilesCount } from '../modules/internal/document/document-domain';
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfiguration-utils';
-import { SYSTEM_USER } from '../utils/access';
+import { isUserHasCapabilities, SYSTEM_USER } from '../utils/access';
 import { isEmptyField, isNotEmptyField, READ_INDEX_FILES, READ_INDEX_HISTORY } from '../database/utils';
 import { getStats } from '../database/engine';
 import { uploadToStorage } from '../database/file-storage-helper';
@@ -151,7 +151,7 @@ export const uploadAndAskJobImport = async (context, user, args = {}) => {
   const contextInDraft = { ...context, draft_context: draftId };
   const uploadedFile = await uploadImport(contextInDraft, user, { file, fileMarkings, noTriggerImport });
 
-  if (connectors) {
+  if (connectors && isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'])) {
     await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
       askJobImport(contextInDraft, user, {
         fileName: uploadedFile.id,

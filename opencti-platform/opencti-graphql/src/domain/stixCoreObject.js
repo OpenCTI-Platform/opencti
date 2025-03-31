@@ -56,7 +56,7 @@ import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-util
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { isBypassUser, isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import { isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
@@ -695,7 +695,7 @@ export const stixCoreObjectImportFile = async (context, user, id, file, args = {
     noTriggerImport
   });
 
-  if (connectors) {
+  if (connectors && isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'])) {
     await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
       askJobImport(contextInDraft, user, {
         fileName: uploadedFile.id,

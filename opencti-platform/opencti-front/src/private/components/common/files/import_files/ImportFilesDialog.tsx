@@ -32,6 +32,8 @@ import useBulkCommit from '../../../../../utils/hooks/useBulkCommit';
 import { resolveLink } from '../../../../../utils/Entity';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { RelayError } from '../../../../../relay/relayTypes';
+import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
+import Security from '../../../../../utils/Security';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -411,14 +413,16 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
             {t_i18n('Navigate to entity')}
           </Button>
         ) : (
-          <Button
-            color="secondary"
-            onClick={() => handleClose()}
-            component={Link}
-            to={'/dashboard/data/import'}
-          >
-            {t_i18n('Navigate to import')}
-          </Button>
+          <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+            <Button
+              color="secondary"
+              onClick={() => handleClose()}
+              component={Link}
+              to={'/dashboard/data/import'}
+            >
+              {t_i18n('Navigate to import')}
+            </Button>
+          </Security>
         )
       );
     }
