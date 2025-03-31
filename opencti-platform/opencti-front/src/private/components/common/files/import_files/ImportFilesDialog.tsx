@@ -403,7 +403,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
                 color="secondary"
                 onClick={() => handleClose()}
                 component={Link}
-                to={'/dashboard/data/import'}
+                to={'/dashboard/data/import/file'}
               >
                 {t_i18n('Navigate to import')}
               </Button>

@@ -2,12 +2,10 @@ import { graphql } from 'react-relay';
 import React, { useState } from 'react';
 import ImportMenu from '@components/data/ImportMenu';
 import { ImportFilesContentQuery, ImportFilesContentQuery$variables } from '@components/data/import/__generated__/ImportFilesContentQuery.graphql';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import { DeleteOutlined, GetAppOutlined } from '@mui/icons-material';
 import { ImportFilesContentLines_data$data } from '@components/data/import/__generated__/ImportFilesContentLines_data.graphql';
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
 import ImportActionsPopover from '@components/common/files/ImportActionsPopover';
+import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
@@ -20,6 +18,7 @@ import { deleteNode } from '../../../../utils/store';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { getFileUri } from '../../../../utils/utils';
+import ImportButton from '../../../../components/ImportButton';
 import stopEvent from '../../../../utils/domEvent';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../components/DeleteDialog';
@@ -61,6 +60,9 @@ export const workbenchLineFragment = graphql`
         name
       }
       entity_id
+    }
+    works {
+      id
     }
   }
 `;
@@ -128,6 +130,7 @@ const ImportFilesContent = () => {
   const { isFeatureEnable } = useHelper();
   const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   const [fileId, setFileId] = useState<string>('');
+  const [openImportFilesDialog, setOpenImportFilesDialog] = useState<boolean>(false);
 
   const initialValues = {
     filters: emptyFilterGroup,
@@ -236,6 +239,8 @@ const ImportFilesContent = () => {
     },
   };
 
+  // const buttonUploadFile = <
+
   return (
     <div style={{ height: '100%', paddingRight: isNewImportScreensEnabled ? 0 : 200 }} className="break">
       {isNewImportScreensEnabled ? (
@@ -271,7 +276,7 @@ const ImportFilesContent = () => {
               window.location.pathname = getFileUri(id);
             }
           }}
-          // createButton={isFABReplaced && (<WorkbenchCreation paginationOptions={queryPaginationOptions}/>)}
+          createButton={<ImportButton onClick={() => setOpenImportFilesDialog(true)}/>}
           actions={(file: ImportFilesContentFileLine_file$data) => (
             <ImportActionsPopover
               file={file}
@@ -281,9 +286,9 @@ const ImportFilesContent = () => {
           )}
         />
       )}
-      {/* {!isFABReplaced && ( */}
-      {/*  <WorkbenchCreation paginationOptions={queryPaginationOptions}/> */}
-      {/* )} */}
+      {openImportFilesDialog && (
+        <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)}/>
+      )}
     </div>
   );
 };
