@@ -1,8 +1,5 @@
 name: Assign labels on PR from an organization
-on:
-  pull_request:
-    branches:
-      - master
+on: pull_request
 jobs:
   build:
     runs-on: ubuntu-latest
