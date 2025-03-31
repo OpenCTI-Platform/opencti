@@ -9,7 +9,6 @@ import { Add } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import React, { useState } from 'react';
-import { Option } from '@components/common/form/ReferenceField';
 import * as Yup from 'yup';
 import { FormikHelpers } from 'formik/dist/types';
 import AuthorizedMembersFieldListItem from '@components/common/form/AuthorizedMembersFieldListItem';
@@ -20,7 +19,7 @@ import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Cre
 import SwitchField from '../../../../components/fields/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { AutoCompleteOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 /**
@@ -52,7 +51,7 @@ interface AuthorizedMembersFieldProps
 // Type of data for internal form, not exposed to others.
 interface AuthorizedMembersFieldInternalValue {
   applyAccesses: boolean;
-  newAccessMember: Option | null;
+  newAccessMember: AutoCompleteOption | null;
   newAccessRight: AccessRight;
   allAccessRight: AccessRight;
   creatorAccessRight: AccessRight;
@@ -93,7 +92,6 @@ const AuthorizedMembersField = ({
   const [applyAccesses, setApplyAccesses] = useState(
     value && Array.isArray(value) && value.length > 0,
   );
-
   const accessForAllMembers = (value ?? []).find(
     (o) => o.value === ALL_MEMBERS_AUTHORIZED_CONFIG.id,
   );
@@ -101,15 +99,19 @@ const AuthorizedMembersField = ({
     (o) => o.value === CREATOR_AUTHORIZED_CONFIG.id,
   );
 
-  const allMembersOption: Option = {
+  const allMembersOption: AuthorizedMemberOption = {
     label: t_i18n(ALL_MEMBERS_AUTHORIZED_CONFIG.labelKey),
     type: ALL_MEMBERS_AUTHORIZED_CONFIG.type,
     value: ALL_MEMBERS_AUTHORIZED_CONFIG.id,
+    groupsRestriction: [],
+    accessRight: accessForAllMembers?.accessRight ?? 'none',
   };
-  const creatorOption: Option = {
+  const creatorOption: AuthorizedMemberOption = {
     label: t_i18n(CREATOR_AUTHORIZED_CONFIG.labelKey),
     type: CREATOR_AUTHORIZED_CONFIG.type,
     value: CREATOR_AUTHORIZED_CONFIG.id,
+    groupsRestriction: [],
+    accessRight: accessForCreator?.accessRight ?? 'none',
   };
 
   const accessRights = [
@@ -177,6 +179,7 @@ const AuthorizedMembersField = ({
         values.push({
           ...creatorOption,
           accessRight: 'admin',
+          groupsRestriction: [],
         });
         setField('creatorAccessRight', 'admin');
       }
@@ -186,6 +189,7 @@ const AuthorizedMembersField = ({
           type: owner.entity_type,
           value: owner.id,
           accessRight: 'admin',
+          groupsRestriction: [],
         });
       }
       if (addMeUserWithAdminRights && me.id !== owner?.id) {
@@ -194,6 +198,7 @@ const AuthorizedMembersField = ({
           type: 'User',
           value: me.id,
           accessRight: 'admin',
+          groupsRestriction: [],
         });
       }
       setFieldValue(name, values);
@@ -258,6 +263,19 @@ const AuthorizedMembersField = ({
       ? t_i18n('info_authorizedmembers_knowledge_off')
       : t_i18n('info_authorizedmembers_knowledge_on');
   }
+
+  const doesNewMemberAlreadyExist = (values: AuthorizedMembersFieldInternalValue) => {
+    return value?.some(
+      (a) => {
+        const sameMember = a.value === values.newAccessMember?.value;
+        const sameGroupsLength = a.groupsRestriction.length === values.groupsRestriction.length;
+        const sameGroups = sameGroupsLength && a.groupsRestriction.every((g1) => {
+          return values.groupsRestriction.find((g2) => g1.value === g2.value);
+        });
+        return sameMember && sameGroups;
+      },
+    );
+  };
 
   return (
     <>
@@ -362,9 +380,7 @@ const AuthorizedMembersField = ({
                     disabled={
                       !dirty
                       || !isValid
-                      || value?.some(
-                        (a) => a.value === values.newAccessMember?.value,
-                      )
+                      || doesNewMemberAlreadyExist(values)
                       || !values.applyAccesses
                     }
                     style={{ marginTop: 10 }}
@@ -379,11 +395,17 @@ const AuthorizedMembersField = ({
                         <Typography>{t_i18n('Advanced options')}</Typography>
                       </AccordionSummary>
                       <AccordionDetails>
+                        <Alert
+                          severity="info"
+                        >
+                          {t_i18n('Restrict access by selecting groups to intersect with the organization\'s access rights')}
+                        </Alert>
                         <ObjectMembersField
                           name="groupsRestriction"
-                          label={'Groups'}
+                          label={t_i18n('Groups restriction')}
                           disabled={!values.applyAccesses}
                           entityTypes={['Group']}
+                          style={fieldSpacingContainerStyle}
                           multiple
                         />
                       </AccordionDetails>

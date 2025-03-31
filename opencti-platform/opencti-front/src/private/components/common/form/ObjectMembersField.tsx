@@ -30,7 +30,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const objectMembersFieldSearchQuery = graphql`
     query ObjectMembersFieldSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
-        members(search: $search, first: $first,  entityTypes: $entityTypes) {
+      members(search: $search, first: $first, entityTypes: $entityTypes) {
             edges {
                 node {
                     id

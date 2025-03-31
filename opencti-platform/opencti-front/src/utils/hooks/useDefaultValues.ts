@@ -49,11 +49,12 @@ export const useComputeDefaultValues = () => {
             name: parsed.name ?? '',
             entity_type: parsed.entity_type ?? '',
             access_right: parsed.access_right,
+            groups_restriction: parsed.groups_restriction,
           };
         })
         .filter((v) => !!v.id && !!v.access_right);
 
-      return defaultAuthorizedMembers.length > 0
+      return defaultAuthorizedMembers && defaultAuthorizedMembers.length > 0
         ? authorizedMembersToOptions(defaultAuthorizedMembers)
         : null;
     }

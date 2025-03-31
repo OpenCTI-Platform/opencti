@@ -3,11 +3,11 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
+import { Delete, InfoOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
-import { Delete } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
 import React from 'react';
 import { isGenericOption } from '@components/common/form/AuthorizedMembersField';
-import { Option } from '@components/common/form/ReferenceField';
 import SelectField from '../../../../components/fields/SelectField';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -43,7 +43,7 @@ const AuthorizedMembersFieldListItem = ({
   // Used for artificial rows for ALL and CREATOR if they have
   // no access.
   const noAccess = { label: t_i18n('no access'), value: 'none' };
-
+  const groupsLabel = authorizedMember.groupsRestriction.map((n) => n.label);
   // Construct the list of available access levels based on
   // if generic option or not.
   const getAccessList = (memberId: string) => {
@@ -89,9 +89,16 @@ const AuthorizedMembersFieldListItem = ({
               </span>
             )}
             {authorizedMember.groupsRestriction && authorizedMember.groupsRestriction.length > 0 && (
-              <span style={smallText}>
-                {' '}({t_i18n('Groups restriction')})
-              </span>
+              <>
+                <span style={smallText}>
+                  {' '}({t_i18n('Groups restriction')})
+                </span>
+                <Tooltip title={`Groups restriction: ${groupsLabel}`}>
+                  <IconButton size="small" color="primary">
+                    <InfoOutlined fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </>
             )}
           </>
         }

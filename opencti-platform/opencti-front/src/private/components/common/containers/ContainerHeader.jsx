@@ -420,6 +420,10 @@ const containerHeaderEditAuthorizedMembersMutation = graphql`
           name
           entity_type
           access_right
+          groups_restriction {
+            id
+            name
+          }
         }
       }
     }
