@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { FormikConfig } from 'formik/dist/types';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { WorkbenchCreationMutation } from '@components/common/files/workbench/__generated__/WorkbenchCreationMutation.graphql';
@@ -23,6 +23,8 @@ import { Option } from '../../form/ReferenceField';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import type { Theme } from '../../../../../components/Theme';
+import CreateEntityControlledDial from '../../../../../components/CreateEntityControlledDial';
+import useHelper from '../../../../../utils/hooks/useHelper';
 
 const workbenchCreationMutation = graphql`
   mutation WorkbenchCreationMutation(
@@ -119,9 +121,7 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
           commitMutation({
             variables: { file, labels: finalLabels, entityId, file_markings },
             updater: (store) => {
-              if (updater) {
-                updater(store);
-              }
+              updater(store);
             },
             onCompleted: () => {
               handleCompleted();
@@ -141,11 +141,8 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
       commitMutation({
         variables: { file, labels: finalLabels, entityId, file_markings },
         updater: (store) => {
-          if (updater) {
-            updater(store);
-          }
+          updater(store);
         },
-
         onCompleted: () => {
           handleCompleted();
         },
@@ -252,10 +249,19 @@ const WorkbenchCreation = ({
   paginationOptions: ImportWorkbenchesContentQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_uploadedFiles', paginationOptions, 'uploadPending');
+  const CreateWorkbenchControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Workbench' {...props} />
+  );
 
   return (
-    <Drawer title={t_i18n('Create a workbench')} variant={DrawerVariant.create}>
+    <Drawer
+      title={t_i18n('Create a workbench')}
+      variant={isFABReplaced ? undefined : DrawerVariant.create}
+      controlledDial={isFABReplaced ? CreateWorkbenchControlledDial : undefined}
+    >
       {({ onClose }) => (
         <WorkbenchCreationForm
           updater={updater}

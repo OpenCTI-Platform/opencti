@@ -19,35 +19,37 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import { toB64 } from '../../../../utils/String';
 
 export const workbenchLineFragment = graphql`
-    fragment ImportWorkbenchesContentFileLine_file on File {
-        id
-        entity_type
-        name
-        uploadStatus
-        lastModified
-        lastModifiedSinceMin
-        objectMarking {
-            id
-        }
-        metaData {
-            mimetype
-            list_filters
-            labels
-            labels_text
-            messages {
-                timestamp
-                message
-            }
-            errors {
-                timestamp
-                message
-            }
-            creator {
-                name
-            }
-        }
-        ...FileWork_file
+  fragment ImportWorkbenchesContentFileLine_file on File {
+    id
+    entity_type
+    name
+    uploadStatus
+    lastModified
+    lastModifiedSinceMin
+    objectMarking {
+      id
     }
+    metaData {
+      mimetype
+      list_filters
+      labels
+      labels_text
+      messages {
+        timestamp
+        message
+      }
+      errors {
+        timestamp
+        message
+      }
+      creator {
+        name
+      }
+    }
+    works {
+      id
+    }
+  }
 `;
 
 const importWorkbenchLinesFragment = graphql`

@@ -373,10 +373,10 @@ const ImportContentComponent = ({
                 >
                   <span
                     style={{
-                        display: 'table-cell',
-                        verticalAlign: 'middle',
-                        textAlign: 'center',
-                      }}
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
                   >
                     {t_i18n('No file for the moment')}
                   </span>
@@ -407,10 +407,10 @@ const ImportContentComponent = ({
                   <ListItemIcon>
                     <span
                       style={{
-                          padding: '0 8px 0 8px',
-                          fontWeight: 700,
-                          fontSize: 12,
-                        }}
+                        padding: '0 8px 0 8px',
+                        fontWeight: 700,
+                        fontSize: 12,
+                      }}
                     >
                         &nbsp;
                     </span>
@@ -418,12 +418,12 @@ const ImportContentComponent = ({
                   <ListItemText
                     primary={
                       <div>
-                          {sortHeader('name', 'Name', false)}
-                          {sortHeader('creator_name', 'Creator', false)}
-                          {sortHeader('labels', 'Labels', false)}
-                          {sortHeader('markings', 'Markings', false)}
-                          {sortHeader('lastModified', 'Modification date', false)}
-                        </div>
+                        {sortHeader('name', 'Name', false)}
+                        {sortHeader('creator_name', 'Creator', false)}
+                        {sortHeader('labels', 'Labels', false)}
+                        {sortHeader('markings', 'Markings', false)}
+                        {sortHeader('lastModified', 'Modification date', false)}
+                      </div>
                       }
                   />
                 </ListItem>
@@ -473,7 +473,7 @@ const ImportContentComponent = ({
                           || (connector.connector_scope.length > 0
                             && !connector.connector_scope.includes(fileToImport.metaData.mimetype));
                       return (
-                          <MenuItem
+                        <MenuItem
                           key={connector.id}
                           value={connector.id}
                           disabled={disabled || !connector.active}
@@ -518,15 +518,15 @@ const ImportContentComponent = ({
                         onChange={handleSetCsvMapper}
                       >
                       {selectedConnector.configurations?.map((config) => {
-                          return (
+                        return (
                           <MenuItem
                             key={config.id}
                             value={config.configuration}
                           >
                             {config.name}
                           </MenuItem>
-                          );
-                        })}
+                        );
+                      })}
                     </Field>
                     : <ManageImportConnectorMessage name={selectedConnector?.name }/>
                     }
@@ -590,7 +590,7 @@ const ImportContentComponent = ({
                         || (connector.connector_scope.length > 0
                           && !connector.connector_scope.includes(fileToValidate.metaData.mimetype));
                       return (
-                          <MenuItem
+                        <MenuItem
                           key={i}
                           value={connector.id}
                           disabled={disabled || !connector.active}

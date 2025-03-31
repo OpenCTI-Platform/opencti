@@ -1238,6 +1238,7 @@
   "entity_Vulnerability": "Vulnérabilité",
   "entity_Windows-Registry-Key": "Clé de reg. Windows",
   "entity_Windows-Registry-Value-Type": "Clé de reg. Windows - Valeur",
+  "entity_Workbench": "Banc de travail",
   "entity_Workspace": "Espace de travail",
   "entity_X509-Certificate": "Certificat X509",
   "EPSS Percentile": "EPSS - Percentile",

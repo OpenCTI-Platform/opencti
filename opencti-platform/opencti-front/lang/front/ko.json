@@ -1238,6 +1238,7 @@
   "entity_Vulnerability": "취약점",
   "entity_Windows-Registry-Key": "Windows 레지스트리 키",
   "entity_Windows-Registry-Value-Type": "Windows 레지스트리 키 값",
+  "entity_Workbench": "워크벤치",
   "entity_Workspace": "워크스페이스",
   "entity_X509-Certificate": "X509 인증서",
   "EPSS Percentile": "EPSS - 백분위수",
