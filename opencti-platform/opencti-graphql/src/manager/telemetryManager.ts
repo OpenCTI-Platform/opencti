@@ -43,8 +43,12 @@ const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
 // Region user event counters
 export const TELEMETRY_GAUGE_DISSEMINATION = 'disseminationCount';
+export const TELEMETRY_GAUGE_NLQ = 'nlqQueryCount';
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
+};
+export const addNlqQueryCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_NLQ, 1);
 };
 
 // End Region user event counters
@@ -157,6 +161,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region Telemetry user events
     const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
     manager.setDisseminationCount(disseminationCountInRedis);
+    const nlqQueryCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_NLQ);
+    manager.setNlqQueryCount(nlqQueryCountInRedis);
     // end region Telemetry user events
     logApp.debug('[TELEMETRY] Fetching telemetry data successfully');
   } catch (e) {
