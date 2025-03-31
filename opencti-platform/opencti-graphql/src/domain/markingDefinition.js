@@ -98,12 +98,14 @@ export const addAllowedMarkingDefinition = async (context, user, markingDefiniti
     ...markingDefinition,
     x_opencti_color: markingColor,
   };
-  const { element, isCreation } = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION, { complete: true });
-  if (isCreation && !getDraftContext(context, user)) {
+  // Force context out of draft to force creation in live index
+  const contextOutOfDraft = { ...context, draft_context: '' };
+  const { element, isCreation } = await createEntity(contextOutOfDraft, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION, { complete: true });
+  if (isCreation) {
     // marking creation --> update the markings of the groups with auto_new_marking = true
-    await updateGroupsAfterAddingMarking(context, element);
+    await updateGroupsAfterAddingMarking(contextOutOfDraft, element);
     // users of group impacted must be refreshed
-    await notifyMembersOfNewMarking(context, user, element);
+    await notifyMembersOfNewMarking(contextOutOfDraft, user, element);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, element, user);
 };
