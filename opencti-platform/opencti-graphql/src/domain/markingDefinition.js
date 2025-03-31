@@ -10,7 +10,6 @@ import { RELATION_ACCESSES_TO, RELATION_MEMBER_OF } from '../schema/internalRela
 import { groupAddRelation, groupEditField, groupMaxShareableMarkings } from './group';
 import { getEntitiesListFromCache } from '../database/cache';
 import { READ_RELATIONSHIPS_INDICES } from '../database/utils';
-import { getDraftContext } from '../utils/draftContext';
 
 export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
