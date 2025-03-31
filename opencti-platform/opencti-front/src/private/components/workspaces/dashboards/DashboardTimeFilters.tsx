@@ -1,9 +1,11 @@
 import React from 'react';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { parse } from 'src/utils/Time';
+import { InvestigationGraph_workspace$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_workspace.graphql';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
@@ -11,13 +13,13 @@ import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMember
 import { Dashboard_workspace$data } from './__generated__/Dashboard_workspace.graphql';
 
 interface DashboardTimeFiltersProps {
-  workspace: Dashboard_workspace$data
+  workspace: Dashboard_workspace$data | InvestigationGraph_workspace$data;
   config?: {
-    startDate: object
-    endDate: object
-    relativeDate: string
+    startDate: string | null
+    endDate: string | null
+    relativeDate: string | null
   }
-  handleDateChange: (bound: 'startDate' | 'endDate' | 'relativeDate', value: object | string | null) => unknown
+  handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void
 }
 
 const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
@@ -27,6 +29,16 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
+
+  const handleChangeRelativeDate = (event: SelectChangeEvent) => {
+    const { value } = event.target;
+    handleDateChange('relativeDate', value);
+  };
+
+  const handleChangeDate = (type: 'startDate' | 'endDate', value: Date | null) => {
+    const formattedDate = value ? parse(value).format() : null;
+    handleDateChange(type, formattedDate);
+  };
 
   return (
     <Security
@@ -45,7 +57,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           <Select
             labelId="relative"
             value={config.relativeDate ?? ''}
-            onChange={(value) => handleDateChange('relativeDate', value)}
+            onChange={handleChangeRelativeDate}
             label={t_i18n('Relative time')}
             variant="outlined"
           >
@@ -59,11 +71,11 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           </Select>
         </FormControl>
         <DatePicker
-          value={config.startDate ?? null}
+          value={config.startDate ? new Date(config.startDate) : null}
           label={t_i18n('Start date')}
-          disableFuture={true}
+          disableFuture
           disabled={!!config.relativeDate}
-          onChange={(value, context) => !context.validationError && handleDateChange('startDate', value)}
+          onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('startDate', value)}
           slotProps={{
             textField: {
               style: { marginRight: 8 },
@@ -73,11 +85,11 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           }}
         />
         <DatePicker
-          value={config.endDate ?? null}
+          value={config.endDate ? new Date(config.endDate) : null}
           label={t_i18n('End date')}
           disabled={!!config.relativeDate}
-          disableFuture={true}
-          onChange={(value, context) => !context.validationError && handleDateChange('endDate', value)}
+          disableFuture
+          onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('endDate', value)}
           slotProps={{
             textField: {
               variant: 'outlined',
