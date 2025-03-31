@@ -352,11 +352,11 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
       const hasCsvMapperConnector = file.connectors?.some((connector) => connector.name === CSV_MAPPER_NAME);
       return hasCsvMapperConnector ? !!file.configuration : true;
     }));
-  }, [files]);
+  }, [files, importMode]);
 
   const isValidImport = useMemo(() => {
     return (optionsContext.values.validationMode === 'draft' && optionsContext.values.name.length > 0) || optionsContext.values.validationMode === 'workbench' || importMode === 'auto';
-  }, [optionsContext.values]);
+  }, [optionsContext.values, importMode]);
 
   const renderActions = useMemo(() => {
     if (!uploadStatus) {
