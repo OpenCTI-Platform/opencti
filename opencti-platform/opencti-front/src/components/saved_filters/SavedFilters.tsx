@@ -5,6 +5,7 @@ import { SavedFiltersQuery, SavedFiltersQuery$variables } from 'src/components/s
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSelection from './SavedFilterSelection';
+import SavedFiltersAutocomplete from './SavedFiltersAutocomplete';
 
 const savedFiltersQuery = graphql`
   query SavedFiltersQuery($filters: FilterGroup) {
@@ -52,9 +53,10 @@ const SavedFilters = () => {
 
   return (
     <>
-      {queryRef && (
-        <SavedFiltersComponent queryRef={queryRef} />
-      )}
+      {queryRef
+        ? <SavedFiltersComponent queryRef={queryRef} />
+        : <SavedFiltersAutocomplete isDisabled />
+      }
     </>
   );
 };

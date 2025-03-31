@@ -82,7 +82,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose }: SavedFilterDialogProps) =>
       fullWidth
       maxWidth="xs"
     >
-      <DialogTitle>{t_i18n('Save Filter')}</DialogTitle>
+      <DialogTitle>{t_i18n('Save filter')}</DialogTitle>
       <DialogContent>
         <TextField
           label={t_i18n('Name')}
