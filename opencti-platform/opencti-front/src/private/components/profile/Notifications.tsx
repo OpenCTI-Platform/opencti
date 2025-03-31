@@ -164,7 +164,7 @@ const Notifications: FunctionComponent = () => {
   const dataColumns: DataTableProps['dataColumns'] = {
     operation: {
       label: 'Operation',
-      percentWidth: 20,
+      percentWidth: 10,
       isSortable: isRuntimeSort,
       render: ({ notification_content, notification_type }: NotificationLine_node$data) => {
         const firstOperation = getFirstOperation({ notification_content, notification_type });
@@ -219,13 +219,13 @@ const Notifications: FunctionComponent = () => {
     },
     created: {
       label: 'Original creation date',
-      percentWidth: 20,
+      percentWidth: 25,
       isSortable: isRuntimeSort,
     },
     name: {
       id: 'trigger_name',
       label: 'Trigger name',
-      percentWidth: 12,
+      percentWidth: 17,
       isSortable: isRuntimeSort,
       render: ({ notification_type, name }, { storageHelpers: { handleAddFilter } }) => {
         return (
@@ -298,7 +298,7 @@ const Notifications: FunctionComponent = () => {
     };
 
     return (
-      <div style={{ marginLeft: -30 }}>
+      <div style={{ marginLeft: -40 }}>
         <IconButton
           disabled={updating}
           onClick={(event) => {
