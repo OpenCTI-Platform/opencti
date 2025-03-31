@@ -15,18 +15,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { FilterMode, type QueryJsonMappersArgs } from '../../../generated/graphql';
+import { type EditInput, FilterMode, type JsonMapperAddInput, type QueryJsonMappersArgs } from '../../../generated/graphql';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperRepresentation } from './jsonMapper-types';
+import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperParsed, type JsonMapperRepresentation, type StoreEntityJsonMapper } from './jsonMapper-types';
 import { extractContentFrom } from '../../../utils/fileToContent';
 import { createEntity } from '../../../database/middleware';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { checkConfigurationImport } from '../../workspace/workspace-domain';
-import { convertRepresentationsIds } from '../csvMapper/csvMapper-utils';
+import { convertRepresentationsIds, validateJsonMapper } from '../csvMapper/csvMapper-utils';
 import pjson from '../../../../package.json';
 import { type BasicStoreEntityIngestionJson, ENTITY_TYPE_INGESTION_JSON } from '../../ingestion/ingestion-types';
 import { FunctionalError } from '../../../config/errors';
-import { deleteInternalObject } from '../../../domain/internalObject';
+import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 
 export const findById = async (context: AuthContext, user: AuthUser, jsonMapperId: string) => {
   return storeLoadById<BasicStoreEntityJsonMapper>(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER);
@@ -92,4 +92,34 @@ export const deleteJsonMapper = async (context: AuthContext, user: AuthUser, jso
   }
 
   return deleteInternalObject(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER);
+};
+
+export const parseJsonMapper = (mapper: any): JsonMapperParsed => {
+  let representations: JsonMapperRepresentation[] = [];
+  if (typeof mapper?.representations === 'string') {
+    try {
+      representations = JSON.parse(mapper.representations);
+    } catch (error) {
+      throw FunctionalError('Could not parse JSON mapper: representations is not a valid JSON', { name: mapper?.name, error });
+    }
+  } else {
+    representations = mapper?.representations ?? [];
+  }
+
+  return {
+    ...mapper,
+    representations,
+  };
+};
+
+export const createJsonMapper = async (context: AuthContext, user: AuthUser, jsonMapperInput: JsonMapperAddInput) => {
+  // attempt to parse and validate the mapper representations ; this can throw errors
+  const parsedMapper = parseJsonMapper(jsonMapperInput);
+  await validateJsonMapper(context, user, parsedMapper);
+
+  return createInternalObject<StoreEntityJsonMapper>(context, user, jsonMapperInput, ENTITY_TYPE_JSON_MAPPER);
+};
+
+export const fieldPatchJsonMapper = async (context: AuthContext, user: AuthUser, jsonMapperId: string, input: EditInput[]) => {
+  return editInternalObject<StoreEntityJsonMapper>(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER, input);
 };

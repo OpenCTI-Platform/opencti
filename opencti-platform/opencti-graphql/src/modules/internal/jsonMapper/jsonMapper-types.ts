@@ -24,14 +24,12 @@ interface AttributeColumnConfiguration {
   pattern_date?: string
   timezone?: string
 }
-export interface ComplexPath {
-  complex: {
-    variables?: { path: string, independent?: boolean, variable: string }[]
-    formula: string
-  }
+export interface ComplexAttributePath {
+  formula: string
+  variables?: { path: string, independent?: boolean, variable: string }[]
   configuration?: AttributeColumnConfiguration
 }
-export interface AttributePath {
+export interface SimpleAttributePath {
   path: string
   independent?: boolean
   configuration?: AttributeColumnConfiguration
@@ -40,19 +38,29 @@ interface AttributeBasedOn {
   identifier?: string[]
   representations?: string[]
 }
-interface AttributeRef {
-  multiple: boolean
-  id: string
-  ids: string[]
-}
 
 export interface JsonMapperRepresentationAttribute {
   key: string
-  attr_path?: AttributePath | ComplexPath
-  based_on?: AttributeBasedOn
+  mode: 'simple' | 'complex' | 'base'
   default_values?: string[]
-  ref?: AttributeRef
 }
+
+export interface SimpleRepresentationAttribute extends JsonMapperRepresentationAttribute {
+  mode: 'simple'
+  attr_path?: SimpleAttributePath
+}
+
+export interface ComplexRepresentationAttribute extends JsonMapperRepresentationAttribute {
+  mode: 'complex'
+  complex_path?: ComplexAttributePath
+}
+
+export interface BasedRepresentationAttribute extends JsonMapperRepresentationAttribute {
+  mode: 'base'
+  based_on: AttributeBasedOn
+}
+
+export type RepresentationAttribute = SimpleRepresentationAttribute | ComplexRepresentationAttribute | BasedRepresentationAttribute;
 
 interface JsonMapperRepresentationTarget {
   entity_type: string
@@ -67,13 +75,11 @@ export interface JsonMapperRepresentation {
   type: JsonMapperRepresentationType
   target: JsonMapperRepresentationTarget
   identifier?: string[]
-  attributes: JsonMapperRepresentationAttribute[]
-  from?: string
-  to?: string
+  attributes: RepresentationAttribute[]
 }
 
 export type JsonMapperParsed = Omit<BasicStoreEntityJsonMapper, 'representations' | 'variables'> & {
-  variables: { name: string, path: ComplexPath }[]
+  variables: { name: string, path: ComplexAttributePath }[]
   representations: JsonMapperRepresentation[]
   user_chosen_markings?: string[]
 };

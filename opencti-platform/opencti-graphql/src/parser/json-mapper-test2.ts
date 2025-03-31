@@ -14,14 +14,13 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
     {
       name: 'mapper_confidence',
       path: {
-        complex: {
-          variables: [{ variable: 'threat_level', path: '$.Event.threat_level_id' }],
-          formula: `decisionMatrix(threat_level, 90, [
+        variables: [{ variable: 'threat_level', path: '$.Event.threat_level_id' }],
+        formula: `decisionMatrix(threat_level, 90, [
                   { value: '1', result: 90 },
                   { value: '2', result: 60 },
                   { value: '3', result: 30 },
               ])`
-        }
+
       }
     }
   ],
@@ -37,14 +36,14 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'definition_type',
-          attr_path: {
-            complex: {
-              variables: [{ variable: 'name', path: '$.name' }],
-              formula: 'name.split(":")[0]'
-            },
+          mode: 'complex',
+          complex_path: {
+            variables: [{ variable: 'name', path: '$.name' }],
+            formula: 'name.split(":")[0]'
           },
         }, {
           key: 'definition',
+          mode: 'simple',
           attr_path: {
             path: '$.name',
           },
@@ -63,6 +62,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'name',
+          mode: 'simple',
           attr_path: {
             path: '$.meta.ISO',
           },
@@ -80,6 +80,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'name',
+          mode: 'simple',
           attr_path: {
             path: '$.name',
           },
@@ -97,18 +98,21 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'external_id',
+          mode: 'simple',
           attr_path: {
             path: '$.uuid',
           },
         },
         {
           key: 'source_name',
+          mode: 'simple',
           attr_path: {
             path: '$.category',
           },
         },
         {
           key: 'url',
+          mode: 'simple',
           attr_path: {
             path: '$.value',
           },
@@ -126,6 +130,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'source_name',
+          mode: 'simple',
           attr_path: {
             path: '$.Event.id',
             independent: true
@@ -133,6 +138,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'url',
+          mode: 'simple',
           attr_path: {
             path: '$',
           },
@@ -150,27 +156,29 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'source_name',
+          mode: 'simple',
           default_values: ['MISP Event']
         },
         {
           key: 'description',
+          mode: 'simple',
           attr_path: {
             path: '$.info'
           },
         },
         {
           key: 'external_id',
+          mode: 'simple',
           attr_path: {
             path: '$.uuid'
           },
         },
         {
           key: 'url',
-          attr_path: {
-            complex: {
-              variables: [{ variable: 'uuid', path: '$.uuid' }],
-              formula: 'externalUri + "/events/view/" + uuid'
-            }
+          mode: 'complex',
+          complex_path: {
+            variables: [{ variable: 'uuid', path: '$.uuid' }],
+            formula: 'externalUri + "/events/view/" + uuid'
           },
         }
       ]
@@ -187,30 +195,35 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'name',
+          mode: 'simple',
           attr_path: {
             path: '$.value',
           },
         },
         {
           key: 'description',
+          mode: 'simple',
           attr_path: {
             path: '$.description',
           },
         },
         {
           key: 'createdBy',
+          mode: 'base',
           based_on: {
             representations: ['orgRepresentation']
           },
         },
         {
           key: 'aliases',
+          mode: 'simple',
           attr_path: {
             path: '$.meta.synonyms',
           },
         },
         {
           key: 'externalReferences',
+          mode: 'base',
           based_on: {
             identifier: ['$.meta.refs'],
             representations: ['externalRefsRepresentation']
@@ -218,6 +231,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
@@ -234,6 +248,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -243,6 +258,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             identifier: ['$.meta.country'],
             representations: [
@@ -263,24 +279,28 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'name',
+          mode: 'simple',
           attr_path: {
             path: '$.value',
           },
         },
         {
           key: 'description',
+          mode: 'simple',
           attr_path: {
             path: '$.description',
           },
         },
         {
           key: 'aliases',
+          mode: 'simple',
           attr_path: {
             path: '$.meta.synonyms',
           },
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
@@ -299,25 +319,27 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'name',
-          attr_path: {
-            complex: {
-              variables: [{ variable: 'name', path: '$.value' }],
-              formula: 'extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 1, name)'
-            }
+          mode: 'complex',
+          complex_path: {
+            variables: [{ variable: 'name', path: '$.value' }],
+            formula: 'extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 1, name)'
           },
         },
         {
           key: 'description',
+          mode: 'simple',
           attr_path: {
             path: '$.description',
           },
         },
         {
           key: 'is_family',
+          mode: 'simple',
           default_values: ['true']
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
@@ -336,31 +358,33 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'SHA-256',
+          mode: 'simple',
           attr_path: {
             path: '$.value',
           },
         },
         {
           key: 'x_opencti_description',
+          mode: 'simple',
           attr_path: {
             path: '$.comment',
           },
         },
         {
           key: 'x_opencti_score',
-          attr_path: {
-            complex: {
-              variables: [{ variable: 'threat_level', independent: true, path: '$.Event.threat_level_id' }],
-              formula: `decisionMatrix(threat_level, 90, [
+          mode: 'complex',
+          complex_path: {
+            variables: [{ variable: 'threat_level', independent: true, path: '$.Event.threat_level_id' }],
+            formula: `decisionMatrix(threat_level, 90, [
                   { value: '1', result: 290 },
                   { value: '2', result: 60 },
                   { value: '3', result: 30 },
               ])`
-            }
           }
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
@@ -378,30 +402,32 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'pattern',
-          attr_path: {
-            complex: {
-              variables: [
-                { path: '$.value', variable: 'value' },
-                { path: '$.type', variable: 'type' }
-              ],
-              formula: 'patternFromValue("File_" + type, value)'
-            },
+          mode: 'complex',
+          complex_path: {
+            variables: [
+              { path: '$.value', variable: 'value' },
+              { path: '$.type', variable: 'type' }
+            ],
+            formula: 'patternFromValue("File_" + type, value)'
           },
         },
         {
           key: 'x_opencti_detection',
+          mode: 'simple',
           attr_path: {
             path: '$.to_ids',
           },
         },
         {
           key: 'description',
+          mode: 'simple',
           attr_path: {
             path: '$.comment',
           },
         },
         {
           key: 'created',
+          mode: 'simple',
           attr_path: {
             path: '$.Event.date',
             independent: true,
@@ -413,6 +439,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'modified',
+          mode: 'simple',
           attr_path: {
             path: '$.Event.date',
             independent: true,
@@ -424,6 +451,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'valid_from',
+          mode: 'simple',
           attr_path: {
             path: '$.Event.date',
             independent: true,
@@ -435,10 +463,12 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'x_opencti_score',
+          mode: 'simple',
           default_values: ['90']
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
@@ -455,6 +485,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -464,6 +495,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -483,6 +515,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -492,6 +525,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             representations: [
               'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
@@ -510,6 +544,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -519,6 +554,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             representations: [
               'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
@@ -539,22 +575,26 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'name',
+          mode: 'simple',
           attr_path: {
             path: '$.value',
           },
         },
         {
           key: 'x_opencti_description',
+          mode: 'simple',
           attr_path: {
             path: '$.comment',
           },
         },
         {
           key: 'x_opencti_score',
+          mode: 'simple',
           default_values: ['90']
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
@@ -572,29 +612,31 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'pattern',
-          attr_path: {
-            complex: {
-              variables: [
-                { path: '$.value', variable: 'value' },
-              ],
-              formula: 'patternFromValue("File_name", value)'
-            },
+          mode: 'complex',
+          complex_path: {
+            variables: [
+              { path: '$.value', variable: 'value' },
+            ],
+            formula: 'patternFromValue("File_name", value)'
           },
         },
         {
           key: 'x_opencti_detection',
+          mode: 'simple',
           attr_path: {
             path: '$.to_ids',
           },
         },
         {
           key: 'description',
+          mode: 'simple',
           attr_path: {
             path: '$.comment',
           },
         },
         {
           key: 'created',
+          mode: 'simple',
           attr_path: {
             path: '$.Event.date',
             independent: true,
@@ -606,6 +648,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'modified',
+          mode: 'simple',
           attr_path: {
             path: '$.Event.date',
             independent: true,
@@ -617,10 +660,12 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'x_opencti_score',
+          mode: 'simple',
           default_values: ['90']
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
@@ -637,6 +682,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -646,6 +692,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -665,6 +712,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -674,6 +722,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             representations: [
               'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
@@ -692,6 +741,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -701,6 +751,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             representations: [
               'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
@@ -721,22 +772,26 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'value',
+          mode: 'simple',
           attr_path: {
             path: '$.value',
           },
         },
         {
           key: 'x_opencti_score',
+          mode: 'simple',
           default_values: ['90']
         },
         {
           key: 'x_opencti_description',
+          mode: 'simple',
           attr_path: {
             path: '$.comment',
           },
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
@@ -754,37 +809,41 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'pattern',
-          attr_path: {
-            complex: {
-              variables: [
-                { path: '$.value', variable: 'value' }
-              ],
-              formula: 'patternFromValue("IPv4-Addr", value)'
-            },
+          mode: 'complex',
+          complex_path: {
+            variables: [
+              { path: '$.value', variable: 'value' }
+            ],
+            formula: 'patternFromValue("IPv4-Addr", value)'
           },
         },
         {
           key: 'x_opencti_score',
+          mode: 'simple',
           default_values: ['90']
         },
         {
           key: 'pattern_type',
+          mode: 'simple',
           default_values: ['stix']
         },
         {
           key: 'x_opencti_detection',
+          mode: 'simple',
           attr_path: {
             path: '$.to_ids',
           },
         },
         {
           key: 'description',
+          mode: 'simple',
           attr_path: {
             path: '$.comment',
           },
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
@@ -801,6 +860,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -810,6 +870,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -829,6 +890,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -838,6 +900,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             representations: [
               'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
@@ -856,6 +919,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -865,6 +929,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             representations: [
               'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
@@ -885,12 +950,14 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'value',
+          mode: 'simple',
           attr_path: {
             path: '$.value',
           },
         },
         {
           key: 'x_opencti_description',
+          mode: 'simple',
           attr_path: {
             path: '$.comment',
           },
@@ -908,41 +975,43 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'pattern',
-          attr_path: {
-            complex: {
-              variables: [
-                { path: '$.value', variable: 'value' }
-              ],
-              formula: 'patternFromValue("Domain-Name", value)'
-            },
+          mode: 'complex',
+          complex_path: {
+            variables: [
+              { path: '$.value', variable: 'value' }
+            ],
+            formula: 'patternFromValue("Domain-Name", value)'
           },
         },
         {
           key: 'x_opencti_score',
-          attr_path: {
-            complex: {
-              formula: 'mapper_confidence'
-            }
+          mode: 'complex',
+          complex_path: {
+            formula: 'mapper_confidence'
           }
         },
         {
           key: 'pattern_type',
+          mode: 'simple',
           default_values: ['stix']
         },
         {
           key: 'x_opencti_detection',
+          mode: 'simple',
           attr_path: {
             path: '$.to_ids',
           },
         },
         {
           key: 'description',
+          mode: 'simple',
           attr_path: {
             path: '$.comment',
           },
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
@@ -959,6 +1028,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -968,6 +1038,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -987,6 +1058,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -996,6 +1068,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             representations: [
               'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
@@ -1014,6 +1087,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'from',
+          mode: 'base',
           based_on: {
             identifier: ['$.id'],
             representations: [
@@ -1023,6 +1097,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'to',
+          mode: 'base',
           based_on: {
             representations: [
               'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
@@ -1043,26 +1118,27 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'name',
-          attr_path: {
-            path: '$.info',
-            complex: {
-              variables: [{ variable: 'info', path: '$.info' }, { variable: 'reference', path: '$.Attribute[?(@.category == \'Internal reference\')]' }],
-              formula: 'reference?.value ?? info'
-            }
+          mode: 'complex',
+          complex_path: {
+            variables: [{ variable: 'info', path: '$.info' }, { variable: 'reference', path: '$.Attribute[?(@.category == \'Internal reference\')]' }],
+            formula: 'reference?.value ?? info'
           },
         },
         {
           key: 'description',
+          mode: 'simple',
           attr_path: {
             path: '$.info',
           },
         },
         {
           key: 'report_types',
+          mode: 'simple',
           default_values: ['misp-event']
         },
         {
           key: 'published',
+          mode: 'simple',
           attr_path: {
             path: '$.date',
             configuration: {
@@ -1073,18 +1149,21 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
         },
         {
           key: 'externalReferences',
+          mode: 'base',
           based_on: {
             representations: ['externalRefsRepresentation']
           }
         },
         {
           key: 'objects',
+          mode: 'base',
           based_on: {
             representations: [
               'countryRepresentation',
@@ -1131,18 +1210,21 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
       attributes: [
         {
           key: 'attribute_abstract',
+          mode: 'simple',
           attr_path: {
             path: '$.name',
           },
         },
         {
           key: 'content',
+          mode: 'simple',
           attr_path: {
             path: '$.content',
           },
         },
         {
           key: 'created',
+          mode: 'simple',
           attr_path: {
             path: '$.Event.date',
             independent: true,
@@ -1154,6 +1236,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'modified',
+          mode: 'simple',
           attr_path: {
             path: '$.Event.date',
             independent: true,
@@ -1165,12 +1248,14 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
         },
         {
           key: 'objectMarking',
+          mode: 'base',
           based_on: {
             representations: ['markingRepresentation']
           }
         },
         {
           key: 'objects',
+          mode: 'base',
           based_on: {
             representations: ['event-reports-reports']
           }
