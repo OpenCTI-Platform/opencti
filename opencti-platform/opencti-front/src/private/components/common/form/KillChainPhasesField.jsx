@@ -40,6 +40,8 @@ class KillChainPhasesField extends Component {
           map((n) => ({
             label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
             value: n.node.id,
+            kill_chain_name: n.node.kill_chain_name,
+            phase_name: n.node.phase_name,
           })),
         )(data);
         this.setState({

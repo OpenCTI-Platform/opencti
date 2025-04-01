@@ -18,6 +18,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { ListItemButton } from '@mui/material';
+import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
@@ -185,6 +186,9 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
         { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
+        { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
+        { label: t_i18n('Indicator types'), value: 'indicator_types', isMultiple: true },
+        { label: t_i18n('Platforms'), value: 'x_mitre_platforms', isMultiple: true },
       ];
     } else if (actionsInputs[i]?.op === 'replace') {
       options = [
@@ -201,6 +205,9 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
         { label: t_i18n('Severity'), value: 'severity', isMultiple: false },
         { label: t_i18n('Priority'), value: 'priority', isMultiple: false },
+        { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
+        { label: t_i18n('Indicator types'), value: 'indicator_types', isMultiple: true },
+        { label: t_i18n('Platforms'), value: 'x_mitre_platforms', isMultiple: true },
         {
           label: t_i18n('Detection'),
           value: 'x_opencti_detection',
@@ -222,6 +229,9 @@ const PlaybookAddComponentsContent = ({
         { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
         { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
         { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
+        { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
+        { label: t_i18n('Indicator types'), value: 'indicator_types', isMultiple: true },
+        { label: t_i18n('Platforms'), value: 'x_mitre_platforms', isMultiple: true },
       ];
     }
     return (
@@ -372,6 +382,46 @@ const PlaybookAddComponentsContent = ({
             ])}
           />
         );
+      case 'indicator_types':
+        return (
+          <OpenVocabField
+            name={`actions-${i}-value`}
+            type={'indicator_type_ov'}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
+            onChange={(_, value) => {
+              handleChangeActionInput(
+                i,
+                'value',
+                value.map((n) => ({
+                  label: n,
+                  value: n,
+                  patch_value: n,
+                })),
+              );
+            }}
+          />
+        );
+      case 'x_mitre_platforms':
+        return (
+          <OpenVocabField
+            name={`actions-${i}-value`}
+            type={'platforms_ov'}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
+            onChange={(_, value) => {
+              handleChangeActionInput(
+                i,
+                'value',
+                value.map((n) => ({
+                  label: n,
+                  value: n,
+                  patch_value: n,
+                })),
+              );
+            }}
+          />
+        );
       case 'priority':
         return (
           <OpenVocabField
@@ -381,6 +431,23 @@ const PlaybookAddComponentsContent = ({
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
             ])}
+          />
+        );
+      case 'killChainPhases':
+        return (
+          <KillChainPhasesField
+            name={`actions-${i}-value`}
+            onChange={(_, value) => {
+              handleChangeActionInput(
+                i,
+                'value',
+                value.map((n) => ({
+                  label: n.label,
+                  value: n.value,
+                  patch_value: { kill_chain_name: n.kill_chain_name, phase_name: n.phase_name },
+                })),
+              );
+            }}
           />
         );
       default:

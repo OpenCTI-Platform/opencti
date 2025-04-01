@@ -246,7 +246,7 @@ const typesWithRftTypes = ['Case-Rft'];
 const typesWithDetection = ['Indicator'];
 const typesWithKillChains = ['Indicator'];
 const typesWithIndicatorTypes = ['Indicator'];
-const typesWithPlateforms = ['Indicator'];
+const typesWithPlatforms = ['Indicator'];
 
 const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
 const notShareableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
@@ -842,7 +842,7 @@ class DataTableToolBar extends Component {
       (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
       checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Kill chains'), value: 'killChainPhases' },
       checkTypes(typesWithIndicatorTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Indicator types'), value: 'indicator_type_ov' },
-      checkTypes(typesWithPlateforms) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Plateforms'), value: 'platforms_ov' },
+      checkTypes(typesWithPlatforms) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Platforms'), value: 'platforms_ov' },
       ...(actionsInputs[i]?.type === 'REPLACE' ? [
         { label: t('Author'), value: 'created-by' },
         { label: t('Confidence'), value: 'confidence' },
