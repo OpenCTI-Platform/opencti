@@ -43,7 +43,8 @@ const AuthorizedMembersFieldListItem = ({
   // Used for artificial rows for ALL and CREATOR if they have
   // no access.
   const noAccess = { label: t_i18n('no access'), value: 'none' };
-  const groupsLabel = authorizedMember.groupsRestriction.map((n) => n.label);
+  const groupsLabel = (authorizedMember.groupsRestriction ?? []).map((n) => n.label);
+
   // Construct the list of available access levels based on
   // if generic option or not.
   const getAccessList = (memberId: string) => {

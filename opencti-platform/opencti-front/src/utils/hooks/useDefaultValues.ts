@@ -54,7 +54,7 @@ export const useComputeDefaultValues = () => {
         })
         .filter((v) => !!v.id && !!v.access_right);
 
-      return defaultAuthorizedMembers && defaultAuthorizedMembers.length > 0
+      return defaultAuthorizedMembers.length > 0
         ? authorizedMembersToOptions(defaultAuthorizedMembers)
         : null;
     }
