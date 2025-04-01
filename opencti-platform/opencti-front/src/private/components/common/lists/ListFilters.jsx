@@ -13,7 +13,6 @@ import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject } from '../
 import SavedFilters from '../../../../components/saved_filters/SavedFilters';
 import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
 import useHelper from '../../../../utils/hooks/useHelper';
-import { useDataTableContext } from '../../../../components/dataGrid/components/DataTableContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

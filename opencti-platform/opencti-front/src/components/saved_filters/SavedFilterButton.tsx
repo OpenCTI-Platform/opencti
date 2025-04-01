@@ -14,11 +14,15 @@ const SavedFilterButton = () => {
   const {
     useDataTablePaginationLocalStorage: {
       viewStorage: { filters },
+      localStorageKey,
     },
   } = useDataTableContext();
 
   const handleOpenDialog = () => setIsSavedDialogOpen(true);
   const handleCloseDialog = () => setIsSavedDialogOpen(false);
+
+  const isRestrictedStorageKey = localStorageKey.includes('_stixCoreRelationshipCreationFromEntity');
+  if (isRestrictedStorageKey) return null;
 
   return (
     <>

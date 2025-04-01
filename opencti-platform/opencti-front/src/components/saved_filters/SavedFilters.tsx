@@ -30,12 +30,10 @@ const SavedFiltersComponent = ({ queryRef }: SavedFiltersComponentProps) => {
   const { savedFilters } = usePreloadedQuery(savedFiltersQuery, queryRef);
 
   return (
-    <>
-      <SavedFilterSelection
-        isDisabled={!savedFilters?.edges?.length}
-        data={savedFilters?.edges?.map(({ node }) => node) ?? []}
-      />
-    </>
+    <SavedFilterSelection
+      isDisabled={!savedFilters?.edges?.length}
+      data={savedFilters?.edges?.map(({ node }) => node) ?? []}
+    />
   );
 };
 
@@ -50,6 +48,9 @@ const SavedFilters = () => {
   const queryOptions = { filters } as unknown as SavedFiltersQuery$variables;
 
   const queryRef = useQueryLoading<SavedFiltersQuery>(savedFiltersQuery, queryOptions);
+
+  const isRestrictedStorageKey = localStorageKey.includes('_stixCoreRelationshipCreationFromEntity');
+  if (isRestrictedStorageKey) return null;
 
   return (
     <>
