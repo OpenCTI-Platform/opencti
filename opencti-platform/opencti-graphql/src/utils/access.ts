@@ -468,9 +468,19 @@ export const getUserAccessRight = (user: AuthUser, element: { restricted_members
   }
   return MEMBER_ACCESS_RIGHT_VIEW;
 };
+
 export const hasAuthorizedMemberAccess = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
   const userAccessRight = getUserAccessRight(user, element);
   return !!userAccessRight;
+};
+
+export const isUserInAuthorizedMember = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+  // If no restricted members, user is not part of it
+  if (!element.restricted_members || element.restricted_members.length === 0) {
+    return false;
+  }
+  // If specified, user must have access
+  return hasAuthorizedMemberAccess(user, element);
 };
 
 const isEntityOrganizationsAllowed = (

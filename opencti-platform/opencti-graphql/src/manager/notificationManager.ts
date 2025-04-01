@@ -97,7 +97,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     mode: 'or',
     filters: [
       { key: ['objectAssignee'], values: [user.internal_id], operator: 'eq', mode: 'or' },
-      { key: ['objectParticipant'], values: [user.internal_id], operator: 'eq', mode: 'or' }
+      { key: ['objectParticipant'], values: [user.internal_id], operator: 'eq', mode: 'or' },
     ],
     filterGroups: []
   };
@@ -114,10 +114,43 @@ const generateAssigneeTrigger = (user: AuthUser) => {
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 
+// For now only for REPORT CREATION
+const AUTH_TRIGGER_IDENTIFIER = 'Default Trigger for Restricted members';
+const generateAuthorizeTrigger = (user: AuthUser) => {
+  const filters = {
+    mode: 'or',
+    filters: [
+      // /!\ objectAuthorized is a specific filter only worker in STIX
+      // ONLY to use internally for this specific feature.
+      // Any other usage / modification on this required a tech lead validation
+      { key: ['objectAuthorized'], values: [user], operator: 'eq' },
+      { key: ['entity_type'], values: ['Report'] },
+    ],
+    filterGroups: []
+  };
+  return {
+    internal_id: `default-trigger-${user.id}`,
+    name: AUTH_TRIGGER_IDENTIFIER,
+    trigger_type: 'live',
+    trigger_scope: 'knowledge',
+    event_types: ['create'],
+    notifiers: user.personal_notifiers,
+    filters: JSON.stringify(filters),
+    instance_trigger: false,
+    restricted_members: [],
+    override_notifier_message: 'granted you in `access restriction`'
+  } as unknown as BasicStoreEntityLiveTrigger;
+};
+
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const nativeTriggers = platformUsers.map((user) => ({ users: [user], trigger: generateAssigneeTrigger(user) }));
+  const nativeTriggers = platformUsers.map((user) => {
+    return [
+      { users: [user], trigger: generateAssigneeTrigger(user) },
+      { users: [user], trigger: generateAuthorizeTrigger(user) },
+    ];
+  }).flat();
   const definedTriggers = triggers.map((trigger) => {
     const triggerAuthorizedMembersIds = trigger.restricted_members?.map((member) => member.id) ?? [];
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
@@ -493,12 +526,13 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
 
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
-      const { data: { data, message: streamMessage, origin } } = streamEvent;
+      const { data: { data, message: eventMessage, origin } } = streamEvent;
       // For each event we need to check ifs
       for (let notifIndex = 0; notifIndex < liveNotifications.length; notifIndex += 1) {
         const { users, trigger }: ResolvedLive = liveNotifications[notifIndex];
         const { internal_id: notification_id, trigger_type: type, instance_trigger } = trigger;
         const targets = await buildTargetEvents(context, users, streamEvent, trigger);
+        const streamMessage: string = trigger.override_notifier_message ?? eventMessage;
         if (targets.length > 0) {
           const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets, data, streamMessage, origin };
           await storeNotificationEvent(context, notificationEvent);
