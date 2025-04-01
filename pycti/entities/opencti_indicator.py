@@ -401,8 +401,8 @@ class Indicator:
                 stix_object["x_opencti_workflow_id"] = (
                     self.opencti.get_attribute_in_extension("workflow_id", stix_object)
                 )
-            if "x_mitre_plateforms" not in stix_object:
-                stix_object["x_mitre_plateforms"] = (
+            if "x_mitre_platforms" not in stix_object:
+                stix_object["x_mitre_platforms"] = (
                     self.opencti.get_attribute_in_mitre_extension(
                         "platforms", stix_object
                     )
