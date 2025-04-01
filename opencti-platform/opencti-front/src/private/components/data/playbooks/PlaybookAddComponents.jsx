@@ -437,9 +437,17 @@ const PlaybookAddComponentsContent = ({
         return (
           <KillChainPhasesField
             name={`actions-${i}-value`}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              { label: value, value, patch_value: value },
-            ])}
+            onChange={(_, value) => {
+              handleChangeActionInput(
+                i,
+                'value',
+                value.map((n) => ({
+                  label: n.label,
+                  value: n.value,
+                  patch_value: { kill_chain_name: n.kill_chain_name, phase_name: n.phase_name },
+                })),
+              );
+            }}
           />
         );
       default:

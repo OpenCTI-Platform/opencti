@@ -695,7 +695,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
     };
     const convertValue = (attributeType: string, value: any) => {
       if (attributeType === 'numeric') return Number(value);
-      if (attributeType === 'boolean') return Boolean(value);
+      if (attributeType === 'boolean') return value.toLowerCase() === 'true';
       return value;
     };
     const patchOperations = [];
