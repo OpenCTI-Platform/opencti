@@ -1485,6 +1485,7 @@
   "Groups": "グループ",
   "Groups | Security | Settings": "グループ｜セキュリティ｜設定",
   "Groups permissions on data marking is not fully implemented yet.": "データマーキングのグループ権限は、まだ完全には実装されていません。",
+  "Groups restriction": "グループ制限",
   "Groups using this role": "このロールを使用しているグループ",
   "Groups with this role": "この役割を持つグループ",
   "gt": "より大きい",
