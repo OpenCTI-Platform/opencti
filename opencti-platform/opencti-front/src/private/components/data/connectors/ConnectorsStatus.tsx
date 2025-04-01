@@ -41,6 +41,7 @@ import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModif
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -319,6 +320,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const managerForConnectorToUpdate = connectorManagers.find(({ id }) => id === connectorToUpdate?.manager_id);
 
   const { isSensitive } = useSensitiveModifications('connector_reset');
+  const { isFeatureEnable } = useHelper();
+  const isComposerEnable = isFeatureEnable('COMPOSER');
   return (
     <>
       <Dialog
@@ -354,77 +357,79 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
           </Button>
         </DialogActions>
       </Dialog>
-      <div>
-        <Typography
-          variant="h4"
-          style={{ float: 'left', marginBottom: 15 }}
-        >
-          <>
-            {t_i18n('Registered manager')}
-            <EEChip feature="Registered manager" />
-          </>
-        </Typography>
-        <div className="clearfix" />
-        <Paper
-          className={'paper-for-grid'}
-          style={{
-            padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
-          }}
-          variant="outlined"
-        >
-          <div
-            ref={(r) => setRef(r)}
-            style={{
-              height: 200,
-            }}
+      {isComposerEnable && (
+        <div>
+          <Typography
+            variant="h4"
+            style={{ float: 'left', marginBottom: 15 }}
           >
-            {ref && (
-              <DataTableWithoutFragment
-                dataColumns={{
-                  type: {
-                    id: 'type',
-                    label: ' ',
-                    percentWidth: 5,
-                    isSortable: false,
-                    render: () => <HubOutlined />,
-                  },
-                  name: {
-                    percentWidth: 35,
-                    isSortable: false,
-                  },
-                  messages: {
-                    id: 'messages',
-                    label: 'Contracts',
-                    percentWidth: 20,
-                    isSortable: false,
-                    render: (row) => defaultRender(row.connector_manager_contracts.length),
-                  },
-                  active: {
-                    id: 'active',
-                    label: 'Status',
-                    percentWidth: 20,
-                    isSortable: false,
-                    render: (row) => computeConnectorStatus(row),
-                  },
-                  updated_at: {
-                    percentWidth: 20,
-                    isSortable: false,
-                    render: ({ last_sync_execution }) => nsdt(last_sync_execution),
-                  },
-                }}
-                data={connectorManagers}
-                globalCount={connectorManagers.length}
-                rootRef={ref}
-                disableNavigation
-                onLineClick={(m) => setManager(m)}
-                storageKey={'connectors-status-managers'}
-                variant={DataTableVariant.inline}
-              />
-            )}
-          </div>
-        </Paper>
-      </div>
-      {manager && <ManagedConnectorCreation manager={manager} onClose={() => setManager(undefined)} />}
+            <>
+              {t_i18n('Registered manager')}
+              <EEChip feature="Registered manager" />
+            </>
+          </Typography>
+          <div className="clearfix" />
+          <Paper
+            className={'paper-for-grid'}
+            style={{
+              padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+            }}
+            variant="outlined"
+          >
+            <div
+              ref={(r) => setRef(r)}
+              style={{
+                height: 200,
+              }}
+            >
+              {ref && (
+                <DataTableWithoutFragment
+                  dataColumns={{
+                    type: {
+                      id: 'type',
+                      label: ' ',
+                      percentWidth: 5,
+                      isSortable: false,
+                      render: () => <HubOutlined />,
+                    },
+                    name: {
+                      percentWidth: 35,
+                      isSortable: false,
+                    },
+                    messages: {
+                      id: 'messages',
+                      label: 'Contracts',
+                      percentWidth: 20,
+                      isSortable: false,
+                      render: (row) => defaultRender(row.connector_manager_contracts.length),
+                    },
+                    active: {
+                      id: 'active',
+                      label: 'Status',
+                      percentWidth: 20,
+                      isSortable: false,
+                      render: (row) => computeConnectorStatus(row),
+                    },
+                    updated_at: {
+                      percentWidth: 20,
+                      isSortable: false,
+                      render: ({ last_sync_execution }) => nsdt(last_sync_execution),
+                    },
+                  }}
+                  data={connectorManagers}
+                  globalCount={connectorManagers.length}
+                  rootRef={ref}
+                  disableNavigation
+                  onLineClick={(m) => setManager(m)}
+                  storageKey={'connectors-status-managers'}
+                  variant={DataTableVariant.inline}
+                />
+              )}
+            </div>
+          </Paper>
+        </div>
+      )}
+      {(manager && isComposerEnable) && <ManagedConnectorCreation manager={manager} onClose={() => setManager(undefined)} />}
       <div>
         <Typography
           variant="h4"
@@ -501,7 +506,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                   secondaryAction={
                     <Security needs={[MODULES_MODMANAGE]}>
                       <>
-                        {connector.is_managed && <Tooltip title={t_i18n('Update connector')}>
+                        {(connector.is_managed && isComposerEnable) && <Tooltip title={t_i18n('Update connector')}>
                           <IconButton
                             onClick={() => {
                               setConnectorToUpdate(connector);
@@ -606,7 +611,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             })}
           </List>
         </Paper>
-        {(connectorToUpdate && managerForConnectorToUpdate) && (
+        {(connectorToUpdate && managerForConnectorToUpdate && isComposerEnable) && (
           <ManagedConnectorEdition
             connector={connectorToUpdate}
             onClose={() => setConnectorToUpdate(undefined)}

@@ -36,7 +36,6 @@ import {
   type SynchronizerFetchInput,
   type UpdateConnectorManagerStatusInput,
   ValidationMode,
-  ValidationMode,
 } from '../generated/graphql';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
