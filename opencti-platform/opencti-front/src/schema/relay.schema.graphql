@@ -12714,7 +12714,7 @@ type SavedFilter implements InternalObject & BasicObject {
   parent_types: [String]!
   name: String!
   filters: String!
-  scope: String
+  scope: String!
 }
 
 type SavedFilterEdge {
@@ -12735,7 +12735,7 @@ enum SavedFilterOrdering {
 input SavedFilterAddInput {
   name: String!
   filters: String!
-  scope: String
+  scope: String!
 }
 
 enum RequestAccessType {

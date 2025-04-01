@@ -51,7 +51,7 @@ export const DataTableDisplayFilters = ({
   }
 
   return (
-    <div id="filter-container" style={{ minHeight: 10 }}>
+    <div id="filter-container" style={{ minHeight: 10, display: 'flex', alignItems: 'center' }}>
       <FilterIconButton
         helpers={helpers}
         availableFilterKeys={availableFilterKeys}
@@ -98,7 +98,6 @@ const DataTableFilters = ({
       viewStorage: { numberOfElements, openExports, redirectionMode },
     },
   } = useDataTableContext();
-
   const { selectedElements } = useEntityToggle(storageKey);
 
   const exportDisabled = !exportContext || (numberOfElements
@@ -110,7 +109,6 @@ const DataTableFilters = ({
   const hasFilters = availableFilterKeys && availableFilterKeys.length > 0;
 
   const hasToggleGroup = additionalHeaderButtons || redirectionModeEnabled || !exportDisabled;
-
   return (
     <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
@@ -122,6 +120,7 @@ const DataTableFilters = ({
         >
           {hasFilters && (
             <Filters
+              isDatatable
               helpers={helpers}
               searchContext={searchContextFinal}
               availableFilterKeys={availableFilterKeys}
