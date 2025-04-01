@@ -1102,7 +1102,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connect_auto,
             self.connect_only_contextual,
             playbook_compatible,
-            self.listen_protocol_api_uri + self.listen_protocol_api_path,
+            (
+                self.listen_protocol_api_uri + self.listen_protocol_api_path
+                if self.listen_protocol == "API"
+                else None
+            ),
         )
         connector_configuration = self.api.connector.register(self.connector)
         self.connector_logger.info(
