@@ -2,7 +2,7 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import JsonMapperRepresentationAttributeOptions from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributeOptions';
 import { alphabet } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
-import { FieldProps } from 'formik';
+import { Field, FieldProps } from 'formik';
 import JsonMapperRepresentationDialogOption from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationDialogOption';
 import JsonMapperRepresentationAttributeSelectedConfigurations
   from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributeSelectedConfigurations';
@@ -10,6 +10,7 @@ import { JsonMapperRepresentationAttributeFormData } from '@components/data/json
 import { SchemaAttribute } from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
+import TextField from '../../../../../../components/TextField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -101,9 +102,30 @@ JsonMapperRepresentationAttributeFormProps
         {label}
         {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
       </div>
+      {/** <div>
+        <Field
+          name="newAccessRight"
+          label={t_i18n('Mode')}
+          component={SelectField}
+          inputProps={{ 'aria-label': 'Without label' }}
+          disableUnderline
+          InputLabelProps={{ sx: visuallyHidden }}
+          style={{ m: 1, minWidth: 100 }}
+          value={value?.column_name ?? 'simple'}
+          size="small"
+        >
+          <MenuItem value="simple">{t_i18n('Simple')}</MenuItem>
+          <MenuItem value="complex">{t_i18n('Complex')}</MenuItem>
+        </Field>
+      </div>* */}
       <div>
-        MODE (Simple / complex)
-        TEXT
+        <Field
+          component={TextField}
+          variant="standard"
+          name="path"
+          label={t_i18n('JSON Path')}
+          fullWidth={true}
+        />
 
         {/** <MUIAutocomplete
           selectOnFocus
