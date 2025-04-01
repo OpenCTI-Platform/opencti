@@ -1,5 +1,5 @@
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
-import { isStixObjectTypes } from './filtersUtils';
+import { isStixObjectTypes, ME_FILTER_VALUE } from './filtersUtils';
 
 // eslint-disable-next-line import/prefer-default-export
 export const getOptionsFromEntities = (
@@ -28,13 +28,19 @@ export const getOptionsFromEntities = (
     return f;
   })
     .sort((a, b) => {
-    // In case value is null, for "no label" case we want it at the top of the list
+      // In case value is null, for "no label" case we want it at the top of the list
       if (!b.value) {
         return 1;
       }
+      // In case value is dynamic @me filter, for user id filter we want it at the top of the list
+      if (a.value === ME_FILTER_VALUE) {
+        return -1;
+      }
+      // order by group
       if (a.group && b.group && a.group !== b.group) {
         return a.group.localeCompare(b.group);
       }
+      // order by label
       return a.label.localeCompare(b.label);
     });
 };
