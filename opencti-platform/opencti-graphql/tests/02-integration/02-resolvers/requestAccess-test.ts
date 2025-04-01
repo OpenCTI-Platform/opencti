@@ -484,7 +484,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
       }, {
         id: testOrgId,
         access_right: MEMBER_ACCESS_RIGHT_EDIT,
-        groups_restriction: [{ id: amberGroupId, name: 'TODO' }] // FIXME update with AMBER_GROUP.name when it's fixed
+        groups_restriction: [{ id: amberGroupId, name: AMBER_GROUP.name }]
       }
     ]);
 
