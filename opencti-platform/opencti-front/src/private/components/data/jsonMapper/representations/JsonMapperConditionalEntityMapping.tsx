@@ -37,7 +37,6 @@ JsonMapperConditionalEntityMappingProps
         value={columnBased?.enabled ? columnBased.value : ''}
         variant='standard'
         style={{ width: '100%' }}
-        disabled={!representation.column_based?.enabled}
         error={!columnBased?.value && columnBased?.enabled}
       />
     </div>
