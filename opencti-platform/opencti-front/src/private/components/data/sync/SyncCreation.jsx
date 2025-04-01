@@ -101,8 +101,6 @@ export const syncStreamCollectionQuery = graphql`
 const CreateSynchronizerControlledDial = (props) => (
   <CreateEntityControlledDial
     entityType='Synchronizer'
-    entityPrefix={false}
-    size='medium'
     {...props}
   />
 );

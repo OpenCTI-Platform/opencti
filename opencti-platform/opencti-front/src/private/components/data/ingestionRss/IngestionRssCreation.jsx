@@ -80,7 +80,6 @@ const ingestionRssCreationValidation = (t) => Yup.object().shape({
 const CreateIngestionRssControlledDial = (props) => (
   <CreateEntityControlledDial
     entityType='IngestionRss'
-    size='medium'
     {...props}
   />
 );

@@ -37,7 +37,6 @@ const CreateExclusionListControlledDial = (
 ) => (
   <CreateEntityControlledDial
     entityType='ExclusionList'
-    size='medium'
     {...props}
   />
 );

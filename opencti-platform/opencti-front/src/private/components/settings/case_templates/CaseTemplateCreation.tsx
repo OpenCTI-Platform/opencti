@@ -30,7 +30,6 @@ const CreateCaseTemplateControlledDial = (
 ) => (
   <CreateEntityControlledDial
     entityType="Case-Template"
-    size="medium"
     {...props}
   />
 );

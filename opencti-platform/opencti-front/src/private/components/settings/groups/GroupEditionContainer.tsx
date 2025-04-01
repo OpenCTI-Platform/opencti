@@ -74,7 +74,6 @@ interface GroupEditionContainerProps {
 
 const UpdateGroupControlledDial = (props: DrawerControlledDialProps) => (
   <EditEntityControlledDial
-    size={'medium'}
     style={{ float: 'right' }}
     {...props}
   />

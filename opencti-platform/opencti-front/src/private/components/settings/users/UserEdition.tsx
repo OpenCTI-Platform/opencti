@@ -99,7 +99,6 @@ interface UserEditionDrawerProps {
 
 const UpdateUserControlledDial = (props: DrawerControlledDialProps) => (
   <EditEntityControlledDial
-    size={'medium'}
     style={{ float: 'right' }}
     {...props}
   />

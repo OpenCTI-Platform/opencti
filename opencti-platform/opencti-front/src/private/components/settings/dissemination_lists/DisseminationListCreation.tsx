@@ -32,7 +32,6 @@ const CreateDisseminationListControlledDial = (
 ) => (
   <CreateEntityControlledDial
     entityType='DisseminationList'
-    size='medium'
     {...props}
   />
 );

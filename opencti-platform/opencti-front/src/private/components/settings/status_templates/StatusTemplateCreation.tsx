@@ -52,7 +52,6 @@ const CreateStatusTemplateControlledDial = (
 ) => (
   <CreateEntityControlledDial
     entityType="Status-Template"
-    size="medium"
     {...props}
   />
 );

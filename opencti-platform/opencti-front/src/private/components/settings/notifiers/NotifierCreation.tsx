@@ -265,7 +265,6 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
 const CreateNotifierControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
     entityType='Notifier'
-    size='medium'
     {...props}
   />
 );

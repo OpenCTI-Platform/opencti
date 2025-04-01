@@ -8,7 +8,7 @@ import { useFormatter } from './i18n';
 const EditEntityControlledDial = ({
   onOpen,
   color = 'primary',
-  size = 'small',
+  size = 'medium',
   variant = 'contained',
   style,
 }: ButtonOwnProps & CommonProps & DrawerControlledDialProps) => {

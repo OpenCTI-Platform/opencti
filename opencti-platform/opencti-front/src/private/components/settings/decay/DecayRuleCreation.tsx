@@ -284,7 +284,6 @@ const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
 const CreateDecayRuleControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
     entityType='DecayRule'
-    size='medium'
     {...props}
   />
 );

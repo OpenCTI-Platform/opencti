@@ -109,7 +109,6 @@ const resolveHasUserChoiceCsvMapper = (option: Option & {
 const CreateIngestionCsvControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
     entityType='IngestionCsv'
-    size='medium'
     {...props}
   />
 );

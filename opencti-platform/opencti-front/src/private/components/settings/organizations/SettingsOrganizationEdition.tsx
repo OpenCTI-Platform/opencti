@@ -103,7 +103,6 @@ export const convertGrantableGroups = (organization: SettingsOrganization_organi
 
 const UpdateSettingsOrganizationControlledDial = (props: DrawerControlledDialProps) => (
   <EditEntityControlledDial
-    size={'medium'}
     style={{ float: 'right' }}
     {...props}
   />

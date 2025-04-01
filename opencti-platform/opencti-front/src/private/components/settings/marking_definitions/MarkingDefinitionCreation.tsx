@@ -31,7 +31,6 @@ const CreateMarkingDefinitionControlledDial = (
 ) => (
   <CreateEntityControlledDial
     entityType="Marking-Definition"
-    size="medium"
     {...props}
   />
 );

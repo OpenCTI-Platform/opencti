@@ -334,7 +334,6 @@ const SectorCreation = ({
   const CreateSectorControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial
       entityType='Sector'
-      size='medium'
       {...props}
     />
   );

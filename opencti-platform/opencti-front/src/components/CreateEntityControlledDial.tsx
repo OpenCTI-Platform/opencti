@@ -17,7 +17,7 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
   onOpen,
   entityType,
   color = 'primary',
-  size = 'small',
+  size = 'medium',
   variant = 'contained',
   style,
 }) => {
@@ -38,9 +38,7 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
       title={buttonValue}
       sx={style ?? { marginLeft: theme.spacing(1) }}
     >
-      <div style={{ display: 'flex' }}>
-        {buttonValue}
-      </div>
+      {buttonValue}
     </Button>
   );
 };

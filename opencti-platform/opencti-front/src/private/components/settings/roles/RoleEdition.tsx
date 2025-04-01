@@ -36,7 +36,6 @@ interface RoleEditionDrawerProps {
 
 const UpdateRoleControlledDial = (props: DrawerControlledDialProps) => (
   <EditEntityControlledDial
-    size={'medium'}
     style={{ float: 'right' }}
     {...props}
   />

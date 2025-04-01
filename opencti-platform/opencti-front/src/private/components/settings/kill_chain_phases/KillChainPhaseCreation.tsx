@@ -28,7 +28,6 @@ const CreateKillChainPhaseControlledDial = (
 ) => (
   <CreateEntityControlledDial
     entityType="Kill-Chain-Phase"
-    size="medium"
     {...props}
   />
 );
