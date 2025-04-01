@@ -3,20 +3,20 @@ import type { BasicStoreSettings } from '../../types/settings';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 
 export const verifyRequestAccessEnabled = (settings: BasicStoreSettings, rfiEntitySettings: BasicStoreEntityEntitySetting) => {
-  let message = '';
+  const message: string [] = [];
   if (!isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
     return { enabled: false };
   }
   // 1. EE must be enabled
   const isEEConfigured: boolean = settings.valid_enterprise_edition === true;
   if (!isEEConfigured) {
-    message += 'Enterprise edition must be enabled.';
+    message.push('Enterprise edition must be enabled.');
   }
   // 2. Platform organization should be set up
   const platformOrgValue = settings.platform_organization;
   const isPlatformOrgSetup: boolean = platformOrgValue !== undefined && platformOrgValue !== '';
   if (!isPlatformOrgSetup) {
-    message += 'Platform organization must be setup.';
+    message.push('Platform organization must be setup.');
   }
 
   // 3. Request access status should be configured
@@ -24,14 +24,14 @@ export const verifyRequestAccessEnabled = (settings: BasicStoreSettings, rfiEnti
     && rfiEntitySettings.request_access_workflow.declined_workflow_id !== undefined
     && rfiEntitySettings.request_access_workflow.approved_workflow_id !== undefined;
   if (!areRequestAccessStatusConfigured) {
-    message += 'RFI status for decline and approval must be configured in entity settings.';
+    message.push('RFI status for decline and approval must be configured in entity settings.');
   }
 
   // 4. At least one auth member admin should be configured.
   const isRequestAccesApprovalAdminConfigured: boolean = rfiEntitySettings?.request_access_workflow?.approval_admin !== undefined
     && rfiEntitySettings?.request_access_workflow?.approval_admin.length >= 1;
   if (!isRequestAccesApprovalAdminConfigured) {
-    message += 'At least one approval administrator must be configured in entity settings.';
+    message.push('At least one approval administrator must be configured in entity settings.');
   }
 
   const isEnabled: boolean = isEEConfigured
@@ -41,7 +41,7 @@ export const verifyRequestAccessEnabled = (settings: BasicStoreSettings, rfiEnti
 
   return {
     enabled: isEnabled,
-    message
+    message: message.join(' '),
   };
 };
 
