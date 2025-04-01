@@ -98,7 +98,6 @@ const DataTableFilters = ({
       viewStorage: { numberOfElements, openExports, redirectionMode },
     },
   } = useDataTableContext();
-  console.log('storageKey : ', storageKey);
   const { selectedElements } = useEntityToggle(storageKey);
 
   const exportDisabled = !exportContext || (numberOfElements
@@ -110,7 +109,6 @@ const DataTableFilters = ({
   const hasFilters = availableFilterKeys && availableFilterKeys.length > 0;
 
   const hasToggleGroup = additionalHeaderButtons || redirectionModeEnabled || !exportDisabled;
-  console.log('Datatable filter');
   return (
     <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
