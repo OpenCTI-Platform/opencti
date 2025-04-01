@@ -50,7 +50,6 @@ const CreateLabelsControlledDial = (
 ) => (
   <CreateEntityControlledDial
     entityType="Label"
-    size="medium"
     {...props}
   />
 );

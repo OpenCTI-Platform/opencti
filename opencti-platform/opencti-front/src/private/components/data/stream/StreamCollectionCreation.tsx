@@ -19,11 +19,13 @@ import { emptyFilterGroup, serializeFilterGroupForBackend, stixFilters } from '.
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StreamCollectionCreationProps {
   paginationOptions: PaginationOptions
@@ -82,10 +84,20 @@ const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginat
   }
 };
 
+const CreateStreamCollectionControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial
+    entityType='StreamCollection'
+    {...props}
+  />
+);
+
 const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps> = ({ paginationOptions }) => {
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const onSubmit: FormikConfig<StreamCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -122,7 +134,8 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
   return (
     <Drawer
       title={t_i18n('Create a stream')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced ? CreateStreamCollectionControlledDial : undefined}
       onClose={helpers.handleClearAllFilters}
     >
       {({ onClose }) => (

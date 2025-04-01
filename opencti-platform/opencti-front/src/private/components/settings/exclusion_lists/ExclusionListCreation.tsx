@@ -36,9 +36,7 @@ const CreateExclusionListControlledDial = (
   props: DrawerControlledDialProps,
 ) => (
   <CreateEntityControlledDial
-    entityType='Exclusion Lists'
-    size='medium'
-    entityPrefix={false}
+    entityType='ExclusionList'
     {...props}
   />
 );

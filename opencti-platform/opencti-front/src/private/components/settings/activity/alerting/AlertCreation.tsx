@@ -72,7 +72,7 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
   };
   if (isFABReplaced) {
     return (
-      <div>
+      <div style={{ marginLeft: theme.spacing(1) }}>
         <Button
           variant='contained'
           size='small'

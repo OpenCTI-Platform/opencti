@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import RoleEditionOverview from './RoleEditionOverview';
 import RoleEditionCapabilities, { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -13,7 +13,7 @@ import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEdi
 import { RoleEdition_role$key } from './__generated__/RoleEdition_role.graphql';
 import { RolePopoverEditionQuery$data } from './__generated__/RolePopoverEditionQuery.graphql';
 import useHelper from '../../../../utils/hooks/useHelper';
-import UpdateRoleControlledDial from '../../../../components/UpdateEntityControlledDial';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const RoleEditionFragment = graphql`
   fragment RoleEdition_role on Role {
@@ -33,6 +33,13 @@ interface RoleEditionDrawerProps {
   open?: boolean
   disabled?: boolean
 }
+
+const UpdateRoleControlledDial = (props: DrawerControlledDialProps) => (
+  <EditEntityControlledDial
+    style={{ float: 'right' }}
+    {...props}
+  />
+);
 
 const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
   handleClose = () => {},

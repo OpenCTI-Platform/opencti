@@ -291,7 +291,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                     type="connector_reset"
                     sx={{
                       root: { border: 'none', padding: 0, margin: 0 },
-                      title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
+                      title: { position: 'absolute', zIndex: 1, left: 4, top: 9, fontSize: 8 },
                     }}
                   >
                     {({ disabled }) => (
@@ -305,7 +305,9 @@ const ConnectorComponent = ({ connector, relay }) => {
                           minWidth: '6rem',
                         }}
                       >
-                        Reset
+                        <span style={{ zIndex: 2 }}>
+                          {t_i18n('Reset')}
+                        </span>
                       </Button>
                     )}
                   </DangerZoneBlock>

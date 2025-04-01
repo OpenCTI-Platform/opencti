@@ -15,6 +15,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import SwitchField from '../../../../components/fields/SwitchField';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const styles = (theme) => ({
   buttons: {
@@ -42,8 +44,19 @@ const ingestionTaxiiCollectionCreationValidation = (t) => Yup.object().shape({
   authorized_members: Yup.array().required(t('This field is required')).min(1, t('This field is required')),
 });
 
+const CreateIngestionTaxiiCollectionControlledDial = (props) => (
+  <CreateEntityControlledDial
+    entityType='IngestionTaxiiCollection'
+    {...props}
+  />
+);
+
 const IngestionTaxiiCollectionCreation = (props) => {
   const { t, classes } = props;
+
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const authorized_members = values.authorized_members.map(({ value }) => ({
       id: value,
@@ -78,7 +91,11 @@ const IngestionTaxiiCollectionCreation = (props) => {
   };
 
   return (
-    <Drawer title={t('Create a TAXII Push ingester')} variant={DrawerVariant.createWithPanel}>
+    <Drawer
+      title={t('Create a TAXII Push ingester')}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced ? CreateIngestionTaxiiCollectionControlledDial : undefined}
+    >
       {({ onClose }) => (
         <Formik
           initialValues={{

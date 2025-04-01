@@ -11,21 +11,19 @@ interface CreateEntityControlledDialProps extends DrawerControlledDialProps {
   size?: 'small' | 'medium' | 'large';
   variant?: 'text' | 'contained' | 'outlined';
   style?: React.CSSProperties;
-  entityPrefix?: boolean;
 }
 
 const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialProps> = ({
   onOpen,
   entityType,
   color = 'primary',
-  size = 'small',
+  size = 'medium',
   variant = 'contained',
   style,
-  entityPrefix = true,
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const valueString = t_i18n(entityPrefix ? `entity_${entityType}` : entityType);
+  const valueString = t_i18n(`entity_${entityType}`);
   const buttonValue = t_i18n('', {
     id: 'Create ...',
     values: { entity_type: valueString },
@@ -40,9 +38,7 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
       title={buttonValue}
       sx={style ?? { marginLeft: theme.spacing(1) }}
     >
-      <div style={{ display: 'flex' }}>
-        {buttonValue}
-      </div>
+      {buttonValue}
     </Button>
   );
 };

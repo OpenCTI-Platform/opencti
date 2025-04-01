@@ -31,9 +31,7 @@ const CreateDisseminationListControlledDial = (
   props: DrawerControlledDialProps,
 ) => (
   <CreateEntityControlledDial
-    entityType='Dissemination list'
-    size='medium'
-    entityPrefix={false}
+    entityType='DisseminationList'
     {...props}
   />
 );

@@ -53,14 +53,13 @@ const Sectors = () => {
   return (
     <>
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Sectors'), current: true }]} />
-      <div style={{ marginTop: -10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <SearchInput
           variant="small"
           onSubmit={handleSearch}
           keyword={sectorsState.searchTerm}
-          style={{ float: 'left' }}
         />
-        <div style={{ float: 'right' }}>
+        <div>
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <SectorCreation />
           </Security>

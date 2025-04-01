@@ -17,6 +17,8 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { insertNode } from '../../../../utils/store';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const styles = (theme) => ({
   createButton: {
@@ -75,8 +77,19 @@ const ingestionRssCreationValidation = (t) => Yup.object().shape({
     .nullable(),
 });
 
+const CreateIngestionRssControlledDial = (props) => (
+  <CreateEntityControlledDial
+    entityType='IngestionRss'
+    {...props}
+  />
+);
+
 const IngestionRssCreation = (props) => {
   const { t, classes } = props;
+
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const input = {
       name: values.name,
@@ -106,7 +119,8 @@ const IngestionRssCreation = (props) => {
   return (
     <Drawer
       title={t('Create a RSS ingester')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced ? CreateIngestionRssControlledDial : undefined}
     >
       {({ onClose }) => (
         <Formik
