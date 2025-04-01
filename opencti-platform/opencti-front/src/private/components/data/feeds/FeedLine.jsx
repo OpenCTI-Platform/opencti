@@ -64,64 +64,69 @@ class FeedLineLineComponent extends Component {
     const { classes, node, dataColumns, paginationOptions, t } = this.props;
     const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
-      <ListItemButton
-        classes={{ root: classes.item }}
+      <ListItem
         divider={true}
-        component="a"
-        href={`/feeds/${node.id}`}
-        target={'_blank'} // open in new tab
+        disablePadding
         secondaryAction={
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <FeedPopover feedId={node.id} paginationOptions={paginationOptions} />
           </Security>
         }
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <FileDelimitedOutline />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {node.name}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.feed_types.width }}
-              >
-                {node.feed_types.map((type) => t(`entity_${type}`)).join(', ')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.rolling_time.width }}
-              >
-                <code>{node.rolling_time}</code>
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.columns.width }}
-              >
-                {node.feed_attributes.map((n) => n.attribute).join(`${node.separator} `)}
-              </div>
-              <div
-                className={classes.filtersItem}
-                style={{ width: dataColumns.filters.width }}
-              >
-                {isFilterGroupNotEmpty(filters)
-                  ? <FilterIconButton
-                      filters={filters}
-                      styleNumber={3}
-                      dataColumns={dataColumns}
-                    />
-                  : '-'}
-              </div>
-            </>
-          }
-        />
-      </ListItemButton>
+        <ListItemButton
+          classes={{ root: classes.item }}
+          component="a"
+          href={`/feeds/${node.id}`}
+          target={'_blank'} // open in new tab
+
+        >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <FileDelimitedOutline />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.name.width }}
+                >
+                  {node.name}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.feed_types.width }}
+                >
+                  {node.feed_types.map((type) => t(`entity_${type}`)).join(', ')}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.rolling_time.width }}
+                >
+                  <code>{node.rolling_time}</code>
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.columns.width }}
+                >
+                  {node.feed_attributes.map((n) => n.attribute).join(`${node.separator} `)}
+                </div>
+                <div
+                  className={classes.filtersItem}
+                  style={{ width: dataColumns.filters.width }}
+                >
+                  {isFilterGroupNotEmpty(filters)
+                    ? <FilterIconButton
+                        filters={filters}
+                        styleNumber={3}
+                        dataColumns={dataColumns}
+                      />
+                    : '-'}
+                </div>
+              </>
+            }
+          />
+        </ListItemButton>
+      </ListItem>
     );
   }
 }

@@ -1,10 +1,11 @@
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
+import Tooltip from '@mui/material/Tooltip';
 import { MoreVert } from '@mui/icons-material';
 import IngestionCsvPopover from '@components/data/ingestionCsv/IngestionCsvPopover';
 import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
@@ -64,6 +65,26 @@ const ingestionCsvLineFragment = graphql`
   }
 `;
 
+interface CellProps {
+  width: number | string | undefined
+  children: ReactNode
+  withTooltip?: boolean
+}
+const Cell = ({ width, children, withTooltip = true }: CellProps) => {
+  const classes = useStyles();
+  return withTooltip ? (
+    <Tooltip title={children}>
+      <div className={classes.bodyItem} style={{ width }}>
+        {children}
+      </div>
+    </Tooltip>
+  ) : (
+    <div className={classes.bodyItem} style={{ width }}>
+      {children}
+    </div>
+  );
+};
+
 export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps> = ({
   dataColumns,
   node,
@@ -94,39 +115,25 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
       <ListItemText
         primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <Cell width={dataColumns.name.width}>
               {data.name}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.uri.width }}
-            >
+            </Cell>
+            <Cell width={dataColumns.uri.width}>
               {data.uri}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.ingestion_running.width }}
-            >
+            </Cell>
+            <Cell width={dataColumns.ingestion_running.width} withTooltip={false}>
               <ItemBoolean
                 variant="inList"
                 label={data.ingestion_running ? t_i18n('Active') : t_i18n('Inactive')}
                 status={!!data.ingestion_running}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.current_state_hash.width }}
-            >
+            </Cell>
+            <Cell width={dataColumns.last_execution_date.width}>
               {fldt(data.last_execution_date) || '-'}
-            </div>
-            <div
-              className={classes.bodyItem}
-            >
+            </Cell>
+            <Cell width={dataColumns.current_state_hash.width}>
               {stateHash}
-            </div>
+            </Cell>
           </div>
         }
       />

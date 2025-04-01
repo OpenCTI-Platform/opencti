@@ -233,7 +233,6 @@ NotificationLineProps
       {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
       {/* @ts-ignore */}
       <ListItem
-        classes={{ root: classes.item }}
         divider={true}
         disablePadding
         secondaryAction={
@@ -262,6 +261,7 @@ NotificationLineProps
         }
       >
         <ListItemButton
+          classes={{ root: classes.item }}
           component={isLinkAvailable ? Link : 'div'}
           to={isLinkAvailable ? `/dashboard/id/${firstEvent?.instance_id}` : undefined}
           onClick={() => { if (isDigest) { setOpen(true); } }}
