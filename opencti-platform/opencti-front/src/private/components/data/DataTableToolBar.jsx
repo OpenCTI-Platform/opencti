@@ -729,7 +729,7 @@ class DataTableToolBar extends Component {
     return t('Copy to clipboard');
   }
 
-  submitTask(availableFilterKeys) {
+  submitTask(availableFilterKeys, isInDraft) {
     this.setState({ processing: true });
     const { actions, mergingElement, promoteToContainer } = this.state;
     const {
@@ -777,14 +777,13 @@ class DataTableToolBar extends Component {
         },
         onCompleted: () => {
           handleClearSelectedElements();
+          const monitoringLink = !isInDraft ? <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link> : t('the draft processes tab');
           MESSAGING$.notifySuccess(
             <span>
               {t(
                 'The background task has been executed. You can monitor it on',
               )}{' '}
-              <Link to="/dashboard/data/processing/tasks">
-                {t('the dedicated page')}
-              </Link>
+              {monitoringLink}
               .
             </span>,
           );
@@ -806,14 +805,13 @@ class DataTableToolBar extends Component {
         },
         onCompleted: () => {
           handleClearSelectedElements();
+          const monitoringLink = !isInDraft ? <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link> : t('the draft processes tab');
           MESSAGING$.notifySuccess(
             <span>
               {t(
                 'The background task has been executed. You can monitor it on',
               )}{' '}
-              <Link to="/dashboard/data/processing/tasks">
-                {t('the dedicated page')}
-              </Link>
+              {monitoringLink}
               .
             </span>,
           );
@@ -2360,7 +2358,7 @@ class DataTableToolBar extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    onClick={this.submitTask.bind(this, availableFilterKeys)}
+                    onClick={this.submitTask.bind(this, availableFilterKeys, isInDraft)}
                     color="secondary"
                     disabled={this.state.processing}
                   >

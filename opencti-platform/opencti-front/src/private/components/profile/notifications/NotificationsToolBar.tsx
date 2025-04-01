@@ -33,6 +33,7 @@ import { serializeFilterGroupForBackend } from '../../../../utils/filters/filter
 import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -101,6 +102,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n, n } = useFormatter();
+  const draftContext = useDraftContext();
 
   const isOpen = numberOfSelectedElements > 0;
 
@@ -164,10 +166,11 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
   };
   const onSubmitCompleted = () => {
     handleClearSelectedElements();
+    const monitoringLink = !draftContext ? <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link> : t_i18n('the draft processes tab');
     MESSAGING$.notifySuccess(
       <span>
         {t_i18n('The background task has been executed. You can monitor it on')}{' '}
-        <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>.
+        {monitoringLink}.
       </span>,
     );
     setProcessing(false);

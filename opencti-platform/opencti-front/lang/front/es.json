@@ -3012,6 +3012,7 @@
   "The dashboard has been duplicated. You can manage it": "El tablero ha sido duplicado. puedes gestionarlo",
   "the dedicated page": "la página dedicada",
   "The default groups are:": "Los grupos por defecto son:",
+  "the draft processes tab": "la pestaña de procesos de borrador",
   "The evaluation of the threat activity cannot be provided (lack of data).": "No se puede proporcionar la evaluación de la actividad de amenaza (falta de datos).",
   "The following groups require your attention:": "Los siguientes grupos requieren su atención:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "Los siguientes TTPs no están cubiertos en su catálogo OpenBAS :",

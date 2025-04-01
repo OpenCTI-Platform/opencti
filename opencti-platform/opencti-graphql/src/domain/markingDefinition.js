@@ -52,52 +52,59 @@ const notifyMembersOfNewMarking = async (context, user, newMarking) => {
   }
 };
 
+const updateGroupsAfterAddingMarking = async (context, markingCreated) => {
+  // marking creation --> update the markings of the groups with auto_new_marking = true
+  const filters = {
+    mode: 'and',
+    filters: [{ key: 'auto_new_marking', values: [true] }],
+    filterGroups: [],
+  };
+  const groupsWithAutoNewMarking = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
+  if (groupsWithAutoNewMarking && groupsWithAutoNewMarking.length > 0) {
+    const markingId = markingCreated.id;
+    const markingType = markingCreated.definition_type;
+    // add marking in allowed markings
+    await Promise.all(groupsWithAutoNewMarking.map((group) => {
+      return groupAddRelation(context, SYSTEM_USER, group.id, { relationship_type: RELATION_ACCESSES_TO, toId: markingId });
+    }));
+    // add marking in max shareable markings
+    const completeGroupsWithAutoNewMarking = await Promise.all(groupsWithAutoNewMarking.map(async (g) => ({
+      ...g,
+      max_shareable_marking: await groupMaxShareableMarkings(context, g),
+    })));
+    const groupsWithShareableMarkingToUpdate = completeGroupsWithAutoNewMarking.filter((g) => {
+      const shareableMarkingOfTypeWithGreaterOrder = (g.max_shareable_marking ?? [])
+        .find((m) => m.definition_type === markingType && m.x_opencti_order > markingCreated.x_opencti_order);
+      // we need to update the group max shareable markings if it has no shareable marking of the same definition type with a greater order
+      return shareableMarkingOfTypeWithGreaterOrder === undefined;
+    });
+    await Promise.all(groupsWithShareableMarkingToUpdate.map((group) => {
+      const finalMarkings = [
+        ...(group.max_shareable_markings ?? []).filter(({ type: t }) => t !== markingType),
+        ...[{ type: markingType, value: markingId }],
+      ];
+      return groupEditField(context, SYSTEM_USER, group.id, [{
+        key: 'max_shareable_markings',
+        value: finalMarkings,
+      }]);
+    }));
+  }
+};
+
 export const addAllowedMarkingDefinition = async (context, user, markingDefinition) => {
   const markingColor = markingDefinition.x_opencti_color ? markingDefinition.x_opencti_color : '#ffffff';
   const markingToCreate = {
     ...markingDefinition,
     x_opencti_color: markingColor,
   };
-  const { element, isCreation } = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION, { complete: true });
+  // Force context out of draft to force creation in live index
+  const contextOutOfDraft = { ...context, draft_context: '' };
+  const { element, isCreation } = await createEntity(contextOutOfDraft, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION, { complete: true });
   if (isCreation) {
     // marking creation --> update the markings of the groups with auto_new_marking = true
-    const filters = {
-      mode: 'and',
-      filters: [{ key: 'auto_new_marking', values: [true] }],
-      filterGroups: [],
-    };
-    const groupsWithAutoNewMarking = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
-    if (groupsWithAutoNewMarking && groupsWithAutoNewMarking.length > 0) {
-      const markingId = element.id;
-      const markingType = element.definition_type;
-      // add marking in allowed markings
-      await Promise.all(groupsWithAutoNewMarking.map((group) => {
-        return groupAddRelation(context, SYSTEM_USER, group.id, { relationship_type: RELATION_ACCESSES_TO, toId: markingId });
-      }));
-      // add marking in max shareable markings
-      const completeGroupsWithAutoNewMarking = await Promise.all(groupsWithAutoNewMarking.map(async (g) => ({
-        ...g,
-        max_shareable_marking: await groupMaxShareableMarkings(context, g),
-      })));
-      const groupsWithShareableMarkingToUpdate = completeGroupsWithAutoNewMarking.filter((g) => {
-        const shareableMarkingOfTypeWithGreaterOrder = (g.max_shareable_marking ?? [])
-          .find((m) => m.definition_type === markingType && m.x_opencti_order > element.x_opencti_order);
-          // we need to update the group max shareable markings if it has no shareable marking of the same definition type with a greater order
-        return shareableMarkingOfTypeWithGreaterOrder === undefined;
-      });
-      await Promise.all(groupsWithShareableMarkingToUpdate.map((group) => {
-        const finalMarkings = [
-          ...(group.max_shareable_markings ?? []).filter(({ type: t }) => t !== markingType),
-          ...[{ type: markingType, value: markingId }],
-        ];
-        return groupEditField(context, SYSTEM_USER, group.id, [{
-          key: 'max_shareable_markings',
-          value: finalMarkings,
-        }]);
-      }));
-    }
+    await updateGroupsAfterAddingMarking(contextOutOfDraft, element);
     // users of group impacted must be refreshed
-    await notifyMembersOfNewMarking(context, user, element);
+    await notifyMembersOfNewMarking(contextOutOfDraft, user, element);
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, element, user);
 };

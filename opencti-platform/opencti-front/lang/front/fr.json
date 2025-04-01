@@ -3012,6 +3012,7 @@
   "The dashboard has been duplicated. You can manage it": "Le tableau de bord a été dupliqué. Vous pouvez l'administrer",
   "the dedicated page": "la page dédiée",
   "The default groups are:": "Les groupes par défaut sont les suivants",
+  "the draft processes tab": "l'onglet des processus du brouillon",
   "The evaluation of the threat activity cannot be provided (lack of data).": "L'évaluation de l'activité de la menace ne peut être fournie (manque de données).",
   "The following groups require your attention:": "Les groupes suivants requièrent votre attention :",
   "The following TTPs are not covered in your OpenBAS catalog : ": "Les TTP suivantes ne sont pas couvertes par votre catalogue OpenBAS :",

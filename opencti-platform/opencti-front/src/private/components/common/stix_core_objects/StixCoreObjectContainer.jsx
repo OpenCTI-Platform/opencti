@@ -21,6 +21,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import Transition from '../../../../components/Transition';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -64,6 +65,7 @@ const stixCoreObjectContainerContainersQuery = graphql`
 const StixCoreObjectContainer = ({ elementId }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
   const [actionsInputs, setActionsInputs] = useState([
     { type: 'ADD', fieldType: 'ATTRIBUTE', field: 'container-object' },
   ]);
@@ -145,12 +147,11 @@ const StixCoreObjectContainer = ({ elementId }) => {
             field: 'container-object',
           },
         ]);
+        const monitoringLink = !draftContext ? <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link> : t_i18n('the draft processes tab');
         MESSAGING$.notifySuccess(
           <span>
             {t_i18n('The background task has been executed. You can monitor it on')}{' '}
-            <Link to="/dashboard/data/processing/tasks">
-              {t_i18n('the dedicated page')}
-            </Link>
+            {monitoringLink}
             .
           </span>,
         );
