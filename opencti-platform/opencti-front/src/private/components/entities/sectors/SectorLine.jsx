@@ -24,8 +24,7 @@ const styles = (theme) => ({
   },
   name: {
     width: '20%',
-    height: 20,
-    lineHeight: '20px',
+    lineHeight: '28px',
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -33,8 +32,7 @@ const styles = (theme) => ({
   },
   description: {
     width: '70%',
-    height: 20,
-    lineHeight: '20px',
+    lineHeight: '28px',
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -71,6 +69,7 @@ class SectorLineComponent extends Component {
             <ItemIcon type="Sector" size={isSubSector ? 'small' : 'medium'} />
           </ListItemIcon>
           <ListItemText
+            sx={{ margin: 0, height: '28px' }}
             primary={
               <div>
                 <div className={classes.name}>
