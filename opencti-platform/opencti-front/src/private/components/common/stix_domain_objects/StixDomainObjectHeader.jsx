@@ -388,7 +388,7 @@ const StixDomainObjectHeader = (props) => {
   return (
     <React.Suspense fallback={<span />}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing(1) }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(2) }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
           <Tooltip title={getMainRepresentative(stixDomainObject)}>
             <Typography
               variant="h1"
@@ -401,7 +401,7 @@ const StixDomainObjectHeader = (props) => {
             </Typography>
           </Tooltip>
           {stixDomainObject.draftVersion && (
-            <DraftChip style={{ marginTop: 7 }}/>
+            <DraftChip />
           )}
           {typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
