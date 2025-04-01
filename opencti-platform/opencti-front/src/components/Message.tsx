@@ -52,9 +52,10 @@ const Message = () => {
       next: (messages) => {
         if (messages && messages.length > 0 && messages[0]) {
           const firstMessage = messages[0] as { text: string | ReactElement, type: string, fullError: FullError | null };
-          const translatedText = firstMessage.text instanceof String
-            ? t_i18n(firstMessage.text)
-            : firstMessage.text;
+          const textPart = firstMessage.text;
+          const translatedText = (typeof textPart === 'string' || textPart instanceof String)
+            ? t_i18n(textPart)
+            : textPart;
           const firstMessageError = firstMessage.type === 'error';
           setOpen(true);
           setFullError(firstMessage.fullError || null);
@@ -90,7 +91,7 @@ const Message = () => {
   const entityIds = fullError?.extensions?.data?.entityIds || [];
 
   const displayAlert = () => {
-    if (fullError?.extensions?.code === 'ACCESS_REQUIRED') {
+    if (isRequestAccessFeatureEnabled && fullError?.extensions?.code === 'ACCESS_REQUIRED') {
       return (
         <Alert
           severity="error"
@@ -108,7 +109,7 @@ const Message = () => {
                   sx={{ marginLeft: 2 }}
                   onClick={handleDialogOpen}
                 >
-                  Request Access
+                  {t_i18n('Request Access')}
                 </Button>
               </Form>
             </Formik>

@@ -8,7 +8,6 @@ import { type BasicStoreEntityOrganization } from '../../../src/modules/organiza
 import { addThreatActorIndividual } from '../../../src/modules/threatActorIndividual/threatActorIndividual-domain';
 import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { isFeatureEnabled, ORGA_SHARING_REQUEST_FF } from '../../../src/config/conf';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { DEFAULT_ROLE } from '../../../src/utils/access';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
@@ -62,11 +61,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
         expect(true, 'An exception should been raised before this line').toBeFalsy();
       } catch (e) {
         const exception = e as GraphQLError;
-        if (isFeatureEnabled(ORGA_SHARING_REQUEST_FF)) {
-          expect(exception.message).toBe('Restricted entity already exists, user can request access');
-        } else {
-          expect(exception.message).toBe('Restricted entity already exists');
-        }
+        expect(exception.message).toBe('Restricted entity already exists');
       }
       await stixDomainObjectDelete(testContext, ADMIN_USER, threatActor.id);
     });

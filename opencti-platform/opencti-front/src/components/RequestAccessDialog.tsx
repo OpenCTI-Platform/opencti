@@ -99,9 +99,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
                 <Form>
                   <DialogContent style={{ padding: 0 }}>
                     <DialogContentText>
-                      {t_i18n(
-                        'Your account/organization does not have permission to create/update the entity as it already exist in the platform but is under restriction. You can make an access request from the original entity owner below. This will notify the organization that created the entity that you wish to access it.',
-                      )}
+                      {t_i18n('Your organization does not have permission...')}
                     </DialogContentText>
                     <Field
                       component={TextField}
