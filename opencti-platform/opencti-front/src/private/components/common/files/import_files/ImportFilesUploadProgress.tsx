@@ -1,12 +1,12 @@
 import React from 'react';
-import { Box, Typography, List, ListItem, LinearProgress } from '@mui/material';
+import { Box, LinearProgress, List, ListItem, Typography } from '@mui/material';
 import { CancelOutlined, CheckCircleOutlined, UploadFileOutlined } from '@mui/icons-material';
+import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 
 interface ImportFilesUploadProgressProps {
   currentCount: number;
   totalCount: number;
   uploadedFiles: { name: string; status?: 'success' | 'error' }[];
-  uploadStatus: 'uploading' | 'success' | undefined;
   BulkResult: React.FC<{ variablesToString: (variables: { file: File }) => string }>;
 }
 
@@ -14,9 +14,10 @@ const ImportFilesUploadProgress: React.FC<ImportFilesUploadProgressProps> = ({
   currentCount,
   totalCount,
   uploadedFiles,
-  uploadStatus,
   BulkResult,
 }) => {
+  const { uploadStatus } = useImportFilesContext();
+
   return (
     <div style={{ display: 'flex', height: '100%', justifyContent: 'center', flexDirection: 'column' }}>
       <Box sx={{ display: 'flex', gap: '12px', alignItems: 'center' }}>

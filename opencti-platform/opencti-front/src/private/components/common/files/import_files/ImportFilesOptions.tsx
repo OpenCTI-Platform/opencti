@@ -5,6 +5,7 @@ import { OptionsFormValues } from '@components/common/files/import_files/ImportF
 import { Field, FormikContextType, FormikProvider } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import StixCoreObjectsField from '@components/common/form/StixCoreObjectsField';
+import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { useFormatter } from '../../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import TextField from '../../../../../components/TextField';
@@ -14,21 +15,18 @@ import useHelper from '../../../../../utils/hooks/useHelper';
 
 interface ImportFilesOptionsProps {
   optionsFormikContext: FormikContextType<OptionsFormValues>;
-  entityId?: string;
   draftContext?: DraftContext | null;
-  isWorkbenchEnabled: boolean;
 }
 
 const ImportFilesOptions = ({
   optionsFormikContext,
-  entityId,
   draftContext,
-  isWorkbenchEnabled,
 }: ImportFilesOptionsProps) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-
+  const { importMode, entityId, files } = useImportFilesContext();
   const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
+  const isWorkbenchEnabled = files.length === 1;
 
   return (
     <FormikProvider value={optionsFormikContext}>
@@ -60,38 +58,42 @@ const ImportFilesOptions = ({
             />
           </div>
         )}
-        {!draftContext && isDraftFeatureEnabled && (
-          <Field
-            component={SelectField}
-            variant="standard"
-            name="validationMode"
-            label={t_i18n('Validation mode')}
-            fullWidth={true}
-            containerstyle={{ marginTop: 20, width: '100%' }}
-          >
-            <MenuItem
-              key={'workbench'}
-              value={'workbench'}
-              disabled={!isWorkbenchEnabled}
-            >
-              {'Workbench'}
-            </MenuItem>
-            <MenuItem
-              key={'draft'}
-              value={'draft'}
-            >
-              {'Draft'}
-            </MenuItem>
-          </Field>
-        )}
-        {optionsFormikContext.values.validationMode === 'draft' && (
-          <Field
-            name="name"
-            label={t_i18n('Name')}
-            component={TextField}
-            variant="standard"
-            fullWidth={true}
-          />
+        {importMode !== 'auto' && (
+          <>
+            {!draftContext && isDraftFeatureEnabled && (
+              <Field
+                component={SelectField}
+                variant="standard"
+                name="validationMode"
+                label={t_i18n('Validation mode')}
+                fullWidth={true}
+                containerstyle={{ marginTop: 20, width: '100%' }}
+              >
+                <MenuItem
+                  key={'draft'}
+                  value={'draft'}
+                >
+                  {'Draft'}
+                </MenuItem>
+                <MenuItem
+                  key={'workbench'}
+                  value={'workbench'}
+                  disabled={!isWorkbenchEnabled}
+                >
+                  {'Workbench'}
+                </MenuItem>
+              </Field>
+            )}
+            {optionsFormikContext.values.validationMode === 'draft' && (
+              <Field
+                name="name"
+                label={t_i18n('Name')}
+                component={TextField}
+                variant="standard"
+                fullWidth={true}
+              />
+            )}
+          </>
         )}
       </Box>
     </FormikProvider>

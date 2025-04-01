@@ -16016,6 +16016,7 @@ export type MutationUploadAndAskJobImportArgs = {
   draftId?: InputMaybe<Scalars['String']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   validationMode?: InputMaybe<ValidationMode>;
 };
 
@@ -24749,6 +24750,7 @@ export type StixCoreObjectEditMutationsUploadAndAskJobImportArgs = {
   draftId?: InputMaybe<Scalars['String']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   validationMode?: InputMaybe<ValidationMode>;
 };
 
