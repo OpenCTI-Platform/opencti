@@ -1,4 +1,3 @@
-import { OptionMember } from '@components/common/form/ObjectMembersField';
 import { AutoCompleteOption } from './field';
 
 export const INPUT_AUTHORIZED_MEMBERS = 'restricted_members';
@@ -7,7 +6,7 @@ export type AccessRight = 'none' | 'view' | 'edit' | 'admin';
 
 export interface AuthorizedMemberOption extends AutoCompleteOption {
   accessRight: AccessRight
-  groupsRestriction: OptionMember[]
+  groupsRestriction: AutoCompleteOption[]
 }
 
 export const ALL_MEMBERS_AUTHORIZED_CONFIG = {
@@ -30,7 +29,6 @@ export type AuthorizedMembers = ReadonlyArray<{
   readonly groups_restriction: ReadonlyArray<{
     readonly id: string;
     readonly name: string;
-    readonly entity_type: string;
   }> | null | undefined;
 }> | null;
 
@@ -61,7 +59,6 @@ export const authorizedMembersToOptions = (
           return {
             label: o.name,
             value: o.id,
-            type: o.entity_type,
           };
         }),
       };

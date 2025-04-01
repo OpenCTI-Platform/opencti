@@ -16,10 +16,9 @@ import { EntitySettingAttributeLine_attribute$data } from './__generated__/Entit
 import { EntitySettingAttributes_entitySetting$data } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
 import ScaleConfiguration from '../scale_configuration/ScaleConfiguration';
 import { isCustomScale } from '../../../../../utils/hooks/useScale';
-import { Option } from '../../../common/form/ReferenceField';
 import { useComputeDefaultValues } from '../../../../../utils/hooks/useDefaultValues';
 import { handleErrorInForm } from '../../../../../relay/environment';
-import { defaultValuesToStringArray } from '../../../../../utils/defaultValues';
+import { DefaultValues, defaultValuesToStringArray } from '../../../../../utils/defaultValues';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -52,7 +51,7 @@ const attributeValidation = () => Yup.object().shape({
 
 interface AttributeFormikValues {
   mandatory: boolean;
-  default_values: string | string[] | Option | Option[] | boolean | null;
+  default_values: DefaultValues;
   scale: ScaleConfig;
 }
 

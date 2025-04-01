@@ -1,7 +1,8 @@
 import { Option } from '@components/common/form/ReferenceField';
 import { INPUT_AUTHORIZED_MEMBERS } from './authorizedMembers';
+import { AutoCompleteOption } from './field';
 
-export type DefaultValues = Option | Option[] | string | (string | null)[] | boolean | null;
+export type DefaultValues = AutoCompleteOption | AutoCompleteOption[] | Option | Option[] | string | (string | null)[] | boolean | null;
 
 const isBoolean = (defaultValues: DefaultValues) => {
   return typeof defaultValues === 'boolean';
