@@ -100,7 +100,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
   representative: (stix: StixIndicator) => {
     return stix.name;
   },
-  converter: convertIndicatorToStix
+  converter_2_1: convertIndicatorToStix
 };
 
 registerDefinition(INDICATOR_DEFINITION);

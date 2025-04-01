@@ -5,7 +5,7 @@ import { validate as isUuid } from 'uuid';
 import { ADMIN_USER, generateBasicAuth, testContext } from './testQuery';
 import { isStixId } from '../../src/schema/schemaUtils';
 import { isStixRelationship } from '../../src/schema/stixRelationship';
-import { STIX_EXT_OCTI } from '../../src/types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../src/types/stix-2-1-extensions';
 import { EVENT_TYPE_UPDATE } from '../../src/database/utils';
 import { internalLoadById } from '../../src/database/middleware-loader';
 

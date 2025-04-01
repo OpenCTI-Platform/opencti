@@ -1,6 +1,6 @@
 import type { BasicStoreObject } from '../types/store';
 import { buildRefRelationKey, ID_INFERRED, ID_INTERNAL } from './general';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { bodyMultipart, externalReferences, isStixRefRelationship, killChainPhases, objectLabel } from './stixRefRelationship';
 

@@ -1,4 +1,4 @@
-import type { StixCoreObject, StixRelationshipObject } from '../types/stix-common';
+import type { StixCoreObject, StixRelationshipObject } from '../types/stix-2-1-common';
 
 export interface NotificationData {
   notification_id: string

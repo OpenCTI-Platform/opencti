@@ -14,9 +14,9 @@ import {
 } from '../../data/csv-bundler/kill-chains-constants';
 import { citiesWithTwoLabelsCsvMapper } from '../../data/csv-bundler/cities-with-two-labels-constants';
 import { BundleBuilder } from '../../../src/parser/bundle-creator';
-import type { StixBundle, StixObject } from '../../../src/types/stix-common';
-import type { StixLabel } from '../../../src/types/stix-smo';
-import type { StixLocation } from '../../../src/types/stix-sdo';
+import type { StixBundle, StixObject } from '../../../src/types/stix-2-1-common';
+import type { StixLabel } from '../../../src/types/stix-2-1-smo';
+import type { StixLocation } from '../../../src/types/stix-2-1-sdo';
 import { emailWithTwoDescCsvMapper } from '../../data/csv-bundler/email-with-two-descp-constants';
 import { type CsvBundlerTestOpts, generateTestBundle } from '../../../src/parser/csv-bundler';
 

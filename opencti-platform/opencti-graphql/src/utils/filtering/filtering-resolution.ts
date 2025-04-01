@@ -17,14 +17,14 @@ import {
   WORKFLOW_FILTER
 } from './filtering-constants';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { StixObject } from '../../types/stix-common';
+import type { StixObject } from '../../types/stix-2-1-common';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../access';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
 import { extractFilterGroupValues, isFilterGroupNotEmpty } from './filtering-utils';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import type { BasicWorkflowStatus } from '../../types/store';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 // list of all filters that needs resolution
 export const RESOLUTION_FILTERS = [

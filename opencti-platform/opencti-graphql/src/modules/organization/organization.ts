@@ -87,6 +87,6 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
   representative: (stix: StixOrganization) => {
     return stix.name;
   },
-  converter: convertOrganizationToStix
+  converter_2_1: convertOrganizationToStix
 };
 registerDefinition(ORGANIZATION_DEFINITION);

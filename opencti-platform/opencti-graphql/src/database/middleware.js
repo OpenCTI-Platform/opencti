@@ -170,7 +170,7 @@ import {
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix } from './stix-converter';
+import { convertExternalReferenceToStix, convertStoreToStix } from './stix-2-1-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,

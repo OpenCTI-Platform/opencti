@@ -1,6 +1,6 @@
-import type { StixDomainObject, StixId, StixOpenctiExtension } from '../../types/stix-common';
+import type { StixDomainObject, StixId, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntityDataSource } from '../dataSource/dataSource-types';
 
 export const RELATION_DATA_SOURCE = 'data-source';

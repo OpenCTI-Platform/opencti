@@ -30,6 +30,6 @@ const TASK_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityTaskTemplate, StixTa
   representative: (stix: StixTaskTemplate) => {
     return stix.name;
   },
-  converter: convertCaseTaskToStix
+  converter_2_1: convertCaseTaskToStix
 };
 registerDefinition(TASK_TEMPLATE_DEFINITION);

@@ -70,7 +70,7 @@ const SUPPORT_PACKAGE_DEFINITION: ModuleDefinition<StoreEntitySupportPackage, St
   representative: (instance: StixSupportPackage) => {
     return instance.name;
   },
-  converter: convertSupportPackageToStix
+  converter_2_1: convertSupportPackageToStix
 };
 
 registerDefinition(SUPPORT_PACKAGE_DEFINITION);

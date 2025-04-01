@@ -44,6 +44,6 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
   representative: (stix: StixTask) => {
     return stix.name;
   },
-  converter: convertCaseTaskToStix
+  converter_2_1: convertCaseTaskToStix
 };
 registerDefinition(CASE_TASK_DEFINITION);

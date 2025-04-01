@@ -1,5 +1,5 @@
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import { buildStixObject, cleanObject } from '../../database/stix-converter';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
 import type { StixLanguage, StoreEntityLanguage } from './language-types';
 import { INPUT_CREATED_BY } from '../../schema/general';
 

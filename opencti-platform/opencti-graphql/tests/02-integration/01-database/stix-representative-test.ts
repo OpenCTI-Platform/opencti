@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { extractStixRepresentative } from '../../../src/database/stix-representative';
-import type { StixObject } from '../../../src/types/stix-common';
-import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
+import type { StixObject } from '../../../src/types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_LOCATION_CITY } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../src/schema/general';

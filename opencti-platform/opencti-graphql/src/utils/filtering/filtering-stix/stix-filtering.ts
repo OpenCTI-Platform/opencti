@@ -3,7 +3,7 @@ import { testFilterGroup } from '../boolean-logic-engine';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../../access';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { getEntitiesMapFromCache } from '../../../database/cache';
-import type { StixObject } from '../../../types/stix-common';
+import type { StixObject } from '../../../types/stix-2-1-common';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../../schema/stixDomainObject';
 import type { Filter, FilterGroup } from '../../../generated/graphql';
 import type { FilterResolutionMap } from '../filtering-resolution';

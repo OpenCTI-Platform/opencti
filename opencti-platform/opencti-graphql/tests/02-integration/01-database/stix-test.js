@@ -13,10 +13,10 @@ import {
 } from '../../../src/schema/stixDomainObject';
 import { isStixRelationship } from '../../../src/schema/stixRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
-import { convertTypeToStixType } from '../../../src/database/stix-converter';
-import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
+import { convertTypeToStixType } from '../../../src/database/stix-2-1-converter';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
-describe('Stix opencti converter', () => {
+describe('Stix 2.1 opencti converter', () => {
   const dataMap = new Map(data.objects.map((obj) => [obj.id, obj]));
 
   const rawDataCompare = async (rawId, standardId) => {

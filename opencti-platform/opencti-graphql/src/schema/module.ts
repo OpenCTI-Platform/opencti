@@ -1,8 +1,8 @@
 import type { StoreEntity } from '../types/store';
 import type { RelationDefinition } from '../database/stix';
 import { stixCoreRelationshipsMapping as coreRels } from '../database/stix';
-import type { ConvertFn, RepresentativeFn } from '../database/stix-converter';
-import { registerStixDomainConverter, registerStixMetaConverter, registerStixRepresentativeConverter } from '../database/stix-converter';
+import type { ConvertFn, RepresentativeFn } from '../database/stix-2-1-converter';
+import { registerStixDomainConverter, registerStixMetaConverter, registerStixRepresentativeConverter } from '../database/stix-2-1-converter';
 // import { registerGraphqlSchema } from '../graphql/schema';
 import {
   ABSTRACT_INTERNAL_OBJECT,
@@ -23,7 +23,7 @@ import { registerEntityValidator } from './validator-register';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { registerStixDomainAliased, resolveAliasesField } from './stixDomainObject';
 import { registerModelIdentifier } from './identifier';
-import type { StixObject } from '../types/stix-common';
+import type { StixObject } from '../types/stix-2-1-common';
 import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { registerEntityOverviewLayoutCustomization } from './overviewLayoutCustomization-register';
@@ -45,7 +45,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
     };
   };
   representative: RepresentativeFn<Z>
-  converter: ConvertFn<T, Z>
+  converter_2_1: ConvertFn<T, Z>
   overviewLayoutCustomization?: Array<OverviewWidgetCustomization>
   attributes: Array<AttributeDefinition>
   relations: Array<{
@@ -67,39 +67,39 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
       case ENTITY_TYPE_THREAT_ACTOR:
         schemaTypesDefinition.add(ENTITY_TYPE_THREAT_ACTOR, definition.type.name);
         schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
-        registerStixDomainConverter(definition.type.name, definition.converter);
+        registerStixDomainConverter(definition.type.name, definition.converter_2_1);
         break;
       case ENTITY_TYPE_LOCATION:
         schemaTypesDefinition.add(ENTITY_TYPE_LOCATION, definition.type.name);
         schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
-        registerStixDomainConverter(definition.type.name, definition.converter);
+        registerStixDomainConverter(definition.type.name, definition.converter_2_1);
         break;
       case ENTITY_TYPE_CONTAINER:
         schemaTypesDefinition.add(ENTITY_TYPE_CONTAINER, definition.type.name);
         // Hack to handle Case, a feature has been created to fix it :)
         if (definition.type.name !== ENTITY_TYPE_CONTAINER_CASE) {
           schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
-          registerStixDomainConverter(definition.type.name, definition.converter);
+          registerStixDomainConverter(definition.type.name, definition.converter_2_1);
         }
         break;
       case ENTITY_TYPE_CONTAINER_CASE:
         schemaTypesDefinition.add(ENTITY_TYPE_CONTAINER_CASE, definition.type.name);
         schemaTypesDefinition.add(ENTITY_TYPE_CONTAINER, definition.type.name);
         schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
-        registerStixDomainConverter(definition.type.name, definition.converter);
+        registerStixDomainConverter(definition.type.name, definition.converter_2_1);
         break;
       case ENTITY_TYPE_IDENTITY:
         schemaTypesDefinition.add(ENTITY_TYPE_IDENTITY, definition.type.name);
         schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
-        registerStixDomainConverter(definition.type.name, definition.converter);
+        registerStixDomainConverter(definition.type.name, definition.converter_2_1);
         break;
       case ABSTRACT_STIX_DOMAIN_OBJECT:
         schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
-        registerStixDomainConverter(definition.type.name, definition.converter);
+        registerStixDomainConverter(definition.type.name, definition.converter_2_1);
         break;
       case ABSTRACT_STIX_META_OBJECT:
         schemaTypesDefinition.add(ABSTRACT_STIX_META_OBJECT, definition.type.name);
-        registerStixMetaConverter(definition.type.name, definition.converter);
+        registerStixMetaConverter(definition.type.name, definition.converter_2_1);
         break;
       case ABSTRACT_INTERNAL_OBJECT:
         schemaTypesDefinition.add(ABSTRACT_INTERNAL_OBJECT, definition.type.name);
