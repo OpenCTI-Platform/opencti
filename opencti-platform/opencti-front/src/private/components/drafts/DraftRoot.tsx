@@ -62,6 +62,12 @@ const draftRootFragment = graphql`
         import_expected_number
         import_processed_number
       }
+      errors {
+        timestamp
+        message
+        sequence
+        source
+      }
     }
   }
 `;
