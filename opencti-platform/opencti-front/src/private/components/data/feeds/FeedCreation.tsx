@@ -358,8 +358,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   return (
     <Drawer
       title={isDuplicated ? (t_i18n('Duplicate a feed')) : (t_i18n('Create a feed'))}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreateFeedControlledDial : undefined }
+      variant={isFABReplaced || isDuplicated ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced && !isDuplicated ? CreateFeedControlledDial : undefined }
       open={open}
       onClose={onHandleClose}
     >
