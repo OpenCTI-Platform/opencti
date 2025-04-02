@@ -167,7 +167,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
   );
-  const [askAI, setAskAI] = useState(false);
   const [isNLQLoading, setIsNLQLoading] = useState(false);
   const [commitMutationNLQ] = useApiMutation<TopBarAskAINLQMutation>(topBarAskAINLQMutation);
 
@@ -234,7 +233,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const handleCloseXtm = () => {
     setXtmOpen({ open: false, anchorEl: null });
   };
-  const handleSearch = (searchKeyword: string) => {
+  const handleSearch = (searchKeyword: string, askAI = false) => {
     if (askAI && isEnterpriseEdition) {
       setIsNLQLoading(true);
       commitMutationNLQ({
@@ -306,12 +305,10 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             <SearchInput
               onSubmit={handleSearch}
               keyword={keyword}
-              setAskAI={setAskAI}
-              askAI={askAI}
               variant="topBar"
               placeholder={`${t_i18n('Search the platform')}...`}
               fullWidth={true}
-              isNLQLoading={askAI && isNLQLoading}
+              isNLQLoading={isNLQLoading}
             />
           </div>
         )}

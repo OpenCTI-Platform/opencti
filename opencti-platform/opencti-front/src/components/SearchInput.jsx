@@ -77,24 +77,19 @@ const SearchInput = (props) => {
     variant,
     keyword,
     placeholder = `${t_i18n('Search these results')}...`,
-    setAskAI,
-    askAI,
     isNLQLoading,
     ...otherProps
   } = props;
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
-  const handleChangeAskAI = () => {
-    if (isEnterpriseEdition) {
-      setAskAI(!askAI);
-    } else {
-      setDisplayEEDialog(true);
+  const [searchValue, setSearchValue] = useState(keyword);
+  const [askAI, setAskAI] = useState(false);
+
+  useEffect(() => {
+    if (keyword !== searchValue) {
+      setSearchValue(keyword);
     }
-  };
-  const handleRemoveAskAI = () => {
-    if (isEnterpriseEdition && askAI) {
-      setAskAI(false);
-    }
-  };
+  }, [keyword]);
+
   const isAIEnabled = variant === 'topBar' && isEnterpriseEdition && askAI;
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const { settings: { id: settingsId } } = useAuth();
@@ -117,12 +112,23 @@ const SearchInput = (props) => {
   } else if (variant === 'noAnimation') {
     classInput = classes.searchInputNoAnimation;
   }
-  const [searchValue, setSearchValue] = useState(keyword);
-  useEffect(() => {
-    if (keyword !== searchValue) {
-      setSearchValue(keyword);
+
+  const handleChangeAskAI = () => {
+    if (isEnterpriseEdition) {
+      if (!askAI && searchValue && searchValue.length > 0) {
+        onSubmit(searchValue, true);
+        setAskAI(true);
+      }
+      setAskAI(!askAI);
+    } else {
+      setDisplayEEDialog(true);
     }
-  }, [keyword]);
+  };
+  const handleRemoveAskAI = () => {
+    if (isEnterpriseEdition && askAI) {
+      setAskAI(false);
+    }
+  };
 
   return (
     <>
@@ -139,7 +145,7 @@ const SearchInput = (props) => {
         onKeyDown={(event) => {
           const { value } = event.target;
           if (typeof onSubmit === 'function' && event.key === 'Enter') {
-            onSubmit(value);
+            onSubmit(value, askAI);
           }
         }}
         sx={isAIEnabled ? {
@@ -165,11 +171,11 @@ const SearchInput = (props) => {
           ),
           endAdornment: variant === 'topBar' && (
           <InputAdornment position="end">
-            {isNLQLoading
-                    && <div>
-                      <Loader variant="inline" />
-                    </div>
-                }
+            {askAI && isNLQLoading
+              && <div>
+                <Loader variant="inline" />
+              </div>
+            }
             <Tooltip title={t_i18n('Advanced search')}>
               <IconButton
                 onClick={handleRemoveAskAI}
