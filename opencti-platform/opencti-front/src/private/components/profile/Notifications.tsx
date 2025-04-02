@@ -1,11 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
-import { NotificationsLines_data$data } from '@components/profile/notifications/__generated__/NotificationsLines_data.graphql';
-import { notificationLineFragment } from '@components/profile/notifications/NotificationLine';
 import { Badge, Tooltip } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import { deepPurple, green, indigo, red } from '@mui/material/colors';
 import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
-import { NotificationLine_node$data } from '@components/profile/notifications/__generated__/NotificationLine_node.graphql';
 import IconButton from '@mui/material/IconButton';
 import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
@@ -14,10 +11,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
+import { NotificationsLine_node$data } from '@components/profile/__generated__/NotificationsLine_node.graphql';
+import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from '@components/profile/__generated__/NotificationsLinesPaginationQuery.graphql';
+import { NotificationsLines_data$data } from '@components/profile/__generated__/NotificationsLines_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { notificationsLinesFragment, notificationsLinesQuery } from './notifications/NotificationsLines';
-import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from './notifications/__generated__/NotificationsLinesPaginationQuery.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useGetDefaultFilterObject, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -34,13 +32,87 @@ import { deleteNode } from '../../../utils/store';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
+const notificationsLineFragment = graphql`
+    fragment NotificationsLine_node on Notification {
+        id
+        entity_type
+        name
+        created
+        notification_type
+        is_read
+        notification_content {
+            title
+            events {
+                message
+                operation
+                instance_id
+            }
+        }
+    }
+`;
+
+const notificationsLinesQuery = graphql`
+    query NotificationsLinesPaginationQuery(
+        $search: String
+        $count: Int!
+        $cursor: ID
+        $orderBy: NotificationsOrdering
+        $orderMode: OrderingMode
+        $filters: FilterGroup
+    ) {
+        ...NotificationsLines_data
+        @arguments(
+            search: $search
+            count: $count
+            cursor: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+            filters: $filters
+        )
+    }
+`;
+
+const notificationsLinesFragment = graphql`
+    fragment NotificationsLines_data on Query
+    @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "NotificationsOrdering", defaultValue: created }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "FilterGroup" }
+    )
+    @refetchable(queryName: "NotificationsLinesRefetchQuery") {
+        myNotifications(
+            search: $search
+            first: $count
+            after: $cursor
+            orderBy: $orderBy
+            orderMode: $orderMode
+            filters: $filters
+        ) @connection(key: "Pagination_myNotifications") {
+            edges {
+                node {
+                    id
+                    ...NotificationsLine_node
+                }
+            }
+            pageInfo {
+                endCursor
+                hasNextPage
+                globalCount
+            }
+        }
+    }
+`;
+
 export const notificationLineNotificationMarkReadMutation = graphql`
   mutation NotificationsNotificationMarkReadMutation(
     $id: ID!
     $read: Boolean!
   ) {
     notificationMarkRead(id: $id, read: $read) {
-      ...NotificationLine_node
+      ...NotificationsLine_node
     }
   }
 `;
@@ -61,7 +133,7 @@ const Notifications: FunctionComponent = () => {
   const [commitDelete] = useApiMutation(
     notificationLineNotificationDeleteMutation,
   );
-  const [notificationToDelete, setNotificationToDelete] = useState<NotificationLine_node$data>();
+  const [notificationToDelete, setNotificationToDelete] = useState<NotificationsLine_node$data>();
 
   setTitle(t_i18n('Notifications'));
 
@@ -137,13 +209,13 @@ const Notifications: FunctionComponent = () => {
     delete: red[500],
     multiple: indigo[500],
   };
-  const getFirstOperation = ({ notification_content, notification_type }: Pick<NotificationLine_node$data, 'notification_content' | 'notification_type'>) => {
+  const getFirstOperation = ({ notification_content, notification_type }: Pick<NotificationsLine_node$data, 'notification_content' | 'notification_type'>) => {
     const events = notification_content.map((n) => n.events).flat();
     const firstEvent = events.at(0);
     const isDigest = notification_type === 'digest';
     return isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
   };
-  const iconSelector = (notification: NotificationLine_node$data) => {
+  const iconSelector = (notification: NotificationsLine_node$data) => {
     const operation = getFirstOperation(notification);
     switch (operation) {
       case 'create':
@@ -166,7 +238,7 @@ const Notifications: FunctionComponent = () => {
       label: 'Operation',
       percentWidth: 10,
       isSortable: isRuntimeSort,
-      render: ({ notification_content, notification_type }: NotificationLine_node$data) => {
+      render: ({ notification_content, notification_type }: NotificationsLine_node$data) => {
         const firstOperation = getFirstOperation({ notification_content, notification_type });
         const events = notification_content.map((n) => n.events).flat();
         const eventTypes: Record<string, string> = {
@@ -200,7 +272,7 @@ const Notifications: FunctionComponent = () => {
       label: 'Message',
       percentWidth: 48,
       isSortable: isRuntimeSort,
-      render: ({ notification_content }: NotificationLine_node$data) => {
+      render: ({ notification_content }: NotificationsLine_node$data) => {
         const events = notification_content.map((n) => n.events).flat();
         const firstEvent = events.at(0);
 
@@ -276,7 +348,7 @@ const Notifications: FunctionComponent = () => {
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<NotificationsLinesPaginationQuery>;
 
-  const renderActions = (data: NotificationLine_node$data) => {
+  const renderActions = (data: NotificationsLine_node$data) => {
     const [updating, setUpdating] = useState<boolean>(false);
 
     const handleRead = (id: string, read: boolean) => {
@@ -345,11 +417,13 @@ const Notifications: FunctionComponent = () => {
             {iconSelector(data)}
           </Badge>
         )}
-        lineFragment={notificationLineFragment}
+        taskScope={'USER'}
+        lineFragment={notificationsLineFragment}
         toolbarFilters={contextFilters}
         exportContext={{ entity_type: 'Notification' }}
         availableEntityTypes={['Notification']}
         actions={renderActions}
+        markAsReadEnabled={true}
       />
       )}
       {notificationToDelete && (

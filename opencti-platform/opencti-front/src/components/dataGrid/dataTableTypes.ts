@@ -139,6 +139,7 @@ export interface DataTableProps {
   disableSelectAll?: boolean
   removeAuthMembersEnabled?: boolean
   removeFromDraftEnabled?: boolean
+  markAsReadEnabled?: boolean
   selectOnLineClick?: boolean
   onLineClick?: (line: any) => void
   hideHeaders?: boolean

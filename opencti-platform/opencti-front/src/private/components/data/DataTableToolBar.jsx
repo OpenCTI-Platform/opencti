@@ -32,6 +32,7 @@ import {
   BrushOutlined,
   CancelOutlined,
   CenterFocusStrong,
+  CheckCircleOutlined,
   ClearOutlined,
   CloseOutlined,
   ContentCopyOutlined,
@@ -44,6 +45,7 @@ import {
   MoveToInboxOutlined,
   RestoreOutlined,
   TransformOutlined,
+  UnpublishedOutlined,
 } from '@mui/icons-material';
 import { BankMinus, BankPlus, CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -196,11 +198,11 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = ['Playbook', 'Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
-const notAddableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
-const notUpdatableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
-const notScannableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
-const notEnrichableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notMergableTypes = ['Playbook', 'Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
+const notAddableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
+const notUpdatableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
+const notScannableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
+const notEnrichableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 const typesWithScore = [
   'Stix-Cyber-Observable',
   'Indicator',
@@ -249,7 +251,7 @@ const typesWithIndicatorTypes = ['Indicator'];
 const typesWithPlatforms = ['Indicator'];
 
 const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
-const notShareableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notShareableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -607,7 +609,19 @@ class DataTableToolBar extends Component {
     }
     this.setState({ actionsInputs });
   }
-
+  handleLaunchRead(read) {
+    const actions = [{
+      type: 'REPLACE',
+      context: {
+        field: 'is_read',
+        type: 'ATTRIBUTE',
+        values: [read ? 'true' : 'false'],
+      },
+    }];
+    this.setState({ actions }, () => {
+      this.handleOpenTask();
+    });
+  }
   handleLaunchDelete() {
     const actions = [{ type: 'DELETE', context: null }];
     this.setState({ actions }, () => {
@@ -1779,6 +1793,7 @@ class DataTableToolBar extends Component {
       deleteOperationEnabled,
       removeAuthMembersEnabled,
       removeFromDraftEnabled,
+      markAsReadEnabled,
       warning,
       warningMessage,
       taskScope,
@@ -1910,6 +1925,36 @@ class DataTableToolBar extends Component {
                   </IconButton>
                 </div>
                 <div>
+                  {markAsReadEnabled && (
+                    <>
+                      <Tooltip title={t('Mark as read')}>
+                        <span>
+                          <IconButton
+                            aria-label="ack"
+                            disabled={numberOfSelectedElements === 0 || this.state.processing}
+                            onClick={this.handleLaunchRead.bind(this, true)}
+                            color="success"
+                            size="small"
+                          >
+                            <CheckCircleOutlined fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={t('Mark as unread')}>
+                        <span>
+                          <IconButton
+                            aria-label="ack"
+                            disabled={numberOfSelectedElements === 0 || this.state.processing}
+                            onClick={this.handleLaunchRead.bind(this, false)}
+                            color="warning"
+                            size="small"
+                          >
+                            <UnpublishedOutlined fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </>
+                  )}
                   {removeAuthMembersEnabled && (
                     <Security needs={[BYPASS]}>
                       <Tooltip title={t('Remove access restriction')}>
@@ -3058,6 +3103,7 @@ DataTableToolBar.propTypes = {
   deleteOperationEnabled: PropTypes.bool,
   removeAuthMembersEnabled: PropTypes.bool,
   removeFromDraft: PropTypes.bool,
+  markAsReadEnabled: PropTypes.bool,
   taskScope: PropTypes.string,
 };
 
