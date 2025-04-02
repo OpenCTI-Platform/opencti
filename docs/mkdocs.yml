@@ -162,6 +162,7 @@ nav:
       - Automated import: usage/import-automated.md
       - Import from files: usage/import-files.md
       - Manual creations: usage/manual-creation.md
+      - Draft workspaces: usage/draftWorkspaces.md
       - Analyst workbench: usage/workbench.md
     - Enrich knowledge:
       - Inferences and reasoning: usage/inferences.md
