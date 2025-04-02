@@ -1,5 +1,5 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixObject } from '../../types/stix-common';
+import type { StixObject } from '../../types/stix-2-1-common';
 
 export const ENTITY_TYPE_SAVED_FILTER = 'SavedFilter';
 

@@ -6,7 +6,7 @@ import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifi
 import { buildDraftValidationBundle } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
 import { fileToReadStream } from '../../../src/database/file-storage-helper';
-import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from '../../../src/modules/draftWorkspace/draftStatuses';
 
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`

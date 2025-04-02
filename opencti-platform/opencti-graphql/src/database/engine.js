@@ -2236,11 +2236,11 @@ const buildLocalMustFilter = async (validFilter) => {
               query: values[i].toString(),
             },
           });
-        } else if (operator === 'wildcard'|| operator === 'not_wildcard') {
+        } else if (operator === 'wildcard' || operator === 'not_wildcard') {
           const targets = operator === 'wildcard' ? valuesFiltering : noValuesFiltering;
-        targets.push({
+          targets.push({
             query_string: {
-              query: values[i] === '*' ? values[i] :`"${values[i].toString()}"`,
+              query: values[i] === '*' ? values[i] : `"${values[i].toString()}"`,
               fields: arrayKeys,
             },
           });

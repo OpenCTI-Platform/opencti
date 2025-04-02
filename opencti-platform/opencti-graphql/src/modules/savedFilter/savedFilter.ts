@@ -59,7 +59,7 @@ const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSave
   representative: (instance: StixSavedFilter) => {
     return instance.name;
   },
-  converter: convertSavedFiltersToStix,
+  converter_2_1: convertSavedFiltersToStix,
 };
 
 const isSavedFiltersEnabled = isFeatureEnabled('SAVED_FILTERS');

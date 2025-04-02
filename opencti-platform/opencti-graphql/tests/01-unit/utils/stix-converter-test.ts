@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { idsValuesRemap } from '../../../src/database/stix-converter';
+import { idsValuesRemap } from '../../../src/database/stix-2-1-converter';
 import type { BasicStoreObject } from '../../../src/types/store';
 
 describe('Stix converter utils: idsValuesRemap', () => {
