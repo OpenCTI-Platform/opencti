@@ -161,7 +161,6 @@ class ThreatActorIndividual:
         :param str after: (optional) OpenCTI object ID of the first row for pagination
         :param str orderBy: (optional) the field to order the response on
         :param bool orderMode: (optional) either "`asc`" or "`desc`"
-        :param bool getAll: (optional) switch to return all entries (be careful to use this without any other filters)
         :param bool withPagination: (optional) switch to use pagination
         """
 
@@ -174,8 +173,6 @@ class ThreatActorIndividual:
         custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
-        if get_all:
-            first = 500
 
         self.opencti.app_logger.info(
             "Listing Threat-Actors-Individual with filters",
@@ -214,9 +211,39 @@ class ThreatActorIndividual:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(
-            result["data"]["threatActorsIndividuals"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(
+                result["data"]["threatActorsIndividuals"]
+            )
+            final_data = final_data + data
+            while result["data"]["threatActorsIndividuals"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["threatActorsIndividuals"]["pageInfo"][
+                    "endCursor"
+                ]
+                self.opencti.app_logger.info(
+                    "Listing threatActorsIndividuals", {"after": after}
+                )
+                result = self.opencti.query(
+                    query,
+                    {
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(
+                    result["data"]["threatActorsIndividuals"]
+                )
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["threatActorsIndividuals"], with_pagination
+            )
 
     def read(self, **kwargs) -> Union[dict, None]:
         """Read a Threat-Actor-Individual object

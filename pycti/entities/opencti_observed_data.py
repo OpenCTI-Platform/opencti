@@ -190,7 +190,7 @@ class ObservedData:
                         }
                         ... on StixCyberObservable {
                             observable_value
-                        }                               
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -202,7 +202,7 @@ class ObservedData:
                             spec_version
                             created_at
                             updated_at
-                        }                        
+                        }
                     }
                 }
             }
@@ -401,7 +401,7 @@ class ObservedData:
                         }
                         ... on StixCyberObservable {
                             observable_value
-                        }                               
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -413,7 +413,7 @@ class ObservedData:
                             spec_version
                             created_at
                             updated_at
-                        }                        
+                        }
                     }
                 }
             }
@@ -461,11 +461,8 @@ class ObservedData:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         with_files = kwargs.get("withFiles", False)
-        if get_all:
-            first = 500
 
         self.opencti.app_logger.info(
             "Listing ObservedDatas with filters", {"filters": json.dumps(filters)}

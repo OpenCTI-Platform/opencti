@@ -293,7 +293,7 @@ class OpenCTIApiClient:
                 if is_multiple_files:
                     # [(var_name + "." + i)] if is_multiple_files else
                     for _ in file_var_item["file"]:
-                        file_vars[str(map_index)] = [(var_name + "." + str(map_index))]
+                        file_vars[str(map_index)] = [var_name + "." + str(map_index)]
                         map_index += 1
                 else:
                     file_vars[str(map_index)] = [var_name]
@@ -801,6 +801,7 @@ class OpenCTIApiClient:
         """
 
         connector_id = kwargs.get("connector_id", None)
+        work_id = kwargs.get("work_id", None)
         bundle = kwargs.get("bundle", None)
 
         if connector_id is not None and bundle is not None:
@@ -808,13 +809,13 @@ class OpenCTIApiClient:
                 "Pushing a bundle to queue through API", {connector_id}
             )
             mutation = """
-                    mutation StixBundlePush($connectorId: String!, $bundle: String!) {
-                        stixBundlePush(connectorId: $connectorId, bundle: $bundle)
+                    mutation StixBundlePush($connectorId: String!, $bundle: String!, $work_id: String) {
+                        stixBundlePush(connectorId: $connectorId, bundle: $bundle, work_id: $work_id)
                     }
                  """
             return self.query(
                 mutation,
-                {"connectorId": connector_id, "bundle": bundle},
+                {"connectorId": connector_id, "bundle": bundle, "work_id": work_id},
             )
         else:
             self.app_logger.error(

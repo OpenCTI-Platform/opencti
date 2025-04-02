@@ -24,13 +24,13 @@ class StixNestedRefRelationship:
                     standard_id
                     entity_type
                     parent_types
-                } 
+                }
                 ... on StixSightingRelationship {
                     id
                     standard_id
                     entity_type
                     parent_types
-                }                 
+                }
                 ... on StixCyberObservable {
                     observable_value
                 }
@@ -47,13 +47,13 @@ class StixNestedRefRelationship:
                     standard_id
                     entity_type
                     parent_types
-                } 
+                }
                 ... on StixSightingRelationship {
                     id
                     standard_id
                     entity_type
                     parent_types
-                }                 
+                }
                 ... on StixCyberObservable {
                     observable_value
                 }
@@ -92,10 +92,7 @@ class StixNestedRefRelationship:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
-        if get_all:
-            first = 500
 
         self.opencti.app_logger.info(
             "Listing stix_nested_ref_relationships",

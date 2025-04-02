@@ -2,7 +2,6 @@
 version: 2.1
 orbs:
   slack: circleci/slack@4.15.0
-  ms-teams: cloudradar-monitoring/ms-teams@0.0.1
 jobs:
   ensure_formatting:
     docker:
@@ -29,9 +28,6 @@ jobs:
           branch_pattern: master
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
   linter:
     docker:
       - image: alpine/flake8
@@ -45,9 +41,6 @@ jobs:
           branch_pattern: master
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
   build:
     working_directory: ~/opencti-client
     docker:
@@ -75,9 +68,6 @@ jobs:
           branch_pattern: master
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
       - persist_to_workspace:
           root: ~/opencti-client
           paths:
@@ -108,9 +98,6 @@ jobs:
           branch_pattern: master
           event: fail
           template: basic_fail_1
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
   notify_rolling:
     docker:
       - image: "cimg/base:stable"
@@ -118,9 +105,6 @@ jobs:
       - slack/notify:
           event: pass
           template: basic_success_1
-      - ms-teams/report:
-          only_on_fail: false
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
   notify:
     docker:
       - image: "cimg/base:stable"
@@ -128,9 +112,6 @@ jobs:
       - slack/notify:
           event: pass
           template: basic_success_1
-      - ms-teams/report:
-          only_on_fail: false
-          webhook_url: $MS_TEAMS_WEBHOOK_URL
 
 workflows:
   version: 2

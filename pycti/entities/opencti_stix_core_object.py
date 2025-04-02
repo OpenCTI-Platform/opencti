@@ -1340,8 +1340,6 @@ class StixCoreObject:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         with_files = kwargs.get("withFiles", False)
-        if get_all:
-            first = 100
 
         self.opencti.app_logger.info(
             "Listing Stix-Core-Objects with filters", {"filters": json.dumps(filters)}

@@ -206,7 +206,7 @@ class CaseRfi:
                         }
                         ... on StixCyberObservable {
                             observable_value
-                        }                        
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -417,7 +417,7 @@ class CaseRfi:
                         }
                         ... on StixCyberObservable {
                             observable_value
-                        }                        
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -465,7 +465,7 @@ class CaseRfi:
 
     """
         List Case Rfi objects
-        
+
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
@@ -484,8 +484,6 @@ class CaseRfi:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         with_files = kwargs.get("withFiles", False)
-        if get_all:
-            first = 500
 
         self.opencti.app_logger.info(
             "Listing Case Rfis with filters", {"filters": json.dumps(filters)}
