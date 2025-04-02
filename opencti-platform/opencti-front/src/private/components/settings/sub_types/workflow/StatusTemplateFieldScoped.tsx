@@ -16,6 +16,7 @@ interface StatusTemplateFieldScopedProps {
   onChange?: (field: string, value: Option) => void;
   style?: Record<string, string | number>;
   scope: string;
+  label: string;
 }
 
 export const StatusTemplateFieldScopedSearchQuery = graphql`
@@ -30,6 +31,7 @@ export const StatusTemplateFieldScopedSearchQuery = graphql`
 
 const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProps> = ({
   name,
+  label,
   style,
   helpertext,
   required = false,
@@ -63,7 +65,7 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
         style={style}
         textfieldprops={{
           variant: 'standard',
-          label: t_i18n('Name'),
+          label,
           helperText: helpertext,
           onFocus: searchStatusTemplates,
         }}
@@ -76,10 +78,10 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
           option: { color: string; label: string },
         ) => (
           <li {...props}>
-            <div style={{ color: option.color }}>
+            <div style={{ color: option.color, paddingTop: 4, display: 'inline-block' }}>
               <Label />
             </div>
-            <div>{option.label}</div>
+            <div style ={{ display: 'inline-block', flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
           </li>
         )}
       />
