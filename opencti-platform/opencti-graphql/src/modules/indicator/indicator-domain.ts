@@ -53,6 +53,9 @@ import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
+import { REVOKED, VALID_UNTIL, X_DETECTION } from '../../schema/identifier';
+
+const INDICATOR_DEFAULT_SCORE = 50;
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -253,7 +256,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   const { formattedPattern } = await validateIndicatorPattern(context, user, indicator.pattern_type, indicator.pattern);
 
-  const indicatorBaseScore = indicator.x_opencti_score ?? 50;
+  const indicatorBaseScore = indicator.x_opencti_score ?? INDICATOR_DEFAULT_SCORE;
   const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
@@ -328,47 +331,91 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
 export const indicatorEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[], opts = {}) => {
   const finalInput = [...input];
-  const indicator = await findById(context, user, id);
-  if (!indicator) {
+
+  // Region Validation
+  const indicatorBeforeUpdate = await findById(context, user, id);
+  if (!indicatorBeforeUpdate) {
     throw FunctionalError('Cannot edit the field, Indicator cannot be found.');
   }
   // validation check because according to STIX 2.1 specification the valid_until must be greater than the valid_from
-  let { valid_from, valid_until } = indicator;
+  let { valid_from, valid_until } = indicatorBeforeUpdate;
   input.forEach((e) => {
     if (e.key === 'valid_from') [valid_from] = e.value;
-    if (e.key === 'valid_until') [valid_until] = e.value;
+    if (e.key === VALID_UNTIL) [valid_until] = e.value;
   });
   if (new Date(valid_until) <= new Date(valid_from)) {
     throw ValidationError('The valid until date must be greater than the valid from date', 'valid_from');
   }
+
+  // check indicatorBeforeUpdate pattern syntax
+  const patternEditInput = input.find((e) => e.key === 'pattern');
+  if (patternEditInput) {
+    await validateIndicatorPattern(context, user, indicatorBeforeUpdate.pattern_type, patternEditInput.value[0]);
+  }
+  // END Region Validation
+
+  // Region Decay computation (score/valid until/ revoke)
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
-    if (indicator.decay_applied_rule && !scoreEditInput.value.includes(indicator.decay_base_score)) {
+    if (indicatorBeforeUpdate.decay_applied_rule && !scoreEditInput.value.includes(indicatorBeforeUpdate.decay_base_score)) {
       const newScore = scoreEditInput.value[0];
       const updateDate = utcDate();
       finalInput.push({ key: 'decay_base_score', value: [newScore] });
       finalInput.push({ key: 'decay_base_score_date', value: [updateDate.toISOString()] });
-      const decayHistory: DecayHistory[] = [...(indicator.decay_history ?? [])];
+      const decayHistory: DecayHistory[] = [...(indicatorBeforeUpdate.decay_history ?? [])];
       decayHistory.push({
         updated_at: updateDate.toDate(),
         score: newScore,
       });
       finalInput.push({ key: 'decay_history', value: decayHistory });
-      const model = indicator.decay_applied_rule;
+      const model = indicatorBeforeUpdate.decay_applied_rule;
       const nextScoreReactionDate = computeNextScoreReactionDate(newScore, newScore, model, updateDate);
       if (nextScoreReactionDate) {
         finalInput.push({ key: 'decay_next_reaction_date', value: [nextScoreReactionDate.toISOString()] });
       }
       const newValidUntilDate = computeDecayPointReactionDate(newScore, model, updateDate, model.decay_revoke_score);
-      finalInput.push({ key: 'valid_until', value: [newValidUntilDate.toISOString()] });
+      finalInput.push({ key: VALID_UNTIL, value: [newValidUntilDate.toISOString()] });
     }
   }
-  // check indicator pattern syntax
-  const patternEditInput = input.find((e) => e.key === 'pattern');
-  if (patternEditInput) {
-    await validateIndicatorPattern(context, user, indicator.pattern_type, patternEditInput.value[0]);
+  const nowDate = utcDate().toDate();
+  const validUntilEditInput = input.find((e) => e.key === VALID_UNTIL);
+  if (validUntilEditInput) {
+    const untilDateTime = utcDate(validUntilEditInput?.value[0]).toDate();
+
+    if (untilDateTime < nowDate) {
+      finalInput.push({ key: REVOKED, value: [true] });
+      finalInput.push({ key: X_DETECTION, value: [false] });
+
+      if (indicatorBeforeUpdate.decay_applied_rule && indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score) {
+        finalInput.push({ key: 'x_opencti_score', value: [indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score] });
+      } else {
+        finalInput.push({ key: 'x_opencti_score', value: [0] });
+      }
+    }
   }
 
+  const revokedEditInput = input.find((e) => e.key === REVOKED);
+  if (revokedEditInput) {
+    if (revokedEditInput.value[0] === true) {
+      if (indicatorBeforeUpdate.decay_applied_rule && indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score) {
+        finalInput.push({ key: 'x_opencti_score', value: [indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score] });
+      } else {
+        finalInput.push({ key: 'x_opencti_score', value: [0] });
+      }
+      finalInput.push({ key: X_DETECTION, value: [false] });
+      finalInput.push({ key: VALID_UNTIL, value: [nowDate] });
+    } else if (indicatorBeforeUpdate.decay_applied_rule && indicatorBeforeUpdate.decay_base_score) {
+      // TODO in case of revoke => move to true
+      // Need to put a valid from, valid until and restart the computation of decay reaction point.
+      finalInput.push({ key: 'x_opencti_score', value: [indicatorBeforeUpdate.decay_base_score] });
+      const decayRule = await findDecayRuleForIndicator(context, indicatorBeforeUpdate.x_opencti_main_observable_type);
+    } else {
+      finalInput.push({ key: 'x_opencti_score', value: [INDICATOR_DEFAULT_SCORE] });
+      // TODO compute finalInput.push({ key: VALID_UNTIL, value: [nowDate] });
+    }
+  }
+
+  // END Region Decay computation
   logApp.info('indicatorEditField finalInput', { finalInput });
   return stixDomainObjectEditField(context, user, id, finalInput, opts);
 };
