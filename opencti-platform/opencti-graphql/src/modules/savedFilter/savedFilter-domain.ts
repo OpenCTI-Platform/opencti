@@ -9,9 +9,13 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QuerySavedFi
   return listEntitiesPaginated<BasicStoreEntitySavedFilter>(context, user, [ENTITY_TYPE_SAVED_FILTER], args);
 };
 export const addSavedFilter = (context: AuthContext, user: AuthUser, input: SavedFilterAddInput) => {
+  // Force context out of draft to force creation in live index
+  const contextOutOfDraft = { ...context, draft_context: '' };
   const savedFiltersToCreate = { ...input, restricted_members: [{ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }] };
-  return createInternalObject<StoreEntitySavedFilter>(context, user, savedFiltersToCreate, ENTITY_TYPE_SAVED_FILTER);
+  return createInternalObject<StoreEntitySavedFilter>(contextOutOfDraft, user, savedFiltersToCreate, ENTITY_TYPE_SAVED_FILTER);
 };
 export const deleteSavedFilter = (context: AuthContext, user: AuthUser, savedFilterId: string) => {
-  return deleteInternalObject(context, user, savedFilterId, ENTITY_TYPE_SAVED_FILTER);
+  // Force context out of draft to force creation in live index
+  const contextOutOfDraft = { ...context, draft_context: '' };
+  return deleteInternalObject(contextOutOfDraft, user, savedFilterId, ENTITY_TYPE_SAVED_FILTER);
 };
