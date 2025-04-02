@@ -61,6 +61,9 @@ class OpenCTIApiConnector:
                 connectorsForWorker {
                     id
                     name
+                    connector_user {
+                      api_token
+                    }
                     config {
                         connection {
                             host
@@ -72,6 +75,7 @@ class OpenCTIApiConnector:
                         }
                         listen
                         listen_exchange
+                        listen_callback_uri
                         push
                         push_exchange
                         push_routing

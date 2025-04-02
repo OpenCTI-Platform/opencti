@@ -408,8 +408,6 @@ class StixCoreRelationship:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         search = kwargs.get("search", None)
-        if get_all:
-            first = 100
 
         self.opencti.app_logger.info(
             "Listing stix_core_relationships",
