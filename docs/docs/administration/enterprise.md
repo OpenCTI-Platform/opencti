@@ -48,6 +48,10 @@ Ability to read summary of reports and activities of threats with forecasting.
 
 Automatic extraction of entities and relationships from raw text (PDF, etc.).
 
+### Natural Language Query
+
+Automatic extraction of filters to display a filtered entities list from a question or assertion.
+
 ### Fintel templates
 
 Finished intelligence templates are models that can be used in containers to generate reports. Those reports can contain texts and visualizations and can be exported in pdf. Fintel templates can be created and managed in the Customization section (please read  [Fintel templates customization](./entities.md)).

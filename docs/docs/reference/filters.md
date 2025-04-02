@@ -298,10 +298,12 @@ Automatic key checking prevents typing error when constructing filters via the A
 #### Allowed filter keys for elastic filters
 
 Query filters are used in a query fetching objects in the database. It concerns:
+
 - dynamic filters (filtering a list of entities),
 - some stored filters: filters of feeds, taxi collections and dashboard widgets.
 
 The available filter keys for query filters are:
+
 - the attributes registered in the schema definition (like 'published', 'name', 'confidence'...),
 - the relations input name (like 'objectLabel', 'externalReferences'...),
 - some special filter keys allowed in addition and that have a special behavior.
