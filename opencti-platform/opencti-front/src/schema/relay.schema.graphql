@@ -1622,6 +1622,7 @@ type MemberGroupRestriction {
 
 type MemberAccess {
   id: ID!
+  member_id: String!
   name: String!
   entity_type: String!
   access_right: String!

@@ -27,6 +27,7 @@ const CREATE_QUERY = gql`
       description
       authorized_members {
         id
+        member_id
         access_right
       }
       currentUserAccessRight
@@ -52,6 +53,7 @@ const READ_QUERY = gql`
       name
       authorized_members {
         id
+        member_id
         access_right
       }
       currentUserAccessRight
@@ -67,6 +69,7 @@ const READ_REPORT_QUERY = gql`
       name
       authorized_members {
         id
+        member_id
         access_right
       }
       currentUserAccessRight
@@ -113,6 +116,7 @@ const EDIT_AUTHORIZED_MEMBERS_QUERY = gql`
         currentUserAccessRight
         authorized_members {
           id
+          member_id
           access_right
         }
         authorized_members_activation_date

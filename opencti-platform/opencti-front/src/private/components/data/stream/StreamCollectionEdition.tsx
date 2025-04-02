@@ -18,7 +18,7 @@ import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { AutoCompleteOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 
@@ -36,7 +36,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface StreamCollectionCreationForm {
-  restricted_members: Option[]
+  restricted_members: AutoCompleteOption[] | null
   stream_public: boolean | null
   name: string | null
   description: string | null
@@ -219,6 +219,7 @@ const StreamCollectionEditionFragment = createFragmentContainer(
                 stream_public
                 authorized_members {
                     id
+                    member_id
                     name
                 }
             }

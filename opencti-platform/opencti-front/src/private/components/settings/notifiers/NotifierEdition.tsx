@@ -11,7 +11,7 @@ import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { AutoCompleteOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import NotifierConnectorField from '../../common/form/NotifierConnectorField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { Option } from '../../common/form/ReferenceField';
@@ -61,6 +61,7 @@ const notifierEditionFragment = graphql`
     notifier_configuration
     authorized_members {
       id
+      member_id
       name
       access_right
     }
@@ -88,7 +89,7 @@ interface NotifierEditionComponentProps {
 interface NotifierEditionValues {
   name: string
   description?: string | null
-  restricted_members?: Option[]
+  restricted_members?: AutoCompleteOption[] | null
   notifier_connector_id?: Option
 }
 

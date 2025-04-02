@@ -13596,6 +13596,7 @@ export type MemberAccess = {
   entity_type: Scalars['String']['output'];
   groups_restriction?: Maybe<Array<MemberGroupRestriction>>;
   id: Scalars['ID']['output'];
+  member_id: Scalars['String']['output'];
   name: Scalars['String']['output'];
 };
 
@@ -37718,6 +37719,7 @@ export type MemberAccessResolvers<ContextType = any, ParentType extends Resolver
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groups_restriction?: Resolver<Maybe<Array<ResolversTypes['MemberGroupRestriction']>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  member_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

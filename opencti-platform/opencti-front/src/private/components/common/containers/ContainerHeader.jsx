@@ -417,6 +417,7 @@ const containerHeaderEditAuthorizedMembersMutation = graphql`
       editAuthorizedMembers(input: $input) {
         authorized_members {
           id
+          member_id
           name
           entity_type
           access_right
@@ -746,6 +747,7 @@ export default createFragmentContainer(ContainerHeader, {
       currentUserAccessRight
       authorized_members {
         id
+        member_id
         name
         entity_type
         access_right

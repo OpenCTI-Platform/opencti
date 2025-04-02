@@ -25,6 +25,7 @@ export type AuthorizedMembers = ReadonlyArray<{
   readonly access_right: string;
   readonly entity_type: string;
   readonly id: string;
+  readonly member_id: string;
   readonly name: string;
   readonly groups_restriction: ReadonlyArray<{
     readonly id: string;
@@ -53,7 +54,7 @@ export const authorizedMembersToOptions = (
       return {
         label: member.name,
         type: member.entity_type,
-        value: member.id,
+        value: member.member_id || member.id,
         accessRight: member.access_right as AccessRight,
         groupsRestriction: (member.groups_restriction ?? []).map((o) => {
           return {

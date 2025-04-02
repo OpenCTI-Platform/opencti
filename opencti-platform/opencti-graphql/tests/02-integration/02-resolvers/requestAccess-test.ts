@@ -49,6 +49,7 @@ export const READ_RFI_QUERY = gql`
             name
             authorized_members {
               id
+              member_id
               access_right
               groups_restriction {
                   id

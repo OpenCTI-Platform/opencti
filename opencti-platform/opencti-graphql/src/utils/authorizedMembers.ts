@@ -48,7 +48,7 @@ export const getAuthorizedMembers = async (
     },
   };
   const members = await findAllMembers(context, user, args);
-  return Promise.all((entity.restricted_members ?? []).map(async (currentAuthMember) => {
+  return Promise.all((entity.restricted_members ?? []).map(async (currentAuthMember, i) => {
     const member = members.find((m) => (m as BasicStoreEntity).id === currentAuthMember.id) as BasicStoreEntity;
     let groups_restriction: MemberGroupRestriction[] = [];
     if (currentAuthMember.groups_restriction_ids) {
@@ -60,7 +60,8 @@ export const getAuthorizedMembers = async (
       );
     }
     return {
-      id: currentAuthMember.id,
+      id: `${currentAuthMember.id}_${i}`,
+      member_id: currentAuthMember.id,
       name: member?.name ?? '',
       entity_type: member?.entity_type ?? '',
       access_right: currentAuthMember.access_right,
