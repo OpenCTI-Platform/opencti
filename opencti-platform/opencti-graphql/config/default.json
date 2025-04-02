@@ -211,7 +211,9 @@
     "version": "",
     "model_images": "",
     "max_tokens": 30000,
-    "insights_refresh_timeout": 60
+    "insights_refresh_timeout": 60,
+    "ai_azure_instance": "",
+    "ai_azure_deployment": ""
   },
   "xtm": {
     "openbas_url": "",

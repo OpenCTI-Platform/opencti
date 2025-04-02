@@ -1,6 +1,6 @@
 import type { ChatPromptValueInterface } from '@langchain/core/prompt_values';
 import { ChatMistralAI } from '@langchain/mistralai';
-import { ChatOpenAI } from '@langchain/openai';
+import { ChatOpenAI, AzureChatOpenAI } from '@langchain/openai';
 import { Mistral } from '@mistralai/mistralai';
 import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
 import { AzureOpenAI, OpenAI } from 'openai';
@@ -21,9 +21,11 @@ const AI_TOKEN = conf.get('ai:token');
 const AI_MODEL = conf.get('ai:model');
 const AI_MAX_TOKENS = conf.get('ai:max_tokens');
 const AI_VERSION = conf.get('ai:version');
+const AI_AZURE_INSTANCE = conf.get('ai:ai_azure_instance');
+const AI_AZURE_DEPLOYMENT = conf.get('ai:ai_azure_deployment');
 
 let client: Mistral | OpenAI | AzureOpenAI | null = null;
-let nlqChat: ChatOpenAI | ChatMistralAI | null = null;
+let nlqChat: ChatOpenAI | ChatMistralAI | AzureChatOpenAI | null = null;
 if (AI_ENABLED && AI_TOKEN) {
   switch (AI_TYPE) {
     case 'mistralai':
@@ -83,7 +85,13 @@ if (AI_ENABLED && AI_TOKEN) {
         ...(isEmptyField(AI_VERSION) ? {} : { apiVersion: AI_VERSION }),
       });
 
-      // FIXME: we need to implement the chat for azureopenai
+      nlqChat = new AzureChatOpenAI({
+        azureOpenAIApiKey: AI_TOKEN,
+        azureOpenAIApiVersion: AI_VERSION,
+        azureOpenAIApiInstanceName: AI_AZURE_INSTANCE,
+        azureOpenAIApiDeploymentName: AI_AZURE_DEPLOYMENT,
+        temperature: 0,
+      });
 
       break;
 
