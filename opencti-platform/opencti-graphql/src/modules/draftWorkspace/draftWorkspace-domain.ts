@@ -49,29 +49,12 @@ export const findAll = (context: AuthContext, user: AuthUser, args: QueryDraftWo
 };
 
 export const getObjectsCount = async (context: AuthContext, user: AuthUser, draft: BasicStoreEntityDraftWorkspace) => {
-  const removeDraftDependenciesFilter = {
-    filterGroups: [],
-    filters: [
-      {
-        key: 'draft_change.draft_operation',
-        mode: 'or',
-        operator: 'eq',
-        values: [
-          'create',
-          'update',
-          'delete',
-        ]
-      }
-    ],
-    mode: 'and'
-  };
   const opts = {
     // types: ['Stix-Object'],
     field: 'entity_type',
     includeDeletedInDraft: true,
     normalizeLabel: false,
     convertEntityTypeLabel: true,
-    filters: removeDraftDependenciesFilter,
   };
   const draftContext = { ...context, draft_context: draft.id };
   const distributionResult = await elAggregationCount(draftContext, context.user, READ_INDEX_DRAFT_OBJECTS, opts);
