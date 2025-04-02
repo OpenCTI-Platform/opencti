@@ -49,7 +49,7 @@ export interface DataTableContextProps {
   useDataTable: ReturnType<DataTableProps['useDataTable']>
   useDataCellHelpers: DataTableProps['useDataCellHelpers']
   useDataTableToggle: ReturnType<DataTableProps['useDataTableToggle']>
-  useComputeLink: (entity: any) => string
+  useComputeLink: (entity: any) => string | undefined
   useDataTableColumnsLocalStorage: ReturnType<DataTableProps['useDataTableColumnsLocalStorage']>
   useDataTablePaginationLocalStorage: ReturnType<DataTableProps['useDataTablePaginationLocalStorage']>
   onAddFilter: DataTableProps['onAddFilter']
@@ -111,7 +111,7 @@ export interface DataTableProps {
     initialValue: LocalStorage,
     ignoreUri?: boolean,
   ) => PaginationLocalStorage<T>
-  useComputeLink?: (entity: any) => string
+  useComputeLink?: (entity: any) => string | undefined
   useDataTableToggle: (key: string) => {
     selectedElements: Record<string, any>
     deSelectedElements: Record<string, any>

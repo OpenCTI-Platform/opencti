@@ -29,6 +29,7 @@ import { hexToRGB } from '../../../utils/Colors';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import Transition from '../../../components/Transition';
 import { deleteNode } from '../../../utils/store';
+import { isNotEmptyField } from '../../../utils/utils';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -156,7 +157,11 @@ const Notifications: FunctionComponent = () => {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
 
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NotificationsLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<NotificationsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
@@ -424,13 +429,23 @@ const Notifications: FunctionComponent = () => {
         availableEntityTypes={['Notification']}
         actions={renderActions}
         markAsReadEnabled={true}
+        useComputeLink={({ notification_content, notification_type }: NotificationsLine_node$data) => {
+          const events = notification_content.map((n) => n.events).flat();
+          const firstEvent = events.at(0);
+          const isDigest = notification_type === 'digest';
+          const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
+          const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
+          if (!isLinkAvailable) return undefined;
+          return `/dashboard/id/${firstEvent.instance_id}`;
+        }}
+
       />
       )}
       {notificationToDelete && (
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={!!notificationToDelete}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={handleCloseDelete}
         >
           <DialogContent>
