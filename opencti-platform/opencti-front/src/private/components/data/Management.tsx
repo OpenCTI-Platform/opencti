@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import ManagementMenu from '@components/data/ManagementMenu';
 import {
@@ -127,6 +127,7 @@ const managementDefinitionsLinesFragment = graphql`
 `;
 
 const Management = () => {
+  const [ref, setRef] = useState<HTMLDivElement | undefined>(undefined);
   const { t_i18n } = useFormatter();
 
   const { setTitle } = useConnectedDocumentModifier();
@@ -215,11 +216,15 @@ const Management = () => {
   } as UsePreloadedPaginationFragment<ManagementDefinitionsLinesPaginationQuery>;
 
   return isEnterpriseEdition ? (
-    <div data-testid="data-management-page">
+    <div data-testid="data-management-page" style={{ height: '100%' }}>
       {isRightMenuManagementEnable && (
         <ManagementMenu />
       )}
-      <PageContainer withGap withRightMenu={isRightMenuManagementEnable}>
+      <PageContainer
+        withGap
+        withRightMenu={isRightMenuManagementEnable}
+        style={{ height: '100%' }}
+      >
         <Breadcrumbs
           elements={[
             { label: t_i18n('Data') },
@@ -232,18 +237,21 @@ const Management = () => {
           content={t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
         />
         {queryRef && (
-          <DataTable
-            dataColumns={dataColumns}
-            resolvePath={(data: ManagementDefinitionsLines_data$data) => data.stixCoreObjectsRestricted?.edges?.map((e) => e?.node)}
-            storageKey={LOCAL_STORAGE_KEY}
-            initialValues={initialValues}
-            lineFragment={managementDefinitionLineFragment}
-            preloadedPaginationProps={preloadedPaginationProps}
-            toolbarFilters={toolbarFilters}
-            entityTypes={['Stix-Core-Object']}
-            searchContextFinal={{ entityTypes: ['Stix-Core-Object'] }}
-            removeAuthMembersEnabled={true}
-          />
+          <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r)}>
+            <DataTable
+              rootRef={ref}
+              dataColumns={dataColumns}
+              resolvePath={(data: ManagementDefinitionsLines_data$data) => data.stixCoreObjectsRestricted?.edges?.map((e) => e?.node)}
+              storageKey={LOCAL_STORAGE_KEY}
+              initialValues={initialValues}
+              lineFragment={managementDefinitionLineFragment}
+              preloadedPaginationProps={preloadedPaginationProps}
+              toolbarFilters={toolbarFilters}
+              entityTypes={['Stix-Core-Object']}
+              searchContextFinal={{ entityTypes: ['Stix-Core-Object'] }}
+              removeAuthMembersEnabled={true}
+            />
+          </div>
         )}
       </PageContainer>
     </div>
