@@ -3444,7 +3444,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
       /* v8 ignore next */ (err) => {
         const root_cause = err.meta?.body?.error?.caused_by?.type;
         if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
-        throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query });
+        throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
       }
     );
 };
