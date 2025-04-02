@@ -2,20 +2,16 @@ import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import MarkingDefinitionEdition from './MarkingDefinitionEdition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { deleteNode } from '../../../../utils/store';
-import Transition from '../../../../components/Transition';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const markingDefinitionPopoverDeletionMutation = graphql`
   mutation MarkingDefinitionPopoverDeletionMutation($id: ID!) {
@@ -44,8 +40,6 @@ const MarkingDefinitionPopover = ({
   const { isSensitive, isAllowed } = useSensitiveModifications('markings', markingDefinition.standard_id);
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayUpdate, setDisplayUpdate] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const disabled = !isAllowed && isSensitive;
 
   const handleOpen = (event) => {
@@ -65,17 +59,10 @@ const MarkingDefinitionPopover = ({
     setDisplayUpdate(false);
   };
 
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
-
   const [commit] = useApiMutation(markingDefinitionPopoverDeletionMutation);
 
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -131,34 +118,11 @@ const MarkingDefinitionPopover = ({
           return <div />;
         }}
       />
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this marking definition?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this marking definition?')}
+      />
     </div>
   );
 };
