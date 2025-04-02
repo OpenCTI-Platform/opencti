@@ -40,6 +40,7 @@ import BulkTextModalButton from '../../../../components/fields/BulkTextField/Bul
 const narrativeMutation = graphql`
   mutation NarrativeCreationMutation($input: NarrativeAddInput!) {
     narrativeAdd(input: $input) {
+      ...NarrativeLine_node
       id
       standard_id
       name
