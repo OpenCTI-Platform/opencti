@@ -1,5 +1,5 @@
-import { buildStixDomain, cleanObject } from '../../../database/stix-converter';
-import { STIX_EXT_OCTI } from '../../../types/stix-extensions';
+import { buildStixDomain, cleanObject } from '../../../database/stix-2-1-converter';
+import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { INPUT_OBJECTS } from '../../../schema/general';
 import type { StixCaseRft, StoreEntityCaseRft } from './case-rft-types';
 

@@ -13,7 +13,7 @@ import type { BasicStoreEntity, BasicStoreObject } from '../../../types/store';
 import { extractRepresentative } from '../../../database/entity-representative';
 import type { MandatoryType, ObjectAttribute } from '../../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
-import { idsValuesRemap } from '../../../database/stix-converter';
+import { idsValuesRemap } from '../../../database/stix-2-1-converter';
 
 export interface CsvMapperSchemaAttribute {
   name: string

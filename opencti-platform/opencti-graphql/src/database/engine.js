@@ -127,7 +127,7 @@ import {
   schemaAttributesDefinition,
   validateDataBeforeIndexing
 } from '../schema/schema-attributes';
-import { convertTypeToStixType } from './stix-converter';
+import { convertTypeToStixType } from './stix-2-1-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { checkAndConvertFilters, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
@@ -139,6 +139,7 @@ import {
   INSTANCE_REGARDING_OF,
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
+  IS_INFERRED_FILTER,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
   RELATION_FROM_TYPES_FILTER,
@@ -2235,10 +2236,11 @@ const buildLocalMustFilter = async (validFilter) => {
               query: values[i].toString(),
             },
           });
-        } else if (operator === 'wildcard') {
-          valuesFiltering.push({
+        } else if (operator === 'wildcard'|| operator === 'not_wildcard') {
+          const targets = operator === 'wildcard' ? valuesFiltering : noValuesFiltering;
+        targets.push({
             query_string: {
-              query: `"${values[i].toString()}"`,
+              query: values[i] === '*' ? values[i] :`"${values[i].toString()}"`,
               fields: arrayKeys,
             },
           });
@@ -2754,6 +2756,19 @@ const adaptFilterToWorkflowFilterKey = async (context, user, filter) => {
   return { newFilter, newFilterGroup };
 };
 
+const adaptFilterValueToIsInferredFilter = (value, operator = 'eq') => {
+  const equivalentBooleanValueIsTrue = value === 'true';
+  const wildcardOperator = (operator === 'eq' && equivalentBooleanValueIsTrue)
+  || (operator === 'not_eq' && !equivalentBooleanValueIsTrue)
+    ? 'wildcard'
+    : 'not_wildcard';
+  return {
+    key: 'i_rule_*',
+    values: ['*'],
+    operator: wildcardOperator,
+  };
+};
+
 /**
  * Complete the filter if needed for several special filter keys
  * Some keys need this preprocessing before building the query:
@@ -2912,6 +2927,19 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           ],
           filterGroups: [],
         });
+      }
+      if (filterKey === IS_INFERRED_FILTER) {
+        // an entity/relationship is inferred <=> a field i_rule_XX is defined, indicating the inferred rule that created the element (ex: i_rule_location_targets)
+        if (filter.values.length === 1) {
+          const value = filter.values[0];
+          finalFilters.push(adaptFilterValueToIsInferredFilter(value, filter.operator));
+        } else {
+          finalFilterGroups.push({
+            mode: filter.mode,
+            filters: filter.values.map((v) => adaptFilterValueToIsInferredFilter(v, filter.operator)),
+            filterGroups: [],
+          });
+        }
       }
     } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {

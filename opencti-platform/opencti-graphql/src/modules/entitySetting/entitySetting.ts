@@ -119,7 +119,7 @@ export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySettin
   representative: (stix: StixEntitySetting) => {
     return stix.target_type;
   },
-  converter: convertEntitySettingToStix
+  converter_2_1: convertEntitySettingToStix
 };
 
 registerDefinition(ENTITY_SETTING_DEFINITION);

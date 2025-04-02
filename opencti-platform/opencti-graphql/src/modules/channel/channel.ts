@@ -150,7 +150,7 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
   representative: (stix: StixChannel) => {
     return stix.name;
   },
-  converter: convertChannelToStix
+  converter_2_1: convertChannelToStix
 };
 
 registerDefinition(CHANNEL_DEFINITION);

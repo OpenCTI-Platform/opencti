@@ -11046,7 +11046,7 @@ type Workspace implements InternalObject & BasicObject {
   name: String!
   description: String
   owner: Creator
-  tags: [String]
+  tags: [String!]
   manifest: String
   created_at: DateTime
   updated_at: DateTime
@@ -11084,7 +11084,7 @@ input WorkspaceAddInput {
   type: String!
   name: String!
   description: String
-  tags: [String]
+  tags: [String!]
   authorized_members: [MemberAccessInput!]
   investigated_entities_ids: [String]
 }
@@ -11094,7 +11094,7 @@ input WorkspaceDuplicateInput {
   name: String!
   description: String
   manifest: String
-  tags: [String]
+  tags: [String!]
 }
 
 input ImportConfigurationInput {

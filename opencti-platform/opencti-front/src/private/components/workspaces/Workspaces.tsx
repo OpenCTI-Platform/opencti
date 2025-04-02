@@ -221,7 +221,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
                 type={type}
               />
             </Security>
-          ) : isNotEmptyField(importFromHubUrl) && (
+          ) : type === 'dashboard' && isNotEmptyField(importFromHubUrl) && (
             <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}>
               <GradientButton
                 size="small"

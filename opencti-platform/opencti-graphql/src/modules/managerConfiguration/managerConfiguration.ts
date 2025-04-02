@@ -32,7 +32,7 @@ const MANAGER_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntityManagerConfi
   representative: (stix: StixManagerConfiguration) => {
     return stix.manager_id;
   },
-  converter: convertManagerConfigurationToStix
+  converter_2_1: convertManagerConfigurationToStix
 };
 
 registerDefinition(MANAGER_CONFIGURATION_DEFINITION);

@@ -50,7 +50,7 @@ const INGESTION_RSS_DEFINITION: ModuleDefinition<StoreEntityIngestionRss, StixIn
   representative: (stix: StixIngestionRss) => {
     return stix.name;
   },
-  converter: convertIngestionRssToStix
+  converter_2_1: convertIngestionRssToStix
 };
 
 registerDefinition(INGESTION_RSS_DEFINITION);

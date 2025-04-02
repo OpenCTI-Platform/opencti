@@ -47,7 +47,7 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> =
   representative: (stix: StixFeedback) => {
     return stix.name;
   },
-  converter: convertFeedbackToStix
+  converter_2_1: convertFeedbackToStix
 };
 
 registerDefinition(FEEDBACK_DEFINITION);

@@ -1,6 +1,6 @@
-import { buildStixObject, cleanObject } from '../../../database/stix-converter';
+import { buildStixObject, cleanObject } from '../../../database/stix-2-1-converter';
 import type { StixCsvMapper, StoreEntityCsvMapper } from './csvMapper-types';
-import { STIX_EXT_OCTI } from '../../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 
 const convertCsvMapperToStix = (instance: StoreEntityCsvMapper): StixCsvMapper => {
   const stixObject = buildStixObject(instance);

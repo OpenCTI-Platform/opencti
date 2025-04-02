@@ -30995,7 +30995,7 @@ export type Workspace = BasicObject & InternalObject & {
   owner?: Maybe<Creator>;
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
-  tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  tags?: Maybe<Array<Scalars['String']['output']>>;
   toConfigurationExport: Scalars['String']['output'];
   toStixReportBundle?: Maybe<Scalars['String']['output']>;
   toWidgetExport: Scalars['String']['output'];
@@ -31025,7 +31025,7 @@ export type WorkspaceAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   investigated_entities_ids?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   name: Scalars['String']['input'];
-  tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  tags?: InputMaybe<Array<Scalars['String']['input']>>;
   type: Scalars['String']['input'];
 };
 
@@ -31039,7 +31039,7 @@ export type WorkspaceDuplicateInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   manifest?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  tags?: InputMaybe<Array<Scalars['String']['input']>>;
   type: Scalars['String']['input'];
 };
 
@@ -42536,7 +42536,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   owner?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  tags?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toStixReportBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toWidgetExport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<WorkspaceToWidgetExportArgs, 'widgetId'>>;

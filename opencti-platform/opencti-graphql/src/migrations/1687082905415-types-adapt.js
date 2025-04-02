@@ -1,6 +1,6 @@
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
-import { convertTypeToStixType } from '../database/stix-converter';
+import { convertTypeToStixType } from '../database/stix-2-1-converter';
 import { logApp } from '../config/conf';
 
 const entityTypeChange = (fromType, toType, indices) => {

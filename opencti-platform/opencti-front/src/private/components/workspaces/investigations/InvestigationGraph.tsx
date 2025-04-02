@@ -3,8 +3,8 @@ import React, { CSSProperties, Suspense, useEffect, useMemo, useRef, useState } 
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/material/styles';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
-import WorkspaceHeader from '@components/workspaces/WorkspaceHeader';
 import fetchMetaObjectsCount from '@components/workspaces/investigations/utils/fetchMetaObjectsCount';
+import WorkspaceHeader from '@components/workspaces/workspaceHeader/WorkspaceHeader';
 import { InvestigationGraphObjectsQuery } from './__generated__/InvestigationGraphObjectsQuery.graphql';
 import { InvestigationGraphObjects_fragment$key } from './__generated__/InvestigationGraphObjects_fragment.graphql';
 import { InvestigationGraphQuery$data } from './__generated__/InvestigationGraphQuery.graphql';
@@ -506,8 +506,6 @@ const InvestigationGraphComponent = ({
       <WorkspaceHeader
         workspace={investigation}
         variant="investigation"
-        widgetActions={undefined}
-        handleAddWidget={undefined}
       />
       <div style={graphContainerStyle} ref={ref}>
         <Graph parentRef={ref} onPositionsChanged={savePositions}>

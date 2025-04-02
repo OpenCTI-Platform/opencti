@@ -55,7 +55,7 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
   representative: (stix: StixEvent) => {
     return stix.name;
   },
-  converter: convertEventToStix
+  converter_2_1: convertEventToStix
 };
 
 registerDefinition(EVENT_DEFINITION);

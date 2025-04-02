@@ -21,7 +21,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { elAggregationCount, elCount, elList } from '../../database/engine';
-import { buildStixBundle } from '../../database/stix-converter';
+import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { SYSTEM_USER } from '../../utils/access';
 import { buildUpdateFieldPatch } from '../../database/draft-utils';
@@ -35,7 +35,7 @@ import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/st
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { deleteAllDraftFiles } from '../../database/file-storage-helper';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
 import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';

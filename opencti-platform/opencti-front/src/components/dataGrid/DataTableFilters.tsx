@@ -72,6 +72,7 @@ export const DataTableDisplayFilters = ({
 };
 
 const DataTableFilters = ({
+  additionalFilters,
   availableFilterKeys,
   searchContextFinal,
   availableEntityTypes,
@@ -109,6 +110,23 @@ const DataTableFilters = ({
   const hasFilters = availableFilterKeys && availableFilterKeys.length > 0;
 
   const hasToggleGroup = additionalHeaderButtons || redirectionModeEnabled || !exportDisabled;
+
+  const exportFilterGroups = [];
+  if (isFilterGroupNotEmpty(additionalFilters)) {
+    exportFilterGroups.push(additionalFilters);
+  }
+  if (isFilterGroupNotEmpty(paginationOptions.filters)) {
+    exportFilterGroups.push(paginationOptions.filters);
+  }
+  const exportPaginationOptions = {
+    ...paginationOptions,
+    filters: {
+      mode: 'and',
+      filters: [],
+      filterGroups: exportFilterGroups,
+    },
+  };
+
   return (
     <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
@@ -193,7 +211,7 @@ const DataTableFilters = ({
             <StixDomainObjectsExports
               open={!!openExports}
               handleToggle={helpers.handleToggleExports}
-              paginationOptions={paginationOptions}
+              paginationOptions={exportPaginationOptions}
               exportContext={exportContext}
             />
           </Security>
@@ -204,7 +222,7 @@ const DataTableFilters = ({
             <StixCoreRelationshipsExports
               open={openExports}
               handleToggle={helpers.handleToggleExports}
-              paginationOptions={paginationOptions}
+              paginationOptions={exportPaginationOptions}
               exportContext={exportContext}
             />
           </Security>
@@ -215,7 +233,7 @@ const DataTableFilters = ({
             <StixCoreObjectsExports
               open={openExports}
               handleToggle={helpers.handleToggleExports}
-              paginationOptions={paginationOptions}
+              paginationOptions={exportPaginationOptions}
               exportContext={exportContext}
             />
           </Security>
@@ -226,7 +244,7 @@ const DataTableFilters = ({
             <StixCyberObservablesExports
               open={openExports}
               handleToggle={helpers.handleToggleExports}
-              paginationOptions={paginationOptions}
+              paginationOptions={exportPaginationOptions}
               exportContext={exportContext}
             />
           </Security>

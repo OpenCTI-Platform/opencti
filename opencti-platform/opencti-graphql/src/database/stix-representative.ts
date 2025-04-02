@@ -1,8 +1,8 @@
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { getStixRepresentativeConverters } from './stix-converter';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import type * as SRO from '../types/stix-sro';
-import type * as S from '../types/stix-common';
+import { head } from 'ramda';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { getStixRepresentativeConverters } from './stix-2-1-converter';
+import type * as SRO from '../types/stix-2-1-sro';
+import type * as S from '../types/stix-2-1-common';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -22,9 +22,9 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import type * as SDO from '../types/stix-sdo';
+import type * as SDO from '../types/stix-2-1-sdo';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import type * as SMO from '../types/stix-smo';
+import type * as SMO from '../types/stix-2-1-smo';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_BANK_ACCOUNT,
@@ -59,15 +59,22 @@ import {
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from '../schema/stixCyberObservable';
-import type * as SCO from '../types/stix-sco';
+import type * as SCO from '../types/stix-2-1-sco';
 import { hashValue } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
 import { isInternalObject } from '../schema/internalObject';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../modules/indicator/indicator-types';
+import { isUserCanAccessStoreElement } from '../utils/access';
+import type { AuthContext, AuthUser } from '../types/user';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import type { BasicStoreCommon } from '../types/store';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 export const extractStixRepresentative = (
   stix: S.StixObject,
-  { fromRestricted = false, toRestricted = false }: { fromRestricted: boolean, toRestricted: boolean } = { fromRestricted: false, toRestricted: false }
+  { fromRestricted = false, toRestricted = false }: { fromRestricted: boolean, toRestricted: boolean } = { fromRestricted: false, toRestricted: false },
+  withArrowForRelationships = false,
 ): string => {
   const entityType = stix.extensions[STIX_EXT_OCTI].type;
   // region Modules
@@ -93,7 +100,8 @@ export const extractStixRepresentative = (
     const relation = stix as SRO.StixRelation;
     const fromValue = fromRestricted ? 'Restricted' : relation.extensions[STIX_EXT_OCTI].source_value;
     const targetValue = toRestricted ? 'Restricted' : relation.extensions[STIX_EXT_OCTI].target_value;
-    return `${fromValue} ${relation.relationship_type} ${targetValue}`;
+    const separator = withArrowForRelationships ? '➡️' : relation.relationship_type;
+    return `${fromValue} ${separator} ${targetValue}`;
   }
   // endregion
   // region Entities
@@ -280,4 +288,64 @@ export const extractStixRepresentative = (
   }
   // endregion
   throw UnsupportedError('No representative extractor available', { type: entityType });
+};
+
+// region: user access information extractors
+// extract information from a sighting to have all the elements to check if a user has access to the from/to of the sighting
+const extractUserAccessPropertiesFromSighting = (sighting: SRO.StixSighting) => {
+  return [
+    {
+      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs,
+      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_granted_refs,
+      entity_type: sighting.extensions[STIX_EXT_OCTI].sighting_of_type,
+    } as BasicStoreCommon,
+    {
+      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs,
+      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_granted_refs,
+      entity_type: head(sighting.extensions[STIX_EXT_OCTI].where_sighted_types),
+    } as BasicStoreCommon
+  ];
+};
+
+// extract information from a relationship to have all the elements to check if a user has access to the from/to of the relationship
+const extractUserAccessPropertiesFromRelationship = (relation: SRO.StixRelation) => {
+  return [
+    {
+      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs,
+      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].source_ref_granted_refs,
+      entity_type: relation.extensions[STIX_EXT_OCTI].source_type,
+    } as BasicStoreCommon,
+    {
+      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs,
+      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].target_ref_granted_refs,
+      entity_type: relation.extensions[STIX_EXT_OCTI].target_type,
+    } as BasicStoreCommon
+  ];
+};
+
+// extract information from a stix object to have all the elements to check if a user has access to the object
+const extractUserAccessPropertiesFromStixObject = (
+  instance: S.StixObject | S.StixRelationshipObject
+) => {
+  if (isStixSightingRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
+    const sighting = instance as SRO.StixSighting;
+    return extractUserAccessPropertiesFromSighting(sighting);
+  }
+  if (isStixCoreRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
+    const relation = instance as SRO.StixRelation;
+    return extractUserAccessPropertiesFromRelationship(relation);
+  }
+  return [];
+};
+
+export const extractStixRepresentativeForUser = async (
+  context: AuthContext,
+  user: AuthUser,
+  stix: S.StixObject,
+  withArrowForRelationships = false,
+) => {
+  const [from, to] = extractUserAccessPropertiesFromStixObject(stix);
+  const fromRestricted = from ? !(await isUserCanAccessStoreElement(context, user, from)) : false;
+  const toRestricted = to ? !(await isUserCanAccessStoreElement(context, user, to)) : false;
+  return extractStixRepresentative(stix, { fromRestricted, toRestricted }, withArrowForRelationships);
 };

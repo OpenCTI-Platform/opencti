@@ -8,7 +8,7 @@ import { WidgetConfigProvider, WidgetConfigType } from './WidgetConfigContext';
 interface WidgetConfigProps {
   onComplete: (value: Widget, variableName?: string) => void,
   open: boolean,
-  setOpen: (open: boolean) => void,
+  onClose: () => void,
   widget?: Widget,
   context: WidgetContext,
   initialVariableName?: string,
@@ -21,7 +21,7 @@ interface WidgetConfigProps {
 const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   onComplete,
   widget,
-  setOpen,
+  onClose,
   open,
   context,
   initialVariableName,
@@ -30,9 +30,7 @@ const WidgetConfig: FunctionComponent<WidgetConfigProps> = ({
   fintelEntityType,
   fintelEditorValue,
 }) => {
-  const close = () => {
-    setOpen(false);
-  };
+  const close = () => onClose();
 
   const onSubmit = (newConfig: WidgetConfigType) => {
     onComplete(

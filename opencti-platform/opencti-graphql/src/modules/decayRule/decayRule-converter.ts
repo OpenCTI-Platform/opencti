@@ -1,5 +1,5 @@
-import { buildStixObject, cleanObject } from '../../database/stix-converter';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixDecayRule, StoreEntityDecayRule } from './decayRule-types';
 
 const convertDecayRuleToStix = (instance: StoreEntityDecayRule): StixDecayRule => {

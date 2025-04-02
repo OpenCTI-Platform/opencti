@@ -19,6 +19,7 @@ import { useDataTableContext } from './components/DataTableContext';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
 | 'additionalFilterKeys'
+| 'additionalFilters'
 | 'entityTypes'> & {
   hideSearch?: boolean
   hideFilters?: boolean
@@ -33,6 +34,7 @@ type DataTableInternalFiltersProps = Pick<DataTableProps,
 
 const DataTableInternalFilters = ({
   additionalFilterKeys,
+  additionalFilters,
   entityTypes,
   hideSearch,
   hideFilters,
@@ -75,6 +77,7 @@ const DataTableInternalFilters = ({
 
         {!hideFilters && (
           <DataTableFilters
+            additionalFilters={additionalFilters}
             availableFilterKeys={availableFilterKeys}
             searchContextFinal={searchContextFinal}
             availableEntityTypes={availableEntityTypes}
@@ -166,6 +169,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'availableFilterKeys'
 | 'redirectionModeEnabled'
 | 'additionalFilterKeys'
+| 'additionalFilters'
 | 'variant'
 | 'actions'
 | 'icon'
@@ -198,6 +202,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     availableRelationFilterTypes,
     preloadedPaginationProps: dataQueryArgs,
     additionalFilterKeys,
+    additionalFilters,
     lineFragment,
     exportContext,
     entityTypes,
@@ -243,6 +248,7 @@ const DataTable = (props: OCTIDataTableProps) => {
         filtersComponent={(
           <DataTableInternalFilters
             entityTypes={entityTypes}
+            additionalFilters={additionalFilters}
             additionalFilterKeys={additionalFilterKeys}
             additionalHeaderButtons={additionalHeaderButtons}
             availableEntityTypes={availableEntityTypes}

@@ -32,7 +32,7 @@ const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, St
   representative: (stix: StixDraftWorkspace) => {
     return stix.name;
   },
-  converter: convertDraftWorkspaceToStix
+  converter_2_1: convertDraftWorkspaceToStix
 };
 
 registerDefinition(DRAFT_WORKSPACE_DEFINITION);

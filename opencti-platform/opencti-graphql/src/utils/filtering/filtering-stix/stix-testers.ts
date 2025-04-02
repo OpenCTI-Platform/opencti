@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../types/stix-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../types/stix-2-1-extensions';
 import { generateInternalType, getParentTypes } from '../../../schema/schemaUtils';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
 import { stixRefsExtractor } from '../../../schema/stixEmbeddedRelationship';

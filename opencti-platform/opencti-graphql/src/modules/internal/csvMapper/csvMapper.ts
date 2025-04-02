@@ -36,7 +36,7 @@ const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityCsvMapper, StixCsvMappe
   representative: (instance: StixCsvMapper) => {
     return instance.name;
   },
-  converter: convertCsvMapperToStix
+  converter_2_1: convertCsvMapperToStix
 };
 
 registerDefinition(CSV_MAPPER_DEFINITION);

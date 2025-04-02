@@ -1,6 +1,6 @@
 import makeStyles from '@mui/styles/makeStyles';
 import { Field } from 'formik';
-import { append, union, take } from 'ramda';
+import { append } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -159,7 +159,8 @@ ExternalReferencesFieldProps
             value: n.node.id,
             entity: n.node,
           }));
-        setExternalReferences((o) => union(take(50, o), newExternalReferences));
+
+        setExternalReferences(newExternalReferences);
       });
   };
 
@@ -171,6 +172,7 @@ ExternalReferencesFieldProps
         name={name}
         required={required}
         multiple={true}
+        filterOptions={(options: unknown) => (options)}
         textfieldprops={{
           variant: 'standard',
           label: t_i18n('External references'),
@@ -187,7 +189,7 @@ ExternalReferencesFieldProps
           props: React.HTMLAttributes<HTMLLIElement>,
           option: Option,
         ) => (
-          <li {...props}>
+          <li {...props} key={option.value}>
             <div className={classes.icon}>
               <ItemIcon type="External-Reference" />
             </div>

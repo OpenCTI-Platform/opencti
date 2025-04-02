@@ -284,7 +284,7 @@ describe('identifier', () => {
     expect(name).toEqual('objects');
   });
 
-  it('should stix type converter work', () => {
+  it('should stix type converter_2_1 work', () => {
     const attackPattern = { type: 'attack-pattern' };
     const attackPatternType = generateInternalType(attackPattern);
     expect(attackPatternType).toEqual('Attack-Pattern');

@@ -14,7 +14,7 @@ services:
       - 5540:5540
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.4
     volumes:
       - esdata:/usr/share/elasticsearch/data
       - essnapshots:/usr/share/elasticsearch/snapshots
@@ -36,7 +36,7 @@ services:
       - 9300:9300
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
-    image: docker.elastic.co/kibana/kibana:8.17.3
+    image: docker.elastic.co/kibana/kibana:8.17.4
     environment:
       - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
     restart: unless-stopped
@@ -84,7 +84,7 @@ services:
       - 9600:9600
   opencti-dev-opensearch-dashboards:
     profiles: [ opensearch ]
-    image: opensearchproject/opensearch-dashboards:2.19.0
+    image: opensearchproject/opensearch-dashboards:2.19.1
     container_name: opencti-dev-opensearch-dashboards
     ports:
       - 5602:5601 # Map host port 5601 to container port 5601
@@ -141,7 +141,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-otlp:
     container_name: opencti-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.120.0
+    image: otel/opentelemetry-collector-contrib:0.122.1
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
@@ -157,7 +157,7 @@ services:
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
       profiles: [ keycloak ]
-      image: quay.io/keycloak/keycloak:26.1.2
+      image: quay.io/keycloak/keycloak:26.1.4
       volumes:
         - keycloakdata:/opt/keycloak/data
       container_name: opencti-dev-keycloak

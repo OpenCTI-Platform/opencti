@@ -3,7 +3,7 @@ import { ChatMistralAI } from '@langchain/mistralai';
 import { ChatOpenAI } from '@langchain/openai';
 import { Mistral } from '@mistralai/mistralai';
 import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
-import OpenAI from 'openai';
+import { AzureOpenAI, OpenAI } from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { UnknownError, UnsupportedError } from '../config/errors';
 import { OutputSchema } from '../modules/ai/ai-nlq-schema';
@@ -20,10 +20,10 @@ const AI_ENDPOINT = conf.get('ai:endpoint');
 const AI_TOKEN = conf.get('ai:token');
 const AI_MODEL = conf.get('ai:model');
 const AI_MAX_TOKENS = conf.get('ai:max_tokens');
+const AI_VERSION = conf.get('ai:version');
 
-let client: Mistral | OpenAI | null = null;
+let client: Mistral | OpenAI | AzureOpenAI | null = null;
 let nlqChat: ChatOpenAI | ChatMistralAI | null = null;
-
 if (AI_ENABLED && AI_TOKEN) {
   switch (AI_TYPE) {
     case 'mistralai':
@@ -75,8 +75,20 @@ if (AI_ENABLED && AI_TOKEN) {
       });
 
       break;
+
+    case 'azureopenai':
+      client = new AzureOpenAI({
+        apiKey: AI_TOKEN,
+        ...(isEmptyField(AI_ENDPOINT) ? {} : { baseURL: AI_ENDPOINT }),
+        ...(isEmptyField(AI_VERSION) ? {} : { apiVersion: AI_VERSION }),
+      });
+
+      // FIXME: we need to implement the chat for azureopenai
+
+      break;
+
     default:
-      throw UnsupportedError('Not supported AI type (currently support: mistralai, openai)', { type: AI_TYPE });
+      throw UnsupportedError('Not supported AI type (currently support: mistralai, openai, azureopenai)', { type: AI_TYPE });
   }
 }
 
@@ -125,11 +137,11 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
-    logApp.info('[AI] Querying OpenAI with prompt');
+    logApp.info('[AI] Querying OpenAI with prompt', { type: AI_TYPE });
     const response = await (client as OpenAI)?.chat.completions.create({
       model: AI_MODEL,
       messages: [
-        { role: 'developer', content: developerMessage },
+        { role: (AI_TYPE === 'azureopenai') ? 'system' : 'developer', content: developerMessage },
         { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) }
       ],
       stream: true,
@@ -138,7 +150,7 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
     if (response) {
       // eslint-disable-next-line no-restricted-syntax
       for await (const chunk of response) {
-        if (chunk.choices[0].delta.content !== undefined) {
+        if (chunk.choices[0]?.delta.content !== undefined) {
           const streamText = chunk.choices[0].delta.content;
           content += streamText;
           if (busId !== null) {
@@ -164,6 +176,7 @@ export const queryAi = async (busId: string | null, developerMessage: string | n
   switch (AI_TYPE) {
     case 'mistralai':
       return queryMistralAi(busId, finalDeveloperMessage, userMessage, user);
+    case 'azureopenai':
     case 'openai':
       return queryChatGpt(busId, finalDeveloperMessage, userMessage, user);
     default:

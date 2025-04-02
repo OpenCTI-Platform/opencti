@@ -171,7 +171,7 @@ import {
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix } from './stix-converter';
+import { convertExternalReferenceToStix, convertStoreToStix } from './stix-2-1-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
@@ -224,7 +224,7 @@ import { getFileContent, storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 
@@ -2291,7 +2291,7 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
     if (operation !== 'add') return true;
     return shouldCheckConfidenceOnRefRelationship(key);
   });
-  if (checkConfidence) {
+  if (checkConfidence && !opts.bypassIndividualUpdate) {
     controlUserConfidenceAgainstElement(user, initial);
   }
   const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
@@ -2623,14 +2623,16 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   }
   if (type === ENTITY_TYPE_INDICATOR) {
     // Do not compute decay again when base score does not change
-    if (updatePatch.decay_applied_rule && (updatePatch.decay_base_score === element.decay_base_score || updatePatch.decay_base_score === element.x_opencti_score)) {
+    // if the element was revoked, we need to update the score to reactivate the indicator
+    if (!element.revoked && updatePatch.decay_applied_rule
+      && (updatePatch.decay_base_score === element.decay_base_score && updatePatch.decay_base_score === element.x_opencti_score)) {
       logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { element, basePatch });
       // don't reset score, valid_from & valid_until
       updatePatch.x_opencti_score = element.x_opencti_score; // don't change the score
       updatePatch.valid_from = element.valid_from;
       updatePatch.valid_until = element.valid_until;
       // don't reset decay attributes
-      updatePatch.decay_base_score = element.decay_base_score;
+      // updatePatch.decay_base_score = element.decay_base_score; // no need since it's the same score
       updatePatch.revoked = element.revoked;
       updatePatch.decay_base_score_date = element.decay_base_score_date;
       updatePatch.decay_applied_rule = element.decay_applied_rule;
@@ -2682,7 +2684,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       const isOutDatedModification = isOutdatedUpdate(context, element, attributeKey);
       const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creators.name; // Ids and creators consolidation is always granted
       const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
-      const isInputWithData = isNotEmptyField(inputData);
+      const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
       // Field can be upsert if:
       // 1. Confidence is correct
