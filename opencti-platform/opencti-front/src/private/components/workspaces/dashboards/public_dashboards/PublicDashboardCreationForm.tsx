@@ -3,6 +3,7 @@ import React, { Suspense, useEffect } from 'react';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
 import { Option } from '@components/common/form/ReferenceField';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
@@ -11,6 +12,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'reac
 import MenuItem from '@mui/material/MenuItem';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PublicDashboardCreationFormDashboardsQuery } from '@components/workspaces/dashboards/public_dashboards/__generated__/PublicDashboardCreationFormDashboardsQuery.graphql';
+import { WarningAmber } from '@mui/icons-material';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
@@ -19,6 +21,9 @@ import SelectField from '../../../../../components/fields/SelectField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import useAuth from '../../../../../utils/hooks/useAuth';
+import { ME_FILTER_VALUE } from '../../../../../utils/filters/filtersUtils';
+import { fromB64 } from '../../../../../utils/String';
 
 const publicDashboardCreateMutation = graphql`
   mutation PublicDashboardCreationFormCreateMutation($input: PublicDashboardAddInput!) {
@@ -36,6 +41,7 @@ export const dashboardsQuery = graphql`
           id
           name
           currentUserAccessRight
+          manifest
         }
       }
     }
@@ -66,6 +72,8 @@ const PublicDashboardCreationFormComponent = ({
   onCompleted,
 }: PublicDashboardCreationFormComponentProps) => {
   const { t_i18n } = useFormatter();
+  const { me } = useAuth();
+  const publicDashboardCreatorName = me.name;
   const [commitCreateMutation] = useApiMutation(publicDashboardCreateMutation);
 
   const { workspaces } = usePreloadedQuery(dashboardsQuery, queryRef);
@@ -134,6 +142,11 @@ const PublicDashboardCreationFormComponent = ({
             {dashboards?.map((dashboard) => (
               <MenuItem key={dashboard.id} value={dashboard.id}>
                 {dashboard.name}
+                {fromB64(dashboard.manifest ?? '').includes(ME_FILTER_VALUE)
+                && <Tooltip title={`${t_i18n('A widget has a @me filter enabled. When sharing this dashboard as a public dashboard, the @me filter will be replaced by')} '${publicDashboardCreatorName}' ${t_i18n('who is sharing the dashboard. It might impact the data displayed in the dashboard.')}`}>
+                  <WarningAmber fontSize="small" color="warning" style={{ marginLeft: 10 }} />
+                  </Tooltip>
+                }
               </MenuItem>
             ))}
           </Field>
