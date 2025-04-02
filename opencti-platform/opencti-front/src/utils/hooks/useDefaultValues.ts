@@ -46,6 +46,7 @@ export const useComputeDefaultValues = () => {
           const parsed = JSON.parse(v.id);
           return {
             id: parsed.id,
+            member_id: parsed.member_id,
             name: parsed.name ?? '',
             entity_type: parsed.entity_type ?? '',
             access_right: parsed.access_right,
