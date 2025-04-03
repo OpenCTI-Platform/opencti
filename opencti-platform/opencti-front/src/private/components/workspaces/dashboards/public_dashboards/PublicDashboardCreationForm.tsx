@@ -80,6 +80,12 @@ const PublicDashboardCreationFormComponent = ({
     .filter((dashboard) => dashboard.currentUserAccessRight === 'admin')
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  const dashboardUsingMeFilter = (dashboardId: string) => {
+    return (dashboards ?? []).find(({ id, manifest }) => {
+      return id === dashboardId && fromB64(manifest ?? '').includes(ME_FILTER_VALUE);
+    });
+  };
+
   const formValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     uri_key: Yup.string(),
@@ -143,12 +149,14 @@ const PublicDashboardCreationFormComponent = ({
               </MenuItem>
             ))}
           </Field>
-          {(dashboards ?? [])
-            .find((dashboard) => dashboard.id === values.dashboard_id && fromB64(dashboard.manifest ?? '').includes(ME_FILTER_VALUE))
-            && <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
-              {`${t_i18n('A widget has a @me filter enabled. When sharing this dashboard as a public dashboard, the @me filter will be replaced by')} '${publicDashboardCreatorName}' ${t_i18n('who is sharing the dashboard. It might impact the data displayed in the dashboard.')}`}
+
+          {dashboardUsingMeFilter(values.dashboard_id) && (
+            <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
+              {t_i18n('A widget has a @me filter enabled...', {
+                values: { name: publicDashboardCreatorName },
+              })}
             </Alert>
-          }
+          )}
 
           <Field
             name="name"
