@@ -1930,7 +1930,7 @@ class DataTableToolBar extends Component {
                       <Tooltip title={t('Mark as read')}>
                         <span>
                           <IconButton
-                            aria-label="ack"
+                            aria-label={t('Mark as read')}
                             disabled={numberOfSelectedElements === 0 || this.state.processing}
                             onClick={this.handleLaunchRead.bind(this, true)}
                             color="success"
@@ -1943,7 +1943,7 @@ class DataTableToolBar extends Component {
                       <Tooltip title={t('Mark as unread')}>
                         <span>
                           <IconButton
-                            aria-label="ack"
+                            aria-label={t('Mark as unread')}
                             disabled={numberOfSelectedElements === 0 || this.state.processing}
                             onClick={this.handleLaunchRead.bind(this, false)}
                             color="warning"

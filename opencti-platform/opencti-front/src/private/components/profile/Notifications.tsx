@@ -30,81 +30,82 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import Transition from '../../../components/Transition';
 import { deleteNode } from '../../../utils/store';
 import { isNotEmptyField } from '../../../utils/utils';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
 const notificationsLineFragment = graphql`
-    fragment NotificationsLine_node on Notification {
-        id
-        entity_type
-        name
-        created
-        notification_type
-        is_read
-        notification_content {
-            title
-            events {
-                message
-                operation
-                instance_id
-            }
-        }
+  fragment NotificationsLine_node on Notification {
+    id
+    entity_type
+    name
+    created
+    notification_type
+    is_read
+    notification_content {
+      title
+      events {
+        message
+        operation
+        instance_id
+      }
     }
+  }
 `;
 
 const notificationsLinesQuery = graphql`
-    query NotificationsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: NotificationsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...NotificationsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query NotificationsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: NotificationsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...NotificationsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
 `;
 
 const notificationsLinesFragment = graphql`
-    fragment NotificationsLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "NotificationsOrdering", defaultValue: created }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "NotificationsLinesRefetchQuery") {
-        myNotifications(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_myNotifications") {
-            edges {
-                node {
-                    id
-                    ...NotificationsLine_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment NotificationsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "NotificationsOrdering", defaultValue: created }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "NotificationsLinesRefetchQuery") {
+    myNotifications(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_myNotifications") {
+      edges {
+        node {
+          id
+          ...NotificationsLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 export const notificationLineNotificationMarkReadMutation = graphql`
@@ -298,6 +299,7 @@ const Notifications: FunctionComponent = () => {
       label: 'Original creation date',
       percentWidth: 25,
       isSortable: isRuntimeSort,
+      render: ({ created }, item) => defaultRender(item.fldt(created)),
     },
     name: {
       id: 'trigger_name',
