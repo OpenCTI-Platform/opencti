@@ -87,7 +87,6 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
             label={t_i18n('Name')}
             detectDuplicate={['Draft']}
             fullWidth
-            askAi
           />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
