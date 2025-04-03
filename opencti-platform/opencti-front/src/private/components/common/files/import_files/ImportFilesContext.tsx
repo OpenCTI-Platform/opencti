@@ -182,7 +182,6 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   const [files, setFiles] = useState<FileWithConnectors[]>([]);
   const [uploadStatus, setUploadStatus] = useState<undefined | UploadStatus>();
   const [draftId, setDraftId] = useState<string | undefined>(draftContext?.id);
-  console.log({ draftId });
   const queryRef = useQueryLoading<ImportFilesContextQuery>(importFilesQuery, {
     id: initialValue.entityId || '',
   });
