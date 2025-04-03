@@ -378,18 +378,20 @@ const Notifications: FunctionComponent = () => {
 
     return (
       <div style={{ marginLeft: -40 }}>
-        <IconButton
-          disabled={updating}
-          onClick={(event) => {
-            event.stopPropagation();
-            event.preventDefault();
-            handleRead(data.id, !data.is_read);
-          }}
-          size="small"
-          color={data.is_read ? 'success' : 'warning'}
-        >
-          {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />}
-        </IconButton>
+        <Tooltip title={data.is_read ? t_i18n('Mark as unread') : t_i18n('Mark as read') }>
+          <IconButton
+            disabled={updating}
+            onClick={(event) => {
+              event.stopPropagation();
+              event.preventDefault();
+              handleRead(data.id, !data.is_read);
+            }}
+            size="small"
+            color={data.is_read ? 'success' : 'warning'}
+          >
+            {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />}
+          </IconButton>
+        </Tooltip>
         <Tooltip title={t_i18n('Delete this notification')}>
           <span>
             <IconButton
