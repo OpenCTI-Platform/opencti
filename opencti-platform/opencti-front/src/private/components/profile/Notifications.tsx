@@ -387,7 +387,7 @@ const Notifications: FunctionComponent = () => {
               handleRead(data.id, !data.is_read);
             }}
             size="small"
-            color={data.is_read ? 'success' : 'warning'}
+            color={data.is_read ? 'warning' : 'success'}
           >
             {data.is_read ? <UnpublishedOutlined /> : <CheckCircleOutlined />}
           </IconButton>
