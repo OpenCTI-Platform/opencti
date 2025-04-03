@@ -244,7 +244,7 @@ const Notifications: FunctionComponent = () => {
       id: 'operation',
       label: 'Operation',
       percentWidth: 10,
-      isSortable: isRuntimeSort,
+      isSortable: false,
       render: ({ notification_content, notification_type }: NotificationsLine_node$data) => {
         const firstOperation = getFirstOperation({ notification_content, notification_type });
         const events = notification_content.map((n) => n.events).flat();
@@ -279,7 +279,7 @@ const Notifications: FunctionComponent = () => {
       id: 'message',
       label: 'Message',
       percentWidth: 48,
-      isSortable: isRuntimeSort,
+      isSortable: false,
       render: ({ notification_content }: NotificationsLine_node$data) => {
         const events = notification_content.map((n) => n.events).flat();
         const firstEvent = events.at(0);
@@ -304,7 +304,7 @@ const Notifications: FunctionComponent = () => {
       render: ({ created }, item) => defaultRender(item.fldt(created)),
     },
     name: {
-      id: 'trigger_name',
+      id: 'name',
       label: 'Trigger name',
       percentWidth: 17,
       isSortable: isRuntimeSort,
