@@ -64,10 +64,12 @@ const stixCoreRelationshipResolvers = {
   StixCoreRelationship: {
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
     from: (rel, _, context) => {
+      // If relation is in a draft, we want to force the context to also be in the same draft
       const contextToUse = isDraftIndex(rel._index) ? { ...context, draft_context: rel.draft_ids[0] } : context;
       return (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, contextToUse, context.user));
     },
     to: (rel, _, context) => {
+      // If relation is in a draft, we want to force the context to also be in the same draft
       const contextToUse = isDraftIndex(rel._index) ? { ...context, draft_context: rel.draft_ids[0] } : context;
       return (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, contextToUse, context.user));
     },
