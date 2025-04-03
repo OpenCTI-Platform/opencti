@@ -48,7 +48,6 @@ export const READ_RFI_QUERY = gql`
             id
             name
             authorized_members {
-              id
               member_id
               access_right
               groups_restriction {
@@ -479,11 +478,11 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     expect(getRfiQueryResult?.data?.caseRfi.authorized_members).toBeDefined();
     expect(getRfiQueryResult?.data?.caseRfi.authorized_members).toEqual([
       {
-        id: OPENCTI_ADMIN_UUID,
+        member_id: OPENCTI_ADMIN_UUID,
         access_right: MEMBER_ACCESS_RIGHT_ADMIN,
         groups_restriction: []
       }, {
-        id: testOrgId,
+        member_id: testOrgId,
         access_right: MEMBER_ACCESS_RIGHT_EDIT,
         groups_restriction: [{ id: amberGroupId, name: AMBER_GROUP.name }]
       }
