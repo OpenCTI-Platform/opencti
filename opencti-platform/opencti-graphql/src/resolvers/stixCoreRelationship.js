@@ -40,6 +40,7 @@ import {
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadThroughDenormalized } from './stix';
+import { isDraftIndex } from '../database/utils';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -62,8 +63,14 @@ const stixCoreRelationshipResolvers = {
   StixCoreRelationshipsOrdering: stixCoreRelationshipOptions.StixCoreRelationshipsOrdering,
   StixCoreRelationship: {
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
-    from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, context, context.user)),
-    to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
+    from: (rel, _, context) => {
+      const contextToUse = isDraftIndex(rel._index) ? { ...context, draft_context: rel.draft_ids[0] } : context;
+      return (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, contextToUse, context.user));
+    },
+    to: (rel, _, context) => {
+      const contextToUse = isDraftIndex(rel._index) ? { ...context, draft_context: rel.draft_ids[0] } : context;
+      return (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, contextToUse, context.user));
+    },
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
     objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS, { sortBy: 'name' }),
