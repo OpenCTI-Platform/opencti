@@ -142,13 +142,6 @@ const useStyles = makeStyles((theme) => createStyles({
     fontSize: 14,
   },
   menuSubItem: {
-    paddingLeft: 44,
-    height: 25,
-    fontWeight: 500,
-    fontSize: 12,
-  },
-  menuSubItemWithIcon: {
-    paddingLeft: 20,
     height: 25,
     fontWeight: 500,
     fontSize: 12,
@@ -380,7 +373,8 @@ const LeftBar = () => {
                   to={entry.link}
                   selected={entry.exact ? location.pathname === entry.link : location.pathname.includes(entry.link)}
                   dense={true}
-                  classes={{ root: submenu_show_icons && entry.icon ? classes.menuSubItemWithIcon : classes.menuSubItem }}
+                  classes={{ root: classes.menuSubItem }}
+                  sx={{ paddingLeft: 3 }}
                 >
                   {submenu_show_icons && entry.icon && (
                     <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -389,9 +383,6 @@ const LeftBar = () => {
                   )}
                   <ListItemText
                     classes={{ primary: (submenu_show_icons && entry.icon) ? classes.menuSubItemText : classes.menuSubItemTextWithoutIcon }}
-                    sx={{
-                      paddingLeft: (submenu_show_icons && entry.icon) ? '0px' : '20px',
-                    }}
                     primary={t_i18n(entry.label)}
                   />
                 </MenuItem>
