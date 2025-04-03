@@ -9,6 +9,8 @@ const ImportFilesStepper = () => {
   const hasSelectedFiles = files.length > 0;
 
   return (
+    // If canSelectImportMode is true activeStep is initialised to 1 instead of 0 (we have 2 step instead of 3)
+    // we decrease 'activeStep' by 1 to adjust the stepper and skip the first step.
     <Stepper nonLinear activeStep={canSelectImportMode ? activeStep : activeStep - 1} sx={{ marginInline: 10 }}>
       {canSelectImportMode && (<Step key={'import_mode'}>
         <StepButton color="inherit" onClick={() => setActiveStep(0)}>

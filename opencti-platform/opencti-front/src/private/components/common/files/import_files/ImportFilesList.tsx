@@ -5,12 +5,12 @@ import { DeleteOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { CSV_MAPPER_NAME } from '@components/common/files/import_files/ImportFilesDialog';
 import { useTheme } from '@mui/styles';
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
+import { ImportFilesContextQuery$data } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
-import { ImportFilesDialogQuery$data } from './__generated__/ImportFilesDialogQuery.graphql';
 import type { Theme } from '../../../../../components/Theme';
 
 interface ImportFilesListProps {
-  connectorsForImport: ImportFilesDialogQuery$data['connectorsForImport'];
+  connectorsForImport: ImportFilesContextQuery$data['connectorsForImport'];
 }
 
 const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }) => {
