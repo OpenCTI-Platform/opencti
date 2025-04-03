@@ -16,6 +16,7 @@ import { commitLocalUpdate } from '../relay/environment';
 import { exportImage, exportPdf } from '../utils/Image';
 import inject18n from './i18n';
 import Loader from './Loader';
+import { UserContext } from '../utils/hooks/useAuth';
 import withRouter from '../utils/compat_router/withRouter';
 import { KNOWLEDGE_KNFRONTENDEXPORT } from '../utils/hooks/useGranted';
 import Security from '../utils/Security';
@@ -168,170 +169,177 @@ class ExportButtons extends Component {
       variant,
     } = this.props;
     return (
-      <div className={classes.exportButtons} id="export-buttons">
-        {handleDashboardDuplication && variant === 'dashboard' && (
-        <Tooltip title={t('Duplicate the dashboard')}>
-          <ToggleButton
-            size="small"
-            value="duplicate-dashboard"
-            onClick={handleDashboardDuplication.bind(this)}
-            style={{ marginRight: 3 }}
-          >
-            <ContentCopyOutlined fontSize="small" color="primary" />
-          </ToggleButton>
-        </Tooltip>
-        )}
-        <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
-          <Tooltip title={t('Export to image')}>
-            <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value={'Export-to-image'} style={{ marginRight: 3 }}>
-              <ImageOutlined fontSize="small" color="primary" />
-            </ToggleButton>
-          </Tooltip>
-        </Security>
-        <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
-          <Tooltip title={t('Export to PDF')}>
-            <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value={'Export-to-PDF'} style={{ marginRight: 3 }}>
-              <FilePdfBox fontSize="small" color="primary" />
-            </ToggleButton>
-          </Tooltip>
-        </Security>
-        {type === 'dashboard' && handleExportDashboard && (
-        <Tooltip title={t('Export')}>
-          <ToggleButton
-            size="small"
-            onClick={handleExportDashboard.bind(this)}
-            value={'Export-to-JSON'}
-            style={{ marginRight: 3 }}
-          >
-            <FileExportOutline fontSize="small" color="primary" />
-          </ToggleButton>
-        </Tooltip>
-        )}
-        {investigationAddFromContainer && (
-        <Tooltip title={t('Start an investigation')}>
-          <ToggleButton
-            size="small"
-            value={'Start-an-investigation'}
-            onClick={investigationAddFromContainer.bind(
-              this,
-              containerId,
-              navigate,
-            )}
-            style={{ marginRight: 3 }}
-          >
-            <ExploreOutlined fontSize="small" color="primary" />
-          </ToggleButton>
-        </Tooltip>
-        )}
-        {type === 'investigation' && (
-        <Tooltip title={t('Download as STIX report')}>
-          <ToggleButton size="small" onClick={handleDownloadAsStixReport.bind(this)} value={'Download-as-STIX-report'} style={{ marginRight: 3 }}>
-            <GetAppOutlined fontSize="small" color="primary" />
-          </ToggleButton>
-        </Tooltip>
-        )}
-        {csvData && (
-        <Tooltip title={t('Export to CSV')}>
-          <ToggleButton size="small" onClick={() => this.csvLink.current.link.click()} value={'Export-to-CSV'} style={{ marginRight: 3 }}>
-            <FileDelimitedOutline fontSize="small" color="primary" />
-          </ToggleButton>
-        </Tooltip>
-        )}
-        <Menu
-          anchorEl={anchorElImage}
-          open={Boolean(anchorElImage)}
-          onClose={this.handleCloseImage.bind(this)}
-        >
-          <MenuItem
-            onClick={this.exportImage.bind(
-              this,
-              domElementId,
-              name,
-              'dark',
-              true,
-            )}
-          >
-            {t('Dark (with background)')}
-          </MenuItem>
-          <MenuItem
-            onClick={this.exportImage.bind(
-              this,
-              domElementId,
-              name,
-              'dark',
-              false,
-            )}
-          >
-            {t('Dark (without background)')}
-          </MenuItem>
-          <MenuItem
-            onClick={this.exportImage.bind(
-              this,
-              domElementId,
-              name,
-              'light',
-              true,
-            )}
-          >
-            {t('Light (with background)')}
-          </MenuItem>
-          <MenuItem
-            onClick={this.exportImage.bind(
-              this,
-              domElementId,
-              name,
-              'light',
-              false,
-            )}
-          >
-            {t('Light (without background)')}
-          </MenuItem>
-        </Menu>
-        <Menu
-          anchorEl={anchorElPdf}
-          open={Boolean(anchorElPdf)}
-          onClose={this.handleClosePdf.bind(this)}
-        >
-          <MenuItem
-            onClick={this.exportPdf.bind(
-              this,
-              domElementId,
-              name,
-              'dark',
-              true,
-            )}
-          >
-            {t('Dark')}
-          </MenuItem>
-          <MenuItem
-            onClick={this.exportPdf.bind(
-              this,
-              domElementId,
-              name,
-              'light',
-              true,
-            )}
-          >
-            {t('Light')}
-          </MenuItem>
-        </Menu>
-        <Dialog
-          slotProps={{ paper: { elevation: 1 } }}
-          open={exporting}
-          keepMounted={true}
-          fullScreen={true}
-          classes={{ paper: classes.loader }}
-        >
-          <Loader />
-        </Dialog>
-        {csvData && (
-          <CSVLink
-            filename={csvFileName || `${t('CSV data.')}.csv`}
-            ref={this.csvLink}
-            data={csvData}
-          />
-        )}
-      </div>
+      <UserContext.Consumer>
+        {({ me }) => {
+          const isInDraft = me.draftContext;
+          return (
+            <div className={classes.exportButtons} id="export-buttons">
+              {handleDashboardDuplication && variant === 'dashboard' && (
+              <Tooltip title={t('Duplicate the dashboard')}>
+                <ToggleButton
+                  size="small"
+                  value="duplicate-dashboard"
+                  onClick={handleDashboardDuplication.bind(this)}
+                  style={{ marginRight: 3 }}
+                >
+                  <ContentCopyOutlined fontSize="small" color="primary" />
+                </ToggleButton>
+              </Tooltip>
+              )}
+              <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+                <Tooltip title={t('Export to image')}>
+                  <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value={'Export-to-image'} style={{ marginRight: 3 }}>
+                    <ImageOutlined fontSize="small" color="primary" />
+                  </ToggleButton>
+                </Tooltip>
+              </Security>
+              <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+                <Tooltip title={t('Export to PDF')}>
+                  <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value={'Export-to-PDF'} style={{ marginRight: 3 }}>
+                    <FilePdfBox fontSize="small" color="primary" />
+                  </ToggleButton>
+                </Tooltip>
+              </Security>
+              {type === 'dashboard' && handleExportDashboard && (
+              <Tooltip title={t('Export')}>
+                <ToggleButton
+                  size="small"
+                  onClick={handleExportDashboard.bind(this)}
+                  value={'Export-to-JSON'}
+                  style={{ marginRight: 3 }}
+                >
+                  <FileExportOutline fontSize="small" color="primary" />
+                </ToggleButton>
+              </Tooltip>
+              )}
+              {investigationAddFromContainer && (
+              <Tooltip title={isInDraft ? t('Not available in draft') : t('Start an investigation')}>
+                <ToggleButton
+                  size="small"
+                  value={isInDraft ? 'Not available in draft' : 'Start-an-investigation'}
+                  onClick={!isInDraft && investigationAddFromContainer.bind(
+                    this,
+                    containerId,
+                    navigate,
+                  )}
+                  style={{ marginRight: 3 }}
+                >
+                  <ExploreOutlined fontSize="small" color={!isInDraft ? 'primary' : 'disabled'} />
+                </ToggleButton>
+              </Tooltip>
+              )}
+              {type === 'investigation' && (
+              <Tooltip title={t('Download as STIX report')}>
+                <ToggleButton size="small" onClick={handleDownloadAsStixReport.bind(this)} value={'Download-as-STIX-report'} style={{ marginRight: 3 }}>
+                  <GetAppOutlined fontSize="small" color="primary" />
+                </ToggleButton>
+              </Tooltip>
+              )}
+              {csvData && (
+              <Tooltip title={t('Export to CSV')}>
+                <ToggleButton size="small" onClick={() => this.csvLink.current.link.click()} value={'Export-to-CSV'} style={{ marginRight: 3 }}>
+                  <FileDelimitedOutline fontSize="small" color="primary" />
+                </ToggleButton>
+              </Tooltip>
+              )}
+              <Menu
+                anchorEl={anchorElImage}
+                open={Boolean(anchorElImage)}
+                onClose={this.handleCloseImage.bind(this)}
+              >
+                <MenuItem
+                  onClick={this.exportImage.bind(
+                    this,
+                    domElementId,
+                    name,
+                    'dark',
+                    true,
+                  )}
+                >
+                  {t('Dark (with background)')}
+                </MenuItem>
+                <MenuItem
+                  onClick={this.exportImage.bind(
+                    this,
+                    domElementId,
+                    name,
+                    'dark',
+                    false,
+                  )}
+                >
+                  {t('Dark (without background)')}
+                </MenuItem>
+                <MenuItem
+                  onClick={this.exportImage.bind(
+                    this,
+                    domElementId,
+                    name,
+                    'light',
+                    true,
+                  )}
+                >
+                  {t('Light (with background)')}
+                </MenuItem>
+                <MenuItem
+                  onClick={this.exportImage.bind(
+                    this,
+                    domElementId,
+                    name,
+                    'light',
+                    false,
+                  )}
+                >
+                  {t('Light (without background)')}
+                </MenuItem>
+              </Menu>
+              <Menu
+                anchorEl={anchorElPdf}
+                open={Boolean(anchorElPdf)}
+                onClose={this.handleClosePdf.bind(this)}
+              >
+                <MenuItem
+                  onClick={this.exportPdf.bind(
+                    this,
+                    domElementId,
+                    name,
+                    'dark',
+                    true,
+                  )}
+                >
+                  {t('Dark')}
+                </MenuItem>
+                <MenuItem
+                  onClick={this.exportPdf.bind(
+                    this,
+                    domElementId,
+                    name,
+                    'light',
+                    true,
+                  )}
+                >
+                  {t('Light')}
+                </MenuItem>
+              </Menu>
+              <Dialog
+                slotProps={{ paper: { elevation: 1 } }}
+                open={exporting}
+                keepMounted={true}
+                fullScreen={true}
+                classes={{ paper: classes.loader }}
+              >
+                <Loader />
+              </Dialog>
+              {csvData && (
+              <CSVLink
+                filename={csvFileName || `${t('CSV data.')}.csv`}
+                ref={this.csvLink}
+                data={csvData}
+              />
+              )}
+            </div>
+          );
+        }}
+      </UserContext.Consumer>
     );
   }
 }
