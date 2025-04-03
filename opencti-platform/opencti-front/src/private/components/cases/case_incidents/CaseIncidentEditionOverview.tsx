@@ -4,7 +4,6 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
-import useHelper from 'src/utils/hooks/useHelper';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -263,9 +262,6 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     references: [],
   };
 
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
   return (
     <Formik
       enableReinitialize={true}
@@ -429,10 +425,7 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <CaseIncidentDeletion id={caseData.id}/>
-              : <div/>
-              }
+            <CaseIncidentDeletion id={caseData.id}/>
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

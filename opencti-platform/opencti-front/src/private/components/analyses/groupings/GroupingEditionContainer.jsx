@@ -15,7 +15,6 @@ const GroupingEditionContainer = (props) => {
       title={t_i18n('Update a grouping')}
       open={open}
       onClose={handleClose}
-      variant={undefined}
       context={editContext}
       controlledDial={controlledDial}
     >

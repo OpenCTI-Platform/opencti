@@ -7,7 +7,6 @@ import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { PopoverProps } from '@mui/material/Popover';
-import useHelper from 'src/utils/hooks/useHelper';
 import StixCoreObjectEnrichment from '@components/common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectEnrollPlaybook from '@components/common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import { useFormatter } from '../../../../components/i18n';
@@ -96,56 +95,51 @@ const CaseRfiPopover = ({ id }: { id: string }) => {
     });
   };
 
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
-  return isFABReplaced
-    ? (<></>)
-    : (
-      <div className={classes.container}>
-        <ToggleButton
-          value="popover"
-          size="small"
-          onClick={handleOpen}
+  return (
+    <div className={classes.container}>
+      <ToggleButton
+        value="popover"
+        size="small"
+        onClick={handleOpen}
+      >
+        <MoreVert fontSize="small" color="primary" />
+      </ToggleButton>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+          <MenuItem onClick={handleOpenEnrichment}>
+            {t_i18n('Enrich')}
+          </MenuItem>
+        </Security>
+        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+          <MenuItem onClick={handleOpenEnroll}>
+            {t_i18n('Enroll in playbook')}
+          </MenuItem>
+        </Security>
+        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        </Security>
+      </Menu>
+      <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
+      <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this request for information?')}
+      />
+      {queryRef && (
+        <React.Suspense
+          fallback={<Loader variant={LoaderVariant.inElement} />}
         >
-          <MoreVert fontSize="small" color="primary" />
-        </ToggleButton>
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-          <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-            <MenuItem onClick={handleOpenEnrichment}>
-              {t_i18n('Enrich')}
-            </MenuItem>
-          </Security>
-          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-            <MenuItem onClick={handleOpenEnroll}>
-              {t_i18n('Enroll in playbook')}
-            </MenuItem>
-          </Security>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-          </Security>
-        </Menu>
-        <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
-        <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
-        <DeleteDialog
-          deletion={deletion}
-          submitDelete={submitDelete}
-          message={t_i18n('Do you want to delete this request for information?')}
-        />
-        {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
-            <CaseRfiEditionContainer
-              queryRef={queryRef}
-              handleClose={handleCloseEdit}
-              open={displayEdit}
-            />
-          </React.Suspense>
-        )}
-      </div>
-    );
+          <CaseRfiEditionContainer
+            queryRef={queryRef}
+            handleClose={handleCloseEdit}
+            open={displayEdit}
+          />
+        </React.Suspense>
+      )}
+    </div>
+  );
 };
 
 export default CaseRfiPopover;

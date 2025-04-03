@@ -7,7 +7,7 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { handleErrorInForm } from 'src/relay/environment';
 import { CaseIncidentsLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
@@ -35,7 +35,6 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -424,14 +423,12 @@ const CaseIncidentCreation = ({
   paginationOptions: CaseIncidentsLinesCasesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_incidents_caseIncidents',
     paginationOptions,
     'caseIncidentAdd',
   );
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateCaseIncidentControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Case-Incident' {...props} />
   );
@@ -439,8 +436,7 @@ const CaseIncidentCreation = ({
   return (
     <Drawer
       title={t_i18n('Create an incident response')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateCaseIncidentControlledDial : undefined}
+      controlledDial={CreateCaseIncidentControlledDial}
     >
       <CaseIncidentCreationForm updater={updater} />
     </Drawer>

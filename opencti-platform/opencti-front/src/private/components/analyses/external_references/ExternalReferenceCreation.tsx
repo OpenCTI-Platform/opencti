@@ -194,7 +194,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     return (
       <Drawer
         title={t_i18n('Create an external reference')}
-        variant={undefined}
         controlledDial={CreateExternalReferenceControlledDial}
       >
         {({ onClose }) => (

@@ -16,7 +16,6 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import CaseIncidentEditionContainer, { caseIncidentEditionQuery } from './CaseIncidentEditionContainer';
 import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
 const caseIncidentPopoverDeletionMutation = graphql`
@@ -37,8 +36,6 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
     caseIncidentEditionQuery,
     { id },
   );
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
@@ -81,54 +78,52 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
       },
     });
   };
-  return isFABReplaced
-    ? (<></>)
-    : (
-      <>
-        <ToggleButton
-          value="popover"
-          size="small"
-          onClick={handleOpen}
-          title={t_i18n('Incident response actions')}
-        >
-          <MoreVert fontSize="small" color="primary" />
-        </ToggleButton>
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-          <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-            <MenuItem onClick={handleOpenEnrichment}>
-              {t_i18n('Enrich')}
-            </MenuItem>
-          </Security>
-          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-            <MenuItem onClick={handleOpenEnroll}>
-              {t_i18n('Enroll in playbook')}
-            </MenuItem>
-          </Security>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-          </Security>
-        </Menu>
-        <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
-        <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
-        <DeleteDialog
-          deletion={deletion}
-          submitDelete={submitDelete}
-          message={t_i18n('Do you want to delete this incident response?')}
+  return (
+    <>
+      <ToggleButton
+        value="popover"
+        size="small"
+        onClick={handleOpen}
+        title={t_i18n('Incident response actions')}
+      >
+        <MoreVert fontSize="small" color="primary" />
+      </ToggleButton>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+          <MenuItem onClick={handleOpenEnrichment}>
+            {t_i18n('Enrich')}
+          </MenuItem>
+        </Security>
+        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+          <MenuItem onClick={handleOpenEnroll}>
+            {t_i18n('Enroll in playbook')}
+          </MenuItem>
+        </Security>
+        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        </Security>
+      </Menu>
+      <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
+      <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this incident response?')}
+      />
+      {queryRef && (
+      <React.Suspense
+        fallback={<div />}
+      >
+        <CaseIncidentEditionContainer
+          queryRef={queryRef}
+          handleClose={handleCloseEdit}
+          open={displayEdit}
         />
-        {queryRef && (
-        <React.Suspense
-          fallback={<div />}
-        >
-          <CaseIncidentEditionContainer
-            queryRef={queryRef}
-            handleClose={handleCloseEdit}
-            open={displayEdit}
-          />
-        </React.Suspense>
-        )}
-      </>
-    );
+      </React.Suspense>
+      )}
+    </>
+  );
 };
 
 export default CaseIncidentPopover;

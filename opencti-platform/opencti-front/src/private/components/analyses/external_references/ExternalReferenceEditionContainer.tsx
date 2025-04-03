@@ -26,7 +26,6 @@ const ExternalReferenceEditionContainer: FunctionComponent<ExternalReferenceEdit
   return (
     <Drawer
       title={t_i18n('Update an external reference')}
-      variant={undefined}
       context={editContext}
       onClose={handleClose}
       open={open}

@@ -1,8 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Drawer, { DrawerControlledDialType, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
 import { FeedbackEditionOverview_case$key } from '@components/cases/feedbacks/__generated__/FeedbackEditionOverview_case.graphql';
-import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import FeedbackEditionOverview from './FeedbackEditionOverview';
@@ -35,8 +34,6 @@ const FeedbackEditionContainer: FunctionComponent<FeedbackEditionContainerProps>
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { feedback } = usePreloadedQuery(feedbackEditionQuery, queryRef);
   if (feedback === null) {
     return <ErrorNotFound />;
@@ -44,11 +41,10 @@ const FeedbackEditionContainer: FunctionComponent<FeedbackEditionContainerProps>
   return (
     <Drawer
       title={t_i18n('Update a feedback')}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={feedback?.editContext}
       onClose={handleClose}
       open={open}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       {({ onClose }) => (
         <FeedbackEditionOverview

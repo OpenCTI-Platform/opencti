@@ -1,15 +1,11 @@
 import Grid from '@mui/material/Grid';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import useHelper from 'src/utils/hooks/useHelper';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import TaskDetails from './TaskDetails';
 import { Tasks_tasks$key } from './__generated__/Tasks_tasks.graphql';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
-import TaskEdition from './TaskEdition';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
@@ -78,8 +74,6 @@ interface TaskProps {
 
 const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
   const task = useFragment(taskFragment, taskData);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const overviewLayoutCustomization = useOverviewLayoutCustomization('Task');
 
   return (
@@ -143,11 +137,6 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
           })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <TaskEdition caseId={task.id} />
-        </Security>
-      )}
     </>
   );
 };

@@ -1,8 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Drawer, { DrawerControlledDialType, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
 import { TasksEditionOverview_task$key } from '@components/cases/tasks/__generated__/TasksEditionOverview_task.graphql';
-import useHelper from 'src/utils/hooks/useHelper';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -35,8 +34,6 @@ const TasksEditionContainer: FunctionComponent<TasksEditionContainerProps> = ({
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const FABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { task } = usePreloadedQuery(tasksEditionQuery, queryRef);
   if (task === null) {
     return <ErrorNotFound />;
@@ -44,11 +41,10 @@ const TasksEditionContainer: FunctionComponent<TasksEditionContainerProps> = ({
   return (
     <Drawer
       title={t_i18n('Update a task')}
-      variant={!FABReplaced && open == null ? DrawerVariant.update : undefined}
       context={task?.editContext}
       onClose={handleClose}
       open={open}
-      controlledDial={FABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       {({ onClose }) => (
         <TasksEditionOverview

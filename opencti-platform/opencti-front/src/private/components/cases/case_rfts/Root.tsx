@@ -20,7 +20,6 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import CaseRft from './CaseRft';
-import CaseRftPopover from './CaseRftPopover';
 import CaseRftKnowledge from './CaseRftKnowledge';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
@@ -32,7 +31,6 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE } 
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseRftEdition from './CaseRftEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
@@ -88,8 +86,6 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const enableReferences = useIsEnforceReference('Case-Rft') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
@@ -115,11 +111,10 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
       />
       <ContainerHeader
         container={caseData}
-        PopoverComponent={<CaseRftPopover id={caseData.id} />}
-        EditComponent={isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
-          <CaseRftEdition caseId={caseData.id} />
-        </Security>
+        EditComponent={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
+            <CaseRftEdition caseId={caseData.id} />
+          </Security>
         )}
         enableQuickSubscription={true}
         enableEnrollPlaybook={true}

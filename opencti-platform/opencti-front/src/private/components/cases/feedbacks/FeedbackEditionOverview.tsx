@@ -4,7 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
-import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
@@ -236,8 +235,6 @@ FeedbackEditionOverviewProps
     objectAssignee: convertAssignees(feedbackData),
     x_opencti_workflow_id: convertStatus(t_i18n, feedbackData) as FieldOption,
   };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <Formik<FeedbackEditionFormValues>
@@ -353,12 +350,9 @@ FeedbackEditionOverviewProps
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <FeedbackDeletion
-                  id={feedbackData.id}
-                />
-              : <div/>
-              }
+            <FeedbackDeletion
+              id={feedbackData.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

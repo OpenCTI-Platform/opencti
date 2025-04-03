@@ -365,7 +365,6 @@ const GroupingCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a grouping')}
-      variant={undefined}
       controlledDial={CreateGroupingControlledDial}
     >
       <GroupingCreationForm updater={updater} />

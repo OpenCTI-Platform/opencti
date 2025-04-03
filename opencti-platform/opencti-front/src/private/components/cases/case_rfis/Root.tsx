@@ -17,7 +17,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import CaseRfiPopover from './CaseRfiPopover';
 import CaseRfi from './CaseRfi';
 import { RootCaseRfiCaseQuery } from './__generated__/RootCaseRfiCaseQuery.graphql';
 import { RootCaseRfiCaseSubscription } from './__generated__/RootCaseRfiCaseSubscription.graphql';
@@ -32,7 +31,6 @@ import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } 
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseRfiEdition from './CaseRfiEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
-import useHelper from '../../../../utils/hooks/useHelper';
 import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 
 const subscription = graphql`
@@ -90,8 +88,6 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     [caseId],
   );
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const enableReferences = useIsEnforceReference('Case-Rfi') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
@@ -117,11 +113,10 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
       />
       <ContainerHeader
         container={caseData}
-        PopoverComponent={<CaseRfiPopover id={caseData.id} />}
-        EditComponent={isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
-          <CaseRfiEdition caseId={caseData.id} />
-        </Security>
+        EditComponent={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
+            <CaseRfiEdition caseId={caseData.id} />
+          </Security>
         )}
         enableQuickSubscription={true}
         enableEnrollPlaybook={true}
