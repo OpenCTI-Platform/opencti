@@ -217,7 +217,6 @@ const LeftBar = () => {
     settings: { platform_whitemark },
   } = useAuth();
   const { isFeatureEnable } = useHelper();
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
