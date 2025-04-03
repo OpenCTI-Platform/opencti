@@ -12,7 +12,7 @@
 There are several possibilities for Enterprise Edition customers to use OpenCTI AI endpoints:
 
 - Use the Filigran AI Service leveraging our custom AI model using the token given by the support team.
-- Use OpenAI or MistralAI cloud endpoints using your own tokens.
+- Use OpenAI, MistralAI or AzureAI cloud endpoints using your own tokens.
 - Deploy or use local AI endpoints (Filigran can provide you with the custom model).
 
 [Please read the configuration documentation](../deployment/configuration.md)
@@ -84,7 +84,7 @@ If the question is not understood or out of the OpenCTI cyber context, no filter
 !!! warning "Token usage and cost notice"
 
     The Natural Language Query feature relies on heavy prompts sent to the language model to describe the filters structure and provide examples. These complex queries may generate significant token usage.
-    When using a custom API endpoint (e.g., OpenAI, Mistral) with your own API key, this may result in increased costs. We recommend checking your provider's pricing documentation to estimate costs accurately.    
+    When using a custom API endpoint (e.g., OpenAI, Mistral, AzureAI) with your own API key, this may result in increased costs. We recommend checking your provider's pricing documentation to estimate costs accurately.    
     For our SaaS customers, queries are routed through our hosted model instance and do not incur additional costs.
 
 #### NLQ results involving an entity

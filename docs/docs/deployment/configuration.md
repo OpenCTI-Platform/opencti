@@ -233,17 +233,20 @@ Here are the configuration keys, for both containers (environment variables) and
     There are several possibilities for [Enterprise Edition](../administration/enterprise.md) customers to use OpenCTI AI endpoints:
 
      - Use the Filigran AI Service leveraging our custom AI model using the token given by the support team.
-     - Use OpenAI or MistralAI cloud endpoints using your own tokens.
+     - Use OpenAI, MistralAI or AzureAI cloud endpoints using your own tokens.
      - Deploy or use local AI endpoints (Filigran can provide you with the custom model).
 
-| Parameter       | Environment variable | Default value | Description                                               |
-|:----------------|:---------------------|:--------------|:----------------------------------------------------------|
-| ai:enabled      | AI__ENABLED          | true          | Enable AI capabilities                                    |
-| ai:type         | AI__TYPE             | mistralai     | AI type (`mistralai` or `openai`)                         |
-| ai:endpoint     | AI__ENDPOINT         |               | Endpoint URL (empty means default cloud service)          |
-| ai:token        | AI__TOKEN            |               | Token for endpoint credentials                            |
-| ai:model        | AI__MODEL            |               | Model to be used for text generation (depending on type)  |
-| ai:model_images | AI__MODEL_IMAGES     |               | Model to be used for image generation (depending on type) |
+| Parameter              | Environment variable        | Default value | Description                                                                   |
+|:-----------------------|:----------------------------|:--------------|:------------------------------------------------------------------------------|
+| ai:enabled             | AI__ENABLED                 | true          | Enable AI capabilities                                                        |
+| ai:type                | AI__TYPE                    | mistralai     | AI type (`openai`, `mistralai` or `azureopenai`)                              |              |
+| ai:endpoint            | AI__ENDPOINT                |               | Endpoint URL (empty means default cloud service)                              |
+| ai:token               | AI__TOKEN                   |               | Token for endpoint credentials                                                |
+| ai:model               | AI__MODEL                   |               | Model to be used for text generation (depending on type)                      |
+| ai:model_images        | AI__MODEL_IMAGES            |               | Model to be used for image generation (depending on type)                     |
+| ai:version             | AI__VERSION                 |               | The version of the deployment server (used for AzureAI)                       |
+| ai:ai_azure_instance   | AI__AI_AZURE_INSTANCE       |               | The Azure instance name you use (https://<ai_azure_instance>.openai.azure.ai) |
+| ai:ai_azure_deployment | AI__AI_AZURE_DEPLOYMENT     |               | The Azure deployment (often equal to the model used)                          |
 
 #### Protect Sensitive Configurations
 
