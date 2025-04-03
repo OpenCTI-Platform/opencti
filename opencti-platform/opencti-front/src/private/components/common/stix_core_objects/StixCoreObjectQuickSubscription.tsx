@@ -356,7 +356,7 @@ StixCoreObjectQuickSubscriptionContentProps
               )}
               <div
                 className={classes.buttons}
-                style={{ marginTop: firstTrigger ? 20 : 40 }}
+                style={{ paddingBottom: 40 }}
               >
                 <Button
                   variant="contained"
@@ -486,7 +486,13 @@ StixCoreObjectQuickSubscriptionContentProps
   }
   return (
     <>
-      <Tooltip title={title}>
+      <Tooltip
+        title={
+          <span style={{ maxWidth: 200, display: 'block', textAlign: 'center' }}>
+            {title}
+          </span>
+        }
+      >
         <ToggleButton
           onClick={() => !disabledInDraft && (triggerUpdate ? handleOpen() : createInstanceTrigger())}
           value="quick-subscription"
