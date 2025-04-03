@@ -356,7 +356,7 @@ StixCoreObjectQuickSubscriptionContentProps
               )}
               <div
                 className={classes.buttons}
-                style={{ paddingBottom: 40 }}
+                style={{ marginTop: firstTrigger ? 20 : 40 }}
               >
                 <Button
                   variant="contained"
