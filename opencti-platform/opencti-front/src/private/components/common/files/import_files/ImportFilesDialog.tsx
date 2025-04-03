@@ -382,7 +382,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
       // If workbench
       return (
         // Navigate to entity button (if associated entity exists)
-        optionsContext.values.associatedEntity?.value ? (
+        optionsContext.values.associatedEntity?.value ? !entityId && (
           <Button
             color="secondary"
             onClick={() => handleClose()}
@@ -391,18 +391,19 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           >
             {t_i18n('Navigate to entity')}
           </Button>
-        ) : (
-          <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-            <Button
-              color="secondary"
-              onClick={() => handleClose()}
-              component={Link}
-              to={'/dashboard/data/import'}
-            >
-              {t_i18n('Navigate to import')}
-            </Button>
-          </Security>
         )
+          : (
+            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+              <Button
+                color="secondary"
+                onClick={() => handleClose()}
+                component={Link}
+                to={'/dashboard/data/import'}
+              >
+                {t_i18n('Navigate to import')}
+              </Button>
+            </Security>
+          )
       );
     }
 
