@@ -9,6 +9,7 @@ import ObjectOrganizationField from '@components/common/form/ObjectOrganizationF
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { graphql } from 'react-relay';
 import { useTheme } from '@mui/styles';
+import * as Yup from 'yup';
 import { useFormatter } from './i18n';
 import TextField from './TextField';
 import useApiMutation from '../utils/hooks/useApiMutation';
@@ -48,6 +49,12 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   const theme = useTheme<Theme>();
   const { me } = useAuth();
   const meResolvedId = me.id;
+
+  const requestAccessValidation = (t: (v: string) => string) => Yup.object().shape({
+    organizations: Yup.object().shape({
+      value: Yup.string().trim().required(t('This field is required')),
+    }),
+  });
 
   const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
     successMessage: `${t_i18n('Your request for access has been successfully taken into account')}`,
@@ -98,6 +105,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
           <Formik
             initialValues={initialValues}
             onSubmit={onSubmit}
+            validationSchema={requestAccessValidation(t_i18n)}
           >
             {({ isSubmitting, submitForm }) => {
               return (
