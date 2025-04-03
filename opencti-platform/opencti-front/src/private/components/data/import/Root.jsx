@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Drafts from '../../drafts/Drafts';
 import Import from './Import';
 import WorkbenchFile from '../../common/files/workbench/WorkbenchFile';
@@ -10,11 +10,13 @@ import useHelper from '../../../../utils/hooks/useHelper';
 const Root = () => {
   const { isFeatureEnable } = useHelper();
   const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
 
   return (
     <Routes>
-      <Route path="/" Component={Import} />
+      <Route
+        path="/"
+        element={isNewImportScreensEnabled ? <Navigate to="/dashboard/data/import/file" replace /> : <Import />}
+      />
       <Route
         path="/pending/:fileId"
         element={<WorkbenchFile />}
@@ -25,7 +27,7 @@ const Root = () => {
           element={<ImportFilesContent />}
         />
       )}
-      {isNewImportScreensEnabled && isDraftFeatureEnabled && (
+      {isNewImportScreensEnabled && (
         <Route
           path="/draft"
           element={<Drafts />}

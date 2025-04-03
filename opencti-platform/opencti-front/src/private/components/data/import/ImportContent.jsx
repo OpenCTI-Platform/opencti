@@ -162,7 +162,6 @@ const ImportContentComponent = ({
   relay,
   importFiles,
   pendingFiles,
-  isNewImportScreensEnabled,
   inDraftOverview,
 }) => {
   const classes = useStyles();
@@ -309,13 +308,12 @@ const ImportContentComponent = ({
 
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
   return (
-    <div style={{ paddingRight: !isNewImportScreensEnabled && !inDraftOverview ? 200 : 0 }}>
+    <div>
       {!inDraftOverview && (
         <Breadcrumbs
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
         />
       )}
-      {isNewImportScreensEnabled && !inDraftOverview && <ImportMenu/>}
       <Grid
         container={true}
         spacing={3}
@@ -613,7 +611,7 @@ const ImportContentComponent = ({
           color="primary"
           aria-label="Add"
           className={classes.createButton}
-          style={{ right: isNewImportScreensEnabled ? 230 : 30 }}
+          style={{ right: 30 }}
         >
           <Add/>
         </Fab>
