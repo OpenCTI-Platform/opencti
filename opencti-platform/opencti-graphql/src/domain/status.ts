@@ -21,7 +21,7 @@ import {
 } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
 import { getEntitiesListFromCache } from '../database/cache';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
@@ -140,6 +140,8 @@ export const createStatusTemplate = async (context: AuthContext, user: AuthUser,
 export const createStatus = async (context: AuthContext, user: AuthUser, subTypeId: string, input: StatusAddInput) => {
   validateSetting(subTypeId, 'workflow_configuration');
   const data = await createEntity(context, user, { type: subTypeId, ...input }, ENTITY_TYPE_STATUS);
+  logApp.info('Create status:', { subTypeId, input });
+  // FIXME Status cache is not invalidated here, and should
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -234,4 +236,29 @@ export const statusTemplateUsagesNumber = async (context: AuthContext, user: Aut
   const result = elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, options);
   const count = await Promise.all([result]);
   return count[0];
+};
+
+export const isGlobalWorkflowEnabled = async (context: AuthContext, user: AuthUser, subTypeId: string) => {
+  // FIXME cache issue here
+  // const entityStatusFromCache = await findByType(context, user, subTypeId);
+
+  const args: QueryStatusesArgs = {
+    filters: {
+      mode: FilterMode.And,
+      filterGroups: [],
+      filters: [
+        { key: ['type'], values: [subTypeId] },
+        { key: ['scope'], values: [StatusScope.Global] },
+      ],
+    },
+    orderBy: StatusOrdering.Order,
+    orderMode: OrderingMode.Asc,
+  };
+
+  const entityStatusFromDB = await findAll(context, user, args);
+
+  // TODO remove this filter if we don't use cache
+  const globalStatuses = entityStatusFromDB.edges.filter((status) => status.node.scope === StatusScope.Global);
+  logApp.info('isGlobalWorkflowEnabled - current:', { subTypeId, globalStatuses, entityStatusFromDB, args });
+  return globalStatuses.length > 0;
 };

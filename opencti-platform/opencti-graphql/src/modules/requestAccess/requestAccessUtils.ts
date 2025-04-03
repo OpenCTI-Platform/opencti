@@ -1,4 +1,4 @@
-import { isFeatureEnabled } from '../../config/conf';
+import { isFeatureEnabled, logApp } from '../../config/conf';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 
@@ -28,16 +28,18 @@ export const verifyRequestAccessEnabled = (settings: BasicStoreSettings, rfiEnti
   }
 
   // 4. At least one auth member admin should be configured.
-  const isRequestAccesApprovalAdminConfigured: boolean = rfiEntitySettings?.request_access_workflow?.approval_admin !== undefined
+  const isRequestAccessApprovalAdminConfigured: boolean = rfiEntitySettings?.request_access_workflow?.approval_admin !== undefined
     && rfiEntitySettings?.request_access_workflow?.approval_admin.length >= 1;
-  if (!isRequestAccesApprovalAdminConfigured) {
+  if (!isRequestAccessApprovalAdminConfigured) {
     message.push('At least one approval administrator must be configured in entity settings.');
   }
 
   const isEnabled: boolean = isEEConfigured
     && isPlatformOrgSetup
     && areRequestAccessStatusConfigured
-    && isRequestAccesApprovalAdminConfigured;
+    && isRequestAccessApprovalAdminConfigured;
+
+  logApp.debug('Request access enabled result:', { enabled: isEnabled, message: message.join(' ') });
 
   return {
     enabled: isEnabled,
