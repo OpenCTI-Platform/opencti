@@ -241,6 +241,7 @@ const Notifications: FunctionComponent = () => {
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     operation: {
+      id: 'operation',
       label: 'Operation',
       percentWidth: 10,
       isSortable: isRuntimeSort,
@@ -275,6 +276,7 @@ const Notifications: FunctionComponent = () => {
       },
     },
     message: {
+      id: 'message',
       label: 'Message',
       percentWidth: 48,
       isSortable: isRuntimeSort,
