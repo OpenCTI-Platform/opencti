@@ -389,7 +389,7 @@ const Notifications: FunctionComponent = () => {
             size="small"
             color={data.is_read ? 'success' : 'warning'}
           >
-            {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />}
+            {data.is_read ? <UnpublishedOutlined /> : <CheckCircleOutlined />}
           </IconButton>
         </Tooltip>
         <Tooltip title={t_i18n('Delete this notification')}>
