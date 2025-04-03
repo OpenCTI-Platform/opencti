@@ -26,7 +26,6 @@ const CREATE_QUERY = gql`
       name
       description
       authorized_members {
-        id
         member_id
         access_right
       }
@@ -52,7 +51,6 @@ const READ_QUERY = gql`
       standard_id
       name
       authorized_members {
-        id
         member_id
         access_right
       }
@@ -68,7 +66,6 @@ const READ_REPORT_QUERY = gql`
       standard_id
       name
       authorized_members {
-        id
         member_id
         access_right
       }
@@ -115,7 +112,6 @@ const EDIT_AUTHORIZED_MEMBERS_QUERY = gql`
         id
         currentUserAccessRight
         authorized_members {
-          id
           member_id
           access_right
         }
@@ -234,7 +230,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       }
     ]);
@@ -269,11 +265,11 @@ describe('Case Incident Response standard behavior with authorized_members activ
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       },
       {
-        id: userEditorId,
+        member_id: userEditorId,
         access_right: 'view'
       }
     ]);
@@ -354,11 +350,11 @@ describe('Case Incident Response standard behavior with authorized_members activ
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       },
       {
-        id: userEditorId,
+        member_id: userEditorId,
         access_right: 'admin'
       }
     ]);
@@ -444,7 +440,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     expect(caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd.authorized_members).not.toBeUndefined();
     expect(caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       }
     ]);
@@ -612,11 +608,11 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       },
       {
-        id: userEditorId,
+        member_id: userEditorId,
         access_right: 'view'
       }
     ]);
@@ -737,11 +733,11 @@ describe('Restricted entities listing', () => {
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       },
       {
-        id: userEditorId,
+        member_id: userEditorId,
         access_right: 'view'
       }
     ]);
@@ -781,11 +777,11 @@ describe('Restricted entities listing', () => {
     expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       },
       {
-        id: userEditorId,
+        member_id: userEditorId,
         access_right: 'view'
       }
     ]);
