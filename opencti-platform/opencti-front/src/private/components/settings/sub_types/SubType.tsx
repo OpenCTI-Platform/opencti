@@ -142,7 +142,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
             variant="outlined"
             className={'paper-for-grid'}
           >
-            <div style={{ display: 'flex' }}>
+            <div style={{ display: 'flex', marginTop: theme.spacing(1) }}>
               <Grid item xs={hasRequestAccessConfig ? 6 : 12}>
                 {subType.settings?.availableSettings.includes('workflow_configuration')
                   && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false}/>

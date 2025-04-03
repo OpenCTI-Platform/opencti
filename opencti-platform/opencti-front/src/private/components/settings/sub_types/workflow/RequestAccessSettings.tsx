@@ -57,7 +57,7 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
   };
   return (
     <>
-      <div style={{ marginTop: 20 }}>
+      <div>
         <Typography variant="h3" gutterBottom={true}>
           {t_i18n('Specific Workflow for Request Access')}
           <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.REQUEST_ACCESS}/>
