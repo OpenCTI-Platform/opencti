@@ -40,7 +40,6 @@ import obasLight from '../../../static/images/xtm/obas_light.png';
 import xtmhubDark from '../../../static/images/xtm/xtm_hub_dark.png';
 import xtmhubLight from '../../../static/images/xtm/xtm_hub_light.png';
 import { isNotEmptyField } from '../../../utils/utils';
-import useHelper from '../../../utils/hooks/useHelper';
 import ItemBoolean from '../../../components/ItemBoolean';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -149,8 +148,6 @@ const topBarAskAINLQMutation = graphql`
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
 }) => {
-  const { isFeatureEnable } = useHelper();
-  const isImportWorkflowEnabled = isFeatureEnable('IMPORT_WORKFLOW');
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -320,16 +317,14 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
             <Security needs={[KNOWLEDGE]}>
               <>
                 { ee.license_type === 'nfr' && <ItemBoolean variant="large" label={'EE DEV LICENSE'} status={false}/> }
-                { isImportWorkflowEnabled && (
-                  <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-                    <UploadImport
-                      variant="icon"
-                      size="medium"
-                      fontSize="medium"
-                      color="inherit"
-                    />
-                  </Security>
-                )}
+                <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+                  <UploadImport
+                    variant="icon"
+                    size="medium"
+                    fontSize="medium"
+                    color="inherit"
+                  />
+                </Security>
                 <Tooltip title={t_i18n('Notifications')}>
                   <IconButton
                     size="medium"
