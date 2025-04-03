@@ -121,11 +121,11 @@ const DataTableLine = ({
 
   // Memoize link to avoid recomputations
   let link = useMemo(() => useComputeLink(data), [data]);
-  if (redirectionMode && redirectionMode !== 'overview') {
+  if (redirectionMode && redirectionMode !== 'overview' && link !== undefined) {
     link = `${link}/${redirectionMode}`;
   }
 
-  const navigable = !disableNavigation && !onLineClick && !selectOnLineClick;
+  const navigable = !disableNavigation && !onLineClick && !selectOnLineClick && !!link;
   const clickable = !!(navigable || selectOnLineClick || onLineClick);
 
   const handleSelectLine = (event: React.MouseEvent) => {
@@ -137,7 +137,8 @@ const DataTableLine = ({
   };
 
   const handleNavigate = (event: React.MouseEvent) => {
-    if (!navigable) return;
+    if (!navigable || !link) return;
+
     if (event.ctrlKey) {
       window.open(link, '_blank');
     } else {
@@ -241,7 +242,7 @@ const DataTableLine = ({
           >
             {actions && actions(data)}
             {endsWithNavigate && (
-              <IconButton onClick={() => navigate(link)}>
+              <IconButton onClick={() => (link ? navigate(link) : undefined)}>
                 <KeyboardArrowRightOutlined />
               </IconButton>
             )}

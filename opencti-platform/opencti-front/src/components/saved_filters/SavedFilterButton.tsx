@@ -27,15 +27,17 @@ const SavedFilterButton = () => {
   return (
     <>
       <Tooltip title={t_i18n('Save filter')}>
-        <IconButton
-          color="primary"
-          onClick={handleOpenDialog}
-          size="small"
-          disabled={!filters?.filters.length && !filters?.filterGroups.length}
-          aria-label={t_i18n('Save')}
-        >
-          <SaveOutlined />
-        </IconButton>
+        <span>
+          <IconButton
+            color="primary"
+            onClick={handleOpenDialog}
+            size="small"
+            disabled={!filters?.filters.length && !filters?.filterGroups.length}
+            aria-label={t_i18n('Save')}
+          >
+            <SaveOutlined />
+          </IconButton>
+        </span>
       </Tooltip>
 
       {isSavedDialogOpen && (
