@@ -186,17 +186,19 @@ ExternalReferenceFileImportViewerBaseProps
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Uploaded files')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 30 }} />}>
-          <div style={{ float: 'left', marginTop: -17 }}>
+        <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 25 }}/>}>
+          <div style={{ float: 'left', marginTop: -15 }}>
             {isImportWorkflowEnabled ? (
-              <UploadImport
-                entityId={id}
-                onSuccess={() => {
-                  if (relay.refetch) {
-                    relay.refetch({ id });
-                  }
-                }}
-              />
+              <div style={{ marginBottom: 5 }}>
+                <UploadImport
+                  entityId={id}
+                  onSuccess={() => {
+                    if (relay.refetch) {
+                      relay.refetch({ id });
+                    }
+                  }}
+                />
+              </div>
             ) : (
               <FileUploader
                 entityId={id}
