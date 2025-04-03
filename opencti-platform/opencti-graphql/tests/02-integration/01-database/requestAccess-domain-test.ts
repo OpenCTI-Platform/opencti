@@ -40,7 +40,7 @@ describe('Request access domain  - initialized status', async () => {
     expect(approvedStatusId?.length, 'The status id must be a string not empty').toBeGreaterThan(1);
     if (approvedStatusId) {
       const statusInRfi = await findStatusById(testContext, ADMIN_USER, approvedStatusId);
-      const statusData = await findTemplateById(testContext, ADMIN_USER, statusInRfi.template_id);
+      const statusData = findTemplateById(testContext, ADMIN_USER, statusInRfi.template_id);
       expect(statusData.name).toBe('APPROVED');
     }
 
@@ -49,7 +49,7 @@ describe('Request access domain  - initialized status', async () => {
     expect(declinedStatusId?.length, 'The status id must be a string not empty').toBeGreaterThan(1);
     if (declinedStatusId) {
       const statusInRfi = await findStatusById(testContext, ADMIN_USER, declinedStatusId);
-      const statusData = await findTemplateById(testContext, ADMIN_USER, statusInRfi.template_id);
+      const statusData = findTemplateById(testContext, ADMIN_USER, statusInRfi.template_id);
       expect(statusData.name).toBe('DECLINED');
     }
   });

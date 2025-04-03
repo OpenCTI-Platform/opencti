@@ -239,26 +239,7 @@ export const statusTemplateUsagesNumber = async (context: AuthContext, user: Aut
 };
 
 export const isGlobalWorkflowEnabled = async (context: AuthContext, user: AuthUser, subTypeId: string) => {
-  // FIXME cache issue here
-  // const entityStatusFromCache = await findByType(context, user, subTypeId);
-
-  const args: QueryStatusesArgs = {
-    filters: {
-      mode: FilterMode.And,
-      filterGroups: [],
-      filters: [
-        { key: ['type'], values: [subTypeId] },
-        { key: ['scope'], values: [StatusScope.Global] },
-      ],
-    },
-    orderBy: StatusOrdering.Order,
-    orderMode: OrderingMode.Asc,
-  };
-
-  const entityStatusFromDB = await findAll(context, user, args);
-
-  // TODO remove this filter if we don't use cache
-  const globalStatuses = entityStatusFromDB.edges.filter((status) => status.node.scope === StatusScope.Global);
-  logApp.info('isGlobalWorkflowEnabled - current:', { subTypeId, globalStatuses, entityStatusFromDB, args });
+  const entityStatusFromCache = await findByType(context, user, subTypeId);
+  const globalStatuses = entityStatusFromCache.filter((status) => status.scope === StatusScope.Global);
   return globalStatuses.length > 0;
 };
