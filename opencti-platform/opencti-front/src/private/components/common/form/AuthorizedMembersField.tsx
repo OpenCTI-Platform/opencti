@@ -462,7 +462,7 @@ const AuthorizedMembersField = ({
                 <List sx={{ pt: 0 }}>
                   {value.map((authorizedMember, index) => (!isGenericOption(authorizedMember.value) ? (
                     <AuthorizedMembersFieldListItem
-                      key={authorizedMember.value}
+                      key={index}
                       authorizedMember={authorizedMember}
                       name={`${name}[${index}].accessRight`}
                       accessRights={accessRights}

@@ -37,27 +37,27 @@ export const getAuthorizedMembers = async (
   if (!validateUserAccessOperation(user, entity, 'manage-access')) {
     return []; // return empty if user doesn't have the right access_right
   }
-  const membersIds = (entity.restricted_members ?? []).map((e) => e.id);
+  const entityRestrictedMembers = entity.restricted_members ?? [];
+  const membersIds = entityRestrictedMembers.map((e) => e.id);
+  const groupsRestrictionIds = entityRestrictedMembers.flatMap((e) => e.groups_restriction_ids ?? []);
   const args = {
     connectionFormat: false,
     first: 100,
     filters: {
       mode: 'and',
-      filters: [{ key: 'internal_id', values: membersIds }],
+      filters: [{ key: 'internal_id', values: [...membersIds, ...groupsRestrictionIds] }],
       filterGroups: [],
     },
   };
   const members = await findAllMembers(context, user, args);
-  return Promise.all((entity.restricted_members ?? []).map(async (currentAuthMember, i) => {
+  return (entity.restricted_members ?? []).map((currentAuthMember, i) => {
     const member = members.find((m) => (m as BasicStoreEntity).id === currentAuthMember.id) as BasicStoreEntity;
     let groups_restriction: MemberGroupRestriction[] = [];
     if (currentAuthMember.groups_restriction_ids) {
-      groups_restriction = await Promise.all(
-        currentAuthMember.groups_restriction_ids.map(async (groupId: string) => {
-          const group = (await findGroup(context, user, groupId)) as unknown as BasicGroupEntity;
-          return { id: groupId, name: group.name };
-        })
-      );
+      groups_restriction = currentAuthMember.groups_restriction_ids.map((groupId: string) => {
+        const group = members.find((m) => (m as BasicStoreEntity).id === groupId) as BasicStoreEntity;
+        return { id: groupId, name: group?.name ?? 'unknown' };
+      });
     }
     return {
       id: `${currentAuthMember.id}_${i}`,
@@ -67,7 +67,7 @@ export const getAuthorizedMembers = async (
       access_right: currentAuthMember.access_right,
       groups_restriction
     };
-  }));
+  });
 };
 
 export const containsValidAdmin = async (
