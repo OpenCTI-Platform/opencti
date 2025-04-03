@@ -216,7 +216,9 @@ const ImportWorkbenchesContent = () => {
           toolbarFilters={toolbarFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={workbenchLineFragment}
+          entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
+          taskScope={'IMPORT'}
           redirectionModeEnabled
           onLineClick={(file: ImportWorkbenchesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
