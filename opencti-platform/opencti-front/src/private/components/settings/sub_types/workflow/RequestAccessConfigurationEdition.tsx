@@ -136,6 +136,7 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
             <Form>
               <StatusTemplateFieldScoped
                 name="acceptedTemplate"
+                label={t_i18n('On approval move to status:')}
                 setFieldValue={setFieldValue}
                 helpertext={t_i18n('Request for information status to use when access request is accepted.')}
                 required={true}
@@ -144,6 +145,7 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
               />
               <StatusTemplateFieldScoped
                 name="declinedTemplate"
+                label={t_i18n('On decline move to status:')}
                 setFieldValue={setFieldValue}
                 helpertext={t_i18n('Request for information status to use when access request is declined.')}
                 required={true}
@@ -152,7 +154,7 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
               />
               <GroupField
                 name="approvalAdmin"
-                label={t_i18n('Select authorized members')}
+                label={t_i18n('Validator group membership:')}
                 onChange={setFieldValue}
                 multiple={false}
                 style={fieldSpacingContainerStyle}

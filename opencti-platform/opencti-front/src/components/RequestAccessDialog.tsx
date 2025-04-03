@@ -8,6 +8,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import ObjectOrganizationField from '@components/common/form/ObjectOrganizationField';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { graphql } from 'react-relay';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from './i18n';
 import TextField from './TextField';
 import useApiMutation from '../utils/hooks/useApiMutation';
@@ -16,6 +17,7 @@ import { RequestAccessDialogMutation$variables } from './__generated__/RequestAc
 import { handleErrorInForm } from '../relay/environment';
 import useAuth from '../utils/hooks/useAuth';
 import { fieldSpacingContainerStyle } from '../utils/field';
+import type { Theme } from './Theme';
 
 const requestAccessDialogMutation = graphql`
   mutation RequestAccessDialogMutation($input: RequestAccessAddInput!) {
@@ -43,6 +45,7 @@ interface RequestAccessFormAddInput {
 
 const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose, entitiesIds }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { me } = useAuth();
   const meResolvedId = me.id;
 
@@ -82,10 +85,12 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
     <> {meResolvedId && (
       <Dialog
         open={open}
-        PaperProps={{ variant: 'elevation', elevation: 1 }}
+        slotProps={{
+          paper: { variant: 'elevation', elevation: 1 },
+        }}
         keepMounted={true}
         fullWidth={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={onClose}
       >
         <DialogContent>
@@ -97,14 +102,14 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
             {({ isSubmitting, submitForm }) => {
               return (
                 <Form>
-                  <DialogContent style={{ padding: 0 }}>
+                  <DialogContent style={{ padding: theme.spacing(1) }}>
                     <DialogContentText>
                       {t_i18n('Your organization does not have permission...')}
                     </DialogContentText>
                     <Field
                       component={TextField}
                       name="request_access_reason"
-                      label={t_i18n('Enter justification for requesting this entity')}
+                      label={t_i18n('Enter justification for requesting access to this knowledge')}
                       fullWidth={true}
                       variant="standard"
                       style={fieldSpacingContainerStyle}
@@ -115,7 +120,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
                     <ObjectOrganizationField
                       name="organizations"
                       style={fieldSpacingContainerStyle}
-                      label={t_i18n('Select the organization of your choice for requesting this entity')}
+                      label={t_i18n('Select one of your organization for requesting access to this knowledge')}
                       multiple={false}
                       alert={false}
                       filters={{
