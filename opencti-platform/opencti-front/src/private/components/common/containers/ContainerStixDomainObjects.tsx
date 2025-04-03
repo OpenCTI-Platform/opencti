@@ -18,7 +18,6 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ContainerAddStixCoreObjectsInLine from './ContainerAddStixCoreObjectsInLine';
@@ -66,8 +65,6 @@ const ContainerStixDomainObjects = ({
   enableReferences?: boolean
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -201,15 +198,17 @@ const ContainerStixDomainObjects = ({
       numberOfElements={numberOfElements}
       paginationOptions={queryPaginationOptions}
       availableEntityTypes={['Stix-Domain-Object']}
-      createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ContainerAddStixCoreObjectsInLine
-          containerId={containerData.id}
-          targetStixCoreObjectTypes={['Stix-Domain-Object']}
-          paginationOptions={queryPaginationOptions}
-          containerStixCoreObjects={selectWithoutInferred}
-          enableReferences={enableReferences}
-        />
-      </Security>}
+      createButton={(
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ContainerAddStixCoreObjectsInLine
+            containerId={containerData.id}
+            targetStixCoreObjectTypes={['Stix-Domain-Object']}
+            paginationOptions={queryPaginationOptions}
+            containerStixCoreObjects={selectWithoutInferred}
+            enableReferences={enableReferences}
+          />
+        </Security>
+      )}
     >
       {queryRef && (
         <React.Suspense
@@ -231,8 +230,6 @@ const ContainerStixDomainObjects = ({
             paginationOptions={queryPaginationOptions}
             dataColumns={dataColumns}
             setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-            onTypesChange={storageHelpers.handleToggleTypes}
-            openExports={openExports}
             selectedElements={selectedElements}
             deSelectedElements={deSelectedElements}
             onToggleEntity={onToggleEntity}

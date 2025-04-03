@@ -2,16 +2,12 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ContainerStixCyberObservableLine, ContainerStixCyberObservableLineDummy } from './ContainerStixCyberObservableLine';
-import Security from '../../../../utils/Security';
-import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { ContainerStixCyberObservablesLinesQuery, ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { ContainerStixCyberObservablesLines_container$key } from './__generated__/ContainerStixCyberObservablesLines_container.graphql';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { ContainerStixCyberObservableLine_node$data } from './__generated__/ContainerStixCyberObservableLine_node.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const nbOfRowsToLoad = 50;
 
@@ -106,7 +102,6 @@ const ContainerStixCyberObservablesLinesFragment = graphql`
 interface ContainerStixCyberObservablesLinesProps {
   dataColumns: DataColumns;
   paginationOptions: ContainerStixCyberObservablesLinesQuery$variables;
-  openExports?: boolean;
   onToggleEntity: (
     entity: ContainerStixCyberObservableLine_node$data,
     event: React.SyntheticEvent,
@@ -119,7 +114,6 @@ interface ContainerStixCyberObservablesLinesProps {
   >;
   selectAll: boolean;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onTypesChange: (type: string) => void;
   queryRef: PreloadedQuery<ContainerStixCyberObservablesLinesQuery>;
   setSelectedElements: (
     selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>
@@ -132,19 +126,15 @@ ContainerStixCyberObservablesLinesProps
 > = ({
   dataColumns,
   paginationOptions,
-  openExports,
   onToggleEntity,
   selectedElements,
   deSelectedElements,
   selectAll,
   setNumberOfElements,
-  onTypesChange,
   queryRef,
   setSelectedElements,
   enableReferences,
 }) => {
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   ContainerStixCyberObservablesLinesQuery,
   ContainerStixCyberObservablesLines_container$key
@@ -183,23 +173,6 @@ ContainerStixCyberObservablesLinesProps
         onToggleEntity={onToggleEntity}
         enableReferences={enableReferences}
       />
-      {!isFABReplaced && data?.container && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ContainerAddStixCoreObjects
-            containerId={data?.container.id}
-            containerStixCoreObjects={data?.container.objects?.edges ?? []}
-            paginationOptions={paginationOptions}
-            withPadding={true}
-            targetStixCoreObjectTypes={['Stix-Cyber-Observable']}
-            onTypesChange={onTypesChange}
-            openExports={openExports}
-            defaultCreatedBy={data?.container.createdBy ?? null}
-            defaultMarkingDefinitions={data?.container.objectMarking ?? []}
-            confidence={data?.container.confidence}
-            enableReferences={enableReferences}
-          />
-        </Security>
-      )}
     </div>
   );
 };
