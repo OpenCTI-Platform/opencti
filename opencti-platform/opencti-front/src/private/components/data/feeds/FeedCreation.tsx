@@ -699,6 +699,7 @@ const FeedCreationFragment = createFragmentContainer(FeedCreation, {
       feed_public
       authorized_members {
         id
+        member_id
         name
       }
     }`,

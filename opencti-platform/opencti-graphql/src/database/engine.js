@@ -580,7 +580,16 @@ const buildUserMemberAccessFilter = (user, opts) => {
     bool: {
       should: [
         { bool: { must_not: [{ exists: { field: `${authorizedMembers.name}.groups_restriction_ids` } }] } },
-        { terms: { [`${authorizedMembers.name}.groups_restriction_ids.keyword`]: userGroupsIds } }
+        {
+          terms_set: {
+            [`${authorizedMembers.name}.groups_restriction_ids.keyword`]: {
+              terms: userGroupsIds,
+              minimum_should_match_script: {
+                source: `doc['${authorizedMembers.name}.groups_restriction_ids.keyword'].length`
+              }
+            }
+          }
+        }
       ]
     }
   };

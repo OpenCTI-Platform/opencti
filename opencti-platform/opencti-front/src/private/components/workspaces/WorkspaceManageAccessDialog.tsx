@@ -24,9 +24,14 @@ const workspaceManageAccessDialogAuthorizedMembersFragment = graphql`
   fragment WorkspaceManageAccessDialog_authorizedMembers on Workspace {
     authorizedMembers {
       id
+      member_id
       name
       entity_type
       access_right
+      groups_restriction {
+        id
+        name
+      }
     }
   }
 `;
@@ -60,6 +65,7 @@ WorkspaceManageAccessDialogProps
           label: owner.name,
           type: owner.entity_type,
           accessRight: 'admin',
+          groupsRestriction: [],
         });
       }
     }

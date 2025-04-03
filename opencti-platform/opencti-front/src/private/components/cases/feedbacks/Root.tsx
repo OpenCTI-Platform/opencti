@@ -55,9 +55,14 @@ const feedbackQuery = graphql`
       currentUserAccessRight
       authorized_members {
         id
+        member_id
         name
         entity_type
         access_right
+        groups_restriction {
+          id
+          name
+        }
       }
       creators {
         id

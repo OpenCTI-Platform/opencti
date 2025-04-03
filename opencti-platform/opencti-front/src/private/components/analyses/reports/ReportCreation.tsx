@@ -89,7 +89,14 @@ interface ReportAddInput {
   objectParticipant: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
-  authorized_members: { value: string, accessRight: string }[] | undefined;
+  authorized_members: {
+    value: string,
+    accessRight: string,
+    groupsRestriction: {
+      label: string,
+      value: string,
+      type: string
+    }[] }[] | undefined;
 }
 
 interface ReportFormProps {
@@ -167,9 +174,10 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
+        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,
           access_right: accessRight,
+          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
         })),
       }),
     };

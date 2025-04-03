@@ -651,6 +651,7 @@ const FeedEditionFragment = createFragmentContainer(FeedEditionContainer, {
       feed_public
       authorized_members {
         id
+        member_id
         name
       }
     }

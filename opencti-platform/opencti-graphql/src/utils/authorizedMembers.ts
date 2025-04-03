@@ -31,35 +31,43 @@ export const getAuthorizedMembers = async (
   user: AuthUser,
   entity: BasicStoreEntity
 ): Promise<MemberAccess[]> => {
-  let authorizedMembers: MemberAccess[] = [];
   if (isEmptyField(entity.restricted_members)) {
-    return authorizedMembers;
+    return [];
   }
   if (!validateUserAccessOperation(user, entity, 'manage-access')) {
-    return authorizedMembers; // return empty if user doesn't have the right access_right
+    return []; // return empty if user doesn't have the right access_right
   }
-  const membersIds = (entity.restricted_members ?? []).map((e) => e.id);
+  const entityRestrictedMembers = entity.restricted_members ?? [];
+  const membersIds = entityRestrictedMembers.map((e) => e.id);
+  const groupsRestrictionIds = entityRestrictedMembers.flatMap((e) => e.groups_restriction_ids ?? []);
   const args = {
     connectionFormat: false,
     first: 100,
     filters: {
       mode: 'and',
-      filters: [{ key: 'internal_id', values: membersIds }],
+      filters: [{ key: 'internal_id', values: [...membersIds, ...groupsRestrictionIds] }],
       filterGroups: [],
     },
   };
   const members = await findAllMembers(context, user, args);
-  authorizedMembers = (entity.restricted_members ?? []).map((currentAuthMember) => {
+  return (entity.restricted_members ?? []).map((currentAuthMember, i) => {
     const member = members.find((m) => (m as BasicStoreEntity).id === currentAuthMember.id) as BasicStoreEntity;
     let groups_restriction: MemberGroupRestriction[] = [];
     if (currentAuthMember.groups_restriction_ids) {
       groups_restriction = currentAuthMember.groups_restriction_ids.map((groupId: string) => {
-        return { id: groupId, name: 'TODO' };
+        const group = members.find((m) => (m as BasicStoreEntity).id === groupId) as BasicStoreEntity;
+        return { id: groupId, name: group?.name ?? 'unknown' };
       });
     }
-    return { id: currentAuthMember.id, name: member?.name ?? '', entity_type: member?.entity_type ?? '', access_right: currentAuthMember.access_right, groups_restriction };
+    return {
+      id: `${currentAuthMember.id}_${i}`,
+      member_id: currentAuthMember.id,
+      name: member?.name ?? '',
+      entity_type: member?.entity_type ?? '',
+      access_right: currentAuthMember.access_right,
+      groups_restriction
+    };
   });
-  return authorizedMembers;
 };
 
 export const containsValidAdmin = async (
@@ -96,6 +104,19 @@ export const containsValidAdmin = async (
   return authorizedUsers.length > 0;
 };
 
+export const sanitizeAuthorizedMembers = (input: MemberAccessInput[]) => {
+  return input.filter((value, index, array) => {
+    if (!value.groups_restriction_ids) {
+      return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id) === index;
+    }
+
+    return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id
+      && e.groups_restriction_ids
+      && e.groups_restriction_ids.length === value.groups_restriction_ids?.length
+      && e.groups_restriction_ids.sort().join() === value.groups_restriction_ids.sort().join()) === index;
+  });
+};
+
 export const editAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
@@ -112,10 +133,8 @@ export const editAuthorizedMembers = async (
   let restricted_members: { id: string, access_right: string, groups_restriction_ids: string[] | null | undefined }[] | null = null;
 
   if (input) {
-    // validate input (validate access right) and remove duplicates
-    const filteredInput = input.filter((value, index, array) => {
-      return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id) === index;
-    });
+    // validate input (validate access right) remove duplicate
+    const filteredInput = sanitizeAuthorizedMembers(input);
 
     const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
     if (filteredInput.some(({ id }) => id === MEMBER_ACCESS_ALL) && settings.platform_organization && !isInternalObject(entityType)) {

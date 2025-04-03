@@ -2,11 +2,17 @@ import { describe, it, expect } from 'vitest';
 import { v4 as uuid } from 'uuid';
 import {
   ADMINISTRATOR_ROLE,
+  BYPASS,
   checkUserCanAccessStixElement,
   checkUserFilterStoreElements,
+  DEFAULT_ROLE,
+  getUserAccessRight,
   isMarkingAllowed,
   isOrganizationAllowed,
-  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS
+  KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  MEMBER_ACCESS_RIGHT_EDIT,
+  MEMBER_ACCESS_RIGHT_VIEW
 } from '../../../src/utils/access';
 import type { BasicStoreCommon } from '../../../src/types/store';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
@@ -16,6 +22,7 @@ import { PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../uti
 import { RELATION_GRANTED_TO } from '../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import type { StixObject, StixOpenctiExtension } from '../../../src/types/stix-2-1-common';
+import type { Group } from '../../../src/types/group';
 
 const inPlatformContext = { ...testContext, user_inside_platform_organization: true };
 
@@ -227,5 +234,152 @@ describe('User access entity testing', async () => {
   it('User not in authorized members should not access stored element', () => {
     const hasAccess = checkUserFilterStoreElements(testContext, user_is_not_allowed as AuthUser, element as BasicStoreCommon, [], true);
     expect(hasAccess).toEqual(false);
+  });
+});
+
+describe('getUserAccessRight testing', () => {
+  const groupId = '8a522ce7-j325-6hc8-a2ab-t8a934a1c647';
+  const group: Partial<Group> = {
+    id: groupId,
+    internal_id: groupId,
+  };
+
+  const group2Id = '4d522ce7-j325-6hc8-a2ab-t8a934a1c657';
+  const group2: Partial<Group> = {
+    id: group2Id,
+    internal_id: group2Id,
+  };
+
+  const orgaId = '7b522ce7-j325-6hc8-a2ab-t8a934a1c612';
+  const orga: Partial<BasicStoreEntityOrganization> = {
+    id: orgaId,
+    internal_id: orgaId,
+  };
+
+  const userId = '55ec0c6a-13ce-5e39-b486-354fe4a7084f';
+  const user: Partial<AuthUser> = {
+    id: userId,
+    internal_id: userId,
+    capabilities: [{ name: KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS }],
+    organizations: [orga as BasicStoreEntityOrganization],
+    allowed_marking: [],
+    roles: [DEFAULT_ROLE],
+    groups: [group as Group, group2 as Group],
+  };
+
+  const bypassUserId = '2a522ce7-j325-4hc8-a2ab-t8a934a1c645';
+  const bypassUser: Partial<AuthUser> = {
+    id: bypassUserId,
+    capabilities: [{ name: BYPASS }],
+    organizations: [],
+    allowed_marking: [],
+    roles: [ADMINISTRATOR_ROLE],
+    groups: [],
+  };
+
+  it('should return "admin" if no restricted members', () => {
+    const element = { restricted_members: [], authorized_authorities: [] };
+    const expected = getUserAccessRight(user as AuthUser, element);
+    expect(expected).toEqual(MEMBER_ACCESS_RIGHT_ADMIN);
+  });
+  it('should return "admin" for BYPASS User', () => {
+    const restricted_members = [{
+      id: '66ac180d-aa8d-4566-ba51-8b385b6ec38e',
+      access_right: 'edit',
+      groups_restriction_ids: []
+    }];
+    const element = { restricted_members, authorized_authorities: [] };
+    const expected = getUserAccessRight(bypassUser as AuthUser, element);
+    expect(expected).toEqual(MEMBER_ACCESS_RIGHT_ADMIN);
+  });
+  it('should return "admin" with authorized authorities', () => {
+    const restricted_members = [{
+      id: '66ac180d-aa8d-4566-ba51-8b385b6ec38e',
+      access_right: 'edit',
+      groups_restriction_ids: []
+    }];
+    const element = { restricted_members, authorized_authorities: [userId] };
+    const expected = getUserAccessRight(user as AuthUser, element);
+    expect(expected).toEqual(MEMBER_ACCESS_RIGHT_ADMIN);
+  });
+  it('should return "admin" if member has access right "admin"', () => {
+    const restricted_members = [{
+      id: userId,
+      access_right: 'admin',
+      groups_restriction_ids: []
+    }];
+    const element = { restricted_members, authorized_authorities: [] };
+    const expected = getUserAccessRight(user as AuthUser, element);
+    expect(expected).toEqual(MEMBER_ACCESS_RIGHT_ADMIN);
+  });
+  it('should return "edit" if member has access right "edit"', () => {
+    const restricted_members = [{
+      id: userId,
+      access_right: 'edit',
+      groups_restriction_ids: []
+    }];
+    const element = { restricted_members, authorized_authorities: [] };
+    const expected = getUserAccessRight(user as AuthUser, element);
+    expect(expected).toEqual(MEMBER_ACCESS_RIGHT_EDIT);
+  });
+  it('should return "view" if member has access right "view"', () => {
+    const restricted_members = [{
+      id: userId,
+      access_right: 'view',
+      groups_restriction_ids: []
+    }];
+    const element = { restricted_members, authorized_authorities: [] };
+    const expected = getUserAccessRight(user as AuthUser, element);
+    expect(expected).toEqual(MEMBER_ACCESS_RIGHT_VIEW);
+  });
+  it('should return access right if user belongs to orga and to groups_restriction_ids', () => {
+    const restricted_members = [{
+      id: orgaId,
+      access_right: 'view',
+      groups_restriction_ids: [groupId]
+    }];
+    const element = { restricted_members, authorized_authorities: [] };
+    const expected = getUserAccessRight(user as AuthUser, element);
+    expect(expected).toEqual(MEMBER_ACCESS_RIGHT_VIEW);
+  });
+  it('should return access right if user belongs to orga and to all groups_restriction_ids', () => {
+    const restricted_members = [{
+      id: orgaId,
+      access_right: 'view',
+      groups_restriction_ids: [groupId, group2Id]
+    }];
+    const element = { restricted_members, authorized_authorities: [] };
+    const expected = getUserAccessRight(user as AuthUser, element);
+    expect(expected).toEqual(MEMBER_ACCESS_RIGHT_VIEW);
+  });
+  it('should return null if user belongs to orga but not to groups_restriction_ids', () => {
+    const restricted_members = [{
+      id: orgaId,
+      access_right: 'view',
+      groups_restriction_ids: ['1e522ce6-f324-4cc9-a2ab-a1a934a1c209']
+    }];
+    const element = { restricted_members, authorized_authorities: [] };
+    const expected = getUserAccessRight(user as AuthUser, element);
+    expect(expected).toEqual(null);
+  });
+  it('should return nul if user belongs to orga and not to all groups_restriction_ids', () => {
+    const restricted_members = [{
+      id: orgaId,
+      access_right: 'view',
+      groups_restriction_ids: [groupId, '1e522ce6-f324-4cc9-a2ab-a1a934a1c209']
+    }];
+    const element = { restricted_members, authorized_authorities: [] };
+    const expected = getUserAccessRight(user as AuthUser, element);
+    expect(expected).toEqual(null);
+  });
+  it('should return null if user not in restricted members', () => {
+    const restricted_members = [{
+      id: '66ac180d-aa8d-4566-ba51-8b385b6ec38e',
+      access_right: 'view',
+      groups_restriction_ids: []
+    }];
+    const element = { restricted_members, authorized_authorities: [] };
+    const expected = getUserAccessRight(user as AuthUser, element);
+    expect(expected).toEqual(null);
   });
 });

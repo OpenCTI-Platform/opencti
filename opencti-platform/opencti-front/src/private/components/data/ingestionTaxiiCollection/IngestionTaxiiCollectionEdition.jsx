@@ -164,6 +164,7 @@ const IngestionTaxiiCollectionEditionFragment = createFragmentContainer(
         }
         authorized_members {
           id
+          member_id
           name
         }
       }

@@ -89,7 +89,14 @@ interface FormikCaseRftAddInput {
   severity: string;
   priority: string;
   caseTemplates?: Option[];
-  authorized_members: { value: string, accessRight: string }[] | undefined;
+  authorized_members: {
+    value: string,
+    accessRight: string,
+    groupsRestriction: {
+      label: string,
+      value: string,
+      type: string
+    }[] }[] | undefined;
 }
 
 interface CaseRftFormProps {
@@ -162,9 +169,10 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       createdBy: values.createdBy?.value,
       file: values.file,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
+        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,
           access_right: accessRight,
+          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
         })),
       }),
     };
