@@ -237,7 +237,7 @@ const Management = () => {
           content={t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
         />
         {queryRef && (
-          <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r)}>
+          <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r ?? undefined)}>
             <DataTable
               rootRef={ref}
               dataColumns={dataColumns}
