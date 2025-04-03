@@ -1,20 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
 import { Option } from '@components/common/form/ReferenceField';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
-import { graphql, UseMutationConfig, useQueryLoader } from 'react-relay';
-import { ImportFilesDialogQuery } from '@components/common/files/import_files/__generated__/ImportFilesDialogQuery.graphql';
-import {
-  ImportFilesDialogGlobalMutation,
-  ImportFilesDialogGlobalMutation$variables,
-} from '@components/common/files/import_files/__generated__/ImportFilesDialogGlobalMutation.graphql';
-import {
-  ImportFilesDialogEntityMutation,
-  ImportFilesDialogEntityMutation$variables,
-} from '@components/common/files/import_files/__generated__/ImportFilesDialogEntityMutation.graphql';
+import { graphql, UseMutationConfig, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ImportFilesStepper from '@components/common/files/import_files/ImportFilesStepper';
 import ImportFilesUploadProgress from '@components/common/files/import_files/ImportFilesUploadProgress';
@@ -23,7 +14,16 @@ import { draftCreationMutation } from '@components/drafts/DraftCreation';
 import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
 import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
-import { ImportFilesProvider, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
+import { ImportFilesProvider, importFilesQuery, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
+import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
+import {
+  ImportFilesDialogGlobalMutation,
+  ImportFilesDialogGlobalMutation$variables,
+} from '@components/common/files/import_files/__generated__/ImportFilesDialogGlobalMutation.graphql';
+import {
+  ImportFilesDialogEntityMutation,
+  ImportFilesDialogEntityMutation$variables,
+} from '@components/common/files/import_files/__generated__/ImportFilesDialogEntityMutation.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import Transition from '../../../../../components/Transition';
 import { handleErrorInForm, MESSAGING$ } from '../../../../../relay/environment';
@@ -96,25 +96,6 @@ const importFilesDialogEntityMutation = graphql`
   }
 `;
 
-export const importFilesDialogQuery = graphql`
-  query ImportFilesDialogQuery {
-    connectorsForImport {
-      id
-      name
-      active
-      auto
-      only_contextual
-      connector_scope
-      updated_at
-      configurations {
-        id
-        name
-        configuration
-      }
-    }
-  }
-`;
-
 interface ImportFilesDialogProps {
   open: boolean;
   handleClose: () => void;
@@ -142,15 +123,13 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     setUploadStatus,
     draftId,
     setDraftId,
+    queryRef,
   } = useImportFilesContext();
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; status?: 'success' | 'error' }[]>([]);
-  const [queryRef, loadQuery] = useQueryLoader<ImportFilesDialogQuery>(importFilesDialogQuery);
-
-  useEffect(() => {
-    if (open) {
-      loadQuery({});
-    }
-  }, [open, loadQuery]);
+  const { stixCoreObject: entity, connectorsForImport } = usePreloadedQuery<ImportFilesContextQuery>(
+    importFilesQuery,
+    queryRef,
+  );
 
   const successMessage = t_i18n('Files successfully uploaded');
   const [commitGlobal] = useApiMutation<ImportFilesDialogGlobalMutation>(
@@ -341,7 +320,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     enableReinitialize: true,
     initialValues: {
       fileMarkings: [] as Option[],
-      associatedEntity: null,
+      associatedEntity: entity ? { value: entity.id, label: entity.name || entity.id, type: entity.entity_type } : null,
       validationMode: importMode === 'manual' ? 'draft' : undefined,
       name: '',
     },
@@ -403,7 +382,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
       // If workbench
       return (
         // Navigate to entity button (if associated entity exists)
-        optionsContext.values.associatedEntity?.value ? (
+        optionsContext.values.associatedEntity?.value ? !entityId && (
           <Button
             color="secondary"
             onClick={() => handleClose()}
@@ -412,18 +391,19 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           >
             {t_i18n('Navigate to entity')}
           </Button>
-        ) : (
-          <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-            <Button
-              color="secondary"
-              onClick={() => handleClose()}
-              component={Link}
-              to={'/dashboard/data/import'}
-            >
-              {t_i18n('Navigate to import')}
-            </Button>
-          </Security>
         )
+          : (
+            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+              <Button
+                color="secondary"
+                onClick={() => handleClose()}
+                component={Link}
+                to={'/dashboard/data/import'}
+              >
+                {t_i18n('Navigate to import')}
+              </Button>
+            </Security>
+          )
       );
     }
 
@@ -462,9 +442,10 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
         {!uploadStatus ? (
           <>
             <ImportFilesStepper/>
-            <Box sx={{ paddingBlock: 10 }}>
+            {/* Remove stepper height (25px) */}
+            <Box sx={{ paddingBlock: 10, height: 'calc(100% - 25px)' }}>
               {activeStep === 0 && (<ImportFilesToggleMode/>)}
-              {activeStep === 1 && queryRef && (<ImportFilesUploader queryRef={queryRef}/>)}
+              {activeStep === 1 && (<ImportFilesUploader connectorsForImport={connectorsForImport}/>)}
               {activeStep === 2 && (
                 <ImportFilesOptions optionsFormikContext={optionsContext} draftContext={draftContext}/>)}
             </Box>

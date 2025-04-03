@@ -4,7 +4,7 @@ import { Badge } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, AlarmOnOutlined, AppsOutlined, CloudUploadOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AlarmOnOutlined, AppsOutlined, NotificationsOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
@@ -18,7 +18,6 @@ import Box from '@mui/material/Box';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
@@ -26,7 +25,7 @@ import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import type { Theme } from '../../../components/Theme';
-import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -47,6 +46,7 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { RelayError } from '../../../relay/relayTypes';
 import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
+import UploadImport from '../../../components/UploadImport';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -213,7 +213,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     anchorEl: HTMLButtonElement | null;
   }>({ open: false, anchorEl: null });
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [openImportFilesDialog, setOpenImportFilesDialog] = useState(false);
 
   const handleOpenMenu = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -322,17 +321,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               <>
                 { ee.license_type === 'nfr' && <ItemBoolean variant="large" label={'EE DEV LICENSE'} status={false}/> }
                 { isImportWorkflowEnabled && (
-                  <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT]}>
-                    <Tooltip title={t_i18n('Import files')} aria-label="Import files">
-                      <IconButton
-                        size="medium"
-                        aria-haspopup="true"
-                        onClick={() => setOpenImportFilesDialog(true)}
-                        color="inherit"
-                      >
-                        <CloudUploadOutlined/>
-                      </IconButton>
-                    </Tooltip>
+                  <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+                    <UploadImport
+                      variant="icon"
+                      size="medium"
+                      fontSize="medium"
+                      color="inherit"
+                    />
                   </Security>
                 )}
                 <Tooltip title={t_i18n('Notifications')}>
@@ -469,9 +464,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         openDrawer={openDrawer}
         handleCloseDrawer={handleCloseDrawer}
       />
-      {openImportFilesDialog && (
-        <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)}/>
-      )}
     </AppBar>
   );
 };

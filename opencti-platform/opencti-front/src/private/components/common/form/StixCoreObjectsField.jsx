@@ -209,7 +209,15 @@ const useStyles = makeStyles(() => ({
 }));
 
 const StixCoreObjectsField = (props) => {
-  const { name, style, helpertext, required = false, multiple = true, label } = props;
+  const {
+    name,
+    style,
+    helpertext,
+    required = false,
+    multiple = true,
+    label,
+    disabled = false,
+  } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: entityTypes } = useAttributes();
@@ -260,6 +268,7 @@ const StixCoreObjectsField = (props) => {
     <>
       <Field
         component={AutocompleteField}
+        disabled={disabled}
         style={style}
         name={name}
         required={required}
@@ -272,7 +281,7 @@ const StixCoreObjectsField = (props) => {
         }}
         endAdornment={(
           <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
-            <IconButton onClick={handleOpenSearchScope} size="small" edge="end">
+            <IconButton onClick={handleOpenSearchScope} size="small" edge="end" disabled={disabled}>
               <PaletteOutlined
                 fontSize="small"
                 color={searchScope[name] && searchScope[name].length > 0 ? 'secondary' : 'primary'}
