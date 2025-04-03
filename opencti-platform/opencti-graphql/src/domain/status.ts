@@ -21,7 +21,7 @@ import {
 } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
 import { getEntitiesListFromCache } from '../database/cache';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
@@ -140,8 +140,6 @@ export const createStatusTemplate = async (context: AuthContext, user: AuthUser,
 export const createStatus = async (context: AuthContext, user: AuthUser, subTypeId: string, input: StatusAddInput) => {
   validateSetting(subTypeId, 'workflow_configuration');
   const data = await createEntity(context, user, { type: subTypeId, ...input }, ENTITY_TYPE_STATUS);
-  logApp.info('Create status:', { subTypeId, input });
-  // FIXME Status cache is not invalidated here, and should
   await publishUserAction({
     user,
     event_type: 'mutation',

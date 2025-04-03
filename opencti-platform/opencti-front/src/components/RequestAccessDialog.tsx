@@ -5,11 +5,10 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
-import ObjectOrganizationField from '@components/common/form/ObjectOrganizationField';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { graphql } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import * as Yup from 'yup';
+import MyOrganizationField, { OrganizationOption } from '@components/common/form/MyOrganizationField';
 import { useFormatter } from './i18n';
 import TextField from './TextField';
 import useApiMutation from '../utils/hooks/useApiMutation';
@@ -49,19 +48,30 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   const theme = useTheme<Theme>();
   const { me } = useAuth();
   const meResolvedId = me.id;
+  let initialOrganization: OrganizationOption = { value: '', label: '' };
+  if (me?.objectOrganization && me?.objectOrganization?.edges?.length > 0) {
+    const organizationData = me?.objectOrganization;
+    initialOrganization = {
+      label: organizationData?.edges[0].node.name,
+      value: organizationData?.edges[0].node.id,
+    };
+  }
 
+  /* TODO
   const requestAccessValidation = (t: (v: string) => string) => Yup.object().shape({
     organizations: Yup.object().shape({
       value: Yup.string().trim().required(t('This field is required')),
+      label: Yup.string().trim().required(t('This field is required')),
     }),
   });
+   */
 
   const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
     successMessage: `${t_i18n('Your request for access has been successfully taken into account')}`,
   });
   const initialValues: RequestAccessFormAddInput = {
     request_access_reason: '',
-    organizations: { label: '', value: '' },
+    organizations: initialOrganization,
     request_access_entities: [],
     request_access_type: 'organization_sharing',
   };
@@ -105,9 +115,9 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
           <Formik
             initialValues={initialValues}
             onSubmit={onSubmit}
-            validationSchema={requestAccessValidation(t_i18n)}
+            // validationSchema={requestAccessValidation(t_i18n)}
           >
-            {({ isSubmitting, submitForm }) => {
+            {({ isSubmitting, submitForm, setFieldValue }) => {
               return (
                 <Form>
                   <DialogContent style={{ padding: theme.spacing(1) }}>
@@ -125,26 +135,13 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
                       multiline={true}
                       minRows={5}
                     />
-                    <ObjectOrganizationField
+                    <MyOrganizationField
                       name="organizations"
                       style={fieldSpacingContainerStyle}
                       label={t_i18n('Select one of your organization for requesting access to this knowledge')}
                       multiple={false}
-                      alert={false}
-                      filters={{
-                        mode: 'and',
-                        filters: [
-                          { key: 'entity_type', values: ['Organization'], mode: 'or', operator: 'eq' },
-                          {
-                            key: 'regardingOf',
-                            values: [
-                              { key: 'id', values: [meResolvedId], mode: 'and', operator: 'eq' },
-                              { key: 'relationship_type', values: ['participate-to'], mode: 'and', operator: 'eq' },
-                            ],
-                          },
-                        ],
-                        filterGroups: [],
-                      }}
+                      disabled={false}
+                      onChange={setFieldValue}
                     />
                   </DialogContent>
                   <DialogActions>
