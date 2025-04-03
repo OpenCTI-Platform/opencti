@@ -165,6 +165,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
         authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
           id: value,
           access_right: accessRight,
+          groups_restriction_ids: groupsRestriction.map((g) => g.value),
         })),
       }),
     };

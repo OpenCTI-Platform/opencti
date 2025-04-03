@@ -39,7 +39,7 @@ const AuthorizedMembersFieldListItem = ({
 }: AuthorizedMembersFieldListItemProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
-
+  console.log({ authorizedMember });
   // Used for artificial rows for ALL and CREATOR if they have
   // no access.
   const noAccess = { label: t_i18n('no access'), value: 'none' };
