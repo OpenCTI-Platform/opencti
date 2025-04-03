@@ -1,5 +1,4 @@
 import React from 'react';
-import NavToolbarMenu from '@components/common/menus/NavToolbarMenu';
 import Tab from '@mui/material/Tab';
 import { Link, useLocation } from 'react-router-dom';
 import Tabs from '@mui/material/Tabs';
@@ -11,17 +10,9 @@ const ImportMenu = () => {
   const location = useLocation();
   const { isFeatureEnable } = useHelper();
   const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
 
   if (!isNewImportScreensEnabled) {
-    return (
-      <NavToolbarMenu
-        entries={[{
-          path: '/dashboard/data/import',
-          label: 'Import',
-        }]}
-      />
-    );
+    return null;
   }
 
   return (
@@ -32,14 +23,12 @@ const ImportMenu = () => {
         value={'/dashboard/data/import/file'}
         label={t_i18n('Global files')}
       />
-      {isDraftFeatureEnabled && (
-        <Tab
-          component={Link}
-          to={'/dashboard/data/import/draft'}
-          value={'/dashboard/data/import/draft'}
-          label={t_i18n('Drafts')}
-        />
-      )}
+      <Tab
+        component={Link}
+        to={'/dashboard/data/import/draft'}
+        value={'/dashboard/data/import/draft'}
+        label={t_i18n('Drafts')}
+      />
       <Tab
         component={Link}
         to={'/dashboard/data/import/workbench'}
