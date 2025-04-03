@@ -329,6 +329,7 @@ const AuthorizedMembersField = ({
                 sx={{
                   mt: '16px',
                   width: '100%',
+                  paddingBottom: '16px',
                   '.MuiAlert-message': { width: '100%' },
                 }}
                 severity="info"
@@ -394,20 +395,19 @@ const AuthorizedMembersField = ({
                       <AccordionSummary id="accordion-panel">
                         <Typography>{t_i18n('Advanced options')}</Typography>
                       </AccordionSummary>
-                      <AccordionDetails>
-                        <Alert
-                          severity="info"
-                        >
+                      <AccordionDetails style={{ padding: 0 }}>
+                        <Alert severity="info" style={{ fontSize: 11 }}>
                           {t_i18n('Restrict access by selecting groups to intersect with the organization\'s access rights')}
                         </Alert>
-                        <ObjectMembersField
-                          name="groupsRestriction"
-                          label={t_i18n('Groups restriction')}
-                          disabled={!values.applyAccesses}
-                          entityTypes={['Group']}
-                          style={fieldSpacingContainerStyle}
-                          multiple
-                        />
+                        <div style={{ padding: '8px 16px 16px 16px' }}>
+                          <ObjectMembersField
+                            name="groupsRestriction"
+                            label={t_i18n('Groups restriction')}
+                            disabled={!values.applyAccesses}
+                            entityTypes={['Group']}
+                            multiple
+                          />
+                        </div>
                       </AccordionDetails>
                     </Accordion>
                   </div>
