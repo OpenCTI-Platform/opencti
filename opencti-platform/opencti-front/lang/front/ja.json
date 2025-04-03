@@ -3576,7 +3576,7 @@
   "Your local storage contains the latest filters and searches used in most views of the platform. Clearing local storage might help to load a page crashing because of some filtering, searching or sorting issue.": "ローカルストレージには、プラットフォームのほとんどのビューで使用されている最新のフィルタと検索が含まれています。ローカルストレージをクリアすることで、フィルタリングや検索、並べ替えの問題でクラッシュしたページをロードできるかもしれません。",
   "Your max shareable markings will be applied to the content max markings": "共有可能な最大マークは、コンテンツの最大マークに適用されます。",
   "Your OpenCTI license is expired": "OpenCTIライセンスの有効期限が切れています。",
-  "Your organization does not have permission...": "あなたのアカウントまたは組織には、ナレッジを作成または更新する権限がありません。所有者である組織にアクセスを要求します。これにより、アクセス権を持つ組織に、あなたがアクセスを要求していることが通知されます。",
+  "Your organization does not have permission...": "あなたのアカウントまたは組織は、プラットフォームに既に存在するが制限下にあるナレッジを作成または更新する権限を持っていません。このフォームでは、このナレッジへのアクセスを提供できる組織にアクセスをリクエストできます。これらの組織にはこのリクエストが通知されます。",
   "Your request for access has been successfully taken into account": "あなたのアクセス要求が考慮されました",
   "your trial license online": "あなたのトライアルライセンスをオンラインで",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "お使いのURLには廃止された形式のフィルタが含まれており、URLに保存されていたパラメータが削除されました。",

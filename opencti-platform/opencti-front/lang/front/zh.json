@@ -3576,7 +3576,7 @@
   "Your local storage contains the latest filters and searches used in most views of the platform. Clearing local storage might help to load a page crashing because of some filtering, searching or sorting issue.": "本地存储包含平台大多数视图中使用的最新筛选器和搜索。清除本地存储可能有助于加载因某些过滤、搜索或排序问题而崩溃的页面。",
   "Your max shareable markings will be applied to the content max markings": "您的最大可共享标记将应用于内容最大标记",
   "Your OpenCTI license is expired": "您的 OpenCTI 许可证已过期",
-  "Your organization does not have permission...": "您的账户或组织没有权限创建或更新平台中已存在但受限制的知识。您请求访问作为所有者的组织。这将通知有访问权限的组织您要求访问它。",
+  "Your organization does not have permission...": "您的帐户或组织没有权限创建或更新平台中已存在但受限制的知识。通过此表单，您可以向可以让您访问该知识的组织提出访问请求。他们将收到此请求的通知。",
   "Your request for access has been successfully taken into account": "您的访问请求已被成功考虑",
   "your trial license online": "在线试用许可证",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "您的 URL 包含已弃用的格式的筛选器，URL 中存储的参数已被删除。",

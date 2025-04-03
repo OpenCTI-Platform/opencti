@@ -3576,7 +3576,7 @@
   "Your local storage contains the latest filters and searches used in most views of the platform. Clearing local storage might help to load a page crashing because of some filtering, searching or sorting issue.": "Your local storage contains the latest filters and searches used in most views of the platform. Clearing local storage might help to load a page crashing because of some filtering, searching or sorting issue.",
   "Your max shareable markings will be applied to the content max markings": "Your max shareable markings will be applied to the content max markings",
   "Your OpenCTI license is expired": "Your OpenCTI license is expired",
-  "Your organization does not have permission...": "Your account or organization does not have the permission to create or update a knowledge that already exists in the platform but is under restriction. You request access to organizations that are owners. This will notify organizations that have access that you request to access it.",
+  "Your organization does not have permission...": "Your account or organization does not have the permission to create or update a knowledge that already exists in the platform but is under restriction. This form allows you to request access to the organizations that can provide you access to this knowledge. They will be notified of this request.",
   "Your request for access has been successfully taken into account": "Your request for access has been successfully taken into account",
   "your trial license online": "your trial license online",
   "Your url contains filters in a deprecated format, parameters stored in the url have been removed.": "Your url contains filters in a deprecated format, parameters stored in the url have been removed.",
