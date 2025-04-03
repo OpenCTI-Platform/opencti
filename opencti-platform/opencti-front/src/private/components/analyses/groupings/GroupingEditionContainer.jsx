@@ -1,15 +1,12 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import GroupingEditionOverview from './GroupingEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const GroupingEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, grouping, open, controlledDial } = props;
   const { editContext } = grouping;
@@ -18,9 +15,9 @@ const GroupingEditionContainer = (props) => {
       title={t_i18n('Update a grouping')}
       open={open}
       onClose={handleClose}
-      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
+      variant={undefined}
       context={editContext}
-      controlledDial={isFABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       <>
         <GroupingEditionOverview

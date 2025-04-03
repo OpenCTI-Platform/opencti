@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
 
 interface ExternalReferenceHeaderComponentProps {
   externalReference: ExternalReferenceHeader_externalReference$data;
-  PopoverComponent: ReactElement<{ id: string }>;
+  PopoverComponent?: ReactElement<{ id: string }>;
   EditComponent?: React.JSX.Element | boolean;
 }
 
@@ -48,11 +48,13 @@ const ExternalReferenceHeaderComponent = ({
         >
           {truncate(externalReference.source_name, 80)}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <div className={classes.popover}>
-            {React.cloneElement(PopoverComponent, { id: externalReference.id })}
-          </div>
-        </Security>
+        {PopoverComponent && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <div className={classes.popover}>
+              {React.cloneElement(PopoverComponent, { id: externalReference.id })}
+            </div>
+          </Security>
+        )}
         <div className="clearfix" />
       </div>
       {EditComponent}

@@ -13,7 +13,6 @@ import { groupingEditionQuery } from './GroupingEdition';
 import GroupingEditionContainer from './GroupingEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 
@@ -30,8 +29,6 @@ const GroupingPopover = ({ id }) => {
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayEnrichment, setDisplayEnrichment] = useState(false);
   const [displayEnroll, setDisplayEnroll] = useState(false);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
   const deletion = useDeletion({ handleClose });
@@ -68,54 +65,52 @@ const GroupingPopover = ({ id }) => {
     setDisplayEnroll(false);
   };
 
-  return isFABReplaced
-    ? (<></>)
-    : (
-      <>
-        <ToggleButton
-          value="popover"
-          size="small"
-          onClick={handleOpen}
-        >
-          <MoreVert fontSize="small" color="primary" />
-        </ToggleButton>
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-          <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-            <MenuItem onClick={handleOpenEnrichment}>
-              {t_i18n('Enrich')}
-            </MenuItem>
-          </Security>
-          <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-          </Security>
-        </Menu>
-        <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
-        <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
-        <DeleteDialog
-          deletion={deletion}
-          submitDelete={submitDelete}
-          message={t_i18n('Do you want to delete this grouping?')}
-        />
-        <QueryRenderer
-          query={groupingEditionQuery}
-          variables={{ id }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <GroupingEditionContainer
-                  grouping={props.grouping}
-                  handleClose={handleCloseEdit}
-                  open={displayEdit}
-                />
-              );
-            }
-            return <div />;
-          }}
-        />
-      </>
-    );
+  return (
+    <>
+      <ToggleButton
+        value="popover"
+        size="small"
+        onClick={handleOpen}
+      >
+        <MoreVert fontSize="small" color="primary" />
+      </ToggleButton>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+          <MenuItem onClick={handleOpenEnrichment}>
+            {t_i18n('Enrich')}
+          </MenuItem>
+        </Security>
+        <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
+        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        </Security>
+      </Menu>
+      <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
+      <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this grouping?')}
+      />
+      <QueryRenderer
+        query={groupingEditionQuery}
+        variables={{ id }}
+        render={({ props }) => {
+          if (props) {
+            return (
+              <GroupingEditionContainer
+                grouping={props.grouping}
+                handleClose={handleCloseEdit}
+                open={displayEdit}
+              />
+            );
+          }
+          return <div />;
+        }}
+      />
+    </>
+  );
 };
 
 export default GroupingPopover;

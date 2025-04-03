@@ -7,8 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useNavigate } from 'react-router-dom';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
-import useHelper from 'src/utils/hooks/useHelper';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { ReportsLinesPaginationQuery$variables } from '@components/analyses/__generated__/ReportsLinesPaginationQuery.graphql';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import Typography from '@mui/material/Typography';
@@ -412,8 +411,6 @@ const ReportCreation = ({
   paginationOptions: ReportsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_reports',
@@ -426,8 +423,7 @@ const ReportCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a report')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateReportControlledDial : undefined}
+      controlledDial={CreateReportControlledDial}
     >
       <ReportCreationForm updater={updater} />
     </Drawer>

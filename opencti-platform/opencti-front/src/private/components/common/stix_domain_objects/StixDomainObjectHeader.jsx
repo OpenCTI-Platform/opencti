@@ -43,7 +43,6 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -254,8 +253,6 @@ const StixDomainObjectHeader = (props) => {
   const [aliasToDelete, setAliasToDelete] = useState(null);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const handleToggleOpenAliases = () => {
     setOpenAliases(!openAliases);
@@ -586,10 +583,10 @@ const StixDomainObjectHeader = (props) => {
             {(enableEnricher && isKnowledgeEnricher) && (
               <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
             )}
-            {isFABReplaced && enableEnrollPlaybook && (
+            {enableEnrollPlaybook && (
               <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixDomainObject.id} />
             )}
-            {isKnowledgeUpdater && (
+            {isKnowledgeUpdater && PopoverComponent && (
               <div>
                 {/* TODO remove this when all components are pure function without compose() */}
                 {!React.isValidElement(PopoverComponent) ? (

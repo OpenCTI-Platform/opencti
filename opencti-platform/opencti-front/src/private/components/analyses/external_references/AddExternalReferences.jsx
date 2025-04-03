@@ -9,7 +9,6 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { Button } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
 import Drawer from '../../common/drawer/Drawer';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -33,11 +32,9 @@ const AddExternalReferences = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const handleOpen = () => {
     setOpen(true);
@@ -82,16 +79,14 @@ const AddExternalReferences = ({
               variant="inDrawer"
               onSubmit={handleSearch}
             />
-            {isFABReplaced
-              && <Button sx={{ margin: '5px 0 0 5px' }}
-                onClick={() => setDialogOpen(true)}
-                color='primary'
-                size='small'
-                variant='contained'
-                 >
-                {t_i18n('Create')} {t_i18n('entity_External-Reference')}
-              </Button>
-            }
+            <Button sx={{ margin: '5px 0 0 5px' }}
+              onClick={() => setDialogOpen(true)}
+              color='primary'
+              size='small'
+              variant='contained'
+            >
+              {t_i18n('Create')} {t_i18n('entity_External-Reference')}
+            </Button>
           </div>
         )}
       >
@@ -114,9 +109,9 @@ const AddExternalReferences = ({
                     }
                     data={props}
                     paginationOptions={paginationOptions}
-                    open={isFABReplaced ? false : open}
+                    open={false}
                     openContextual={dialogOpen}
-                    handleCloseContextual={isFABReplaced ? () => setDialogOpen(false) : undefined}
+                    handleCloseContextual={() => setDialogOpen(false)}
                     search={search}
                   />
                 );

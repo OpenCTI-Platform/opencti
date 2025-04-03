@@ -17,7 +17,6 @@ import { useSettingsMessagesBannerHeight } from '../../settings/settings_message
 import StixCoreObjectSubscribers from '../stix_core_objects/StixCoreObjectSubscribers';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import ExportButtons from '../../../../components/ExportButtons';
-import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -455,8 +454,6 @@ const ContainerHeader = (props) => {
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const navigate = useNavigate();
 
   const handleExportCompleted = (fileName) => {
@@ -686,17 +683,17 @@ const ContainerHeader = (props) => {
                 triggerData={triggerData}
               />
             )}
-            {isFABReplaced && enableEnricher && (
+            {enableEnricher && (
               <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                 <StixCoreObjectEnrichment
                   stixCoreObjectId={container.id}
                 />
               </Security>
             )}
-            {isFABReplaced && enableEnrollPlaybook && (
+            {enableEnrollPlaybook && (
               <StixCoreObjectEnrollPlaybook stixCoreObjectId={container.id} />
             )}
-            {!knowledge && (
+            {!knowledge && PopoverComponent && (
               <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]} hasAccess={canEdit}>
                 {React.cloneElement(PopoverComponent, { id: container.id })}
               </Security>
