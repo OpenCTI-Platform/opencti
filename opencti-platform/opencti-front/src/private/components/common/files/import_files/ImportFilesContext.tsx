@@ -5,6 +5,7 @@ import { ImportFilesContextQuery } from '@components/common/files/import_files/_
 import useGranted from '../../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 
 export const importFilesQuery = graphql`
   query ImportFilesContextQuery($id: String!) {
@@ -163,6 +164,7 @@ type ImportFilesContextProps = InitialValues & {
   setUploadStatus: (uploadStatus: UploadStatus) => void;
   draftId?: string;
   setDraftId: (draftId?: string) => void;
+  inDraftContext: boolean;
   queryRef: PreloadedQuery<ImportFilesContextQuery>;
 };
 
@@ -173,13 +175,13 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   initialValue: InitialValues
 }) => {
   const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT']); // Check capability to set connectors and validation mode
+  const draftContext = useDraftContext();
 
   const [activeStep, setActiveStep] = useState(canSelectImportMode ? 0 : 1);
   const [importMode, setImportMode] = useState<ImportMode | undefined>(!canSelectImportMode ? 'auto' : undefined);
   const [files, setFiles] = useState<FileWithConnectors[]>([]);
   const [uploadStatus, setUploadStatus] = useState<undefined | UploadStatus>();
-  const [draftId, setDraftId] = useState<string | undefined>();
-
+  const [draftId, setDraftId] = useState<string | undefined>(draftContext?.id);
   const queryRef = useQueryLoading<ImportFilesContextQuery>(importFilesQuery, {
     id: initialValue.entityId || '',
   });
@@ -199,6 +201,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
           setUploadStatus,
           draftId,
           setDraftId,
+          inDraftContext: !!draftContext?.id,
           queryRef,
           ...initialValue,
         }}

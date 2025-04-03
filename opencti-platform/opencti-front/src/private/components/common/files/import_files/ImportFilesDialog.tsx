@@ -100,6 +100,7 @@ interface ImportFilesDialogProps {
   open: boolean;
   handleClose: () => void;
   entityId?: string;
+  draftId?: string;
 }
 
 export type OptionsFormValues = {
@@ -123,6 +124,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     setUploadStatus,
     draftId,
     setDraftId,
+    inDraftContext,
     queryRef,
   } = useImportFilesContext();
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; status?: 'success' | 'error' }[]>([]);
@@ -302,7 +304,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
       setUploadStatus('uploading');
       importFiles({ selectedEntityId, fileMarkingIds, validationMode }, setErrors);
     } else if (validationMode === 'draft') {
-      const newDraftId = await createDraft(name, selectedEntityId);
+      const newDraftId = !draftId ? await createDraft(name, selectedEntityId) : draftId;
       if (!newDraftId) {
         setActiveStep(1);
         setUploadStatus(undefined);
@@ -336,7 +338,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   }, [files, importMode]);
 
   const isValidImport = useMemo(() => {
-    return (optionsContext.values.validationMode === 'draft' && optionsContext.values.name.length > 0) || optionsContext.values.validationMode === 'workbench' || importMode === 'auto';
+    return (optionsContext.values.validationMode === 'draft' && optionsContext.values.name.length > 0) || draftId || optionsContext.values.validationMode === 'workbench' || importMode === 'auto';
   }, [optionsContext.values, importMode]);
 
   const renderActions = useMemo(() => {
@@ -366,6 +368,9 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     if (uploadStatus === 'success') {
       // If draft
       if (optionsContext.values.validationMode === 'draft') {
+        // If already in draft do show redirect
+        if (inDraftContext) return (<></>);
+
         return (
           // Switch to draft mode and navigate to files draft
           <Button
