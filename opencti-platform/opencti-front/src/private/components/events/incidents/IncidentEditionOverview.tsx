@@ -26,7 +26,6 @@ import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import type { Theme } from '../../../../components/Theme';
 import IncidentDeletion from './IncidentDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewFieldPatchMutation(
@@ -249,8 +248,6 @@ IncidentEditionOverviewProps
     confidence: incident.confidence,
     references: [],
   };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <Formik<IncidentEditionFormValues>
       enableReinitialize={true}
@@ -350,7 +347,7 @@ IncidentEditionOverviewProps
             style={fieldSpacingContainerStyle}
             onChange={editor.changeParticipant}
           />
-          {incident?.workflowEnabled && (
+          {incident.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Incident"
@@ -388,12 +385,9 @@ IncidentEditionOverviewProps
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <IncidentDeletion
-                  id={incident.id}
-                />
-              : <div/>
-              }
+            <IncidentDeletion
+              id={incident.id}
+            />
             {enableReferences && (
             <CommitMessage
               submitForm={submitForm}

@@ -20,7 +20,6 @@ import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeCo
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import ObservedDataDeletion from './ObservedDataDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const observedDataMutationFieldPatch = graphql`
   mutation ObservedDataEditionOverviewFieldPatchMutation(
@@ -88,8 +87,6 @@ const OBSERVED_DATA_TYPE = 'Observed-Data';
 const ObservedDataEditionOverviewComponent = (props) => {
   const { observedData, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(OBSERVED_DATA_TYPE);
   const basicShape = yupShapeConditionalRequired({
     first_observed: Yup.date()
@@ -313,12 +310,9 @@ const ObservedDataEditionOverviewComponent = (props) => {
               onChange={editor.changeMarking}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-              {isFABReplaced
-                ? <ObservedDataDeletion
-                    id={observedData.id}
-                  />
-                : <div />
-              }
+              <ObservedDataDeletion
+                id={observedData.id}
+              />
               {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}

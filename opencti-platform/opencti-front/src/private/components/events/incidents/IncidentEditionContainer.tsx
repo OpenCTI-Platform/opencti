@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql, PreloadedQuery, usePreloadedQuery } f
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Drawer, { DrawerControlledDialType, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
 import { IncidentEditionOverview_incident$key } from '@components/events/incidents/__generated__/IncidentEditionOverview_incident.graphql';
 import { IncidentEditionDetails_incident$key } from '@components/events/incidents/__generated__/IncidentEditionDetails_incident.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -12,7 +12,6 @@ import IncidentEditionDetails from './IncidentEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { IncidentEditionContainerQuery } from './__generated__/IncidentEditionContainerQuery.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 interface IncidentEditionContainerProps {
   queryRef: PreloadedQuery<IncidentEditionContainerQuery>
@@ -42,8 +41,6 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { incident } = usePreloadedQuery(IncidentEditionQuery, queryRef);
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event: React.SyntheticEvent, value: number) => setCurrentTab(value);
@@ -54,8 +51,7 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
   return (
     <Drawer
       title={t_i18n('Update an incident')}
-      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
-      controlledDial={isFABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
       context={incident?.editContext}
       onClose={handleClose}
       open={open}

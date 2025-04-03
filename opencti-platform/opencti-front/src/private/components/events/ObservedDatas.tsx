@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import useHelper from 'src/utils/hooks/useHelper';
 import { graphql } from 'react-relay';
 import { ObservedDatasLinesPaginationQuery, ObservedDatasLinesPaginationQuery$variables } from '@components/events/__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import { ObservedDatasLines_data$data } from '@components/events/__generated__/ObservedDatasLines_data.graphql';
@@ -125,13 +124,11 @@ const observedDatasLinesFragment = graphql`
 
 const ObservedDatas: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Observed Data | Events'));
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const initialValues = {
     searchTerm: '',
@@ -197,17 +194,12 @@ const ObservedDatas: FunctionComponent = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={observedDataFragment}
           exportContext={{ entity_type: 'Observed-Data' }}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ObservedDataCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </>
   );
