@@ -9,7 +9,7 @@ const ImportFilesStepper = () => {
   const hasSelectedFiles = files.length > 0;
 
   return (
-    <Stepper nonLinear activeStep={activeStep} sx={{ marginInline: 10 }}>
+    <Stepper nonLinear activeStep={canSelectImportMode ? activeStep : activeStep - 1} sx={{ marginInline: 10 }}>
       {canSelectImportMode && (<Step key={'import_mode'}>
         <StepButton color="inherit" onClick={() => setActiveStep(0)}>
           {t_i18n('Import mode')}

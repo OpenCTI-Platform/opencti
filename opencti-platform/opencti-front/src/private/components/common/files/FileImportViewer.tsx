@@ -15,6 +15,8 @@ import { FileImportViewer_entity$data } from './__generated__/FileImportViewer_e
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import useHelper from '../../../../utils/hooks/useHelper';
+import UploadImport from '../../../../components/UploadImport';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -51,6 +53,9 @@ FileImportViewerComponentProps
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isImportWorkflowEnabled = isFeatureEnable('IMPORT_WORKFLOW');
+
   const { id, importFiles } = entity;
   useEffect(() => {
     // Refresh the export viewer every interval
@@ -69,16 +74,25 @@ FileImportViewerComponentProps
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 25 }} />}>
           <div style={{ float: 'left', marginTop: -15 }}>
-            <FileUploader
-              entityId={id}
-              onUploadSuccess={() => relay.refetch({ id })}
-              size="medium"
-            />
-            <FreeTextUploader
-              entityId={id}
-              onUploadSuccess={() => relay.refetch({ id })}
-              size="medium"
-            />
+            {isImportWorkflowEnabled ? (
+              <UploadImport
+                entityId={id}
+                onSuccess={() => relay.refetch({ id })}
+              />
+            ) : (
+              <>
+                <FileUploader
+                  entityId={id}
+                  size="medium"
+                  onUploadSuccess={() => relay.refetch({ id })}
+                />
+                <FreeTextUploader
+                  entityId={id}
+                  onUploadSuccess={() => relay.refetch({ id })}
+                  size="medium"
+                />
+              </>
+            )}
           </div>
         </Security>
         <div className="clearfix" />

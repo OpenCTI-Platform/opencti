@@ -46,18 +46,16 @@ const ImportFilesOptions = ({
           setFieldValue={optionsFormikContext.setFieldValue}
           required={false}
         />
-        {!entityId
-        && (
-          <div style={{ paddingTop: '10px' }}>
-            <StixCoreObjectsField
-              name="associatedEntity"
-              label={t_i18n('Associated entity')}
-              multiple={false}
-              setFieldValue={optionsFormikContext.setFieldValue}
-              values={optionsFormikContext.values.associatedEntity}
-            />
-          </div>
-        )}
+        <div style={{ paddingTop: '10px' }}>
+          <StixCoreObjectsField
+            name="associatedEntity"
+            label={t_i18n('Associated entity')}
+            multiple={false}
+            disabled={!!entityId}
+            setFieldValue={optionsFormikContext.setFieldValue}
+            values={optionsFormikContext.values.associatedEntity}
+          />
+        </div>
         {importMode !== 'auto' && (
           <>
             {!draftContext && isDraftFeatureEnabled && (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
 import Typography from '@mui/material/Typography';
@@ -37,6 +37,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import UploadImport from '../../../../components/UploadImport';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -170,6 +172,8 @@ const ImportContentComponent = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const draftContext = useDraftContext();
+  const { isFeatureEnable } = useHelper();
+  const isImportWorkflowEnabled = isFeatureEnable('IMPORT_WORKFLOW');
   setTitle(t_i18n('Import | Import | Data'));
 
   const [fileToImport, setFileToImport] = useState(null);
@@ -333,14 +337,22 @@ const ImportContentComponent = ({
               {t_i18n('Uploaded files')}
             </Typography>
             <div style={{ float: 'left', marginTop: -15 }}>
-              <FileUploader
-                onUploadSuccess={() => relay.refetch()}
-                size="medium"
-              />
-              <FreeTextUploader
-                onUploadSuccess={() => relay.refetch()}
-                size="medium"
-              />
+              {isImportWorkflowEnabled ? (
+                <UploadImport
+                  onUploadSuccess={() => relay.refetch()}
+                />
+              ) : (
+                <>
+                  <FileUploader
+                    onUploadSuccess={() => relay.refetch()}
+                    size="medium"
+                  />
+                  <FreeTextUploader
+                    onUploadSuccess={() => relay.refetch()}
+                    size="medium"
+                  />
+                </>
+              )}
             </div>
             <div className="clearfix" />
             <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">

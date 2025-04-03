@@ -3,10 +3,8 @@ import { Grid } from '@mui/material';
 import ImportFilesDropzone from '@components/common/files/import_files/ImportFilesDropzone';
 import ImportFilesFreeText from '@components/common/files/import_files/ImportFilesFreeText';
 import ImportFilesList from '@components/common/files/import_files/ImportFilesList';
-import { importFilesDialogQuery } from '@components/common/files/import_files/ImportFilesDialog';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { ImportFilesDialogQuery } from '@components/common/files/import_files/__generated__/ImportFilesDialogQuery.graphql';
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
+import { ImportFilesContextQuery$data } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
 
 export type FileWithConnectors = {
   file: File;
@@ -15,13 +13,12 @@ export type FileWithConnectors = {
 };
 
 interface ImportFilesUploaderProps {
-  queryRef: PreloadedQuery<ImportFilesDialogQuery>;
+  connectorsForImport: ImportFilesContextQuery$data['connectorsForImport'];
 }
 
-const ImportFilesUploader = ({ queryRef }: ImportFilesUploaderProps) => {
+const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) => {
   const { files, setFiles } = useImportFilesContext();
   const [isTextView, setIsTextView] = useState(false);
-  const { connectorsForImport } = usePreloadedQuery<ImportFilesDialogQuery>(importFilesDialogQuery, queryRef);
 
   const updateFiles = (newFiles: File[]) => {
     const extendedFiles: FileWithConnectors[] = newFiles.map((file) => {
