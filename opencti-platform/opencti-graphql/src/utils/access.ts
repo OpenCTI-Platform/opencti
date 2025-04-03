@@ -439,24 +439,11 @@ export const computeUserMemberAccessIds = (user: AuthUser) => {
 };
 
 // region entity access by user
-
-export const getUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
-  if (!element.restricted_members || element.restricted_members.length === 0) { // no restricted user access on element
-    return MEMBER_ACCESS_RIGHT_ADMIN;
-  }
-  const accessMembers = [...element.restricted_members];
+export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
   const userMemberAccessIds = computeUserMemberAccessIds(user);
   const userGroupsIds = user.groups.map((group) => group.internal_id);
-  const foundAccessMembers = accessMembers.filter((u) => (u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id))
-    && (!u.groups_restriction_ids || u.groups_restriction_ids.length === 0 || u.groups_restriction_ids.every((g) => userGroupsIds.includes(g))));
-  // If user have extended capabilities, is an admin
-  if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
-    return MEMBER_ACCESS_RIGHT_ADMIN;
-  }
-  // if user is bypass, user has admin access (needed for data management usage)
-  if (isBypassUser(user)) {
-    return MEMBER_ACCESS_RIGHT_ADMIN;
-  }
+  const foundAccessMembers = (element.restricted_members ?? []).filter((u) => (u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id))
+      && (!u.groups_restriction_ids || u.groups_restriction_ids.length === 0 || u.groups_restriction_ids.every((g) => userGroupsIds.includes(g))));
   if (!foundAccessMembers.length) { // user has no access
     return null;
   }
@@ -469,18 +456,31 @@ export const getUserAccessRight = (user: AuthUser, element: { restricted_members
   return MEMBER_ACCESS_RIGHT_VIEW;
 };
 
+export const getUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+  // if user is bypass, user has admin access (needed for data management usage)
+  if (isBypassUser(user)) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  // no restricted user access on element
+  if (!element.restricted_members || element.restricted_members.length === 0) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  // If user have authorities, is an admin
+  const userMemberAccessIds = computeUserMemberAccessIds(user);
+  if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  return getExplicitUserAccessRight(user, element);
+};
+
 export const hasAuthorizedMemberAccess = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
   const userAccessRight = getUserAccessRight(user, element);
   return !!userAccessRight;
 };
 
 export const isUserInAuthorizedMember = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
-  // If no restricted members, user is not part of it
-  if (!element.restricted_members || element.restricted_members.length === 0) {
-    return false;
-  }
-  // If specified, user must have access
-  return hasAuthorizedMemberAccess(user, element);
+  const userAccessRight = getExplicitUserAccessRight(user, element);
+  return !!userAccessRight;
 };
 
 const isEntityOrganizationsAllowed = (

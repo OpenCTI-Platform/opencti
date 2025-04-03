@@ -9,7 +9,8 @@ import {
   type RequestAccessConfigureInput,
   type RequestAccessMember,
   StatusOrdering,
-  StatusScope
+  StatusScope,
+  VocabularyCategory
 } from '../../generated/graphql';
 import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-domain';
 import {
@@ -45,6 +46,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { verifyRequestAccessEnabled } from './requestAccessUtils';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { addVocabulary } from '../vocabulary/vocabulary-domain';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -355,26 +357,28 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   const organizationId = input.request_access_members[0];
   const elementId = input.request_access_entities[0];
 
+  // region check validity
   const elementData = await storeLoadByIdWithRefs(context, SYSTEM_USER, elementId) as unknown as BasicStoreCommon;
   logApp.debug('[OPENCTI-MODULE][Request access] entity to request access on:', { elementData });
   if (elementData === undefined) {
     throw ValidationError('Element not found for Access Request', 'request_access_members', input);
   }
-
   const organizationData = await findOrganizationById(context, SYSTEM_USER, organizationId);
   if (organizationData === undefined) {
     throw ValidationError('Organization not found for Access Request', 'request_access_entities', input);
   }
+  // endregion
+  // Ensure the required vocab is available
+  const category = VocabularyCategory.RequestForInformationTypesOv;
+  await addVocabulary(context, SYSTEM_USER, { name: REQUEST_SHARE_ACCESS_INFO_TYPE, description: 'Request for information sharing process', category });
+  // Create the new RFI
   const authorized_members = await computeAuthorizedMembersForRequestAccess(context, user, elementData);
-
   const mainRepresentative = extractEntityRepresentativeName(elementData);
-
   const humanDescription = 'Access requested:\n'
       + ` - by user: ${user.name} \n`
       + ` - for organization: ${organizationData.name} \n`
       + ` - for entity: ${elementData.entity_type} ${mainRepresentative} ${elementData.id}\n\n`
       + `Reason: ${input.request_access_reason}`;
-
   const allActionStatuses = await getRFIStatusMap(context, user);
   const action: RequestAccessAction = {
     reason: input.request_access_reason || 'no reason',
@@ -384,7 +388,6 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     status: ActionStatus.NEW,
     workflowMapping: allActionStatuses,
   };
-
   const firstStatus: BasicWorkflowStatus = await findFirstWorkflowStatus(context, user);
   const rfiInput: CaseRfiAddInput = {
     name: `Request Access for entity ${mainRepresentative} by ${user.name} via organization ${organizationData.name}`,

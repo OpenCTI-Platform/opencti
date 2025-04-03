@@ -13,7 +13,6 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   description: string
   trigger_type: string
   trigger_scope: string
-  override_notifier_message?: string
   event_types: string[]
   notifiers: string[]
   trigger_ids: string[]

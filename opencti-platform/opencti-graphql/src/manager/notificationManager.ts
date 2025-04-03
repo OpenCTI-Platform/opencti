@@ -21,7 +21,7 @@ import {
 import { resolveFiltersMapForUser } from '../utils/filtering/filtering-resolution';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
+import { OPENCTI_ADMIN_UUID, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { extractStixRepresentative, extractStixRepresentativeForUser } from '../database/stix-representative';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
@@ -30,6 +30,8 @@ import { replaceFilterKey } from '../utils/filtering/filtering-utils';
 import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER } from '../utils/filtering/filtering-constants';
 import type { FilterGroup } from '../generated/graphql';
 import { DigestPeriod, TriggerEventType, TriggerType } from '../generated/graphql';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { REQUEST_SHARE_ACCESS_INFO_TYPE } from '../modules/requestAccess/requestAccess-domain';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -114,31 +116,30 @@ const generateAssigneeTrigger = (user: AuthUser) => {
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 
-// For now only for REPORT CREATION
-const AUTH_TRIGGER_IDENTIFIER = 'Default Trigger for Restricted members';
+// For now only for RFI request access creation
 const generateAuthorizeTrigger = (user: AuthUser) => {
   const filters = {
-    mode: 'or',
+    mode: 'and',
     filters: [
       // /!\ objectAuthorized is a specific filter only worker in STIX
       // ONLY to use internally for this specific feature.
       // Any other usage / modification on this required a tech lead validation
-      { key: ['objectAuthorized'], values: [user], operator: 'eq' },
-      { key: ['entity_type'], values: ['Report'] },
+      { key: ['objectAuthorized'], values: [user], operator: 'eq', mode: 'or' },
+      { key: ['entity_type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI], operator: 'eq', mode: 'or' },
+      { key: ['information_types'], values: [REQUEST_SHARE_ACCESS_INFO_TYPE], operator: 'eq', mode: 'or' },
     ],
     filterGroups: []
   };
   return {
-    internal_id: `default-trigger-${user.id}`,
-    name: AUTH_TRIGGER_IDENTIFIER,
+    internal_id: `default-rfi-trigger-${user.id}`,
+    name: 'Request sharing',
     trigger_type: 'live',
     trigger_scope: 'knowledge',
     event_types: ['create'],
     notifiers: user.personal_notifiers,
     filters: JSON.stringify(filters),
     instance_trigger: false,
-    restricted_members: [],
-    override_notifier_message: 'granted you in `access restriction`'
+    restricted_members: []
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 
@@ -146,10 +147,11 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const nativeTriggers = platformUsers.map((user) => {
-    return [
-      { users: [user], trigger: generateAssigneeTrigger(user) },
-      { users: [user], trigger: generateAuthorizeTrigger(user) },
-    ];
+    const builtTriggers = [{ users: [user], trigger: generateAssigneeTrigger(user) }];
+    if (user.id !== OPENCTI_ADMIN_UUID) { // Admin is a fallback in current alerting on RFI request access creation.
+      builtTriggers.push({ users: [user], trigger: generateAuthorizeTrigger(user) });
+    }
+    return builtTriggers;
   }).flat();
   const definedTriggers = triggers.map((trigger) => {
     const triggerAuthorizedMembersIds = trigger.restricted_members?.map((member) => member.id) ?? [];
@@ -526,13 +528,12 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
 
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
-      const { data: { data, message: eventMessage, origin } } = streamEvent;
+      const { data: { data, message: streamMessage, origin } } = streamEvent;
       // For each event we need to check ifs
       for (let notifIndex = 0; notifIndex < liveNotifications.length; notifIndex += 1) {
         const { users, trigger }: ResolvedLive = liveNotifications[notifIndex];
         const { internal_id: notification_id, trigger_type: type, instance_trigger } = trigger;
         const targets = await buildTargetEvents(context, users, streamEvent, trigger);
-        const streamMessage: string = trigger.override_notifier_message ?? eventMessage;
         if (targets.length > 0) {
           const notificationEvent: KnowledgeNotificationEvent = { version, notification_id, type, targets, data, streamMessage, origin };
           await storeNotificationEvent(context, notificationEvent);
