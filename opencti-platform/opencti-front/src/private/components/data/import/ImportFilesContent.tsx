@@ -11,6 +11,8 @@ import { ImportFilesContentLines_data$data } from '@components/data/import/__gen
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
 import ImportActionsPopover from '@components/common/files/ImportActionsPopover';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
+import Fab from '@mui/material/Fab';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
@@ -132,6 +134,7 @@ const ImportFilesContent = () => {
   setTitle(t_i18n('Upload Files | Import | Data'));
   const { isFeatureEnable } = useHelper();
   const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [displayDelete, setDisplayDelete] = useState<string>('');
   const [openImportFilesDialog, setOpenImportFilesDialog] = useState<boolean>(false);
 
@@ -284,7 +287,7 @@ const ImportFilesContent = () => {
               window.location.pathname = getFileUri(id);
             }
           }}
-          createButton={<ImportButton onClick={() => setOpenImportFilesDialog(true)}/>}
+          createButton={isFABReplaced && <ImportButton onClick={() => setOpenImportFilesDialog(true)}/>}
           actions={(file: ImportFilesContentFileLine_file$data) => (
             <ImportActionsPopover
               file={file}
@@ -296,6 +299,21 @@ const ImportFilesContent = () => {
       )}
       {openImportFilesDialog && (
         <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)}/>
+      )}
+      {!isFABReplaced && (
+        <Fab
+          onClick={() => setOpenImportFilesDialog(true)}
+          color="primary"
+          aria-label="Add"
+          style={{
+            position: 'fixed',
+            bottom: 30,
+            right: 30,
+            // zIndex: 2000,
+          }}
+        >
+          <Add />
+        </Fab>
       )}
     </div>
   );
