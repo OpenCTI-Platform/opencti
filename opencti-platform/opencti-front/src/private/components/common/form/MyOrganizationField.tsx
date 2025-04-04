@@ -11,8 +11,8 @@ interface MyOrganizationFieldProps {
   label: string;
   disabled:boolean;
   multiple:boolean;
-  style:CSSProperties;
-  onChange:(name: string, value: AutoCompleteOption)=>void;
+  style?: CSSProperties;
+  onChange?: (name: string, value: AutoCompleteOption) => void;
 }
 
 const MyOrganizationField = (props: MyOrganizationFieldProps) => {
@@ -21,8 +21,8 @@ const MyOrganizationField = (props: MyOrganizationFieldProps) => {
     label,
     disabled,
     multiple = true,
-    style,
-    onChange,
+    style = {},
+    onChange = null,
   } = props;
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
@@ -47,7 +47,7 @@ const MyOrganizationField = (props: MyOrganizationFieldProps) => {
       }}
       noOptionsText={t_i18n('No available options')}
       options={myOrganizationList}
-      onChange={typeof onChange === 'function' ? onChange : null}
+      onChange={onChange}
       renderOption={(
         renderProps: React.HTMLAttributes<HTMLLIElement>,
         option: { value: string; label: string },
