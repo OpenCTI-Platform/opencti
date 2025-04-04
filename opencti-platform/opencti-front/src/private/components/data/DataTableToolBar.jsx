@@ -538,8 +538,12 @@ class DataTableToolBar extends Component {
 
     actionsInputs[i] = R.assoc(key, value, actionsInputs[i] || {});
     if (key === 'field') {
-      const values = [];
-      actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
+      if (value === 'x_opencti_detection') {
+        actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
+      } else {
+        const values = [];
+        actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
+      }
       if (
         value === 'object-marking'
         || value === 'object-label'
