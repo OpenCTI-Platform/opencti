@@ -2,7 +2,7 @@ import { files } from '../schema/attribute-definition';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { getDraftContext } from '../utils/draftContext';
-import { READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
+import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE } from '../modules/draftWorkspace/draftOperations';
 import { EditOperation } from '../generated/graphql';
 
@@ -20,6 +20,10 @@ export const getDraftContextFilesPrefix = (context) => {
 
 export const isDraftFile = (fileKey, draftId, suffix = '') => {
   return fileKey.startsWith(getDraftFilePrefix(draftId) + suffix);
+};
+
+export const getDraftContextIfElementInDraft = (context, instance) => {
+  return !getDraftContext(context) && isDraftIndex(instance._index) && instance.draft_ids?.length === 1 ? { ...context, draft_context: instance.draft_ids[0] } : context;
 };
 
 export const buildDraftFilter = (context, user, opts = {}) => {
@@ -123,7 +127,7 @@ export const buildUpdateFieldPatch = (rawUpdatePatch) => {
 export const getConsolidatedUpdatePatch = (currentUpdatePatch, updatedInputsResolved) => {
   const newUpdatePatch = currentUpdatePatch;
   const nonResolvedInput = updatedInputsResolved
-    .map((i) => { return { key: i.key, value: i.value.map((v) => v.standard_id ?? v), operation: i.operation ?? UPDATE_OPERATION_REPLACE, previous: i.previous ?? [] }; });
+    .map((i) => { return { key: i.key, value: i.value?.map((v) => v.standard_id ?? v), operation: i.operation ?? UPDATE_OPERATION_REPLACE, previous: i.previous ?? [] }; });
   for (let i = 0; i < nonResolvedInput.length; i += 1) {
     const currentNonResolvedInput = nonResolvedInput[i];
     const currentUpdates = currentUpdatePatch[currentNonResolvedInput.key];
@@ -157,7 +161,7 @@ export const getConsolidatedUpdatePatch = (currentUpdatePatch, updatedInputsReso
       const replaced_value = currentNonResolvedInput.operation === UPDATE_OPERATION_REPLACE ? currentNonResolvedInput.value : [];
       const added_value = currentNonResolvedInput.operation === UPDATE_OPERATION_ADD ? currentNonResolvedInput.value : [];
       const removed_value = currentNonResolvedInput.operation === UPDATE_OPERATION_REMOVE ? currentNonResolvedInput.value : [];
-      const initial_value = currentNonResolvedInput.previous.map((p) => p.standard_id ?? p);
+      const initial_value = currentNonResolvedInput.previous?.map((p) => p.standard_id ?? p);
       newUpdatePatch[currentNonResolvedInput.key] = { replaced_value, added_value, removed_value, initial_value };
     }
   }

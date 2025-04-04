@@ -40,6 +40,7 @@ import {
 import { numberOfContainersForObject } from '../domain/container';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadThroughDenormalized } from './stix';
+import { getDraftContextIfElementInDraft } from '../database/draft-utils';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -62,8 +63,16 @@ const stixCoreRelationshipResolvers = {
   StixCoreRelationshipsOrdering: stixCoreRelationshipOptions.StixCoreRelationshipsOrdering,
   StixCoreRelationship: {
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
-    from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, context, context.user)),
-    to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
+    from: (rel, _, context) => {
+      // If relation is in a draft, we want to force the context to also be in the same draft
+      const contextToUse = getDraftContextIfElementInDraft(context, rel);
+      return (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, contextToUse, context.user));
+    },
+    to: (rel, _, context) => {
+      // If relation is in a draft, we want to force the context to also be in the same draft
+      const contextToUse = getDraftContextIfElementInDraft(context, rel);
+      return (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, contextToUse, context.user));
+    },
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
     objectOrganization: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_GRANTED_REFS, { sortBy: 'name' }),

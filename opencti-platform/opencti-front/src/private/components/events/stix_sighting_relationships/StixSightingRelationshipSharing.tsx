@@ -24,6 +24,7 @@ import { truncate } from '../../../../utils/String';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import Transition from '../../../../components/Transition';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -99,6 +100,8 @@ ContainerHeaderSharedProps
 > = ({ elementId }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
+  const disabledInDraft = !!draftContext;
   const [displaySharing, setDisplaySharing] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
   const userIsOrganizationEditor = useGranted([
@@ -153,15 +156,15 @@ ContainerHeaderSharedProps
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Organizations sharing')}
         </Typography>
-        <EETooltip title="Share with an organization">
+        <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
           <IconButton
             color="primary"
             aria-label="Label"
-            onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
+            onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
             style={{ float: 'left', margin: '-6px 0 0 3px' }}
             size="small"
           >
-            <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+            <BankPlus fontSize="small" color={isEnterpriseEdition && !disabledInDraft ? 'primary' : 'disabled'} />
           </IconButton>
         </EETooltip>
         {!isEnterpriseEdition && <EEChip floating={true} />}
