@@ -270,9 +270,7 @@ export const createInitialRequestAccessFlow = async (context) => {
       { key: 'request_access_workflow', value: [initialConfig] }
     ];
     // TODO use updateAttribute instead
-    // await updateAttribute(context, user, rfiEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING, {request_access_workflow});
     await updateAttribute(context, SYSTEM_USER, rfiEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING, editInput);
-    // await entitySettingEditField(context, SYSTEM_USER, rfiEntitySettings.id, editInput);
   }
 };
 

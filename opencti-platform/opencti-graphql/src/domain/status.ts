@@ -30,8 +30,8 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { validateSetting } from '../modules/entitySetting/entitySetting-validators';
 import { telemetry } from '../config/tracing';
 
-export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
-  return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
+export const findTemplateById = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
+  return await storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
 };
 export const findAllTemplates = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesArgs) => {
   return listEntitiesPaginated<BasicStoreEntity>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
