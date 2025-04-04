@@ -13,7 +13,7 @@ import {
 } from '../../generated/graphql';
 import { addCaseRfi, findById as findRFIById } from '../case/case-rfi/case-rfi-domain';
 import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT, SYSTEM_USER } from '../../utils/access';
-import { listAllEntities } from '../../database/middleware-loader';
+import { internalLoadById, listAllEntities } from '../../database/middleware-loader';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
@@ -24,7 +24,7 @@ import { elLoadById } from '../../database/engine';
 import type { BasicGroupEntity, BasicStoreBase, BasicStoreCommon, BasicWorkflowStatus } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
-import { FunctionalError, ValidationError } from '../../config/errors';
+import { FunctionalError, UnsupportedError, ValidationError } from '../../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { entitySettingEditField, findByType as findEntitySettingsByType } from '../entitySetting/entitySetting-domain';
@@ -35,6 +35,7 @@ import { getDraftContext } from '../../utils/draftContext';
 import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { verifyRequestAccessEnabled } from './requestAccessUtils';
+import { isEmptyField } from '../../database/utils';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -380,51 +381,55 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
 
 export const approveRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
   logApp.debug('[OPENCTI-MODULE][Request Access] Approving request access:', { id });
+  // region Check validity
   await checkRequestAccessEnabled(context, user);
   const rfi = await findRFIById(context, user, id);
-  logApp.debug('[OPENCTI-MODULE][Request Access] Approving request access, rfi:', { rfi });
-  if (rfi.x_opencti_request_access) {
-    const actionData = rfi.x_opencti_request_access;
-    const action: RequestAccessAction = JSON.parse(actionData);
-
-    if (action.entities && action.members) {
-      await addOrganizationRestriction(context, user, action.entities[0], action.members[0]);
-
-      const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.APPROVED);
-      const allActionStatuses = await getRFIStatusMap(context, user);
-      // Moving RFI to approved
-      const requestAccessAction: RequestAccessAction = {
-        ...action,
-        status: ActionStatus.APPROVED,
-        executionDate: new Date(),
-        workflowMapping: allActionStatuses
-      };
-      const RFIFieldPatch :EditInput[] = [
-        { key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] },
-      ];
-
-      if (x_opencti_workflow_id) {
-        RFIFieldPatch.push({ key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] });
-      }
-      await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
-      const elementData = await elLoadById(context, SYSTEM_USER, action.entities[0]) as unknown as BasicStoreBase;
-      const mainRepresentative = extractEntityRepresentativeName(elementData);
-      await publishUserAction({
-        user,
-        event_type: 'mutation',
-        event_scope: 'update',
-        event_access: 'administration',
-        message: `approved demand of request access for entity ${mainRepresentative}`,
-        context_data: { id: user.id, entity_type: ENTITY_TYPE_CONTAINER_CASE_RFI, input: requestAccessAction }
-      });
-    }
-    logApp.error('Request Access is missing entities or members', { action, RFIId: id });
+  if (!rfi.x_opencti_request_access) {
+    throw UnsupportedError('This RFI is not compatible');
   }
-  logApp.error('RFI not found for Request Access', { RFIId: id });
-  const rfiApproved = await findRFIById(context, user, id);
-  logApp.debug('[OPENCTI-MODULE][Request Access] rfiApproved:', { rfiApproved });
-  await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, rfiApproved, user);
-  return rfiApproved;
+  const actionData = rfi.x_opencti_request_access;
+  const action: RequestAccessAction = JSON.parse(actionData);
+  if (!action.entities || !action.members) {
+    throw UnsupportedError('This RFI is not compatible');
+  }
+  const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.APPROVED);
+  if (isEmptyField((x_opencti_workflow_id))) {
+    throw UnsupportedError('This RFI is not correctly configured');
+  }
+  // endregion
+  // region Execute the sharing
+  const targetInstanceToShare = action.entities[0];
+  const instanceToShare = await internalLoadById(context, user, targetInstanceToShare);
+  if (isEmptyField(instanceToShare)) {
+    throw UnsupportedError('You cant share the requested element (restrictions or markings)');
+  }
+  await addOrganizationRestriction(context, user, targetInstanceToShare, action.members[0]);
+  // endregion
+  // region Moving RFI to approved
+  const allActionStatuses = await getRFIStatusMap(context, user);
+  const requestAccessAction: RequestAccessAction = {
+    ...action,
+    status: ActionStatus.APPROVED,
+    executionDate: new Date(),
+    workflowMapping: allActionStatuses
+  };
+  const RFIFieldPatch :EditInput[] = [
+    { key: 'x_opencti_request_access', value: [`${JSON.stringify(requestAccessAction)}`] },
+    { key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] }
+  ];
+  const { element } = await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
+  const elementData = await elLoadById(context, SYSTEM_USER, targetInstanceToShare) as unknown as BasicStoreBase;
+  const mainRepresentative = extractEntityRepresentativeName(elementData);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `approved demand of request access for entity ${mainRepresentative}`,
+    context_data: { id: user.id, entity_type: ENTITY_TYPE_CONTAINER_CASE_RFI, input: requestAccessAction }
+  });
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
+  // endregion
 };
 
 export const declineRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {

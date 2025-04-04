@@ -238,6 +238,7 @@ const ReportEditionOverviewComponent = (props) => {
           <Field
             component={DateTimePickerField}
             name="published"
+            withSeconds
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             textFieldProps={{

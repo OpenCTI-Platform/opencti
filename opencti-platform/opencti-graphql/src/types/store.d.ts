@@ -118,6 +118,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   draft_change?: DraftChange;
   // representative
   representative: Representative
+  restricted_members?: Array<AuthorizedMember>;
 }
 
 interface StoreMarkingDefinition extends BasicStoreEntity {
@@ -184,7 +185,6 @@ interface BasicStoreCommon extends BasicStoreBase {
   [RELATION_OBJECT_ASSIGNEE]?: Array<string>;
   [RELATION_OBJECT_PARTICIPANT]?: Array<string>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
-  restricted_members?: Array<AuthorizedMember>;
 }
 
 interface StoreCommon {
