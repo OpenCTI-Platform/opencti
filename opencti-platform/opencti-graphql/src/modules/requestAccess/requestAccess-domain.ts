@@ -35,7 +35,7 @@ import { getDraftContext } from '../../utils/draftContext';
 import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { verifyRequestAccessEnabled } from './requestAccessUtils';
-import { isEmptyField } from '../../database/utils';
+import { isEmptyField, isNotEmptyField } from '../../database/utils';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -402,6 +402,10 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
   const instanceToShare = await internalLoadById(context, user, targetInstanceToShare);
   if (isEmptyField(instanceToShare)) {
     throw UnsupportedError('You cant share the requested element (restrictions or markings)');
+  }
+  // If user have access but restrictions is applied, element will not be shared by organization
+  if (isNotEmptyField((instanceToShare.restricted_members))) {
+    throw UnsupportedError('Element is not sharable at the moment (restricted)');
   }
   await addOrganizationRestriction(context, user, targetInstanceToShare, action.members[0]);
   // endregion
