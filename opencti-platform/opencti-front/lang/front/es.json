@@ -1566,6 +1566,7 @@
   "Import a template": "Importar una plantilla",
   "Import a widget": "Importar un widget",
   "Import a Widget": "Importar un widget",
+  "Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.": "Importe todos los datos a un nuevo borrador o a un banco de trabajo de analista, para validar los datos antes de su ingestión. Tenga en cuenta que la creación de un banco de trabajo no es posible cuando se seleccionan varios archivos.",
   "Import dashboard": "Importar un cuadro de mando personalizado",
   "Import data": "Importar datos",
   "Import files": "Importar archivos",

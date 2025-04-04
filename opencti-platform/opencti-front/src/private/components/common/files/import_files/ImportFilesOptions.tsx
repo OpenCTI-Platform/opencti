@@ -81,7 +81,11 @@ const ImportFilesOptions = ({
               <Tooltip
                 title={t_i18n('Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.')}
               >
-                <InformationOutline style={{ position: 'absolute', marginLeft: 16, marginTop: 40 }} fontSize="small" color="primary" />
+                <InformationOutline
+                  style={{ position: 'absolute', marginLeft: 16, marginTop: 40 }}
+                  fontSize="small"
+                  color="primary"
+                />
               </Tooltip>
             </div>
             {optionsFormikContext.values.validationMode === 'draft' && (

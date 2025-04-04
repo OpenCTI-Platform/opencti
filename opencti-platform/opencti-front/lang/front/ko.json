@@ -1566,6 +1566,7 @@
   "Import a template": "템플릿 가져오기",
   "Import a widget": "위젯 가져오기",
   "Import a Widget": "위젯 가져오기",
+  "Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.": "모든 데이터를 새 초안 또는 분석가 워크벤치로 가져와서 수집 전에 데이터의 유효성을 검사합니다. 여러 파일을 선택한 경우에는 워크벤치를 만들 수 없습니다.",
   "Import dashboard": "대시보드 가져오기",
   "Import data": "데이터 가져오기",
   "Import files": "파일 가져오기",

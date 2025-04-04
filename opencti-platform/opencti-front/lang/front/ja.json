@@ -1566,6 +1566,7 @@
   "Import a template": "テンプレートのインポート",
   "Import a widget": "ウィジェットをインポートする",
   "Import a Widget": "ウィジェットのインポート",
+  "Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.": "すべてのデータを新しいドラフトまたは分析者ワークベンチにインポートし、取り込む前にデータを検証する。複数のファイルが選択されている場合、ワークベンチを作成することはできません。",
   "Import dashboard": "ダッシュボードのインポート",
   "Import data": "インポート対象データ",
   "Import files": "ファイルをインポート",
