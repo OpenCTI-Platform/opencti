@@ -581,12 +581,14 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             "OPENCTI_EXECUTION_POOL_SIZE",
             ["opencti", "execution_pool_size"],
             config,
+            True,
             default=5,
         )
         self.listen_pool_size = get_config_variable(
             "WORKER_LISTEN_POOL_SIZE",
             ["worker", "listen_pool_size"],
             config,
+            True,
             default=5,
         )
         # Load worker config
