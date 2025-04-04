@@ -1,22 +1,18 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import { Field } from 'formik';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
-
-export interface OrganizationOption {
-  value: string;
-  label: string ;
-}
+import { AutoCompleteOption } from '../../../../utils/field';
 
 interface MyOrganizationFieldProps {
   name: string;
   label: string;
   disabled:boolean;
   multiple:boolean;
-  style:any;
-  onChange:any;
+  style:CSSProperties;
+  onChange:(name: string, value: AutoCompleteOption)=>void;
 }
 
 const MyOrganizationField = (props: MyOrganizationFieldProps) => {
@@ -30,7 +26,7 @@ const MyOrganizationField = (props: MyOrganizationFieldProps) => {
   } = props;
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
-  const myOrganizationList: OrganizationOption[] = [];
+  const myOrganizationList: AutoCompleteOption[] = [];
   if (me.objectOrganization) {
     for (let i = 0; i < me.objectOrganization?.edges.length; i += 1) {
       const org = me.objectOrganization?.edges[i];
@@ -40,6 +36,7 @@ const MyOrganizationField = (props: MyOrganizationFieldProps) => {
   return (
     <Field
       component={AutocompleteField}
+      required
       name={name}
       multiple={multiple}
       disabled={disabled}

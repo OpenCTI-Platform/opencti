@@ -8,7 +8,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { graphql } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import MyOrganizationField, { OrganizationOption } from '@components/common/form/MyOrganizationField';
+import MyOrganizationField from '@components/common/form/MyOrganizationField';
+import * as Yup from 'yup';
 import { useFormatter } from './i18n';
 import TextField from './TextField';
 import useApiMutation from '../utils/hooks/useApiMutation';
@@ -16,7 +17,7 @@ import Transition from './Transition';
 import { RequestAccessDialogMutation$variables } from './__generated__/RequestAccessDialogMutation.graphql';
 import { handleErrorInForm } from '../relay/environment';
 import useAuth from '../utils/hooks/useAuth';
-import { fieldSpacingContainerStyle } from '../utils/field';
+import { AutoCompleteOption, fieldSpacingContainerStyle } from '../utils/field';
 import type { Theme } from './Theme';
 
 const requestAccessDialogMutation = graphql`
@@ -43,12 +44,16 @@ interface RequestAccessFormAddInput {
   request_access_type: 'organization_sharing';
 }
 
+const requestAccessValidation = (t: (v: string) => string) => Yup.object().shape({
+  organizations: Yup.object().required(t('This field is required')),
+});
+
 const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose, entitiesIds }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { me } = useAuth();
   const meResolvedId = me.id;
-  let initialOrganization: OrganizationOption = { value: '', label: '' };
+  let initialOrganization: AutoCompleteOption = { value: '', label: '' };
   if (me?.objectOrganization && me?.objectOrganization?.edges?.length > 0) {
     const organizationData = me?.objectOrganization;
     initialOrganization = {
@@ -56,15 +61,6 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
       value: organizationData?.edges[0].node.id,
     };
   }
-
-  /* TODO
-  const requestAccessValidation = (t: (v: string) => string) => Yup.object().shape({
-    organizations: Yup.object().shape({
-      value: Yup.string().trim().required(t('This field is required')),
-      label: Yup.string().trim().required(t('This field is required')),
-    }),
-  });
-   */
 
   const [commit] = useApiMutation(requestAccessDialogMutation, undefined, {
     successMessage: `${t_i18n('Your request for access has been successfully taken into account')}`,
@@ -77,7 +73,6 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   };
   const onSubmit: FormikConfig<RequestAccessFormAddInput>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
     const { organizations } = values;
-
     const input: RequestAccessDialogMutation$variables['input'] = {
       request_access_reason: values.request_access_reason,
       request_access_entities: entitiesIds,
@@ -115,7 +110,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
           <Formik
             initialValues={initialValues}
             onSubmit={onSubmit}
-            // validationSchema={requestAccessValidation(t_i18n)}
+            validationSchema={requestAccessValidation(t_i18n)}
           >
             {({ isSubmitting, submitForm, setFieldValue }) => {
               return (
