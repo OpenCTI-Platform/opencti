@@ -488,7 +488,10 @@ StixCoreObjectQuickSubscriptionContentProps
   }
   return (
     <>
-      <Tooltip title={title}>
+      <Tooltip
+        title={title}
+        placement={'bottom-start'}
+      >
         <ToggleButton
           onClick={() => !disabledInDraft && (triggerUpdate ? handleOpen() : createInstanceTrigger())}
           value="quick-subscription"

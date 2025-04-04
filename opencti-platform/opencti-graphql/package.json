@@ -116,7 +116,7 @@
     "graphql-subscriptions": "2.0.0",
     "graphql-upload": "17.0.0",
     "graphql-ws": "5.16.2",
-    "helmet": "7.2.0",
+    "helmet": "8.1.0",
     "http-proxy-agent": "7.0.2",
     "https-proxy-agent": "7.0.6",
     "ioredis": "5.4.1",

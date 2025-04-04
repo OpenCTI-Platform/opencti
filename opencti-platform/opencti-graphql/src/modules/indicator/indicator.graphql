@@ -54,6 +54,7 @@ type DecayChartData {
 type ObservablesValues {
   type: String
   value: String
+  hashes: [Hash!]
 }
 
 type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomainObject {

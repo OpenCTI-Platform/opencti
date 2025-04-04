@@ -119,7 +119,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
       && !!file?.type
       && !acceptedList.includes(file?.type)
     ) {
-      setErrorText(t_i18n('This file is not in the specified format'));
+      setErrorText(`${t_i18n('This file is not in the specified format')} : ${acceptMimeTypes}`);
       return;
     }
 

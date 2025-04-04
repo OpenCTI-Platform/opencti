@@ -1,14 +1,14 @@
 import { Readable } from 'stream';
 import conf, { BUS_TOPICS } from '../../config/conf';
 import { type FileUploadData, uploadToStorage } from '../../database/file-storage-helper';
-import { deleteFile } from '../../database/file-storage';
+import { deleteFile, guessMimeType } from '../../database/file-storage';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST, type StoreEntityExclusionList } from './exclusionList-types';
 import type { ExclusionListFileAddInput, MutationExclusionListFieldPatchArgs, QueryExclusionListsArgs } from '../../generated/graphql';
 import { getClusterInstances, notify, redisGetExclusionListStatus, redisUpdateExclusionListStatus } from '../../database/redis';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { generateInternalId } from '../../schema/identifier';
@@ -76,6 +76,10 @@ const checkFileSize = async (createReadStream: () => Readable) => {
 const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exclusionListId: string, file: FileUploadData) => {
   const fullFile = await file;
   const { byteLength, linesNumber } = await checkFileSize(fullFile.createReadStream);
+  const mimeType = guessMimeType(fullFile.filename);
+  if (mimeType !== 'text/plain') {
+    throw UnsupportedError('Exclusion list file format must be text/plain', { mimeType });
+  }
   const exclusionFile = { ...fullFile, filename: `${exclusionListId}.txt` };
   const { upload } = await uploadToStorage(context, user, filePath, exclusionFile, {});
   return { upload, byteLength, linesNumber };

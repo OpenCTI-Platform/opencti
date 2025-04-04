@@ -30,11 +30,40 @@ import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widge
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const WidgetCreationParameters = () => {
   const { t_i18n } = useFormatter();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
+
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const runtimeSortByValues = isRuntimeSort ? [ // values sortable only if runtime mapping is enabled
+    'createdBy',
+    'creator',
+    'objectMarking',
+    'observable_value',
+  ] : [];
+  const sortByValues = [
+    'created',
+    'created_at',
+    'modified',
+    'updated_at',
+    'name',
+    'valid_from',
+    'valid_until',
+    'entity_type',
+    ...runtimeSortByValues,
+    'value',
+    'x_opencti_workflow_id',
+    'opinions_metrics_mean',
+    'opinions_metrics_max',
+    'opinions_metrics_min',
+    'opinions_metrics_total',
+  ];
 
   const {
     config,
@@ -324,26 +353,7 @@ const WidgetCreationParameters = () => {
                         )
                         }
                       >
-                        {[
-                          'created',
-                          'created_at',
-                          'modified',
-                          'updated_at',
-                          'name',
-                          'valid_from',
-                          'valid_until',
-                          'entity_type',
-                          'createdBy',
-                          'creator',
-                          'objectMarking',
-                          'observable_value',
-                          'value',
-                          'x_opencti_workflow_id',
-                          'opinions_metrics_mean',
-                          'opinions_metrics_max',
-                          'opinions_metrics_min',
-                          'opinions_metrics_total',
-                        ].map((value) => (
+                        {sortByValues.map((value) => (
                           <MenuItem
                             key={value}
                             value={value}
