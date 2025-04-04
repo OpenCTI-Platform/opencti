@@ -15,6 +15,7 @@
   "A FINTEL export will contain extra information like markings and creation date": "FINTELエクスポートには、マーキングや作成日などの追加情報が含まれます。",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "ファイルのインポート、コネクタの選択を合理化し、最終的なインポートの前にレビュー用のワークベンチまたはドラフトを作成できるガイド付きワークフロー",
   "A public dashboard is a snapshot...": "パブリック・ダッシュボードは、特定の時刻におけるプライベート・ダッシュボードのスナップショットです。プライベートダッシュボードを変更しても、すでに作成されたパブリックダッシュボードは変更されません。",
+  "A widget has a @me filter enabled...": "ウィジェットで@meフィルタが有効になっています。このダッシュボードをパブリックダッシュボードとして共有する場合、@meフィルターはダッシュボードを共有している人の\"{name}\"に置き換えられます。ダッシュボードに表示されるデータに影響を与える可能性があります。",
   "About": "OpenCTIについて",
   "Abstract": "要旨",
   "Accent color": "アクセントカラー",

@@ -15,6 +15,7 @@
   "A FINTEL export will contain extra information like markings and creation date": "Una exportación FINTEL contendrá información extra como marcas y fecha de creación",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "Un flujo de trabajo guiado que agiliza la importación de archivos, la selección de conectores y permite la creación de un banco de trabajo o borrador para su revisión antes de la importación final",
   "A public dashboard is a snapshot...": "Un panel público es una instantánea de un panel privado en un momento determinado. Si modifica el panel privado, los paneles públicos ya creados no se modificarán.",
+  "A widget has a @me filter enabled...": "Un widget tiene activado un filtro @me. Al compartir este panel como panel público, el filtro @me se sustituirá por \"{name}\" que está compartiendo el panel. Esto podría afectar a los datos mostrados en el panel.",
   "About": "Acerca de",
   "Abstract": "Resumen",
   "Accent color": "Color de resalte",

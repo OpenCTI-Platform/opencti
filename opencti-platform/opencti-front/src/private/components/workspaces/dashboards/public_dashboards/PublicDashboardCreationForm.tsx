@@ -19,6 +19,9 @@ import SelectField from '../../../../../components/fields/SelectField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import useAuth from '../../../../../utils/hooks/useAuth';
+import { ME_FILTER_VALUE } from '../../../../../utils/filters/filtersUtils';
+import { fromB64 } from '../../../../../utils/String';
 
 const publicDashboardCreateMutation = graphql`
   mutation PublicDashboardCreationFormCreateMutation($input: PublicDashboardAddInput!) {
@@ -36,6 +39,7 @@ export const dashboardsQuery = graphql`
           id
           name
           currentUserAccessRight
+          manifest
         }
       }
     }
@@ -66,6 +70,8 @@ const PublicDashboardCreationFormComponent = ({
   onCompleted,
 }: PublicDashboardCreationFormComponentProps) => {
   const { t_i18n } = useFormatter();
+  const { me } = useAuth();
+  const publicDashboardCreatorName = me.name;
   const [commitCreateMutation] = useApiMutation(publicDashboardCreateMutation);
 
   const { workspaces } = usePreloadedQuery(dashboardsQuery, queryRef);
@@ -73,6 +79,12 @@ const PublicDashboardCreationFormComponent = ({
     .map((edge) => edge.node)
     .filter((dashboard) => dashboard.currentUserAccessRight === 'admin')
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  const dashboardUsingMeFilter = (dashboardId: string) => {
+    return (dashboards ?? []).find(({ id, manifest }) => {
+      return id === dashboardId && fromB64(manifest ?? '').includes(ME_FILTER_VALUE);
+    });
+  };
 
   const formValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
@@ -120,7 +132,7 @@ const PublicDashboardCreationFormComponent = ({
       }}
       onSubmit={onSubmit}
     >
-      {({ isSubmitting, isValid, dirty, handleReset, submitForm, setFieldValue }) => (
+      {({ isSubmitting, isValid, dirty, handleReset, submitForm, setFieldValue, values }) => (
         <Form>
           <Field
             component={SelectField}
@@ -137,6 +149,14 @@ const PublicDashboardCreationFormComponent = ({
               </MenuItem>
             ))}
           </Field>
+
+          {dashboardUsingMeFilter(values.dashboard_id) && (
+            <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
+              {t_i18n('A widget has a @me filter enabled...', {
+                values: { name: publicDashboardCreatorName },
+              })}
+            </Alert>
+          )}
 
           <Field
             name="name"

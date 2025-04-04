@@ -15,6 +15,7 @@
   "A FINTEL export will contain extra information like markings and creation date": "A FINTEL export will contain extra information like markings and creation date",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import",
   "A public dashboard is a snapshot...": "A public dashboard is a snapshot of a private dashboard at a specific time. If you modify the private dashboard, already created public dashboards won't be modified.",
+  "A widget has a @me filter enabled...": "A widget has a @me filter enabled. When sharing this dashboard as a public dashboard, the @me filter will be replaced by \"{name}\" who is sharing the dashboard. It might impact the data displayed in the dashboard.",
   "About": "About",
   "Abstract": "Abstract",
   "Accent color": "Accent color",

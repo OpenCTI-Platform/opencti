@@ -15,6 +15,7 @@
   "A FINTEL export will contain extra information like markings and creation date": "Ein FINTEL-Export enthält zusätzliche Informationen wie Markierungen und Erstellungsdatum",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "Ein geführter Arbeitsablauf, der den Import von Dateien und die Auswahl von Konnektoren vereinfacht und die Erstellung einer Workbench oder eines Entwurfs zur Überprüfung vor dem endgültigen Import ermöglicht",
   "A public dashboard is a snapshot...": "Ein öffentliches Dashboard ist ein Schnappschuss eines privaten Dashboards zu einem bestimmten Zeitpunkt. Wenn Sie das private Dashboard ändern, werden die bereits erstellten öffentlichen Dashboards nicht geändert.",
+  "A widget has a @me filter enabled...": "Ein Widget hat einen @me-Filter aktiviert. Wenn Sie dieses Dashboard als öffentliches Dashboard teilen, wird der @me-Filter durch \"{name}\" ersetzt, der das Dashboard teilt. Dies kann Auswirkungen auf die im Dashboard angezeigten Daten haben.",
   "About": "Über",
   "Abstract": "Zusammenfassung",
   "Accent color": "Akzentfarbe",

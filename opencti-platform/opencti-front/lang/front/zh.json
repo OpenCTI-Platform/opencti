@@ -15,6 +15,7 @@
   "A FINTEL export will contain extra information like markings and creation date": "FINTEL 导出将包含额外信息，如标记和创建日期",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "引导式工作流程可简化文件导入、连接器选择，并允许创建工作台或草稿，以便在最终导入前进行审查",
   "A public dashboard is a snapshot...": "公共仪表盘是私人仪表盘在特定时间的快照。如果修改了私人仪表盘，则不会修改已创建的公共仪表盘。",
+  "A widget has a @me filter enabled...": "部件已启用 @me 过滤器。将此仪表盘作为公共仪表盘共享时，@me 筛选器将被\"{name}\"共享仪表盘的人替换。这可能会影响仪表盘中显示的数据。",
   "About": "关于",
   "Abstract": "摘要",
   "Accent color": "辅助色",
