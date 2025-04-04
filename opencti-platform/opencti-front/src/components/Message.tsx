@@ -38,8 +38,8 @@ const Message = () => {
   try {
     // if you move anything oustide of this try/catch, please check that /public/graphql is still working.
     isEnterpriseEdition = useEnterpriseEdition();
-    const { isRequestAccessEnabled, isFeatureEnable } = useHelper();
-    isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF') && isRequestAccessEnabled() && isEnterpriseEdition;
+    const { isRequestAccessEnabled } = useHelper();
+    isRequestAccessFeatureEnabled = isRequestAccessEnabled() && isEnterpriseEdition;
   } catch (e) {
     // When called being unauthenticated there is no useAuth()
   }

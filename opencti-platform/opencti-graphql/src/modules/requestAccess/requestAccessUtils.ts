@@ -4,9 +4,7 @@ import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetti
 
 export const verifyRequestAccessEnabled = (settings: BasicStoreSettings, rfiEntitySettings: BasicStoreEntityEntitySetting) => {
   const message: string [] = [];
-  if (!isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
-    return { enabled: false };
-  }
+
   // 1. EE must be enabled
   const isEEConfigured: boolean = settings.valid_enterprise_edition === true;
   if (!isEEConfigured) {
