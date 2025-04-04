@@ -11,6 +11,7 @@ import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+
 // -- ENTITY TYPES --
 
 export const queryDefaultSubTypes = async (context: AuthContext, user: AuthUser, search : string | null = null) => {
