@@ -20,29 +20,15 @@ export interface RequestAccessActionStatus {
   actionStatus: string,
 }
 
-interface RequestAccessAction {
-  reason?: string
-  entities?: string[]
-  members?: string[]
-  type?: string,
-  status: string,
-  executionDate?: Date,
-  workflowMapping: RequestAccessActionStatus[],
-}
-
 const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
   const { t_i18n } = useFormatter();
-  let requestAccessData = null;
   const approvedStatus = data.requestAccessConfiguration?.configuration?.approved_status;
   const approvedButtonColor = approvedStatus?.template?.color;
   const declinedStatus = data.requestAccessConfiguration?.configuration?.declined_status;
   const declineButtonColor = declinedStatus?.template?.color;
-  const requestAccess = data.x_opencti_request_access;
-  if (requestAccess) {
-    requestAccessData = JSON.parse(requestAccess) as RequestAccessAction;
-  }
-  const isDecisionNotTaken = requestAccessData?.status === 'NEW'; // Action Status (NEW/DECLINED/ACCEPTED)
-
+  const rfiStatus = data.status?.id;
+  const isDecisionNotTaken = rfiStatus !== approvedStatus?.id && rfiStatus !== declinedStatus?.id;
+  const requestAccessData = data.x_opencti_request_access;
   const onSubmitValidateRequestAccess = () => {
     commitMutation({
       mutation: validateRequestAccessMutation,

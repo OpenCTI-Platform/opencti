@@ -94,11 +94,13 @@ const caseRfiFragment = graphql`
       isUserCanAction
       configuration {
         approved_status {
+          id
           template {
             color
           }
         }
         declined_status {
+          id
           template {
             color
           }
