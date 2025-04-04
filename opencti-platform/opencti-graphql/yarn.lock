@@ -5827,14 +5827,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.8.2":
-  version: 1.8.2
-  resolution: "axios@npm:1.8.2"
+"axios@npm:1.8.4":
+  version: 1.8.4
+  resolution: "axios@npm:1.8.4"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10/d4328758128d0602cc809a8e7627622cb7839b379eae5e4d6b9d603dd4d5fb89159985630243ec107cf5c675cd8825dba737a319dff9499f3b7688d9a69ec9ed
+  checksum: 10/a10f0dd836613924e48cf03dc2eff3fd21b14f764807aedaee4880a70c0f142aaebdb21da7ce27104d4c16ca00d0e452a20a20851f60e385a8d5bad1ae909d46
   languageName: node
   linkType: hard
 
@@ -11504,7 +11504,7 @@ __metadata:
     archiver: "npm:7.0.1"
     archiver-zip-encrypted: "npm:2.0.0"
     async-lock: "npm:1.4.1"
-    axios: "npm:1.8.2"
+    axios: "npm:1.8.4"
     axios-cookiejar-support: "npm:5.0.5"
     bcryptjs: "npm:2.4.3"
     blocked-at: "npm:1.2.0"
