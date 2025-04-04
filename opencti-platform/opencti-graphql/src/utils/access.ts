@@ -528,19 +528,6 @@ export const isMarkingAllowed = (element: BasicStoreCommon, userAuthorizedMarkin
   return true;
 };
 
-export const canRequestAccess = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
-  const hasPlatformOrg = !!settings.platform_organization;
-  const elementsThatRequiresAccess: Array<BasicStoreCommon> = [];
-  for (let i = 0; i < elements.length; i += 1) {
-    if (!isOrganizationAllowed(context, elements[i], user, hasPlatformOrg)) {
-      elementsThatRequiresAccess.push(elements[i]);
-    }
-    // TODO before removing ORGA_SHARING_REQUEST_FF: When it's ready check Authorized members
-  }
-  return elementsThatRequiresAccess;
-};
-
 export const checkUserFilterStoreElements = (
   context: AuthContext,
   user: AuthUser,
