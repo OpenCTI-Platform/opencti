@@ -16,8 +16,14 @@ interface ResetProps {
 }
 
 export const AskSendOtpMutation = graphql`
-mutation ResetPasswordMutation($input: AskSendOtpInput!){
+mutation ResetPasswordAskSendOtpMutation($input: AskSendOtpInput!){
   askSendOtp(input: $input)
+}
+`;
+
+export const VerifyOtpMutation = graphql`
+mutation ResetPasswordVerifyOtpMutation($input: VerifyOtpInput!){
+  verifyOtp(input: $input)
 }
 `;
 
@@ -62,7 +68,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
-  const [commitMutation] = useApiMutation(
+  const [askSentOtpcommitMutation] = useApiMutation(
     AskSendOtpMutation,
     undefined,
     {
@@ -75,7 +81,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
     { setSubmitting, resetForm, setErrors },
   ) => {
     setSubmitting(true);
-    commitMutation({
+    askSentOtpcommitMutation({
       variables: {
         input: {
           email: values.email,
