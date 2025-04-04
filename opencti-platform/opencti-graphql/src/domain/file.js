@@ -76,9 +76,9 @@ export const filesMetrics = async (context, user) => {
 };
 
 export const uploadImport = async (context, user, args) => {
-  const { file, fileMarkings: file_markings } = args;
+  const { file, fileMarkings: file_markings, noTriggerImport } = args;
   const path = 'import/global';
-  const { upload: up } = await uploadToStorage(context, user, path, file, { file_markings });
+  const { upload: up } = await uploadToStorage(context, user, path, file, { file_markings, noTriggerImport });
   const contextData = buildContextDataForFile(null, path, up.name, file_markings);
   await publishUserAction({
     user,
