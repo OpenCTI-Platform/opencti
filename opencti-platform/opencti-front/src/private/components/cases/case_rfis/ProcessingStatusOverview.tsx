@@ -1,11 +1,10 @@
 import Grid from '@mui/material/Grid';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import React from 'react';
 import { declineRequestAccessMutation, validateRequestAccessMutation } from '@components/cases/CaseUtils';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import ItemStatus from '../../../../components/ItemStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseRfi_caseRfi$data } from './__generated__/CaseRfi_caseRfi.graphql';
@@ -34,13 +33,15 @@ interface RequestAccessAction {
 const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
   const { t_i18n } = useFormatter();
   let requestAccessData = null;
-  const approvedButtonColor = data.requestAccessConfiguration?.approved_status?.template?.color;
-  const declineButtonColor = data.requestAccessConfiguration?.declined_status?.template?.color;
+  const approvedStatus = data.requestAccessConfiguration?.configuration?.approved_status;
+  const approvedButtonColor = approvedStatus?.template?.color;
+  const declinedStatus = data.requestAccessConfiguration?.configuration?.declined_status;
+  const declineButtonColor = declinedStatus?.template?.color;
   const requestAccess = data.x_opencti_request_access;
   if (requestAccess) {
     requestAccessData = JSON.parse(requestAccess) as RequestAccessAction;
   }
-  const isButtonsHidden = requestAccessData?.status === 'NEW';
+  const isDecisionNotTaken = requestAccessData?.status === 'NEW'; // Action Status (NEW/DECLINED/ACCEPTED)
 
   const onSubmitValidateRequestAccess = () => {
     commitMutation({
@@ -76,49 +77,66 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
     });
   };
 
-  return (
-    <Security needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-      <Grid item xs={12} style={{ marginBottom: 20 }}>
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          style={{ marginTop: 0 }}
-        >
-          {t_i18n('Processing status')}
-        </Typography>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-        >
-          <ItemStatus
-            status={data.status}
-            disabled={!data.workflowEnabled && !requestAccessData}
-          />
-          {isButtonsHidden && (
-          <div>
-            <Button
-              color="primary"
-              variant="outlined"
-              style={{ marginRight: 10, color: approvedButtonColor, borderColor: approvedButtonColor }}
-              onClick={onSubmitValidateRequestAccess}
-            >
-              {t_i18n('Validate')}
-            </Button>
-            <Button
-              color="primary"
-              variant="outlined"
-              style={{ color: declineButtonColor, borderColor: declineButtonColor }}
-              onClick={onSubmitDeclineRequestAccess}
-            >
-              {t_i18n('Decline')}
-            </Button>
-          </div>)}
+  const userCanAction = data.requestAccessConfiguration?.isUserCanAction;
+  return <Grid item xs={12} style={{ marginBottom: 20 }}>
+    <Typography
+      variant="h3"
+      gutterBottom={true}
+      style={{ marginTop: 0 }}
+    >
+      {t_i18n('Processing status')}
+    </Typography>
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    }}
+    >
+      <ItemStatus
+        status={data.status}
+        disabled={!data.workflowEnabled && !requestAccessData}
+      />
+      {!userCanAction && <Tooltip title={t_i18n('You need to be able to edit the RFI and share knowledge')}>
+        <div>
+          <Button
+            color="primary"
+            disabled
+            variant="contained"
+            style={{ marginRight: 10 }}
+          >
+            {t_i18n('Validate')}
+          </Button>
+          <Button
+            color="primary"
+            disabled
+            variant="contained"
+          >
+            {t_i18n('Decline')}
+          </Button>
         </div>
-        <Divider style={{ marginTop: 20 }}/>
-      </Grid>
-    </Security>);
+      </Tooltip>}
+      {isDecisionNotTaken && userCanAction && (
+      <div>
+        <Button
+          color="primary"
+          variant="outlined"
+          style={{ marginRight: 10, color: approvedButtonColor, borderColor: approvedButtonColor }}
+          onClick={onSubmitValidateRequestAccess}
+        >
+          {t_i18n('Validate')}
+        </Button>
+        <Button
+          color="primary"
+          variant="outlined"
+          style={{ color: declineButtonColor, borderColor: declineButtonColor }}
+          onClick={onSubmitDeclineRequestAccess}
+        >
+          {t_i18n('Decline')}
+        </Button>
+      </div>)}
+    </div>
+    <Divider style={{ marginTop: 20 }}/>
+  </Grid>;
 };
 
 export default ProcessingStatusOverview;

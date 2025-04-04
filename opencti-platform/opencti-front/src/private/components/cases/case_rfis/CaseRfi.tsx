@@ -88,16 +88,20 @@ const caseRfiFragment = graphql`
       }
     }
     workflowEnabled
+    revoked
     x_opencti_request_access
     requestAccessConfiguration {
-      approved_status {
-        template {
-          color
+      isUserCanAction
+      configuration {
+        approved_status {
+          template {
+            color
+          }
         }
-      }
-      declined_status {
-        template {
-          color
+        declined_status {
+          template {
+            color
+          }
         }
       }
     }
