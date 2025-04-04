@@ -23,7 +23,6 @@ import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/
 import { toB64 } from '../../../../../utils/String';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ItemMarkings from '../../../../../components/ItemMarkings';
-import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 
 const styles = (theme) => ({
@@ -105,7 +104,8 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, nested, nsdt }) => {
+const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nested, nsdt }) => {
+  const { t_i18n } = useFormatter();
   const { me } = useAuth();
   const { t_i18n } = useFormatter();
   const deletion = useDeletion({});
@@ -126,7 +126,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
         fileStore.setValue('progress', 'uploadStatus');
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess(t('File successfully removed'));
+        MESSAGING$.notifySuccess(t_i18n('File successfully removed'));
       },
     });
   };
@@ -152,7 +152,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
         secondaryAction={
           <>
             {!directDownload && !isFail && (
-            <Tooltip title={t('Download this file')}>
+            <Tooltip title={t_i18n('Download this file')}>
               <span>
                 <IconButton
                   disabled={isProgress}
@@ -168,7 +168,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
               </span>
             </Tooltip>
             )}
-            <Tooltip title={t('Delete this workbench')}>
+            <Tooltip title={t_i18n('Delete this workbench')}>
               <span>
                 <IconButton
                   disabled={isProgress}
@@ -213,7 +213,7 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
                   {file.name.replace('.json', '')}
                 </div>
                 <div className={classes.bodyItem} style={inlineStyles.creator_name}>
-                  {file.metaData.creator?.name || t('Unknown')}
+                  {file.metaData.creator?.name || t_i18n('Unknown')}
                 </div>
                 <div className={classes.bodyItem} style={inlineStyles.labels}>
                   {file.metaData.labels_text ? file.metaData.labels_text.split(';').map((label, index) => (
@@ -239,11 +239,29 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
       </ListItem>
 
       <FileWork file={file} />
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={handleRemoveFile}
-        message={t_i18n('Do you want to delete this workbench?')}
-      />
+      <Dialog
+        slotProps={{ paper: { elevation: 1 } }}
+        open={displayDelete}
+        slots={{ transition: Transition }}
+        onClose={handleCloseDelete}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t_i18n('Do you want to delete this workbench?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete}>
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={() => handleRemoveFile(file.id)}
+            color="secondary"
+          >
+            {t_i18n('Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
