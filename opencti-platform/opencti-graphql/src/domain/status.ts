@@ -235,3 +235,9 @@ export const statusTemplateUsagesNumber = async (context: AuthContext, user: Aut
   const count = await Promise.all([result]);
   return count[0];
 };
+
+export const isGlobalWorkflowEnabled = async (context: AuthContext, user: AuthUser, subTypeId: string) => {
+  const entityStatusFromCache = await findByType(context, user, subTypeId);
+  const globalStatuses = entityStatusFromCache.filter((status) => status.scope === StatusScope.Global);
+  return globalStatuses.length > 0;
+};

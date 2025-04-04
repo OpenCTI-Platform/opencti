@@ -154,11 +154,12 @@ import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utc
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
-  canRequestAccess,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
   INTERNAL_USERS,
   isBypassUser,
+  isMarkingAllowed,
+  isOrganizationAllowed,
   isUserCanAccessStoreElement,
   isUserHasCapability,
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
@@ -179,6 +180,7 @@ import {
   internalFindByIds,
   internalLoadById,
   listAllRelations,
+  listAllToEntitiesThroughRelations,
   listEntities,
   listRelations,
   storeLoadById
@@ -227,11 +229,44 @@ import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
 const MAX_EXPLANATIONS_PER_RULE = nconf.get('rule_engine:max_explanations_per_rule') ?? 100;
 // endregion
+
+// region request access
+export const canRequestAccess = async (context, user, elements) => {
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  const hasPlatformOrg = !!settings.platform_organization;
+  const elementsThatRequiresAccess = [];
+  for (let i = 0; i < elements.length; i += 1) {
+    const currentElement = elements[i];
+    if (!isOrganizationAllowed(context, currentElement, user, hasPlatformOrg)) {
+      // Check that group has marking allowed or else request accesss RFI will be useless
+      const requestAccessSettings = await loadEntity(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'target_type', values: [ENTITY_TYPE_CONTAINER_CASE_RFI] }],
+          filterGroups: [],
+        }
+      });
+      if (requestAccessSettings.request_access_workflow && requestAccessSettings.request_access_workflow?.approval_admin.length > 0) {
+        const adminGroupId = requestAccessSettings.request_access_workflow?.approval_admin[0];
+        const adminGroupMarking = await listAllToEntitiesThroughRelations(context, user, adminGroupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+        const authorizedGroupMarkings = adminGroupMarking.map((a) => a.internal_id);
+
+        if (isMarkingAllowed(currentElement, authorizedGroupMarkings)) {
+          elementsThatRequiresAccess.push(elements[i]);
+        }
+      }
+    }
+  }
+  return elementsThatRequiresAccess;
+};
+// end region request access
 
 // region Loader common
 export const batchLoader = (loader) => {

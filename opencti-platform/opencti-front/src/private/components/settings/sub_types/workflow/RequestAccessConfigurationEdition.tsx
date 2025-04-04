@@ -152,6 +152,8 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
                 style={fieldSpacingContainerStyle}
                 scope='REQUEST_ACCESS'
               />
+              {/* When multiple is moved to true, need to change access.canRequestAccess method,
+                search for request_access_workflow.approval_admin */}
               <GroupField
                 name="approvalAdmin"
                 label={t_i18n('Validator group membership:')}

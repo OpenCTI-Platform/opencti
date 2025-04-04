@@ -3565,6 +3565,7 @@
   "You need a confidence level to edit objects in the platform.": "プラットフォーム上でオブジェクトを編集するには、最大の自信レベルが必要です。",
   "You need to activate a two-factor authentication. Please type the code generated in your application.": "二要素認証を有効にする必要があります。アプリケーションで生成されたコードを入力してください。",
   "You need to activate OpenCTI enterprise edition to use this feature.": "この機能を使用するには、OpenCTI エンタープライズ版を有効にする必要があります。",
+  "You need to be able to edit the RFI and share knowledge": "RFIを編集し、知識を共有できる必要がある。",
   "You need to enable EE License to use this feature": "この機能を使用するには、EEライセンスを有効にする必要があります。",
   "You need to validate your two-factor authentication. Please type the code generated in your application": "二要素認証を検証する必要があります。アプリケーションで生成されたコードを入力してください。",
   "You see only marking definitions that can be shared (defined by the admin)": "共有可能な（管理者によって定義された）マーキング定義のみが表示されます。",

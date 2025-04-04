@@ -461,7 +461,6 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     });
 
     expect(requestAccessData).not.toBeNull();
-    console.log('requestAccessData:', requestAccessData);
     caseRfiIdForApproval = requestAccessData?.data?.requestAccessAdd;
     expect(caseRfiIdForApproval).not.toBeNull();
   });
@@ -562,7 +561,6 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   });
 
   it('should reject the created Case RFI first time be ok', async () => {
-    // FIXME use a user and not admin !
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: DECLINE_RFI_QUERY,
       variables: { id: caseRfiIdForReject },

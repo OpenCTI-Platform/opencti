@@ -251,6 +251,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
           <Field
             component={DateTimePickerField}
             name="published"
+            withSeconds
             textFieldProps={{
               label: t_i18n('Publication date'),
               required: mandatoryAttributes.includes('published'),

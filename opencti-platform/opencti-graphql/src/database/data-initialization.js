@@ -245,7 +245,6 @@ export const createInitialRequestAccessFlow = async (context) => {
   const statusTemplateDeclined = await createStatusTemplate(context, SYSTEM_USER, { name: 'DECLINED', color: '#b83f13' });
   const statusTemplateApproved = await createStatusTemplate(context, SYSTEM_USER, { name: 'APPROVED', color: '#4caf50' });
 
-  // TODO exclude scope request-access from search first status and order can be 0.
   const statusEntityRFIDeclined = await createStatus(
     context,
     SYSTEM_USER,
@@ -269,10 +268,7 @@ export const createInitialRequestAccessFlow = async (context) => {
     const editInput = [
       { key: 'request_access_workflow', value: [initialConfig] }
     ];
-    // TODO use updateAttribute instead
-    // await updateAttribute(context, user, rfiEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING, {request_access_workflow});
     await updateAttribute(context, SYSTEM_USER, rfiEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING, editInput);
-    // await entitySettingEditField(context, SYSTEM_USER, rfiEntitySettings.id, editInput);
   }
 };
 

@@ -2564,7 +2564,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
-  requestAccessConfiguration?: Maybe<RequestAccessConfiguration>;
+  requestAccessConfiguration?: Maybe<RfiRequestAccessConfiguration>;
   revoked: Scalars['Boolean']['output'];
   severity?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
@@ -23546,6 +23546,12 @@ export enum RetentionUnit {
   Minutes = 'minutes'
 }
 
+export type RfiRequestAccessConfiguration = {
+  __typename?: 'RfiRequestAccessConfiguration';
+  configuration?: Maybe<RequestAccessConfiguration>;
+  isUserCanAction: Scalars['Boolean']['output'];
+};
+
 export type Role = BasicObject & InternalObject & {
   __typename?: 'Role';
   can_manage_sensitive_config?: Maybe<Scalars['Boolean']['output']>;
@@ -32034,6 +32040,7 @@ export type ResolversTypes = ResolversObject<{
   RetentionRuleOrdering: RetentionRuleOrdering;
   RetentionRuleScope: RetentionRuleScope;
   RetentionUnit: RetentionUnit;
+  RfiRequestAccessConfiguration: ResolverTypeWrapper<Omit<RfiRequestAccessConfiguration, 'configuration'> & { configuration?: Maybe<ResolversTypes['RequestAccessConfiguration']> }>;
   Role: ResolverTypeWrapper<Omit<Role, 'capabilities' | 'editContext'> & { capabilities?: Maybe<Array<Maybe<ResolversTypes['Capability']>>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>> }>;
   RoleAddInput: RoleAddInput;
   RoleConnection: ResolverTypeWrapper<Omit<RoleConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['RoleEdge']>> }>;
@@ -32841,6 +32848,7 @@ export type ResolversParentTypes = ResolversObject<{
   RetentionRuleConnection: RetentionRuleConnection;
   RetentionRuleEdge: RetentionRuleEdge;
   RetentionRuleEditMutations: RetentionRuleEditMutations;
+  RfiRequestAccessConfiguration: Omit<RfiRequestAccessConfiguration, 'configuration'> & { configuration?: Maybe<ResolversParentTypes['RequestAccessConfiguration']> };
   Role: Omit<Role, 'capabilities' | 'editContext'> & { capabilities?: Maybe<Array<Maybe<ResolversParentTypes['Capability']>>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>> };
   RoleAddInput: RoleAddInput;
   RoleConnection: Omit<RoleConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['RoleEdge']>> };
@@ -33967,7 +33975,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRfiRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseRfiReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
-  requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
+  requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RfiRequestAccessConfiguration']>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -39976,6 +39984,12 @@ export type RetentionRuleEditMutationsResolvers<ContextType = any, ParentType ex
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type RfiRequestAccessConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['RfiRequestAccessConfiguration'] = ResolversParentTypes['RfiRequestAccessConfiguration']> = ResolversObject<{
+  configuration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
+  isUserCanAction?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = ResolversObject<{
   can_manage_sensitive_config?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   capabilities?: Resolver<Maybe<Array<Maybe<ResolversTypes['Capability']>>>, ParentType, ContextType>;
@@ -43041,6 +43055,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   RetentionRuleConnection?: RetentionRuleConnectionResolvers<ContextType>;
   RetentionRuleEdge?: RetentionRuleEdgeResolvers<ContextType>;
   RetentionRuleEditMutations?: RetentionRuleEditMutationsResolvers<ContextType>;
+  RfiRequestAccessConfiguration?: RfiRequestAccessConfigurationResolvers<ContextType>;
   Role?: RoleResolvers<ContextType>;
   RoleConnection?: RoleConnectionResolvers<ContextType>;
   RoleEdge?: RoleEdgeResolvers<ContextType>;

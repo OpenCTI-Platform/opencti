@@ -10595,6 +10595,11 @@ input CaseIncidentAddInput {
   authorized_members: [MemberAccessInput!]
 }
 
+type RfiRequestAccessConfiguration {
+  configuration: RequestAccessConfiguration
+  isUserCanAction: Boolean!
+}
+
 type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
   id: ID!
   standard_id: String!
@@ -10661,7 +10666,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   severity: String
   priority: String
   x_opencti_request_access: String
-  requestAccessConfiguration: RequestAccessConfiguration
+  requestAccessConfiguration: RfiRequestAccessConfiguration
   x_opencti_workflow_id: String
 }
 
