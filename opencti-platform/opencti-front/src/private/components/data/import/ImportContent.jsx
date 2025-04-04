@@ -19,7 +19,6 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
 import makeStyles from '@mui/styles/makeStyles';
-import ImportMenu from '../ImportMenu';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
 import { TEN_SECONDS } from '../../../../utils/Time';
