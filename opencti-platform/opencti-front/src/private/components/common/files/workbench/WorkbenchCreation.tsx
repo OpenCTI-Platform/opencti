@@ -153,9 +153,15 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
     }
   };
 
+  const initialValues = {
+    name: '',
+    labels: [],
+    fileMarkings: [],
+  } as WorkbenchFileFormValues;
+
   return (
     <Formik
-      initialValues={{ name: '', labels: [], fileMarkings: [] } as WorkbenchFileFormValues}
+      initialValues={initialValues}
       validationSchema={fileValidation}
       onSubmit={onSubmit}
       onReset={onReset}

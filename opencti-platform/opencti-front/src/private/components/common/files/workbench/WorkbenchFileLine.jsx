@@ -1,6 +1,5 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
@@ -18,7 +17,7 @@ import ListItem from '@mui/material/ListItem';
 import { importActionsPopoverDeleteMutation } from '../ImportActionsPopover';
 import { workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
-import inject18n, { useFormatter } from '../../../../../components/i18n';
+import { useFormatter } from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import { toB64 } from '../../../../../utils/String';
 import useAuth from '../../../../../utils/hooks/useAuth';
@@ -104,8 +103,8 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nested, nsdt }) => {
-  const { t_i18n } = useFormatter();
+const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nested }) => {
+  const { t_i18n, nsdt } = useFormatter();
   const { me } = useAuth();
   const { t_i18n } = useFormatter();
   const deletion = useDeletion({});
@@ -281,4 +280,4 @@ const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
   file: workbenchLineFragment,
 });
 
-export default compose(inject18n, withStyles(styles))(WorkbenchFileLine);
+export default withStyles(styles)(WorkbenchFileLine);
