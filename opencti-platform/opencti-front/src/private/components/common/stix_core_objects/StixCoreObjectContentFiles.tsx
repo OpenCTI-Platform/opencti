@@ -251,7 +251,6 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                 size="small"
                 nameInCallback={true}
               />
-              TOTO
               <IconButton
                 onClick={() => setDisplayCreate(true)}
                 color="primary"
