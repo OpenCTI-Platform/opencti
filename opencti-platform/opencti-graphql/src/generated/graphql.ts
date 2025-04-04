@@ -17191,6 +17191,7 @@ export type ObjectTotals = {
 
 export type ObservablesValues = {
   __typename?: 'ObservablesValues';
+  hashes?: Maybe<Array<Hash>>;
   type?: Maybe<Scalars['String']['output']>;
   value?: Maybe<Scalars['String']['output']>;
 };
@@ -38205,6 +38206,7 @@ export type ObjectTotalsResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type ObservablesValuesResolvers<ContextType = any, ParentType extends ResolversParentTypes['ObservablesValues'] = ResolversParentTypes['ObservablesValues']> = ResolversObject<{
+  hashes?: Resolver<Maybe<Array<ResolversTypes['Hash']>>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
