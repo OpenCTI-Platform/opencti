@@ -206,7 +206,7 @@ export const queryDefaultValuesAttributesForSetting = async (
         const member = members.find((m) => (m as BasicStoreEntity).id === memberId) as BasicStoreEntity;
         defaultValueObject.name = member?.name ?? '';
         defaultValueObject.entity_type = member?.entity_type ?? '';
-        defaultValueObject.groups_restriction = defaultValueObject.groups_restriction_ids.map((groupId: string) => {
+        defaultValueObject.groups_restriction = (defaultValueObject.groups_restriction_ids ?? []).map((groupId: string) => {
           const group = members.find((m) => (m as BasicStoreEntity).id === groupId) as BasicStoreEntity;
           return { id: groupId, name: group?.name ?? 'unknown' };
         });
