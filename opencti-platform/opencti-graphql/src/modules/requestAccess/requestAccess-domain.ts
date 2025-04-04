@@ -420,7 +420,7 @@ export const checkRequestAction = async (context: AuthContext, user: AuthUser, i
     throw UnsupportedError('This RFI is not correctly configured');
   }
   // endregion
-  return { action, actionData, x_opencti_workflow_id };
+  return { action, x_opencti_workflow_id };
 };
 
 export const approveRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -428,9 +428,9 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
   // region Check validity
   const { action, x_opencti_workflow_id } = await checkRequestAction(context, user, id);
   // endregion
-  // region Execute the sharing
+  // region Check if the target instance can be manipulated
   const targetInstanceToShare = (action.entities ?? [])[0];
-  const instanceToShare = await internalLoadById(context, user, targetInstanceToShare);
+  const instanceToShare = await internalLoadById<BasicStoreEntityCaseRfi>(context, user, targetInstanceToShare);
   if (isEmptyField(instanceToShare)) {
     throw UnsupportedError('You cant share the requested element (restrictions or markings)');
   }
@@ -438,6 +438,12 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
   if (isNotEmptyField((instanceToShare.restricted_members))) {
     throw UnsupportedError('Element is not sharable at the moment (restricted)');
   }
+  const isUserCanAction = await isUserCanActionRequestAccess(context, user, instanceToShare);
+  if (!isUserCanAction) {
+    throw UnsupportedError('You need to be able to edit the RFI and share knowledge');
+  }
+  // endregion
+  // region Execute the sharing
   await addOrganizationRestriction(context, user, targetInstanceToShare, (action.members ?? [])[0]);
   // endregion
   // region Moving RFI to approved
