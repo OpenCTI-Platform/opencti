@@ -55,7 +55,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     float: 'left',
   },
   button: {
-    float: 'right',
+    float: 'left',
     backgroundColor: theme.palette.error.main,
     borderColor: theme.palette.error.main,
     color: theme.palette.common.white,
@@ -432,16 +432,6 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                 width: '100%',
               }}
               >
-                {typeof handleDelete === 'function' && (
-                  <Button
-                    variant="contained"
-                    onClick={() => handleDelete()}
-                    classes={{ root: classes.button }}
-                    disabled={inferred}
-                  >
-                    {t_i18n('Delete')}
-                  </Button>
-                )}
                 {enableReferences && (
                   <CommitMessage
                     submitForm={submitForm}
@@ -457,6 +447,16 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             </Form>
           )}
         </Formik>
+        {typeof handleDelete === 'function' && (
+          <Button
+            variant="contained"
+            onClick={() => handleDelete()}
+            classes={{ root: classes.button }}
+            disabled={inferred}
+          >
+            {t_i18n('Delete')}
+          </Button>
+        )}
       </div>
     </>
   );
