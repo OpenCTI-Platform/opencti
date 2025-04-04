@@ -403,7 +403,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
   return requestForInformation.id;
 };
 
-export const checkRequestAction = async (context: AuthContext, user: AuthUser, id: string) => {
+export const checkRequestAction = async (context: AuthContext, user: AuthUser, id: string, status: ActionStatus) => {
   // region Check validity
   await checkRequestAccessEnabled(context, user);
   const rfi = await findRFIById(context, user, id);
@@ -415,7 +415,7 @@ export const checkRequestAction = async (context: AuthContext, user: AuthUser, i
   if (!action.entities || !action.members) {
     throw UnsupportedError('This RFI is not compatible');
   }
-  const x_opencti_workflow_id = await getRFIStatusForAction(context, user, ActionStatus.APPROVED);
+  const x_opencti_workflow_id = await getRFIStatusForAction(context, user, status);
   if (isEmptyField((x_opencti_workflow_id))) {
     throw UnsupportedError('This RFI is not correctly configured');
   }
@@ -426,7 +426,7 @@ export const checkRequestAction = async (context: AuthContext, user: AuthUser, i
 export const approveRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
   logApp.debug('[OPENCTI-MODULE][Request Access] Approving request access:', { id });
   // region Check validity
-  const { action, x_opencti_workflow_id } = await checkRequestAction(context, user, id);
+  const { action, x_opencti_workflow_id } = await checkRequestAction(context, user, id, ActionStatus.APPROVED);
   // endregion
   // region Check if the target instance can be manipulated
   const targetInstanceToShare = (action.entities ?? [])[0];
@@ -476,7 +476,7 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
 export const declineRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
   logApp.debug(`[OPENCTI-MODULE][Request Access] Reject for RFI ${id}`);
   // region Check validity
-  const { action, x_opencti_workflow_id } = await checkRequestAction(context, user, id);
+  const { action, x_opencti_workflow_id } = await checkRequestAction(context, user, id, ActionStatus.DECLINED);
   // endregion
   // region Moving RFI to rejected
   const allActionStatuses = await getRFIStatusMap(context, user);
