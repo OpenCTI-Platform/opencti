@@ -140,7 +140,7 @@ const PlaybookAddComponentsContent = ({
       setActionsInputs(
         actionsInputs.map((v, k) => {
           if (k === i) {
-            return { ...v, [key]: value, attribute: null, value: null };
+            return { ...v, [key]: value };
           }
           return v;
         }),
