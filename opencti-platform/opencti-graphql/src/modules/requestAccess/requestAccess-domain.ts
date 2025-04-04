@@ -44,6 +44,7 @@ import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { verifyRequestAccessEnabled } from './requestAccessUtils';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
+import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 
 export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
@@ -393,6 +394,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     information_types: [REQUEST_SHARE_ACCESS_INFO_TYPE],
     x_opencti_request_access: `${JSON.stringify(action)}`,
     authorized_members,
+    objectMarking: elementData[RELATION_OBJECT_MARKING] ?? [],
     x_opencti_workflow_id: firstStatus.id,
     revoked: false
   };

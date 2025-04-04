@@ -55,7 +55,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation'] }, async ({ pa
   // region Check default values in the form
   // ---------------------------------------
 
-  await expect(reportForm.publicationDateField.getInput()).toHaveValue('2024-04-01 12:00 PM');
+  await expect(reportForm.publicationDateField.getInput()).toHaveValue('2024-04-01 12:00:00 PM');
   await expect(reportForm.confidenceLevelField.getInput()).toHaveValue('100');
 
   // ---------
