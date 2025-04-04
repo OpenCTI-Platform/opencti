@@ -2,7 +2,7 @@ import React, { CSSProperties, useMemo } from 'react';
 import { Skeleton, Checkbox, IconButton, Box } from '@mui/material';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import type { DataTableCellProps, DataTableLineProps } from '../dataTableTypes';
 import { DataTableVariant } from '../dataTableTypes';
 import type { Theme } from '../../Theme';

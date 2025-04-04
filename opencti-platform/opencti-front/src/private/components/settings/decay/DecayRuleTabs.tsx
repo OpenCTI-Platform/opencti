@@ -7,7 +7,7 @@ import useConnectedDocumentModifier from 'src/utils/hooks/useConnectedDocumentMo
 import DecayRules from '@components/settings/decay/DecayRules';
 import Breadcrumbs from 'src/components/Breadcrumbs';
 import DecayExclusionRules from './DecayExclusionRules';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 
 const DecayRuleTabs = () => {
   const { t_i18n } = useFormatter();

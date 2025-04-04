@@ -18,7 +18,7 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import React, { useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import * as Yup from 'yup';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import TextField from '../../../../components/TextField';

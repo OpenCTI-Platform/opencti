@@ -16,8 +16,8 @@ export default class DashboardDetailsPage {
     return this.page.getByRole('heading', { name });
   }
 
-  getActionsPopover() {
-    return this.page.getByLabel('Popover of actions');
+  getActionsPopover(dahsboardName: string) {
+    return this.page.getByTestId(dahsboardName).getByRole('button', { name: 'Workspace popover of actions' });
   }
 
   getActionButton(name: string) {

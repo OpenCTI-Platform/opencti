@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import React, { Fragment } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import { RootSettings$data } from '../../../__generated__/RootSettings.graphql';
 

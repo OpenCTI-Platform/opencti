@@ -3,7 +3,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MoreVert from '@mui/icons-material/MoreVert';
 import ToggleButton from '@mui/material/ToggleButton';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import WorkspaceManageAccessDialog from '@components/workspaces/WorkspaceManageAccessDialog';
 import WorkspaceTurnToContainerDialog from '@components/workspaces/WorkspaceTurnToContainerDialog';

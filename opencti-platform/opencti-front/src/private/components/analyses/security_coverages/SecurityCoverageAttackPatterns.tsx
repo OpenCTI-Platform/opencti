@@ -12,7 +12,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import StixCoreRelationshipPopover from '@components/common/stix_core_relationships/StixCoreRelationshipPopover';
 import { Box, ListItemButton, Stack } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
