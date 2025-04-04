@@ -44,6 +44,7 @@ import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../components/dataGrid/DataTable';
+import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -567,6 +568,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const { viewStorage, helpers } = usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
     getLocalStorageKey(entityId),
     {},
+    true,
   );
   const { searchTerm = '', orderAsc: storageOrderAsc, sortBy: storageSortBy, filters } = viewStorage;
 
@@ -793,6 +795,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       disableSelectAll
                       disableNavigation
                       selectOnLineClick
+                      variant={DataTableVariant.inline}
                       rootRef={tableRootRef ?? undefined}
                       dataColumns={buildColumns(platformModuleHelpers)}
                       resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
