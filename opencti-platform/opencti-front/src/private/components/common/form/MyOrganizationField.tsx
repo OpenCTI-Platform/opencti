@@ -49,7 +49,7 @@ const MyOrganizationField = (props: MyOrganizationFieldProps) => {
         label: t_i18n(label) ?? '',
       }}
       noOptionsText={t_i18n('No available options')}
-      options={myOrganizationList ?? []}
+      options={myOrganizationList}
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(
         renderProps: React.HTMLAttributes<HTMLLIElement>,
