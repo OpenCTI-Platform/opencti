@@ -10,7 +10,7 @@ import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import Transition from '../../../components/Transition';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { MESSAGING$ } from '../../../relay/environment';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import useSwitchDraft from './useSwitchDraft';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { DraftApproveFragment$key } from '@components/drafts/__generated__/DraftApproveFragment.graphql';

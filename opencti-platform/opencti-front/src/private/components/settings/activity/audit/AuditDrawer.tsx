@@ -2,7 +2,7 @@ import Drawer from '@components/common/drawer/Drawer';
 import { Stack } from '@mui/material';
 import { FunctionComponent, Suspense } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Alert from '../../../../../components/Alert';
 import Loader from '../../../../../components/Loader';
 import Label from '../../../../../components/common/label/Label';

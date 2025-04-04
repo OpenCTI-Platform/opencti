@@ -5,7 +5,7 @@ import {
   RelatedContainersDetailsTableLinesPaginationQuery,
 } from '@components/common/containers/related_containers/__generated__/RelatedContainersDetailsTableLinesPaginationQuery.graphql';
 import { RelatedContainersDetailsTableLines_data$data } from '@components/common/containers/related_containers/__generated__/RelatedContainersDetailsTableLines_data.graphql';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useFormatter } from '../../../../../components/i18n';
 import DataTable from '../../../../../components/dataGrid/DataTable';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';

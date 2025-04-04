@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../components/i18n';
 import { PirTabsFragment$key } from './__generated__/PirTabsFragment.graphql';

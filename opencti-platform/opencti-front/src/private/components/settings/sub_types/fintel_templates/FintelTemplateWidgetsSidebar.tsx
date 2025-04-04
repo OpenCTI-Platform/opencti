@@ -4,7 +4,7 @@ import { useSettingsMessagesBannerHeight } from '@components/settings/settings_m
 import { useTheme } from '@mui/styles';
 import { graphql, useFragment } from 'react-relay';
 import { useFintelTemplateContext } from '@components/settings/sub_types/fintel_templates/FintelTemplateContext';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { fintelTemplateVariableNameChecker } from '@components/widgets/useWidgetConfigValidateForm';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
 import { FintelTemplateWidgetsSidebar_template$key } from './__generated__/FintelTemplateWidgetsSidebar_template.graphql';

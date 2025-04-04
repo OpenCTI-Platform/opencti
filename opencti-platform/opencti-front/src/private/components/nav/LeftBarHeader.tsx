@@ -3,7 +3,7 @@ import { ArrowDropDown, OpenInNew } from '@mui/icons-material';
 import { Box, Divider, List, ListItemButton, ListItemIcon, Popover, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../../../components/i18n';
 import logoOpenAEVDark from '../../../static/images/logo_open_aev_dark.svg';
 import logoOpenAEVLight from '../../../static/images/logo_open_aev_light.svg';
