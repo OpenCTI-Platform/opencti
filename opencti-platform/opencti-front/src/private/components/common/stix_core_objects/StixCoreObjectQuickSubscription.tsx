@@ -487,11 +487,8 @@ StixCoreObjectQuickSubscriptionContentProps
   return (
     <>
       <Tooltip
-        title={
-          <span style={{ maxWidth: 200, display: 'block', textAlign: 'center' }}>
-            {title}
-          </span>
-        }
+        title={title}
+        placement={'bottom-start'}
       >
         <ToggleButton
           onClick={() => !disabledInDraft && (triggerUpdate ? handleOpen() : createInstanceTrigger())}
