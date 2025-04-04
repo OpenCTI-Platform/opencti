@@ -26,10 +26,8 @@ import { TEN_SECONDS } from '../../../../utils/Time';
 import { fileManagerAskJobImportMutation, scopesConn } from '../../common/files/FileManager';
 import FileLine from '../../common/files/FileLine';
 import { useFormatter } from '../../../../components/i18n';
-import FileUploader from '../../common/files/FileUploader';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import WorkbenchFileLine from '../../common/files/workbench/WorkbenchFileLine';
-import FreeTextUploader from '../../common/files/FreeTextUploader';
 import WorkbenchFileCreator from '../../common/files/workbench/WorkbenchFileCreator';
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -38,7 +36,6 @@ import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapper
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import UploadImport from '../../../../components/UploadImport';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -172,8 +169,6 @@ const ImportContentComponent = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const draftContext = useDraftContext();
-  const { isFeatureEnable } = useHelper();
-  const isImportWorkflowEnabled = isFeatureEnable('IMPORT_WORKFLOW');
   setTitle(t_i18n('Import | Import | Data'));
 
   const [fileToImport, setFileToImport] = useState(null);
@@ -337,22 +332,9 @@ const ImportContentComponent = ({
               {t_i18n('Uploaded files')}
             </Typography>
             <div style={{ float: 'left', marginTop: -15 }}>
-              {isImportWorkflowEnabled ? (
-                <UploadImport
-                  onUploadSuccess={() => relay.refetch()}
-                />
-              ) : (
-                <>
-                  <FileUploader
-                    onUploadSuccess={() => relay.refetch()}
-                    size="medium"
-                  />
-                  <FreeTextUploader
-                    onUploadSuccess={() => relay.refetch()}
-                    size="medium"
-                  />
-                </>
-              )}
+              <UploadImport
+                onUploadSuccess={() => relay.refetch()}
+              />
             </div>
             <div className="clearfix" />
             <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">

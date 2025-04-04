@@ -24,7 +24,6 @@ import { CsvMapperFieldOption } from '@components/common/form/CsvMapperField';
 import { FileManagerAskJobImportMutation$variables } from '@components/common/files/__generated__/FileManagerAskJobImportMutation.graphql';
 import FileLine from '../../common/files/FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
-import FileUploader from '../../common/files/FileUploader';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { fileManagerAskJobImportMutation } from '../../common/files/FileManager';
@@ -37,7 +36,6 @@ import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapper
 import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import UploadImport from '../../../../components/UploadImport';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -104,8 +102,6 @@ ExternalReferenceFileImportViewerBaseProps
   const [fileToImport, setFileToImport] = useState<
   FileLine_file$data | null | undefined
   >(null);
-  const { isFeatureEnable } = useHelper();
-  const isImportWorkflowEnabled = isFeatureEnable('IMPORT_WORKFLOW');
 
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
   const { id, importFiles } = externalReference;
@@ -187,29 +183,15 @@ ExternalReferenceFileImportViewerBaseProps
           {t_i18n('Uploaded files')}
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 25 }}/>}>
-          <div style={{ float: 'left', marginTop: -15 }}>
-            {isImportWorkflowEnabled ? (
-              <div style={{ marginBottom: 5 }}>
-                <UploadImport
-                  entityId={id}
-                  onSuccess={() => {
-                    if (relay.refetch) {
-                      relay.refetch({ id });
-                    }
-                  }}
-                />
-              </div>
-            ) : (
-              <FileUploader
-                entityId={id}
-                onUploadSuccess={() => {
-                  if (relay.refetch) {
-                    relay.refetch({ id });
-                  }
-                }}
-                size={undefined}
-              />
-            )}
+          <div style={{ float: 'left', marginTop: -15, marginBottom: 5 }}>
+            <UploadImport
+              entityId={id}
+              onSuccess={() => {
+                if (relay.refetch) {
+                  relay.refetch({ id });
+                }
+              }}
+            />
           </div>
         </Security>
         <div className="clearfix" />
