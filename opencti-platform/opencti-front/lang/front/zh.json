@@ -3564,6 +3564,7 @@
   "You need a confidence level to edit objects in the platform.": "编辑平台中的对象需要信任级别。",
   "You need to activate a two-factor authentication. Please type the code generated in your application.": "您需要激活双因素身份验证。请输入在您的应用程序中生成的代码。",
   "You need to activate OpenCTI enterprise edition to use this feature.": "您需要激活 OpenCTI 企业版才能使用此功能。",
+  "You need to be able to edit the RFI and share knowledge": "您需要能够编辑《索取资料书》并分享知识",
   "You need to enable EE License to use this feature": "您需要启用 EE 许可才能使用此功能",
   "You need to validate your two-factor authentication. Please type the code generated in your application": "您需要验证您的双因素身份验证。请输入在您的应用程序中生成的代码。",
   "You see only marking definitions that can be shared (defined by the admin)": "您只能看到可以共享的标记定义（由管理员定义）",

@@ -3564,6 +3564,7 @@
   "You need a confidence level to edit objects in the platform.": "Du benötigst ein Vertrauensniveau, um Objekte auf der Plattform zu bearbeiten.",
   "You need to activate a two-factor authentication. Please type the code generated in your application.": "Sie müssen eine Zwei-Faktor-Authentifizierung aktivieren. Bitte geben Sie den in Ihrer Anwendung generierten Code ein.",
   "You need to activate OpenCTI enterprise edition to use this feature.": "Um diese Funktion nutzen zu können, müssen Sie die OpenCTI Enterprise Edition aktivieren.",
+  "You need to be able to edit the RFI and share knowledge": "Sie müssen in der Lage sein, die RFI zu bearbeiten und Wissen zu teilen",
   "You need to enable EE License to use this feature": "Sie müssen die EE-Lizenz aktivieren, um diese Funktion nutzen zu können",
   "You need to validate your two-factor authentication. Please type the code generated in your application": "Sie müssen Ihre Zwei-Faktor-Authentifizierung validieren. Bitte geben Sie den in Ihrer Anwendung generierten Code ein.",
   "You see only marking definitions that can be shared (defined by the admin)": "Sie sehen nur Markierungsdefinitionen, die freigegeben werden können (vom Administrator definiert)",
