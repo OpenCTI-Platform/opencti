@@ -76,7 +76,7 @@
     "@pyroscope/nodejs": "0.4.3",
     "@sesamecare-oss/redlock": "1.4.0",
     "ajv": "8.17.1",
-    "amqplib": "0.10.5",
+    "amqplib": "0.10.7",
     "antlr4": "4.13.2",
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "2.0.0",
