@@ -26,7 +26,7 @@ const StixDomainObjectVictimology = ({
     relationship_type: 'targets',
   };
 
-  const gridItemSize = { height: 300, minHeight: 300 };
+  const gridItemSize = { height: 350, minHeight: 350 };
 
   return (
     <>
