@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState, Suspense } from 'react';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';
@@ -26,6 +26,7 @@ import {
 import { PaginationOptions } from 'src/components/list_lines';
 import Drawer from '@components/common/drawer/Drawer';
 import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
+import Loader, { LoaderVariant } from 'src/components/Loader';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
@@ -1019,22 +1020,24 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         title={t_i18n('Create a relationship')}
         ref={containerRef}
       >
-        <QueryRenderer
-          query={stixCoreRelationshipCreationFromEntityQuery}
-          variables={{ id: entityId }}
-          render={({ props: renderProps }: ({ props: StixCoreRelationshipCreationFromEntityQuery$data })) => {
-            if (renderProps && renderProps.stixCoreObject) {
-              const { name, entity_type, observable_value } = renderProps.stixCoreObject;
-              return (
-                <>
-                  {step === 0 ? renderSelectEntity(entity_type, name || observable_value) : null}
-                  {step === 1 ? renderForm(renderProps.stixCoreObject) : null}
-                </>
-              );
-            }
-            return renderLoader();
-          }}
-        />
+        <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <QueryRenderer
+            query={stixCoreRelationshipCreationFromEntityQuery}
+            variables={{ id: entityId }}
+            render={({ props: renderProps }: ({ props: StixCoreRelationshipCreationFromEntityQuery$data })) => {
+              if (renderProps && renderProps.stixCoreObject) {
+                const { name, entity_type, observable_value } = renderProps.stixCoreObject;
+                return (
+                  <>
+                    {step === 0 ? renderSelectEntity(entity_type, name || observable_value) : null}
+                    {step === 1 ? renderForm(renderProps.stixCoreObject) : null}
+                  </>
+                );
+              }
+              return renderLoader();
+            }}
+          />
+        </Suspense>
       </Drawer>
     </>
   );
