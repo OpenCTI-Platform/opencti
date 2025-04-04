@@ -22,7 +22,6 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const entitySettingSubscription = graphql`
@@ -64,8 +63,6 @@ interface SubTypeProps {
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
@@ -92,7 +89,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
   const hasTemplates = subType.settings?.availableSettings.includes('templates');
 
-  const hasRequestAccessConfig = subType.settings?.requestAccessConfiguration && isRequestAccessFeatureEnabled && isEnterpriseEdition && subType.settings?.availableSettings.includes('request_access_workflow');
+  const hasRequestAccessConfig = subType.settings?.requestAccessConfiguration && isEnterpriseEdition && subType.settings?.availableSettings.includes('request_access_workflow');
 
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),

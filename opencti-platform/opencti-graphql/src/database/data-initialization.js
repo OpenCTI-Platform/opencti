@@ -1,4 +1,3 @@
-import { isFeatureEnabled, logApp } from '../config/conf';
 import { addSettings } from '../domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
@@ -17,6 +16,7 @@ import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_FRONTEND_EXPORT, K
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { logApp } from '../config/conf';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -230,15 +230,7 @@ const createDefaultStatusTemplates = async (context) => {
   await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusProgress.id, order: 2, scope: StatusScope.Global });
   await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusAnalyzed.id, order: 3, scope: StatusScope.Global });
   await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusClosed.id, order: 4, scope: StatusScope.Global });
-
-  if (isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
-    await createStatus(
-      context,
-      SYSTEM_USER,
-      ENTITY_TYPE_CONTAINER_CASE_RFI,
-      { template_id: statusNew.id, order: 0, scope: StatusScope.RequestAccess }
-    );
-  }
+  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, { template_id: statusNew.id, order: 0, scope: StatusScope.RequestAccess });
 };
 
 export const createInitialRequestAccessFlow = async (context) => {
@@ -379,9 +371,7 @@ export const initializeData = async (context, withMarkings = true) => {
   await initManagerConfigurations(context, SYSTEM_USER);
   await initDecayRules(context, SYSTEM_USER);
   await createDefaultStatusTemplates(context);
-  if (isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
-    await createInitialRequestAccessFlow(context);
-  }
+  await createInitialRequestAccessFlow(context);
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
   if (withMarkings) {

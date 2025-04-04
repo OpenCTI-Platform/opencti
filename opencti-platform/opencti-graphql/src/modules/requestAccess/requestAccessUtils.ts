@@ -1,12 +1,10 @@
-import { isFeatureEnabled, logApp } from '../../config/conf';
+import { logApp } from '../../config/conf';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 
 export const verifyRequestAccessEnabled = (settings: BasicStoreSettings, rfiEntitySettings: BasicStoreEntityEntitySetting) => {
   const message: string [] = [];
-  if (!isFeatureEnabled('ORGA_SHARING_REQUEST_FF')) {
-    return { enabled: false };
-  }
+
   // 1. EE must be enabled
   const isEEConfigured: boolean = settings.valid_enterprise_edition === true;
   if (!isEEConfigured) {

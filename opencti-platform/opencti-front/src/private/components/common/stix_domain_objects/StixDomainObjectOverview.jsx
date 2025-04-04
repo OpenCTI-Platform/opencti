@@ -41,7 +41,6 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemParticipants from '../../../../components/ItemParticipants';
 import Transition from '../../../../components/Transition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -78,9 +77,6 @@ const StixDomainObjectOverview = ({
   const [openStixIds, setOpenStixIds] = useState(false);
   const [openAddAssignee, setOpenAddAssignee] = useState(false);
   const [openAddParticipant, setOpenAddParticipant] = useState(false);
-
-  const { isFeatureEnable } = useHelper();
-  const isRequestAccessFeatureEnabled = isFeatureEnable('ORGA_SHARING_REQUEST_FF');
 
   const handleToggleOpenStixIds = () => {
     setOpenStixIds(!openStixIds);
@@ -165,7 +161,7 @@ const StixDomainObjectOverview = ({
     ? stixDomainObject.createdBy?.x_opencti_reliability
     : stixDomainObject.x_opencti_reliability;
 
-  const isRequestAccessRFI = stixDomainObject.x_opencti_request_access && isRequestAccessFeatureEnabled;
+  const isRequestAccessRFI = stixDomainObject.x_opencti_request_access;
 
   return (
     <>
