@@ -2,9 +2,6 @@ import { graphql } from 'react-relay';
 import React, { useState } from 'react';
 import ImportMenu from '@components/data/ImportMenu';
 import { ImportFilesContentQuery, ImportFilesContentQuery$variables } from '@components/data/import/__generated__/ImportFilesContentQuery.graphql';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import { DeleteOutlined, GetAppOutlined } from '@mui/icons-material';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
@@ -12,8 +9,11 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { ImportFilesContentLines_data$data } from '@components/data/import/__generated__/ImportFilesContentLines_data.graphql';
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
+import ImportActionsPopover from '@components/common/files/ImportActionsPopover';
+import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
+import Fab from '@mui/material/Fab';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import { APP_BASE_PATH } from '../../../../relay/environment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -24,6 +24,9 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { deleteNode } from '../../../../utils/store';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { getFileUri } from '../../../../utils/utils';
+import ImportButton from '../../../../components/ImportButton';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
   mutation ImportFilesContentFileLineDeleteMutation($fileName: String) {
@@ -62,6 +65,9 @@ export const workbenchLineFragment = graphql`
         name
       }
       entity_id
+    }
+    works {
+      id
     }
   }
 `;
@@ -126,7 +132,11 @@ const ImportFilesContent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Upload Files | Import | Data'));
+  const { isFeatureEnable } = useHelper();
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [displayDelete, setDisplayDelete] = useState<string>('');
+  const [openImportFilesDialog, setOpenImportFilesDialog] = useState<boolean>(false);
 
   const initialValues = {
     filters: emptyFilterGroup,
@@ -135,7 +145,11 @@ const ImportFilesContent = () => {
     orderAsc: false,
   };
 
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ImportFilesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<ImportFilesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
   const { filters } = viewStorage;
   const finalFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['InternalFile']);
   const queryPaginationOptions = {
@@ -196,10 +210,40 @@ const ImportFilesContent = () => {
     filterGroups: finalFilters ? [finalFilters] : [],
   };
 
+  const dataColumns = {
+    name: { percentWidth: 50 },
+    createdBy: {
+      percentWidth: 15,
+      render: (({ metaData }: ImportFilesContentFileLine_file$data) => metaData?.creator?.name ?? '-'),
+    },
+    objectMarking: {
+      percentWidth: 15,
+    },
+    lastModified: {
+      id: 'lastModified',
+      label: 'Modification date',
+      isSortable: true,
+      percentWidth: 19,
+      render: ({ lastModified }: ImportFilesContentFileLine_file$data, { fd }: {
+        fd: (date: Date) => string
+      }) => fd(lastModified),
+    },
+  };
+
+  // const buttonUploadFile = <
+
   return (
-    <div style={{ height: '100%', paddingRight: 200 }} className="break">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]} />
-      <ImportMenu />
+    <div style={{ height: '100%', paddingRight: isNewImportScreensEnabled ? 0 : 200 }} className="break">
+      {isNewImportScreensEnabled ? (
+        <>
+          <Breadcrumbs
+            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+          />
+          <ImportMenu/>
+        </>
+      ) : (
+        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]}/>
+      )}
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={!!displayDelete}
@@ -225,64 +269,51 @@ const ImportFilesContent = () => {
       </Dialog>
       {queryRef && (
         <DataTable
-          dataColumns={{
-            name: { percentWidth: 50 },
-            createdBy: {
-              percentWidth: 15,
-              render: (({ metaData: { creator } }) => creator?.name ?? '-'),
-            },
-            objectMarking: {
-              percentWidth: 15,
-            },
-            lastModified: {
-              id: 'lastModified',
-              label: 'Modification date',
-              isSortable: true,
-              percentWidth: 19,
-              render: ({ lastModified }, { fd }) => fd(lastModified),
-            },
-          }}
+          dataColumns={dataColumns}
           resolvePath={(data: ImportFilesContentLines_data$data) => data.importFiles?.edges?.map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={toolbarFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={workbenchLineFragment}
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
-          toolbarFilters={toolbarFilters}
-          lineFragment={workbenchLineFragment}
-          initialValues={initialValues}
-          preloadedPaginationProps={preloadedPaginationProps}
           taskScope={'IMPORT'}
-          actions={(file: ImportFilesContentFileLine_file$data) => {
+          redirectionModeEnabled
+          onLineClick={(file: ImportFilesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
-            return (
-              <div style={{ marginLeft: -10 }}>
-                {!(metaData?.errors && metaData?.errors.length > 0) && (
-                  <Tooltip title={t_i18n('Download this file')}>
-                    <IconButton
-                      disabled={isProgress}
-                      href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(id)}`}
-                      aria-haspopup="true"
-                      color={'primary'}
-                      size="small"
-                    >
-                      <GetAppOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                <Tooltip title={t_i18n('Delete this file')}>
-                  <IconButton
-                    disabled={isProgress}
-                    color={'primary'}
-                    onClick={() => setDisplayDelete(id)}
-                    size="small"
-                  >
-                    <DeleteOutlined fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            );
+            if (!isProgress && !(metaData?.errors && metaData?.errors.length > 0)) {
+              window.location.pathname = getFileUri(id);
+            }
           }}
+          createButton={isFABReplaced && <ImportButton onClick={() => setOpenImportFilesDialog(true)}/>}
+          actions={(file: ImportFilesContentFileLine_file$data) => (
+            <ImportActionsPopover
+              file={file}
+              paginationOptions={queryPaginationOptions}
+              paginationKey={'Pagination_global_importFiles'}
+            />
+          )}
         />
+      )}
+      {openImportFilesDialog && (
+        <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)}/>
+      )}
+      {!isFABReplaced && (
+        <Fab
+          onClick={() => setOpenImportFilesDialog(true)}
+          color="primary"
+          aria-label="Add"
+          style={{
+            position: 'fixed',
+            bottom: 30,
+            right: 30,
+            // zIndex: 2000,
+          }}
+        >
+          <Add />
+        </Fab>
       )}
     </div>
   );
