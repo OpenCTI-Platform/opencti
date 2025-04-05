@@ -48,6 +48,7 @@ const caseRfiFragment = graphql`
   fragment CaseRfi_caseRfi on CaseRfi {
     id
     name
+    standard_id
     description
     created
     information_types

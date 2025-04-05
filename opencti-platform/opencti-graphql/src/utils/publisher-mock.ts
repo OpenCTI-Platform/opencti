@@ -1,8 +1,8 @@
-import type { StixCoreObject, StixRelationshipObject } from '../types/stix-2-1-common';
+import type { StixCoreObject, StixId, StixRelationshipObject } from '../types/stix-2-1-common';
 
 export interface NotificationData {
   notification_id: string
-  instance: StixCoreObject | StixRelationshipObject | Partial<{ id: string }>
+  instance: StixCoreObject | StixRelationshipObject | Partial<{ id: string | StixId | null }>
   type: string
   message: string
 }

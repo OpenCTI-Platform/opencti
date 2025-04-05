@@ -11,7 +11,7 @@ import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../type
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
-import type { StixCoreObject, StixObject, StixRelationshipObject } from '../types/stix-2-1-common';
+import type { StixCoreObject, StixId, StixObject, StixRelationshipObject } from '../types/stix-2-1-common';
 import {
   type BasicStoreEntityDigestTrigger,
   type BasicStoreEntityLiveTrigger,
@@ -31,7 +31,7 @@ import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER 
 import type { FilterGroup } from '../generated/graphql';
 import { DigestPeriod, TriggerEventType, TriggerType } from '../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
-import { REQUEST_SHARE_ACCESS_INFO_TYPE } from '../modules/requestAccess/requestAccess-domain';
+import type { Representative } from '../types/store';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -42,6 +42,7 @@ export const TRIGGER_EVENT_TYPES_VALUES = Object.values(TriggerEventType);
 export const TRIGGER_TYPE_VALUES = Object.values(TriggerType);
 export const DIGEST_PERIOD_VALUES = Object.values(DigestPeriod);
 export const TRIGGER_SCOPE_VALUES = ['knowledge', 'activity'];
+export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
 export interface ResolvedTrigger {
   users: Array<AuthUser>
@@ -76,6 +77,13 @@ export interface ActivityNotificationEvent extends StreamNotifEvent {
   type: 'live'
   targets: Array<{ user: NotificationUser, type: string, message: string }>
   data: Partial<{ id: string }>
+  origin: Partial<UserOrigin>
+}
+
+export interface ActionNotificationEvent extends StreamNotifEvent {
+  type: 'action'
+  targets: Array<{ user: NotificationUser, type: string, message: string }>
+  data: { id: StixId | null, representative: Representative }
   origin: Partial<UserOrigin>
 }
 
@@ -116,8 +124,22 @@ const generateAssigneeTrigger = (user: AuthUser) => {
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 
+export const platformNotification = (user: { id: string }) => `platform-notification-${user.id}`;
+const generatePlatformNotificationTrigger = (user: AuthUser) => {
+  return {
+    internal_id: platformNotification(user),
+    name: 'Platform',
+    trigger_type: 'live',
+    trigger_scope: 'internal',
+    event_types: TRIGGER_EVENT_TYPES_VALUES,
+    notifiers: user.personal_notifiers,
+    instance_trigger: false,
+    restricted_members: [],
+  } as unknown as BasicStoreEntityLiveTrigger;
+};
+
 // For now only for RFI request access creation
-const generateAuthorizeTrigger = (user: AuthUser) => {
+const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
   const filters = {
     mode: 'and',
     filters: [
@@ -147,9 +169,12 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const nativeTriggers = platformUsers.map((user) => {
-    const builtTriggers = [{ users: [user], trigger: generateAssigneeTrigger(user) }];
+    const builtTriggers = [
+      { users: [user], trigger: generateAssigneeTrigger(user) },
+      { users: [user], trigger: generatePlatformNotificationTrigger(user) }
+    ];
     if (user.id !== OPENCTI_ADMIN_UUID) { // Admin is a fallback in current alerting on RFI request access creation.
-      builtTriggers.push({ users: [user], trigger: generateAuthorizeTrigger(user) });
+      builtTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
     }
     return builtTriggers;
   }).flat();

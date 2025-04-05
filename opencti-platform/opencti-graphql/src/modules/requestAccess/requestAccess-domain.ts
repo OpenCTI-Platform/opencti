@@ -30,7 +30,7 @@ import { storeLoadByIdWithRefs, updateAttribute } from '../../database/middlewar
 import { ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
 import { findById as findOrganizationById } from '../organization/organization-domain';
 import { elLoadById } from '../../database/engine';
-import type { BasicGroupEntity, BasicStoreBase, BasicStoreCommon, BasicWorkflowStatus } from '../../types/store';
+import type { BasicGroupEntity, BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { type BasicStoreEntityCaseRfi, ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { FunctionalError, UnsupportedError, ValidationError } from '../../config/errors';
@@ -41,14 +41,19 @@ import { findById as findStatusById } from '../../domain/status';
 import { type BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 import { findById as findGroupById } from '../../domain/group';
 import { getDraftContext } from '../../utils/draftContext';
-import { notify } from '../../database/redis';
+import { notify, storeNotificationEvent } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { verifyRequestAccessEnabled } from './requestAccessUtils';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { addVocabulary } from '../vocabulary/vocabulary-domain';
-
-export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
+import {
+  type ActionNotificationEvent,
+  EVENT_NOTIFICATION_VERSION,
+  type NotificationUser,
+  platformNotification,
+  REQUEST_SHARE_ACCESS_INFO_TYPE
+} from '../../manager/notificationManager';
 
 // having an id is required for Relay
 const REQUEST_ACCESS_CONFIGURATION_ID = '7059b2f9-86d4-419b-9fde-adf825090820';
@@ -68,9 +73,10 @@ export interface RequestAccessAction {
   reason?: string
   entities?: string[]
   members?: string[]
-  type?: string,
-  status: string,
-  executionDate?: Date,
+  type?: string
+  status: string
+  applicant_id: string
+  executionDate?: Date
   workflowMapping: RequestAccessActionStatus[],
 }
 
@@ -387,6 +393,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     entities: input.request_access_entities,
     status: ActionStatus.NEW,
     workflowMapping: allActionStatuses,
+    applicant_id: user.id
   };
   const firstStatus: BasicWorkflowStatus = await findFirstWorkflowStatus(context, user);
   const rfiInput: CaseRfiAddInput = {
@@ -426,24 +433,62 @@ export const checkRequestActionAndGetWorkflow = async (context: AuthContext, use
   return { action, x_opencti_workflow_id };
 };
 
+export const notifyRequestAccessResult = async (
+  context: AuthContext,
+  user: AuthUser,
+  instanceToShare: BasicStoreEntity,
+  applicantId: string,
+  representative: string,
+  status: ActionStatus
+) => {
+  const applicant = await internalLoadById<any>(context, SYSTEM_USER, applicantId);
+  const targets: Array<{ user: NotificationUser, type: string, message: string }> = [{
+    user: {
+      user_id: applicant.id,
+      user_email: applicant.user_email,
+      notifiers: applicant.personal_notifiers,
+    },
+    type: 'ACCESS REQUEST',
+    message: `${representative} request access is now ${status}`
+  }];
+  const notificationEvent: ActionNotificationEvent = {
+    version: EVENT_NOTIFICATION_VERSION,
+    notification_id: platformNotification(applicant),
+    type: 'action',
+    targets,
+    data: {
+      id: status === ActionStatus.APPROVED ? instanceToShare.standard_id : null,
+      representative: {
+        main: `Access request ${status}`,
+        secondary: '-',
+      }
+    },
+    origin: {
+      user_id: user.id, // User responsible for the action
+    }
+  };
+  await storeNotificationEvent(context, notificationEvent);
+};
+
 export const approveRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
   logApp.debug('[OPENCTI-MODULE][Request Access] Approving request access:', { id });
+  const entityCaseRfi = await internalLoadById<BasicStoreEntityCaseRfi>(context, user, id);
+  const isUserCanAction = await isUserCanActionRequestAccess(context, user, entityCaseRfi);
+  if (!isUserCanAction) {
+    throw UnsupportedError('You need to be able to edit the RFI and share knowledge');
+  }
   // region Check validity
   const { action, x_opencti_workflow_id } = await checkRequestActionAndGetWorkflow(context, user, id, ActionStatus.APPROVED);
   // endregion
   // region Check if the target instance can be manipulated
   const targetInstanceToShare = (action.entities ?? [])[0];
-  const instanceToShare = await internalLoadById<BasicStoreEntityCaseRfi>(context, user, targetInstanceToShare);
+  const instanceToShare = await internalLoadById<BasicStoreEntity>(context, user, targetInstanceToShare);
   if (isEmptyField(instanceToShare)) {
     throw UnsupportedError('You cant share the requested element (restrictions or markings)');
   }
   // If user have access but restrictions is applied, element will not be shared by organization
   if (isNotEmptyField((instanceToShare.restricted_members))) {
     throw UnsupportedError('Element is not sharable at the moment (restricted)');
-  }
-  const isUserCanAction = await isUserCanActionRequestAccess(context, user, instanceToShare);
-  if (!isUserCanAction) {
-    throw UnsupportedError('You need to be able to edit the RFI and share knowledge');
   }
   // endregion
   // region Execute the sharing
@@ -472,8 +517,10 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
     message: `approved demand of request access for entity ${mainRepresentative}`,
     context_data: { id: user.id, entity_type: ENTITY_TYPE_CONTAINER_CASE_RFI, input: requestAccessAction }
   });
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
   // endregion
+  // Notify the user
+  await notifyRequestAccessResult(context, user, instanceToShare, action.applicant_id, mainRepresentative, ActionStatus.APPROVED);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
 };
 
 export const declineRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -494,8 +541,8 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
     { key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] }
   ];
   const { element } = await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
-  const elementData = await elLoadById(context, SYSTEM_USER, (action.entities ?? [])[0]) as unknown as BasicStoreBase;
-  const mainRepresentative = extractEntityRepresentativeName(elementData);
+  const instanceToShare = await internalLoadById<BasicStoreEntity>(context, SYSTEM_USER, (action.entities ?? [])[0]);
+  const mainRepresentative = extractEntityRepresentativeName(instanceToShare);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -504,6 +551,8 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
     message: `declined demand of request access for entity ${mainRepresentative}`,
     context_data: { id: user.id, entity_type: ENTITY_TYPE_CONTAINER_CASE_RFI, input: requestAccessAction }
   });
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
   // endregion
+  // Notify the user
+  await notifyRequestAccessResult(context, user, instanceToShare, action.applicant_id, mainRepresentative, ActionStatus.DECLINED);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
 };
