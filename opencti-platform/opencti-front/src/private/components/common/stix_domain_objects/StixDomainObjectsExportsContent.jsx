@@ -35,6 +35,14 @@ class StixDomainObjectsExportsContentComponent extends Component {
   render() {
     const { t, data, exportContext, paginationOptions } = this.props;
     const stixDomainObjectsExportFiles = data?.stixDomainObjectsExportFiles?.edges ?? [];
+
+    // Extract pattern types from indicators
+    const indicators = data?.indicators?.edges ?? [];
+    const idAndPatternTypes = indicators.map((indicator) => ({
+      id: indicator.node.id,
+      pattern_type: indicator.node.pattern_type,
+    }));
+
     return (
       <>
         <List>
@@ -69,6 +77,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
             data={data}
             exportContext={exportContext}
             paginationOptions={paginationOptions}
+            idAndPatternTypes={idAndPatternTypes}
             onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
           />
         </Security>
@@ -81,9 +90,10 @@ export const stixDomainObjectsExportsContentQuery = graphql`
   query StixDomainObjectsExportsContentRefetchQuery(
     $count: Int!
     $exportContext: ExportContext!
+    $filters: FilterGroup!
   ) {
     ...StixDomainObjectsExportsContent_data
-      @arguments(count: $count, exportContext: $exportContext)
+      @arguments(count: $count, exportContext: $exportContext, filters: $filters )
   }
 `;
 
@@ -95,6 +105,7 @@ const StixDomainObjectsExportsContent = createRefetchContainer(
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
         exportContext: { type: "ExportContext!" }
+        filters: { type: "FilterGroup" }
       ) {
         stixDomainObjectsExportFiles(first: $count, exportContext: $exportContext)
           @connection(key: "Pagination_stixDomainObjectsExportFiles") {
@@ -102,6 +113,14 @@ const StixDomainObjectsExportsContent = createRefetchContainer(
             node {
               id
               ...FileLine_file
+            }
+          }
+        }
+        indicators(filters: $filters) {
+          edges {
+            node {
+              id
+              pattern_type
             }
           }
         }
