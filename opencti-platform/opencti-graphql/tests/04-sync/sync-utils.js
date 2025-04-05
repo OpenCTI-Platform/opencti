@@ -62,6 +62,7 @@ export const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
     }
   `;
 
+export const VOCABULARY_NUMBERS = 343;
 export const UPLOADED_FILE_SIZE = 42204;
 
 const filterOutDeleteOperationRefs = {
@@ -81,7 +82,7 @@ export const checkPreSyncContent = async () => {
   expect(objectMap.get('Indicator')).toEqual(28);
   expect(objectMap.get('Malware')).toEqual(27);
   expect(objectMap.get('Label')).toEqual(13);
-  expect(objectMap.get('Vocabulary')).toEqual(342);
+  expect(objectMap.get('Vocabulary')).toEqual(VOCABULARY_NUMBERS);
   // Relations
   const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type', filters: filterOutDeleteOperationRefs });
   const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
