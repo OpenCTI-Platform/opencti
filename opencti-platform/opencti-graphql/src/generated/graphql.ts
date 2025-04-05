@@ -617,6 +617,10 @@ export type ArtifactAddInput = {
   x_opencti_additional_names?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+export type AskSendOtpInput = {
+  email: Scalars['String']['input'];
+};
+
 export type Assignee = {
   __typename?: 'Assignee';
   entity_type: Scalars['String']['output'];
@@ -13686,6 +13690,7 @@ export type Mutation = {
   aiVictimGenerateReport?: Maybe<Scalars['String']['output']>;
   artifactImport?: Maybe<Artifact>;
   askJobImport?: Maybe<File>;
+  askSendOtp?: Maybe<Scalars['Boolean']['output']>;
   attackPatternAdd?: Maybe<AttackPattern>;
   attackPatternEdit?: Maybe<AttackPatternEditMutations>;
   bookmarkAdd?: Maybe<StixDomainObject>;
@@ -14013,6 +14018,7 @@ export type Mutation = {
   userNoteAdd?: Maybe<Note>;
   userOpinionAdd?: Maybe<Opinion>;
   userSessionsKill?: Maybe<Array<Maybe<Scalars['ID']['output']>>>;
+  verifyOtp?: Maybe<Scalars['Boolean']['output']>;
   vocabularyAdd?: Maybe<Vocabulary>;
   vocabularyDelete?: Maybe<Scalars['ID']['output']>;
   vocabularyFieldPatch?: Maybe<Vocabulary>;
@@ -14198,6 +14204,11 @@ export type MutationAskJobImportArgs = {
   connectorId?: InputMaybe<Scalars['String']['input']>;
   fileName: Scalars['ID']['input'];
   validationMode?: InputMaybe<ValidationMode>;
+};
+
+
+export type MutationAskSendOtpArgs = {
+  input: AskSendOtpInput;
 };
 
 
@@ -16060,6 +16071,11 @@ export type MutationUserOpinionAddArgs = {
 
 export type MutationUserSessionsKillArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationVerifyOtpArgs = {
+  input: VerifyOtpInput;
 };
 
 
@@ -29996,6 +30012,11 @@ export enum ValidationMode {
   Workbench = 'workbench'
 }
 
+export type VerifyOtpInput = {
+  email: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
+};
+
 export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   __typename?: 'Vocabulary';
   aliases?: Maybe<Array<Scalars['String']['output']>>;
@@ -31437,6 +31458,7 @@ export type ResolversTypes = ResolversObject<{
   Architecture: Architecture;
   Artifact: ResolverTypeWrapper<Omit<Artifact, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   ArtifactAddInput: ArtifactAddInput;
+  AskSendOtpInput: AskSendOtpInput;
   Assignee: ResolverTypeWrapper<Assignee>;
   AssigneeConnection: ResolverTypeWrapper<AssigneeConnection>;
   AssigneeEdge: ResolverTypeWrapper<AssigneeEdge>;
@@ -32272,6 +32294,7 @@ export type ResolversTypes = ResolversObject<{
   UserStatus: ResolverTypeWrapper<UserStatus>;
   UsersOrdering: UsersOrdering;
   ValidationMode: ValidationMode;
+  VerifyOtpInput: VerifyOtpInput;
   Vocabulary: ResolverTypeWrapper<BasicStoreEntityVocabulary>;
   VocabularyAddInput: VocabularyAddInput;
   VocabularyCategory: VocabularyCategory;
@@ -32334,6 +32357,7 @@ export type ResolversParentTypes = ResolversObject<{
   AppMemory: AppMemory;
   Artifact: Omit<Artifact, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   ArtifactAddInput: ArtifactAddInput;
+  AskSendOtpInput: AskSendOtpInput;
   Assignee: Assignee;
   AssigneeConnection: AssigneeConnection;
   AssigneeEdge: AssigneeEdge;
@@ -33040,6 +33064,7 @@ export type ResolversParentTypes = ResolversObject<{
   UserOTPLoginInput: UserOtpLoginInput;
   UserSession: UserSession;
   UserStatus: UserStatus;
+  VerifyOtpInput: VerifyOtpInput;
   Vocabulary: BasicStoreEntityVocabulary;
   VocabularyAddInput: VocabularyAddInput;
   VocabularyConnection: Omit<VocabularyConnection, 'edges'> & { edges: Array<ResolversParentTypes['VocabularyEdge']> };
@@ -37806,6 +37831,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   aiVictimGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiVictimGenerateReportArgs, 'id' | 'victimId'>>;
   artifactImport?: Resolver<Maybe<ResolversTypes['Artifact']>, ParentType, ContextType, RequireFields<MutationArtifactImportArgs, 'file'>>;
   askJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationAskJobImportArgs, 'fileName'>>;
+  askSendOtp?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationAskSendOtpArgs, 'input'>>;
   attackPatternAdd?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<MutationAttackPatternAddArgs, 'input'>>;
   attackPatternEdit?: Resolver<Maybe<ResolversTypes['AttackPatternEditMutations']>, ParentType, ContextType, RequireFields<MutationAttackPatternEditArgs, 'id'>>;
   bookmarkAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationBookmarkAddArgs, 'id' | 'type'>>;
@@ -38130,6 +38156,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
   userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;
+  verifyOtp?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerifyOtpArgs, 'input'>>;
   vocabularyAdd?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyAddArgs, 'input'>>;
   vocabularyDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationVocabularyDeleteArgs, 'id'>>;
   vocabularyFieldPatch?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyFieldPatchArgs, 'id' | 'input'>>;
