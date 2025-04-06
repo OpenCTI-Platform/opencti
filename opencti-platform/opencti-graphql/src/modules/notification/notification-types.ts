@@ -59,7 +59,7 @@ export const NOTIFICATION_NUMBER = 'NotificationNumber';
 export interface NotificationContentEvent {
   operation: string
   message: string
-  instance_id?: string
+  instance_id?: string | null
 }
 
 export interface NotificationAddInput {

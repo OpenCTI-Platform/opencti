@@ -7,16 +7,25 @@ import type { TesterFunction } from '../boolean-logic-engine';
 import { testBooleanFilter, testNumericFilter, testStringFilter, toValidArray } from '../boolean-logic-engine';
 import {
   ASSIGNEE_FILTER,
+  AUTHORIZED_FILTER,
+  CISA_KEV_FILTER,
   CONFIDENCE_FILTER,
   CONNECTED_TO_INSTANCE_FILTER,
   CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER,
   CREATED_BY_FILTER,
   CREATOR_FILTER,
+  CVSS_BASE_SCORE_FILTER,
+  CVSS_BASE_SEVERITY_FILTER,
   DETECTION_FILTER,
+  EPSS_PERCENTILE_FILTER,
+  EPSS_SCORE_FILTER,
+  INCIDENT_RESPONSE_TYPES_FILTER,
+  INCIDENT_TYPE_FILTER,
   INDICATOR_FILTER,
   LABEL_FILTER,
   MAIN_OBSERVABLE_TYPE_FILTER,
   MARKING_FILTER,
+  NOTE_TYPES_FILTER,
   OBJECT_CONTAINS_FILTER,
   PARTICIPANT_FILTER,
   PATTERN_FILTER,
@@ -25,27 +34,22 @@ import {
   RELATION_FROM_TYPES_FILTER,
   RELATION_TO_FILTER,
   RELATION_TO_TYPES_FILTER,
+  REPORT_TYPES_FILTER,
   REPRESENTATIVE_FILTER,
+  REQUEST_FOR_INFORMATION_TYPES_FILTER,
+  REQUEST_FOR_TAKEDOWN_TYPES_FILTER,
   REVOKED_FILTER,
   SCORE_FILTER,
   SEVERITY_FILTER,
   TYPE_FILTER,
-  WORKFLOW_FILTER,
-  CISA_KEV_FILTER,
-  EPSS_PERCENTILE_FILTER,
-  EPSS_SCORE_FILTER,
-  CVSS_BASE_SCORE_FILTER,
-  CVSS_BASE_SEVERITY_FILTER,
-  REPORT_TYPES_FILTER,
-  INCIDENT_RESPONSE_TYPES_FILTER,
-  REQUEST_FOR_INFORMATION_TYPES_FILTER,
-  REQUEST_FOR_TAKEDOWN_TYPES_FILTER,
-  INCIDENT_TYPE_FILTER,
-  NOTE_TYPES_FILTER
+  WORKFLOW_FILTER
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
 import { extractStixRepresentative } from '../../../database/stix-representative';
+import { type AuthorizedMember, isUserInAuthorizedMember } from '../../access';
+import type { AuthUser } from '../../../types/user';
+import { UnsupportedError } from '../../../config/errors';
 
 //-----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -179,6 +183,20 @@ export const testAssignee = (stix: any, filter: Filter) => {
 export const testParticipant = (stix: any, filter: Filter) => {
   const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.participant_ids ?? [];
   return testStringFilter(filter, stixValues);
+};
+
+/**
+ * RESTRICTED_MEMBERS
+ * - user is declared in authorized_members in stix (in extension)
+ */
+export const testAuthorize = (stix: any, filter: Filter) => {
+  const restricted_members: AuthorizedMember[] = stix.extensions?.[STIX_EXT_OCTI]?.authorized_members ?? [];
+  if (filter.values.length !== 1) {
+    throw UnsupportedError('Filter only support one user in parameter');
+  }
+  const user = filter.values[0] as AuthUser;
+  // TODO Need refactor to really get the right result as BYPASS for now will be always notify
+  return isUserInAuthorizedMember(user, { restricted_members, authorized_authorities: [] });
 };
 
 /**
@@ -425,6 +443,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   // basic keys
   [ASSIGNEE_FILTER]: testAssignee,
   [PARTICIPANT_FILTER]: testParticipant,
+  [AUTHORIZED_FILTER]: testAuthorize,
   [CONFIDENCE_FILTER]: testConfidence,
   [CREATED_BY_FILTER]: testCreatedBy,
   [CREATOR_FILTER]: testCreator,

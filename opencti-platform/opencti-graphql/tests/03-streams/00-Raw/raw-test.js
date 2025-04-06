@@ -6,6 +6,7 @@ import { checkStreamData, checkStreamGenericContent, fetchStreamEvents, } from '
 import { PORT } from '../../../src/config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
 import { writeTestDataToFile } from '../../utils/testOutput';
+import { VOCABULARY_NUMBERS } from '../../04-sync/sync-utils';
 
 describe('Raw streams tests', () => {
   // We need to check the event format to be sure that everything is setup correctly
@@ -46,9 +47,10 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.incident.length).toBe(2);
       expect(createEventsByTypes.report.length).toBe(42);
       expect(createEventsByTypes.tool.length).toBe(2);
-      expect(createEventsByTypes.vocabulary.length).toBe(342); // 328 created at init + 2 created in tests + 5 vocabulary organizations types + 7 persona
+      // 328 created at init + 1 request access + 2 created in tests + 5 vocabulary organizations types + 7 persona
+      expect(createEventsByTypes.vocabulary.length).toBe(VOCABULARY_NUMBERS);
       expect(createEventsByTypes.vulnerability.length).toBe(7);
-      expect(createEvents.length).toBe(826);
+      expect(createEvents.length).toBe(827);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();

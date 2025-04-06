@@ -62,6 +62,10 @@ export const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
     }
   `;
 
+export const VOCABULARY_NUMBERS = 343;
+export const INDICATOR_NUMBERS = 28;
+export const MALWARE_NUMBERS = 27;
+export const LABEL_NUMBERS = 13;
 export const UPLOADED_FILE_SIZE = 42204;
 
 const filterOutDeleteOperationRefs = {
@@ -78,10 +82,10 @@ const filterOutDeleteOperationRefs = {
 export const checkPreSyncContent = async () => {
   const initObjectAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
   const objectMap = new Map(initObjectAggregation.map((i) => [i.label, i.value]));
-  expect(objectMap.get('Indicator')).toEqual(28);
-  expect(objectMap.get('Malware')).toEqual(27);
-  expect(objectMap.get('Label')).toEqual(13);
-  expect(objectMap.get('Vocabulary')).toEqual(342);
+  expect(objectMap.get('Indicator')).toEqual(INDICATOR_NUMBERS);
+  expect(objectMap.get('Malware')).toEqual(MALWARE_NUMBERS);
+  expect(objectMap.get('Label')).toEqual(LABEL_NUMBERS);
+  expect(objectMap.get('Vocabulary')).toEqual(VOCABULARY_NUMBERS);
   // Relations
   const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type', filters: filterOutDeleteOperationRefs });
   const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));

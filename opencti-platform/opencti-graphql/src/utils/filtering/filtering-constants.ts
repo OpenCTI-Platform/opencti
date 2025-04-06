@@ -12,6 +12,7 @@ export const CREATED_BY_FILTER = 'createdBy';
 export const CREATOR_FILTER = 'creator_id';
 export const ASSIGNEE_FILTER = 'objectAssignee';
 export const PARTICIPANT_FILTER = 'objectParticipant';
+export const AUTHORIZED_FILTER = 'objectAuthorized';
 export const OBJECT_CONTAINS_FILTER = 'objects';
 export const RELATION_TO_SIGHTING_FILTER = 'toSightingId';
 // ---- entities

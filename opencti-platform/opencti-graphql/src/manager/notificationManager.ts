@@ -11,7 +11,7 @@ import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../type
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
-import type { StixCoreObject, StixObject, StixRelationshipObject } from '../types/stix-2-1-common';
+import type { StixCoreObject, StixId, StixObject, StixRelationshipObject } from '../types/stix-2-1-common';
 import {
   type BasicStoreEntityDigestTrigger,
   type BasicStoreEntityLiveTrigger,
@@ -21,7 +21,7 @@ import {
 import { resolveFiltersMapForUser } from '../utils/filtering/filtering-resolution';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
+import { OPENCTI_ADMIN_UUID, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { extractStixRepresentative, extractStixRepresentativeForUser } from '../database/stix-representative';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
@@ -30,6 +30,8 @@ import { replaceFilterKey } from '../utils/filtering/filtering-utils';
 import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER } from '../utils/filtering/filtering-constants';
 import type { FilterGroup } from '../generated/graphql';
 import { DigestPeriod, TriggerEventType, TriggerType } from '../generated/graphql';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import type { Representative } from '../types/store';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -40,6 +42,7 @@ export const TRIGGER_EVENT_TYPES_VALUES = Object.values(TriggerEventType);
 export const TRIGGER_TYPE_VALUES = Object.values(TriggerType);
 export const DIGEST_PERIOD_VALUES = Object.values(DigestPeriod);
 export const TRIGGER_SCOPE_VALUES = ['knowledge', 'activity'];
+export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
 export interface ResolvedTrigger {
   users: Array<AuthUser>
@@ -77,6 +80,13 @@ export interface ActivityNotificationEvent extends StreamNotifEvent {
   origin: Partial<UserOrigin>
 }
 
+export interface ActionNotificationEvent extends StreamNotifEvent {
+  type: 'action'
+  targets: Array<{ user: NotificationUser, type: string, message: string }>
+  data: { id: StixId | null, representative: Representative }
+  origin: Partial<UserOrigin>
+}
+
 export interface DigestEvent extends StreamNotifEvent {
   type: 'digest'
   target: NotificationUser
@@ -97,7 +107,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     mode: 'or',
     filters: [
       { key: ['objectAssignee'], values: [user.internal_id], operator: 'eq', mode: 'or' },
-      { key: ['objectParticipant'], values: [user.internal_id], operator: 'eq', mode: 'or' }
+      { key: ['objectParticipant'], values: [user.internal_id], operator: 'eq', mode: 'or' },
     ],
     filterGroups: []
   };
@@ -114,10 +124,60 @@ const generateAssigneeTrigger = (user: AuthUser) => {
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 
+export const platformNotification = (user: { id: string }) => `platform-notification-${user.id}`;
+const generatePlatformNotificationTrigger = (user: AuthUser) => {
+  return {
+    internal_id: platformNotification(user),
+    name: 'Platform',
+    trigger_type: 'live',
+    trigger_scope: 'internal',
+    event_types: TRIGGER_EVENT_TYPES_VALUES,
+    notifiers: user.personal_notifiers,
+    instance_trigger: false,
+    restricted_members: [],
+  } as unknown as BasicStoreEntityLiveTrigger;
+};
+
+// For now only for RFI request access creation
+const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
+  const filters = {
+    mode: 'and',
+    filters: [
+      // /!\ objectAuthorized is a specific filter only worker in STIX
+      // ONLY to use internally for this specific feature.
+      // Any other usage / modification on this required a tech lead validation
+      { key: ['objectAuthorized'], values: [user], operator: 'eq', mode: 'or' },
+      { key: ['entity_type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI], operator: 'eq', mode: 'or' },
+      { key: ['information_types'], values: [REQUEST_SHARE_ACCESS_INFO_TYPE], operator: 'eq', mode: 'or' },
+    ],
+    filterGroups: []
+  };
+  return {
+    internal_id: `default-rfi-trigger-${user.id}`,
+    name: 'Request sharing',
+    trigger_type: 'live',
+    trigger_scope: 'knowledge',
+    event_types: ['create'],
+    notifiers: user.personal_notifiers,
+    filters: JSON.stringify(filters),
+    instance_trigger: false,
+    restricted_members: []
+  } as unknown as BasicStoreEntityLiveTrigger;
+};
+
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const nativeTriggers = platformUsers.map((user) => ({ users: [user], trigger: generateAssigneeTrigger(user) }));
+  const nativeTriggers = platformUsers.map((user) => {
+    const builtTriggers = [
+      { users: [user], trigger: generateAssigneeTrigger(user) },
+      { users: [user], trigger: generatePlatformNotificationTrigger(user) }
+    ];
+    if (user.id !== OPENCTI_ADMIN_UUID) { // Admin is a fallback in current alerting on RFI request access creation.
+      builtTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
+    }
+    return builtTriggers;
+  }).flat();
   const definedTriggers = triggers.map((trigger) => {
     const triggerAuthorizedMembersIds = trigger.restricted_members?.map((member) => member.id) ?? [];
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
