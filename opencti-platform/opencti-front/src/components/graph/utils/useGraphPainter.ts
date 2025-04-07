@@ -65,6 +65,12 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
       ctx.lineWidth = 0.8;
       ctx.strokeStyle = colors.selected;
       ctx.stroke();
+    } else if (selected) {
+      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = colors.selected;
+      ctx.setLineDash([2, 1]);
+      ctx.stroke();
+      ctx.setLineDash([]);
     } else if (isNestedInferred) {
       ctx.lineWidth = 0.8;
       ctx.strokeStyle = colors.inferred;
