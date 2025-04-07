@@ -5,7 +5,6 @@ import {
   InfrastructuresLinesPaginationQuery,
   InfrastructuresLinesPaginationQuery$variables,
 } from '@components/observations/__generated__/InfrastructuresLinesPaginationQuery.graphql';
-import useHelper from 'src/utils/hooks/useHelper';
 import useAuth from '../../../utils/hooks/useAuth';
 import InfrastructureCreation from './infrastructures/InfrastructureCreation';
 import Security from '../../../utils/Security';
@@ -120,11 +119,9 @@ const Infrastructures = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Infrastructures | Observations'));
-  const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const initialValues = {
     searchTerm: '',
@@ -180,17 +177,12 @@ const Infrastructures = () => {
           lineFragment={infrastructureFragment}
           preloadedPaginationProps={preloadedPaginationOptions}
           exportContext={{ entity_type: 'Infrastructure' }}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <InfrastructureCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <InfrastructureCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </ExportContextProvider>
   );

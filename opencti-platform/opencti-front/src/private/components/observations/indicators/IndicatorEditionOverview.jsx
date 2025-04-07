@@ -25,7 +25,6 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import IndicatorDeletion from './IndicatorDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
@@ -86,8 +85,6 @@ const IndicatorEditionOverviewComponent = ({
   enableReferences,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDICATOR_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -433,10 +430,7 @@ const IndicatorEditionOverviewComponent = ({
             }
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <IndicatorDeletion id={indicator.id} />
-              : <div />
-            }
+            <IndicatorDeletion id={indicator.id} />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

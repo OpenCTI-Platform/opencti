@@ -1,12 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Drawer, { DrawerControlledDialType, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import InfrastructureEditionOverview from './InfrastructureEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { InfrastructureEditionContainerQuery } from './__generated__/InfrastructureEditionContainerQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const infrastructureEditionContainerQuery = graphql`
   query InfrastructureEditionContainerQuery($id: String!) {
@@ -34,19 +33,16 @@ const InfrastructureEditionContainer: FunctionComponent<InfrastructureEditionCon
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { infrastructure } = usePreloadedQuery(infrastructureEditionContainerQuery, queryRef);
 
   if (infrastructure) {
     return (
       <Drawer
         title={t_i18n('Update an infrastructure')}
-        variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
         context={infrastructure.editContext}
         onClose={handleClose}
         open={open}
-        controlledDial={isFABReplaced ? controlledDial : undefined}
+        controlledDial={controlledDial}
       >
         {({ onClose }) => (
           <InfrastructureEditionOverview

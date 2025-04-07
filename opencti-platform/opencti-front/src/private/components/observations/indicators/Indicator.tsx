@@ -2,7 +2,6 @@ import { graphql } from 'relay-runtime';
 import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { Indicator_indicator$key } from './__generated__/Indicator_indicator.graphql';
 import IndicatorDetails from './IndicatorDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -11,9 +10,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import IndicatorEdition from './IndicatorEdition';
 
 const indicatorFragment = graphql`
   fragment Indicator_indicator on Indicator {
@@ -76,8 +72,6 @@ const Indicator: React.FC<IndicatorProps> = ({ indicatorData }) => {
     indicatorFragment,
     indicatorData,
   );
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <>
       <Grid
@@ -118,11 +112,6 @@ const Indicator: React.FC<IndicatorProps> = ({ indicatorData }) => {
           />
         </Grid>
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IndicatorEdition indicatorId={indicator.id} />
-        </Security>
-      )}
     </>
   );
 };

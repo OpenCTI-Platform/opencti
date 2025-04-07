@@ -4,8 +4,7 @@ import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Fab from '@mui/material/Fab';
-import { Add, Close } from '@mui/icons-material';
+import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
@@ -19,7 +18,6 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
@@ -35,15 +33,6 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
   },
   buttons: {
     marginTop: 20,
@@ -97,9 +86,7 @@ const ArtifactCreation = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const [open, setOpen] = useState(false);
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [commit] = useApiMutation(
     artifactMutation,
     undefined,
@@ -152,19 +139,10 @@ const ArtifactCreation = ({
 
   return (
     <>
-      {isFABReplaced
-        ? <CreateEntityControlledDial
-            entityType='Artifact'
-            onOpen={handleOpen}
-          />
-        : <Fab
-            onClick={handleOpen}
-            color="primary"
-            aria-label="Add"
-            className={classes.createButton}
-          >
-          <Add />
-        </Fab>}
+      <CreateEntityControlledDial
+        entityType='Artifact'
+        onOpen={handleOpen}
+      />
       <Drawer
         open={open}
         anchor="right"

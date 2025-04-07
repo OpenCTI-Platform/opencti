@@ -14,7 +14,6 @@ import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import InfrastructurePopover from './InfrastructurePopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -29,7 +28,6 @@ import { getCurrentTab } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import InfrastructureEdition from './InfrastructureEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -84,8 +82,6 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
     [infrastructureId],
   );
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
@@ -112,8 +108,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
           <StixDomainObjectHeader
             entityType="Infrastructure"
             stixDomainObject={infrastructure}
-            PopoverComponent={InfrastructurePopover}
-            EditComponent={isFABReplaced && (
+            EditComponent={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <InfrastructureEdition infrastructureId={infrastructure.id} />
               </Security>

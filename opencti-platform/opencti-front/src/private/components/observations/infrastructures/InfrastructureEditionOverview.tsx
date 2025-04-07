@@ -24,7 +24,6 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { InfrastructureEditionOverview_infrastructure$key } from './__generated__/InfrastructureEditionOverview_infrastructure.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import InfrastructureDeletion from './InfrastructureDeletion';
 
 const infrastructureMutationFieldPatch = graphql`
@@ -161,8 +160,6 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
 }) => {
   const { t_i18n } = useFormatter();
   const infrastructure = useFragment(infrastructureEditionOverviewFragment, infrastructureData);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     INFRASTRUCTURE_TYPE,
   );
@@ -412,11 +409,9 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <InfrastructureDeletion
-                  id={infrastructure.id}
-                />
-              : <div />}
+            <InfrastructureDeletion
+              id={infrastructure.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

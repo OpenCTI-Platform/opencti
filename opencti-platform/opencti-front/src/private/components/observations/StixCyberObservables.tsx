@@ -1,6 +1,5 @@
 import { FunctionComponent } from 'react';
 import { React } from 'mdi-material-ui';
-import useHelper from 'src/utils/hooks/useHelper';
 import { StixCyberObservablesLines_data$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLines_data.graphql';
 import { stixCyberObservableLineFragment } from '@components/observations/stix_cyber_observables/StixCyberObservableLine';
 import { StixCyberObservablesLinesSearchQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
@@ -32,13 +31,11 @@ const StixCyberObservables: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Observables | Observations'));
-  const { isFeatureEnable } = useHelper();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const initialValues = {
     filters: {
@@ -149,8 +146,8 @@ const StixCyberObservables: FunctionComponent = () => {
             exportContext={{ entity_type: 'Stix-Cyber-Observable' }}
             availableEntityTypes={['Stix-Cyber-Observable']}
             searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable'] }} // ???? for entity_type fileter
-            createButton={isFABReplaced
-              && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            createButton={(
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <StixCyberObservableCreation
                   paginationKey="Pagination_stixCyberObservables"
                   paginationOptions={queryPaginationOptions}
@@ -163,22 +160,8 @@ const StixCyberObservables: FunctionComponent = () => {
                   inputValue=''
                 />
               </Security>
-            }
+            )}
           />
-        )}
-        {!isFABReplaced && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <StixCyberObservableCreation
-              paginationKey="Pagination_stixCyberObservables"
-              paginationOptions={queryPaginationOptions}
-              contextual={false}
-              open={false}
-              speeddial={false}
-              type={undefined}
-              defaultCreatedBy={undefined}
-              inputValue=''
-            />
-          </Security>
         )}
       </ExportContextProvider>
     </span>
