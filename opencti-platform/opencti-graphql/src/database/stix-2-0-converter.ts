@@ -2,7 +2,7 @@ import type { StoreEntity, StoreObject, StoreRelation } from '../types/store';
 import type * as S from '../types/stix-2-0-common';
 import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SMO from '../types/stix-2-0-smo';
-import { assertType, convertToStixDate, convertTypeToStixType, cleanObject } from './stix-converter';
+import { assertType, convertToStixDate, convertTypeToStixType, cleanObject } from './stix-2-1-converter';
 import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_MALWARE } from '../schema/stixDomainObject';
