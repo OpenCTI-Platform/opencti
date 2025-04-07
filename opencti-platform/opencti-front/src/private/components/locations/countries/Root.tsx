@@ -25,13 +25,11 @@ import { RootCountryQuery } from './__generated__/RootCountryQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
-import CountryPopover from './CountryPopover';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CountryEdition from './CountryEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -89,8 +87,6 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(countryQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
@@ -138,8 +134,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               entityType="Country"
               disableSharing={true}
               stixDomainObject={country}
-              PopoverComponent={<CountryPopover id={country.id} />}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CountryEdition countryId={country.id} />
                 </Security>

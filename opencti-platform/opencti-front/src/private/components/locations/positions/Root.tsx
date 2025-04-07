@@ -14,7 +14,6 @@ import Position from './Position';
 import PositionKnowledge from './PositionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import PositionPopover from './PositionPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -27,7 +26,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import PositionEdition from './PositionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -85,8 +83,6 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
   }), [positionId]);
 
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription<RootPositionsSubscription>(subConfig);
 
@@ -142,8 +138,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               entityType="Position"
               disableSharing={true}
               stixDomainObject={position}
-              PopoverComponent={<PositionPopover id={position.id} />}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <PositionEdition positionId={position.id} />
                 </Security>
