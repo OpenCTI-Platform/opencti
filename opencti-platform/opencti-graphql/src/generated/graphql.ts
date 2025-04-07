@@ -19774,6 +19774,7 @@ export type Query = {
   groupingsNumber?: Maybe<Number>;
   groupingsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   groups?: Maybe<GroupConnection>;
+  guessMimeType?: Maybe<Scalars['String']['output']>;
   identities?: Maybe<IdentityConnection>;
   identity?: Maybe<Identity>;
   importFiles?: Maybe<FileConnection>;
@@ -20753,6 +20754,11 @@ export type QueryGroupsArgs = {
   orderBy?: InputMaybe<GroupsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryGuessMimeTypeArgs = {
+  fileId: Scalars['String']['input'];
 };
 
 
@@ -39425,6 +39431,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   groupingsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryGroupingsNumberArgs>>;
   groupingsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryGroupingsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
   groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<QueryGroupsArgs>>;
+  guessMimeType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryGuessMimeTypeArgs, 'fileId'>>;
   identities?: Resolver<Maybe<ResolversTypes['IdentityConnection']>, ParentType, ContextType, Partial<QueryIdentitiesArgs>>;
   identity?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<QueryIdentityArgs, 'id'>>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryImportFilesArgs>>;
