@@ -23,6 +23,7 @@ interface GraphContextValue {
   setGraphData: Setter<LibGraphProps['graphData']>
   // --- data of the graph pass as props
   rawObjects: ObjectToParse[]
+  setRawObjects: Setter<ObjectToParse[]>
   rawPositions: OctiGraphPositions
   setRawPositions: Setter<OctiGraphPositions>
   // --- graph state (config saved in URL and local storage)
@@ -109,6 +110,11 @@ export const GraphProvider = ({
     setRawPositions(positions ?? {});
   }, [positions]);
 
+  const [rawObjects, setRawObjects] = useState(objects ?? []);
+  useEffect(() => {
+    setRawObjects(objects ?? []);
+  }, [objects]);
+
   const [graphData, setGraphData] = useState<LibGraphProps['graphData']>();
   useEffect(() => {
     const filteredObjects = context === 'correlation' && graphState.correlationMode === 'observables'
@@ -174,7 +180,8 @@ export const GraphProvider = ({
     timeRange,
     context,
     rawPositions,
-    rawObjects: objects,
+    rawObjects,
+    setRawObjects,
     setRawPositions,
     setGraphData,
     setGraphState,

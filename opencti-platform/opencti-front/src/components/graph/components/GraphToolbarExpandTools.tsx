@@ -637,7 +637,9 @@ const GraphToolbarExpandTools = ({
     const selectionIds = [...selectedNodes, ...selectedLinks].map((s) => s.id);
     const objectIds = rawObjects.map((o) => o.id);
 
-    await Promise.all(selectionIds.map(async (id) => {
+    const allNewElements: ObjectToParse[] = [];
+    for (const id of selectionIds) {
+      // eslint-disable-next-line no-await-in-loop
       const { stixRelationships } = (await fetchQuery(
         expandRelationshipsQuery,
         { filters: expandFilterGroup(id, entityTypes, relationshipTypes) },
@@ -654,9 +656,9 @@ const GraphToolbarExpandTools = ({
         }
         return toReturn;
       });
-      onInvestigationExpand?.(newElements);
-      return '';
-    }));
+      allNewElements.push(...newElements);
+    }
+    onInvestigationExpand?.(allNewElements);
 
     resetForm();
     setRollBackOpen(false);

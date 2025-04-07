@@ -19,9 +19,11 @@ const useGraphInteractions = () => {
     graphData,
     graphState,
     rawPositions,
+    rawObjects,
     setGraphData,
     setGraphState,
     setRawPositions,
+    setRawObjects,
     context,
   } = useGraphContext();
 
@@ -355,12 +357,16 @@ const useGraphInteractions = () => {
         o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
       ))
       : objects;
+    setRawObjects(filteredObjects);
     setGraphData(context === 'correlation'
       ? buildCorrelationData(filteredObjects, rawPositions)
       : buildGraphData(filteredObjects, rawPositions));
   };
 
   const addNode = (data: ObjectToParse) => {
+    if (!rawObjects.find((o) => o.id === data.id)) {
+      setRawObjects((old) => ([...old, data]));
+    }
     const node = buildNode(data, rawPositions);
     setGraphData((oldData) => {
       const withoutExisting = (oldData?.nodes ?? []).filter((n) => n.id !== node.id);
@@ -372,6 +378,7 @@ const useGraphInteractions = () => {
   };
 
   const removeNode = (nodeId: string) => {
+    setRawObjects((old) => old.filter((o) => o.id !== nodeId));
     setGraphData((oldData) => {
       return {
         nodes: (oldData?.nodes ?? []).filter((node) => node.id !== nodeId),
@@ -381,6 +388,7 @@ const useGraphInteractions = () => {
   };
 
   const removeNodes = (nodeIds: string[]) => {
+    setRawObjects((old) => old.filter((o) => !nodeIds.includes(o.id)));
     setGraphData((oldData) => {
       return {
         nodes: (oldData?.nodes ?? []).filter((node) => !nodeIds.includes(node.id)),
@@ -390,6 +398,9 @@ const useGraphInteractions = () => {
   };
 
   const addLink = (data: ObjectToParse) => {
+    if (!rawObjects.find((o) => o.id === data.id)) {
+      setRawObjects((old) => ([...old, data]));
+    }
     const link = buildLink(data); // TODO does it work with nested?
     setGraphData((oldData) => {
       const withoutExisting = (oldData?.links ?? []).filter((l) => l.id !== link.id);
@@ -401,6 +412,7 @@ const useGraphInteractions = () => {
   };
 
   const removeLink = (linkId: string) => {
+    setRawObjects((old) => old.filter((o) => o.id !== linkId));
     setGraphData((oldData) => {
       return {
         links: (oldData?.links ?? []).filter((link) => link.id !== linkId),
@@ -410,6 +422,7 @@ const useGraphInteractions = () => {
   };
 
   const removeLinks = (linkIds: string[]) => {
+    setRawObjects((old) => old.filter((o) => !linkIds.includes(o.id)));
     setGraphData((oldData) => {
       return {
         links: (oldData?.links ?? []).filter((link) => !linkIds.includes(link.id)),
