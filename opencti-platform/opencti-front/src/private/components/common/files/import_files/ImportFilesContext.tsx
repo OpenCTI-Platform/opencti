@@ -1,11 +1,13 @@
-import React, { createContext, ReactNode, useContext, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useState } from 'react';
 import { FileWithConnectors } from '@components/common/files/import_files/ImportFilesUploader';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
+import { ImportFilesContextGuessMimeTypeQuery$data } from '@components/common/files/import_files/__generated__/ImportFilesContextGuessMimeTypeQuery.graphql';
 import useGranted from '../../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
+import { fetchQuery } from '../../../../../relay/environment';
 
 export const importFilesQuery = graphql`
   query ImportFilesContextQuery($id: String!) {
@@ -145,6 +147,12 @@ export const importFilesQuery = graphql`
   }
 `;
 
+const importFilesContextGuessMimeTypeQuery = graphql`
+  query ImportFilesContextGuessMimeTypeQuery($fileId: String!) {
+    guessMimeType(fileId: $fileId)
+  }
+`;
+
 export type ImportMode = 'auto' | 'manual';
 export type UploadStatus = 'uploading' | 'success' | undefined;
 
@@ -165,6 +173,7 @@ type ImportFilesContextProps = InitialValues & {
   draftId?: string;
   setDraftId: (draftId?: string) => void;
   inDraftContext: boolean;
+  guessMimeType: (fileId: string) => Promise<string | null>;
   queryRef: PreloadedQuery<ImportFilesContextQuery>;
 };
 
@@ -186,6 +195,15 @@ export const ImportFilesProvider = ({ children, initialValue }: {
     id: initialValue.entityId || '',
   });
 
+  const guessMimeType = useCallback(async (fileId: string): Promise<string | null> => {
+    const result = await fetchQuery(
+      importFilesContextGuessMimeTypeQuery,
+      { fileId },
+    ).toPromise() as ImportFilesContextGuessMimeTypeQuery$data;
+
+    return result?.guessMimeType || null;
+  }, []);
+
   return queryRef && (
     <React.Suspense fallback={<Loader variant={LoaderVariant.container}/>}>
       <ImportFilesContext.Provider
@@ -202,6 +220,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
           draftId,
           setDraftId,
           inDraftContext: !!draftContext?.id,
+          guessMimeType,
           queryRef,
           ...initialValue,
         }}
