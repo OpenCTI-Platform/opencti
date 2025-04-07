@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { PLAYBOOK_SHARING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
-import type { StixBundle } from '../../../src/types/stix-common';
+import type { StixBundle } from '../../../src/types/stix-2-1-common';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { PLATFORM_ORGANIZATION, TEST_ORGANIZATION } from '../../utils/testQuery';
