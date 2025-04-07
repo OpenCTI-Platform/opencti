@@ -2,7 +2,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
 import { System_system$key } from './__generated__/System_system.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
 import SystemDetails from './SystemDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
@@ -10,9 +9,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import SystemEdition from './SystemEdition';
 
 const systemFragment = graphql`
   fragment System_system on System {
@@ -80,8 +76,6 @@ const System: React.FC<SystemProps> = ({ systemData, viewAs }) => {
   const lastReportsProps = viewAs === 'knowledge'
     ? { stixCoreObjectOrStixRelationshipId: system.id }
     : { authorId: system.id };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -125,11 +119,6 @@ const System: React.FC<SystemProps> = ({ systemData, viewAs }) => {
         stixCoreObjectOrStixCoreRelationshipId={system.id}
         defaultMarkings={system.objectMarking ?? []}
       />
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <SystemEdition systemId={system.id} />
-        </Security>
-      )}
     </>
   );
 };

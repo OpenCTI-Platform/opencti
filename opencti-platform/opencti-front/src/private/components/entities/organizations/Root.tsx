@@ -15,7 +15,6 @@ import Organization from './Organization';
 import OrganizationKnowledge from './OrganizationKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import OrganizationPopover from './OrganizationPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import OrganizationAnalysis from './OrganizationAnalysis';
@@ -29,7 +28,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import OrganizationEdition from './OrganizationEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -88,8 +86,6 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
     variables: { id: organizationId },
   }), [organizationId]);
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const navigate = useNavigate();
   const LOCAL_STORAGE_KEY = `organization-${organizationId}`;
   const params = buildViewParamsFromUrlAndStorage(
@@ -172,8 +168,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               stixDomainObject={organization}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<OrganizationPopover id={organization.id}/>}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <OrganizationEdition organizationId={organization.id} />
                 </Security>

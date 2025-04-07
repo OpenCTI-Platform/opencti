@@ -15,7 +15,6 @@ import System from './System';
 import SystemKnowledge from './SystemKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import SystemPopover from './SystemPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import SystemAnalysis from './SystemAnalysis';
@@ -29,7 +28,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SystemEdition from './SystemEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -86,8 +84,6 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
     variables: { id: systemId },
   }), [systemId]);
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const navigate = useNavigate();
   const LOCAL_STORAGE_KEY = `system-${systemId}`;
   const params = buildViewParamsFromUrlAndStorage(
@@ -167,8 +163,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               isOpenctiAlias={true}
               enableQuickSubscription={true}
               enableEnricher={true}
-              PopoverComponent={<SystemPopover id={system.id}/>}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SystemEdition systemId={system.id} />
                 </Security>

@@ -15,7 +15,6 @@ import Individual from './Individual';
 import IndividualKnowledge from './IndividualKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import IndividualPopover from './IndividualPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import IndividualAnalysis from './IndividualAnalysis';
@@ -29,7 +28,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import IndividualEdition from './IndividualEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -89,8 +87,6 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
     variables: { id: individualId },
   }), [individualId]);
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const navigate = useNavigate();
   const LOCAL_STORAGE_KEY = `individual-${individualId}`;
@@ -173,8 +169,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               stixDomainObject={individual}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              PopoverComponent={<IndividualPopover id={individual.id}/>}
-              EditComponent={!individual.isUser && isFABReplaced && (
+              EditComponent={!individual.isUser && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IndividualEdition individualId={individual.id} />
                 </Security>

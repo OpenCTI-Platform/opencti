@@ -22,7 +22,6 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import EventDeletion from './EventDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const eventMutationFieldPatch = graphql`
   mutation EventEditionOverviewFieldPatchMutation(
@@ -79,8 +78,6 @@ const eventMutationRelationDelete = graphql`
 const EventEditionOverviewComponent = (props) => {
   const { event, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -296,11 +293,9 @@ const EventEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <EventDeletion
-                  id={event.id}
-                />
-              : <div />}
+            <EventDeletion
+              id={event.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

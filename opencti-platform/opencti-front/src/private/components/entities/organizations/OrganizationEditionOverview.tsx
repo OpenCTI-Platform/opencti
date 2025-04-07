@@ -23,7 +23,6 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import { useFormatter } from '../../../../components/i18n';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import OrganizationDeletion from './OrganizationDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const organizationMutationFieldPatch = graphql`
   mutation OrganizationEditionOverviewFieldPatchMutation(
@@ -104,8 +103,6 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -309,11 +306,9 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <OrganizationDeletion
-                  id={organization.id}
-                />
-              : <div />}
+            <OrganizationDeletion
+              id={organization.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

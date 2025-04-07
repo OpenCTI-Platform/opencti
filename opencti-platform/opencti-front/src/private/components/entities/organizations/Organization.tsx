@@ -2,7 +2,6 @@ import { graphql } from 'relay-runtime';
 import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { Organization_organization$key } from './__generated__/Organization_organization.graphql';
 import OrganizationDetails from './OrganizationDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -11,9 +10,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import OrganizationEdition from './OrganizationEdition';
 
 const organizationFragment = graphql`
   fragment Organization_organization on Organization {
@@ -81,8 +77,6 @@ const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs })
   const lastReportsProps = viewAs === 'knowledge'
     ? { stixCoreObjectOrStixRelationshipId: organization.id }
     : { authorId: organization.id };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <>
       <Grid
@@ -127,11 +121,6 @@ const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs })
         stixCoreObjectOrStixCoreRelationshipId={organization.id}
         defaultMarkings={organization.objectMarking ?? []}
       />
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <OrganizationEdition organizationId={organization.id} />
-        </Security>
-      )}
     </>
   );
 };
