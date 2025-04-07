@@ -529,19 +529,6 @@ export const buildTargetEvents = async (
   return targets;
 };
 
-export const generateDefaultTrigger = (notifiers: string[], type: string) => {
-  return {
-    name: `Default Trigger for ${type}`,
-    trigger_type: 'live',
-    trigger_scope: 'knowledge',
-    event_types: TRIGGER_EVENT_TYPES_VALUES,
-    notifiers,
-    filters: '',
-    instance_trigger: false,
-    restricted_members: [],
-  } as unknown as BasicStoreEntityLiveTrigger;
-};
-
 const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   try {
     if (streamEvents.length === 0) {
