@@ -55,9 +55,10 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     }
     return undefined;
   };
-  const isValidValue = (value: string, values: string[]) => {
-    const isValidString = RELATIVE_DATE_REGEX.test(value) || isValidDate(value);
-    if (value && values[0] !== values[1] && isValidString) {
+  const isValidValues = (values: string[]) => {
+    console.log('isValidDate', isValidDate(values[1]));
+    const isValidString = values.every((v) => RELATIVE_DATE_REGEX.test(v) || isValidDate(v));
+    if (values.length === 2 && values.every((v) => v !== '') && values[0] !== values[1] && isValidString) {
       return true;
     }
     return false;
@@ -66,7 +67,9 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     const newValues = [...dateInput];
     newValues[valueOrder] = value;
     setDateInput(newValues);
-    if (isValidValue(value, newValues)) {
+    console.log('value', value);
+    console.log('isvalid', isValidValues(newValues));
+    if (isValidValues(newValues)) {
       helpers?.handleReplaceFilterValues(
         filter?.id ?? '',
         newValues,

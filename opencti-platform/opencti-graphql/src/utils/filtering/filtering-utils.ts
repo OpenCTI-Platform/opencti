@@ -27,7 +27,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
 import { isNotEmptyField } from '../../database/utils';
-import { isValidStringDate } from '../../schema/schemaUtils';
+import { isValidDate } from '../../schema/schemaUtils';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -79,7 +79,7 @@ export const checkFilterGroupValuesSyntax = (filterGroup: FilterGroup) => {
       throw UnsupportedError('A filter with "within" operator must have 2 values', { filter: f });
     }
     const relative_date_regex = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
-    if (values.some((v) => !relative_date_regex.test(v) && !isValidStringDate(v))) {
+    if (values.some((v) => !relative_date_regex.test(v) && !isValidDate(v))) {
       throw UnsupportedError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.', { filter: f });
     }
   });

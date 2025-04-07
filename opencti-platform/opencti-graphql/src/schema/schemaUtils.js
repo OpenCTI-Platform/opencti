@@ -53,23 +53,11 @@ export const shortHash = (element) => {
   return hash.slice(0, 8);
 };
 
-export const isValidISODate = (stringDate) => {
+export const isValidDate = (stringDate) => {
   const dateParsed = Date.parse(stringDate);
   if (!dateParsed) return false;
   const dateInstance = new Date(dateParsed);
   return dateInstance.toISOString() === stringDate;
-};
-
-export const isValidStringDate = (stringDate) => {
-  const dateParsed = Date.parse(stringDate);
-  if (!dateParsed) return false;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const dateInstance = new Date(dateParsed);
-  } catch (e) {
-    return false;
-  }
-  return true;
 };
 
 const pascalize = (str) => {
