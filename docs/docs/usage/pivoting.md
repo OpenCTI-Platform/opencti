@@ -13,6 +13,11 @@ To access investigations, navigate to the top right corner of the toolbar:
 
 ## Perform investigation
 
+### Select entity 
+Wehn selecting an entity, all the other entities will be overlayed, to emphasis your selection.
+The entity that you are currently seeing in the right panel is the one with the **blue solid line** while the ones with **blue doted line** are the other that you have selected but not viewed in the right panel.
+
+
 
 ### Manipulate entity
 
