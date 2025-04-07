@@ -105,7 +105,10 @@ const WorkspaceHeader = ({
           </Typography>
         </Tooltip>
         <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
-          <WorkspacePopover workspace={workspace} />
+          <WorkspacePopover
+            workspace={workspace}
+            paginationOptions={undefined}
+          />
         </Security>
         {variant === 'dashboard' && !isFABReplaced && (
           <DashboardTimeFilters

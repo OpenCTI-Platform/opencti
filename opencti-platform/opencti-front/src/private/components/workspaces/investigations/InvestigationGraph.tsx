@@ -506,7 +506,6 @@ const InvestigationGraphComponent = ({
       <WorkspaceHeader
         workspace={investigation}
         variant="investigation"
-        widgetActions={undefined}
         handleAddWidget={undefined}
         config={undefined}
         adjust={undefined}
