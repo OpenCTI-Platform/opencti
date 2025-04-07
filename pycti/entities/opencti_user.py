@@ -784,3 +784,20 @@ class User:
         return self.opencti.process_multiple_fields(
             result["data"]["userEdit"]["tokenRenew"]
         )
+
+    def process_multiple_fields(self, data):
+        if "roles" in data:
+            data["roles"] = self.opencti.process_multiple(data["roles"])
+            data["rolesIds"] = self.opencti.process_multiple_ids(data["roles"])
+        if "groups" in data:
+            data["groups"] = self.opencti.process_multiple(data["groups"])
+            data["groupsIds"] = self.opencti.process_multiple_ids(data["groups"])
+        if "objectOrganization" in data:
+            data["objectOrganization"] = self.opencti.process_multiple(
+                data["objectOrganization"]
+            )
+            data["objectOrganizationIds"] = self.opencti.process_multiple_ids(
+                data["objectOrganization"]
+            )
+
+        return data

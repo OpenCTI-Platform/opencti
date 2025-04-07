@@ -398,3 +398,11 @@ class Role:
         return self.opencti.process_multiple_fields(
             result["data"]["roleEdit"]["relationDelete"]
         )
+
+    def process_multiple_fields(self, data):
+        if "capabilities" in data:
+            data["capabilities"] = self.opencti.process_multiple(data["capabilities"])
+            data["capabilitiesIds"] = self.opencti.process_multiple_ids(
+                data["capabilities"]
+            )
+        return data

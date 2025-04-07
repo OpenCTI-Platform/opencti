@@ -138,6 +138,7 @@ class Settings:
             }
         """
         self.messages_properties = """
+            entity_type
             platform_messages {
                 id, message, activated, dismissible, updated_at, color
                 recipients {
@@ -365,3 +366,20 @@ class Settings:
         return self.opencti.process_multiple_fields(
             result["data"]["settingsEdit"]["deleteMessage"]
         )
+
+    def process_multiple_fields(self, data):
+        if "platform_messages" in data:
+            data["platform_messages"] = self.opencti.process_multiple(
+                data["platform_messages"]
+            )
+            data["platform_messages_ids"] = self.opencti.process_multiple_ids(
+                data["platform_messages"]
+            )
+        if "messages_administration" in data:
+            data["messages_administration"] = self.opencti.process_multiple(
+                data["messages_administration"]
+            )
+            data["messages_administration_ids"] = self.opencti.process_multiple_ids(
+                data["messages_administration"]
+            )
+        return data

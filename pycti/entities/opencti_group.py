@@ -705,3 +705,12 @@ class Group:
         return self.opencti.process_multiple_fields(
             result["data"]["groupEdit"]["relationDelete"]
         )
+
+    def process_multiple_fields(self, data):
+        if "roles" in data:
+            data["roles"] = self.opencti.process_multiple(data["roles"])
+            data["rolesIds"] = self.opencti.process_multiple_ids(data["roles"])
+        if "members" in data:
+            data["members"] = self.opencti.process_multiple(data["members"])
+            data["membersIds"] = self.opencti.process_multiple_ids(data["members"])
+        return data
