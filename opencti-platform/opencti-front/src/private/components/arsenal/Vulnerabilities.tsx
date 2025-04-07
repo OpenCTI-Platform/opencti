@@ -13,7 +13,6 @@ import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import useHelper from '../../../utils/hooks/useHelper';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
@@ -114,8 +113,6 @@ const Vulnerabilities = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const initialValues = {
     searchTerm: '',
@@ -175,17 +172,12 @@ const Vulnerabilities = () => {
           preloadedPaginationProps={preloadedPaginationOptions}
           lineFragment={vulnerabilityLineFragment}
           exportContext={{ entity_type: 'Vulnerability' }}
-          createButton={isFABReplaced && (
+          createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <VulnerabilityCreation paginationOptions={queryPaginationOptions} />
-        </Security>
       )}
     </>
   );

@@ -10,10 +10,6 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Tool_tool$key } from './__generated__/Tool_tool.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import ToolEdition from './ToolEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const toolFragment = graphql`
   fragment Tool_tool on Tool {
@@ -75,8 +71,6 @@ const Tool: React.FC<ToolProps> = ({ toolData }) => {
   const tool = useFragment(toolFragment, toolData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(tool.entity_type);
 
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <>
       <Grid
@@ -147,11 +141,6 @@ const Tool: React.FC<ToolProps> = ({ toolData }) => {
           })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ToolEdition toolId={tool.id} />
-        </Security>
-      )}
     </>
   );
 };

@@ -12,7 +12,6 @@ import Channel from './Channel';
 import ChannelKnowledge from './ChannelKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import ChannelPopover from './ChannelPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -23,7 +22,6 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import { RootChannelSubscription } from './__generated__/RootChannelSubscription.graphql';
 import { RootChannelQuery } from './__generated__/RootChannelQuery.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ChannelEdition from './ChannelEdition';
@@ -88,8 +86,6 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootChannelSubscription>(subConfig);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const {
     channel,
@@ -140,13 +136,12 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
             <StixDomainObjectHeader
               entityType="Channel"
               stixDomainObject={channel}
-              PopoverComponent={<ChannelPopover id={channel.id}/>}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ChannelEdition channelId={channel.id} />
                 </Security>
               )}
-              enableEnricher={isFABReplaced}
+              enableEnricher={true}
               enableQuickSubscription={true}
             />
             <Box

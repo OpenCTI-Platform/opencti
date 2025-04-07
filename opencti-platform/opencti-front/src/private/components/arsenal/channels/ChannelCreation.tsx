@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { ChannelsLinesPaginationQuery$variables } from '@components/arsenal/__generated__/ChannelsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -27,7 +27,6 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
@@ -320,18 +319,15 @@ const ChannelCreation = ({
 }: {
   paginationOptions: ChannelsLinesPaginationQuery$variables;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_channels', paginationOptions, 'channelAdd');
   const [bulkOpen, setBulkOpen] = useState(false);
 
   return (
     <Drawer
       title={t_i18n('Create a channel')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
-      controlledDial={isFABReplaced ? CreateChannelControlledDial : undefined}
+      controlledDial={CreateChannelControlledDial}
     >
       {({ onClose }) => (
         <ChannelCreationForm
