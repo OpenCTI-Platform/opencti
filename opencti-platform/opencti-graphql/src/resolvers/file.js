@@ -1,4 +1,4 @@
-import { loadFile } from '../database/file-storage';
+import { guessMimeType, loadFile } from '../database/file-storage';
 import { batchFileMarkingDefinitions, batchFileWorks, deleteImport, filesMetrics, uploadAndAskJobImport, uploadImport, uploadPending } from '../domain/file';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
@@ -24,6 +24,7 @@ const fileResolvers = {
       return paginatedForPathWithEnrichment(context, context.user, 'import/pending', undefined, opts);
     },
     filesMetrics: (_, args, context) => filesMetrics(context, context.user),
+    guessMimeType: (_, { fileId }) => guessMimeType(fileId),
   },
   File: {
     objectMarking: (rel, _, context) => markingDefinitionsLoader.load(rel, context, context.user),

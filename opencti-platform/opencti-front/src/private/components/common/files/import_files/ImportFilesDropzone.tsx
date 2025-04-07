@@ -3,6 +3,7 @@ import { CloudUploadOutlined } from '@mui/icons-material';
 import { Box, Button, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
+import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 
@@ -20,20 +21,30 @@ const ImportFilesDropzone = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [isDragging, setIsDragging] = useState(false);
+  const { guessMimeType } = useImportFilesContext();
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const processNewFiles = async (files: FileList) => {
+    const newFiles = await Promise.all(Array.from(files).map(async (file) => {
+      const guessedType = await guessMimeType(file.name);
+      return new File([file], file.name, {
+        type: guessedType || file.type,
+        lastModified: file.lastModified,
+      });
+    }));
+    onChange(newFiles);
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      const newFiles = Array.from(event.target.files).map((file) => Object.assign(file, { preview: URL.createObjectURL(file) }));
-      onChange(newFiles);
+      await processNewFiles(event.target.files);
     }
   };
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(false);
     if (event.dataTransfer.files) {
-      const newFiles = Array.from(event.dataTransfer.files).map((file) => Object.assign(file, { preview: URL.createObjectURL(file) }));
-      onChange(newFiles);
+      await processNewFiles(event.dataTransfer.files);
     }
   };
 
