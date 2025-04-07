@@ -19,7 +19,7 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { AutoAwesomeOutlined, CheckCircleOutlined, ErrorOutlined, ExpandLessOutlined, ExpandMoreOutlined, ManageHistoryOutlined } from '@mui/icons-material';
+import { CheckCircleOutlined, ErrorOutlined, ExpandLessOutlined, ExpandMoreOutlined, ManageHistoryOutlined } from '@mui/icons-material';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -32,12 +32,14 @@ import { interval } from 'rxjs';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
+import { useTheme } from '@mui/material';
 import Drawer from '../../common/drawer/Drawer';
 import { PlaybookHeader_playbook$data } from './__generated__/PlaybookHeader_playbook.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import PlaybookPopover from './PlaybookPopover';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import Transition from '../../../../components/Transition';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -95,6 +97,8 @@ const PlaybookHeaderComponent = ({
   relay: RelayRefetchProp;
 }) => {
   const classes = useStyles();
+  const theme = useTheme();
+
   useEffect(() => {
     // Refresh
     const subscription = interval$.subscribe(() => {
@@ -180,8 +184,8 @@ const PlaybookHeaderComponent = ({
                   onClick={() => setOpenExecution(openExecution ? null : lastExecution.id)
                   }
                 >
-                  <ListItemIcon>
-                    <AutoAwesomeOutlined fontSize="small" color="primary" />
+                  <ListItemIcon style={{ marginLeft: 10 }}>
+                    <ItemIcon type="Playbook" color={theme.palette.primary.main} />
                   </ListItemIcon>
                   <ListItemText
                     primary={`${t_i18n('Execution at')} ${nsdt(
