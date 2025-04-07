@@ -103,7 +103,6 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
         super().__init__()
         self.logger_class = logger(self.log_level.upper(), self.json_logging)
         self.worker_logger = self.logger_class("worker")
-        self.worker_logger.info(self.connector)
         self.queue_name = self.connector["config"]["listen"]
         self.connector_token = self.connector["connector_user"]["api_token"]
         self.pika_credentials = pika.PlainCredentials(
@@ -222,7 +221,6 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
                 connection.add_callback_threadsafe(cb)
 
     def stop(self):
-        self.worker_logger.info('stop called')
         self._is_interrupted = True
 
     def run(self) -> None:
