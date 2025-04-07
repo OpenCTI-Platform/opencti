@@ -43,7 +43,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       return t_i18n('The values must be different.');
     }
     const newValue = values[valueOrder];
-    if (!newValue.match(RELATIVE_DATE_REGEX) && !isValidDate(newValue)) {
+    if (!RELATIVE_DATE_REGEX.test(newValue) && !isValidDate(newValue)) {
       return t_i18n('', {
         id: 'The value must be a datetime or a relative date expressed in date math. See our documentation for more information.',
         values: {
@@ -55,11 +55,18 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     }
     return undefined;
   };
+  const isValidValue = (value: string, values: string[]) => {
+    const isValidString = RELATIVE_DATE_REGEX.test(value) || isValidDate(value);
+    if (value && value !== '' && values[0] !== values[1] && isValidString) {
+      return true;
+    }
+    return false;
+  };
   const handleChangeRangeDateFilter = (value: string) => {
     const newValues = [...dateInput];
     newValues[valueOrder] = value;
     setDateInput(newValues);
-    if (!generateErrorMessage(newValues)) {
+    if (isValidValue(value, newValues)) {
       helpers?.handleReplaceFilterValues(
         filter?.id ?? '',
         newValues,

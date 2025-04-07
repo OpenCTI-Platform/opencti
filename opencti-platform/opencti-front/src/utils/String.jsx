@@ -174,8 +174,13 @@ export const stringWithZeroWidthSpace = (value) => {
 export const isValidDate = (stringDate) => {
   const dateParsed = Date.parse(stringDate);
   if (!dateParsed) return false;
-  const dateInstance = new Date(dateParsed);
-  return dateInstance.toISOString() === stringDate;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const dateInstance = new Date(dateParsed);
+  } catch (e) {
+    return false;
+  }
+  return true;
 };
 
 /**
