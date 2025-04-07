@@ -9,6 +9,7 @@ import ItemStatus from '../../../../components/ItemStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseRfi_caseRfi$data } from './__generated__/CaseRfi_caseRfi.graphql';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface CaseRfiRequestAccessOverviewProps {
   data: CaseRfi_caseRfi$data;
@@ -22,6 +23,7 @@ export interface RequestAccessActionStatus {
 
 const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
   const approvedStatus = data.requestAccessConfiguration?.configuration?.approved_status;
   const approvedButtonColor = approvedStatus?.template?.color;
   const declinedStatus = data.requestAccessConfiguration?.configuration?.declined_status;
@@ -64,6 +66,7 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
   };
 
   const userCanAction = data.requestAccessConfiguration?.isUserCanAction;
+  const disabledTooltip = draftContext ? t_i18n('Not available in draft') : t_i18n('You need to be able to edit the RFI and share knowledge');
   return <Grid item xs={12} style={{ marginBottom: 20 }}>
     <Typography
       variant="h3"
@@ -82,7 +85,7 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
         status={data.status}
         disabled={!data.workflowEnabled && !requestAccessData}
       />
-      {!userCanAction && <Tooltip title={t_i18n('You need to be able to edit the RFI and share knowledge')}>
+      {!userCanAction && <Tooltip title={disabledTooltip}>
         <div>
           <Button
             color="primary"

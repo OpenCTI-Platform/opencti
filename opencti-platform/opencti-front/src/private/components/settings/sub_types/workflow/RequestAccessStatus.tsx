@@ -37,68 +37,104 @@ export const requestAccessFragment = graphql`
 `;
 
 interface RequestAccessStatusProps {
-  data: RequestAccessConfigurationEdition_requestAccess$key
+  data: RequestAccessConfigurationEdition_requestAccess$key,
+  requestAccessWorkflowDisabled: boolean
 }
 
 const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
-  data,
+  data, requestAccessWorkflowDisabled,
 }) => {
   const { t_i18n } = useFormatter();
   const dataResolved = useFragment(requestAccessFragment, data);
   const approvedToRfiStatus = dataResolved?.approved_status;
   const declinedToRfiStatus = dataResolved?.declined_status;
   const admins = dataResolved?.approval_admin || [];
+  const approvedLabel = approvedToRfiStatus ? t_i18n(approvedToRfiStatus?.template?.name) : 'undefined';
+  const approvedColor = approvedToRfiStatus?.template?.color ?? '#000000';
+  const declinedLabel = declinedToRfiStatus ? t_i18n(declinedToRfiStatus?.template?.name) : 'undefined';
+  const declinedColor = declinedToRfiStatus?.template?.color ?? '#000000';
+
   return (
     <>
       <Typography variant="h3" gutterBottom={true}>
         {t_i18n('On approval move to status:')}
-        <Chip
-          key={approvedToRfiStatus?.id}
-          variant="outlined"
-          label={approvedToRfiStatus ? t_i18n(approvedToRfiStatus?.template?.name) : 'undefined'}
-          style={{
-            fontSize: 12,
-            lineHeight: '12px',
-            height: 25,
-            margin: 7,
-            textTransform: 'uppercase',
-            borderRadius: 4,
-            width: 100,
-            color: approvedToRfiStatus?.template?.color,
-            borderColor: approvedToRfiStatus?.template?.color,
-            backgroundColor: hexToRGB(
-              approvedToRfiStatus?.template?.color ?? '#000000',
-            ),
-          }}
-        />
+        { requestAccessWorkflowDisabled && (
+          <Chip
+            key={approvedToRfiStatus?.id}
+            variant="outlined"
+            label={t_i18n('Disabled')}
+            style={{
+              fontSize: 12,
+              lineHeight: '12px',
+              height: 25,
+              margin: 7,
+              textTransform: 'uppercase',
+              borderRadius: 4,
+              width: 100,
+            }}
+          />)}
+        { !requestAccessWorkflowDisabled && (
+          <Chip
+            key={approvedToRfiStatus?.id}
+            variant="outlined"
+            label={t_i18n(approvedLabel)}
+            style={{
+              fontSize: 12,
+              lineHeight: '12px',
+              height: 25,
+              margin: 7,
+              textTransform: 'uppercase',
+              borderRadius: 4,
+              width: 100,
+              color: approvedColor,
+              borderColor: approvedColor,
+              backgroundColor: hexToRGB(approvedColor),
+            }}
+          />
+        )}
       </Typography>
 
       <Typography variant="h3" gutterBottom={true} style={{ marginBottom: 10 }}>
         {t_i18n('On decline move to status:')}
-        <Chip
-          key={declinedToRfiStatus?.id}
-          variant="outlined"
-          label={declinedToRfiStatus ? t_i18n(declinedToRfiStatus?.template?.name) : 'undefined'}
-          style={{
-            fontSize: 12,
-            lineHeight: '12px',
-            height: 25,
-            margin: 7,
-            textTransform: 'uppercase',
-            borderRadius: 4,
-            width: 100,
-            color: declinedToRfiStatus?.template?.color,
-            borderColor: declinedToRfiStatus?.template?.color,
-            backgroundColor: hexToRGB(
-              declinedToRfiStatus?.template?.color ?? '#000000',
-            ),
-          }}
-        />
+        { requestAccessWorkflowDisabled && (
+          <Chip
+            key={approvedToRfiStatus?.id}
+            variant="outlined"
+            label={t_i18n('Disabled')}
+            style={{
+              fontSize: 12,
+              lineHeight: '12px',
+              height: 25,
+              margin: 7,
+              textTransform: 'uppercase',
+              borderRadius: 4,
+              width: 100,
+            }}
+          />)}
+        { !requestAccessWorkflowDisabled && (
+          <Chip
+            key={declinedToRfiStatus?.id}
+            variant="outlined"
+            label={t_i18n(declinedLabel)}
+            style={{
+              fontSize: 12,
+              lineHeight: '12px',
+              height: 25,
+              margin: 7,
+              textTransform: 'uppercase',
+              borderRadius: 4,
+              width: 100,
+              color: declinedColor,
+              borderColor: declinedColor,
+              backgroundColor: hexToRGB(declinedColor),
+            }}
+          />
+        )}
       </Typography>
       <Typography variant="h3" gutterBottom={true} style={{ marginBottom: 10 }}>
         {t_i18n('Validator membership:')}
       </Typography>
-      {admins.map((member) => {
+      {!requestAccessWorkflowDisabled && admins.map((member) => {
         return (
           <ListItemButton
             key={member?.id}

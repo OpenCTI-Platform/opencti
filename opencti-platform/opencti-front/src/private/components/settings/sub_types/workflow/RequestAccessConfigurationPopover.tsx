@@ -6,9 +6,11 @@ import { RequestAccessConfigurationEdition_requestAccess$key } from './__generat
 
 interface RequestAccessWorkflowEditionProps {
   data: RequestAccessConfigurationEdition_requestAccess$key
+  requestAccessWorkflowDisabled: boolean
 }
 const RequestAccessConfigurationPopover: FunctionComponent<RequestAccessWorkflowEditionProps> = ({
   data,
+  requestAccessWorkflowDisabled,
 }) => {
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleOpenUpdate = () => setDisplayUpdate(true);
@@ -21,6 +23,7 @@ const RequestAccessConfigurationPopover: FunctionComponent<RequestAccessWorkflow
         aria-haspopup="true"
         onClick={handleOpenUpdate}
         size="large"
+        disabled={requestAccessWorkflowDisabled}
       >
         <Edit fontSize="small" />
       </IconButton>

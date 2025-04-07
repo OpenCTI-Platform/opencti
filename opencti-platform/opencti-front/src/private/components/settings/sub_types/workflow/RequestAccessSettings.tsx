@@ -48,6 +48,7 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
       name: statusData.template?.name ?? 'unknown',
     },
   }));
+  const requestAccessWorkflowDisabled = statusList.length === 0;
 
   const paperStyle: CSSProperties = {
     marginTop: theme.spacing(1),
@@ -64,7 +65,7 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
         </Typography>
         <ItemStatusTemplate
           statuses={statusList}
-          disabled={false}
+          disabled={requestAccessWorkflowDisabled}
         />
       </div>
       <div style={{ marginTop: 20 }}>
@@ -75,8 +76,8 @@ const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAc
         >
           <Typography variant="h3" gutterBottom={true}>
             {t_i18n('Request access actions configuration')}
-            <RequestAccessConfigurationPopover data={dataConfiguration}/>
-            <RequestAccessStatus data={dataConfiguration}/>
+            <RequestAccessConfigurationPopover data={dataConfiguration} requestAccessWorkflowDisabled={requestAccessWorkflowDisabled}/>
+            <RequestAccessStatus data={dataConfiguration} requestAccessWorkflowDisabled={requestAccessWorkflowDisabled}/>
           </Typography>
         </Paper>
       </div>
