@@ -1757,6 +1757,8 @@ const BASE_SEARCH_ATTRIBUTES = [
   'path',
   'value',
   'display_name',
+  'account_login',
+  'user_id',
   'body',
   'hashes.MD5',
   'hashes.SHA-1',
