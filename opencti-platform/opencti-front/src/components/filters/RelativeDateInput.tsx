@@ -57,7 +57,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   };
   const isValidValue = (value: string, values: string[]) => {
     const isValidString = RELATIVE_DATE_REGEX.test(value) || isValidDate(value);
-    if (value && value !== '' && values[0] !== values[1] && isValidString) {
+    if (value && values[0] !== values[1] && isValidString) {
       return true;
     }
     return false;
