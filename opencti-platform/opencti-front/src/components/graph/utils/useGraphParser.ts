@@ -171,7 +171,7 @@ const useGraphParser = () => {
       toId: data.to?.id,
       toType: data.to?.entity_type,
       isObservable: !!data.observable_value,
-      numberOfConnectedElement,
+      numberOfConnectedElement: numberOfConnectedElement ?? data.numberOfConnectedElement,
       ...getNodeImg(data),
       name: getNodeName(data),
       label: getNodeLabel(data),
