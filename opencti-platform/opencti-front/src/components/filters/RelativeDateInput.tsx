@@ -33,17 +33,14 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const generateErrorMessage = (values: string[]) => {
-    if (values.length !== 2) {
+    const newValue = values[valueOrder];
+    if (!newValue) {
       return t_i18n('The value must not be empty');
-    }
-    if (values.includes('')) {
-      return t_i18n('The value must not be empty.');
     }
     if (values[0] === values[1]) {
       return t_i18n('The values must be different.');
     }
-    const newValue = values[valueOrder];
-    if (!newValue.match(RELATIVE_DATE_REGEX) && !isValidDate(newValue)) {
+    if (!RELATIVE_DATE_REGEX.test(newValue) && !isValidDate(newValue)) {
       return t_i18n('', {
         id: 'The value must be a datetime or a relative date expressed in date math. See our documentation for more information.',
         values: {
@@ -55,11 +52,18 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     }
     return undefined;
   };
+  const isValuesIntervalValid = (values: string[]) => {
+    const isValidString = values.every((v) => RELATIVE_DATE_REGEX.test(v) || isValidDate(v));
+    if (values.length === 2 && values[0] !== values[1] && isValidString) {
+      return true;
+    }
+    return false;
+  };
   const handleChangeRangeDateFilter = (value: string) => {
     const newValues = [...dateInput];
     newValues[valueOrder] = value;
     setDateInput(newValues);
-    if (!generateErrorMessage(newValues)) {
+    if (isValuesIntervalValid(newValues)) {
       helpers?.handleReplaceFilterValues(
         filter?.id ?? '',
         newValues,
