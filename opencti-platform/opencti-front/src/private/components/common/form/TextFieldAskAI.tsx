@@ -239,7 +239,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
           <IconButton
             size="small"
             onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
-            disabled={disabled || currentValue?.length < 10}
+            disabled={disabled || currentValue.length < 10}
             style={{ marginTop: 4, color: theme.palette.ai.main }}
           >
             <AutoAwesomeOutlined fontSize='small' />
