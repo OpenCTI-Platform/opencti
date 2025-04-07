@@ -3,13 +3,10 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import CourseOfActionEditionOverview from './CourseOfActionEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import useHelper from '../../../../utils/hooks/useHelper';
+import Drawer from '../../common/drawer/Drawer';
 
 const CourseOfActionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, courseOfAction, open, controlledDial } = props;
   const { editContext } = courseOfAction;
@@ -19,9 +16,8 @@ const CourseOfActionEditionContainer = (props) => {
       title={t_i18n('Update a course of action')}
       open={open}
       onClose={handleClose}
-      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={isFABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       <CourseOfActionEditionOverview
         courseOfAction={courseOfAction}

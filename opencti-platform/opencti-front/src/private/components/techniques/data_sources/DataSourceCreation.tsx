@@ -4,14 +4,12 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { DataSourcesLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -29,7 +27,6 @@ import { DataSourceCreationMutation, DataSourceCreationMutation$variables } from
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
@@ -336,9 +333,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   inputValue,
   paginationOptions,
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const [open, setOpen] = useState(false);
@@ -360,9 +355,8 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   const renderClassic = () => (
     <Drawer
       title={t_i18n('Create a data source')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
-      controlledDial={isFABReplaced ? CreateDataSourceControlledDial : undefined}
+      controlledDial={CreateDataSourceControlledDial}
     >
       {({ onClose }) => (
         <DataSourceCreationForm
@@ -379,27 +373,9 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
 
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
-      {isFABReplaced
-        ? (
-          <div style={{ marginTop: '5px' }}>
-            {CreateNarrativeControlledDialContextual}
-          </div>
-        ) : (
-          <Fab
-            onClick={handleOpen}
-            color="secondary"
-            aria-label="Add"
-            style={{
-              position: 'fixed',
-              bottom: 30,
-              right: 30,
-              zIndex: 2000,
-            }}
-          >
-            <Add />
-          </Fab>
-        )
-      }
+      <div style={{ marginTop: '5px' }}>
+        {CreateNarrativeControlledDialContextual}
+      </div>
       <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
         <DialogTitle>
           {t_i18n('Create a data source')}

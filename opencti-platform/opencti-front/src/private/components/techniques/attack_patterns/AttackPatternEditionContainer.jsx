@@ -7,13 +7,10 @@ import AttackPatternEditionOverview from './AttackPatternEditionOverview';
 import AttackPatternEditionDetails from './AttackPatternEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { useFormatter } from '../../../../components/i18n';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import useHelper from '../../../../utils/hooks/useHelper';
+import Drawer from '../../common/drawer/Drawer';
 
 const AttackPatternEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { handleClose, attackPattern, open, controlledDial } = props;
   const { editContext } = attackPattern;
@@ -27,9 +24,8 @@ const AttackPatternEditionContainer = (props) => {
       title={t_i18n('Update an attack pattern')}
       open={open}
       onClose={handleClose}
-      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={isFABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

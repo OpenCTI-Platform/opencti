@@ -19,7 +19,6 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import DataComponentDeletion from './DataComponentDeletion';
 
 const dataComponentMutationFieldPatch = graphql`
@@ -143,8 +142,6 @@ const DataComponentEditionOverview: FunctionComponent<
 DataComponentEditionOverviewComponentProps
 > = ({ data, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const dataComponent = useFragment(DataComponentEditionOverviewFragment, data);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_COMPONENT_TYPE);
@@ -327,11 +324,9 @@ DataComponentEditionOverviewComponentProps
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <DataComponentDeletion
-                  id={dataComponent.id}
-                />
-              : <div />}
+            <DataComponentDeletion
+              id={dataComponent.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

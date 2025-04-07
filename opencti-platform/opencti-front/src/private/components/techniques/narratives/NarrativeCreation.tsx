@@ -1,8 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import Dialog from '@mui/material/Dialog';
@@ -10,7 +8,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -28,7 +26,6 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
@@ -336,13 +333,11 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   inputValue,
   display,
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_narratives',
@@ -361,9 +356,8 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
     return (
       <Drawer
         title={t_i18n('Create a narrative')}
-        variant={isFABReplaced ? undefined : DrawerVariant.create}
         header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
-        controlledDial={isFABReplaced ? CreateNarrativeControlledDial : undefined}
+        controlledDial={CreateNarrativeControlledDial}
       >
         {({ onClose }) => (
           <NarrativeCreationForm
@@ -382,27 +376,9 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        {isFABReplaced
-          ? (
-            <div style={{ marginTop: '5px' }}>
-              {CreateNarrativeControlledDialContextual}
-            </div>
-          ) : (
-            <Fab
-              onClick={handleOpen}
-              color="secondary"
-              aria-label="Add"
-              style={{
-                position: 'fixed',
-                bottom: 30,
-                right: 30,
-                zIndex: 2000,
-              }}
-            >
-              <Add />
-            </Fab>
-          )
-        }
+        <div style={{ marginTop: '5px' }}>
+          {CreateNarrativeControlledDialContextual}
+        </div>
         <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
           <DialogTitle>
             {t_i18n('Create a narrative')}

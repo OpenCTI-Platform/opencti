@@ -3,9 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { CourseOfAction_courseOfAction$key } from '@components/techniques/courses_of_action/__generated__/CourseOfAction_courseOfAction.graphql';
 import CourseOfActionDetails from './CourseOfActionDetails';
-import CourseOfActionEdition from './CourseOfActionEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -13,7 +10,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const courssOfActionFragment = graphql`
   fragment CourseOfAction_courseOfAction on CourseOfAction {
@@ -74,8 +70,6 @@ interface CourseOfActionProps {
 const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) => {
   const courseOfAction = useFragment<CourseOfAction_courseOfAction$key>(courssOfActionFragment, courseOfActionData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(courseOfAction.entity_type);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -147,11 +141,6 @@ const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) =
           })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
-        </Security>
-      )}
     </>
   );
 };

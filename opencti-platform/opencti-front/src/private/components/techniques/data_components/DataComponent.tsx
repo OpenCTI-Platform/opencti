@@ -10,10 +10,6 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/Stix
 import { DataComponent_dataComponent$key } from './__generated__/DataComponent_dataComponent.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import useHelper from '../../../../utils/hooks/useHelper';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import DataComponentEdition from './DataComponentEdition';
 
 const DataComponentFragment = graphql`
   fragment DataComponent_dataComponent on DataComponent {
@@ -74,8 +70,6 @@ interface DataComponentProps {
 const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {
   const dataComponent = useFragment<DataComponent_dataComponent$key>(DataComponentFragment, dataComponentData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(dataComponent.entity_type);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -147,11 +141,6 @@ const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {
           })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DataComponentEdition dataComponentId={dataComponent.id} />
-        </Security>
-      )}
     </>
   );
 };
