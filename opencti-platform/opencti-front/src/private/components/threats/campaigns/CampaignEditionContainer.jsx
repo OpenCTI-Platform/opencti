@@ -7,13 +7,10 @@ import { useFormatter } from '../../../../components/i18n';
 import CampaignEditionOverview from './CampaignEditionOverview';
 import CampaignEditionDetails from './CampaignEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import useHelper from '../../../../utils/hooks/useHelper';
+import Drawer from '../../common/drawer/Drawer';
 
 const CampaignEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event, value) => setCurrentTab(value);
@@ -25,9 +22,8 @@ const CampaignEditionContainer = (props) => {
       title={t_i18n('Update a campaign')}
       open={open}
       onClose={handleClose}
-      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={isFABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

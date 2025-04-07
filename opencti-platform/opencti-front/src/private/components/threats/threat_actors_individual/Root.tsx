@@ -15,7 +15,6 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import { RootThreatActorIndividualQuery } from './__generated__/RootThreatActorIndividualQuery.graphql';
 import { RootThreatActorIndividualSubscription } from './__generated__/RootThreatActorIndividualSubscription.graphql';
-import ThreatActorIndividualPopover from './ThreatActorIndividualPopover';
 import ThreatActorIndividual from './ThreatActorIndividual';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
@@ -28,7 +27,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -101,8 +99,6 @@ const RootThreatActorIndividualComponent = ({
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootThreatActorIndividualSubscription>(subConfig);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const {
     threatActorIndividual,
     connectorsForExport,
@@ -158,15 +154,14 @@ const RootThreatActorIndividualComponent = ({
             <StixDomainObjectHeader
               entityType="Threat-Actor-Individual"
               stixDomainObject={threatActorIndividual}
-              PopoverComponent={ThreatActorIndividualPopover}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ThreatActorIndividualEdition
                     threatActorIndividualId={threatActorIndividual.id}
                   />
                 </Security>
               )}
-              enableEnricher={isFABReplaced}
+              enableEnricher={true}
               enableQuickSubscription={true}
             />
             <Box

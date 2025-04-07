@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { styled } from '@mui/material/styles';
 import { Badge, BadgeProps } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -38,7 +38,6 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
@@ -693,7 +692,6 @@ const ThreatActorIndividualCreation = ({
 }: {
   paginationOptions: ThreatActorsIndividualCardsPaginationQuery$variables;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
 
@@ -704,7 +702,6 @@ const ThreatActorIndividualCreation = ({
     'threatActorIndividualAdd',
   );
 
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateThreatActorIndividualControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Threat-Actor-Individual' {...props} />
   );
@@ -712,8 +709,7 @@ const ThreatActorIndividualCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a threat actor individual')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateThreatActorIndividualControlledDial : undefined}
+      controlledDial={CreateThreatActorIndividualControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >
       {({ onClose }) => (

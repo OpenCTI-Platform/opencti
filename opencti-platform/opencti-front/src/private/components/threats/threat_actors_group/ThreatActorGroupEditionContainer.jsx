@@ -7,8 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ThreatActorGroupEditionOverview from './ThreatActorGroupEditionOverview';
 import ThreatActorGroupEditionDetails from './ThreatActorGroupEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
-import useHelper from '../../../../utils/hooks/useHelper';
+import Drawer from '../../common/drawer/Drawer';
 
 const ThreatActorGroupEditionContainer = ({
   handleClose,
@@ -17,8 +16,6 @@ const ThreatActorGroupEditionContainer = ({
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { editContext } = threatActorGroup;
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event, value) => setCurrentTab(value);
@@ -27,9 +24,8 @@ const ThreatActorGroupEditionContainer = ({
       title={t_i18n('Update a threat actor group')}
       open={open}
       onClose={handleClose}
-      variant={!isFABReplaced && open == null ? DrawerVariant.update : undefined}
       context={editContext}
-      controlledDial={isFABReplaced ? controlledDial : undefined}
+      controlledDial={controlledDial}
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

@@ -17,7 +17,6 @@ import ThreatActorGroupKnowledge from './ThreatActorGroupKnowledge';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import ThreatActorGroupPopover from './ThreatActorGroupPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -25,7 +24,6 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
-import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ThreatActorGroupEdition from './ThreatActorGroupEdition';
@@ -93,8 +91,6 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootThreatActorsGroupSubscription>(subConfig);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const {
     threatActorGroup,
     connectorsForExport,
@@ -146,13 +142,12 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
             <StixDomainObjectHeader
               entityType="Threat-Actor-Group"
               stixDomainObject={threatActorGroup}
-              PopoverComponent={<ThreatActorGroupPopover id={threatActorGroup.id} />}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ThreatActorGroupEdition threatActorGroupId={threatActorGroup.id} />
                 </Security>
               )}
-              enableEnricher={isFABReplaced}
+              enableEnricher={true}
               enableQuickSubscription={true}
             />
             <Box
