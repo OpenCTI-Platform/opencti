@@ -30,6 +30,9 @@ export class TelemetryMeterManager {
   // Number of NLQ query call
   nlqQueryCount = 0;
 
+  // Number of RFI of request access type that are created
+  requestAccessCreationCount = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -70,6 +73,10 @@ export class TelemetryMeterManager {
     this.nlqQueryCount = n;
   }
 
+  setRequestAccessCreatedCount(n: number) {
+    this.requestAccessCreationCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
@@ -92,5 +99,6 @@ export class TelemetryMeterManager {
     this.registerGauge('active_drafts_count', 'number of active drafts', 'draftCount');
     this.registerGauge('active_workbenches_count', 'number of active workbenches', 'workbenchCount');
     this.registerGauge('call_nlq', 'NLQ feature usage', 'nlqQueryCount');
+    this.registerGauge('request_access_creation_count', 'Number of RFI of request access type that are created', 'requestAccessCreationCount');
   }
 }

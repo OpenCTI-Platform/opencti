@@ -54,6 +54,7 @@ import {
   platformNotification,
   REQUEST_SHARE_ACCESS_INFO_TYPE
 } from '../../manager/notificationManager';
+import { addRequestAccessCreationCount } from '../../manager/telemetryManager';
 
 // having an id is required for Relay
 const REQUEST_ACCESS_CONFIGURATION_ID = '7059b2f9-86d4-419b-9fde-adf825090820';
@@ -409,6 +410,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     revoked: false
   };
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
+  await addRequestAccessCreationCount();
   logApp.debug(`[OPENCTI-MODULE][Request access] - RFI created with id=${requestForInformation.id}`);
   return requestForInformation.id;
 };
