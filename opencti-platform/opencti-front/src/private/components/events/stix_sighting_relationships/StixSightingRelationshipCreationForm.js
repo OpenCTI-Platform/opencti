@@ -20,7 +20,6 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import { truncate } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -62,6 +61,11 @@ const useStyles = makeStyles((theme) => ({
     lineHeight: 1,
     fontSize: 12,
     verticalAlign: 'middle',
+    textOverflow: 'ellipsis',
+    maxWidth: 180,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    padding: 8,
   },
   relationCreate: {
     position: 'relative',
@@ -187,7 +191,7 @@ const StixSightingRelationshipCreationForm = ({
                   ) : (
                     <Tooltip title={getMainRepresentative(fromEntity)}>
                       <span className={classes.name}>
-                        {truncate(getMainRepresentative(fromEntity), 20)}
+                        {getMainRepresentative(fromEntity)}
                       </span>
                     </Tooltip>
                   )}
@@ -242,7 +246,7 @@ const StixSightingRelationshipCreationForm = ({
                   ) : (
                     <Tooltip title={getMainRepresentative(toEntity)}>
                       <span className={classes.name}>
-                        {truncate(getMainRepresentative(toEntity), 20)}
+                        {getMainRepresentative(toEntity)}
                       </span>
                     </Tooltip>
                   )}
