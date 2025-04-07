@@ -13,7 +13,7 @@ To access investigations, navigate to the top right corner of the toolbar:
 
 ## Perform investigation
 
-### Select entity 
+### Select / search entity 
 Wehn selecting (or searching) an entity, all the entities that you have selected (or matching your searched), will still be "coloured". The other entities will be overlayed, to emphasis your selection (or search).
 The entity that you are currently seeing in the right panel is the one with the **blue solid line** while the ones with **blue doted line** are the other that you have selected but not viewed in the right panel.
 In addition, the right panel will have now a counter of the amount of selected entities to help you understand the amount of selected (or matching your search). 
