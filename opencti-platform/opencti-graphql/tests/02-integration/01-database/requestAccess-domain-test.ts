@@ -356,7 +356,7 @@ describe('Request access domain  - conditions for request access activated', asy
   });
 });
 
-describe.only('Request access domain  - draft', async () => {
+describe('Request access domain  - draft', async () => {
   it('create request access RFI should be disabled from draft context', async () => {
     const fakeUser = getFakeAuthUser('RequestAccessInDraft');
     const testContextInDraft = executionContext('testing', fakeUser, 'fake-draft-id');
