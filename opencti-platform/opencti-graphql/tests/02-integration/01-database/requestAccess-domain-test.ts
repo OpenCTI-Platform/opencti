@@ -16,21 +16,31 @@ import {
   OrderingMode,
   type QueryStatusesArgs,
   type QueryStatusTemplatesByStatusScopeArgs,
+  type RequestAccessConfigureInput,
   StatusOrdering,
   StatusScope,
-  type StatusTemplate,
+  type StatusTemplate
 } from '../../../src/generated/graphql';
-import type { BasicStoreCommon, BasicStoreEntity } from '../../../src/types/store';
+import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../src/types/store';
 import { logApp } from '../../../src/config/conf';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
-import { computeAuthorizedMembersForRequestAccess, getRfiEntitySettings } from '../../../src/modules/requestAccess/requestAccess-domain';
-import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
-import type { BasicStoreEntityEntitySetting } from '../../../src/modules/entitySetting/entitySetting-types';
+import {
+  addRequestAccess,
+  approveRequestAccess,
+  computeAuthorizedMembersForRequestAccess,
+  configureRequestAccess,
+  declineRequestAccess,
+  getRfiEntitySettings
+} from '../../../src/modules/requestAccess/requestAccess-domain';
+import { executionContext, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
+import type { BasicStoreEntityEntitySetting, RequestAccessFlow } from '../../../src/modules/entitySetting/entitySetting-types';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { verifyRequestAccessEnabled } from '../../../src/modules/requestAccess/requestAccessUtils';
 import type { BasicStoreSettings } from '../../../src/types/settings';
+import { getFakeAuthUser, getGroupEntity } from '../../utils/domainQueryHelper';
+import type { Group } from '../../../src/types/group';
 
 describe('Request access domain  - initialized status', async () => {
   it('should initial data be created', async () => {
@@ -58,8 +68,14 @@ describe('Request access domain  - initialized status', async () => {
   let statusTemplateRequestAccess: BasicStoreEntity;
 
   it('should get request access scope status', async () => {
-    statusTemplateGlobalRfi = await createStatusTemplate(testContext, ADMIN_USER, { name: 'GLOBAL_RFI', color: '#b83f13' });
-    statusTemplateRequestAccess = await createStatusTemplate(testContext, ADMIN_USER, { name: 'REQUEST_ACCESS_SCOPE', color: '#b83f13' });
+    statusTemplateGlobalRfi = await createStatusTemplate(testContext, ADMIN_USER, {
+      name: 'GLOBAL_RFI',
+      color: '#b83f13'
+    });
+    statusTemplateRequestAccess = await createStatusTemplate(testContext, ADMIN_USER, {
+      name: 'REQUEST_ACCESS_SCOPE',
+      color: '#b83f13'
+    });
     await createStatus(
       testContext,
       ADMIN_USER,
@@ -114,7 +130,7 @@ describe('Request access domain  - initialized status', async () => {
 
   it('should get all status template by GLOBAL scope', async () => {
     resetCacheForEntity(ENTITY_TYPE_STATUS);
-    const args:QueryStatusTemplatesByStatusScopeArgs = {
+    const args: QueryStatusTemplatesByStatusScopeArgs = {
       scope: StatusScope.Global
     };
     const globalTemplates: StatusTemplate[] = await findAllTemplatesByStatusScope(testContext, ADMIN_USER, args);
@@ -125,7 +141,7 @@ describe('Request access domain  - initialized status', async () => {
 
   it('should get all status template by REQUEST_ACCESS scope', async () => {
     resetCacheForEntity(ENTITY_TYPE_STATUS);
-    const args:QueryStatusTemplatesByStatusScopeArgs = {
+    const args: QueryStatusTemplatesByStatusScopeArgs = {
       scope: StatusScope.RequestAccess
     };
     const requestAccessTemplates: StatusTemplate[] = await findAllTemplatesByStatusScope(testContext, ADMIN_USER, args);
@@ -189,9 +205,7 @@ describe('Request access domain  - compute RFI retricted members', async () => {
 
   it('should knowledge sharing request on entity without any organisation sharing use platform organization', async () => {
     // No granted part
-    const someEntity: Partial<BasicStoreCommon> = {
-
-    };
+    const someEntity: Partial<BasicStoreCommon> = {};
 
     const authorizedMembers = await computeAuthorizedMembersForRequestAccess(testContext, ADMIN_USER, someEntity as BasicStoreCommon);
     expect(authorizedMembers.find((member) => member.access_right === MEMBER_ACCESS_RIGHT_ADMIN)).toStrictEqual({
@@ -339,5 +353,97 @@ describe('Request access domain  - conditions for request access activated', asy
 
     const isRequestAccessEnabled = verifyRequestAccessEnabled(settings as BasicStoreSettings, rfiSettings as BasicStoreEntityEntitySetting);
     expect(isRequestAccessEnabled.enabled).toBeTruthy();
+  });
+});
+
+describe.only('Request access domain  - draft', async () => {
+  it('create request access RFI should be disabled from draft context', async () => {
+    const fakeUser = getFakeAuthUser('RequestAccessInDraft');
+    const testContextInDraft = executionContext('testing', fakeUser, 'fake-draft-id');
+    const input = { request_access_entities: [], request_access_members: [] };
+    await expect(() => addRequestAccess(testContextInDraft, fakeUser, input)).rejects.toThrowError('Request access is not available in draft mode');
+  });
+
+  it('approve request access should be disabled from draft context', async () => {
+    const fakeUser = getFakeAuthUser('RequestAccessInDraft');
+    const testContextInDraft = executionContext('testing', fakeUser, 'fake-draft-id');
+    await expect(() => approveRequestAccess(testContextInDraft, fakeUser, 'fake-rfi-id')).rejects.toThrowError('Request access is not available in draft mode');
+  });
+
+  it('decline request access should be disabled from draft context', async () => {
+    const fakeUser = getFakeAuthUser('RequestAccessInDraft');
+    const testContextInDraft = executionContext('testing', fakeUser, 'fake-draft-id');
+    await expect(() => declineRequestAccess(testContextInDraft, fakeUser, 'fake-rfi-id')).rejects.toThrowError('Request access is not available in draft mode');
+  });
+});
+
+describe('Request access domain  - configuration edition', async () => {
+  let statusTemplateRequestAccess: BasicWorkflowTemplateEntity;
+  let statusRequestAccess: BasicWorkflowStatus;
+  let greenGroup: Group;
+  let initialConfig: RequestAccessFlow | undefined;
+  let rfiEntitySettings: BasicStoreEntityEntitySetting;
+
+  beforeAll(async () => {
+    rfiEntitySettings = await getRfiEntitySettings(testContext, ADMIN_USER);
+    initialConfig = rfiEntitySettings.request_access_workflow;
+
+    statusTemplateRequestAccess = await createStatusTemplate(testContext, ADMIN_USER, { name: 'REQUEST_ACCESS_CONFIG', color: '#8c13b8' });
+    statusRequestAccess = await createStatus(
+      testContext,
+      ADMIN_USER,
+      ENTITY_TYPE_CONTAINER_CASE_RFI,
+      { template_id: statusTemplateRequestAccess.id, order: 3, scope: StatusScope.RequestAccess }
+    );
+
+    greenGroup = await getGroupEntity(GREEN_GROUP);
+  });
+
+  afterAll(async () => {
+    const editInput: EditInput[] = [
+      { key: 'request_access_workflow', value: [initialConfig] }
+    ];
+    await entitySettingEditField(testContext, ADMIN_USER, rfiEntitySettings?.id, editInput);
+  });
+
+  it('should disabling approval_admin in request access be allowed', async () => {
+    const input:RequestAccessConfigureInput = {
+      approval_admin: undefined,
+      approved_status_id: statusTemplateRequestAccess.id,
+      declined_status_id: statusTemplateRequestAccess.id
+    };
+
+    const configuration = await configureRequestAccess(testContext, ADMIN_USER, input);
+
+    // Should not throw exceptions and
+    expect(configuration.approval_admin).toStrictEqual([]);
+  });
+
+  it('should disabling approved_status_id in request access be allowed', async () => {
+    const input:RequestAccessConfigureInput = {
+      approval_admin: [greenGroup.id],
+      approved_status_id: undefined,
+      declined_status_id: statusTemplateRequestAccess.id
+    };
+
+    const configuration = await configureRequestAccess(testContext, ADMIN_USER, input);
+
+    // Should not throw exceptions and
+    expect(configuration.approval_admin).toStrictEqual([{ id: greenGroup.id, name: GREEN_GROUP.name }]);
+    expect(configuration.declined_status?.id).toStrictEqual(statusRequestAccess.id);
+  });
+
+  it('should disabling approved_status_id in request access be allowed', async () => {
+    const input:RequestAccessConfigureInput = {
+      approval_admin: [greenGroup.id],
+      approved_status_id: statusTemplateRequestAccess.id,
+      declined_status_id: undefined
+    };
+
+    const configuration = await configureRequestAccess(testContext, ADMIN_USER, input);
+
+    // Should not throw exceptions and
+    expect(configuration.approval_admin).toStrictEqual([{ id: greenGroup.id, name: GREEN_GROUP.name }]);
+    expect(configuration.approved_status?.id).toStrictEqual(statusRequestAccess.id);
   });
 });

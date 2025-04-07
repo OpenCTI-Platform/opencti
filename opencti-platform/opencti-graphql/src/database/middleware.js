@@ -3142,7 +3142,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
         const rfiSetting = await getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
         const isRequestAccessConfigured = isRequestAccessEnabled(settings, rfiSetting);
-        if (isRequestAccessConfigured === true) {
+        if (isRequestAccessConfigured === true && getDraftContext(context, user) !== undefined) {
           const entitiesThatRequiresAccess = await canRequestAccess(context, user, existingEntities);
           if (entitiesThatRequiresAccess.length > 0) {
             throw AccessRequiredError('Restricted entity already exists, you can request access', { entityIds: entitiesThatRequiresAccess.map((value) => value.internal_id) });
