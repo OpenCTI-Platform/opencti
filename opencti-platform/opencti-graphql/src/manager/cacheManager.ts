@@ -168,7 +168,7 @@ const platformUsers = (context: AuthContext) => {
   const removeUser = async (values: AuthUser[], instance: BasicStoreCommon) => {
     return (values ?? []).filter((user) => user.internal_id !== instance.internal_id);
   };
-  const refreshUser = async (values: AuthUser[], instance: BasicStoreCommon | BasicStoreCommon[]) => {
+  const refreshUsers = async (values: AuthUser[], instance: BasicStoreCommon | BasicStoreCommon[]) => {
     const users = Array.isArray(instance) ? instance : [instance];
     const userIds = users.map((u) => u.internal_id);
     const refreshValues = (values ?? []).filter((user) => !userIds.includes(user.internal_id));
@@ -178,13 +178,18 @@ const platformUsers = (context: AuthContext) => {
   };
   const addUser = async (values: AuthUser[] | null, instance: BasicStoreCommon) => {
     if (values) { // If values not preloaded yet
+      // If user already available (local mode), do not add it
+      if (values.find((user) => user.internal_id === instance.internal_id)) {
+        return values;
+      }
+      // If user not available (cluster mode)
       const user = await resolveUserById(context, instance.internal_id);
       values.push(user);
       return values;
     }
     return values;
   };
-  return { values: null, fn: loadUsers, remove: removeUser, refresh: refreshUser, add: addUser };
+  return { values: null, fn: loadUsers, remove: removeUser, refresh: refreshUsers, add: addUser };
 };
 const platformSettings = (context: AuthContext) => {
   const reloadSettings = async () => {
