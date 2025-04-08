@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { adminQuery, queryAsAdmin } from '../../utils/testQuery';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
@@ -119,6 +119,23 @@ describe('Indicator resolver standard behavior', () => {
   let indicatorStixId = 'indicator--f6ad652c-166a-43e6-98b8-8ff078e2349f';
   const indicatorForTestName = 'Indicator in indicator-test';
 
+  it('should not create indicator with score value outside of 0 and 100', async () => {
+    // Create the indicator
+    const INDICATOR_TO_CREATE = {
+      input: {
+        name: indicatorForTestName,
+        stix_id: indicatorStixId,
+        pattern: "[domain-name:value = 'www.payah.rest']",
+        pattern_type: 'stix',
+        x_opencti_score: 142,
+      },
+    };
+    const indicator = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: INDICATOR_TO_CREATE,
+    });
+    expect(indicator.errors?.[0]?.message).toEqual('The score should be between 0 and 100');
+  });
   it('should indicator created', async () => {
     // Create the indicator
     const INDICATOR_TO_CREATE = {
@@ -229,6 +246,20 @@ describe('Indicator resolver standard behavior', () => {
       const indicatorCreatedEarlier = indicatorList.find((indicator: BasicStoreEntityEdge<BasicStoreEntityIndicator>) => indicator.node.name === indicatorForTestName);
       expect(indicatorCreatedEarlier).toBeDefined();
     }
+  });
+  it('should not update indicator with score value outside of 0 and 100', async () => {
+    const queryResulAbove100 = await adminQuery({
+      query: UPDATE_QUERY,
+      variables: { id: firstIndicatorInternalId, input: { key: 'x_opencti_score', value: ['142'] } },
+    });
+    expect(queryResulAbove100.errors).toBeDefined();
+    expect(queryResulAbove100.errors[0].message).toBe('The score should be between 0 and 100');
+    const queryResultBelow0 = await adminQuery({
+      query: UPDATE_QUERY,
+      variables: { id: firstIndicatorInternalId, input: { key: 'x_opencti_score', value: ['-42'] } },
+    });
+    expect(queryResultBelow0.errors).toBeDefined();
+    expect(queryResultBelow0.errors[0].message).toBe('The score should be between 0 and 100');
   });
   it('should not update indicator with incorrectly formatted pattern', async () => {
     const queryResult = await adminQuery({
