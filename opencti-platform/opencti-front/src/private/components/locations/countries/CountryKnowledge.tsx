@@ -10,12 +10,15 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { CountryKnowledge_country$key } from './__generated__/CountryKnowledge_country.graphql';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const countryKnowledgeFragment = graphql`
   fragment CountryKnowledge_country on Country {
     id
     name
     x_opencti_aliases
+    entity_type
   }
 `;
 
@@ -29,6 +32,8 @@ const CountryKnowledgeComponent = ({
     countryData,
   );
   const link = `/dashboard/locations/countries/${country.id}/knowledge`;
+  const { schema } = useAuth();
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(country.entity_type, schema);
   return (
     <>
       <Routes>
@@ -56,6 +61,19 @@ const CountryKnowledgeComponent = ({
             <StixDomainObjectKnowledge
               stixDomainObjectId={country.id}
               stixDomainObjectType="Country"
+            />
+          }
+        />
+        <Route
+          path="/all"
+          element={
+            <EntityStixCoreRelationships
+              entityId={country.id}
+              relationshipTypes={allRelationshipsTypes}
+              entityLink={link}
+              defaultStartTime={country.startTime}
+              defaultStopTime={country.stopTime}
+              allDirections
             />
           }
         />

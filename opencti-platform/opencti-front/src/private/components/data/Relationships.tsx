@@ -6,6 +6,8 @@ import {
 } from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLinesPaginationQuery.graphql';
 import { RelationshipsStixCoreRelationshipsLines_data$data } from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLines_data.graphql';
 import { AutoFix } from 'mdi-material-ui';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import { useTheme } from '@mui/styles';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -19,6 +21,7 @@ import ItemIcon from '../../../components/ItemIcon';
 import { itemColor } from '../../../utils/Colors';
 import ItemEntityType from '../../../components/ItemEntityType';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import type { Theme } from '../../../components/Theme';
 
 const LOCAL_STORAGE_KEY = 'relationships';
 
@@ -242,6 +245,7 @@ export const relationshipsStixCoreRelationshipsLinesFragment = graphql`
 const Relationships = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+  const theme = useTheme<Theme>();
   setTitle(t_i18n('Relationships | Data'));
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -287,7 +291,16 @@ const Relationships = () => {
       label: ' ',
       isSortable: false,
       percentWidth: 3,
-      render: ({ is_inferred, entity_type }) => (is_inferred ? <AutoFix style={{ color: itemColor(entity_type) }} /> : <ItemIcon type={entity_type} />),
+      render: ({ is_inferred, entity_type, draftVersion }) => {
+        if (is_inferred) {
+          const inferredColor = draftVersion ? getDraftModeColor(theme) : itemColor(entity_type);
+          return (<AutoFix style={{ color: inferredColor }} />);
+        }
+        if (draftVersion) {
+          return (<ItemIcon type={entity_type} color={getDraftModeColor(theme)} />);
+        }
+        return (<ItemIcon type={entity_type} />);
+      },
     },
     fromType: {
       id: 'fromType',

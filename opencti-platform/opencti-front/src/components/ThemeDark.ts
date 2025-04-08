@@ -37,7 +37,7 @@ const ThemeDark = (
     warn: {
       main: '#ffa726',
     },
-    dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#f44336', contrastText: 'black', text: { primary: '#fbc2be' } },
+    dangerZone: { main: '#f6685e', light: '#fbc2be', dark: '#f44336', contrastText: '#000000', text: { primary: '#fbc2be' } },
     success: { main: '#03a847' },
     primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
@@ -51,7 +51,7 @@ const ThemeDark = (
       main: '#ffffff',
     },
     chip: { main: '#ffffff' },
-    ai: { main: '#9575cd', light: '#d1c4e9', dark: '#673ab7', contrastText: 'black', text: { primary: '#9575cd' } },
+    ai: { main: '#9575cd', light: '#d1c4e9', dark: '#673ab7', contrastText: '#000000', text: { primary: '#9575cd' } },
     ee: {
       main: EE_COLOR,
       contrastText: '#ffffff',
@@ -130,8 +130,10 @@ const ThemeDark = (
   components: {
     MuiAccordion: {
       defaultProps: {
-        TransitionProps: {
-          unmountOnExit: true,
+        slotProps: {
+          transition: {
+            unmountOnExit: true,
+          },
         },
       },
     },

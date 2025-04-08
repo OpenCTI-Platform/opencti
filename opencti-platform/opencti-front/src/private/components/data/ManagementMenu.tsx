@@ -4,7 +4,7 @@ import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMe
 const ManagementMenu = () => {
   const entries: MenuEntry[] = [
     {
-      path: '/dashboard/data/management/restricted',
+      path: '/dashboard/data/restriction/restricted',
       label: 'Restricted entities',
     },
   ];

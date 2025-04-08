@@ -43,8 +43,8 @@ const PlatformCriticalAlertDialog: React.FC<PlatformCriticalAlertDialogProps> = 
   return (
     <Dialog
       open={open}
-      PaperProps={{ elevation: 1 }}
-      TransitionComponent={Transition}
+      slotProps={{ paper: { elevation: 1 } }}
+      slots={{ transition: Transition }}
       onClose={closeHandler}
     >
       <DialogTitle>{t_i18n('Important notice: your action is required!')}</DialogTitle>

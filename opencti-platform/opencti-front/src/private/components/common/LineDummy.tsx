@@ -2,7 +2,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Skeleton from '@mui/material/Skeleton';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVertOutlined } from '@mui/icons-material';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
@@ -33,7 +32,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const LineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={<MoreVertOutlined classes={classes.itemIconDisabled} />}
+    >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
@@ -57,9 +60,6 @@ const LineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
           </div>
                 }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVertOutlined />
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

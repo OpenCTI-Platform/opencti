@@ -8,21 +8,19 @@ import {
   type QueryDraftWorkspacesArgs,
   type QueryDraftWorkspaceSightingRelationshipsArgs
 } from '../../generated/graphql';
-import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
-import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
-import { elDeleteDraftContextFromUsers, elDeleteDraftElements } from '../../database/draft-engine';
-import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from './draftWorkspace-types';
+import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
+import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
-import { deleteElementById, stixLoadByIds } from '../../database/middleware';
+import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../../database/middleware';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
-import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { usersSessionRefresh } from '../../domain/user';
-import { elAggregationCount, elList } from '../../database/engine';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { elAggregationCount, elCount, elList } from '../../database/engine';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { SYSTEM_USER } from '../../utils/access';
@@ -31,12 +29,16 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE 
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { isStixRefRelationship } from '../../schema/stixRefRelationship';
-import { notify } from '../../database/redis';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
+import { deleteAllDraftFiles } from '../../database/file-storage-helper';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
+import { notify } from '../../database/redis';
+import { publishUserAction } from '../../listener/UserActionListener';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -59,7 +61,7 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
   // TODO fix total to include only stix domain objects & SCO & stix core relationships & sightings & stix domain objects
   const totalCount = computeSumOfList(distributionResult.map((r: { label: string, count: number }) => r.count));
   const entitiesCount = computeSumOfList(
-    distributionResult.filter((r: { label: string }) => isStixDomainObject(r.label)).map((r: { count: number }) => r.count)
+    distributionResult.filter((r: { label: string }) => isStixDomainObject(r.label) && !isStixDomainObjectContainer(r.label)).map((r: { count: number }) => r.count)
   );
   const observablesCount = computeSumOfList(
     distributionResult.filter((r: { label: string }) => isStixCyberObservable(r.label)).map((r: { count: number }) => r.count)
@@ -81,6 +83,56 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
     sightingsCount,
     containersCount,
   };
+};
+
+export const getProcessingCount = async (context: AuthContext, user: AuthUser, draft: BasicStoreEntityDraftWorkspace) => {
+  const draftWorksFilter = {
+    filterGroups: [],
+    filters: [
+      {
+        key: 'draft_context',
+        mode: 'or',
+        operator: 'eq',
+        values: [draft.internal_id]
+      },
+      {
+        key: 'status',
+        mode: 'or',
+        operator: 'eq',
+        values: ['wait', 'progress']
+      }
+    ],
+    mode: 'and'
+  };
+  const worksOpts = {
+    types: [ENTITY_TYPE_WORK],
+    filters: draftWorksFilter,
+  };
+  const draftIncompleteWorksCount = await elCount(context, context.user, READ_INDEX_HISTORY, worksOpts);
+  const draftTasksFilter = {
+    filterGroups: [],
+    filters: [
+      {
+        key: 'draft_context',
+        mode: 'or',
+        operator: 'eq',
+        values: [draft.internal_id]
+      },
+      {
+        key: 'completed',
+        mode: 'or',
+        operator: 'eq',
+        values: ['false']
+      }
+    ],
+    mode: 'and'
+  };
+  const tasksOpts = {
+    types: [ENTITY_TYPE_BACKGROUND_TASK],
+    filters: draftTasksFilter,
+  };
+  const draftIncompleteTasksCount = await elCount(context, context.user, READ_INDEX_INTERNAL_OBJECTS, tasksOpts);
+  return draftIncompleteTasksCount + draftIncompleteWorksCount;
 };
 
 export const listDraftObjects = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceEntitiesArgs) => {
@@ -126,14 +178,26 @@ export const listDraftSightingRelations = (context: AuthContext, user: AuthUser,
 };
 
 export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, input: DraftWorkspaceAddInput) => {
-  if (!isFeatureEnabled('DRAFT_WORKSPACE')) {
-    throw UnsupportedError('Feature not yet available');
-  }
   const defaultOps = {
     created_at: now(),
+    draft_status: DRAFT_STATUS_OPEN,
   };
   const draftWorkspaceInput = { ...input, ...defaultOps };
-  return createInternalObject<StoreEntityDraftWorkspace>(context, user, draftWorkspaceInput, ENTITY_TYPE_DRAFT_WORKSPACE);
+  const createdDraftWorkspace = await createEntity(context, user, draftWorkspaceInput, ENTITY_TYPE_DRAFT_WORKSPACE);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `creates draft workspace \`${createdDraftWorkspace.name}\``,
+    context_data: {
+      id: createdDraftWorkspace.id,
+      entity_type: ENTITY_TYPE_DRAFT_WORKSPACE,
+      input,
+    },
+  });
+
+  return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].ADDED_TOPIC, createdDraftWorkspace, user);
 };
 
 const findAllUsersWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {
@@ -150,9 +214,24 @@ const deleteDraftContextFromUsers = async (context: AuthContext, user: AuthUser,
   const usersWithDraftContext = await findAllUsersWithDraftContext(context, user, draftId);
   if (usersWithDraftContext.length > 0) {
     await elDeleteDraftContextFromUsers(context, user, draftId);
-    const usersIds = usersWithDraftContext.map((u) => u.id);
-    await usersSessionRefresh(usersIds);
-    await Promise.all(usersWithDraftContext.map((u) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, u, user)));
+    await notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, usersWithDraftContext, user);
+  }
+};
+
+const findAllWorksWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {
+  const listArgs = {
+    connectionFormat: false,
+    indices: [READ_INDEX_HISTORY],
+    filters: { mode: FilterMode.And, filters: [{ key: ['draft_context'], values: [draftId] }], filterGroups: [] }
+  };
+  return listAllEntities(context, user, [ENTITY_TYPE_WORK], listArgs);
+};
+
+// When deleting a draft, we need to remove all draft_ids from works currently linked to this draft
+const deleteDraftContextFromWorks = async (context: AuthContext, user: AuthUser, draftId: string) => {
+  const worksWithDraftContext = await findAllWorksWithDraftContext(context, user, draftId);
+  if (worksWithDraftContext.length > 0) {
+    await elDeleteDraftContextFromWorks(context, user, draftId);
   }
 };
 
@@ -162,11 +241,26 @@ export const deleteDraftWorkspace = async (context: AuthContext, user: AuthUser,
   if (!draftWorkspace) {
     throw FunctionalError(`Draft workspace ${id} cannot be found`, id);
   }
+  await deleteAllDraftFiles(context, user, id);
   await elDeleteDraftElements(context, user, id); // delete all draft elements from draft index
   await deleteDraftContextFromUsers(context, user, id);
-  await deleteElementById(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
+  await deleteDraftContextFromWorks(context, user, id);
+  const deleted = await deleteElementById(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
 
-  return id;
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'extended',
+    message: `deletes draft workspace \`${deleted.name}\``,
+    context_data: {
+      id: deleted.id,
+      entity_type: ENTITY_TYPE_DRAFT_WORKSPACE,
+      input: deleted,
+    },
+  });
+
+  return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].DELETE_TOPIC, deleted, user).then(() => id);
 };
 
 export const buildDraftVersion = (object: BasicStoreCommon) => {
@@ -175,7 +269,8 @@ export const buildDraftVersion = (object: BasicStoreCommon) => {
   }
 
   if (!object.draft_ids || object.draft_ids.length === 0) {
-    throw FunctionalError('Cannot find draft ids on draft entity', { id: object.id });
+    logApp.warn('Draft entity without draft ids found', { id: object.id });
+    return null;
   }
 
   return { draft_id: object.draft_ids[0], draft_operation: object.draft_change?.draft_operation };
@@ -187,24 +282,36 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   // We start by listing all elements currently in this draft context
   const draftEntities = await elList(contextInDraft, user, READ_INDEX_DRAFT_OBJECTS, includeDeleteOption);
 
-  const draftEntitiesMinusRefRel = draftEntities.filter((e) => !isStixRefRelationship(e.entity_type));
+  const draftEntitiesMinusRefRel = draftEntities.filter((e) => !isStixRefRelationship(e.entity_type) && e.entity_type !== ENTITY_TYPE_INTERNAL_FILE);
 
   // We add all created elements as stix objects to the bundle
   const createEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_CREATE);
   const createEntitiesIds = createEntities.map((e) => e.internal_id);
-  const createStixEntities = await stixLoadByIds(contextInDraft, user, createEntitiesIds);
+  const createStixEntities = await stixLoadByIds(contextInDraft, user, createEntitiesIds, { resolveStixFiles: true });
 
   // We add all deleted elements as stix objects to the bundle, but we mark them as a delete operation
   const deletedEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_DELETE);
   const deleteEntitiesIds = deletedEntities.map((e) => e.internal_id);
   const deleteStixEntities = await stixLoadByIds(contextInDraft, user, deleteEntitiesIds, includeDeleteOption);
-  const deleteStixEntitiesModified = deleteStixEntities.map((d: any) => ({ ...d, opencti_operation: 'delete' }));
+  const deleteStixEntitiesModified = deleteStixEntities.map((d: any) => {
+    const stixWithOperation = { ...d };
+    stixWithOperation.extensions[STIX_EXT_OCTI].opencti_operation = 'delete';
+    return stixWithOperation;
+  });
 
   // Send update with "field patch" info
   const updateEntities = draftEntitiesMinusRefRel.filter((e) => e.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE && e.draft_change.draft_updates_patch);
   const updateEntitiesIds = updateEntities.map((e) => e.internal_id);
   const updateStixEntities = await stixLoadByIds(contextInDraft, user, updateEntitiesIds);
-  const updateStixEntitiesWithPatch = updateStixEntities.map((d: any) => ({ ...d, opencti_operation: 'patch', opencti_field_patch: buildUpdateFieldPatch(updateEntities.find((e) => e.standard_id === d.id).draft_change.draft_updates_patch) }));
+  const updateStixEntitiesWithPatchPromises = updateStixEntities.map(async (d: any) => {
+    const updateFieldPatchNonResolved = buildUpdateFieldPatch(updateEntities.find((e) => e.standard_id === d.id).draft_change.draft_updates_patch);
+    const updateFieldPatchResolved = await resolveDraftUpdateFiles(contextInDraft, user, updateFieldPatchNonResolved);
+    const stixWithPatch = { ...d };
+    stixWithPatch.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
+    stixWithPatch.extensions[STIX_EXT_OCTI].opencti_field_patch = updateFieldPatchResolved;
+    return stixWithPatch;
+  });
+  const updateStixEntitiesWithPatch = await Promise.all(updateStixEntitiesWithPatchPromises);
 
   return buildStixBundle([...createStixEntities, ...deleteStixEntitiesModified, ...updateStixEntitiesWithPatch]);
 };
@@ -213,6 +320,9 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
   const draftWorkspace = await findById(context, user, draft_id);
   if (!draftWorkspace) {
     throw FunctionalError(`Draft workspace ${draft_id} cannot be found`, draft_id);
+  }
+  if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) {
+    throw FunctionalError('Draft workspace cannot be validated in this state', { draftId: draft_id, status: draftWorkspace.draft_status });
   }
   const stixBundle = await buildDraftValidationBundle(context, user, draft_id);
   const jsonBundle = JSON.stringify(stixBundle);
@@ -224,8 +334,11 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
     // Only add explicit expectation if the worker will not split anything
     await updateExpectationsNumber(contextOutOfDraft, context.user, work.id, stixBundle.objects.length);
   }
-  await pushToWorkerForConnector(DRAFT_VALIDATION_CONNECTOR.id, { type: 'bundle', applicant_id: user.internal_id, content, update: true, work_id: work.id });
-  await deleteDraftWorkspace(contextOutOfDraft, user, draft_id);
+  await pushToWorkerForConnector(DRAFT_VALIDATION_CONNECTOR.id, { type: 'bundle', applicant_id: user.internal_id, content, update: true, work_id: work.id, draft_id: '' });
+  const draftValidationInput = [{ key: 'draft_status', value: [DRAFT_STATUS_VALIDATED] }, { key: 'validation_work_id', value: [work.id] }];
+  const { element } = await updateAttribute(context, user, draft_id, ENTITY_TYPE_DRAFT_WORKSPACE, draftValidationInput);
+  await notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].EDIT_TOPIC, element, user);
+  await deleteDraftContextFromUsers(context, user, draft_id);
 
   return work;
 };

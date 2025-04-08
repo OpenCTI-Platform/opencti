@@ -16,7 +16,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import CampaignDeletion from './CampaignDeletion';
@@ -84,6 +84,8 @@ export const campaignMutationRelationDelete = graphql`
   }
 `;
 
+const CAMPAIGN_TYPE = 'Campaign';
+
 const CampaignEditionOverviewComponent = (props) => {
   const { campaign, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
@@ -91,14 +93,21 @@ const CampaignEditionOverviewComponent = (props) => {
 
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    CAMPAIGN_TYPE,
+  );
+
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
+    createdBy: Yup.object().nullable(),
     x_opencti_workflow_id: Yup.object(),
-  };
-  const campaignValidator = useSchemaEditionValidation('Campaign', basicShape);
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+
+  const campaignValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: campaignMutationFieldPatch,
@@ -177,6 +186,8 @@ const CampaignEditionOverviewComponent = (props) => {
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={campaignValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -193,6 +204,7 @@ const CampaignEditionOverviewComponent = (props) => {
             component={TextField}
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -214,6 +226,7 @@ const CampaignEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -242,6 +255,7 @@ const CampaignEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -251,6 +265,7 @@ const CampaignEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

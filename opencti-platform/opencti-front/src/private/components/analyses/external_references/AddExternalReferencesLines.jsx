@@ -4,11 +4,11 @@ import { createPaginationContainer, graphql } from 'react-relay';
 import { compose, filter, head, map } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { CheckCircle } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -211,11 +211,10 @@ class AddExternalReferencesLinesContainer extends Component {
             const isLinkedRef = isNotEmptyField(externalReference.fileId);
             if (isLinkedRef) {
               return (
-                <ListItem
+                <ListItemButton
                   key={externalReference.id}
                   classes={{ root: classes.menuItem }}
                   divider={true}
-                  button={true}
                   onClick={this.toggleExternalReference.bind(
                     this,
                     externalReference,
@@ -230,15 +229,14 @@ class AddExternalReferencesLinesContainer extends Component {
                     )}
                   </ListItemIcon>
                   {computeTextItem(externalReferenceNode)}
-                </ListItem>
+                </ListItemButton>
               );
             }
             return (
-              <ListItem
+              <ListItemButton
                 key={externalReference.id}
                 classes={{ root: classes.menuItem }}
                 divider={true}
-                button={true}
                 onClick={this.toggleExternalReference.bind(
                   this,
                   externalReference,
@@ -253,7 +251,7 @@ class AddExternalReferencesLinesContainer extends Component {
                   )}
                 </ListItemIcon>
                 {computeTextItem(externalReferenceNode)}
-              </ListItem>
+              </ListItemButton>
             );
           })}
         </List>

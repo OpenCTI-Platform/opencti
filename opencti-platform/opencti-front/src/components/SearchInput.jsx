@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
+import { AutoAwesomeOutlined, BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { Link, useLocation } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from './i18n';
+import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
+import useAuth from '../utils/hooks/useAuth';
+import EnterpriseEditionAgreement from '../private/components/common/entreprise_edition/EnterpriseEditionAgreement';
+import FeedbackCreation from '../private/components/cases/feedbacks/FeedbackCreation';
+import Loader from './Loader';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -62,14 +69,31 @@ const useStyles = makeStyles((theme) => ({
 const SearchInput = (props) => {
   const classes = useStyles();
   const location = useLocation();
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const theme = useTheme();
   const { t_i18n } = useFormatter();
   const {
     onSubmit,
     variant,
     keyword,
     placeholder = `${t_i18n('Search these results')}...`,
+    isNLQLoading,
     ...otherProps
   } = props;
+  const [displayEEDialog, setDisplayEEDialog] = useState(false);
+  const [searchValue, setSearchValue] = useState(keyword);
+  const [askAI, setAskAI] = useState(false);
+
+  useEffect(() => {
+    if (keyword !== searchValue) {
+      setSearchValue(keyword);
+    }
+  }, [keyword]);
+
+  const isAIEnabled = variant === 'topBar' && isEnterpriseEdition && askAI;
+  const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
+  const { settings: { id: settingsId } } = useAuth();
+
   let classRoot = classes.searchRoot;
   if (variant === 'inDrawer') {
     classRoot = classes.searchRootInDrawer;
@@ -88,77 +112,135 @@ const SearchInput = (props) => {
   } else if (variant === 'noAnimation') {
     classInput = classes.searchInputNoAnimation;
   }
-  const [searchValue, setSearchValue] = useState(keyword);
-  useEffect(() => {
-    if (keyword !== searchValue) {
-      setSearchValue(keyword);
+
+  const handleChangeAskAI = () => {
+    if (isEnterpriseEdition) {
+      if (!askAI && searchValue && searchValue.length > 0) {
+        onSubmit(searchValue, true);
+        setAskAI(true);
+      }
+      setAskAI(!askAI);
+    } else {
+      setDisplayEEDialog(true);
     }
-  }, [keyword]);
+  };
+  const handleRemoveAskAI = () => {
+    if (isEnterpriseEdition && askAI) {
+      setAskAI(false);
+    }
+  };
 
   return (
-    <TextField
-      name="keyword"
-      value={searchValue}
-      variant="outlined"
-      size="small"
-      placeholder={placeholder}
-      onChange={(event) => {
-        const { value } = event.target;
-        setSearchValue(value);
-      }}
-      onKeyDown={(event) => {
-        const { value } = event.target;
-        if (typeof onSubmit === 'function' && event.key === 'Enter') {
-          onSubmit(value);
-        }
-      }}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <Search fontSize="small" />
-          </InputAdornment>
-        ),
-        endAdornment: variant === 'topBar' && (
+    <>
+      <TextField
+        name="keyword"
+        value={searchValue}
+        variant="outlined"
+        size="small"
+        placeholder={isAIEnabled ? `${t_i18n('Ask your question')}...` : placeholder}
+        onChange={(event) => {
+          const { value } = event.target;
+          setSearchValue(value);
+        }}
+        onKeyDown={(event) => {
+          const { value } = event.target;
+          if (typeof onSubmit === 'function' && event.key === 'Enter') {
+            onSubmit(value, askAI);
+          }
+        }}
+        sx={isAIEnabled ? {
+          borderColor: 'red',
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: theme.palette.ai.main,
+              borderWidth: '2px',
+            },
+            '&:hover fieldset': {
+              borderColor: theme.palette.ai.main,
+              borderWidth: '2px',
+            },
+          },
+        } : undefined}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start" style={{ color: isAIEnabled ? theme.palette.ai.main : undefined }} >
+              {isAIEnabled
+                ? <AutoAwesomeOutlined fontSize="small" />
+                : <Search fontSize="small"/>}
+            </InputAdornment>
+          ),
+          endAdornment: variant === 'topBar' && (
           <InputAdornment position="end">
+            {askAI && isNLQLoading
+              && <div>
+                <Loader variant="inline" />
+              </div>
+            }
             <Tooltip title={t_i18n('Advanced search')}>
               <IconButton
+                onClick={handleRemoveAskAI}
                 component={Link}
                 to="/dashboard/search"
                 size="medium"
                 color={
-                   location.pathname.includes('/dashboard/search')
-                    && !location.pathname.includes('/dashboard/search_bulk')
-                     ? 'primary'
-                     : 'inherit'
-                    }
+                  location.pathname.includes('/dashboard/search')
+                  && !location.pathname.includes('/dashboard/search_bulk')
+                  && !askAI ? 'primary' : 'inherit'
+                }
               >
                 <BiotechOutlined fontSize='medium'/>
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('Bulk search')}>
               <IconButton
+                onClick={handleRemoveAskAI}
                 component={Link}
                 to="/dashboard/search_bulk"
                 size="medium"
                 color={
-                location.pathname.includes('/dashboard/search_bulk')
-                  ? 'primary'
-                  : 'inherit'
-              }
+                  location.pathname.includes('/dashboard/search_bulk') && !askAI
+                    ? 'primary'
+                    : 'inherit'
+                }
               >
                 <ContentPasteSearchOutlined fontSize="medium"/>
               </IconButton>
             </Tooltip>
+            <Tooltip title={t_i18n('Ask AI')}>
+              <IconButton
+                size="medium"
+                style={{ color: theme.palette.ai.main }}
+                onClick={handleChangeAskAI}
+              >
+                <AutoAwesomeOutlined fontSize='medium'/>
+              </IconButton>
+            </Tooltip>
           </InputAdornment>
-        ),
-        classes: {
-          root: classRoot,
-          input: classInput,
-        },
-      }}
-      {...otherProps}
-      autoComplete="off"
-    />
+          ),
+          classes: {
+            root: classRoot,
+            input: classInput,
+          },
+        }}
+        {...otherProps}
+        autoComplete="off"
+      />
+      {isAdmin ? (
+        <EnterpriseEditionAgreement
+          open={displayEEDialog}
+          onClose={() => setDisplayEEDialog(false)}
+          settingsId={settingsId}
+        />
+      ) : (
+        <FeedbackCreation
+          openDrawer={displayEEDialog}
+          handleCloseDrawer={() => setDisplayEEDialog(false)}
+          initialValue={{
+            description: t_i18n('I would like to use a EE feature AI Summary but I don\'t have EE activated.\nI would like to discuss with you about activating EE.'),
+          }}
+        />
+      )}
+    </>
   );
 };
 

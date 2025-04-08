@@ -55,7 +55,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation'] }, async ({ pa
   // region Check default values in the form
   // ---------------------------------------
 
-  await expect(reportForm.publicationDateField.getInput()).toHaveValue('2024-04-01 12:00 PM');
+  await expect(reportForm.publicationDateField.getInput()).toHaveValue('2024-04-01 12:00:00 PM');
   await expect(reportForm.confidenceLevelField.getInput()).toHaveValue('100');
 
   // ---------
@@ -77,7 +77,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation'] }, async ({ pa
   await expect(page.getByText('This field is required')).toBeVisible();
   await reportForm.publicationDateField.fill('2023-12-05');
   await expect(page.getByText('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).toBeVisible();
-  await reportForm.publicationDateField.fill('2023-12-05 12:00 AM');
+  await reportForm.publicationDateField.fill('2023-12-05 12:00:00 AM');
   await expect(page.getByText('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).toBeHidden();
 
   await reportForm.reportTypesAutocomplete.selectOption('malware');

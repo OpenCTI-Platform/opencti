@@ -25,8 +25,8 @@ import useHelper from 'src/utils/hooks/useHelper';
 import WorkspaceWidgetConfig from 'src/private/components/workspaces/dashboards/WorkspaceWidgetConfig';
 import WorkspaceHeaderTagManager from '@components/workspaces/workspaceHeader/WorkspaceHeaderTagManager';
 import DashboardTimeFilters from '@components/workspaces/dashboards/DashboardTimeFilters';
-import { InvestigationGraph_workspace$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_workspace.graphql';
 import { WorkspaceHeaderToStixReportBundleQuery$data } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderToStixReportBundleQuery.graphql';
+import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
 
 const workspaceHeaderToStixReportBundleQuery = graphql`
   query WorkspaceHeaderToStixReportBundleQuery($id: String!) {
@@ -37,25 +37,25 @@ const workspaceHeaderToStixReportBundleQuery = graphql`
 `;
 
 type WorkspaceHeaderProps = {
-  workspace: Dashboard_workspace$data | InvestigationGraph_workspace$data;
+  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
   variant: 'dashboard' | 'investigation';
-  adjust: () => void;
-  handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void
+  adjust?: () => void;
+  handleDateChange?: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void
   config?: {
     startDate: string | null
     endDate: string | null
     relativeDate: string | null
   },
-  handleAddWidget: () => void;
+  handleAddWidget?: () => void;
 };
 
 const WorkspaceHeader = ({
   workspace,
   config,
   variant,
-  adjust,
-  handleDateChange,
-  handleAddWidget,
+  adjust = () => {},
+  handleDateChange = () => {},
+  handleAddWidget = () => {},
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();

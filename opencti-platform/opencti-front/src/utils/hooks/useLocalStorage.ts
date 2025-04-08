@@ -14,6 +14,7 @@ import {
   handleRemoveRepresentationFilterUtil,
   handleSwitchLocalModeUtil,
   handleChangeRepresentationFilterUtil,
+  handleReplaceFilterValuesUtil,
 } from '../filters/filtersManageStateUtil';
 import { LocalStorage } from './useLocalStorageModel';
 import useBus from './useBus';
@@ -34,6 +35,7 @@ export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleAddRepresentationFilter: (id: string, value: FilterValue) => void;
   handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
   handleAddSingleValueFilter: (id: string, value?: FilterValue) => void;
+  handleReplaceFilterValues: (id: string, values: FilterValue[]) => void;
   handleSwitchFilter: HandleAddFilter;
   handleToggleExports: () => void;
   handleSetNumberOfElements: (value: NumberOfElements) => void;
@@ -42,6 +44,7 @@ export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleAddProperty: (field: string, value: unknown) => void;
   handleChangeView: (value: string) => void;
   handleClearAllFilters: () => void;
+  handleSetFilters: (filters: FilterGroup) => void;
 }
 
 const localStorageToPaginationOptions = (
@@ -519,6 +522,19 @@ export const usePaginationLocalStorage = <U>(
         dispatch(`${key}_paginationStorage`, newStorageValue);
       }
     },
+    handleReplaceFilterValues: (id: string, values: FilterValue[]) => {
+      const filters = viewStorage?.filters;
+      if (!filters) {
+        return;
+      }
+      const newStorageValue = {
+        ...viewStorage,
+        filters: handleReplaceFilterValuesUtil({ filters, id, values }),
+        latestAddFilterId: undefined,
+      };
+      setValue(newStorageValue);
+      dispatch(`${key}_paginationStorage`, newStorageValue);
+    },
     handleAddSingleValueFilter: (id: string, valueId?: string) => {
       if (viewStorage?.filters) {
         const { filters } = viewStorage;
@@ -671,6 +687,15 @@ export const usePaginationLocalStorage = <U>(
         filters: initialValue.filters ?? emptyFilterGroup,
         searchTerm: initialValue.searchTerm ?? '',
         numberOfElements: viewStorage.numberOfElements,
+      };
+      setValue(newValue);
+      dispatch(`${key}_paginationStorage`, newValue);
+    },
+    handleSetFilters: (filters: FilterGroup) => {
+      const newValue = {
+        ...viewStorage,
+        filters,
+        latestAddFilterId: undefined,
       };
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);

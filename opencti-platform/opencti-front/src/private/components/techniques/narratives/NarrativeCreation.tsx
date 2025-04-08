@@ -19,7 +19,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { Option } from '../../common/form/ReferenceField';
 import { NarrativeCreationMutation, NarrativeCreationMutation$variables } from './__generated__/NarrativeCreationMutation.graphql';
@@ -40,6 +40,7 @@ import BulkTextModalButton from '../../../../components/fields/BulkTextField/Bul
 const narrativeMutation = graphql`
   mutation NarrativeCreationMutation($input: NarrativeAddInput!) {
     narrativeAdd(input: $input) {
+      ...NarrativeLine_node
       id
       standard_id
       name
@@ -115,12 +116,13 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(NARRATIVE_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
-  };
-  const narrativeValidator = useSchemaCreationValidation(
-    NARRATIVE_TYPE,
+  }, mandatoryAttributes);
+  const narrativeValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
     basicShape,
   );
 
@@ -201,6 +203,8 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     <Formik<NarrativeAddInput>
       initialValues={initialValues}
       validationSchema={narrativeValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -236,6 +240,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Narrative']}
             />
@@ -243,6 +248,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -254,22 +260,26 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -394,7 +404,7 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
             </Fab>
           )
         }
-        <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
+        <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
           <DialogTitle>
             {t_i18n('Create a narrative')}
             <BulkTextModalButton onClick={() => setBulkOpen(true)} />

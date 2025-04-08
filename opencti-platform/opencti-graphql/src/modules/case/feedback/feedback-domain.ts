@@ -6,7 +6,7 @@ import { BUS_TOPICS } from '../../../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
 import { now } from '../../../utils/format';
-import { userAddIndividual } from '../../../domain/user';
+import { resolveUserIndividual } from '../../../domain/user';
 import { isEmptyField } from '../../../database/utils';
 import type { BasicStoreEntityFeedback } from './feedback-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from './feedback-types';
@@ -28,11 +28,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
 export const addFeedback = async (context: AuthContext, user: AuthUser, feedbackAdd: FeedbackAddInput) => {
   let caseToCreate = feedbackAdd.created ? feedbackAdd : { ...feedbackAdd, created: now() };
   if (isEmptyField(feedbackAdd.createdBy)) {
-    let individualId = user.individual_id;
-    if (individualId === undefined) {
-      const individual = await userAddIndividual(context, user);
-      individualId = individual.id;
-    }
+    const individualId = await resolveUserIndividual(context, user);
     caseToCreate = { ...caseToCreate, createdBy: individualId };
   }
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_FEEDBACK);

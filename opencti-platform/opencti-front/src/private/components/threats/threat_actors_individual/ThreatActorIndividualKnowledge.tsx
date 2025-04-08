@@ -15,6 +15,8 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import { ThreatActorIndividualKnowledge_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualKnowledge_ThreatActorIndividual.graphql';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
+import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 const threatActorIndividualKnowledgeFragment = graphql`
   fragment ThreatActorIndividualKnowledge_ThreatActorIndividual on ThreatActorIndividual {
@@ -23,6 +25,7 @@ const threatActorIndividualKnowledgeFragment = graphql`
     aliases
     first_seen
     last_seen
+    entity_type
   }
 `;
 
@@ -38,6 +41,8 @@ const ThreatActorIndividualKnowledgeComponent = ({
     threatActorIndividualData,
   );
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`;
+  const { schema } = useAuth();
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(threatActorIndividual.entity_type, schema);
   return (
     <Routes>
       <Route
@@ -65,6 +70,19 @@ const ThreatActorIndividualKnowledgeComponent = ({
             stixDomainObjectId={threatActorIndividual.id}
             stixDomainObjectName={threatActorIndividual.name}
             stixDomainObjectType="Threat-Actor-Individual"
+          />
+        }
+      />
+      <Route
+        path="/all"
+        element={
+          <EntityStixCoreRelationships
+            entityId={threatActorIndividual.id}
+            relationshipTypes={allRelationshipsTypes}
+            entityLink={link}
+            defaultStartTime={threatActorIndividual.startTime}
+            defaultStopTime={threatActorIndividual.stopTime}
+            allDirections
           />
         }
       />

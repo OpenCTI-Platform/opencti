@@ -48,8 +48,6 @@ export const getFakeAuthUser = (userName: string) => {
     roles: [],
     groups: [],
     capabilities: [],
-    all_marking: [],
-    inside_platform_organization: true,
     allowed_marking: [],
     default_marking: [],
     origin: { referer: 'test', user_id: userId },

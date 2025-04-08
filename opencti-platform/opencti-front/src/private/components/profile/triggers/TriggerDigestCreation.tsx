@@ -342,7 +342,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       disableRestoreFocus={true}
       open={open ?? false}
       onClose={handleClose}
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ paper: { elevation: 1 } }}
     >
       <Formik
         initialValues={digestInitialValues}

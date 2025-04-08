@@ -14,7 +14,7 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests_e2e',
   /* Run tests in files in parallel */
-  fullyParallel: true,
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   retries: 0,
@@ -113,7 +113,7 @@ export default defineConfig({
    webServer: {
      command: 'yarn start',
      url: 'http://localhost:3000',
-     reuseExistingServer: false,
+     reuseExistingServer: !process.env.CI,
    },
 
 });

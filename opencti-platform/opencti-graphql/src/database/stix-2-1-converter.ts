@@ -44,7 +44,7 @@ import type * as SDO from '../types/stix-2-1-sdo';
 import type * as SRO from '../types/stix-2-1-sro';
 import type * as SCO from '../types/stix-2-1-sco';
 import type * as SMO from '../types/stix-2-1-smo';
-import type { StoreCommon, StoreCyberObservable, StoreEntity, StoreEntityIdentity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
+import type { BasicStoreObject, StoreCommon, StoreCyberObservable, StoreEntity, StoreEntityIdentity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -121,6 +121,7 @@ import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/f
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
+import { isInternalId, isStixId } from '../schema/schemaUtils';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -230,7 +231,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     granted_refs_ids: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.internal_id),
     assignee_ids: (instance[INPUT_ASSIGNEE] ?? []).map((m) => m.internal_id),
     participant_ids: (instance[INPUT_PARTICIPANT] ?? []).map((m) => m.internal_id),
-    authorized_members: instance.authorized_members ?? undefined,
+    authorized_members: instance.restricted_members ?? undefined,
     workflow_id: instance.x_opencti_workflow_id,
     labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
@@ -1606,4 +1607,20 @@ export const buildStixBundle = (stixObjects: S.StixObject[]): S.StixBundle => {
     type: 'bundle',
     objects: stixObjects
   });
+};
+
+export const idsValuesRemap = (ids: string[], resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix', removeNotFoundStixIds = false) => {
+  return ids.map((id) => {
+    if (from === 'internal' && isInternalId(id)) {
+      return resolvedMap[id]?.standard_id ?? id;
+    }
+    if (from === 'stix' && isStixId(id)) {
+      if (removeNotFoundStixIds) {
+        return resolvedMap[id]?.internal_id ?? null;
+      }
+      return resolvedMap[id]?.internal_id ?? id;
+    }
+    return id;
+  })
+    .filter((id) => !!id); // remove null values
 };

@@ -146,12 +146,6 @@ const useStyles = makeStyles((theme) => createStyles({
     fontWeight: 500,
     fontSize: 12,
   },
-  menuSubItemWithIcon: {
-    paddingLeft: 20,
-    height: 25,
-    fontWeight: 500,
-    fontSize: 12,
-  },
   menuItemText: {
     padding: '1px 0 0 8px',
     fontWeight: 500,
@@ -222,8 +216,6 @@ const LeftBar = () => {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
     settings: { platform_whitemark },
   } = useAuth();
-  const { isFeatureEnable } = useHelper();
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -381,7 +373,8 @@ const LeftBar = () => {
                   to={entry.link}
                   selected={entry.exact ? location.pathname === entry.link : location.pathname.includes(entry.link)}
                   dense={true}
-                  classes={{ root: submenu_show_icons && entry.icon ? classes.menuSubItemWithIcon : classes.menuSubItem }}
+                  classes={{ root: classes.menuSubItem }}
+                  sx={{ paddingLeft: 3 }}
                 >
                   {submenu_show_icons && entry.icon && (
                     <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
@@ -390,9 +383,6 @@ const LeftBar = () => {
                   )}
                   <ListItemText
                     classes={{ primary: (submenu_show_icons && entry.icon) ? classes.menuSubItemText : classes.menuSubItemTextWithoutIcon }}
-                    sx={{
-                      paddingLeft: (submenu_show_icons && entry.icon) ? '0px' : '20px',
-                    }}
                     primary={t_i18n(entry.label)}
                   />
                 </MenuItem>
@@ -481,25 +471,48 @@ const LeftBar = () => {
           component="nav"
           style={{ marginTop: `calc( ${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px + 66px )` }}
         >
-          <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
-            <MenuItem
-              component={Link}
-              to="/dashboard"
-              selected={location.pathname === '/dashboard'}
-              dense={true}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                <DashboardOutlined />
-              </ListItemIcon>
-              {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Home')}
-                />
-              )}
-            </MenuItem>
-          </StyledTooltip>
+          {!draftContext && (
+            <StyledTooltip title={!navOpen && t_i18n('Home')} placement="right">
+              <MenuItem
+                component={Link}
+                to="/dashboard"
+                selected={location.pathname === '/dashboard'}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <DashboardOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Home')}
+                  />
+                )}
+              </MenuItem>
+            </StyledTooltip>
+          )}
+          {draftContext && (
+            <StyledTooltip title={!navOpen && t_i18n('Draft overview')} placement="right">
+              <MenuItem
+                component={Link}
+                to={`/dashboard/drafts/${draftContext.id}/`}
+                selected={location.pathname.includes(`/dashboard/drafts/${draftContext.id}/`)}
+                dense={true}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                  <ArchitectureOutlined />
+                </ListItemIcon>
+                {navOpen && (
+                  <ListItemText
+                    classes={{ primary: classes.menuItemText }}
+                    primary={t_i18n('Draft overview')}
+                  />
+                )}
+              </MenuItem>
+            </StyledTooltip>
+          )}
         </MenuList>
         <Divider />
         <Security needs={[KNOWLEDGE]}>
@@ -864,7 +877,7 @@ const LeftBar = () => {
                 </StyledTooltip>
               )}
             </Security>
-            {isDraftFeatureEnabled && (
+            {!draftContext && (
               <Security needs={[KNOWLEDGE]}>
                 <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
                   <MenuItem

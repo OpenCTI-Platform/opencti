@@ -14,7 +14,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import { DialogTitle } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
@@ -389,7 +388,7 @@ const StixDomainObjectHeader = (props) => {
   return (
     <React.Suspense fallback={<span />}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing(1) }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(2) }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
           <Tooltip title={getMainRepresentative(stixDomainObject)}>
             <Typography
               variant="h1"
@@ -402,7 +401,7 @@ const StixDomainObjectHeader = (props) => {
             </Typography>
           </Tooltip>
           {stixDomainObject.draftVersion && (
-            <DraftChip style={{ marginTop: 7 }}/>
+            <DraftChip />
           )}
           {typeof onViewAs === 'function' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
@@ -612,9 +611,9 @@ const StixDomainObjectHeader = (props) => {
       </div>
       {!noAliases && (
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={openAliases}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={handleToggleOpenAliases}
           fullWidth={true}
         >
@@ -672,9 +671,11 @@ const StixDomainObjectHeader = (props) => {
                 stixDomainObject,
               ).map(
                 (label) => label.length > 0 && (
-                  <ListItem key={label} disableGutters={true} dense={true}>
-                    <ListItemText primary={label} />
-                    <ListItemSecondaryAction>
+                  <ListItem
+                    key={label}
+                    disableGutters={true}
+                    dense={true}
+                    secondaryAction={
                       <IconButton
                         edge="end"
                         aria-label="delete"
@@ -687,7 +688,9 @@ const StixDomainObjectHeader = (props) => {
                       >
                         <Delete />
                       </IconButton>
-                    </ListItemSecondaryAction>
+                    }
+                  >
+                    <ListItemText primary={label} />
                   </ListItem>
                 ),
               )}

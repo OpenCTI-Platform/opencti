@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import Checkbox from '@mui/material/Checkbox';
@@ -59,7 +58,16 @@ CaseTemplateTasksLineProps
   const task = useFragment(CaseTemplateTasksLineFragment, node);
 
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <CaseTemplateTasksPopover
+          paginationOptions={paginationOptions}
+          task={task}
+        />
+      }
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="Task" />
       </ListItemIcon>
@@ -78,12 +86,6 @@ CaseTemplateTasksLineProps
           </div>
         }
       />
-      <ListItemSecondaryAction>
-        <CaseTemplateTasksPopover
-          paginationOptions={paginationOptions}
-          task={task}
-        />
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

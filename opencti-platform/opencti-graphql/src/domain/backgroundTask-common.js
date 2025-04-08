@@ -33,6 +33,7 @@ export const ACTION_TYPE_UNSHARE = 'UNSHARE';
 export const ACTION_TYPE_SHARE_MULTIPLE = 'SHARE_MULTIPLE';
 export const ACTION_TYPE_UNSHARE_MULTIPLE = 'UNSHARE_MULTIPLE';
 export const ACTION_TYPE_REMOVE_AUTH_MEMBERS = 'REMOVE_AUTH_MEMBERS';
+export const ACTION_TYPE_REMOVE_FROM_DRAFT = 'REMOVE_FROM_DRAFT';
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
@@ -76,7 +77,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess('The targeted ids are not knowledge.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
-      const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id)));
+      const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id, { includeDeletedInDraft: true })));
       const acceptedInternalTypes = objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION || o?.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const isNotKnowledge = objects.includes(undefined)
         || (!acceptedInternalTypes && !areParentTypesKnowledge(objects.map((o) => o.parent_types)))
@@ -265,7 +266,7 @@ export const createDefaultTask = (user, input, taskType, taskExpectedNumber, sco
     task = {
       ...task,
       scope,
-      authorized_members: authorizedMembersForTask(user, scope),
+      restricted_members: authorizedMembersForTask(user, scope),
       authorized_authorities: authorizedAuthoritiesForTask(scope),
     };
   }
@@ -308,9 +309,6 @@ const authorizedMembersForTask = (user, scope) => {
 };
 
 export const createListTask = async (context, user, input) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot create background task in draft');
-  }
   const { actions, ids, scope } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_LIST);
   const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length, scope);

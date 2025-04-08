@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import { StreamOutlined } from '@mui/icons-material';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import { AddDataSourcesLines_data$key } from './__generated__/AddDataSourcesLines_data.graphql';
 import { AddDataSourcesLinesQuery } from './__generated__/AddDataSourcesLinesQuery.graphql';
@@ -102,10 +102,9 @@ AddDataSourcesLinesContainerProps
             );
           }
           return (
-            <ListItem
+            <ListItemButton
               key={dataSource.id}
               divider={true}
-              button={true}
               onClick={() => addDataSource(dataSource)}
             >
               <ListItemIcon>
@@ -115,7 +114,7 @@ AddDataSourcesLinesContainerProps
                 primary={dataSource.name}
                 secondary={truncate(dataSource.description, 120)}
               />
-            </ListItem>
+            </ListItemButton>
           );
         })}
     </List>

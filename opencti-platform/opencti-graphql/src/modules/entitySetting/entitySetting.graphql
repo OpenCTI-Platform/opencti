@@ -60,6 +60,7 @@ type EntitySetting implements InternalObject & BasicObject {
     orderMode: OrderingMode
     search: String
   ): FintelTemplateConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  requestAccessConfiguration: RequestAccessConfiguration @auth
 }
 
 # Ordering

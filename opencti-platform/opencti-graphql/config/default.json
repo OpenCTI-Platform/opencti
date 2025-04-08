@@ -95,6 +95,9 @@
     "request_timeout": 1200000,
     "session_timeout": 1200000,
     "session_cookie": false,
+    "child_locking_process": {
+      "enabled": true
+    },
     "locked_account_statuses": {
       "Inactive": "Your account has been marked inactive. If you would like to reactivate your account, please contact your administrator.",
       "Locked": "Your account has been locked for security reasons. Please contact your administrator."
@@ -189,6 +192,9 @@
     "ce_ee_toggle": {
       "enabled": true
     },
+    "connector_reset": {
+      "enabled": true
+    },
     "file_indexing": {
       "enabled": true
     },
@@ -205,7 +211,9 @@
     "version": "",
     "model_images": "",
     "max_tokens": 30000,
-    "insights_refresh_timeout": 60
+    "insights_refresh_timeout": 60,
+    "ai_azure_instance": "",
+    "ai_azure_deployment": ""
   },
   "xtm": {
     "openbas_url": "",

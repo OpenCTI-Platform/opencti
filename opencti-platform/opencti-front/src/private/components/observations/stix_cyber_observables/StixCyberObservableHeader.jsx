@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/material/styles';
 import { DraftChip } from '../../common/draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
@@ -33,6 +34,7 @@ const StixCyberObservableHeaderComponent = ({
   stixCyberObservable,
   isArtifact,
 }) => {
+  const theme = useTheme();
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const classes = useStyles();
@@ -44,6 +46,7 @@ const StixCyberObservableHeaderComponent = ({
         variant="h1"
         gutterBottom={true}
         classes={{ root: classes.title }}
+        style={{ marginRight: theme.spacing(1) }}
       >
         {truncate(stixCyberObservable.observable_value, 50)}
       </Typography>

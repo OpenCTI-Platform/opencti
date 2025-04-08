@@ -224,9 +224,9 @@ class WorkbenchFileToolbar extends Component {
             </Toolbar>
             <Dialog
               open={displayApplyMarking}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               keepMounted={true}
-              TransitionComponent={Transition}
+              slots={{ transition: Transition }}
               onClose={this.handleCloseApplyMarking.bind(this)}
               maxWidth="xs"
               fullWidth={true}
@@ -265,9 +265,9 @@ class WorkbenchFileToolbar extends Component {
             </Dialog>
             <Dialog
               open={displayDelete}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               keepMounted={true}
-              TransitionComponent={Transition}
+              slots={{ transition: Transition }}
               onClose={this.handleCloseDelete.bind(this)}
             >
               <DialogContent>

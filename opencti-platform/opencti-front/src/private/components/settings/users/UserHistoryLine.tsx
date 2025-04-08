@@ -356,7 +356,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
       <div className={classes.line} />
       <Dialog
         open={open}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         onClose={handleClose}
         fullWidth={true}
       >

@@ -68,6 +68,7 @@ describe.concurrent('Testing exception management in FileIndexManager', () => {
       otp_mandatory: false,
       source: 'file-manager-unit-test',
       tracing: {},
+      user_inside_platform_organization: false,
       user: mockAuthUser as AuthUser,
     };
 

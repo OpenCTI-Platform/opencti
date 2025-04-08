@@ -22,9 +22,9 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
-import { encodeMappingData } from '../../../../utils/Graph';
 import { deleteElementByValue } from '../../../../utils/utils';
 import Transition from '../../../../components/Transition';
+import { serializeObjectB64 } from '../../../../utils/object';
 
 const styles = (theme) => ({
   container: {
@@ -169,7 +169,7 @@ class ContainerStixCoreObjectPopover extends Component {
         id: containerId,
         input: {
           key: 'content_mapping',
-          value: encodeMappingData(newMappingData),
+          value: serializeObjectB64(newMappingData),
         },
         commitMessage,
         references,
@@ -311,10 +311,10 @@ class ContainerStixCoreObjectPopover extends Component {
           </Security>
         </Menu>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayDeleteMapping}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDeleteMapping.bind(this)}
         >
           <DialogContent>
@@ -339,10 +339,10 @@ class ContainerStixCoreObjectPopover extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayRemove}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseRemove.bind(this)}
         >
           <DialogContent>
@@ -393,10 +393,10 @@ class ContainerStixCoreObjectPopover extends Component {
           </Formik>
         )}
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayDelete}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>

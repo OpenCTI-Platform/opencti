@@ -5,11 +5,12 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
+import { ListItemButton } from '@mui/material';
+import Box from '@mui/material/Box';
 import inject18n from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -49,10 +50,9 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
   const { isSensitive } = useSensitiveModifications('roles', node.standard_id);
 
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/settings/accesses/roles/${node.id}`}
     >
@@ -118,7 +118,7 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 
@@ -152,7 +152,15 @@ class RoleLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        secondaryAction={
+          <Box sx={{ root: classes.itemIconDisabled }}>
+            <KeyboardArrowRightOutlined />
+          </Box>
+        }
+      >
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <Skeleton
             animation="wave"
@@ -211,9 +219,6 @@ class RoleLineDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <KeyboardArrowRightOutlined />
-        </ListItemSecondaryAction>
       </ListItem>
     );
   }

@@ -59,11 +59,12 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { indicatorEditField, promoteIndicatorToObservables } from '../modules/indicator/indicator-domain';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
-import { objectOrganization, RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, objectOrganization, RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
   ACTION_TYPE_REMOVE_AUTH_MEMBERS,
+  ACTION_TYPE_REMOVE_FROM_DRAFT,
   ACTION_TYPE_RESTORE,
   ACTION_TYPE_SHARE,
   ACTION_TYPE_SHARE_MULTIPLE,
@@ -87,6 +88,8 @@ import { findById as findOrganizationById } from '../modules/organization/organi
 import { getDraftContext } from '../utils/draftContext';
 import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { elRemoveElementFromDraft } from '../database/draft-engine';
+import { stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from '../domain/stixObjectOrStixRelationship';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -201,6 +204,7 @@ const computeListTaskElements = async (context, user, task) => {
     type,
     orderMode: task_order_mode || 'desc',
     orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
+    includeDeletedInDraft: true,
   };
   const elements = await internalFindByIds(context, user, ids, options);
   const processingElements = elements.map((element) => ({ element, next: element.id }));
@@ -262,7 +266,12 @@ const executeAdd = async (context, user, actionContext, element) => {
   if (contextType === ACTION_TYPE_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
-      await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: field });
+      if (isStixRefRelationship(field)) {
+        const addRefInput = { relationship_type: field, toIds: [target] };
+        await stixObjectOrRelationshipAddRefRelations(context, user, element.id, addRefInput, element.entity_type);
+      } else {
+        await createRelation(context, user, { fromId: element.id, toId: target, relationship_type: field });
+      }
     }
   }
   if (contextType === ACTION_TYPE_REVERSED_RELATION) {
@@ -282,7 +291,11 @@ const executeRemove = async (context, user, actionContext, element) => {
   if (contextType === ACTION_TYPE_RELATION) {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
-      await deleteRelationsByFromAndTo(context, user, element.id, target, field, ABSTRACT_BASIC_RELATIONSHIP);
+      if (isStixRefRelationship(field)) {
+        await stixObjectOrRelationshipDeleteRefRelation(context, user, element.id, target, field, element.entity_type);
+      } else {
+        await deleteRelationsByFromAndTo(context, user, element.id, target, field, ABSTRACT_BASIC_RELATIONSHIP);
+      }
     }
   }
   if (contextType === ACTION_TYPE_REVERSED_RELATION) {
@@ -576,6 +589,9 @@ const executeProcessing = async (context, user, job, scope) => {
           }
           if (type === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
             await executeRemoveAuthMembers(context, user, element);
+          }
+          if (type === ACTION_TYPE_REMOVE_FROM_DRAFT) {
+            await elRemoveElementFromDraft(context, user, element);
           }
         } catch (err) {
           logApp.error('[OPENCTI-MODULE] Task manager index processing error', { cause: err, field, index: elementIndex });

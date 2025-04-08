@@ -6,6 +6,7 @@ const convertDraftWorkspaceToStix = (instance: StoreEntityDraftWorkspace): StixD
   return {
     ...stixObject,
     name: instance.name,
+    draft_status: instance.draft_status,
   };
 };
 

@@ -33,10 +33,10 @@ import ContainerStixCoreObjectsMappingHeader from '@components/common/containers
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { decodeMappingData, encodeMappingData } from '../../../../utils/Graph';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { deserializeObjectB64, serializeObjectB64 } from '../../../../utils/object';
 
 const OPEN$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -289,7 +289,7 @@ ContainerMappingContentComponentProps
     setRemovedEntities([...removedEntities, removedEntity.id]);
   };
 
-  const contentMappingData = decodeMappingData(content_mapping);
+  const contentMappingData = deserializeObjectB64(content_mapping);
   const mappedStrings = Object.keys(contentMappingData);
   const mappedStringsCount = countMappingMatch(mappedStrings);
 
@@ -340,7 +340,7 @@ ContainerMappingContentComponentProps
   };
 
   const addSuggestedMappingToCurrentMapping = () => {
-    let newMappingData = decodeMappingData(content_mapping);
+    let newMappingData = deserializeObjectB64(content_mapping);
     for (let i = 0; i < filteredSuggestedMappedEntities.length; i += 1) {
       const suggestedMapping = filteredSuggestedMappedEntities[i];
       newMappingData = {
@@ -353,7 +353,7 @@ ContainerMappingContentComponentProps
         id: containerData.id,
         input: [{
           key: 'content_mapping',
-          value: [encodeMappingData(newMappingData)],
+          value: [serializeObjectB64(newMappingData)],
         }],
       },
       onCompleted: () => {
@@ -400,7 +400,7 @@ ContainerMappingContentComponentProps
         id: containerData.id,
         input: [{
           key: 'content_mapping',
-          value: [encodeMappingData(newMappingData)],
+          value: [serializeObjectB64(newMappingData)],
         }],
       },
       onCompleted: () => {
@@ -418,7 +418,7 @@ ContainerMappingContentComponentProps
         id: containerData.id,
         input: [{
           key: 'content_mapping',
-          value: [encodeMappingData({})],
+          value: [serializeObjectB64({})],
         }],
       },
       onCompleted: () => {

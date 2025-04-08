@@ -49,6 +49,21 @@ const Users = () => {
     },
   );
 
+  let userCreateButton;
+  if (isSetAccess && defaultGroupsQueryRef) {
+    userCreateButton = (
+      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <UserCreation paginationOptions={paginationOptions} defaultGroupsQueryRef={defaultGroupsQueryRef} />
+      </React.Suspense>
+    );
+  } else if (!isSetAccess && isAdminOrganization && isEnterpriseEdition) {
+    userCreateButton = (
+      <SettingsOrganizationUserCreation
+        paginationOptions={paginationOptions}
+        variant="fab"
+      />
+    );
+  }
   const renderLines = () => {
     const dataColumns = {
       name: {
@@ -97,6 +112,7 @@ const Users = () => {
         displayImport={false}
         secondaryAction={false}
         keyword={viewStorage.searchTerm}
+        createButton={userCreateButton}
       >
         <QueryRenderer
           query={usersLinesQuery}
@@ -132,17 +148,6 @@ const Users = () => {
             feature="Organization sharing"
           />
         </Grid>
-      )}
-      {isSetAccess && defaultGroupsQueryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <UserCreation paginationOptions={paginationOptions} defaultGroupsQueryRef={defaultGroupsQueryRef} />
-        </React.Suspense>
-      )}
-      {!isSetAccess && isAdminOrganization && isEnterpriseEdition && (
-        <SettingsOrganizationUserCreation
-          paginationOptions={paginationOptions}
-          variant="fab"
-        />
       )}
     </div>
   );

@@ -34,4 +34,5 @@ export interface handleFilterHelpers {
   handleClearAllFilters: (filters?: Filter[]) => void;
   getLatestAddFilterId: () => string | undefined;
   handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
+  handleReplaceFilterValues: (id: string, values: string[]) => void;
 }

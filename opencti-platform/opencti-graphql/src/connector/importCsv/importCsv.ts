@@ -12,7 +12,7 @@ export const IMPORT_CSV_CONNECTOR: Connector = {
   internal_id: IMPORT_CSV_CONNECTOR_ID,
   active: ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR,
   auto: false,
-  connector_scope: 'text/csv',
+  connector_scope: ['text/csv', 'application/vnd.ms-excel'].join(','),
   connector_type: CONNECTOR_INTERNAL_IMPORT_FILE,
   name: '[FILE] CSV Mapper import',
   built_in: true,

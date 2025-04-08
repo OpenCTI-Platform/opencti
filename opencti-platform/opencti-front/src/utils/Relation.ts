@@ -142,3 +142,16 @@ export const getRelationsFromOneEntityToAny = (
     allRelationsToEntity: entityList,
   };
 };
+
+export const getRelationshipTypesForEntityType = (entityType: string, schema: SchemaType): string[] => {
+  const { schemaRelationsTypesMapping } = schema;
+  const entries = Array.from(schemaRelationsTypesMapping.entries());
+
+  const relationshipList = entries
+    .filter(([key, _]) => key.startsWith(`${entityType}_`) || key.endsWith(`_${entityType}`))
+    .flatMap(([_, values]) => values);
+
+  const uniqRelationshipList = new Set(relationshipList);
+  uniqRelationshipList.add(DEFAULT_RELATION);
+  return Array.from(uniqRelationshipList);
+};

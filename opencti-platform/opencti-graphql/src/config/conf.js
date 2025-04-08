@@ -37,6 +37,7 @@ import { SUPPORT_BUS } from '../modules/support/support-types';
 import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -522,7 +523,6 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 // a special flag name allows to enable all feature flags at once
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
-export const ORGA_SHARING_REQUEST_FF = 'ORGA_SHARING_REQUEST_FF';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
@@ -539,6 +539,7 @@ export const BUS_TOPICS = {
   [O.ENTITY_TYPE_GROUP]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}GROUP_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}GROUP_ADDED_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}GROUP_DELETE_TOPIC`,
   },
   [O.ENTITY_TYPE_RULE]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}RULE_EDIT_TOPIC`,
@@ -546,10 +547,12 @@ export const BUS_TOPICS = {
   [O.ENTITY_TYPE_ROLE]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ROLE_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ROLE_ADDED_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}ROLE_DELETE_TOPIC`,
   },
   [O.ENTITY_TYPE_USER]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}USER_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}USER_ADDED_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}USER_DELETE_TOPIC`,
   },
   [ENTITY_TYPE_WORKSPACE]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}WORKSPACE_EDIT_TOPIC`,
@@ -559,6 +562,11 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}PUBLIC_DASHBOARD_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}PUBLIC_DASHBOARD_ADDED_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}PUBLIC_DASHBOARD_DELETE_TOPIC`,
+  },
+  [ENTITY_TYPE_DRAFT_WORKSPACE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}DRAFT_WORKSPACE_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}DRAFT_WORKSPACE_ADDED_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}DRAFT_WORKSPACE_DELETE_TOPIC`,
   },
   [M.ENTITY_TYPE_LABEL]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}LABEL_EDIT_TOPIC`,

@@ -219,7 +219,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <EventKnowledge event={event} />
+                    <EventKnowledge eventData={event} />
                   </div>
                 }
               />

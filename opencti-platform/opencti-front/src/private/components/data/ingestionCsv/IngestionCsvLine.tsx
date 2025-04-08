@@ -1,11 +1,11 @@
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Skeleton from '@mui/material/Skeleton';
+import Tooltip from '@mui/material/Tooltip';
 import { MoreVert } from '@mui/icons-material';
 import IngestionCsvPopover from '@components/data/ingestionCsv/IngestionCsvPopover';
 import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
@@ -65,6 +65,26 @@ const ingestionCsvLineFragment = graphql`
   }
 `;
 
+interface CellProps {
+  width: number | string | undefined
+  children: ReactNode
+  withTooltip?: boolean
+}
+const Cell = ({ width, children, withTooltip = true }: CellProps) => {
+  const classes = useStyles();
+  return withTooltip ? (
+    <Tooltip title={children}>
+      <div className={classes.bodyItem} style={{ width }}>
+        {children}
+      </div>
+    </Tooltip>
+  ) : (
+    <div className={classes.bodyItem} style={{ width }}>
+      {children}
+    </div>
+  );
+};
+
 export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps> = ({
   dataColumns,
   node,
@@ -75,50 +95,10 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   const data = useFragment(ingestionCsvLineFragment, node);
   const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : '-');
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <TableViewIcon />
-      </ListItemIcon>
-      <ListItemText
-        primary={
-          <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              {data.name}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.uri.width }}
-            >
-              {data.uri}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.ingestion_running.width }}
-            >
-              <ItemBoolean
-                variant="inList"
-                label={data.ingestion_running ? t_i18n('Active') : t_i18n('Inactive')}
-                status={!!data.ingestion_running}
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.current_state_hash.width }}
-            >
-              {fldt(data.last_execution_date) || '-'}
-            </div>
-            <div
-              className={classes.bodyItem}
-            >
-              {stateHash}
-            </div>
-          </div>
-        }
-      />
-      <ListItemSecondaryAction>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionCsvPopover
             ingestionCsvId={data.id}
@@ -127,7 +107,36 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
             setStateHash={setStateHash}
           />
         </Security>
-      </ListItemSecondaryAction>
+      }
+    >
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <TableViewIcon />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <Cell width={dataColumns.name.width}>
+              {data.name}
+            </Cell>
+            <Cell width={dataColumns.uri.width}>
+              {data.uri}
+            </Cell>
+            <Cell width={dataColumns.ingestion_running.width} withTooltip={false}>
+              <ItemBoolean
+                variant="inList"
+                label={data.ingestion_running ? t_i18n('Active') : t_i18n('Inactive')}
+                status={!!data.ingestion_running}
+              />
+            </Cell>
+            <Cell width={dataColumns.last_execution_date.width}>
+              {fldt(data.last_execution_date) || '-'}
+            </Cell>
+            <Cell width={dataColumns.current_state_hash.width}>
+              {stateHash}
+            </Cell>
+          </div>
+        }
+      />
     </ListItem>
   );
 };
@@ -135,7 +144,11 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
 export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={<MoreVert classes={classes.itemIconDisabled}/>}
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton
           animation="wave"
@@ -204,9 +217,6 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
           </div>
         }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVert/>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

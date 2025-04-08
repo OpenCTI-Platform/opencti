@@ -276,7 +276,6 @@ export const GenericAttackCardDummy = () => {
               style={{ marginBottom: 10 }}
             />
           }
-          titleTypographyProps={{ color: 'inherit' }}
           subheader={
             <Skeleton
               animation="wave"
@@ -293,6 +292,9 @@ export const GenericAttackCardDummy = () => {
               height={30}
             />
           }
+          slotProps={{
+            title: { color: 'inherit' },
+          }}
         />
         <CardContent classes={{ root: classes.contentDummy }}>
           <div className={classes.description}>

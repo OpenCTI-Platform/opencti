@@ -336,7 +336,12 @@ class ReportKnowledgeComponent extends Component {
                 render={({ props }) => {
                   if (props && props.report) {
                     return (
-                      <ReportKnowledgeGraph report={props.report} mode={mode} enableReferences={enableReferences}/>
+                      <ReportKnowledgeGraph
+                        id={report.id}
+                        mode={mode}
+                        data={props.report}
+                        enableReferences={enableReferences}
+                      />
                     );
                   }
                   return (
@@ -403,7 +408,12 @@ class ReportKnowledgeComponent extends Component {
                 variables={{ id: report.id }}
                 render={({ props }) => {
                   if (props && props.report) {
-                    return <ReportKnowledgeCorrelation report={props.report} />;
+                    return (
+                      <ReportKnowledgeCorrelation
+                        id={report.id}
+                        data={props.report}
+                      />
+                    );
                   }
                   return (
                     <Loader

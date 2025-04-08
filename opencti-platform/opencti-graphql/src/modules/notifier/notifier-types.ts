@@ -12,7 +12,7 @@ export interface BasicStoreEntityNotifier extends BasicStoreEntity {
   built_in: boolean
   notifier_connector_id: string
   notifier_configuration: string
-  authorized_members: AuthorizedMember[]
+  restricted_members: AuthorizedMember[]
 }
 
 export interface StoreEntityNotifier extends StoreEntity {

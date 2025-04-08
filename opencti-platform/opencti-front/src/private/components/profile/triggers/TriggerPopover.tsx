@@ -93,8 +93,8 @@ const TriggerPopover = ({
       <Dialog
         open={displayDelete}
         keepMounted={true}
-        TransitionComponent={Transition}
-        PaperProps={{ elevation: 1 }}
+        slots={{ transition: Transition }}
+        slotProps={{ paper: { elevation: 1 } }}
         onClose={handleCloseDelete}
       >
         <DialogContent>

@@ -3,15 +3,15 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LockPattern } from 'mdi-material-ui';
 import { LinkOff } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
+import { ListItemButton } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import AddSubAttackPattern from './AddSubAttackPattern';
 import { addSubAttackPatternsMutationRelationDelete } from './AddSubAttackPatternsLines';
@@ -74,17 +74,7 @@ class AttackPatternSubAttackPatternsComponent extends Component {
                 key={subAttackPattern.id}
                 dense={true}
                 divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/techniques/attack_patterns/${subAttackPattern.id}`}
-              >
-                <ListItemIcon>
-                  <LockPattern color="primary"/>
-                </ListItemIcon>
-                <ListItemText
-                  primary={`[${subAttackPattern.x_mitre_id}] ${subAttackPattern.name}`}
-                />
-                <ListItemSecondaryAction>
+                secondaryAction={
                   <IconButton
                     aria-label="Remove"
                     onClick={this.removeSubAttackPattern.bind(
@@ -95,7 +85,19 @@ class AttackPatternSubAttackPatternsComponent extends Component {
                   >
                     <LinkOff/>
                   </IconButton>
-                </ListItemSecondaryAction>
+                }
+              >
+                <ListItemButton
+                  component={Link}
+                  to={`/dashboard/techniques/attack_patterns/${subAttackPattern.id}`}
+                >
+                  <ListItemIcon>
+                    <LockPattern color="primary"/>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={`[${subAttackPattern.x_mitre_id}] ${subAttackPattern.name}`}
+                  />
+                </ListItemButton>
               </ListItem>
             ))}
           </FieldOrEmpty>

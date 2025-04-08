@@ -15,7 +15,7 @@ import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
-import { authenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
+import { sessionAuthenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
@@ -189,7 +189,8 @@ const createApp = async (app) => {
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
     try {
       const executeContext = executionContext('storage_get');
-      const auth = await authenticateUserFromRequest(executeContext, req, res);
+      executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
+      const auth = await authenticateUserFromRequest(executeContext, req);
       if (!auth) {
         res.sendStatus(403);
         return;
@@ -212,7 +213,8 @@ const createApp = async (app) => {
   app.get(`${basePath}/storage/view/:file(*)`, async (req, res) => {
     try {
       const executeContext = executionContext('storage_view');
-      const auth = await authenticateUserFromRequest(executeContext, req, res);
+      executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
+      const auth = await authenticateUserFromRequest(executeContext, req);
       if (!auth) {
         res.sendStatus(403);
         return;
@@ -242,7 +244,7 @@ const createApp = async (app) => {
   app.get(`${basePath}/storage/html/:file(*)`, async (req, res) => {
     try {
       const executeContext = executionContext('storage_html');
-      const auth = await authenticateUserFromRequest(executeContext, req, res);
+      const auth = await authenticateUserFromRequest(executeContext, req);
       if (!auth) {
         res.sendStatus(403);
         return;
@@ -272,7 +274,7 @@ const createApp = async (app) => {
   app.get(`${basePath}/storage/encrypted/:file(*)`, async (req, res) => {
     try {
       const executeContext = executionContext('storage_encrypted');
-      const auth = await authenticateUserFromRequest(executeContext, req, res);
+      const auth = await authenticateUserFromRequest(executeContext, req);
       if (!auth) {
         res.sendStatus(403);
         return;
@@ -313,7 +315,7 @@ const createApp = async (app) => {
             const userInfo = { email: emailAddress, name: isEmptyField(CN) ? emailAddress : CN };
             loginFromProvider(userInfo)
               .then(async (user) => {
-                await authenticateUser(context, req, user, 'cert');
+                await sessionAuthenticateUser(context, req, user, 'cert');
                 res.redirect(redirect);
               })
               .catch((err) => {
@@ -337,7 +339,7 @@ const createApp = async (app) => {
   app.get(`${basePath}/logout`, async (req, res) => {
     try {
       const referer = extractRefererPathFromReq(req) ?? '/';
-      const provider = req.session.session_provider?.provider;
+      const provider = req.session.session_provider;
       const { user } = req.session;
       if (user) {
         const withOrigin = userWithOrigin(req, user);
@@ -433,7 +435,7 @@ const createApp = async (app) => {
     try {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
-      await authenticateUser(context, req, logged, provider);
+      await sessionAuthenticateUser(context, req, logged, provider);
     } catch (e) {
       logApp.error('Error auth provider callback', { cause: e, provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');

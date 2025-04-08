@@ -49,11 +49,11 @@ export const nowUTC = () => moment().utc().format();
 
 export const dayAgo = () => moment().subtract(1, 'days').format();
 
-export const daysAgo = (number, date = null, fromStart = true) => moment(dayStartDate(date, fromStart)).subtract(number, 'days').format();
+export const daysAgo = (number, date, fromStart = true) => moment(dayStartDate(date ?? null, fromStart)).subtract(number, 'days').format();
 
 export const lastDayOfThePreviousMonth = () => moment().subtract(1, 'months').endOf('month').format();
 
-export const daysAfter = (number, date = null, noFuture = true) => {
+export const daysAfter = (number, date, noFuture = true) => {
   const newDate = moment(date || dayStartDate())
     .add(number, 'days')
     .format();
@@ -63,7 +63,7 @@ export const daysAfter = (number, date = null, noFuture = true) => {
   return newDate;
 };
 
-export const minutesBefore = (number, date = null) => moment(date || dayStartDate())
+export const minutesBefore = (number, date) => moment(date || dayStartDate())
   .subtract(number, 'minutes')
   .format();
 

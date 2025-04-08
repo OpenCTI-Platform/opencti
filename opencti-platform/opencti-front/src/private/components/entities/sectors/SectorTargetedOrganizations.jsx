@@ -12,6 +12,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { AccountBalanceOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
+import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -132,10 +133,9 @@ class SectorTargetedOrganizations extends Component {
                         (relationEdge) => {
                           const relation = relationEdge.node;
                           return (
-                            <ListItem
+                            <ListItemButton
                               key={relation.id}
                               dense={true}
-                              button={true}
                               classes={{ root: classes.item }}
                               divider={true}
                               component={Link}
@@ -164,7 +164,7 @@ class SectorTargetedOrganizations extends Component {
                                   limit={1}
                                 />
                               </div>
-                            </ListItem>
+                            </ListItemButton>
                           );
                         },
                       )}
@@ -200,7 +200,7 @@ class SectorTargetedOrganizations extends Component {
                       key={i}
                       dense={true}
                       divider={true}
-                      button={false}
+
                     >
                       <ListItemIcon classes={{ root: classes.itemIcon }}>
                         <Skeleton

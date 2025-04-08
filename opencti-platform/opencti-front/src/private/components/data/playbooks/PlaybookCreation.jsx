@@ -26,6 +26,8 @@ import TextField from '../../../../components/TextField';
 import { insertNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -53,10 +55,19 @@ const playbookCreationValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
 });
 
+const CreatePlaybookControlledDial = (props) => (
+  <CreateEntityControlledDial
+    entityType='Playbook'
+    {...props}
+  />
+);
+
 const PlaybookCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     commitMutation({
       mutation: PlaybookCreationMutation,
@@ -82,7 +93,8 @@ const PlaybookCreation = ({ paginationOptions }) => {
   return (
     <Drawer
       title={t_i18n('Create a playbook')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced ? CreatePlaybookControlledDial : undefined}
     >
       {({ onClose }) => (
         <Formik

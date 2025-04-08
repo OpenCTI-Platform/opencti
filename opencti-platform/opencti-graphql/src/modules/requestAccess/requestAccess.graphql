@@ -1,0 +1,45 @@
+enum RequestAccessType {
+  organization_sharing
+}
+
+type RequestAccessMember {
+  id: ID!
+  name: String!
+}
+
+type RequestAccessConfiguration {
+  id: ID!
+  approved_status: Status
+  declined_status: Status
+  approval_admin: [RequestAccessMember]
+}
+
+type RequestAccessWorkflow {
+  approved_workflow_id: String
+  declined_workflow_id: String
+  approval_admin: [ID]
+}
+
+type RequestAccessStatus {
+  id: ID!
+  template_id: String
+  statusTemplate: [StatusTemplate]
+}
+
+input RequestAccessAddInput {
+  request_access_reason: String
+  request_access_entities: [ID!]!
+  request_access_members: [ID!]!
+  request_access_type: RequestAccessType
+}
+
+input RequestAccessConfigureInput {
+  approved_status_id: ID
+  declined_status_id: ID
+  approval_admin: [ID]
+}
+
+type Mutation {
+  requestAccessAdd(input: RequestAccessAddInput!): ID @auth(for: [KNOWLEDGE])
+  requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}

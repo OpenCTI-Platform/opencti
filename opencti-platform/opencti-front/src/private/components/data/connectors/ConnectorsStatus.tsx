@@ -13,7 +13,6 @@ import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, PlaylistRemo
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import List from '@mui/material/List';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
@@ -21,6 +20,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
 import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
+import { ListItemButton } from '@mui/material';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -34,6 +34,7 @@ import type { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import SortConnectorsHeader from './SortConnectorsHeader';
+import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -120,42 +121,42 @@ export const connectorsStatusQuery = graphql`
 `;
 
 const connectorsStatusFragment = graphql`
-      fragment ConnectorsStatus_data on Query {
-        connectors {
-          id
-          name
-          active
-          auto
-          connector_trigger_filters
-          connector_type
-          connector_scope
-          updated_at
-          config {
-            listen
-            listen_exchange
-            push
-            push_exchange
-          }
-          built_in
-        }
-        rabbitMQMetrics {
-          queues {
-            name
-            messages
-            messages_ready
-            messages_unacknowledged
-            consumers
-            idle_since
-            message_stats {
-              ack
-              ack_details {
-                rate
-              }
-            }
+  fragment ConnectorsStatus_data on Query {
+    connectors {
+      id
+      name
+      active
+      auto
+      connector_trigger_filters
+      connector_type
+      connector_scope
+      updated_at
+      config {
+        listen
+        listen_exchange
+        push
+        push_exchange
+      }
+      built_in
+    }
+    rabbitMQMetrics {
+      queues {
+        name
+        messages
+        messages_ready
+        messages_unacknowledged
+        consumers
+        idle_since
+        message_stats {
+          ack
+          ack_details {
+            rate
           }
         }
       }
-    `;
+    }
+  }
+`;
 
 interface ConnectorsStatusComponentProps {
   queryRef: PreloadedQuery<ConnectorsStatusQuery>;
@@ -167,6 +168,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   refetch,
 }) => {
   const { t_i18n, nsdt, n } = useFormatter();
+
   const classes = useStyles(); // TODO remove as deprecated
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<string>('name');
@@ -175,10 +177,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const [connectorMessages, setConnectorMessages] = useState<string | number | null | undefined>();
   const [resetting, setResetting] = useState<boolean>(false);
 
-  const data = usePreloadedFragment<
-  ConnectorsStatusQuery,
-  ConnectorsStatus_data$key
-  >({
+  const data = usePreloadedFragment<ConnectorsStatusQuery,
+  ConnectorsStatus_data$key>({
     queryDef: connectorsStatusQuery,
     fragmentDef: connectorsStatusFragment,
     queryRef,
@@ -281,13 +281,14 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     return valueA > valueB ? -1 : 1;
   });
 
+  const { isSensitive } = useSensitiveModifications('connector_reset');
   return (
     <>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={!!connectorIdToReset}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={() => setConnectorIdToReset(undefined)}
       >
         <DialogContent>
@@ -328,6 +329,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
               classes={{ root: classes.itemHead }}
               divider={false}
               style={{ paddingTop: 0 }}
+              secondaryAction={<> &nbsp; </>}
             >
               <ListItemIcon>
                 <span
@@ -366,90 +368,34 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                       <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     </div>
                   </div>
-                  }
+                }
               />
-              <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
             </ListItem>
 
             {sortedConnectors && sortedConnectors.map((connector) => (
               <ListItem
                 key={connector.id}
-                classes={{ root: classes.item }}
                 divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/data/ingestion/connectors/${connector.id}`}
-              >
-                <ListItemIcon>
-                  {connector.built_in ? <DeveloperBoardOutlined /> : <ExtensionOutlined />}
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.name}
-                      >
-                        {connector.name}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.connector_type}
-                      >
-                        {t_i18n(connector.connector_type)}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.auto}
-                      >
-                        <ItemBoolean
-                          label={connector.connectorTriggerStatus.label}
-                          status={connector.connectorTriggerStatus.status}
-                          variant="inList"
-                        />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.messages}
-                      >
-                        {n(connector.messages)}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.active}
-                      >
-                        <ItemBoolean
-                          status={connector.active}
-                          label={connector.active ? t_i18n('Active') : t_i18n('Inactive')}
-                          variant="inList"
-                        />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.updated_at}
-                      >
-                        {nsdt(connector.updated_at)}
-                      </div>
-                    </div>
-                  }
-                />
-                <ListItemSecondaryAction>
+                disablePadding
+                secondaryAction={
                   <Security needs={[MODULES_MODMANAGE]}>
                     <>
-                      <Tooltip title={t_i18n('Reset the connector state')}>
-                        <IconButton
-                          onClick={() => {
-                            setConnectorIdToReset(connector.id);
-                            setConnectorMessages(connector.messages);
-                          }}
-                          aria-haspopup="true"
-                          color="primary"
-                          size="large"
-                          disabled={!!connector.built_in}
-                        >
-                          <PlaylistRemoveOutlined />
-                        </IconButton>
-                      </Tooltip>
+                      {!isSensitive && (
+                        <Tooltip title={t_i18n('Reset the connector state')}>
+                          <IconButton
+                            onClick={() => {
+                              setConnectorIdToReset(connector.id);
+                              setConnectorMessages(connector.messages);
+                            }}
+                            aria-haspopup="true"
+                            color="primary"
+                            size="large"
+                            disabled={!!connector.built_in}
+                          >
+                            <PlaylistRemoveOutlined />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       <Tooltip title={t_i18n('Clear this connector')}>
                         <IconButton
                           onClick={() => {
@@ -465,7 +411,67 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                       </Tooltip>
                     </>
                   </Security>
-                </ListItemSecondaryAction>
+                }
+              >
+                <ListItemButton
+                  component={Link}
+                  classes={{ root: classes.item }}
+                  to={`/dashboard/data/ingestion/connectors/${connector.id}`}
+                >
+                  <ListItemIcon>
+                    {connector.built_in ? <DeveloperBoardOutlined /> : <ExtensionOutlined />}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.name}
+                        >
+                          {connector.name}
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.connector_type}
+                        >
+                          {t_i18n(connector.connector_type)}
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.auto}
+                        >
+                          <ItemBoolean
+                            label={connector.connectorTriggerStatus.label}
+                            status={connector.connectorTriggerStatus.status}
+                            variant="inList"
+                          />
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.messages}
+                        >
+                          {n(connector.messages)}
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.active}
+                        >
+                          <ItemBoolean
+                            status={connector.active}
+                            label={connector.active ? t_i18n('Active') : t_i18n('Inactive')}
+                            variant="inList"
+                          />
+                        </div>
+                        <div
+                          className={classes.bodyItem}
+                          style={inlineStyles.updated_at}
+                        >
+                          {nsdt(connector.updated_at)}
+                        </div>
+                      </div>
+                  }
+                  />
+                </ListItemButton>
               </ListItem>
             ))}
           </List>

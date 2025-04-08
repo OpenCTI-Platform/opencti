@@ -267,10 +267,10 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         renderOption={renderOption}
       />
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={!!newMarking}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCancellation}
       >
         <DialogContent>

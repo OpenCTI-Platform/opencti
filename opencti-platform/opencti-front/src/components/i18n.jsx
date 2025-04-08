@@ -239,6 +239,24 @@ export const useFormatter = () => {
     });
   };
 
+  /**
+   * A date that stop precision at minute. For example "02/06/2024 11:54 AM".
+   * @param date
+   * @returns {string}
+   */
+  const shortMinuteHourDate = (date) => {
+    if (isNone(date)) {
+      return '-';
+    }
+    return intl.formatDate(date, {
+      minute: 'numeric',
+      hour: 'numeric',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+    }).replace(',', ''); // remove comma between date and hours
+  };
+
   const MONTH_IN_MILLIS = 2.592e9;
   const WEEK_IN_MILLIS = 6.048e8;
   const DAY_IN_MILLIS = 8.64e7;
@@ -368,6 +386,7 @@ export const useFormatter = () => {
     yd: yearDate,
     nt: numericTime,
     mhd: minuteHourDate,
+    smhd: shortMinuteHourDate,
     rd: relativeDate,
   };
 };

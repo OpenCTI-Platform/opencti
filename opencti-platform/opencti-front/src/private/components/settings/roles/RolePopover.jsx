@@ -14,9 +14,10 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import RoleEdition from './RoleEdition';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import { roleDeletionMutation } from './RoleEditionOverview';
 
 const styles = () => ({
   container: {
@@ -35,14 +36,6 @@ const rolePopoverCleanContext = graphql`
       contextClean {
         ...RoleEdition_role
       }
-    }
-  }
-`;
-
-const rolePopoverDeletionMutation = graphql`
-  mutation RolePopoverDeletionMutation($id: ID!) {
-    roleEdit(id: $id) {
-      delete
     }
   }
 `;
@@ -99,7 +92,7 @@ class RolePopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: rolePopoverDeletionMutation,
+      mutation: roleDeletionMutation,
       variables: {
         id: this.props.roleId,
       },
@@ -112,7 +105,7 @@ class RolePopover extends Component {
   }
 
   render() {
-    const { classes, t, roleId, disabled } = this.props;
+    const { classes, t, disabled, roleEditionData } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -137,27 +130,16 @@ class RolePopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <QueryRenderer
-          query={roleEditionQuery}
-          variables={{ id: roleId }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <RoleEdition
-                  role={props.role}
-                  handleClose={this.handleCloseUpdate.bind(this)}
-                  open={this.state.displayUpdate}
-                />
-              );
-            }
-            return null;
-          }}
+        <RoleEdition
+          roleEditionData={roleEditionData}
+          handleClose={this.handleCloseUpdate.bind(this)}
+          open={this.state.displayUpdate}
         />
         <Dialog
           open={this.state.displayDelete}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
@@ -187,7 +169,6 @@ class RolePopover extends Component {
 }
 
 RolePopover.propTypes = {
-  roleId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

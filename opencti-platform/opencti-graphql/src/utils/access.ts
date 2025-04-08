@@ -88,7 +88,6 @@ export const SYSTEM_USER: AuthUser = {
   individual_id: undefined,
   name: 'SYSTEM',
   user_email: 'SYSTEM',
-  inside_platform_organization: true,
   origin: { user_id: OPENCTI_SYSTEM_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
@@ -97,7 +96,6 @@ export const SYSTEM_USER: AuthUser = {
   allowed_marking: [],
   default_marking: [],
   max_shareable_marking: [],
-  all_marking: [],
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
@@ -121,7 +119,6 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   individual_id: undefined,
   name: 'RETENTION MANAGER',
   user_email: 'RETENTION MANAGER',
-  inside_platform_organization: true,
   origin: { user_id: RETENTION_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
@@ -130,7 +127,6 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
-  all_marking: [],
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
@@ -154,7 +150,6 @@ export const RULE_MANAGER_USER: AuthUser = {
   individual_id: undefined,
   name: 'RULE MANAGER',
   user_email: 'RULE MANAGER',
-  inside_platform_organization: true,
   origin: { user_id: RULE_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
@@ -163,7 +158,6 @@ export const RULE_MANAGER_USER: AuthUser = {
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
-  all_marking: [],
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
@@ -187,7 +181,6 @@ export const AUTOMATION_MANAGER_USER: AuthUser = {
   individual_id: undefined,
   name: 'AUTOMATION MANAGER',
   user_email: 'AUTOMATION MANAGER',
-  inside_platform_organization: true,
   origin: { user_id: AUTOMATION_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
@@ -196,7 +189,6 @@ export const AUTOMATION_MANAGER_USER: AuthUser = {
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
-  all_marking: [],
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
@@ -220,7 +212,6 @@ export const DECAY_MANAGER_USER: AuthUser = {
   individual_id: undefined,
   name: 'DECAY MANAGER',
   user_email: 'DECAY MANAGER',
-  inside_platform_organization: true,
   origin: { user_id: DECAY_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
@@ -229,7 +220,6 @@ export const DECAY_MANAGER_USER: AuthUser = {
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
-  all_marking: [],
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
@@ -253,7 +243,6 @@ export const GARBAGE_COLLECTION_MANAGER_USER: AuthUser = {
   individual_id: undefined,
   name: 'GARBAGE_COLLECTION MANAGER',
   user_email: 'GARBAGE COLLECTION MANAGER',
-  inside_platform_organization: true,
   origin: { user_id: GARBAGE_COLLECTION_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
@@ -262,7 +251,6 @@ export const GARBAGE_COLLECTION_MANAGER_USER: AuthUser = {
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
-  all_marking: [],
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
@@ -287,7 +275,6 @@ export const REDACTED_USER: AuthUser = {
   individual_id: undefined,
   name: REDACTED_INFORMATION,
   user_email: REDACTED_INFORMATION,
-  inside_platform_organization: false,
   origin: { user_id: REDACTED_USER_UUID, socket: 'internal' },
   roles: [],
   groups: [],
@@ -296,7 +283,6 @@ export const REDACTED_USER: AuthUser = {
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
-  all_marking: [],
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
@@ -313,7 +299,6 @@ export const TELEMETRY_MANAGER_USER: AuthUser = {
   individual_id: undefined,
   name: 'TELEMETRY MANAGER',
   user_email: 'TELEMETRY MANAGER',
-  inside_platform_organization: true,
   origin: { user_id: TELEMETRY_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
@@ -322,7 +307,6 @@ export const TELEMETRY_MANAGER_USER: AuthUser = {
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
-  all_marking: [],
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
@@ -346,7 +330,6 @@ export const EXPIRATION_MANAGER_USER: AuthUser = {
   individual_id: undefined,
   name: 'EXPIRATION MANAGER',
   user_email: 'EXPIRATION MANAGER',
-  inside_platform_organization: true,
   origin: { user_id: EXPIRATION_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
@@ -355,7 +338,6 @@ export const EXPIRATION_MANAGER_USER: AuthUser = {
   allowed_marking: [],
   max_shareable_marking: [],
   default_marking: [],
-  all_marking: [],
   api_token: '',
   account_lock_after_date: undefined,
   account_status: ACCOUNT_STATUS_ACTIVE,
@@ -372,7 +354,7 @@ export const EXPIRATION_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
-export interface AuthorizedMember { id: string, access_right: string }
+export interface AuthorizedMember { id: string, access_right: string, groups_restriction_ids?: string[] | null }
 
 class TracingContext {
   ctx: Context | undefined;
@@ -397,10 +379,10 @@ class TracingContext {
   }
 }
 
-export const executionContext = (source: string, auth?: AuthUser): AuthContext => {
+export const executionContext = (source: string, auth?: AuthUser, draftContext?: string): AuthContext => {
   const tracer = trace.getTracer('instrumentation-opencti', '1.0.0');
   const tracing = new TracingContext(tracer);
-  return { otp_mandatory: false, source, tracing, user: auth ?? undefined };
+  return { otp_mandatory: false, user_inside_platform_organization: false, source, tracing, user: auth ?? undefined, draft_context: draftContext ?? undefined };
 };
 
 export const INTERNAL_USERS = {
@@ -457,22 +439,11 @@ export const computeUserMemberAccessIds = (user: AuthUser) => {
 };
 
 // region entity access by user
-
-export const getUserAccessRight = (user: AuthUser, element: any) => {
-  if (!element.authorized_members || element.authorized_members.length === 0) { // no restricted user access on element
-    return MEMBER_ACCESS_RIGHT_ADMIN;
-  }
-  const accessMembers = [...element.authorized_members];
+export const getExplicitUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
   const userMemberAccessIds = computeUserMemberAccessIds(user);
-  const foundAccessMembers = accessMembers.filter((u) => u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id));
-  // If user have extended capabilities, is an admin
-  if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
-    return MEMBER_ACCESS_RIGHT_ADMIN;
-  }
-  // if user is bypass, user has admin access (needed for data management usage)
-  if (isBypassUser(user)) {
-    return MEMBER_ACCESS_RIGHT_ADMIN;
-  }
+  const userGroupsIds = user.groups.map((group) => group.internal_id);
+  const foundAccessMembers = (element.restricted_members ?? []).filter((u) => (u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id))
+      && (!u.groups_restriction_ids || u.groups_restriction_ids.length === 0 || u.groups_restriction_ids.every((g) => userGroupsIds.includes(g))));
   if (!foundAccessMembers.length) { // user has no access
     return null;
   }
@@ -484,12 +455,36 @@ export const getUserAccessRight = (user: AuthUser, element: any) => {
   }
   return MEMBER_ACCESS_RIGHT_VIEW;
 };
-export const hasAuthorizedMemberAccess = (user: AuthUser, element: { authorized_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+
+export const getUserAccessRight = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+  // if user is bypass, user has admin access (needed for data management usage)
+  if (isBypassUser(user)) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  // no restricted user access on element
+  if (!element.restricted_members || element.restricted_members.length === 0) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  // If user have authorities, is an admin
+  const userMemberAccessIds = computeUserMemberAccessIds(user);
+  if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  return getExplicitUserAccessRight(user, element);
+};
+
+export const hasAuthorizedMemberAccess = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
   const userAccessRight = getUserAccessRight(user, element);
   return !!userAccessRight;
 };
 
+export const isUserInAuthorizedMember = (user: AuthUser, element: { restricted_members?: AuthorizedMember[], authorized_authorities?: string[] }) => {
+  const userAccessRight = getExplicitUserAccessRight(user, element);
+  return !!userAccessRight;
+};
+
 const isEntityOrganizationsAllowed = (
+  context: AuthContext,
   entityInternalId: string,
   entityOrganizations: string[],
   user: AuthUser,
@@ -500,7 +495,7 @@ const isEntityOrganizationsAllowed = (
     const userOrganizations = user.organizations.map((o) => extractIdsFromStoreObject(o)).flat();
 
     // If user part of platform organization, is granted by default
-    if (user.inside_platform_organization) {
+    if (context.user_inside_platform_organization) {
       return true;
     }
     // Grant access to the user individual
@@ -515,9 +510,9 @@ const isEntityOrganizationsAllowed = (
   return true;
 };
 
-export const isOrganizationAllowed = (element: BasicStoreCommon, user: AuthUser, hasPlatformOrg: boolean) => {
+export const isOrganizationAllowed = (context: AuthContext, element: BasicStoreCommon, user: AuthUser, hasPlatformOrg: boolean) => {
   const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
-  return isEntityOrganizationsAllowed(element.internal_id, elementOrganizations, user, hasPlatformOrg);
+  return isEntityOrganizationsAllowed(context, element.internal_id, elementOrganizations, user, hasPlatformOrg);
 };
 
 const isOrganizationUnrestrictedForEntityType = (entityType: string) => {
@@ -543,20 +538,8 @@ export const isMarkingAllowed = (element: BasicStoreCommon, userAuthorizedMarkin
   return true;
 };
 
-export const canRequestAccess = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
-  const hasPlatformOrg = !!settings.platform_organization;
-  const elementsThatRequiresAccess: Array<BasicStoreCommon> = [];
-  for (let i = 0; i < elements.length; i += 1) {
-    if (!isOrganizationAllowed(elements[i], user, hasPlatformOrg)) {
-      elementsThatRequiresAccess.push(elements[i]);
-    }
-    // TODO before removing ORGA_SHARING_REQUEST_FF: When it's ready check Authorized members
-  }
-  return elementsThatRequiresAccess;
-};
-
 export const checkUserFilterStoreElements = (
+  context: AuthContext,
   user: AuthUser,
   element: BasicStoreCommon,
   authorizedMarkings: string[],
@@ -576,9 +559,9 @@ export const checkUserFilterStoreElements = (
     return true;
   }
   // Check restricted elements
-  // either allowed by orga sharing or has authorized members access if authorized_members are defined (bypass orga sharing)
-  return isOrganizationAllowed(element, user, hasPlatformOrg)
-    || (element.authorized_members && element.authorized_members.length > 0 && hasAuthorizedMemberAccess(user, element));
+  // either allowed by orga sharing or has authorized members access if restricted_members are defined (bypass orga sharing)
+  return isOrganizationAllowed(context, element, user, hasPlatformOrg)
+    || (element.restricted_members && element.restricted_members.length > 0 && hasAuthorizedMemberAccess(user, element));
 };
 
 export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
@@ -592,7 +575,7 @@ export const userFilterStoreElements = async (context: AuthContext, user: AuthUs
     const hasPlatformOrg = !!settings.platform_organization;
     const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
     return elements.filter((element) => {
-      return checkUserFilterStoreElements(user, element, authorizedMarkings, hasPlatformOrg);
+      return checkUserFilterStoreElements(context, user, element, authorizedMarkings, hasPlatformOrg);
     });
   };
   return telemetry(context, user, 'FILTERING store filter', {
@@ -606,7 +589,7 @@ export const isUserCanAccessStoreElement = async (context: AuthContext, user: Au
   return elements.length === 1;
 };
 
-export const checkUserCanAccessStixElement = (user: AuthUser, instance: StixObject, hasPlatformOrg: boolean) => {
+export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUser, instance: StixObject, hasPlatformOrg: boolean) => {
   // If user have bypass, grant access to all
   if (isBypassUser(user)) {
     return true;
@@ -620,8 +603,8 @@ export const checkUserCanAccessStixElement = (user: AuthUser, instance: StixObje
       return false;
     }
   }
-  const authorized_members = instance.extensions?.[STIX_EXT_OCTI]?.authorized_members ?? [];
-  const authorizedMemberAllowed = hasAuthorizedMemberAccess(user, { authorized_members });
+  const restricted_members = instance.extensions?.[STIX_EXT_OCTI]?.authorized_members ?? [];
+  const authorizedMemberAllowed = hasAuthorizedMemberAccess(user, { restricted_members });
   // 2. check authorized members
   if (!authorizedMemberAllowed) {
     return false;
@@ -634,15 +617,15 @@ export const checkUserCanAccessStixElement = (user: AuthUser, instance: StixObje
   }
   // Check restricted elements
   const elementOrganizations = instance.extensions?.[STIX_EXT_OCTI]?.granted_refs ?? [];
-  const organizationAllowed = isEntityOrganizationsAllowed(instance.id, elementOrganizations, user, hasPlatformOrg);
+  const organizationAllowed = isEntityOrganizationsAllowed(context, instance.id, elementOrganizations, user, hasPlatformOrg);
   // either allowed by organization or authorized members
-  return organizationAllowed || (authorized_members.length > 0 && authorizedMemberAllowed);
+  return organizationAllowed || (restricted_members.length > 0 && authorizedMemberAllowed);
 };
 
 export const isUserCanAccessStixElement = async (context: AuthContext, user: AuthUser, instance: StixObject) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const hasPlatformOrg = !!settings.platform_organization;
-  return checkUserCanAccessStixElement(user, instance, hasPlatformOrg);
+  return checkUserCanAccessStixElement(context, user, instance, hasPlatformOrg);
 };
 // end region
 
@@ -650,7 +633,7 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
 
 // user access methods
 export const isDirectAdministrator = (user: AuthUser, element: any) => {
-  const elementAccessIds = element.authorized_members
+  const elementAccessIds = element.restricted_members
     .filter((u: AuthorizedMember) => u.access_right === MEMBER_ACCESS_RIGHT_ADMIN)
     .map((u: AuthorizedMember) => u.id);
   const userMemberAccessIds = computeUserMemberAccessIds(user);
@@ -718,6 +701,6 @@ export const validateMarking = async (context: AuthContext, user: AuthUser, mark
   const userMarking = (user.allowed_marking || []).map((m) => markings.get(m.internal_id)).filter((m) => isNotEmptyField(m));
   const userMarkingIds = userMarking.map((marking) => extractIdsFromStoreObject(marking)).flat();
   if (!userMarkingIds.includes(markingId)) {
-    throw FunctionalError('User trying to create the data has missing markings', { id: markingId });
+    throw FunctionalError('User trying to create the data has missing markings', { id: markingId, user_markings: userMarkingIds });
   }
 };

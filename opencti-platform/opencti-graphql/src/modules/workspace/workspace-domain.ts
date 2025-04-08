@@ -168,7 +168,7 @@ export const addWorkspace = async (
     input.authorized_members,
     user,
   );
-  const workspaceToCreate = { ...input, authorized_members: authorizedMembers };
+  const workspaceToCreate = { ...input, restricted_members: authorizedMembers };
   const created = await createEntity(
     context,
     user,
@@ -384,7 +384,7 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
     openCTI_version: parsedData.openCTI_version,
     name: parsedData.configuration.name,
     manifest: generatedManifest,
-    authorized_members: authorizedMembers,
+    restricted_members: authorizedMembers,
   };
   const importWorkspaceCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_WORKSPACE);
   const workspaceId = importWorkspaceCreation.id;
@@ -406,7 +406,7 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
 
 export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
   const authorizedMembers = initializeAuthorizedMembers([], user);
-  const workspaceToCreate = { ...input, authorized_members: authorizedMembers };
+  const workspaceToCreate = { ...input, restricted_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
   await publishUserAction({
     user,

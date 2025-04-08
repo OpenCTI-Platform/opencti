@@ -8,6 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { graphql } from 'react-relay';
 import Skeleton from '@mui/material/Skeleton';
 import * as R from 'ramda';
+import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
@@ -197,7 +198,7 @@ const StixCoreRelationshipCreationFromEntityDummyList = () => {
   return (
     <List>
       {Array.from(Array(20), (e, i) => (
-        <ListItem key={i} divider={true} button={false}>
+        <ListItem key={i} divider={true}>
           <ListItemIcon>
             <Skeleton
               animation="wave"
@@ -362,10 +363,9 @@ const StixCoreRelationshipCreationFromEntityList = ({
                       ),
                     );
                   return (
-                    <ListItem
+                    <ListItemButton
                       key={node.id}
                       divider={true}
-                      button={true}
                       onClick={() => toggle(node, alreadyAdded)}
                     >
                       <ListItemIcon>
@@ -397,7 +397,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
                           },
                         }}
                       />
-                    </ListItem>
+                    </ListItemButton>
                   );
                 })}
             </List>

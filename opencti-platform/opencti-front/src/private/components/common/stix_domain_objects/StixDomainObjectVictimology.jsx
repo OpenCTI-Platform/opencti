@@ -18,7 +18,7 @@ const StixDomainObjectVictimology = ({
 }) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const [viewMode, setViewMode] = useState('relationships');
+  const [viewMode, setViewMode] = useState('entities');
 
   const paginationOptionsSectors = {
     fromId: stixDomainObjectId,
@@ -94,7 +94,7 @@ const StixDomainObjectVictimology = ({
             currentView={viewMode}
             handleChangeView={setViewMode}
             enableNestedView={true}
-            enableEntitiesView={false}
+            enableEntitiesView={true}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
           />

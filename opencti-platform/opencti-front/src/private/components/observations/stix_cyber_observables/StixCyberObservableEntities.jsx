@@ -8,7 +8,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -244,6 +243,7 @@ class StixCyberObservableEntities extends Component {
               classes={{ root: classes.itemHead }}
               divider={false}
               style={{ paddingTop: 0 }}
+              secondaryAction={<> &nbsp; </>}
             >
               <ListItemIcon>
                 <span
@@ -270,7 +270,6 @@ class StixCyberObservableEntities extends Component {
                   </div>
                 }
               />
-              <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
             </ListItem>
             <QueryRenderer
               query={stixCyberObservableEntitiesLinesQuery}

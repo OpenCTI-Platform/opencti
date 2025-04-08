@@ -141,7 +141,7 @@ const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUp
               fullWidth={true}
               onClose={handleClose}
               open={isOpen}
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
             >
               <DialogTitle>{t_i18n('Free text import')}</DialogTitle>
               <DialogContent>

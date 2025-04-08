@@ -13,7 +13,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import DialogTitle from '@mui/material/DialogTitle';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import UserEdition from './UserEdition';
 import Transition from '../../../../components/Transition';
 
@@ -86,7 +86,7 @@ class UserPopover extends Component {
   }
 
   render() {
-    const { t, userId, disabled } = this.props;
+    const { t, disabled, userEditionData } = this.props;
     return (
       <>
         <IconButton
@@ -113,27 +113,16 @@ class UserPopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <QueryRenderer
-          query={userEditionQuery}
-          variables={{ id: userId }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <UserEdition
-                  user={props.user}
-                  open={this.state.displayUpdate}
-                  handleClose={this.handleCloseUpdate.bind(this)}
-                />
-              );
-            }
-            return <div />;
-          }}
+        <UserEdition
+          userEditionData={userEditionData}
+          open={this.state.displayUpdate}
+          handleClose={this.handleCloseUpdate.bind(this)}
         />
         <Dialog
           open={this.state.displayDelete}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogTitle>{t('Do you want to delete this user?')}</DialogTitle>

@@ -15,7 +15,7 @@ import { RetentionCreationCheckMutation$data } from '@components/settings/retent
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -28,6 +28,8 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import type { Theme } from '../../../../components/Theme';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -64,6 +66,13 @@ const RetentionCreationValidation = (t: (text: string) => string) => Yup.object(
   max_retention: Yup.number().min(1, t('This field must be >= 1')),
 });
 
+const CreateRetentionControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial
+    entityType='RetentionRule'
+    {...props}
+  />
+);
+
 interface RetentionFormValues {
   name: string,
   max_retention: string,
@@ -77,6 +86,8 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
   const { t_i18n } = useFormatter();
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
   const onSubmit: FormikConfig<RetentionFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const scope = values.scope.value;
@@ -144,8 +155,12 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
   return (
     <Drawer
       title={t_i18n('Create a retention policy')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
       onClose={helpers.handleClearAllFilters}
+      controlledDial={isFABReplaced
+        ? CreateRetentionControlledDial
+        : undefined
+      }
     >
       {({ onClose }) => (
         <Formik
@@ -183,22 +198,24 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 fullWidth={true}
                 onChange={() => setVerified(false)}
                 style={{ marginTop: 20 }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Tooltip
-                        title={t_i18n(
-                          'All objects matching the filters that have not been updated since this amount of units will be deleted',
-                        )}
-                      >
-                        <InformationOutline
-                          fontSize="small"
-                          color="primary"
-                          style={{ cursor: 'default' }}
-                        />
-                      </Tooltip>
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Tooltip
+                          title={t_i18n(
+                            'All objects matching the filters that have not been updated since this amount of units will be deleted',
+                          )}
+                        >
+                          <InformationOutline
+                            fontSize="small"
+                            color="primary"
+                            style={{ cursor: 'default' }}
+                          />
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  },
                 }}
               />
               <Field

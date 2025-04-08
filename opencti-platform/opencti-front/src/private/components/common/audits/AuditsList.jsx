@@ -15,13 +15,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import { graphql } from 'react-relay';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
+import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -179,10 +179,9 @@ const AuditsList = ({
                       )}/${audit.context_data?.entity_id}`
                       : undefined;
                     return (
-                      <ListItem
+                      <ListItemButton
                         key={audit.id}
                         dense={true}
-                        button={true}
                         className="noDrag"
                         classes={{ root: classes.item }}
                         divider={true}
@@ -243,7 +242,7 @@ const AuditsList = ({
                             </>
                           }
                         />
-                      </ListItem>
+                      </ListItemButton>
                     );
                   })}
                 </List>

@@ -385,7 +385,6 @@ class StixDomainObjectBookmarkDummyComponent extends Component {
                 style={{ marginBottom: 10 }}
               />
             }
-            titleTypographyProps={{ color: 'inherit' }}
             subheader={
               <Skeleton
                 animation="wave"
@@ -402,6 +401,9 @@ class StixDomainObjectBookmarkDummyComponent extends Component {
                 height={30}
               />
             }
+            slotProps={{
+              title: { color: 'inherit' },
+            }}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
             <Skeleton

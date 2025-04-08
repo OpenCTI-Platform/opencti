@@ -240,7 +240,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             size="small"
             onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
             disabled={disabled || currentValue.length < 10}
-            style={{ marginTop: 4, color: theme.palette.ai.main }}
+            style={{ color: theme.palette.ai.main }}
           >
             <AutoAwesomeOutlined fontSize='small' />
           </IconButton>
@@ -289,7 +289,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
         />
         )}
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={openToneOptions}
           onClose={handleCloseToneOptions}
           fullWidth={true}
@@ -331,20 +331,20 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   };
   if (variant === 'markdown') {
     return (
-      <div style={style || { position: 'absolute', top: 17, right: 0 }}>
+      <div style={style || { position: 'absolute', top: 17, right: 0, paddingTop: 4 }}>
         {renderButton()}
       </div>
     );
   }
   if (variant === 'html') {
     return (
-      <div style={style || { position: 'absolute', top: -12, right: 30 }}>
+      <div style={style || { position: 'absolute', top: -12, right: 30, paddingTop: 4 }}>
         {renderButton()}
       </div>
     );
   }
   return (
-    <InputAdornment position="end" style={{ position: 'absolute', top: 7, right: 0 }}>
+    <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
       {renderButton()}
     </InputAdornment>
   );

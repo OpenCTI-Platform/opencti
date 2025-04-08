@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, ADMIN_API_TOKEN, API_URI, FIFTEEN_MINUTES, PYTHON_PATH, queryAsAdmin, RAW_EVENTS_SIZE, SYNC_RAW_START_REMOTE_URI, testContext } from '../../utils/testQuery';
+import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, FIFTEEN_MINUTES, PYTHON_PATH, queryAsAdmin, RAW_EVENTS_SIZE, SYNC_RAW_START_REMOTE_URI, testContext } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import { checkPostSyncContent, checkPreSyncContent } from '../sync-utils';
+import { checkPostSyncContent, checkPreSyncContent, INDICATOR_NUMBERS, LABEL_NUMBERS, MALWARE_NUMBERS, VOCABULARY_NUMBERS } from '../sync-utils';
 import { elAggregationCount } from '../../../src/database/engine';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
 
@@ -49,6 +49,8 @@ describe('Database sync raw', () => {
       const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
+      // to uncomment for debug if counters are failing
+      // expect(execution.messages.length, `Execution messages ${JSON.stringify(execution.messages)}`).toEqual(0);
 
       const queryResultAfter = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 350 } });
 
@@ -71,14 +73,14 @@ describe('Database sync raw', () => {
       expect(vocabRemoved.map((v) => v.name)).toEqual([]);
       expect(vocabAdded.map((v) => v.name)).toEqual([]);
 
-      expect(vocabBefore.length).toEqual(342);
+      expect(vocabBefore.length).toEqual(VOCABULARY_NUMBERS);
 
       const counters = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
       const countersMap = new Map(counters.map((i) => [i.label, i.value]));
-      expect(countersMap.get('Indicator')).toEqual(28);
-      expect(countersMap.get('Malware')).toEqual(27);
-      expect(countersMap.get('Label')).toEqual(13);
-      expect(countersMap.get('Vocabulary')).toEqual(342);
+      expect(countersMap.get('Indicator')).toEqual(INDICATOR_NUMBERS);
+      expect(countersMap.get('Malware')).toEqual(MALWARE_NUMBERS);
+      expect(countersMap.get('Label')).toEqual(LABEL_NUMBERS);
+      expect(countersMap.get('Vocabulary')).toEqual(VOCABULARY_NUMBERS);
 
       // Post check
       await checkPostSyncContent(SYNC_RAW_START_REMOTE_URI, objectMap, relMap, initStixReport);

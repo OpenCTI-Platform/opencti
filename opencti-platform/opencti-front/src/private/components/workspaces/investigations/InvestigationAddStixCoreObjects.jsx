@@ -150,7 +150,6 @@ const InvestigationAddStixCoreObjects = (props) => {
             color="primary"
             aria-label="Add"
             onClick={() => setOpen(true)}
-            size="large"
           >
             <Add />
           </IconButton>

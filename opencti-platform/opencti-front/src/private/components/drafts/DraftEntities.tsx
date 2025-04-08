@@ -1,10 +1,11 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { DraftEntitiesLinesPaginationQuery, DraftEntitiesLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftEntitiesLinesPaginationQuery.graphql';
 import { useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { DraftEntitiesLines_data$data } from '@components/drafts/__generated__/DraftEntitiesLines_data.graphql';
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
+import { DraftEntities_node$data } from '@components/drafts/__generated__/DraftEntities_node.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -13,10 +14,12 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useHelper from '../../../utils/hooks/useHelper';
+import { computeLink } from '../../../utils/Entity';
 
 const draftEntitiesLineFragment = graphql`
     fragment DraftEntities_node on StixCoreObject {
         id
+        standard_id
         entity_type
         created_at
         representative {
@@ -30,6 +33,18 @@ const draftEntitiesLineFragment = graphql`
             definition
             x_opencti_order
             x_opencti_color
+        }
+        objectLabel {
+            id
+            value
+            color
+        }
+        createdBy {
+            ... on Identity {
+                id
+                name
+                entity_type
+            }
         }
         creators {
             id
@@ -88,6 +103,7 @@ export const draftEntitiesLinesFragment = graphql`
         ) @connection(key: "Pagination_draftWorkspaceEntities") {
             edges {
                 node {
+                    id
                     ...DraftEntities_node
                 }
             }
@@ -104,10 +120,14 @@ const LOCAL_STORAGE_KEY = 'draft_entities';
 
 interface DraftEntitiesProps {
   entitiesType?: string;
+  excludedEntitiesType?: string;
+  isReadOnly: boolean;
 }
 
 const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   entitiesType = 'Stix-Core-Object',
+  excludedEntitiesType,
+  isReadOnly,
 }) => {
   const { draftId } = useParams() as { draftId: string };
   const { isFeatureEnable } = useHelper();
@@ -147,8 +167,9 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     filters,
     searchTerm,
   } = viewStorage;
-
-  const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters, excludedEntitiesType);
+  const relevantDraftOperationFilter = { key: 'draft_change.draft_operation', values: ['create', 'update', 'delete'], operator: 'eq', mode: 'or' };
+  const toolbarFilters = { ...contextFilters, filters: [...contextFilters.filters, relevantDraftOperationFilter] };
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -204,6 +225,50 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
     },
   };
 
+  let createButton: ReactNode;
+  if (!isReadOnly) {
+    createButton = entitiesType === 'Stix-Cyber-Observable' ? (
+      <>
+        <StixCyberObservableCreation
+          display={open}
+          contextual={false}
+          inputValue={searchTerm}
+          paginationKey="Pagination_draftWorkspaceEntities"
+          paginationOptions={queryPaginationOptions}
+          speeddial={false}
+          open={openCreateObservable}
+          controlledDialStyles={{ marginLeft: 1 }}
+          handleClose={handleCloseCreateObservable}
+        />
+      </>
+    ) : (
+      <>
+        <StixDomainObjectCreation
+          display={true}
+          inputValue={searchTerm}
+          paginationKey="Pagination_draftWorkspaceEntities"
+          paginationOptions={queryPaginationOptions}
+          speeddial={false}
+          fabReplaced={isFABReplaced}
+          controlledDialStyles={{ marginLeft: 1 }}
+          open={openCreateEntity}
+          handleClose={handleCloseCreateEntity}
+          onCompleted={() => setOpenCreateEntity(false)}
+          stixDomainObjectTypes={entitiesType}
+          creationCallback={undefined}
+          confidence={undefined}
+          defaultCreatedBy={undefined}
+          isFromBulkRelation={undefined}
+          defaultMarkingDefinitions={undefined}
+        />
+      </>
+    );
+  }
+
+  const getRedirectionLink = (stixObject: DraftEntities_node$data) => {
+    return isReadOnly ? `/dashboard/id/${stixObject.standard_id}` : computeLink(stixObject);
+  };
+
   return (
     <span data-testid="draft-entities-page">
       {queryRef && (
@@ -212,50 +277,14 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           resolvePath={(data: DraftEntitiesLines_data$data) => data.draftWorkspaceEntities?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          toolbarFilters={toolbarFilters}
           preloadedPaginationProps={preloadedPaginationProps}
+          useComputeLink={getRedirectionLink}
           lineFragment={draftEntitiesLineFragment}
-          exportContext={{ entity_type: 'Stix-Domain-Object' }}
-          redirectionModeEnabled
-          disableSelectAll // TODO: To handle selectAll
-          createButton={
-            entitiesType === 'Stix-Cyber-Observable' ? (
-              <>
-                <StixCyberObservableCreation
-                  display={open}
-                  contextual={false}
-                  inputValue={searchTerm}
-                  paginationKey="Pagination_draftWorkspaceEntities"
-                  paginationOptions={queryPaginationOptions}
-                  speeddial={false}
-                  open={openCreateObservable}
-                  controlledDialStyles={{ marginLeft: 1 }}
-                  handleClose={handleCloseCreateObservable}
-                />
-              </>
-            ) : (
-              <>
-                <StixDomainObjectCreation
-                  display={true}
-                  inputValue={searchTerm}
-                  paginationKey="Pagination_draftWorkspaceEntities"
-                  paginationOptions={queryPaginationOptions}
-                  speeddial={false}
-                  fabReplaced={isFABReplaced}
-                  controlledDialStyles={{ marginLeft: 1 }}
-                  open={openCreateEntity}
-                  handleClose={handleCloseCreateEntity}
-                  onCompleted={() => setOpenCreateEntity(false)}
-                  creationCallback={undefined}
-                  confidence={undefined}
-                  defaultCreatedBy={undefined}
-                  isFromBulkRelation={undefined}
-                  defaultMarkingDefinitions={undefined}
-                  stixDomainObjectTypes={undefined}
-                />
-              </>
-            )
-          }
+          entityTypes={[entitiesType]}
+          removeFromDraftEnabled
+          disableLineSelection={isReadOnly}
+          createButton={createButton}
         />
       )}
     </span>

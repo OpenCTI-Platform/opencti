@@ -83,8 +83,8 @@ const InfoTooltip = ({ text }: { text: string }) => (
 );
 
 const DetailGrid = ({ title, tooltip, children, extra }: DetailValue) => (
-  <Grid item xs={3} mt={-1}>
-    <Box display="flex" alignItems="center">
+  <Grid item xs={3} sx={{ mt: -1 }}>
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <CardLabel action={(
         <InfoTooltip text={tooltip} />
       )}

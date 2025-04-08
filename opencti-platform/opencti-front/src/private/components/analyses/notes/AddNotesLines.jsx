@@ -4,10 +4,10 @@ import * as R from 'ramda';
 import { createPaginationContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { CheckCircle, WorkOutline } from '@mui/icons-material';
+import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -129,11 +129,10 @@ class AddNotesLinesContainer extends Component {
           const alreadyAdded = entityNotesIds.includes(note.id);
           const noteId = note.external_id ? `(${note.external_id})` : '';
           return (
-            <ListItem
+            <ListItemButton
               key={note.id}
               classes={{ root: classes.menuItem }}
               divider={true}
-              button={true}
               onClick={this.toggleNote.bind(this, note)}
             >
               <ListItemIcon>
@@ -156,7 +155,7 @@ class AddNotesLinesContainer extends Component {
                   markingDefinitions={data.objectMarking ?? []}
                 />
               </div>
-            </ListItem>
+            </ListItemButton>
           );
         })}
       </List>

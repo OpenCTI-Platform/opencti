@@ -28,7 +28,7 @@ import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer'
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
-import useHelper from '../../../../utils/hooks/useHelper';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const styles = (theme) => ({
   container: {
@@ -136,8 +136,7 @@ const StixCoreObjectFilesAndHistory = ({
   bypassEntityId,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
+  const draftContext = useDraftContext();
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
@@ -289,7 +288,7 @@ const StixCoreObjectFilesAndHistory = ({
       </Grid>
       <Formik
         enableReinitialize={true}
-        initialValues={{ connector_id: '', validation_mode: 'workbench', configuration: '', objectMarking: [] }}
+        initialValues={{ connector_id: '', validation_mode: draftContext ? 'draft' : 'workbench', configuration: '', objectMarking: [] }}
         validationSchema={importValidation(t_i18n, selectedConnector?.configurations?.length > 0)}
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
@@ -297,7 +296,7 @@ const StixCoreObjectFilesAndHistory = ({
         {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               open={fileToImport}
               keepMounted={true}
               onClose={() => handleReset()}
@@ -332,7 +331,7 @@ const StixCoreObjectFilesAndHistory = ({
                     );
                   })}
                 </Field>
-                {isDraftFeatureEnabled && (
+                {!draftContext && (
                   <Field
                     component={SelectField}
                     variant="standard"
@@ -423,7 +422,7 @@ const StixCoreObjectFilesAndHistory = ({
           {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 open={openExport}
                 keepMounted={true}
                 onClose={handleCloseExport}

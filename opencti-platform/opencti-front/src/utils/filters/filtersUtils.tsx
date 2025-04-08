@@ -6,7 +6,7 @@ import { subDays } from 'date-fns';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
-import { capitalizeFirstLetter } from '../String';
+import { capitalizeFirstLetter, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { generateUniqueItemsArray, isEmptyField } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
@@ -36,6 +36,11 @@ export const emptyFilterGroup = {
 
 export const SELF_ID = 'SELF_ID';
 export const SELF_ID_VALUE = 'CURRENT ENTITY';
+
+export const ME_FILTER_VALUE = '@me';
+
+// 'within' operator filter constants
+export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
 
 export const FiltersVariant = {
   list: 'list',
@@ -96,6 +101,11 @@ export const stixFilters = [
   'x_opencti_cvss_base_score',
   'x_opencti_cvss_base_severity',
   'report_types',
+  'response_types',
+  'information_types',
+  'takedown_types',
+  'note_types',
+  'incident_type',
 ];
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -338,9 +348,9 @@ export const useBuildFiltersForTemplateWidgets = () => {
   return { buildFiltersForTemplateWidgets };
 };
 
-// return the i18n label corresponding to a value
+// return the i18n label corresponding to a filter value
 export const filterValue = (filterKey: string, value?: string | null, filterType?: string, filterOperator?: string) => {
-  const { t_i18n, nsd } = useFormatter();
+  const { t_i18n, nsd, smhd } = useFormatter();
   if (filterKey === 'regardingOf') {
     return JSON.stringify(value);
   }
@@ -363,10 +373,14 @@ export const filterValue = (filterKey: string, value?: string | null, filterType
       );
   }
   if (filterType === 'date') {
-    if (filterOperator && value && ['lte', 'gt'].includes(filterOperator)) {
-      return nsd(subDays(value, 1));
+    if (filterOperator === 'within' && !isValidDate(value)) {
+      return value;
     }
-    return nsd(value);
+    const dateConvertor = filterOperator === 'within' ? smhd : nsd;
+    if (filterOperator && value && ['lte', 'gt'].includes(filterOperator)) {
+      return dateConvertor(subDays(value, 1));
+    }
+    return dateConvertor(value);
   }
   if (filterKey === 'relationship_type' || filterKey === 'type') {
     return t_i18n(`relationship_${value}`);
@@ -630,7 +644,7 @@ export const getDefaultOperatorFilter = (
   }
   const { type } = filterDefinition;
   if (type === 'date') {
-    return 'gte';
+    return 'within';
   }
   if (isNumericFilter(type)) {
     return 'gt';
@@ -681,7 +695,7 @@ export const getAvailableOperatorForFilterKey = (
   }
   const { type: filterType } = filterDefinition;
   if (filterType === 'date') {
-    return ['gt', 'gte', 'lt', 'lte', 'nil', 'not_nil'];
+    return ['gt', 'gte', 'lt', 'lte', 'nil', 'not_nil', 'within'];
   }
   if (isNumericFilter(filterType)) {
     return ['gt', 'gte', 'lt', 'lte'];
@@ -816,19 +830,23 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
   };
 };
 
-export const useBuildEntityTypeBasedFilterContext = (entityTypeParam: string | string[], filters: FilterGroup | undefined): FilterGroup => {
+export const useBuildEntityTypeBasedFilterContext = (
+  entityTypeParam: string | string[],
+  filters: FilterGroup | undefined,
+  excludedEntityTypeParam?: string | string[] | undefined,
+): FilterGroup => {
   const entityTypes = Array.isArray(entityTypeParam) ? entityTypeParam : [entityTypeParam];
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes);
+  const entityTypeFilter = { key: 'entity_type', values: entityTypes, operator: 'eq', mode: 'or' };
+  const entityTypeFilters = [entityTypeFilter];
+  if (excludedEntityTypeParam && excludedEntityTypeParam.length > 0) {
+    const excludedEntityTypes = Array.isArray(excludedEntityTypeParam) ? excludedEntityTypeParam : [excludedEntityTypeParam];
+    const excludedEntityTypeFilter = { key: 'entity_type', values: excludedEntityTypes, operator: 'not_eq', mode: 'or' };
+    entityTypeFilters.push(excludedEntityTypeFilter);
+  }
   return {
     mode: 'and',
-    filters: [
-      {
-        key: 'entity_type',
-        values: entityTypes,
-        operator: 'eq',
-        mode: 'or',
-      },
-    ],
+    filters: entityTypeFilters,
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 };
@@ -984,10 +1002,7 @@ export const isRegardingOfFilterWarning = (
     const entityTypes = entitiesIds
       .map((id) => filtersRepresentativesMap.get(id)?.entity_type)
       .filter((t) => !!t) as string[];
-    if (relationshipTypes.includes('targets')
-      && entityTypes.some((type) => ['Attack-Pattern', 'Campaign', 'Incident', 'Intrusion-Set', 'Malware', 'Threat-Actor-Individual', 'Threat-Actor-Group'].includes(type))) {
-      return true;
-    } if (relationshipTypes.includes('located-at')
+    if (relationshipTypes.includes('located-at')
       && entityTypes.some((type) => ['City', 'IPv4-Addr', 'IPv6-Addr'].includes(type))) {
       return true;
     } if (relationshipTypes.includes('related-to')

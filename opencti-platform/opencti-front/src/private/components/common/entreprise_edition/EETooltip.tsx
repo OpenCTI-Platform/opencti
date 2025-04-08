@@ -49,7 +49,7 @@ const EETooltip = ({
           </span>
         </Tooltip>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={openEnableAI}
           onClose={() => setOpenEnableAI(false)}
           fullWidth={true}
@@ -82,7 +82,7 @@ const EETooltip = ({
           </span>
         </Tooltip>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={openConfigAI}
           onClose={() => setOpenConfigAI(false)}
           fullWidth={true}
@@ -104,7 +104,7 @@ const EETooltip = ({
   return (
     <>
       <Tooltip title={title ? t_i18n(title) : undefined}>
-        <span onClick={(e) => {
+        <span onClickCapture={(e) => {
           setFeedbackCreation(true);
           e.preventDefault();
           e.stopPropagation();

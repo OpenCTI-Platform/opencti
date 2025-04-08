@@ -5,7 +5,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItem from '@mui/material/ListItem';
-import { IconButton, ListItemSecondaryAction, Tooltip } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import { OpenInNew, ContentCopy } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import { TaxiiLineDummy } from './TaxiiLine';
@@ -119,7 +119,29 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
     );
   };
   return (
-    <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      color="primary"
+      divider={true}
+      secondaryAction={
+        <>
+          <Tooltip title={t_i18n('Copy uri to clipboard for your Taxii client')}>
+            <span>
+              <IconButton onClick={copyClick} size="large" color="primary">
+                <ContentCopy />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title={t_i18n('Access stream directly in your browser')}>
+            <span>
+              <IconButton onClick={browseClick} size="large" color="primary">
+                <OpenInNew />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </>
+      }
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="taxiicollection" />
       </ListItemIcon>
@@ -138,22 +160,6 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
           </div>
         }
       />
-      <ListItemSecondaryAction>
-        <Tooltip title={t_i18n('Copy uri to clipboard for your Taxii client')}>
-          <span>
-            <IconButton onClick={copyClick} size="large" color="primary">
-              <ContentCopy />
-            </IconButton>
-          </span>
-        </Tooltip>
-        <Tooltip title={t_i18n('Access stream directly in your browser')}>
-          <span>
-            <IconButton onClick={browseClick} size="large" color="primary">
-              <OpenInNew />
-            </IconButton>
-          </span>
-        </Tooltip>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

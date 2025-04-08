@@ -222,7 +222,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <PositionKnowledge position={position} />
+                    <PositionKnowledge positionData={position} />
                   </div>
                 }
               />

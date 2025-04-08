@@ -99,6 +99,7 @@ const Retention = () => {
         sortBy={sortBy}
         orderAsc={orderAsc}
         handleSort={storageHelpers.handleSort}
+        createButton={<RetentionCreation paginationOptions={paginationOptions} />}
       >
         {queryRef && (
           <React.Suspense
@@ -120,7 +121,6 @@ const Retention = () => {
           </React.Suspense>
         )}
       </ListLines>
-      <RetentionCreation paginationOptions={paginationOptions} />
     </div>
   );
 };

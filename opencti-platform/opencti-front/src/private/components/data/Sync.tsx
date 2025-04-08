@@ -119,6 +119,11 @@ const Sync = () => {
           displayImport={false}
           secondaryAction={true}
           keyword={viewStorage.searchTerm}
+          createButton={
+            <Security needs={[INGESTION_SETINGESTIONS]}>
+              <SyncCreation paginationOptions={paginationOptions} />
+            </Security>
+          }
         >
           <QueryRenderer
             query={SyncLinesQuery}
@@ -134,9 +139,6 @@ const Sync = () => {
             )}
           />
         </ListLines>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          <SyncCreation paginationOptions={paginationOptions} />
-        </Security>
       </PageContainer>
     </>
   );

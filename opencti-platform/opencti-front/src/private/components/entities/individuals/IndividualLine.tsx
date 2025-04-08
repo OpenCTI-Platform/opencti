@@ -10,6 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { IndividualLine_node$key } from '@components/entities/individuals/__generated__/IndividualLine_node.graphql';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -85,10 +86,9 @@ export const IndividualLine: FunctionComponent<IndividualLineProps> = ({
   const { fd } = useFormatter();
   const data = useFragment(individualLineFragment, node);
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/entities/individuals/${data.id}`}
     >
@@ -133,7 +133,7 @@ export const IndividualLine: FunctionComponent<IndividualLineProps> = ({
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

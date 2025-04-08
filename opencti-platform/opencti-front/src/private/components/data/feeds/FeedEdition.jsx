@@ -389,22 +389,24 @@ const FeedEditionContainer = (props) => {
                       label={t('Rolling time (in minutes)')}
                       fullWidth={true}
                       style={{ marginTop: 20 }}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <Tooltip
-                              title={t(
-                                'Return all objects matching the filters that have been updated since this amount of minutes',
-                              )}
-                            >
-                              <InformationOutline
-                                fontSize="small"
-                                color="primary"
-                                style={{ cursor: 'default' }}
-                              />
-                            </Tooltip>
-                          </InputAdornment>
-                        ),
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <Tooltip
+                                title={t(
+                                  'Return all objects matching the filters that have been updated since this amount of minutes',
+                                )}
+                              >
+                                <InformationOutline
+                                  fontSize="small"
+                                  color="primary"
+                                  style={{ cursor: 'default' }}
+                                />
+                              </Tooltip>
+                            </InputAdornment>
+                          ),
+                        },
                       }}
                     />
                     <Field
@@ -649,6 +651,7 @@ const FeedEditionFragment = createFragmentContainer(FeedEditionContainer, {
       feed_public
       authorized_members {
         id
+        member_id
         name
       }
     }

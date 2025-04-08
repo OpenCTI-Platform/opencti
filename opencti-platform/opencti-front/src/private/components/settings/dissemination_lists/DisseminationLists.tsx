@@ -133,13 +133,13 @@ const DisseminationLists = () => {
     description: {
       id: 'description',
       label: 'Description',
-      percentWidth: 60,
+      percentWidth: 53,
       isSortable: false,
     },
     lineNumber: {
       id: 'dissemination_list_values_count',
       label: 'Number of recipients',
-      percentWidth: 15,
+      percentWidth: 22,
       isSortable: true,
       render: (node: DisseminationListsLine_node$data) => node.emails.length || '-',
     },
@@ -178,10 +178,10 @@ const DisseminationLists = () => {
                 disableNavigation
                 preloadedPaginationProps={preloadedPaginationProps}
                 actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
+                createButton={<DisseminationListCreation paginationOptions={queryPaginationOptions} />}
                 icon={() => <ItemIcon type="dissemination-list" />}
               />
             )}
-            <DisseminationListCreation paginationOptions={queryPaginationOptions} />
           </>
         )}
       </PageContainer>

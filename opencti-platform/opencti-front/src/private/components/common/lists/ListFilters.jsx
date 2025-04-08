@@ -10,6 +10,9 @@ import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { useFormatter } from '../../../../components/i18n';
 import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
+import SavedFilters from '../../../../components/saved_filters/SavedFilters';
+import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -34,8 +37,13 @@ const ListFilters = ({
   helpers,
   required = false,
   entityTypes,
+  isDatatable = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+
+  const isSavedFiltersFeatureEnabled = isFeatureEnable('SAVED_FILTERS');
+
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   const [inputValue, setInputValue] = React.useState('');
   const classes = useStyles();
@@ -131,6 +139,7 @@ const ListFilters = ({
             )}
             renderOption={(props, option) => <li {...props}>{option.label}</li>}
           />
+          {isSavedFiltersFeatureEnabled && isDatatable && <SavedFilters />}
           <Tooltip title={t_i18n('Clear filters')}>
             <IconButton
               color={color}
@@ -140,6 +149,7 @@ const ListFilters = ({
               <FilterListOffOutlined fontSize={size || 'small'} />
             </IconButton>
           </Tooltip>
+          {isSavedFiltersFeatureEnabled && isDatatable && <SavedFilterButton />}
         </>
       )}
       <Popover

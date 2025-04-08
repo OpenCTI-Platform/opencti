@@ -1,12 +1,18 @@
+import type { ChatPromptValueInterface } from '@langchain/core/prompt_values';
+import { ChatMistralAI } from '@langchain/mistralai';
+import { ChatOpenAI, AzureChatOpenAI } from '@langchain/openai';
 import { Mistral } from '@mistralai/mistralai';
+import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
 import { AzureOpenAI, OpenAI } from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
-import { isEmptyField } from './utils';
-import { notify } from './redis';
+import { UnknownError, UnsupportedError } from '../config/errors';
+import { OutputSchema } from '../modules/ai/ai-nlq-schema';
 import { AI_BUS } from '../modules/ai/ai-types';
 import type { AuthUser } from '../types/user';
-import { UnsupportedError } from '../config/errors';
 import { truncate } from '../utils/format';
+import { notify } from './redis';
+import { isEmptyField } from './utils';
+import { addNlqQueryCount } from '../manager/telemetryManager';
 
 const AI_ENABLED = conf.get('ai:enabled');
 const AI_TYPE = conf.get('ai:type');
@@ -15,8 +21,11 @@ const AI_TOKEN = conf.get('ai:token');
 const AI_MODEL = conf.get('ai:model');
 const AI_MAX_TOKENS = conf.get('ai:max_tokens');
 const AI_VERSION = conf.get('ai:version');
+const AI_AZURE_INSTANCE = conf.get('ai:ai_azure_instance');
+const AI_AZURE_DEPLOYMENT = conf.get('ai:ai_azure_deployment');
 
 let client: Mistral | OpenAI | AzureOpenAI | null = null;
+let nlqChat: ChatOpenAI | ChatMistralAI | AzureChatOpenAI | null = null;
 if (AI_ENABLED && AI_TOKEN) {
   switch (AI_TYPE) {
     case 'mistralai':
@@ -30,38 +39,82 @@ if (AI_ENABLED && AI_TOKEN) {
           groupEnd: () => logApp.info('[AI] group end.'),
         } */
       });
+
+      if (AI_ENDPOINT.includes('https://api.mistral.ai')) {
+        // Official MistralAI API
+        nlqChat = new ChatMistralAI({
+          model: AI_MODEL,
+          apiKey: AI_TOKEN,
+          temperature: 0,
+        });
+      } else {
+        // Mistral model deployed via vLLM (OpenAI-compatible)
+        nlqChat = new ChatOpenAI({
+          model: AI_MODEL,
+          apiKey: AI_TOKEN,
+          temperature: 0,
+          configuration: {
+            baseURL: `${AI_ENDPOINT}/v1`,
+          },
+        });
+      }
+
       break;
+
     case 'openai':
       client = new OpenAI({
         apiKey: AI_TOKEN,
         ...(isEmptyField(AI_ENDPOINT) ? {} : { baseURL: AI_ENDPOINT }),
       });
+
+      nlqChat = new ChatOpenAI({
+        model: AI_MODEL,
+        apiKey: AI_TOKEN,
+        temperature: 0,
+        configuration: {
+          baseURL: AI_ENDPOINT || undefined,
+        },
+      });
+
       break;
+
     case 'azureopenai':
       client = new AzureOpenAI({
         apiKey: AI_TOKEN,
         ...(isEmptyField(AI_ENDPOINT) ? {} : { baseURL: AI_ENDPOINT }),
         ...(isEmptyField(AI_VERSION) ? {} : { apiVersion: AI_VERSION }),
       });
+
+      nlqChat = new AzureChatOpenAI({
+        azureOpenAIApiKey: AI_TOKEN,
+        azureOpenAIApiVersion: AI_VERSION,
+        azureOpenAIApiInstanceName: AI_AZURE_INSTANCE,
+        azureOpenAIApiDeploymentName: AI_AZURE_DEPLOYMENT,
+        temperature: 0,
+      });
+
       break;
+
     default:
       throw UnsupportedError('Not supported AI type (currently support: mistralai, openai, azureopenai)', { type: AI_TYPE });
   }
 }
 
+// Query MistralAI (Streaming)
 export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
     logApp.debug('[AI] Querying MistralAI with prompt', { questionStart: userMessage.substring(0, 100) });
-    const response = await (client as Mistral)?.chat.stream({
+    const request: ChatCompletionStreamRequest = {
       model: AI_MODEL,
       messages: [
         { role: 'system', content: systemMessage },
-        { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) }
+        { role: 'user', content: truncate(userMessage, AI_MAX_TOKENS, false) },
       ],
-    });
+    };
+    const response = await (client as Mistral)?.chat.stream(request);
     let content = '';
     if (response) {
       // eslint-disable-next-line no-restricted-syntax
@@ -86,6 +139,7 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
   }
 };
 
+// Query OpenAI (Streaming)
 export const queryChatGpt = async (busId: string | null, developerMessage: string, userMessage: string, user: AuthUser) => {
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
@@ -124,6 +178,7 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
   }
 };
 
+// Generic AI Query Handler
 export const queryAi = async (busId: string | null, developerMessage: string | null, userMessage: string, user: AuthUser) => {
   const finalDeveloperMessage = developerMessage || 'You are an assistant helping a cyber threat intelligence analyst to better understand cyber threat intelligence data.';
   switch (AI_TYPE) {
@@ -134,5 +189,26 @@ export const queryAi = async (busId: string | null, developerMessage: string | n
       return queryChatGpt(busId, finalDeveloperMessage, userMessage, user);
     default:
       throw UnsupportedError('Not supported AI type', { type: AI_TYPE });
+  }
+};
+
+// NLQ AI Query with LangChain's Chat Models
+export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
+  if (!nlqChat) {
+    throw UnsupportedError('Incorrect AI configuration for NLQ', {
+      enabled: AI_ENABLED,
+      type: AI_TYPE,
+      endpoint: AI_ENDPOINT,
+      model: AI_MODEL,
+    });
+  }
+
+  await addNlqQueryCount();
+
+  logApp.info('[NLQ] Querying AI model for structured output');
+  try {
+    return await nlqChat.withStructuredOutput(OutputSchema).invoke(promptValue);
+  } catch (err) {
+    throw UnknownError('[NLQ] Error querying AI model', { cause: err });
   }
 };

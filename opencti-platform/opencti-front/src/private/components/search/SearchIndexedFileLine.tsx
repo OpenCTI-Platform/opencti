@@ -23,9 +23,10 @@ import { SearchIndexedFileLine_node$data } from '@components/search/__generated_
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { MoreVertOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
+import Box from '@mui/material/Box';
+import { ListItemButton } from '@mui/material';
 import { DataColumns } from '../../../components/list_lines';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
@@ -76,45 +77,47 @@ const SearchIndexedFileLineComponent: FunctionComponent<SearchIndexedFileLineCom
   }
   return (
     <ListItem
-      classes={{ root: classes.item }}
       divider={true}
-      button={true}
-      component="a"
-      href={getFileUri(node.file_id)}
-      target="_blank"
+      disablePadding
+      secondaryAction={node.entity && entityLink && (
+        <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
+          <IconButton
+            component={Link}
+            target="_blank"
+            to={entityLink}
+            size="medium"
+          >
+            <OpenInNewOutlined fontSize="medium" />
+          </IconButton>
+        </Tooltip>
+      )}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type="File" />
-      </ListItemIcon>
-      <ListItemText
-        primary={
-          <div>
-            {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                {value.render?.(node)}
-              </div>
-            ))}
-          </div>
+
+      <ListItemButton
+        classes={{ root: classes.item }}
+        component="a"
+        href={getFileUri(node.file_id)}
+        target="_blank"
+      >
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type="File" />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <div>
+              {Object.values(dataColumns).map((value) => (
+                <div
+                  key={value.label}
+                  className={classes.bodyItem}
+                  style={{ width: value.width }}
+                >
+                  {value.render?.(node)}
+                </div>
+              ))}
+            </div>
         }
-      />
-      <ListItemSecondaryAction>
-        {node.entity && entityLink && (
-          <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
-            <IconButton
-              component={Link}
-              target="_blank"
-              to={entityLink}
-              size="medium"
-            >
-              <OpenInNewOutlined fontSize="medium" />
-            </IconButton>
-          </Tooltip>
-        )}
-      </ListItemSecondaryAction>
+        />
+      </ListItemButton>
     </ListItem>
   );
 };
@@ -156,7 +159,15 @@ export const SearchIndexedFileLineDummy = ({
 }) => {
   const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <Box sx={{ root: classes.itemIconDisabled }}>
+          <MoreVertOutlined/>
+        </Box>
+      }
+    >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
@@ -180,9 +191,6 @@ export const SearchIndexedFileLineDummy = ({
           </div>
         }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <MoreVertOutlined />
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

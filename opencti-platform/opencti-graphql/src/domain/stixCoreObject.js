@@ -41,12 +41,12 @@ import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
+import { defaultValidationMode, deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
 import { generateStandardId, getInstanceIds } from '../schema/identifier';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../database/utils';
+import { isEmptyField, isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -56,7 +56,7 @@ import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-util
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { isBypassUser, isUserCanAccessStoreElement, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
+import { isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
@@ -78,6 +78,10 @@ import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
+import { elRemoveElementFromDraft } from '../database/draft-engine';
+import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
+import { askJobImport } from './connector';
+import { authorizedMembers } from '../schema/attribute-definition';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -130,11 +134,11 @@ export const findAllAuthMemberRestricted = async (context, user, args) => {
     throw ForbiddenAccess();
   }
   const types = extractStixCoreObjectTypesFromArgs(args);
-  const filters = addFilter(args.filters, 'authorized_members.id', [], FilterOperator.NotNil);
+  const filters = addFilter(args.filters, `${authorizedMembers.name}.id`, [], FilterOperator.NotNil);
   const finalArgs = {
     ...args,
     includeAuthorities: true,
-    filters
+    filters,
   };
 
   return listEntitiesPaginated(context, user, types, finalArgs);
@@ -165,7 +169,8 @@ export const batchInternalRels = async (context, user, elements, opts = {}) => {
         const resolve = resolvedElements[id];
         // If resolution is empty the database is inconsistent, an error must be thrown
         if (isEmptyField(resolve)) {
-          throw UnsupportedError('Invalid loading of batched elements', { ids: relId });
+          logApp.warn('Invalid loading of batched elements', { ids: relId });
+          return undefined;
         }
         // If user have correct access right, return the element
         if (await isUserCanAccessStoreElement(context, user, resolve)) {
@@ -174,17 +179,19 @@ export const batchInternalRels = async (context, user, elements, opts = {}) => {
         // If access is not possible, return a restricted entity
         return buildRestrictedEntity(resolve);
       }));
+      const filteredResults = relElements.filter((e) => e);
       // Return sorted elements if needed
       if (opts.sortBy) {
-        return R.sortWith([R.ascend(R.prop(opts.sortBy))])(relElements);
+        return R.sortWith([R.ascend(R.prop(opts.sortBy))])(filteredResults);
       }
-      return relElements;
+      return filteredResults;
     }
     if (relId) {
       const resolve = resolvedElements[relId];
       // If resolution is empty the database is inconsistent, an error must be thrown
       if (isEmptyField(resolve)) {
-        throw UnsupportedError('Invalid loading of batched element', { id: relId });
+        logApp.warn('Invalid loading of batched element', { id: relId });
+        return undefined;
       }
       // If user have correct access right, return the element
       if (await isUserCanAccessStoreElement(context, user, resolve)) {
@@ -200,7 +207,7 @@ export const batchInternalRels = async (context, user, elements, opts = {}) => {
 export const batchMarkingDefinitions = async (context, user, stixCoreObjects) => {
   const markingsFromCache = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
   return stixCoreObjects.map((s) => {
-    const markings = (s[RELATION_OBJECT_MARKING] ?? []).map((id) => markingsFromCache.get(id));
+    const markings = (s[RELATION_OBJECT_MARKING] ?? []).map((id) => markingsFromCache.get(id)).filter((m) => m);
     return R.sortWith([
       R.ascend(R.propOr('TLP', 'definition_type')),
       R.descend(R.propOr(0, 'x_opencti_order')),
@@ -271,6 +278,16 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
   return stixCoreObjectId;
 };
 
+export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjectId) => {
+  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT, { includeDeletedInDraft: true });
+  if (!stixCoreObject) {
+    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Object cannot be found.');
+  }
+  // TODO currently not locked, but might need to be
+  await elRemoveElementFromDraft(context, user, stixCoreObject);
+  return stixCoreObject.id;
+};
+
 export const askElementEnrichmentForConnector = async (context, user, enrichedId, connectorId) => {
   const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
   const element = await internalLoadById(context, user, enrichedId);
@@ -281,7 +298,7 @@ export const askElementEnrichmentForConnector = async (context, user, enrichedId
   const draftContext = getDraftContext(context, user);
   const contextOutOfDraft = { ...context, draft_context: '' };
   const workMessage = draftContext ? `Manual enrichment in draft ${draftContext}` : 'Manual enrichment';
-  const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id);
+  const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
   const message = {
     internal: {
       work_id: work.id, // Related action for history
@@ -411,7 +428,7 @@ export const stixCoreObjectsExportAsk = async (context, user, args) => {
   const { search, orderBy, orderMode, filters } = args;
   const argsFilters = { search, orderBy, orderMode, filters };
   const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
-  const listParams = exportTransformFilters(argsFilters, ordersOpts);
+  const listParams = exportTransformFilters(argsFilters, ordersOpts, user.id);
   const works = await askListExport(context, user, exportContext, format, selectedIds, listParams, exportType, contentMaxMarkings, fileMarkings);
   return works.map((w) => workToExportFile(w));
 };
@@ -659,10 +676,41 @@ export const stixCoreAnalysis = async (context, user, entityId, contentSource, c
   return { analysisType, mappedEntities, analysisStatus: 'complete', analysisDate: analysis.lastModified };
 };
 
-export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot import in draft');
+export const stixCoreObjectImportFile = async (context, user, id, file, args = {}) => {
+  const {
+    fileMarkings,
+    connectors,
+    validationMode = defaultValidationMode,
+    draftId,
+    version,
+    importContextEntities,
+    noTriggerImport,
+  } = args;
+
+  const contextInDraft = { ...context, draft_context: draftId };
+  const uploadedFile = await stixCoreObjectImportPush(contextInDraft, user, id, file, {
+    version,
+    fileMarkings,
+    importContextEntities,
+    noTriggerImport
+  });
+
+  if (connectors && isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'])) {
+    await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
+      askJobImport(contextInDraft, user, {
+        fileName: uploadedFile.id,
+        connectorId,
+        configuration,
+        validationMode,
+        forceValidation: true
+      })
+    )));
   }
+
+  return uploadedFile;
+};
+
+export const stixCoreObjectImportPush = async (context, user, id, file, args = {}) => {
   let lock;
   const { noTriggerImport, version: fileVersion, fileMarkings: file_markings, importContextEntities, fromTemplate = false } = args;
   const previous = await storeLoadByIdWithRefs(context, user, id);
@@ -715,13 +763,20 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });
-    await elUpdateElement(context, user, {
+
+    const elementWithUpdatedFiles = {
       _index: previous._index,
       internal_id: internalId,
       entity_type: previous.entity_type, // required for schema validation
       updated_at: now(),
       x_opencti_files: nonResolvedFiles
-    });
+    };
+    if (getDraftContext(context, user)) {
+      elementWithUpdatedFiles._id = previous._id;
+      const eventFileInput = { key: FILES_UPDATE_KEY, value: [up.id], operation: UPDATE_OPERATION_ADD };
+      elementWithUpdatedFiles.draft_change = getDraftChanges(previous, [eventFileInput]);
+    }
+    await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
     const fileMarkings = R.uniq(R.flatten(files.filter((f) => f.file_markings).map((f) => f.file_markings)));
     let fileMarkingsPromise = Promise.resolve();
@@ -769,10 +824,11 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
 };
 
 export const stixCoreObjectImportDelete = async (context, user, fileId) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot delete imports in draft');
+  const draftContext = getDraftContext(context, user);
+  if (draftContext && !isDraftFile(fileId, draftContext)) {
+    throw UnsupportedError('Cannot delete non draft imports in draft');
   }
-  if (!fileId.startsWith('import')) {
+  if (!draftContext && !fileId.startsWith('import')) {
     throw UnsupportedError('Cant delete an exported file with this method');
   }
   // Get the context
@@ -812,13 +868,19 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
       return nonResolvedFile;
     });
-    await elUpdateElement(context, user, {
+    const elementWithUpdatedFiles = {
       _index: previous._index,
       internal_id: entityId,
       updated_at: now(),
       x_opencti_files: nonResolvedFiles,
       entity_type: previous.entity_type, // required for schema validation
-    });
+    };
+    if (getDraftContext(context, user)) {
+      elementWithUpdatedFiles._id = previous._id;
+      const eventFileInput = { key: FILES_UPDATE_KEY, value: [fileId], operation: UPDATE_OPERATION_REMOVE };
+      elementWithUpdatedFiles.draft_change = getDraftChanges(previous, [eventFileInput]);
+    }
+    await elUpdateElement(context, user, elementWithUpdatedFiles);
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
     await storeUpdateEvent(context, user, previous, instance, `removes \`${baseDocument.name}\` in \`files\``);

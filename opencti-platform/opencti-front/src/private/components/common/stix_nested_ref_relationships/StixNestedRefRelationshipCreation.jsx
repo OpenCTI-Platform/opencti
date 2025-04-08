@@ -881,7 +881,7 @@ class StixNestedRefRelationshipCreation extends Component {
 
 StixNestedRefRelationshipCreation.propTypes = {
   open: PropTypes.bool,
-  fromObjects: PropTypes.object,
+  fromObjects: PropTypes.array,
   toObjects: PropTypes.array,
   handleResult: PropTypes.func,
   classes: PropTypes.object,
@@ -891,7 +891,7 @@ StixNestedRefRelationshipCreation.propTypes = {
   startTime: PropTypes.string,
   stopTime: PropTypes.string,
   confidence: PropTypes.number,
-  defaultMarkingDefinitions: PropTypes.object,
+  defaultMarkingDefinitions: PropTypes.array,
   handleClose: PropTypes.func,
   handleReverseRelation: PropTypes.func,
 };

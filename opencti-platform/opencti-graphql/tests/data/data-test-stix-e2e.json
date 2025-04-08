@@ -871,7 +871,7 @@
       "created": "2024-07-22T11:34:27.675Z",
       "modified": "2024-07-22T11:34:27.680Z",
       "name": "Incident for background task test - search by text 1",
-      "description": "Find this incident in test please.",
+      "description": "Find this incident in test please findMeWithSearchID.",
       "x_opencti_id": "2f7b477c-41c2-4d27-854b-99ed35dd5403",
       "x_opencti_type": "Incident",
       "type": "incident"

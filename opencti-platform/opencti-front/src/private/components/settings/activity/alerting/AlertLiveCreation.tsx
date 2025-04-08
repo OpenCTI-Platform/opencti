@@ -292,7 +292,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     <Dialog disableRestoreFocus={true}
       open={open ?? false}
       onClose={handleClose}
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ paper: { elevation: 1 } }}
     >
       <Formik initialValues={liveInitialValues}
         validationSchema={liveActivityTriggerValidation(t_i18n)}

@@ -16,7 +16,7 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   event_types: string[]
   notifiers: string[]
   trigger_ids: string[]
-  authorized_members: Array<AuthorizedMember>;
+  restricted_members: Array<AuthorizedMember>;
   instance_trigger: boolean
   filters: string
 }
@@ -40,7 +40,7 @@ export interface StoreEntityTrigger extends StoreEntity {
   trigger_type: string
   event_types: string[]
   notifiers: string[]
-  authorized_members: Array<AuthorizedMember>;
+  restricted_members: Array<AuthorizedMember>;
   instance_trigger: boolean
 }
 
@@ -59,7 +59,7 @@ export const NOTIFICATION_NUMBER = 'NotificationNumber';
 export interface NotificationContentEvent {
   operation: string
   message: string
-  instance_id?: string
+  instance_id?: string | null
 }
 
 export interface NotificationAddInput {

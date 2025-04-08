@@ -217,7 +217,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <ToolKnowledge tool={tool} />
+                    <ToolKnowledge toolData={tool} />
                   </div>
                 }
               />

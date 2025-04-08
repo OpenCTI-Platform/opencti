@@ -11,11 +11,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import StixCoreObjectOrStixCoreRelationshipContainersLines, {
   stixCoreObjectOrStixCoreRelationshipContainersLinesQuery,
 } from './StixCoreObjectOrStixCoreRelationshipContainersLines';
-import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
-  stixCoreObjectOrStixCoreRelationshipContainersGraphQuery,
-} from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
-import Loader from '../../../../components/Loader';
-import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
+import StixCoreObjectOrStixCoreRelationshipContainersGraph, { containersObjectsQuery } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import SearchInput from '../../../../components/SearchInput';
 import useAuth from '../../../../utils/hooks/useAuth';
 import Filters from '../lists/Filters';
@@ -23,6 +19,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
+import { deserializeObjectB64 } from '../../../../utils/object';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -277,7 +274,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
           redirection
         />
         <QueryRenderer
-          query={stixCoreObjectOrStixCoreRelationshipContainersGraphQuery}
+          query={containersObjectsQuery}
           variables={{
             id: stixDomainObjectOrStixCoreRelationship.id,
             types: [
@@ -312,24 +309,16 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
           }}
           render={({ props }) => {
             if (props) {
+              const positions = deserializeObjectB64(stixDomainObjectOrStixCoreRelationship.x_opencti_graph_data);
               return (
                 <StixCoreObjectOrStixCoreRelationshipContainersGraph
-                  stixDomainObjectOrStixCoreRelationship={
-                    stixDomainObjectOrStixCoreRelationship
-                  }
+                  id={stixDomainObjectOrStixCoreRelationship.id}
+                  positions={positions}
                   data={props}
-                  handleChangeView={helpers.handleChangeView}
                 />
               );
             }
-            return (
-              <>
-                <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
-                  disabled={true}
-                />
-                <Loader />
-              </>
-            );
+            return null;
           }}
         />
       </>

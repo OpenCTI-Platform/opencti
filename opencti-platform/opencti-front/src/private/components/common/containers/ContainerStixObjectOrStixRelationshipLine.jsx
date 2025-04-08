@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
@@ -67,70 +67,9 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
     : `${resolveLink(node.entity_type)}/${node.id}`;
   return (
     <ListItem
-      classes={{ root: classes.item }}
-      button={true}
       divider={true}
-      component={Link}
-      to={link}
-      disabled={node.relationship_type && restrictedWithFrom}
-    >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={node.entity_type} />
-      </ListItemIcon>
-      <ListItemText
-        primary={
-          <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <ItemEntityType
-                entityType={node.entity_type}
-                isRestricted={node.relationship_type && restrictedWithFrom}
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              {getMainRepresentative(node)}
-              {node.draftVersion && (<DraftChip/>)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
-              {R.pathOr('', ['createdBy', 'name'], node)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
-              <StixCoreObjectLabels
-                variant="inList"
-                labels={node.objectLabel}
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
-              {fd(node.created_at)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <ItemMarkings
-                variant="inList"
-                markingDefinitions={node.objectMarking ?? []}
-                limit={1}
-              />
-            </div>
-          </div>
-        }
-      />
-      <ListItemSecondaryAction>
+      disablePadding
+      secondaryAction={
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerStixCoreObjectPopover
             containerId={containerId}
@@ -142,7 +81,71 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
             enableReferences={enableReferences}
           />
         </Security>
-      </ListItemSecondaryAction>
+          }
+    >
+      <ListItemButton
+        component={Link}
+        classes={{ root: classes.item }}
+        to={link}
+        disabled={node.relationship_type && restrictedWithFrom}
+      >
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type={node.entity_type} />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.entity_type.width }}
+              >
+                <ItemEntityType
+                  entityType={node.entity_type}
+                  isRestricted={node.relationship_type && restrictedWithFrom}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {getMainRepresentative(node)}
+                {node.draftVersion && (<DraftChip/>)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                {R.pathOr('', ['createdBy', 'name'], node)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
+              >
+                <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.objectLabel}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created_at.width }}
+              >
+                {fd(node.created_at)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectMarking.width }}
+              >
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitions={node.objectMarking ?? []}
+                  limit={1}
+                />
+              </div>
+            </div>
+        }
+        />
+      </ListItemButton>
     </ListItem>
   );
 };
@@ -710,7 +713,15 @@ export const ContainerStixObjectOrStixRelationshipLineDummy = ({
 }) => {
   const classes = useStyles();
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <IconButton classes={classes.itemIconDisabled } disabled={true} aria-haspopup="true" size="large">
+          <MoreVert />
+        </IconButton>
+        }
+    >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
@@ -786,11 +797,6 @@ export const ContainerStixObjectOrStixRelationshipLineDummy = ({
           </div>
         }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <IconButton disabled={true} aria-haspopup="true" size="large">
-          <MoreVert />
-        </IconButton>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

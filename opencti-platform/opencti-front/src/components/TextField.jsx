@@ -7,14 +7,13 @@ import TextFieldAskAI from '../private/components/common/form/TextFieldAskAI';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
 
 const TextField = (props) => {
-  const { detectDuplicate, onBeforePaste, startAdornment, ...htmlProps } = props;
+  const { detectDuplicate, onBeforePaste, startAdornment, askAi, ...htmlProps } = props;
   const {
     form: { setFieldValue, setFieldTouched },
     field: { name },
     onChange,
     onFocus,
     onSubmit,
-    askAi,
   } = props;
   const internalOnChange = React.useCallback(
     (event) => {
@@ -92,21 +91,23 @@ const TextField = (props) => {
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
       onPaste={internalOnPaste}
-      InputProps={{
-        startAdornment,
-        endAdornment: askAi && (
-          <TextFieldAskAI
-            currentValue={value ?? ''}
-            setFieldValue={(val) => {
-              setFieldValue(name, val);
-              if (typeof onSubmit === 'function') {
-                onSubmit(name, val || '');
-              }
-            }}
-            format="text"
-            disabled={props.disabled}
-          />
-        ),
+      slotProps={{
+        input: {
+          startAdornment,
+          endAdornment: askAi && (
+            <TextFieldAskAI
+              currentValue={value ?? ''}
+              setFieldValue={(val) => {
+                setFieldValue(name, val);
+                if (typeof onSubmit === 'function') {
+                  onSubmit(name, val || '');
+                }
+              }}
+              format="text"
+              disabled={props.disabled}
+            />
+          ),
+        },
       }}
     />
   );

@@ -23,7 +23,8 @@ import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
 import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
-import { userAddIndividual } from '../domain/user';
+import { resolveUserIndividual } from '../domain/user';
+import { isEmptyField } from '../database/utils';
 
 // Needs to have edit rights or needs to be creator of the note
 const checkUserAccess = async (context, user, id) => {
@@ -97,24 +98,20 @@ const noteResolvers = {
     // For collaborative creation
     userNoteAdd: async (_, { input }, context) => {
       const { user } = context;
-      const noteToCreate = { ...input };
-      noteToCreate.createdBy = user.individual_id;
-      if (noteToCreate.createdBy === undefined) {
-        const individual = await userAddIndividual(context, user);
-        noteToCreate.createdBy = individual.id;
+      let noteToCreate = { ...input };
+      if (isEmptyField(noteToCreate.createdBy)) {
+        const individualId = await resolveUserIndividual(context, user);
+        noteToCreate = { ...noteToCreate, createdBy: individualId };
       }
       return addNote(context, user, noteToCreate);
     },
     // For knowledge
     noteAdd: async (_, { input }, context) => {
       const { user } = context;
-      const noteToCreate = { ...input };
-      if (!noteToCreate.createdBy) {
-        noteToCreate.createdBy = user.individual_id;
-        if (noteToCreate.createdBy === undefined) {
-          const individual = await userAddIndividual(context, user);
-          noteToCreate.createdBy = individual.id;
-        }
+      let noteToCreate = { ...input };
+      if (isEmptyField(noteToCreate.createdBy)) {
+        const individualId = await resolveUserIndividual(context, user);
+        noteToCreate = { ...noteToCreate, createdBy: individualId };
       }
       return addNote(context, context.user, noteToCreate);
     },

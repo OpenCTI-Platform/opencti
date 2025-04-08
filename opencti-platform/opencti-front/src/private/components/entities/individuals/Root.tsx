@@ -260,7 +260,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                 element={
                   <div key={forceUpdate}>
                     <IndividualKnowledge
-                      individual={individual}
+                      individualData={individual}
                       viewAs={viewAs}
                     />
                   </div>

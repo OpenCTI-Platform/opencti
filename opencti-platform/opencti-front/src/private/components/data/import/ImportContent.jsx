@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
 import Typography from '@mui/material/Typography';
@@ -9,7 +9,6 @@ import { Add, ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -27,17 +26,16 @@ import { TEN_SECONDS } from '../../../../utils/Time';
 import { fileManagerAskJobImportMutation, scopesConn } from '../../common/files/FileManager';
 import FileLine from '../../common/files/FileLine';
 import { useFormatter } from '../../../../components/i18n';
-import FileUploader from '../../common/files/FileUploader';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import WorkbenchFileLine from '../../common/files/workbench/WorkbenchFileLine';
-import FreeTextUploader from '../../common/files/FreeTextUploader';
 import WorkbenchFileCreator from '../../common/files/workbench/WorkbenchFileCreator';
 import ManageImportConnectorMessage from './ManageImportConnectorMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import useHelper from '../../../../utils/hooks/useHelper';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import UploadImport from '../../../../components/UploadImport';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -165,12 +163,12 @@ const ImportContentComponent = ({
   importFiles,
   pendingFiles,
   isNewImportScreensEnabled,
+  inDraftOverview,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  const { isFeatureEnable } = useHelper();
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
+  const draftContext = useDraftContext();
   setTitle(t_i18n('Import | Import | Data'));
 
   const [fileToImport, setFileToImport] = useState(null);
@@ -310,13 +308,14 @@ const ImportContentComponent = ({
   };
 
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
-
   return (
-    <div style={{ paddingRight: isNewImportScreensEnabled ? 200 : 0 }}>
+    <div style={{ paddingRight: isNewImportScreensEnabled && !inDraftOverview ? 200 : 0 }}>
+      {!inDraftOverview && (
       <Breadcrumbs
         elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
       />
-      {isNewImportScreensEnabled && <ImportMenu/>}
+      )}
+      {isNewImportScreensEnabled && !inDraftOverview && <ImportMenu/>}
       <Grid
         container={true}
         spacing={3}
@@ -333,13 +332,8 @@ const ImportContentComponent = ({
               {t_i18n('Uploaded files')}
             </Typography>
             <div style={{ float: 'left', marginTop: -15 }}>
-              <FileUploader
+              <UploadImport
                 onUploadSuccess={() => relay.refetch()}
-                size="medium"
-              />
-              <FreeTextUploader
-                onUploadSuccess={() => relay.refetch()}
-                size="medium"
               />
             </div>
             <div className="clearfix" />
@@ -373,7 +367,7 @@ const ImportContentComponent = ({
             </Paper>
           </div>
         </Grid>
-        <Grid item xs={12}>
+        {!inDraftOverview && (<Grid item xs={12}>
           <div style={{ height: '100%' }} className="break">
             <Typography
               variant="h4"
@@ -388,6 +382,9 @@ const ImportContentComponent = ({
                   classes={{ root: classes.itemHead }}
                   divider={false}
                   style={{ paddingTop: 0 }}
+                  secondaryAction={
+                    <div style={{ width: 96 }}> &nbsp; </div>
+                  }
                 >
                   <ListItemIcon>
                     <span
@@ -411,7 +408,6 @@ const ImportContentComponent = ({
                       </div>
                       }
                   />
-                  <ListItemSecondaryAction style={{ width: 96 }}> &nbsp; </ListItemSecondaryAction>
                 </ListItem>
                 {pendingFilesEdges.map((file) => (
                   <WorkbenchFileLine
@@ -424,12 +420,12 @@ const ImportContentComponent = ({
               </List>
             </Paper>
           </div>
-        </Grid>
+        </Grid>)}
       </Grid>
       <div>
         <Formik
           enableReinitialize={true}
-          initialValues={{ connector_id: '', validation_mode: 'workbench', configuration: '', objectMarking: [] }}
+          initialValues={{ connector_id: '', validation_mode: draftContext ? 'draft' : 'workbench', configuration: '', objectMarking: [] }}
           validationSchema={importValidation(t_i18n, !!selectedConnector?.configurations)}
           onSubmit={onSubmitImport}
           onReset={handleCloseImport}
@@ -438,7 +434,7 @@ const ImportContentComponent = ({
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={!!fileToImport}
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 keepMounted={true}
                 onClose={() => handleReset()}
                 fullWidth={true}
@@ -469,7 +465,7 @@ const ImportContentComponent = ({
                       );
                     })}
                   </Field>
-                  {isDraftFeatureEnabled && (
+                  {!draftContext && (
                     <Field
                       component={SelectField}
                       variant="standard"
@@ -556,7 +552,7 @@ const ImportContentComponent = ({
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={!!fileToValidate}
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 keepMounted={true}
                 onClose={handleCloseValidate}
                 fullWidth={true}
@@ -603,12 +599,15 @@ const ImportContentComponent = ({
             </Form>
           )}
         </Formik>
+        {!inDraftOverview && (
         <WorkbenchFileCreator
           handleCloseCreate={handleCloseCreate}
           openCreate={displayCreate}
           onCompleted={onCreateWorkbenchCompleted}
         />
+        )}
       </div>
+      {!inDraftOverview && (
       <Fab
         onClick={handleOpenCreate}
         color="primary"
@@ -618,6 +617,7 @@ const ImportContentComponent = ({
       >
         <Add />
       </Fab>
+      )}
     </div>
   );
 };

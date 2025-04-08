@@ -10,6 +10,7 @@ import {
   stixSightingRelationshipDeleteRelation,
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
+  stixSightingRelationshipRemoveFromDraft,
   stixSightingRelationshipsNumber
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext } from '../database/redis';
@@ -28,10 +29,11 @@ import {
   externalReferencesPaginated,
   notesPaginated,
   opinionsPaginated,
-  reportsPaginated
+  reportsPaginated,
 } from '../domain/stixCoreObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
+import { getDraftContextIfElementInDraft } from '../database/draft-utils';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -50,8 +52,16 @@ const stixSightingRelationshipResolvers = {
     stixSightingRelationshipsNumber: (_, args, context) => stixSightingRelationshipsNumber(context, context.user, args),
   },
   StixSightingRelationship: {
-    from: (rel, _, context) => (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, context, context.user)),
-    to: (rel, _, context) => (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, context, context.user)),
+    from: (rel, _, context) => {
+      // If relation is in a draft, we want to force the context to also be in the same draft
+      const contextToUse = getDraftContextIfElementInDraft(context, rel);
+      return (rel.from ? rel.from : loadByIdLoader.load({ id: rel.fromId, type: rel.fromType }, contextToUse, context.user));
+    },
+    to: (rel, _, context) => {
+      // If relation is in a draft, we want to force the context to also be in the same draft
+      const contextToUse = getDraftContextIfElementInDraft(context, rel);
+      return (rel.to ? rel.to : loadByIdLoader.load({ id: rel.toId, type: rel.toType }, contextToUse, context.user));
+    },
     // region batch fully loaded through rel de-normalization. Cant be ordered of filtered
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     objectMarking: (stixCoreObject, _, context) => markingDefinitionsLoader.load(stixCoreObject, context, context.user),
@@ -91,6 +101,7 @@ const stixSightingRelationshipResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixSightingRelationshipDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
       restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
       restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
+      removeFromDraft: () => stixSightingRelationshipRemoveFromDraft(context, context.user, id),
     }),
     stixSightingRelationshipAdd: (_, { input }, context) => addStixSightingRelationship(context, context.user, input),
   },

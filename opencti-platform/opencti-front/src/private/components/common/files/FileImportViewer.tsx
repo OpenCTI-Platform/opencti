@@ -8,13 +8,12 @@ import List from '@mui/material/List';
 import makeStyles from '@mui/styles/makeStyles';
 import FileLine from './FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
-import FileUploader from './FileUploader';
 import { useFormatter } from '../../../../components/i18n';
-import FreeTextUploader from './FreeTextUploader';
 import { FileImportViewer_entity$data } from './__generated__/FileImportViewer_entity.graphql';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
 import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import UploadImport from '../../../../components/UploadImport';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -51,6 +50,7 @@ FileImportViewerComponentProps
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
   const { id, importFiles } = entity;
   useEffect(() => {
     // Refresh the export viewer every interval
@@ -69,15 +69,9 @@ FileImportViewerComponentProps
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 25 }} />}>
           <div style={{ float: 'left', marginTop: -15 }}>
-            <FileUploader
+            <UploadImport
               entityId={id}
-              onUploadSuccess={() => relay.refetch({ id })}
-              size="medium"
-            />
-            <FreeTextUploader
-              entityId={id}
-              onUploadSuccess={() => relay.refetch({ id })}
-              size="medium"
+              onSuccess={() => relay.refetch({ id })}
             />
           </div>
         </Security>

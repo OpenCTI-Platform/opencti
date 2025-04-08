@@ -21,9 +21,11 @@ import Filters from '../../common/lists/Filters';
 import { useAvailableFilterKeysForEntityTypes, emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 interface TaxiiCollectionCreationProps {
   paginationOptions: PaginationOptions
@@ -87,9 +89,18 @@ const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginat
   }
 };
 
+const CreateTaxiiCollectionControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial
+    entityType='TaxiiCollection'
+    {...props}
+  />
+);
+
 const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -128,7 +139,8 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
   return (
     <Drawer
       title={t_i18n('Create a TAXII collection')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced ? CreateTaxiiCollectionControlledDial : undefined}
       onClose={helpers.handleClearAllFilters}
     >
       {({ onClose }) => (

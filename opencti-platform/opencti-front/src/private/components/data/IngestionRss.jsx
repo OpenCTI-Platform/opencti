@@ -92,6 +92,11 @@ const IngestionRss = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
+        createButton={
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <IngestionRssCreation paginationOptions={paginationOptions} />
+          </Security>
+        }
       >
         <QueryRenderer
           query={IngestionRssLinesQuery}
@@ -107,9 +112,6 @@ const IngestionRss = () => {
           )}
         />
       </ListLines>
-      <Security needs={[INGESTION_SETINGESTIONS]}>
-        <IngestionRssCreation paginationOptions={paginationOptions} />
-      </Security>
     </div>
   );
 };

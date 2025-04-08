@@ -161,9 +161,9 @@ const KillChainPhases = () => {
           actions={(killChainPhase) => <KillChainPhasePopover killChainPhase={killChainPhase} paginationOptions={queryPaginationOptions} />}
           searchContextFinal={{ entityTypes: ['Kill-Chain-Phase'] }}
           disableNavigation
+          createButton={<KillChainPhaseCreation paginationOptions={queryPaginationOptions} />}
         />
       )}
-      <KillChainPhaseCreation paginationOptions={queryPaginationOptions} />
     </div>
   );
 };

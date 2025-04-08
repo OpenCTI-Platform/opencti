@@ -430,7 +430,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   );
 
   const renderLoader = () => (
-    <Box sx={{ width: '100%', height: '100%', backgroundColor: 'black', opacity: 0.5, position: 'absolute' }}>
+    <Box sx={{ width: '100%', height: '100%', backgroundColor: '#000000', opacity: 0.5, position: 'absolute' }}>
       <Loader />
     </Box>
   );
@@ -477,7 +477,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
 
   return (
     <>
-      <Dialog open={isOpen} PaperProps={{ elevation: 1 }} scroll='paper' sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
+      <Dialog open={isOpen} slotProps={{ paper: { elevation: 1 } }} scroll='paper' sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
         {isSubmitting && renderLoader()}
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px' }}>
           <div>{t_i18n('Create relations in bulk for')}: {t_i18n(`entity_${stixDomainObjectType}`)}</div>
@@ -511,7 +511,6 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
               <Box sx={{ width: `${toHeaderWidth}px` }}>
                 <TextField
                   disabled={isSubmitting}
-                  inputProps={{ style: { lineHeight: '37px' } }}
                   sx={{
                     '.MuiInputBase-root': {
                       paddingTop: '2px',
@@ -526,6 +525,9 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
                   minRows={textAreaValue.length > 10 ? textAreaValue.length + 1 : 10}
                   placeholder={t_i18n('Type or copy paste data in this area.')}
                   variant="outlined"
+                  slotProps={{
+                    htmlInput: { style: { lineHeight: '37px' } },
+                  }}
                 />
               </Box>
               <Box style={{ marginTop: '6px' }}>

@@ -16,6 +16,7 @@ import WorkbenchFileLine from './WorkbenchFileLine';
 import WorkbenchFileCreator from './WorkbenchFileCreator';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
+import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -41,6 +42,7 @@ const WorkbenchFileViewerBase = ({
   const { id, pendingFiles } = entity;
   const { edges } = pendingFiles;
   const [openCreate, setOpenCreate] = useState(false);
+  const draftContext = useDraftContext();
 
   useEffect(() => {
     // Refresh the export viewer every interval
@@ -62,6 +64,7 @@ const WorkbenchFileViewerBase = ({
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Analyst workbenches')}
         </Typography>
+        {!draftContext && (
         <Security needs={[KNOWLEDGE_KNASKIMPORT]} placeholder={<div style={{ height: 28 }}/>}>
           <IconButton
             color="primary"
@@ -73,6 +76,7 @@ const WorkbenchFileViewerBase = ({
             <Add fontSize="small" />
           </IconButton>
         </Security>
+        )}
         <WorkbenchFileCreator
           handleCloseCreate={() => setOpenCreate(false)}
           openCreate={openCreate}

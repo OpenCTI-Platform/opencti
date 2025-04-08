@@ -74,8 +74,8 @@ const GroupingDeletion: FunctionComponent<GroupingDeletionProps> = ({
       </Security>
       <Dialog
         open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
+        slotProps={{ paper: { elevation: 1 } }}
+        slots={{ transition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>

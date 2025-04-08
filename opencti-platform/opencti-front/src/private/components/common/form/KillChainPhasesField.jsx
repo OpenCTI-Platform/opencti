@@ -40,6 +40,8 @@ class KillChainPhasesField extends Component {
           map((n) => ({
             label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
             value: n.node.id,
+            kill_chain_name: n.node.kill_chain_name,
+            phase_name: n.node.phase_name,
           })),
         )(data);
         this.setState({
@@ -49,12 +51,22 @@ class KillChainPhasesField extends Component {
   }
 
   render() {
-    const { t, name, style, classes, onChange, helpertext, disabled } = this.props;
+    const {
+      t,
+      name,
+      style,
+      classes,
+      onChange,
+      helpertext,
+      disabled,
+      required = false,
+    } = this.props;
     return (
       <Field
         component={AutocompleteField}
         style={style}
         name={name}
+        required={required}
         multiple={true}
         disabled={disabled}
         textfieldprops={{
@@ -62,6 +74,7 @@ class KillChainPhasesField extends Component {
           label: t('Kill chain phases'),
           helperText: helpertext,
           onFocus: this.searchKillChainPhases.bind(this),
+          required,
         }}
         noOptionsText={t('No available options')}
         options={this.state.killChainPhases}

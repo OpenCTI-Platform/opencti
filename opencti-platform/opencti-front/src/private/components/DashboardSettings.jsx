@@ -111,8 +111,8 @@ const DashboardSettings = () => {
       </Fab>
       <Dialog
         open={open}
-        PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
+        slotProps={{ paper: { elevation: 1 } }}
+        slots={{ transition: Transition }}
         onClose={handleClose}
         maxWidth="xs"
         fullWidth={true}

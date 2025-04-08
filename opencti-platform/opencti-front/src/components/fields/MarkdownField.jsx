@@ -59,7 +59,7 @@ const MarkdownField = (props) => {
       <InputLabel
         shrink={true}
         required={required}
-        error={meta.error}
+        error={!!meta.error}
       >
         {label}
       </InputLabel>

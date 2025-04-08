@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { DraftSightingsLinesPaginationQuery, DraftSightingsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftSightingsLinesPaginationQuery.graphql';
@@ -11,10 +11,12 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { truncate } from '../../../utils/String';
 import { useFormatter } from '../../../components/i18n';
+import { computeLink } from '../../../utils/Entity';
 
 const draftSightingsLineFragment = graphql`
     fragment DraftSightings_node on StixSightingRelationship {
         id
+        standard_id
         entity_type
         parent_types
         x_opencti_negative
@@ -26,6 +28,18 @@ const draftSightingsLineFragment = graphql`
         draftVersion {
             draft_id
             draft_operation
+        }
+        objectLabel {
+            id
+            value
+            color
+        }
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
         }
         status {
             id
@@ -252,6 +266,7 @@ export const draftSightingsLinesFragment = graphql`
         ) @connection(key: "Pagination_draftWorkspaceSightingRelationships") {
             edges {
                 node {
+                    id
                     ...DraftSightings_node
                 }
             }
@@ -266,7 +281,11 @@ export const draftSightingsLinesFragment = graphql`
 
 const LOCAL_STORAGE_KEY = 'draft_sightings';
 
-const DraftSightings = () => {
+interface DraftSightingsProps {
+  isReadOnly: boolean;
+}
+
+const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) => {
   const { draftId } = useParams() as { draftId: string };
   const { t_i18n } = useFormatter();
 
@@ -291,6 +310,8 @@ const DraftSightings = () => {
   } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('stix-sighting-relationship', filters);
+  const relevantDraftOperationFilter = { key: 'draft_change.draft_operation', values: ['create', 'update', 'delete'], operator: 'eq', mode: 'or' };
+  const toolbarFilters = { ...contextFilters, filters: [...contextFilters.filters, relevantDraftOperationFilter] };
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -355,6 +376,11 @@ const DraftSightings = () => {
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftSightingsLinesPaginationQuery>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getRedirectionLink = (stixSighting: any) => {
+    return isReadOnly ? `/dashboard/id/${stixSighting.standard_id}` : computeLink(stixSighting);
+  };
+
   return (
     <span data-testid="draft-relationships-page">
       {queryRef && (
@@ -363,12 +389,12 @@ const DraftSightings = () => {
         resolvePath={(data: DraftSightingsLines_data$data) => data.draftWorkspaceSightingRelationships?.edges?.map((n) => n?.node)}
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
-        toolbarFilters={contextFilters}
+        toolbarFilters={toolbarFilters}
+        useComputeLink={getRedirectionLink}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={draftSightingsLineFragment}
-        exportContext={{ entity_type: 'stix-sighting-relationship' }}
-        redirectionModeEnabled
-        disableSelectAll
+        entityTypes={['stix-sighting-relationship']}
+        removeFromDraftEnabled
       />
       )}
     </span>

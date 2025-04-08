@@ -1,13 +1,9 @@
-import List from '@mui/material/List';
-import { ListItemButton } from '@mui/material';
+import React from 'react';
+import { List, ListItemButton, ListItemText, ListItemIcon, ListItem } from '@mui/material';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import { Extension } from '@mui/icons-material';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Paper from '@mui/material/Paper';
-import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ImportMenu from '@components/data/ImportMenu';
 import { truncate } from '../../../../utils/String';
@@ -46,39 +42,35 @@ const ImportConnectors = ({ connectors }: { connectors: ImportContentContainer_c
             {connectors.map((connector) => {
               const connectorScope = connector.connector_scope?.join(',');
               return (
-                <ListItemButton
-                  component={Link}
-                  to={`/dashboard/data/ingestion/connectors/${connector.id}`}
+                <ListItem
                   key={connector.id}
-                  dense={true}
-                  divider={true}
+                  dense
+                  divider
+                  disablePadding
                   classes={{ root: classes.item }}
+                  secondaryAction={connector.updated_at && (<ListItemText primary={nsdt(connector.updated_at)} />)}
                 >
-                  <Tooltip
-                    title={
+                  <ListItemButton component={Link} to={`/dashboard/data/ingestion/connectors/${connector.id}`}>
+                    <Tooltip
+                      title={
                       connector.active
                         ? t_i18n('This connector is active')
                         : t_i18n('This connector is disconnected')
                     }
-                  >
-                    <ListItemIcon
-                      style={{
-                        color: connector.active ? '#4caf50' : '#f44336',
-                      }}
                     >
-                      <Extension/>
-                    </ListItemIcon>
-                  </Tooltip>
-                  <Tooltip title={connectorScope}>
-                    <ListItemText
-                      primary={connector.name}
-                      secondary={truncate(connectorScope, 300)}
-                    />
-                  </Tooltip>
-                  {connector.updated_at && (<ListItemSecondaryAction>
-                    <ListItemText primary={nsdt(connector.updated_at)}/>
-                  </ListItemSecondaryAction>)}
-                </ListItemButton>
+                      <ListItemIcon
+                        style={{
+                          color: connector.active ? '#4caf50' : '#f44336',
+                        }}
+                      >
+                        <Extension />
+                      </ListItemIcon>
+                    </Tooltip>
+                    <Tooltip title={connectorScope}>
+                      <ListItemText primary={connector.name} secondary={truncate(connectorScope, 300)} />
+                    </Tooltip>
+                  </ListItemButton>
+                </ListItem>
               );
             })}
           </List>

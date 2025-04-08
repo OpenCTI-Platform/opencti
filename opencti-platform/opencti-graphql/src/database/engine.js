@@ -19,6 +19,7 @@ import {
   INDEX_DRAFT_OBJECTS,
   INDEX_INTERNAL_OBJECTS,
   inferIndexFromConceptType,
+  isDraftIndex,
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
@@ -87,7 +88,6 @@ import {
   ATTRIBUTE_EXPLANATION,
   ATTRIBUTE_NAME,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
@@ -98,15 +98,7 @@ import {
 } from '../schema/stixDomainObject';
 import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
-import {
-  isStixCoreRelationship,
-  RELATION_INDICATES,
-  RELATION_LOCATED_AT,
-  RELATION_PUBLISHES,
-  RELATION_RELATED_TO,
-  RELATION_TARGETS,
-  STIX_CORE_RELATIONSHIPS
-} from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_INDICATES, RELATION_LOCATED_AT, RELATION_PUBLISHES, RELATION_RELATED_TO, STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { generateInternalId, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
   BYPASS,
@@ -163,6 +155,7 @@ import {
 } from '../utils/filtering/filtering-constants';
 import { FilterMode } from '../generated/graphql';
 import {
+  authorizedMembers,
   booleanMapping,
   dateMapping,
   iAliasedIds,
@@ -218,7 +211,7 @@ const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
 export const BULK_TIMEOUT = '5m';
 const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 const ES_MAX_MAPPINGS = 3000;
-const ES_RETRY_ON_CONFLICT = 5;
+export const ES_RETRY_ON_CONFLICT = 5;
 const MAX_AGGREGATION_SIZE = 100;
 
 export const ROLE_FROM = 'from';
@@ -252,9 +245,10 @@ export const isSpecialNonImpactedCases = (relationshipType, fromType, toType, si
     return true;
   }
   // Rel on the "to" side with targets from any threat to region / country / sector
-  if (side === ROLE_TO && relationshipType === RELATION_TARGETS && [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_IDENTITY_SECTOR].includes(toType)) {
-    return true;
-  }
+  // Adding March 2025: For the NLQ, we now re-index those relationships for "in regards of threat victimology"
+  // if (side === ROLE_TO && relationshipType === RELATION_TARGETS && [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_IDENTITY_SECTOR].includes(toType)) {
+  //   return true;
+  // }
   return false;
 };
 export const isImpactedTypeAndSide = (type, fromType, toType, side) => {
@@ -469,9 +463,10 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       // If user have no marking, he can only access to data with no markings.
       must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING) } });
     } else {
+      const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
       // Markings should be grouped by types for restriction
       const userGroupedMarkings = R.groupBy((m) => m.definition_type, user.allowed_marking);
-      const allGroupedMarkings = R.groupBy((m) => m.definition_type, user.all_marking);
+      const allGroupedMarkings = R.groupBy((m) => m.definition_type, allMarkings);
       const markingGroups = Object.keys(allGroupedMarkings);
       const mustNotHaveOneOf = [];
       for (let index = 0; index < markingGroups.length; index += 1) {
@@ -520,7 +515,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
     // If user have organization management role, he can bypass this restriction.
     // If platform is for specific organization, only user from this organization can access empty defined
     const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-    // We want to exlucde a set of entities from organization restrictions while forcing restrictions for an other set of entities
+    // We want to exclude a set of entities from organization restrictions while forcing restrictions for another set of entities
     const excludedEntityMatches = {
       bool: {
         must: [
@@ -540,7 +535,7 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       }
     };
     if (settings.platform_organization) {
-      if (user.inside_platform_organization) {
+      if (context.user_inside_platform_organization) {
         // Data are visible independently of the organizations
         // Nothing to restrict.
       } else {
@@ -576,19 +571,50 @@ const buildUserMemberAccessFilter = (user, opts) => {
   }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
-  const emptyAuthorizedMembers = { bool: { must_not: { exists: { field: 'authorized_members' } } } };
+  const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: { } } } } } };
+  // condition on authorizedMembers id
+  const authorizedMembersIdsTerms = { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } };
+  // condition on group restriction ids
+  const userGroupsIds = user.groups.map((group) => group.internal_id);
+  const groupRestrictionCondition = {
+    bool: {
+      should: [
+        { bool: { must_not: [{ exists: { field: `${authorizedMembers.name}.groups_restriction_ids` } }] } },
+        {
+          terms_set: {
+            [`${authorizedMembers.name}.groups_restriction_ids.keyword`]: {
+              terms: userGroupsIds,
+              minimum_should_match_script: {
+                source: `doc['${authorizedMembers.name}.groups_restriction_ids.keyword'].length`
+              }
+            }
+          }
+        }
+      ]
+    }
+  };
   const authorizedFilters = [
-    { terms: { 'authorized_members.id.keyword': [MEMBER_ACCESS_ALL, ...userAccessIds] } },
+    { bool: { must: [authorizedMembersIdsTerms, groupRestrictionCondition] } }
   ];
-  if (!excludeEmptyAuthorizedMembers) {
-    authorizedFilters.push(emptyAuthorizedMembers);
-  }
+  const shouldConditions = [];
   if (includeAuthorities) {
     const roleIds = user.roles.map((r) => r.id);
     const owners = [...userAccessIds, ...capabilities, ...roleIds];
-    authorizedFilters.push({ terms: { 'authorized_authorities.keyword': owners } });
+    shouldConditions.push({ terms: { 'authorized_authorities.keyword': owners } });
   }
-  return [{ bool: { should: authorizedFilters } }];
+  if (!excludeEmptyAuthorizedMembers) {
+    shouldConditions.push(emptyAuthorizedMembers);
+  }
+  const nestedQuery = {
+    nested: {
+      path: authorizedMembers.name,
+      query: {
+        bool: { should: authorizedFilters }
+      }
+    }
+  };
+  shouldConditions.push(nestedQuery);
+  return [{ bool: { should: shouldConditions } }];
 };
 
 export const elIndexExists = async (indexName) => {
@@ -2189,85 +2215,95 @@ const buildLocalMustFilter = async (validFilter) => {
   }
   // 03. Handle values according to the operator
   if (operator !== 'nil' && operator !== 'not_nil') {
-    for (let i = 0; i < values.length; i += 1) {
-      if (values[i] === 'EXISTS') {
-        if (arrayKeys.length > 1) {
-          throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
+    if (operator === 'within') {
+      if (arrayKeys.length > 1) {
+        throw UnsupportedError('Within filter must have only one field', { keys: arrayKeys });
+      }
+      if (values.length !== 2) {
+        throw UnsupportedError('Within filter must have two values', { values });
+      }
+      valuesFiltering.push({ range: { [headKey]: { gte: values[0], lte: values[1] } } });
+    } else {
+      for (let i = 0; i < values.length; i += 1) {
+        if (values[i] === 'EXISTS') {
+          if (arrayKeys.length > 1) {
+            throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
+          }
+          valuesFiltering.push({ exists: { field: headKey } });
+        } else if (operator === 'eq' || operator === 'not_eq') {
+          const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
+          targets.push({
+            multi_match: {
+              fields: arrayKeys.map((k) => buildFieldForQuery(k)),
+              query: values[i].toString(),
+            },
+          });
+        } else if (operator === 'match') {
+          valuesFiltering.push({
+            multi_match: {
+              fields: arrayKeys,
+              query: values[i].toString(),
+            },
+          });
+        } else if (operator === 'wildcard' || operator === 'not_wildcard') {
+          const targets = operator === 'wildcard' ? valuesFiltering : noValuesFiltering;
+          targets.push({
+            query_string: {
+              query: values[i] === '*' ? values[i] : `"${values[i].toString()}"`,
+              fields: arrayKeys,
+            },
+          });
+        } else if (operator === 'contains' || operator === 'not_contains') {
+          const targets = operator === 'contains' ? valuesFiltering : noValuesFiltering;
+          const val = specialElasticCharsEscape(values[i].toString());
+          targets.push({
+            query_string: {
+              query: `*${val.replace(/\s/g, '\\ ')}*`,
+              analyze_wildcard: true,
+              fields: arrayKeys.map((k) => `${k}.keyword`),
+            },
+          });
+        } else if (operator === 'starts_with' || operator === 'not_starts_with') {
+          const targets = operator === 'starts_with' ? valuesFiltering : noValuesFiltering;
+          const val = specialElasticCharsEscape(values[i].toString());
+          targets.push({
+            query_string: {
+              query: `${val.replace(/\s/g, '\\ ')}*`,
+              analyze_wildcard: true,
+              fields: arrayKeys.map((k) => `${k}.keyword`),
+            },
+          });
+        } else if (operator === 'ends_with' || operator === 'not_ends_with') {
+          const targets = operator === 'ends_with' ? valuesFiltering : noValuesFiltering;
+          const val = specialElasticCharsEscape(values[i].toString());
+          targets.push({
+            query_string: {
+              query: `*${val.replace(/\s/g, '\\ ')}`,
+              analyze_wildcard: true,
+              fields: arrayKeys.map((k) => `${k}.keyword`),
+            },
+          });
+        } else if (operator === 'script') {
+          valuesFiltering.push({
+            script: {
+              script: values[i].toString()
+            },
+          });
+        } else if (operator === 'search') {
+          const shouldSearch = elGenerateFieldTextSearchShould(values[i].toString(), arrayKeys);
+          const bool = {
+            bool: {
+              should: shouldSearch,
+              minimum_should_match: 1,
+            },
+          };
+          valuesFiltering.push(bool);
+        } else { // range operators
+          if (arrayKeys.length > 1) {
+            throw UnsupportedError('Range filter must have only one field', { keys: arrayKeys });
+          }
+          valuesFiltering.push({ range: { [headKey]: { [operator]: values[i] } } });
         }
-        valuesFiltering.push({ exists: { field: headKey } });
-      } else if (operator === 'eq' || operator === 'not_eq') {
-        const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
-        targets.push({
-          multi_match: {
-            fields: arrayKeys.map((k) => buildFieldForQuery(k)),
-            query: values[i].toString(),
-          },
-        });
-      } else if (operator === 'match') {
-        valuesFiltering.push({
-          multi_match: {
-            fields: arrayKeys,
-            query: values[i].toString(),
-          },
-        });
-      } else if (operator === 'wildcard' || operator === 'not_wildcard') {
-        const targets = operator === 'wildcard' ? valuesFiltering : noValuesFiltering;
-        targets.push({
-          query_string: {
-            query: values[i] === '*' ? values[i] : `"${values[i].toString()}"`,
-            fields: arrayKeys,
-          },
-        });
-      } else if (operator === 'contains' || operator === 'not_contains') {
-        const targets = operator === 'contains' ? valuesFiltering : noValuesFiltering;
-        const val = specialElasticCharsEscape(values[i].toString());
-        targets.push({
-          query_string: {
-            query: `*${val.replace(/\s/g, '\\ ')}*`,
-            analyze_wildcard: true,
-            fields: arrayKeys.map((k) => `${k}.keyword`),
-          },
-        });
-      } else if (operator === 'starts_with' || operator === 'not_starts_with') {
-        const targets = operator === 'starts_with' ? valuesFiltering : noValuesFiltering;
-        const val = specialElasticCharsEscape(values[i].toString());
-        targets.push({
-          query_string: {
-            query: `${val.replace(/\s/g, '\\ ')}*`,
-            analyze_wildcard: true,
-            fields: arrayKeys.map((k) => `${k}.keyword`),
-          },
-        });
-      } else if (operator === 'ends_with' || operator === 'not_ends_with') {
-        const targets = operator === 'ends_with' ? valuesFiltering : noValuesFiltering;
-        const val = specialElasticCharsEscape(values[i].toString());
-        targets.push({
-          query_string: {
-            query: `*${val.replace(/\s/g, '\\ ')}`,
-            analyze_wildcard: true,
-            fields: arrayKeys.map((k) => `${k}.keyword`),
-          },
-        });
-      } else if (operator === 'script') {
-        valuesFiltering.push({
-          script: {
-            script: values[i].toString()
-          },
-        });
-      } else if (operator === 'search') {
-        const shouldSearch = elGenerateFieldTextSearchShould(values[i].toString(), arrayKeys);
-        const bool = {
-          bool: {
-            should: shouldSearch,
-            minimum_should_match: 1,
-          },
-        };
-        valuesFiltering.push(bool);
-      } else {
-        if (arrayKeys.length > 1) {
-          throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
-        }
-        valuesFiltering.push({ range: { [headKey]: { [operator]: values[i] } } }); // range operators
       }
     }
   }
@@ -2885,6 +2921,10 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         const nested = [{ key: 'role', operator: filter.operator, values }];
         finalFilters.push({ key: 'connections', nested, mode: filter.mode });
       }
+      if (filterKey === 'authorized_members.id' || filterKey === 'restricted_members.id') {
+        const nested = [{ key: 'id', operator: filter.operator, values: filter.values }];
+        finalFilters.push({ key: authorizedMembers.name, nested, mode: filter.mode });
+      }
       if (filterKey === ALIAS_FILTER) {
         finalFilterGroups.push({
           mode: filter.operator === 'nil' || (filter.operator.startsWith('not_') && filter.operator !== 'not_nil')
@@ -2946,7 +2986,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const { ids = [], after, orderBy = null, orderMode = 'asc', noSize = false, noSort = false, intervalInclude = false } = options;
   const first = options.first ?? ES_DEFAULT_PAGINATION;
   const { types = null, search = null } = options;
-  const filters = checkAndConvertFilters(options.filters, { noFiltersChecking: options.noFiltersChecking });
+  const filters = checkAndConvertFilters(options.filters, user.id, { noFiltersChecking: options.noFiltersChecking });
   const { startDate = null, endDate = null, dateAttribute = null } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
@@ -3176,7 +3216,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
     });
 };
 
-const extractNestedQueriesFromBool = (boolQueryArray) => {
+const extractNestedQueriesFromBool = (boolQueryArray, nestedPath = 'connections') => {
   let result = [];
   for (let i = 0; i < boolQueryArray.length; i += 1) {
     const boolQuery = boolQueryArray[i];
@@ -3184,7 +3224,7 @@ const extractNestedQueriesFromBool = (boolQueryArray) => {
     const nestedQueries = [];
     for (let j = 0; j < shouldArray.length; j += 1) {
       const queryElement = shouldArray[j];
-      if (queryElement.nested) nestedQueries.push(queryElement.nested.query);
+      if (queryElement.nested && queryElement.nested.path === nestedPath) nestedQueries.push(queryElement.nested.query);
       if (queryElement.bool?.should) { // case nested is in an imbricated filterGroup (not possible for the moment)
         const nestedBoolResult = extractNestedQueriesFromBool([queryElement]);
         if (nestedBoolResult.length > 0) {
@@ -3413,7 +3453,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
       /* v8 ignore next */ (err) => {
         const root_cause = err.meta?.body?.error?.caused_by?.type;
         if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
-        throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query });
+        throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
       }
     );
 };
@@ -3649,7 +3689,7 @@ export const elDeleteInstances = async (instances) => {
     }
   }
 };
-const elRemoveRelationConnection = async (context, user, elementsImpact) => {
+export const elRemoveRelationConnection = async (context, user, elementsImpact) => {
   const impacts = Object.entries(elementsImpact);
   if (impacts.length > 0) {
     const idsToResolve = impacts.map(([k]) => k);
@@ -3720,7 +3760,7 @@ const elRemoveRelationConnection = async (context, user, elementsImpact) => {
   }
 };
 
-const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, relationsToRemoveMap) => {
+export const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, relationsToRemoveMap) => {
   // Update all rel connections that will remain
   const elementsImpact = {};
   let startProcessingTime = new Date().getTime();
@@ -3808,58 +3848,27 @@ export const elReindexElements = async (context, user, ids, sourceIndex, destInd
   });
 };
 
-export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
-  if (elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot delete unsupported element in draft context', { elements });
-  const draftContext = getDraftContext(context, user);
-  // Relations from and to need to be elements that are also in draft.
-  for (let i = 0; i < elements.length; i += 1) {
-    const e = elements[i];
-    if (e.base_type === BASE_TYPE_RELATION) {
-      const { from, fromId, to, toId } = e;
-      const resolvedFrom = from ?? await elLoadById(context, user, fromId);
-      const draftFrom = await loadDraftElement(context, user, resolvedFrom);
-      e.from = draftFrom;
-      e.fromId = draftFrom.id;
-      const resolvedTo = to ?? await elLoadById(context, user, toId);
-      const draftTo = await loadDraftElement(context, user, resolvedTo);
-      e.to = draftTo;
-      e.toId = draftTo.id;
-    }
-  }
-
-  const { relations } = await getRelationsToRemove(context, SYSTEM_USER, elements, { includeDeletedInDraft: true });
-
-  // 01. Remove all related relations and elements: delete instances created in draft, mark as deletionLink for others
-  const draftRelations = relations.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS));
-  const liveRelations = relations.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
-  await elDeleteInstances(draftRelations);
-  await Promise.all(liveRelations.map((r) => copyLiveElementToDraft(context, user, r, DRAFT_OPERATION_DELETE_LINKED)));
-  // 02/ Remove all elements: delete instances created in draft, mark as deletion for others
-  const draftElements = elements.filter((f) => f._index.includes(INDEX_DRAFT_OBJECTS));
-  const liveElements = elements.filter((f) => !f._index.includes(INDEX_DRAFT_OBJECTS));
-  await elDeleteInstances(draftElements);
-  liveElements.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE));
-  // 03/ Remove draft_ids from live relations and live elements of draft reverts
-  const allDraftIds = [...draftRelations, ...draftElements].map((d) => d.internal_id);
+export const elRemoveDraftIdFromElements = async (context, user, draftId, elementsIds) => {
   const revertDraftIdSource = `
     if (ctx._source.containsKey('draft_ids')) { 
       for (int i = 0; i < ctx._source.draft_ids.length; ++i){
-        if(ctx._source.draft_ids[i] == '${draftContext}'){
+        if(ctx._source.draft_ids[i] == params.draftId){
           ctx._source.draft_ids.remove(i);
         }
       }
     }  
   `;
-  if (allDraftIds.length > 0) {
+
+  if (elementsIds.length > 0) {
     await elRawUpdateByQuery({
       index: READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
       refresh: true,
       conflicts: 'proceed',
       body: {
-        script: { source: revertDraftIdSource },
+        script: { source: revertDraftIdSource, params: { draftId } },
         query: {
           terms: {
-            'id.keyword': allDraftIds
+            'id.keyword': elementsIds
           }
         },
       },
@@ -3867,6 +3876,72 @@ export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
       throw DatabaseError('Revert live entities indexing fail', { cause: err });
     });
   }
+};
+
+const elCopyRelationsTargetsToDraft = async (context, user, elements) => {
+  const draftContext = getDraftContext(context, user);
+  if (!draftContext) {
+    return;
+  }
+  for (let i = 0; i < elements.length; i += 1) {
+    const e = elements[i];
+    if (e.base_type === BASE_TYPE_RELATION) {
+      const { from, fromId, to, toId } = e;
+      const resolvedFrom = from ?? await elLoadById(context, user, fromId, { includeDeletedInDraft: true });
+      const draftFrom = await loadDraftElement(context, user, resolvedFrom);
+      e.from = draftFrom;
+      e.fromId = draftFrom.id;
+      const resolvedTo = to ?? await elLoadById(context, user, toId, { includeDeletedInDraft: true });
+      const draftTo = await loadDraftElement(context, user, resolvedTo);
+      e.to = draftTo;
+      e.toId = draftTo.id;
+    }
+  }
+};
+
+export const elMarkElementsAsDraftDelete = async (context, user, elements) => {
+  if (elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot delete unsupported element in draft context', { elements });
+
+  // 01. Remove all elements that are draft creations, mark as delete for others
+  const liveElements = elements.filter((f) => !isDraftIndex(f._index));
+  const draftCreatedElements = elements.filter((f) => isDraftIndex(f._index) && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE);
+  const draftNonCreatedElements = elements.filter((f) => isDraftIndex(f._index) && f.draft_change.draft_operation !== DRAFT_OPERATION_CREATE);
+
+  const copyLiveElementsPromise = liveElements.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE));
+  const deleteDraftCreatedElementsPromise = elDeleteInstances(draftCreatedElements);
+  const updateDraftElementsPromise = draftNonCreatedElements.map((draftE) => {
+    // TODO we might want to apply the reverse patch to draft updated elements
+    const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE } };
+    return elReplace(draftE._index, draftE._id, { doc: newDraftChange });
+  });
+  const copiedLiveElements = await Promise.all(copyLiveElementsPromise);
+  const allDraftElements = [...copiedLiveElements, ...draftCreatedElements, ...draftNonCreatedElements];
+
+  // 02. Remove all related relations and elements: delete instances created in draft, mark as deletionLink for others
+  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, allDraftElements, { includeDeletedInDraft: true });
+  const liveRelations = relations.filter((f) => !isDraftIndex(f._index));
+  const draftCreatedRelations = relations.filter((f) => isDraftIndex(f._index) && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE);
+  const draftNonCreatedRelations = relations.filter((f) => isDraftIndex(f._index) && f.draft_change.draft_operation !== DRAFT_OPERATION_CREATE);
+
+  const deleteDraftCreatedRelationsPromise = elDeleteInstances(draftCreatedRelations);
+  const copyLiveRelationsPromise = liveRelations.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE_LINKED));
+  const updateDraftRelationsPromise = draftNonCreatedRelations.map((draftR) => {
+    // TODO we might want to apply the reverse patch to draft updated elements
+    const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE_LINKED } };
+    return elReplace(draftR._index, draftR._id, { doc: newDraftChange });
+  });
+  await Promise.all([deleteDraftCreatedElementsPromise, ...updateDraftElementsPromise]);
+  await Promise.all([...copyLiveRelationsPromise, deleteDraftCreatedRelationsPromise, ...updateDraftRelationsPromise]);
+
+  // 03. Clear all connections rel, import all dependencies into draft if not already in draft
+  await elCopyRelationsTargetsToDraft(context, user, [...allDraftElements, ...liveRelations]);
+  // Compute the id that needs to be removed from rel
+  const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
+  // Update all rel connections that will remain
+  const cleanupRelations = relations.concat(basicCleanup);
+  const toBeRemovedIds = elements.map((e) => e.internal_id);
+  const elementsImpact = await computeDeleteElementsImpacts(cleanupRelations, toBeRemovedIds, relationsToRemoveMap);
+  await elRemoveRelationConnection(context, user, elementsImpact);
 };
 
 export const elDeleteElements = async (context, user, elements, opts = {}) => {
@@ -4104,7 +4179,7 @@ export const elListExistingDraftWorkspaces = async (context, user) => {
 // Creates a copy of a live element in the draft index with the current draft context
 export const copyLiveElementToDraft = async (context, user, element, draftOperation = DRAFT_OPERATION_UPDATE_LINKED) => {
   const draftContext = getDraftContext(context, user);
-  if (!draftContext || element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
+  if (!draftContext || isDraftIndex(element._index)) return element;
 
   const updatedElement = structuredClone(element);
   const newId = generateInternalId();
@@ -4141,7 +4216,7 @@ export const copyLiveElementToDraft = async (context, user, element, draftOperat
 // If it doesn't exist, creates a copy of live element to draft context then returns it
 const draftCopyLockPrefix = 'draft_copy';
 const loadDraftElement = async (context, user, element) => {
-  if (element._index.includes(INDEX_DRAFT_OBJECTS)) return element;
+  if (isDraftIndex(element._index) || !isDraftSupportedEntity(element)) return element;
 
   let lock;
   const currentDraft = getDraftContext(context, user);
@@ -4149,7 +4224,7 @@ const loadDraftElement = async (context, user, element) => {
   try {
     lock = await lockResources([lockKey]);
     const loadedElement = await elLoadById(context, user, element.internal_id);
-    if (loadedElement && loadedElement._index.includes(INDEX_DRAFT_OBJECTS)) return loadedElement;
+    if (loadedElement && isDraftIndex(loadedElement._index)) return loadedElement;
 
     return await copyLiveElementToDraft(context, user, element);
   } catch (e) {

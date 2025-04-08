@@ -37,7 +37,7 @@ interface BaseEvent {
 
 interface StreamNotifEvent extends BaseEvent {
   notification_id: string
-  type: 'live' | 'digest';
+  type: 'live' | 'digest' | 'action';
 }
 
 interface StreamDataEvent extends BaseEvent {

@@ -9,6 +9,7 @@ import { PersonOutlined, AccountCircleOutlined, KeyboardArrowRightOutlined, Hori
 import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { UserLine_node$data } from '@components/settings/users/__generated__/UserLine_node.graphql';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
@@ -55,10 +56,9 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
   const { t_i18n, fd } = useFormatter();
 
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`/dashboard/settings/accesses/users/${node.id}`}
     >
@@ -126,7 +126,7 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined/>
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 

@@ -10,6 +10,7 @@ import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { ListItemButton } from '@mui/material';
 import ItemMarkings from '../../../../../components/ItemMarkings';
 import StixCoreObjectLabels from '../../stix_core_objects/StixCoreObjectLabels';
 import type { Theme } from '../../../../../components/Theme';
@@ -236,10 +237,9 @@ EntityStixCoreRelationshipsEntitiesLineProps
     node,
   );
   return (
-    <ListItem
+    <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
       component={Link}
       to={`${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`}
     >
@@ -327,7 +327,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
       </ListItemIcon>
-    </ListItem>
+    </ListItemButton>
   );
 };
 export const EntityStixCoreRelationshipsEntitiesLineDummy = ({

@@ -114,10 +114,10 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                   {t_i18n('Lifecycle')}
                 </Button>
                 <Dialog
-                  PaperProps={{ elevation: 1 }}
+                  slotProps={{ paper: { elevation: 1 } }}
                   open={isLifecycleOpen}
                   keepMounted={true}
-                  TransitionComponent={Transition}
+                  slots={{ transition: Transition }}
                   onClose={onDecayLifecycleClose}
                   fullWidth
                   maxWidth='lg'

@@ -3,11 +3,12 @@ import { graphql, useFragment } from 'react-relay';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
-import { ListItemButton, ListItemSecondaryAction } from '@mui/material';
+import { ListItemButton } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { LockPersonOutlined, NorthEastOutlined, ShortTextOutlined } from '@mui/icons-material';
 import EEChip from '@components/common/entreprise_edition/EEChip';
+import Box from '@mui/material/Box';
 import { DataColumns } from '../../../../../components/list_lines';
 import type { Theme } from '../../../../../components/Theme';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -151,7 +152,15 @@ export const EntitySettingAttributeLineDummy = ({
 }) => {
   const classes = useStyles();
   return (
-    <ListItem divider={true} classes={{ root: classes.item }}>
+    <ListItem
+      divider={true}
+      classes={{ root: classes.item }}
+      secondaryAction={
+        <Box sx={{ root: classes.itemIconDisabled }}>
+          <NorthEastOutlined />
+        </Box>
+      }
+    >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
@@ -175,9 +184,6 @@ export const EntitySettingAttributeLineDummy = ({
           </div>
         }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <NorthEastOutlined />
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

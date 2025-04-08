@@ -417,9 +417,14 @@ const containerHeaderEditAuthorizedMembersMutation = graphql`
       editAuthorizedMembers(input: $input) {
         authorized_members {
           id
+          member_id
           name
           entity_type
           access_right
+          groups_restriction {
+            id
+            name
+          }
         }
       }
     }
@@ -567,6 +572,7 @@ const ContainerHeader = (props) => {
               {modes.includes('graph') && (
                 <Tooltip title={t_i18n('Graph view')}>
                   <ToggleButton
+                    value="graph"
                     component={Link}
                     to={`${link}/graph`}
                     selected={currentMode === 'graph'}
@@ -581,6 +587,7 @@ const ContainerHeader = (props) => {
               {modes.includes('timeline') && (
                 <Tooltip title={t_i18n('TimeLine view')}>
                   <ToggleButton
+                    value="timeline"
                     component={Link}
                     to={`${link}/timeline`}
                     selected={currentMode === 'timeline'}
@@ -595,6 +602,7 @@ const ContainerHeader = (props) => {
               {modes.includes('correlation') && (
                 <Tooltip title={t_i18n('Correlation view')}>
                   <ToggleButton
+                    value="correlation"
                     component={Link}
                     to={`${link}/correlation`}
                     selected={currentMode === 'correlation'}
@@ -611,6 +619,7 @@ const ContainerHeader = (props) => {
               {modes.includes('matrix') && (
                 <Tooltip title={t_i18n('Tactics matrix view')}>
                   <ToggleButton
+                    value="matrix"
                     component={Link}
                     to={`${link}/matrix`}
                     selected={currentMode === 'matrix'}
@@ -738,9 +747,14 @@ export default createFragmentContainer(ContainerHeader, {
       currentUserAccessRight
       authorized_members {
         id
+        member_id
         name
         entity_type
         access_right
+        groups_restriction {
+          id
+          name
+        }
       }
       ... on Report {
         name

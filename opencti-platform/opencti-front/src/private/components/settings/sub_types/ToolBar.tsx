@@ -250,7 +250,7 @@ const ToolBar: FunctionComponent<{
       </Toolbar>
       <Dialog
         open={display}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
         onClose={handleClose}
       >

@@ -24,7 +24,6 @@ import { CsvMapperFieldOption } from '@components/common/form/CsvMapperField';
 import { FileManagerAskJobImportMutation$variables } from '@components/common/files/__generated__/FileManagerAskJobImportMutation.graphql';
 import FileLine from '../../common/files/FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
-import FileUploader from '../../common/files/FileUploader';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { fileManagerAskJobImportMutation } from '../../common/files/FileManager';
@@ -36,6 +35,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import UploadImport from '../../../../components/UploadImport';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -102,6 +102,7 @@ ExternalReferenceFileImportViewerBaseProps
   const [fileToImport, setFileToImport] = useState<
   FileLine_file$data | null | undefined
   >(null);
+
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
   const { id, importFiles } = externalReference;
   const importConnsPerFormat = scopesConn(connectorsImport);
@@ -181,16 +182,15 @@ ExternalReferenceFileImportViewerBaseProps
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Uploaded files')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 30 }} />}>
-          <div style={{ float: 'left', marginTop: -17 }}>
-            <FileUploader
+        <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 25 }}/>}>
+          <div style={{ float: 'left', marginTop: -15, marginBottom: 5 }}>
+            <UploadImport
               entityId={id}
-              onUploadSuccess={() => {
+              onSuccess={() => {
                 if (relay.refetch) {
                   relay.refetch({ id });
                 }
               }}
-              size={undefined}
             />
           </div>
         </Security>
@@ -249,7 +249,7 @@ ExternalReferenceFileImportViewerBaseProps
           {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 open={fileToImportBoolean()}
                 keepMounted={true}
                 onClose={() => handleReset()}

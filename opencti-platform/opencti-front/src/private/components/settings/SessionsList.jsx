@@ -11,10 +11,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { graphql, createRefetchContainer } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { ListItemButton } from '@mui/material';
 import { commitMutation } from '../../../relay/environment';
 import { FIVE_SECONDS, timestamp } from '../../../utils/Time';
 import { userSessionKillMutation } from './users/User';
@@ -135,10 +135,9 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
           );
           return (
             <div key={session.user.id}>
-              <ListItem
+              <ListItemButton
                 classes={{ root: classes.item }}
                 divider={true}
-                button={true}
                 component={Link}
                 to={`/dashboard/settings/accesses/users/${user.id}`}
               >
@@ -156,13 +155,23 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                 <ListItemIcon classes={{ root: classes.goIcon }}>
                   &nbsp;
                 </ListItemIcon>
-              </ListItem>
+              </ListItemButton>
               <List style={{ margin: 0, padding: 0 }}>
                 {orderedSessions.map((userSession) => (
                   <ListItem
                     key={userSession.id}
                     classes={{ root: classes.itemNested }}
                     divider={true}
+                    secondaryAction={
+                      <IconButton
+                        aria-label="Kill"
+                        onClick={() => handleOpenKillSession(userSession.id)}
+                        size="large"
+                        color="primary"
+                      >
+                        <DeleteOutlined />
+                      </IconButton>
+                    }
                   >
                     <ListItemIcon>
                       <ItemIcon type="Session" />
@@ -181,16 +190,6 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                         </div>
                       }
                     />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        aria-label="Kill"
-                        onClick={() => handleOpenKillSession(userSession.id)}
-                        size="large"
-                        color="primary"
-                      >
-                        <DeleteOutlined />
-                      </IconButton>
-                    </ListItemSecondaryAction>
                   </ListItem>
                 ))}
               </List>
@@ -200,9 +199,9 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
       </List>
       <Dialog
         open={displayKillSession}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseKillSession}
       >
         <DialogContent>

@@ -6,12 +6,12 @@ import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { CheckCircle, ExpandMore } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import { ListItemButton } from '@mui/material';
 import { commitMutation } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
@@ -218,11 +218,10 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                           stixCyberObservable.id,
                         );
                         return (
-                          <ListItem
+                          <ListItemButton
                             key={stixCyberObservable.id}
                             classes={{ root: classes.menuItem }}
                             divider={true}
-                            button={true}
                             onClick={() => toggleStixCyberObservable(stixCyberObservable, alreadyAdded)}
                           >
                             <ListItemIcon>
@@ -235,7 +234,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                             <ListItemText
                               primary={stixCyberObservable.observable_value}
                             />
-                          </ListItem>
+                          </ListItemButton>
                         );
                       })}
                     </List>

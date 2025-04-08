@@ -21,7 +21,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import type { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -70,6 +70,8 @@ export const toolMutationRelationAdd = graphql`
     }
   }
 `;
+
+const TOOL_TYPE = 'Tool';
 
 export const toolMutationRelationDelete = graphql`
   mutation ToolEditionOverviewRelationDeleteMutation(
@@ -151,15 +153,22 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
 
   const tool = useFragment(toolEditionOverviewFragment, toolRef);
 
-  const toolValidator = useSchemaEditionValidation('Tool', {
-    name: Yup.string().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    TOOL_TYPE,
+  );
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     tool_types: Yup.array().nullable(),
     tool_version: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object().nullable(),
     references: Yup.array().nullable(),
-  });
+    createdBy: Yup.object().nullable(),
+    killChainPhases: Yup.array().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: toolMutationFieldPatch,
@@ -172,12 +181,12 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
     tool as GenericData,
     enableReferences,
     queries,
-    toolValidator,
+    validator,
   );
 
   const handleSubmitField = (name: string, value: string[] | string) => {
     if (!enableReferences) {
-      toolValidator
+      validator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
@@ -235,7 +244,9 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
     <Formik<ToolEditionFormValues>
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={toolValidator}
+      validationSchema={validator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({ submitForm, isSubmitting, setFieldValue, values }) => (
@@ -245,7 +256,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            required
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -255,6 +266,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             component={TextField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             multiline
             fullWidth
             style={{ marginTop: theme.spacing(2) }}
@@ -272,6 +284,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
           />
           <KillChainPhasesField
             name="killChainPhases"
+            required={(mandatoryAttributes.includes('killChainPhases'))}
             setFieldValue={setFieldValue}
             style={{ marginTop: theme.spacing(2) }}
             helpertext={<SubscriptionFocus context={context} fieldName="killChainPhases" />}
@@ -290,6 +303,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={{ marginTop: theme.spacing(2) }}
             setFieldValue={setFieldValue}
             helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
@@ -297,6 +311,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={{ marginTop: theme.spacing(2) }}
             setFieldValue={setFieldValue}
             helpertext={<SubscriptionFocus context={context} fieldName="objectMarking" />}
@@ -306,6 +321,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             type="tool_types_ov"
             name="tool_types"
             label={t_i18n('Tool types')}
+            required={(mandatoryAttributes.includes('tool_types'))}
             onSubmit={(name, value) => handleSubmitField(name, value as string)}
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}

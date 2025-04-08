@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
 import { UsersLinesSearchQuery, UsersLinesSearchQuery$variables } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import { GroupUsersLinesQuery$variables } from '@components/settings/users/__generated__/GroupUsersLinesQuery.graphql';
@@ -24,6 +24,8 @@ import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../u
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
 import { useDataTablePaginationLocalStorage } from '../../../../components/dataGrid/dataTableHooks';
+import useHelper from '../../../../utils/hooks/useHelper';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 export const groupEditionContainerQuery = graphql`
   query GroupEditionContainerQuery($id: String!) {
@@ -70,6 +72,13 @@ interface GroupEditionContainerProps {
   disabled?: boolean
 }
 
+const UpdateGroupControlledDial = (props: DrawerControlledDialProps) => (
+  <EditEntityControlledDial
+    style={{ float: 'right' }}
+    {...props}
+  />
+);
+
 const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   groupQueryRef,
   handleClose = () => {},
@@ -77,6 +86,8 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const [currentTab, setTab] = useState(0);
 
@@ -113,11 +124,17 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   return (
     <Drawer
       title={t_i18n('Update a group')}
-      variant={open == null ? DrawerVariant.updateWithPanel : undefined}
+      variant={open == null && !isFABReplaced
+        ? DrawerVariant.updateWithPanel
+        : undefined}
       context={editContext}
       onClose={handleClose}
       open={open}
       disabled={disabled}
+      controlledDial={isFABReplaced
+        ? UpdateGroupControlledDial
+        : undefined
+      }
     >
       <>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

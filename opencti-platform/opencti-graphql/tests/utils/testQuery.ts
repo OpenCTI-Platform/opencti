@@ -22,8 +22,8 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 1160;
-export const SYNC_LIVE_EVENTS_SIZE = 612;
+export const RAW_EVENTS_SIZE = 1201;
+export const SYNC_LIVE_EVENTS_SIZE = 613;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -39,6 +39,7 @@ export const FIFTEEN_MINUTES = 300 * FIVE_MINUTES;
 export const DATA_FILE_TEST = 'DATA-TEST-STIX2_v2.json';
 
 export const testContext = executionContext('testing');
+export const inPlatformContext = { ...testContext, user_inside_platform_organization: true };
 
 export const generateBasicAuth = (email?: string, password?: string) => {
   const buff = Buffer.from(`${email ?? API_EMAIL}:${password ?? API_PASSWORD}`, 'utf-8');
@@ -46,10 +47,7 @@ export const generateBasicAuth = (email?: string, password?: string) => {
 };
 
 export const createHttpClient = (email?: string, password?: string) => {
-  const jar = new CookieJar();
   return wrapper(axios.create({
-    withCredentials: true,
-    jar,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -322,8 +320,6 @@ export const ADMIN_USER: AuthUser = {
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
-  all_marking: [],
-  inside_platform_organization: true,
   allowed_marking: [],
   default_marking: [],
   origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
@@ -347,6 +343,7 @@ export const USER_PARTICIPATE: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'participate@opencti.io' }),
   email: 'participate@opencti.io',
   password: 'participate',
+  organizations: [TEST_ORGANIZATION],
   groups: [GREEN_GROUP],
   client: createHttpClient('participate@opencti.io', 'participate')
 };
@@ -384,6 +381,7 @@ export const USER_DISINFORMATION_ANALYST: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'anais@opencti.io' }),
   email: 'anais@opencti.io',
   password: 'disinformation',
+  organizations: [PLATFORM_ORGANIZATION],
   groups: [GREEN_DISINFORMATION_ANALYST_GROUP],
   client: createHttpClient('anais@opencti.io', 'disinformation')
 };
@@ -523,6 +521,7 @@ export const editorQuery = async (request: any, options: QueryOption = {}) => {
 export const securityQuery = async (request: any) => {
   return executeInternalQuery(USER_SECURITY.client, print(request.query), request.variables);
 };
+
 export const participantQuery = async (request: any) => {
   return executeInternalQuery(USER_PARTICIPATE.client, print(request.query), request.variables);
 };
@@ -697,8 +696,6 @@ export const buildStandardUser = (
     roles: [DEFAULT_ROLE],
     groups: [],
     capabilities: capabilities ?? [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }],
-    all_marking: (allMarkings ?? []) as StoreMarkingDefinition[],
-    inside_platform_organization: true,
     allowed_marking: allowedMarkings as StoreMarkingDefinition[],
     default_marking: [],
     max_shareable_marking: [],
@@ -739,8 +736,8 @@ const serverFromUser = new ApolloServer<AuthContext>({
   persistedQueries: false,
 });
 
-export const queryAsAdmin = async <T = Record<string, any>>(request: any) => {
-  const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: executionContext('test', ADMIN_USER) });
+export const queryAsAdmin = async <T = Record<string, any>>(request: any, draftContext?: any) => {
+  const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: executionContext('test', ADMIN_USER, draftContext ?? undefined) });
   if (body.kind === 'single') {
     return body.singleResult;
   }

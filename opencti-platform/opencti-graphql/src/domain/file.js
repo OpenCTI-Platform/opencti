@@ -1,19 +1,16 @@
 import * as R from 'ramda';
 import { Readable } from 'stream';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
-import { logApp } from '../config/conf';
-import { defaultValidationMode, deleteFile, loadFile, uploadJobImport } from '../database/file-storage';
+import { defaultValidationMode, deleteFile } from '../database/file-storage';
 import { internalLoadById, listAllEntities } from '../database/middleware-loader';
-import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
+import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
-import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { allFilesMimeTypeDistribution, allRemainingFilesCount } from '../modules/internal/document/document-domain';
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfiguration-utils';
-import { SYSTEM_USER } from '../utils/access';
+import { isUserHasCapabilities, SYSTEM_USER } from '../utils/access';
 import { isEmptyField, isNotEmptyField, READ_INDEX_FILES, READ_INDEX_HISTORY } from '../database/utils';
 import { getStats } from '../database/engine';
-import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { uploadToStorage } from '../database/file-storage-helper';
 import { extractContentFrom } from '../utils/fileToContent';
 import { stixLoadById } from '../database/middleware';
@@ -22,6 +19,10 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { FilterMode, OrderingMode } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { getDraftContext } from '../utils/draftContext';
+import { UnsupportedError } from '../config/errors';
+import { isDraftFile } from '../database/draft-utils';
+import { askJobImport } from './connector';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
@@ -74,45 +75,10 @@ export const filesMetrics = async (context, user) => {
   };
 };
 
-export const askJobImport = async (context, user, args) => {
-  const { fileName, connectorId = null, configuration = null, bypassEntityId = null, bypassValidation = false, validationMode = defaultValidationMode } = args;
-  logApp.info(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);
-  const file = await loadFile(context, user, fileName);
-  logApp.info('[JOBS] ask import, file found:', file);
-  const entityId = bypassEntityId || file.metaData.entity_id;
-  const opts = { manual: true, connectorId, configuration, bypassValidation, validationMode };
-  const entity = await internalLoadById(context, user, entityId);
-  // This is a manual request for import, we have to check confidence and throw on error
-  if (entity) {
-    controlUserConfidenceAgainstElement(user, entity);
-  }
-  const connectors = await uploadJobImport(context, user, file, entityId, opts);
-  const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
-  const entityType = entityId ? entity.entity_type : 'global';
-  const baseData = {
-    id: entityId,
-    file_id: file.id,
-    file_name: file.name,
-    file_mime: file.metaData.mimetype,
-    connectors: connectors.map((c) => c.name),
-    entity_name: entityName,
-    entity_type: entityType
-  };
-  const contextData = completeContextDataForEntity(baseData, entity);
-  await publishUserAction({
-    user,
-    event_access: 'extended',
-    event_type: 'command',
-    event_scope: 'import',
-    context_data: contextData
-  });
-  return file;
-};
-
 export const uploadImport = async (context, user, args) => {
-  const { file, fileMarkings: file_markings } = args;
+  const { file, fileMarkings: file_markings, noTriggerImport } = args;
   const path = 'import/global';
-  const { upload: up } = await uploadToStorage(context, user, path, file, { file_markings });
+  const { upload: up } = await uploadToStorage(context, user, path, file, { file_markings, noTriggerImport });
   const contextData = buildContextDataForFile(null, path, up.name, file_markings);
   await publishUserAction({
     user,
@@ -125,6 +91,9 @@ export const uploadImport = async (context, user, args) => {
 };
 
 export const uploadPending = async (context, user, args) => {
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot create a workbench in draft');
+  }
   const { file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false, file_markings = [] } = args;
   let finalFile = file;
   const meta = { labels_text: labels ? labels.join(';') : undefined };
@@ -170,11 +139,44 @@ export const uploadPending = async (context, user, args) => {
   return up;
 };
 
+export const uploadAndAskJobImport = async (context, user, args = {}) => {
+  const {
+    file,
+    fileMarkings,
+    connectors,
+    validationMode = defaultValidationMode,
+    draftId,
+    noTriggerImport,
+  } = args;
+  const contextInDraft = { ...context, draft_context: draftId };
+  const uploadedFile = await uploadImport(contextInDraft, user, { file, fileMarkings, noTriggerImport });
+
+  if (connectors && isUserHasCapabilities(user, ['KNOWLEDGE_KNASKIMPORT'])) {
+    await Promise.all(connectors.map(async ({ connectorId, configuration }) => (
+      askJobImport(contextInDraft, user, {
+        fileName: uploadedFile.id,
+        connectorId,
+        configuration,
+        validationMode,
+        forceValidation: true
+      })
+    )));
+  }
+
+  return uploadedFile;
+};
+
 export const deleteImport = async (context, user, fileName) => {
+  const draftContext = getDraftContext(context, user);
+  if (draftContext && !isDraftFile(fileName, draftContext)) {
+    throw UnsupportedError('Cannot delete non draft imports in draft');
+  }
   // Imported file must be handled specifically
   // File deletion must publish a specific event
   // and update the updated_at field of the source entity
-  if (fileName.startsWith('import') && !fileName.includes('global') && !fileName.includes('pending')) {
+  const isDraftFileImport = draftContext && isDraftFile(fileName, draftContext, 'import');
+  const isImportFile = fileName.startsWith('import') || isDraftFileImport;
+  if (isImportFile && !fileName.includes('global') && !fileName.includes('pending')) {
     await stixCoreObjectImportDelete(context, context.user, fileName);
     return fileName;
   }

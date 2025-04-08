@@ -3,7 +3,7 @@ import { FormikConfig } from 'formik/dist/types';
 import React from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
 import GroupField from '@components/common/form/GroupField';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import OpenVocabField from '@components/common/form/OpenVocabField';
@@ -22,6 +22,8 @@ import { Option } from '../../common/form/ReferenceField';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const organizationMutationFieldPatch = graphql`
   mutation SettingsOrganizationEditionMutation(
@@ -99,6 +101,13 @@ export const convertGrantableGroups = (organization: SettingsOrganization_organi
   value: n.id,
 }));
 
+const UpdateSettingsOrganizationControlledDial = (props: DrawerControlledDialProps) => (
+  <EditEntityControlledDial
+    style={{ float: 'right' }}
+    {...props}
+  />
+);
+
 const SettingsOrganizationEdition = ({
   organization,
   context,
@@ -106,6 +115,8 @@ const SettingsOrganizationEdition = ({
 }: SettingsOrganizationEditionProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -187,8 +198,12 @@ const SettingsOrganizationEdition = ({
   return (
     <Drawer
       title={t_i18n('Update the organization')}
-      variant={DrawerVariant.updateWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.updateWithPanel}
       context={context}
+      controlledDial={isFABReplaced
+        ? UpdateSettingsOrganizationControlledDial
+        : undefined
+      }
     >
       {({ onClose }) => (
         <Formik<SettingsOrganizationFormValues>

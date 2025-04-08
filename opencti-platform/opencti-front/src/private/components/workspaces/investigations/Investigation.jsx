@@ -5,7 +5,7 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import InvestigationKnowledgeGraph, { investigationGraphQuery } from './InvestigationGraph';
+import InvestigationGraph, { investigationGraphQuery } from './InvestigationGraph';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
@@ -30,7 +30,10 @@ class InvestigationComponent extends Component {
             if (props) {
               if (props.workspace) {
                 return (
-                  <InvestigationKnowledgeGraph workspace={props.workspace} />
+                  <InvestigationGraph
+                    id={workspace.id}
+                    data={props.workspace}
+                  />
                 );
               }
               return <ErrorNotFound />;

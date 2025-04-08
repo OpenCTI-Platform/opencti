@@ -7,10 +7,10 @@ import { CloudUploadOutlined, WidgetsOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import { Dashboard_workspace$data } from '@components/workspaces/dashboards/__generated__/Dashboard_workspace.graphql';
-import { InvestigationGraph_workspace$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_workspace.graphql';
 import { Widget } from 'src/utils/widget/widget';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
+import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import WidgetConfig from '../../widgets/WidgetConfig';
 import { toB64 } from '../../../../utils/String';
@@ -34,7 +34,7 @@ const workspaceImportWidgetMutation = graphql`
 `;
 
 type WorkspaceWidgetConfigProps = {
-  workspace: Dashboard_workspace$data | InvestigationGraph_workspace$data;
+  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
   widget?: Widget,
   onComplete: (value: Widget, variableName?: string) => void,
   closeMenu?: () => void;

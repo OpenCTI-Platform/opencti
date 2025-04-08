@@ -2,8 +2,7 @@ import { uniq } from 'ramda';
 import { buildRefRelationKey, RULE_PREFIX } from '../../schema/general';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import type { Filter, FilterGroup } from '../../generated/graphql';
-import { FilterOperator } from '../../generated/graphql';
+import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import {
   CONTEXT_CREATED_BY_FILTER,
   CONTEXT_CREATOR_FILTER,
@@ -11,7 +10,9 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
+  filterKeysWithMeValue,
   INSTANCE_REGARDING_OF,
+  ME_FILTER_VALUE,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
@@ -25,9 +26,24 @@ import {
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { UnsupportedError } from '../../config/errors';
+import { isNotEmptyField } from '../../database/utils';
+import { isValidDate } from '../../schema/schemaUtils';
+
+export const emptyFilterGroup: FilterGroup = {
+  mode: FilterMode.And,
+  filters: [],
+  filterGroups: [],
+};
 
 //----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
+
+export const isFilterFormatCorrect = (filter: Filter) => {
+  // TODO complete (regardingOf checks, nested filters checks, within/nil operators checks, etc)
+  return (
+    filter.key && isNotEmptyField(filter.key)
+  );
+};
 
 /**
  * Tells if a filter group is in the correct format
@@ -35,10 +51,40 @@ import { UnsupportedError } from '../../config/errors';
  * Note that it's a shallow check; it does not recurse into the nested groups.
  * @param filterGroup
  */
-export const isFilterGroupFormatCorrect = (filterGroup: FilterGroup) => {
+const isFilterGroupFormatCorrect = (filterGroup: FilterGroup): boolean => {
   return (filterGroup.mode
+    && ['and', 'or'].includes(filterGroup.mode)
     && filterGroup.filters && Array.isArray(filterGroup.filters)
-    && filterGroup.filterGroups && Array.isArray(filterGroup.filters));
+    && filterGroup.filters.every((f) => isFilterFormatCorrect(f))
+    && filterGroup.filterGroups && Array.isArray(filterGroup.filterGroups)
+    && filterGroup.filterGroups.every((fg) => isFilterGroupFormatCorrect(fg))
+  );
+};
+
+/**
+ * Tells if a filter group values are valid
+ * (Enables to check filters won't raise an error at the query resolution)
+ * Only implemented for the 'within' operator for the moment
+ * @param filterGroup
+ */
+export const checkFilterGroupValuesSyntax = (filterGroup: FilterGroup) => {
+  // 'within' operator
+  const withinFilters = filterGroup.filters.filter((f) => f.operator === FilterOperator.Within);
+  withinFilters.forEach((f) => {
+    const { values } = f;
+    if (values.length !== 2) {
+      throw UnsupportedError('A filter with "within" operator must have 2 values', { filter: f });
+    }
+    if (values.some((v) => v === null || v === '')) {
+      throw UnsupportedError('A filter with "within" operator must have 2 values', { filter: f });
+    }
+    const relative_date_regex = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
+    if (values.some((v) => !relative_date_regex.test(v) && !isValidDate(v))) {
+      throw UnsupportedError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.', { filter: f });
+    }
+  });
+  // recursively check the syntax of sub filter groups
+  filterGroup.filterGroups.forEach((fg) => checkFilterGroupValuesSyntax(fg));
 };
 
 /**
@@ -98,8 +144,8 @@ export const extractFilterGroupValues = (inputFilters: FilterGroup, key: string 
   if (key) {
     filteredFilters = reverse
       // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
-      ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : f.key !== key))
-      : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : f.key === key));
+      ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : !keysToKeep.includes(f.key)))
+      : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : keysToKeep.includes(f.key)));
   } else {
     filteredFilters = filters;
   }
@@ -236,49 +282,137 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
 };
 
 /**
+ * Replace @me by the user id in filter whose values can contain user ids
+ */
+export const replaceMeValuesInFilters = (filterGroup: FilterGroup, userId: string) => {
+  const filtersResult = { ...filterGroup };
+  filtersResult.filters.forEach((filter) => {
+    const { key } = filter;
+    const arrayKeys = Array.isArray(key) ? key : [key];
+    if (arrayKeys.some((filterKey) => filterKeysWithMeValue.includes(filterKey))) {
+      // replace ME_FILTER_VALUE with the id of the user
+      if (filter.values.includes(ME_FILTER_VALUE)) {
+        // eslint-disable-next-line no-param-reassign
+        filter.values = filter.values.map((v) => (v === ME_FILTER_VALUE ? userId : v));
+      }
+    }
+  });
+  filtersResult.filterGroups.forEach((fg) => replaceMeValuesInFilters(fg, userId));
+  return filtersResult;
+};
+
+/**
+ * Check the filter keys exist in the schema
+ */
+const checkFilterKeys = (filterGroup: FilterGroup) => {
+  // TODO improvement: check filters keys correspond to the entity types if types is given
+  const keys = extractFilterKeys(filterGroup)
+    .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
+  if (keys.length > 0) {
+    let incorrectKeys = keys;
+    const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
+    const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
+    const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
+    const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
+    const availableKeys = availableAttributes
+      .concat(availableRefRelations)
+      .concat(availableConvertedRefRelations)
+      .concat(STIX_CORE_RELATIONSHIPS)
+      .concat(availableConvertedStixCoreRelationships)
+      .concat(specialFilterKeys);
+    keys.forEach((k) => {
+      if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
+        incorrectKeys = incorrectKeys.filter((n) => n !== k);
+      }
+    });
+    if (incorrectKeys.length > 0) {
+      throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
+    }
+  }
+};
+
+export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersChecking = false) => {
+  // detect filters in the old format or in a bad format
+  if (!isFilterGroupFormatCorrect(filterGroup)) {
+    throw UnsupportedError('Incorrect filters format', { filter: JSON.stringify(filterGroup) });
+  }
+  // check filters keys exist in schema
+  if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
+    checkFilterKeys(filterGroup);
+  }
+  // check values are in a correct syntax
+  checkFilterGroupValuesSyntax(filterGroup);
+};
+
+/**
  * Go through all keys in a filter group to:
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
  */
-export const checkAndConvertFilters = (filterGroup: FilterGroup | null | undefined, opts: { noFiltersChecking?: boolean } = {}) => {
-  if (!filterGroup) {
+export const checkAndConvertFilters = (inputFilterGroup: FilterGroup | null | undefined, userId: string, opts: { noFiltersChecking?: boolean } = {}) => {
+  if (!inputFilterGroup) {
     return undefined;
   }
-  if (!isFilterGroupFormatCorrect(filterGroup)) { // detect filters in the old format or in a bad format
-    throw UnsupportedError('Incorrect filters format', { filter: JSON.stringify(filterGroup) });
-  }
+  // 01. check filters validity
   const { noFiltersChecking = false } = opts;
-  // 01. check filters keys exist in schema
-  // TODO improvement: check filters keys correspond to the entity types if types is given
-  if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
-    const keys = extractFilterKeys(filterGroup)
-      .map((k) => k.split('.')[0]); // keep only the first part of the key to handle composed keys
-    if (keys.length > 0) {
-      let incorrectKeys = keys;
-      const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
-      const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
-      const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
-      const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
-      const availableKeys = availableAttributes
-        .concat(availableRefRelations)
-        .concat(availableConvertedRefRelations)
-        .concat(STIX_CORE_RELATIONSHIPS)
-        .concat(availableConvertedStixCoreRelationships)
-        .concat(specialFilterKeys);
-      keys.forEach((k) => {
-        if (availableKeys.includes(k) || k.startsWith(RULE_PREFIX)) {
-          incorrectKeys = incorrectKeys.filter((n) => n !== k);
-        }
-      });
-      if (incorrectKeys.length > 0) {
-        throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
-      }
-    }
-
-    // 02. translate the filter keys on relation refs and return the converted filters
+  checkFiltersValidity(inputFilterGroup, noFiltersChecking);
+  // 02. replace dynamic @me value
+  const filterGroup = replaceMeValuesInFilters(inputFilterGroup, userId);
+  // 03. convert relation refs
+  if (!noFiltersChecking && isFilterGroupNotEmpty(inputFilterGroup)) {
     return convertRelationRefsFilterKeys(filterGroup);
   }
 
   // nothing to convert
   return filterGroup;
+};
+
+/**
+ * Go through all keys in a filter group and foreach keys is in keysToReplace:
+ * - replace the values of the filter by the associated id in the map
+ * - if no id has been found in the map for the filter values, remove the filter
+ */
+export const filtersEntityIdsMappingResult = (inputFilters: FilterGroup, keysToReplace: string[], valuesIdsMap: Map<string, string | null>) => {
+  let newFilters = inputFilters.filters;
+  let newFilterGroups = inputFilters.filterGroups;
+  if (isFilterGroupNotEmpty(inputFilters)) {
+    // replace the values by their ids
+    newFilters = inputFilters.filters.map((f) => {
+      const key = Array.isArray(f.key) ? f.key[0] : f.key;
+      if (keysToReplace.includes(key)) {
+        if (key === INSTANCE_REGARDING_OF) {
+          const valuesIds = f.values.filter((v) => v.key === 'id').map((v) => v.values).flat();
+          const resolvedValuesIds = valuesIds.map((v) => valuesIdsMap.get(v)).filter((v) => !!v);
+          if (resolvedValuesIds.length > 0) {
+            // eslint-disable-next-line no-param-reassign
+            f.values = [
+              ...f.values.filter((v) => v.key !== 'id'),
+              { key: 'id', values: resolvedValuesIds },
+            ];
+          } else {
+            // eslint-disable-next-line no-param-reassign
+            f.values = [
+              ...f.values.filter((v) => v.key !== 'id'),
+            ];
+          }
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          f.values = f.values
+            .map((v) => valuesIdsMap.get(v))
+            .filter((v) => !!v);
+        }
+      }
+      const shouldRemoveFilter = f.values.length === 0 && f.operator && !['nil', 'not_nil'].includes(f.operator);
+      if (shouldRemoveFilter) { // remove filters of keysToReplace with values not resolved
+        return null;
+      }
+      return f;
+    }).filter((f) => !!f);
+    newFilterGroups = inputFilters.filterGroups.map((fg) => filtersEntityIdsMappingResult(fg, keysToReplace, valuesIdsMap));
+  }
+  return {
+    ...inputFilters,
+    filters: newFilters,
+    filterGroups: newFilterGroups,
+  };
 };

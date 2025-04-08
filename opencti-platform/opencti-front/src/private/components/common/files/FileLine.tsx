@@ -21,8 +21,10 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PopoverProps } from '@mui/material/Popover';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import { ListItemButton } from '@mui/material';
+import { ListItem, ListItemButton } from '@mui/material';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import { useTheme } from '@mui/styles';
+import { OverridableStringUnion } from '@mui/types';
 import useAuth from '../../../../utils/hooks/useAuth';
 import FileWork from './FileWork';
 import { useFormatter } from '../../../../components/i18n';
@@ -34,6 +36,7 @@ import { truncate } from '../../../../utils/String';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction='up' ref={ref} {...otherProps}>{children}</Slide>
@@ -105,7 +108,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 }) => {
   const classes = useStyles();
   const { me } = useAuth();
+  const draftContext = useDraftContext();
   const { t_i18n, fld } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayRemove, setDisplayRemove] = useState(false);
@@ -130,6 +135,13 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const fileMarkings = me.allowed_marking?.filter(({ id }) => (file_markings ?? []).includes(id)) ?? [];
 
   const isImportActive = () => connectors && connectors.filter((x) => x.data.active).length > 0;
+  const fileDeleteDraftDisabled = !!draftContext && !file?.draftVersion;
+  let deleteFileColor:OverridableStringUnion<'inherit' | 'disabled' | 'primary'> = 'primary';
+  if (nested) {
+    deleteFileColor = 'inherit';
+  } else if (fileDeleteDraftDisabled) {
+    deleteFileColor = 'disabled';
+  }
   const history = [];
 
   if (isOutdated) {
@@ -225,12 +237,14 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     handleClose();
     window.location.pathname = url;
   };
-
   const generateIcon = () => {
+    const fileInDraft = file?.draftVersion;
+    const color = fileInDraft ? getDraftModeColor(theme) : theme.palette.primary.main;
+    const fileColor = (nested || fileInDraft) ? color : 'inherit';
     return isExternalReferenceAttachment || isContainsReference ? (
-      <DocumentScannerOutlined color="primary" />
+      <DocumentScannerOutlined style={{ color }} />
     ) : (
-      <FileOutline color={nested ? 'primary' : 'inherit'} />
+      <FileOutline style={{ color: fileColor }} />
     );
   };
   const listUri = `${APP_BASE_PATH}/storage/${
@@ -252,171 +266,185 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 
   return (
     <>
-      <ListItemButton
+      <ListItem
         divider={true}
         dense={dense}
-        classes={{ root: nested ? classes.itemNested : classes.item }}
-        rel="noopener noreferrer"
-        onClick={
-          onClick
-          || (() => (isWarning ? setDisplayDownload(true) : handleLink(listUri)))
-        }
-      >
-        <ListItemIcon>
-          {isProgress && (
-            <CircularProgress
-              size={20}
-              color={nested ? 'primary' : 'inherit'}
-            />
-          )}
-          {!isProgress && (isFail || isOutdated) && (
-            <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
-              <WarningOutlined
-                color={nested ? 'primary' : 'inherit'}
-                style={{ fontSize: 15, color: '#f44336', marginLeft: 4 }}
-              />
-            </Tooltip>
-          )}
-          {!isProgress && !isFail && !isOutdated && generateIcon()}
-        </ListItemIcon>
-        <Tooltip title={!isFail && !isOutdated ? file?.name : ''}>
-          <ListItemText
-            classes={{
-              root: classes.itemText,
-              primary: classes.fileName,
-            }}
-            primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
-            secondary={
-              <>
-                {status} (
-                {fld(file?.lastModified ?? moment())})
-              </>
-            }
-          />
-        </Tooltip>
-        <ListItemSecondaryAction style={{ display: 'flex', alignItems: 'center' }}>
-          {!isProgress && !isFail && !isOutdated && (
-            <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1} />
-          )}
-          {!disableImport && (
-            <Tooltip title={t_i18n('Launch an import of this file')}>
-              <span>
-                <IconButton
-                  disabled={isProgress || !isImportActive()}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    if (handleOpenImport && file) {
-                      handleOpenImport(file);
-                    }
-                  }}
-                  aria-haspopup="true"
-                  color={nested ? 'inherit' : 'primary'}
-                  size="small"
-                >
-                  <ProgressUpload fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-          )}
-          {!directDownload && !isFail && (
-            <>
-              <Tooltip title={t_i18n('Download this file')}>
+        disablePadding
+        secondaryAction={
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {!isProgress && !isFail && !isOutdated && (
+              <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1}/>
+            )}
+            {!disableImport && (
+              <Tooltip title={t_i18n('Launch an import of this file')}>
                 <span>
                   <IconButton
-                    disabled={isProgress}
+                    disabled={isProgress || !isImportActive()}
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
-                      if (isWarning) {
-                        handleOpen(event);
-                      } else {
-                        handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`);
+                      if (handleOpenImport && file) {
+                        handleOpenImport(file);
                       }
                     }}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
                     size="small"
                   >
-                    <GetAppOutlined fontSize="small" />
+                    <ProgressUpload fontSize="small"/>
                   </IconButton>
                 </span>
               </Tooltip>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-              >
-                <MenuItem
-                  dense={true}
-                  onClick={() => handleLink(
-                    `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-                  )
-                  }
-                >
-                  {t_i18n('Encrypted archive')}
-                </MenuItem>
-                <MenuItem
-                  dense={true}
-                  onClick={() => handleLink(
-                    `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
-                  )
-                  }
-                >
-                  {t_i18n('Raw file')}
-                </MenuItem>
-              </Menu>
-            </>
-          )}
-          {!isExternalReferenceAttachment && (
-            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+            )}
+            {!directDownload && !isFail && (
               <>
-                {isFail || isOutdated ? (
-                  <Tooltip title={t_i18n('Delete this file')}>
-                    <span>
-                      <IconButton
-                        disabled={isProgress}
-                        color={nested ? 'inherit' : 'primary'}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          handleOpenRemove();
-                        }}
-                        size="small"
-                      >
-                        <DeleteOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                ) : (
-                  <Tooltip title={t_i18n('Delete this file')}>
-                    <span>
-                      <IconButton
-                        disabled={isProgress}
-                        color={nested ? 'inherit' : 'primary'}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          handleOpenDelete();
-                        }}
-                        size="small"
-                      >
-                        <DeleteOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                )}
+                <Tooltip title={t_i18n('Download this file')}>
+                  <span>
+                    <IconButton
+                      disabled={isProgress}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        if (isWarning) {
+                          handleOpen(event);
+                        } else {
+                          handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`);
+                        }
+                      }}
+                      aria-haspopup="true"
+                      color={nested ? 'inherit' : 'primary'}
+                      size="small"
+                    >
+                      <GetAppOutlined fontSize="small"/>
+                    </IconButton>
+                  </span>
+                </Tooltip>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleClose}
+                >
+                  <MenuItem
+                    dense={true}
+                    onClick={() => handleLink(
+                      `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
+                    )
+                    }
+                  >
+                    {t_i18n('Encrypted archive')}
+                  </MenuItem>
+                  <MenuItem
+                    dense={true}
+                    onClick={() => handleLink(
+                      `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
+                    )
+                    }
+                  >
+                    {t_i18n('Raw file')}
+                  </MenuItem>
+                </Menu>
               </>
-            </Security>
-          )}
-        </ListItemSecondaryAction>
-      </ListItemButton>
-      <FileWork file={file} nested={workNested} />
+            )}
+            {!isExternalReferenceAttachment && (
+              <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+                <>
+                  {isFail || isOutdated ? (
+                    <Tooltip
+                      title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}
+                    >
+                      <span>
+                        <IconButton
+                          disabled={isProgress}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            if (fileDeleteDraftDisabled) {
+                              return;
+                            }
+                            handleOpenRemove();
+                          }}
+                          size="small"
+                        >
+                          <DeleteOutlined fontSize="small" color={deleteFileColor}/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip
+                      title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}
+                    >
+                      <span>
+                        <IconButton
+                          disabled={isProgress}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            if (fileDeleteDraftDisabled) {
+                              return;
+                            }
+                            handleOpenDelete();
+                          }}
+                          size="small"
+                        >
+                          <DeleteOutlined fontSize="small" color={deleteFileColor}/>
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                </>
+              </Security>
+            )}
+          </div>
+        }
+      >
+        <ListItemButton
+          classes={{ root: nested ? classes.itemNested : classes.item }}
+          rel="noopener noreferrer"
+          onClick={
+            onClick
+            || (() => (isWarning ? setDisplayDownload(true) : handleLink(listUri)))
+          }
+        >
+          <ListItemIcon>
+            {isProgress && (
+              <CircularProgress
+                size={20}
+                color={nested ? 'primary' : 'inherit'}
+              />
+            )}
+            {!isProgress && (isFail || isOutdated) && (
+              <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
+                <WarningOutlined
+                  color={nested ? 'primary' : 'inherit'}
+                  style={{ fontSize: 15, color: '#f44336', marginLeft: 4 }}
+                />
+              </Tooltip>
+            )}
+            {!isProgress && !isFail && !isOutdated && generateIcon()}
+          </ListItemIcon>
+          <Tooltip title={!isFail && !isOutdated ? file?.name : ''}>
+            <ListItemText
+              classes={{
+                root: classes.itemText,
+                primary: classes.fileName,
+              }}
+              primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
+              secondary={
+                <>
+                  {status} (
+                  {fld(file?.lastModified ?? moment())})
+                </>
+              }
+            />
+          </Tooltip>
+        </ListItemButton>
+      </ListItem>
+      <FileWork file={file} nested={workNested}/>
       <Dialog
         open={displayDelete}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDelete}
       >
         <DialogContent>
@@ -450,9 +478,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       </Dialog>
       <Dialog
         open={displayRemove}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseRemove}
       >
         <DialogContent>
@@ -475,9 +503,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
       </Dialog>
       <Dialog
         open={displayDownload}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDownload}
       >
         <DialogContent>
@@ -525,6 +553,10 @@ const FileLine = createFragmentContainer(FileLineComponent, {
     fragment FileLine_file on File {
       id
       name
+      draftVersion {
+        draft_id
+        draft_operation
+      }
       uploadStatus
       lastModified
       lastModifiedSinceMin

@@ -10,6 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from '@mui/styles';
+import { ListItemButton } from '@mui/material';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -344,10 +345,9 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                       {renderProps.containers.edges.map((containerEdge) => {
                         const container = containerEdge.node;
                         return (
-                          <ListItem
+                          <ListItemButton
                             key={container.id}
                             dense={true}
-                            button={true}
                             classes={{ root: classes.item }}
                             divider={true}
                             component={Link}
@@ -388,7 +388,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                                 </>
                                 }
                             />
-                          </ListItem>
+                          </ListItemButton>
                         );
                       })}
                     </List>
@@ -424,7 +424,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                     key={i}
                     dense={true}
                     divider={true}
-                    button={false}
+
                   >
                     <ListItemIcon classes={{ root: classes.itemIcon }}>
                       <Skeleton

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from '@hello-pangea/dnd';
-import { List, ListItem, ListItemIcon, ListItemText, ListItemSecondaryAction, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
+import { List, ListItem, ListItemIcon, ListItemText, IconButton, Checkbox, Typography, Box, AccordionDetails } from '@mui/material';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@mui/material/Button';
@@ -62,13 +62,16 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
       <AccordionSummary>
         <Typography> {t_i18n('Customize columns')} </Typography>
       </AccordionSummary>
-
       <AccordionDetails sx={{ background: 'none', paddingBlock: theme.spacing(2) }}>
         <Box sx={{ display: 'flex', width: '100%', gap: theme.spacing(2) }}>
           {/* Available Columns */}
           <Box sx={{ flex: 1 }}>
             <Typography variant="h4">{`${t_i18n('Available columns')} (${availableColumns.length})`}</Typography>
-            <List sx={{ border: `1px solid ${theme.palette.common.white}`, borderRadius: `${theme.borderRadius}px` }}>
+            <List sx={{
+              border: `1px solid ${theme.palette.common.white}`,
+              borderRadius: `${theme.borderRadius}px`,
+            }}
+            >
               {availableColumns.map((column) => (
                 <ListItem
                   disablePadding
@@ -112,18 +115,17 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                               background: snapshotDrag.isDragging ? 'rgba(0, 0, 0, 0.05)' : 'inherit',
                               height: 42,
                             }}
+                            secondaryAction={
+                              <IconButton onClick={() => handleToggleColumn(column.attribute)}>
+                                <Close />
+                              </IconButton>
+                            }
                           >
                             <ListItemIcon {...providedDrag.dragHandleProps}>
                               <DragIndicatorOutlined />
                             </ListItemIcon>
 
                             <ListItemText primary={formatColumnName(column)} />
-
-                            <ListItemSecondaryAction>
-                              <IconButton onClick={() => handleToggleColumn(column.attribute)}>
-                                <Close />
-                              </IconButton>
-                            </ListItemSecondaryAction>
                           </ListItem>
                         )}
                       </Draggable>

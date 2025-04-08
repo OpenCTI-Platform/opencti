@@ -18,7 +18,7 @@ export const up = async (next) => {
       },
       source: 'ctx._source.scope = params.scope;'
         + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.authorized_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
+        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
     },
     query: {
       bool: {
@@ -47,7 +47,7 @@ export const up = async (next) => {
       },
       source: 'ctx._source.scope = params.scope;'
         + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.authorized_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
+        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
     },
     query: {
       bool: {
@@ -81,7 +81,7 @@ export const up = async (next) => {
       },
       source: 'ctx._source.scope = params.scope;'
         + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.authorized_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
+        + ' ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
     },
     query: {
       bool: {
@@ -110,7 +110,7 @@ export const up = async (next) => {
       },
       source: 'ctx._source.scope = params.scope;'
         + ' ctx._source.authorized_authorities = params.authorized_authorities;'
-        + ' ctx._source.authorized_members = ctx._source.authorized_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
+        + ' ctx._source.restricted_members = ctx._source.restricted_members = [["id":ctx._source.initiator_id, "access_right": "admin"]];'
     },
     query: {
       bool: {

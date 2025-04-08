@@ -31,7 +31,7 @@ const InvestigationRollBackExpandDialog = ({ closeDialog, handleRollBackToPreExp
 
   return (
     <Dialog
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ paper: { elevation: 1 } }}
       open={isOpen}
       onClose={closeDialog}
       fullWidth={true}

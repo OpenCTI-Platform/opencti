@@ -9,7 +9,7 @@ export const buildTestConfig = (include: string[]) => defineConfig({
   test: {
     include,
     testTimeout: 1200000,
-    teardownTimeout: 20000,
+    teardownTimeout: 5000,
     globalSetup: ['./tests/utils/globalSetup.ts'],
     setupFiles: ['./tests/utils/testSetup.js'],
     coverage: {

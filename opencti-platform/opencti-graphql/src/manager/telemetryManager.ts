@@ -4,20 +4,25 @@ import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-convent
 import { ConsoleMetricExporter, InstrumentType, MeterProvider } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { AggregationTemporality } from '@opentelemetry/sdk-metrics/build/src/export/AggregationTemporality';
-import conf, { DEV_MODE, isFeatureEnabled, logApp, PLATFORM_VERSION } from '../config/conf';
+import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../domain/settings';
-import { usersWithActiveSession } from '../database/session';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../telemetry/TelemetryMeterManager';
 import type { HandlerInput, ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 import { MetricFileExporter } from '../telemetry/MetricFileExporter';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { BatchExportingMetricReader } from '../telemetry/BatchExportingMetricReader';
 import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { elCount } from '../database/engine';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { FilterMode } from '../generated/graphql';
+import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
+import type { AuthUser } from '../types/user';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -36,16 +41,37 @@ const TELEMETRY_EXPORT_INTERVAL = DEV_MODE ? TWO_MINUTE : SIX_HOUR;
 // Manager schedule, data point generation
 const COMPUTE_SCHEDULE_TIME = DEV_MODE ? ONE_MINUTE / 2 : ONE_HOUR / 2;
 
-const TELEMETRY_COUNT_ACTIVE_USERS = isFeatureEnabled('TELEMETRY_COUNT_ACTIVE_USERS');
+// Region user event counters
+export const TELEMETRY_GAUGE_DISSEMINATION = 'disseminationCount';
+export const TELEMETRY_GAUGE_NLQ = 'nlqQueryCount';
+export const TELEMETRY_GAUGE_REQUEST_ACCESS = 'requestAccessCreationCount';
+
+export const addDisseminationCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
+};
+export const addNlqQueryCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_NLQ, 1);
+};
+
+export const addRequestAccessCreationCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_REQUEST_ACCESS, 1);
+};
+
+// End Region user event counters
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
   const context = executionContext('telemetry_manager');
   const filigranMetricReaders = [];
+  const collectorCallback = async () => {
+    logApp.debug('[TELEMETRY] Clearing all telemetry data in Redis');
+    await redisClearTelemetry();
+  };
   // region File exporter
   const fileExporterReader = new BatchExportingMetricReader({
     exporter: new MetricFileExporter(AggregationTemporality.DELTA),
     collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
     exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
+    collectCallback: collectorCallback
   });
   filigranMetricReaders.push(fileExporterReader);
   logApp.info('[TELEMETRY] File exporter activated');
@@ -104,7 +130,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   return filigranTelemetryMeterManager;
 };
 
-const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
+export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
   try {
     const context = executionContext('telemetry_manager');
     // region Settings information
@@ -116,11 +142,7 @@ const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setInstancesCount(clusterInfo.info.instances_number);
     // endregion
     // region Users information
-    if (TELEMETRY_COUNT_ACTIVE_USERS) {
-      const activUsers = await usersWithActiveSession(TELEMETRY_COLLECT_INTERVAL / 1000 / 60);
-      manager.setActiveUsersCount(activUsers.length);
-    }
-    const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER);
+    const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER) as AuthUser[];
     manager.setUsersCount(users.length);
     // endregion
     // region Connectors information
@@ -128,6 +150,29 @@ const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const activeConnectors = connectors.filter((c) => c.active);
     manager.setActiveConnectorsCount(activeConnectors.length);
     // endregion
+    // region Draft information
+    const draftWorkspaces = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
+    manager.setDraftCount(draftWorkspaces.length);
+    // endregion
+    // region Workbenches information
+    const pendingFileFilter = {
+      mode: FilterMode.And,
+      filters: [{ key: ['internal_id'], values: ['import/pending'], operator: 'starts_with' }],
+      filterGroups: []
+    };
+    const workbenchesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { filters: pendingFileFilter, types: [ENTITY_TYPE_INTERNAL_FILE] });
+    manager.setWorkbenchCount(workbenchesCount);
+    // endregion
+
+    // region Telemetry user events
+    const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
+    manager.setDisseminationCount(disseminationCountInRedis);
+    const nlqQueryCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_NLQ);
+    manager.setNlqQueryCount(nlqQueryCountInRedis);
+    const requestAccessCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_REQUEST_ACCESS);
+    manager.setRequestAccessCreatedCount(requestAccessCountInRedis);
+    // end region Telemetry user events
+    logApp.debug('[TELEMETRY] Fetching telemetry data successfully');
   } catch (e) {
     logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
   }

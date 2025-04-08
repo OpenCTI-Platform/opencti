@@ -1,7 +1,7 @@
 import { Readable } from 'stream';
 import { join } from 'node:path';
 import fs from 'node:fs';
-import { copyFile, deleteFile, deleteFiles, loadedFilesListing, storeFileConverter, upload } from './file-storage';
+import { copyFile, deleteFile, deleteFiles, deleteRawFiles, loadedFilesListing, storeFileConverter, upload } from './file-storage';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { logApp } from '../config/conf';
@@ -10,6 +10,7 @@ import { deleteWorkForSource } from '../domain/work';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { getDraftContext } from '../utils/draftContext';
 import { UnsupportedError } from '../config/errors';
+import { getDraftFilePrefix } from './draft-utils';
 
 interface FileUploadOpts {
   entity?:BasicStoreBase | unknown, // entity on which the file is uploaded
@@ -55,9 +56,6 @@ interface S3File {
  * @param opts
  */
 export const uploadToStorage = (context: AuthContext, user: AuthUser, filePath: string, fileUpload: FileUploadData, opts: FileUploadOpts) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot upload file in draft context');
-  }
   return upload(context, user, filePath, fileUpload, opts);
 };
 
@@ -84,7 +82,6 @@ export const ALL_MERGEABLE_FOLDERS = [IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH, 
  */
 export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser, element: any) => {
   logApp.debug(`[FILE STORAGE] deleting all storage files for ${element.internal_id}`);
-
   let ids = [];
   if (element.entity_type === ENTITY_TYPE_SUPPORT_PACKAGE) {
     const supportPath = `${SUPPORT_STORAGE_PATH}/${element.internal_id}`;
@@ -115,6 +112,21 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
   }
   logApp.debug('[FILE STORAGE] deleting all files with ids:', { ids });
   return deleteFiles(context, user, ids);
+};
+
+/**
+ * Delete all files in storage that relates to a draft.
+ * @param context
+ * @param user
+ * @param draftId
+ */
+export const deleteAllDraftFiles = async (context: AuthContext, user: AuthUser, draftId: string) => {
+  logApp.debug(`[FILE STORAGE] deleting all storage files for draft ${draftId}`);
+  const contextInDraft = { ...context, draft_context: draftId };
+  const draftFiles = await allFilesForPaths(contextInDraft, user, [getDraftFilePrefix(draftId)]);
+  const draftFilesIds = draftFiles.map((file) => file.id);
+  logApp.debug('[FILE STORAGE] deleting all draft files with ids:', { draftFilesIds });
+  return deleteRawFiles(context, user, draftFilesIds);
 };
 
 /**
@@ -153,8 +165,10 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
  * @param targetEntity
  */
 export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user: AuthUser, sourceEntity: BasicStoreBase, targetEntity: BasicStoreBase) => {
+  if (getDraftContext(context, user)) {
+    throw UnsupportedError('Cannot merge all files in draft');
+  }
   const updatedXOpenctiFiles: Partial<S3File> [] = [];
-
   for (let folderI = 0; folderI < ALL_MERGEABLE_FOLDERS.length; folderI += 1) {
     try {
       const sourcePath = `${ALL_MERGEABLE_FOLDERS[folderI]}/${sourceEntity.entity_type}/${sourceEntity.internal_id}`;

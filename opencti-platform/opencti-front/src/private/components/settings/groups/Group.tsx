@@ -13,9 +13,9 @@ import * as R from 'ramda';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import GroupConfidenceLevel from '@components/settings/groups/GroupConfidenceLevel';
 import { uniq } from 'ramda';
+import { ListItemButton } from '@mui/material';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -32,6 +32,7 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 import type { Theme } from '../../../../components/Theme';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -125,6 +126,8 @@ const groupFragment = graphql`
 const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const group = useFragment<Group_group$key>(groupFragment, groupData);
   const { isAllowed, isSensitive } = useSensitiveModifications('groups', group.standard_id);
@@ -159,9 +162,13 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
       >
         {group.name}
       </Typography>
-      <div className={classes.popover}>
+      {!isFABReplaced && <div className={classes.popover}>
         <GroupPopover groupId={group.id} disabled={!isAllowed && isSensitive} />
-      </div>
+      </div>}
+      <GroupEdition
+        groupId={group.id}
+        disabled={!isAllowed && isSensitive}
+      />
       <div className="clearfix" />
       <Grid
         container={true}
@@ -219,11 +226,10 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 </Typography>
                 <List>
                   {group.roles?.edges?.map(({ node: role }) => (
-                    <ListItem
+                    <ListItemButton
                       key={role?.id}
                       dense={true}
                       divider={true}
-                      button={true}
                       component={Link}
                       to={`/dashboard/settings/accesses/roles/${role?.id}`}
                     >
@@ -231,7 +237,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         <ItemIcon type="Role" />
                       </ListItemIcon>
                       <ListItemText primary={role?.name} />
-                    </ListItem>
+                    </ListItemButton>
                   ))}
                 </List>
               </Grid>
@@ -244,27 +250,27 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     <ListItem
                       dense={true}
                       divider={true}
-                      button={true}
-                      component={Link}
-                      to={`/dashboard/workspaces/dashboards/${group.default_dashboard?.id}`}
-                    >
-                      <ListItemIcon>
-                        <ItemIcon type="Dashboard" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={truncate(group.default_dashboard?.name, 40)}
-                      />
-                      {!canAccessDashboard && (
-                        <ListItemSecondaryAction>
-                          <Tooltip
-                            title={t_i18n(
-                              'You need to authorize this group to access this dashboard in the permissions of the workspace.',
-                            )}
-                          >
-                            <WarningOutlined color="warning" />
-                          </Tooltip>
-                        </ListItemSecondaryAction>
+                      secondaryAction={!canAccessDashboard && (
+                      <Tooltip
+                        title={t_i18n(
+                          'You need to authorize this group to access this dashboard in the permissions of the workspace.',
+                        )}
+                      >
+                        <WarningOutlined color="warning" />
+                      </Tooltip>
                       )}
+                    >
+                      <ListItemButton
+                        component={Link}
+                        to={`/dashboard/workspaces/dashboards/${group.default_dashboard?.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="Dashboard" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={truncate(group.default_dashboard?.name, 40)}
+                        />
+                      </ListItemButton>
                     </ListItem>
                   </List>
                 </FieldOrEmpty>
@@ -332,7 +338,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         key={marking?.id}
                         dense={true}
                         divider={true}
-                        button={false}
+
                       >
                         <ListItemIcon>
                           <ItemIcon
@@ -359,7 +365,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                         key={marking?.id}
                         dense={true}
                         divider={true}
-                        button={false}
+
                       >
                         <ListItemIcon>
                           <ItemIcon
@@ -390,9 +396,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             key={marking.id}
                             dense={true}
                             divider={true}
-                            button={false}
+
                           >
-                            <Typography variant="h3" gutterBottom={true} width={100}>
+                            <Typography variant="h3" gutterBottom={true} sx={{
+                              width: 100,
+                            }}
+                            >
                               {truncate(type, 40)}
                             </Typography>
                             {isMarkingAllowed
@@ -429,9 +438,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             key={type}
                             dense={true}
                             divider={true}
-                            button={false}
+
                           >
-                            <Typography variant="h3" gutterBottom={true} width={100}>
+                            <Typography variant="h3" gutterBottom={true} sx={{
+                              width: 100,
+                            }}
+                            >
                               {truncate(type, 40)}
                             </Typography>
                             <ListItemText
@@ -445,9 +457,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                           key={type}
                           dense={true}
                           divider={true}
-                          button={false}
+
                         >
-                          <Typography variant="h3" gutterBottom={true} width={100}>
+                          <Typography variant="h3" gutterBottom={true} sx={{
+                            width: 100,
+                          }}
+                          >
                             {truncate(type, 40)}
                           </Typography>
                           <ListItemText
@@ -465,10 +480,6 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         <Triggers recipientId={group.id} filterKey="authorized_members.id" />
         <GroupUsers groupId={group.id} />
       </Grid>
-      <GroupEdition
-        groupId={group.id}
-        disabled={!isAllowed && isSensitive}
-      />
     </div>
   );
 };

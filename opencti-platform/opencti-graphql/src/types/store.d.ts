@@ -51,7 +51,7 @@ import {
   INPUT_PARTICIPANT
 } from '../schema/general';
 import type { StixId } from './stix-2-1-common';
-import type { EditOperation, PageInfo } from '../generated/graphql';
+import { type EditOperation, type PageInfo, StatusScope } from '../generated/graphql';
 import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-2-1-sco';
 import { RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { AuthorizedMember } from '../utils/access';
@@ -118,6 +118,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   draft_change?: DraftChange;
   // representative
   representative: Representative
+  restricted_members?: Array<AuthorizedMember>;
 }
 
 interface StoreMarkingDefinition extends BasicStoreEntity {
@@ -184,7 +185,6 @@ interface BasicStoreCommon extends BasicStoreBase {
   [RELATION_OBJECT_ASSIGNEE]?: Array<string>;
   [RELATION_OBJECT_PARTICIPANT]?: Array<string>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
-  authorized_members?: Array<AuthorizedMember>;
 }
 
 interface StoreCommon {
@@ -433,7 +433,7 @@ interface BasicStoreEntityFeed extends BasicStoreEntity {
       attribute: string;
     }];
   }>;
-  authorized_members: Array<AuthorizedMember>;
+  restricted_members: Array<AuthorizedMember>;
 }
 
 interface BasicStoreCyberObservable extends BasicStoreCommon {
@@ -616,6 +616,7 @@ interface BasicWorkflowStatus extends BasicStoreEntity {
   order: number;
   template_id: string;
   type: string;
+  scope: StatusScope;
 }
 
 interface BasicTaskEntity extends BasicStoreEntity {

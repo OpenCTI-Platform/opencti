@@ -17,6 +17,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
+import { DraftChip } from '../draft/DraftChip';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -240,7 +241,7 @@ class StixCoreRelationshipContainer extends Component {
         >
           <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Relationship')}
+              {t('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip/>)}
             </Typography>
             <Paper
               classes={{ root: classes.paperWithoutPadding }}
@@ -295,6 +296,7 @@ class StixCoreRelationshipContainer extends Component {
                           50,
                         )
                         : t('Restricted')}
+                      {!fromRestricted && stixCoreRelationship.from.draftVersion && (<DraftChip/>)}
                     </span>
                   </div>
                 </div>
@@ -360,6 +362,7 @@ class StixCoreRelationshipContainer extends Component {
                           50,
                         )
                         : t('Restricted')}
+                      {!toRestricted && stixCoreRelationship.to.draftVersion && (<DraftChip/>)}
                     </span>
                   </div>
                 </div>
@@ -551,8 +554,7 @@ class StixCoreRelationshipContainer extends Component {
                 <StixCoreRelationshipInference
                   key={inference.rule.id}
                   inference={inference}
-                  stixCoreRelationship={stixCoreRelationship}
-                  paddingRight={paddingRight}
+                  stixRelationship={stixCoreRelationship}
                 />
               ))}
               {expandable && (
@@ -596,9 +598,9 @@ class StixCoreRelationshipContainer extends Component {
         )}
         <Dialog
           open={this.state.displayDelete}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>
@@ -645,6 +647,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
     stixCoreRelationship: graphql`
       fragment StixCoreRelationshipOverview_stixCoreRelationship on StixCoreRelationship {
         id
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         entity_type
         parent_types
         relationship_type
@@ -3877,9 +3883,17 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             parent_types
           }
           ... on StixCoreObject {
+            draftVersion {
+              draft_id
+              draft_operation
+            }
             created_at
           }
           ... on StixCoreRelationship {
+            draftVersion {
+              draft_id
+              draft_operation
+            }
             created_at
             start_time
             stop_time
@@ -4393,9 +4407,17 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             parent_types
           }
           ... on StixCoreObject {
+            draftVersion {
+              draft_id
+              draft_operation
+            }
             created_at
           }
           ... on StixCoreRelationship {
+            draftVersion {
+              draft_id
+              draft_operation
+            }
             created_at
             start_time
             stop_time

@@ -82,7 +82,7 @@ StixSightingRelationshipProps
                 {isFABReplaced && (
                   <Security needs={[KNOWLEDGE_KNUPDATE]}>
                     <Button
-                      variant='outlined'
+                      variant='contained'
                       size='small'
                       aria-label={t_i18n('Update')}
                       onClick={handleOpenEdit}
@@ -114,9 +114,9 @@ StixSightingRelationshipProps
               {/* Deletion Dialog, hidden by default */}
               <Dialog
                 open={deleteOpen}
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 keepMounted={true}
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 onClose={handleCloseDelete}
               >
                 <DialogContent>

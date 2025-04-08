@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { map, pathOr, pipe } from 'ramda';
+import { ascend, map, path, pathOr, pipe, sortWith, union } from 'ramda';
 import { Link } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import withTheme from '@mui/styles/withTheme';
@@ -19,7 +19,6 @@ import Select from '@mui/material/Select';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Table from '@mui/material/Table';
 import TableHead from '@mui/material/TableHead';
 import TableBody from '@mui/material/TableBody';
@@ -33,10 +32,12 @@ import {
   BrushOutlined,
   CancelOutlined,
   CenterFocusStrong,
+  CheckCircleOutlined,
   ClearOutlined,
   CloseOutlined,
   ContentCopyOutlined,
   DeleteOutlined,
+  DeleteSweepOutlined,
   LanguageOutlined,
   LinkOffOutlined,
   LockOpenOutlined,
@@ -44,6 +45,7 @@ import {
   MoveToInboxOutlined,
   RestoreOutlined,
   TransformOutlined,
+  UnpublishedOutlined,
 } from '@mui/icons-material';
 import { BankMinus, BankPlus, CloudRefreshOutline, LabelOutline } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -59,7 +61,7 @@ import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import Avatar from '@mui/material/Avatar';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import { Switch, FormControlLabel } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
@@ -94,6 +96,7 @@ import ItemMarkings from '../../../components/ItemMarkings';
 import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import EETooltip from '../common/entreprise_edition/EETooltip';
+import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -195,11 +198,11 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = ['Playbook', 'Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
-const notAddableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
-const notUpdatableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
-const notScannableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
-const notEnrichableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notMergableTypes = ['Playbook', 'Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
+const notAddableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
+const notUpdatableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
+const notScannableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
+const notEnrichableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'Task', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 const typesWithScore = [
   'Stix-Cyber-Observable',
   'Indicator',
@@ -242,9 +245,13 @@ const typesWithParticipant = ['Case-Incident', 'Case-Rft', 'Case-Rfi', 'Report']
 const typesWithIncidentResponseType = ['Case-Incident'];
 const typesWithRfiTypes = ['Case-Rfi'];
 const typesWithRftTypes = ['Case-Rft'];
+const typesWithDetection = ['Indicator'];
+const typesWithKillChains = ['Indicator'];
+const typesWithIndicatorTypes = ['Indicator'];
+const typesWithPlatforms = ['Indicator'];
 
 const typesWithoutStatus = ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Artifact', 'ExternalReference'];
-const notShareableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace'];
+const notShareableTypes = ['Playbook', 'Label', 'Vocabulary', 'Case-Template', 'DeleteOperation', 'InternalFile', 'PublicDashboard', 'Workspace', 'DraftWorkspace', 'Notification'];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -359,10 +366,13 @@ class DataTableToolBar extends Component {
         incident_response_types_ov: [],
         request_for_information_types_ov: [],
         request_for_takedown_types_ov: [],
+        indicator_type_ov: [],
+        platforms_ov: [],
       },
       navOpen: localStorage.getItem('navOpen') === 'true',
       assignees: [],
       participants: [],
+      killChainPhases: [],
     };
   }
 
@@ -490,6 +500,8 @@ class DataTableToolBar extends Component {
       incident_response_types_ov: 'response_types',
       request_for_information_types_ov: 'information_types',
       request_for_takedown_types_ov: 'takedown_types',
+      indicator_type_ov: 'indicator_types',
+      platforms_ov: 'x_mitre_platforms',
     };
 
     const actions = actionsInputs.map((n) => {
@@ -526,8 +538,12 @@ class DataTableToolBar extends Component {
 
     actionsInputs[i] = R.assoc(key, value, actionsInputs[i] || {});
     if (key === 'field') {
-      const values = [];
-      actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
+      if (value === 'x_opencti_detection') {
+        actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
+      } else {
+        const values = [];
+        actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
+      }
       if (
         value === 'object-marking'
         || value === 'object-label'
@@ -587,6 +603,29 @@ class DataTableToolBar extends Component {
     this.setState({ actionsInputs });
   }
 
+  handleChangeSwitchInput(i, key, value) {
+    const { actionsInputs } = this.state;
+    const currentValue = actionsInputs[i] ? actionsInputs[i][key] : null;
+    if (key === 'values' && currentValue !== value) {
+      actionsInputs[i] = { ...actionsInputs[i], [key]: [String(value)] };
+    } else {
+      actionsInputs[i] = { ...actionsInputs[i], [key]: value };
+    }
+    this.setState({ actionsInputs });
+  }
+  handleLaunchRead(read) {
+    const actions = [{
+      type: 'REPLACE',
+      context: {
+        field: 'is_read',
+        type: 'ATTRIBUTE',
+        values: [read ? 'true' : 'false'],
+      },
+    }];
+    this.setState({ actions }, () => {
+      this.handleOpenTask();
+    });
+  }
   handleLaunchDelete() {
     const actions = [{ type: 'DELETE', context: null }];
     this.setState({ actions }, () => {
@@ -595,6 +634,12 @@ class DataTableToolBar extends Component {
   }
   handleLaunchRemoveAuthMembers() {
     const actions = [{ type: 'REMOVE_AUTH_MEMBERS', context: null }];
+    this.setState({ actions }, () => {
+      this.handleOpenTask();
+    });
+  }
+  handleLaunchRemoveFromDraft() {
+    const actions = [{ type: 'REMOVE_FROM_DRAFT', context: null }];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
@@ -702,7 +747,7 @@ class DataTableToolBar extends Component {
     return t('Copy to clipboard');
   }
 
-  submitTask(availableFilterKeys) {
+  submitTask(availableFilterKeys, isInDraft) {
     this.setState({ processing: true });
     const { actions, mergingElement, promoteToContainer } = this.state;
     const {
@@ -750,14 +795,13 @@ class DataTableToolBar extends Component {
         },
         onCompleted: () => {
           handleClearSelectedElements();
+          const monitoringLink = !isInDraft ? <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link> : t('the draft processes tab');
           MESSAGING$.notifySuccess(
             <span>
               {t(
                 'The background task has been executed. You can monitor it on',
               )}{' '}
-              <Link to="/dashboard/data/processing/tasks">
-                {t('the dedicated page')}
-              </Link>
+              {monitoringLink}
               .
             </span>,
           );
@@ -779,14 +823,13 @@ class DataTableToolBar extends Component {
         },
         onCompleted: () => {
           handleClearSelectedElements();
+          const monitoringLink = !isInDraft ? <Link to="/dashboard/data/processing/tasks">{t('the dedicated page')}</Link> : t('the draft processes tab');
           MESSAGING$.notifySuccess(
             <span>
               {t(
                 'The background task has been executed. You can monitor it on',
               )}{' '}
-              <Link to="/dashboard/data/processing/tasks">
-                {t('the dedicated page')}
-              </Link>
+              {monitoringLink}
               .
             </span>,
           );
@@ -813,6 +856,9 @@ class DataTableToolBar extends Component {
       actionsInputs[i]?.type === 'ADD' && { label: t('In containers'), value: 'container-object' },
       ((actionsInputs[i]?.type === 'ADD' && isAdmin) || (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && { label: t('Creator'), value: 'creator_id' },
       (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
+      checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Kill chains'), value: 'killChainPhases' },
+      checkTypes(typesWithIndicatorTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Indicator types'), value: 'indicator_type_ov' },
+      checkTypes(typesWithPlatforms) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Platforms'), value: 'platforms_ov' },
       ...(actionsInputs[i]?.type === 'REPLACE' ? [
         { label: t('Author'), value: 'created-by' },
         { label: t('Confidence'), value: 'confidence' },
@@ -823,6 +869,7 @@ class DataTableToolBar extends Component {
         checkTypes(typesWithRfiTypes) && { label: t('Request for information type'), value: 'request_for_information_types_ov' },
         checkTypes(typesWithRftTypes) && { label: t('Request for takedown type'), value: 'request_for_takedown_types_ov' },
         checkTypes(typesWithScore) && { label: t('Score'), value: 'x_opencti_score' },
+        checkTypes(typesWithDetection) && { label: t('Detection'), value: 'x_opencti_detection' },
         selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0]) && { label: t('Status'), value: 'x_opencti_workflow_id' },
       ] : []),
     ].filter(Boolean);
@@ -1163,6 +1210,33 @@ class DataTableToolBar extends Component {
           .sort((a, b) => a.type.localeCompare(b.type));
         this.setState({
           users: R.union(this.state.users, users),
+        });
+      });
+  }
+
+  searchKillChains(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = {
+      ...actionsInputs[i],
+      inputValue: newValue && newValue.length > 0 ? newValue : '',
+    };
+    this.setState({ actionsInputs });
+    fetchQuery(killChainPhasesSearchQuery, {
+      search: newValue && newValue.length > 0 ? newValue : '',
+    })
+      .toPromise()
+      .then((data) => {
+        const killChainPhases = pipe(
+          pathOr([], ['killChainPhases', 'edges']),
+          sortWith([ascend(path(['node', 'x_opencti_order']))]),
+          map((n) => ({
+            label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+            value: n.node.id,
+          })),
+        )(data);
+        this.setState({
+          killChainPhases: union(this.state.killChainPhases, killChainPhases),
         });
       });
   }
@@ -1537,6 +1611,40 @@ class DataTableToolBar extends Component {
             )}
           />
         );
+      case 'indicator_type_ov':
+      case 'platforms_ov':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || null}
+            multiple={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Select Value')}
+                fullWidth={true}
+                onFocus={this.searchVocabulary.bind(this, i, selectedField)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.vocabularies[selectedField] || []}
+            onInputChange={this.searchVocabulary.bind(this, i, selectedField)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
       case 'creator_id':
         return (
           <Autocomplete
@@ -1582,6 +1690,55 @@ class DataTableToolBar extends Component {
             fullWidth={true}
             type="number"
             onChange={this.handleChangeActionInputValuesReplace.bind(this, i)}
+          />
+        );
+      case 'killChainPhases':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            multiple={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchKillChains.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.killChainPhases}
+            onInputChange={this.searchKillChains.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon} style={{ color: option.color }}>
+                  <ItemIcon type="Kill-Chain-Phase" />
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
+      case 'x_opencti_detection':
+        return (
+          <FormControlLabel
+            control={
+              <Switch
+                onChange={(event) => this.handleChangeSwitchInput(i, 'values', event.target.checked)}
+                name={`actions-${i}-value`}
+                color="primary"
+              />
+            }
+            label={t('Value')}
           />
         );
       default:
@@ -1639,6 +1796,8 @@ class DataTableToolBar extends Component {
       mergeDisable,
       deleteOperationEnabled,
       removeAuthMembersEnabled,
+      removeFromDraftEnabled,
+      markAsReadEnabled,
       warning,
       warningMessage,
       taskScope,
@@ -1654,6 +1813,7 @@ class DataTableToolBar extends Component {
       <UserContext.Consumer>
         {({ schema, settings, me }) => {
           const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
+          const isInDraft = me.draftContext;
           const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
           const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
           const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
@@ -1769,6 +1929,36 @@ class DataTableToolBar extends Component {
                   </IconButton>
                 </div>
                 <div>
+                  {markAsReadEnabled && (
+                    <>
+                      <Tooltip title={t('Mark as read')}>
+                        <span>
+                          <IconButton
+                            aria-label={t('Mark as read')}
+                            disabled={numberOfSelectedElements === 0 || this.state.processing}
+                            onClick={this.handleLaunchRead.bind(this, true)}
+                            color="success"
+                            size="small"
+                          >
+                            <CheckCircleOutlined fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title={t('Mark as unread')}>
+                        <span>
+                          <IconButton
+                            aria-label={t('Mark as unread')}
+                            disabled={numberOfSelectedElements === 0 || this.state.processing}
+                            onClick={this.handleLaunchRead.bind(this, false)}
+                            color="warning"
+                            size="small"
+                          >
+                            <UnpublishedOutlined fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </>
+                  )}
                   {removeAuthMembersEnabled && (
                     <Security needs={[BYPASS]}>
                       <Tooltip title={t('Remove access restriction')}>
@@ -1806,7 +1996,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
-                    {!removeAuthMembersEnabled && (
+                    {!removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && (
                     <UserContext.Consumer>
                       {({ platformModuleHelpers }) => {
                         const label = platformModuleHelpers.isRuleEngineEnable()
@@ -1882,7 +2072,7 @@ class DataTableToolBar extends Component {
                         </span>
                       </Tooltip>
                     )}
-                    {enableMerge && !removeAuthMembersEnabled && (
+                    {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && (
                       <Tooltip title={t('Merge')}>
                         <span>
                           <IconButton
@@ -1945,7 +2135,7 @@ class DataTableToolBar extends Component {
                       </Tooltip>
                     </Security>
                   )}
-                  {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && (
+                  {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && (
                     <>
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                         <EETooltip title={t('Share with organizations')}>
@@ -1981,7 +2171,7 @@ class DataTableToolBar extends Component {
                       </Security>
                     </>
                   )}
-                  {deleteDisable !== true && !removeAuthMembersEnabled && (
+                  {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && (
                     <Security needs={[deleteCapability]}>
                       <Tooltip title={warningMessage || t('Delete')}>
                         <span>
@@ -1998,6 +2188,24 @@ class DataTableToolBar extends Component {
                             <DeleteOutlined fontSize="small" />
                           </IconButton>
                         </span>
+                      </Tooltip>
+                    </Security>
+                  )}
+                  {removeFromDraftEnabled && (
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <Tooltip title={t('Remove from draft')}>
+                        <IconButton
+                          color="primary"
+                          aria-label="input"
+                          onClick={this.handleLaunchRemoveFromDraft.bind(this)}
+                          size="small"
+                          disabled={
+                              numberOfSelectedElements === 0
+                              || this.state.processing
+                          }
+                        >
+                          <DeleteSweepOutlined fontSize="small" color={'primary'} />
+                        </IconButton>
                       </Tooltip>
                     </Security>
                   )}
@@ -2040,13 +2248,14 @@ class DataTableToolBar extends Component {
                 </div>
               </Toolbar>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 open={this.state.displayTask}
                 keepMounted={true}
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 onClose={this.handleCloseTask.bind(this)}
                 fullWidth={true}
                 maxWidth="md"
+                data-testid="background-task-popup"
               >
                 <DialogTitle>
                   <div style={{ float: 'left' }}>
@@ -2198,7 +2407,7 @@ class DataTableToolBar extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    onClick={this.submitTask.bind(this, availableFilterKeys)}
+                    onClick={this.submitTask.bind(this, availableFilterKeys, isInDraft)}
                     color="secondary"
                     disabled={this.state.processing}
                   >
@@ -2328,7 +2537,27 @@ class DataTableToolBar extends Component {
                   </Typography>
                   <List>
                     {selectedElementsList.map((element) => (
-                      <ListItem key={element.id} dense={true} divider={true}>
+                      <ListItem
+                        key={element.id}
+                        dense={true}
+                        divider={true}
+                        secondaryAction={
+                          <Radio
+                            checked={
+                                      keptEntityId
+                                        ? keptEntityId === element.id
+                                        : R.head(selectedElementsList).id === element.id
+                                  }
+                            onChange={this.handleChangeKeptEntityId.bind(
+                              this,
+                              element.id,
+                            )}
+                            value={element.id}
+                            name="keptEntityID"
+                            inputProps={{ 'aria-label': 'keptEntityID' }}
+                          />
+                          }
+                      >
                         <ListItemIcon>
                           <ItemIcon type={element.entity_type} />
                         </ListItemIcon>
@@ -2358,22 +2587,6 @@ class DataTableToolBar extends Component {
                             }
                           />
                         </div>
-                        <ListItemSecondaryAction>
-                          <Radio
-                            checked={
-                              keptEntityId
-                                ? keptEntityId === element.id
-                                : R.head(selectedElementsList).id === element.id
-                            }
-                            onChange={this.handleChangeKeptEntityId.bind(
-                              this,
-                              element.id,
-                            )}
-                            value={element.id}
-                            name="keptEntityID"
-                            inputProps={{ 'aria-label': 'keptEntityID' }}
-                          />
-                        </ListItemSecondaryAction>
                       </ListItem>
                     ))}
                   </List>
@@ -2494,12 +2707,11 @@ class DataTableToolBar extends Component {
                       </Alert>
                     )}
                     {this.state.enrichConnectors.map((connector) => (
-                      <ListItem key={connector.id} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <CloudRefreshOutline />
-                        </ListItemIcon>
-                        <ListItemText primary={connector.name} />
-                        <ListItemSecondaryAction>
+                      <ListItem
+                        key={connector.id}
+                        dense={true}
+                        divider={true}
+                        secondaryAction={
                           <MuiSwitch
                             checked={this.state.enrichSelected.includes(
                               connector.id,
@@ -2510,7 +2722,12 @@ class DataTableToolBar extends Component {
                             )}
                             inputProps={{ 'aria-label': 'controlled' }}
                           />
-                        </ListItemSecondaryAction>
+                      }
+                      >
+                        <ListItemIcon>
+                          <CloudRefreshOutline />
+                        </ListItemIcon>
+                        <ListItemText primary={connector.name} />
                       </ListItem>
                     ))}
                   </List>
@@ -2585,10 +2802,10 @@ class DataTableToolBar extends Component {
                 </div>
               </Drawer>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 open={this.state.displayAddInContainer}
                 onClose={() => this.setState({ displayAddInContainer: false })}
               >
@@ -2706,10 +2923,10 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 open={this.state.displayShare}
                 onClose={() => this.setState({ displayShare: false })}
               >
@@ -2797,10 +3014,10 @@ class DataTableToolBar extends Component {
                 </DialogActions>
               </Dialog>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 fullWidth={true}
                 maxWidth="sm"
-                TransitionComponent={Transition}
+                slots={{ transition: Transition }}
                 open={this.state.displayUnshare}
                 onClose={() => this.setState({ displayUnshare: false })}
               >
@@ -2889,6 +3106,8 @@ DataTableToolBar.propTypes = {
   mergeDisable: PropTypes.bool,
   deleteOperationEnabled: PropTypes.bool,
   removeAuthMembersEnabled: PropTypes.bool,
+  removeFromDraft: PropTypes.bool,
+  markAsReadEnabled: PropTypes.bool,
   taskScope: PropTypes.string,
 };
 

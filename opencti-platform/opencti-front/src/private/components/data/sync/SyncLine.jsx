@@ -5,7 +5,6 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import { DatabaseImportOutline } from 'mdi-material-ui';
 import { compose } from 'ramda';
@@ -70,7 +69,19 @@ class SyncLineLineComponent extends Component {
   render() {
     const { classes, node, dataColumns, paginationOptions, t, nsdt, n } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        secondaryAction={
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <SyncPopover
+              syncId={node.id}
+              paginationOptions={paginationOptions}
+              running={node.running}
+            />
+          </Security>
+        }
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <DatabaseImportOutline />
         </ListItemIcon>
@@ -114,15 +125,6 @@ class SyncLineLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction>
-          <Security needs={[INGESTION_SETINGESTIONS]}>
-            <SyncPopover
-              syncId={node.id}
-              paginationOptions={paginationOptions}
-              running={node.running}
-            />
-          </Security>
-        </ListItemSecondaryAction>
       </ListItem>
     );
   }
@@ -161,7 +163,13 @@ class SyncDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        secondaryAction={
+          <MoreVert classes={classes.itemIconDisabled} />
+        }
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton
             animation="wave"
@@ -231,9 +239,6 @@ class SyncDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert/>
-        </ListItemSecondaryAction>
       </ListItem>
     );
   }

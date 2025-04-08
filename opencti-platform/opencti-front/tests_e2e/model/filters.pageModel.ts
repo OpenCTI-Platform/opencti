@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 
 export default class FiltersPageModel {
   constructor(private page: Page) {}
@@ -14,6 +14,7 @@ export default class FiltersPageModel {
     return this.page.mouse.click(10, 10);
   }
   async removeLastFilter() {
-    await this.page.getByTestId('CancelIcon').last().click();
+    await expect(this.page.getByTestId('CancelIcon').last()).toBeVisible();
+    await this.page.getByTestId('CancelIcon').last().click({ force: true});
   }
 }

@@ -70,6 +70,16 @@ const StatusTemplates = () => {
         displayImport={false}
         secondaryAction={false}
         keyword={searchTerm}
+        createButton={
+          <StatusTemplateCreation
+            paginationOptions={paginationOptions}
+            contextual={false}
+            creationCallback={() => { }}
+            handleClose={() => { }}
+            inputValueContextual={''}
+            open={false}
+          />
+        }
       >
         {queryRef && (
           <React.Suspense
@@ -93,6 +103,7 @@ const StatusTemplates = () => {
               setNumberOfElements={helpers.handleSetNumberOfElements}
             />
           </React.Suspense>
+
         )}
       </ListLines>
     );
@@ -102,14 +113,6 @@ const StatusTemplates = () => {
       <LabelsVocabulariesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Status templates'), current: true }]} />
       {renderLines()}
-      <StatusTemplateCreation
-        paginationOptions={paginationOptions}
-        contextual={false}
-        creationCallback={() => {}}
-        handleCloseContextual={() => {}}
-        inputValueContextual={''}
-        openContextual={false}
-      />
     </div>
   );
 };

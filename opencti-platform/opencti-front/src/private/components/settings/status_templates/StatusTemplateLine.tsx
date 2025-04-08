@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { FactCheckOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import { graphql, useFragment } from 'react-relay';
+import ListItem from '@mui/material/ListItem';
 import StatusTemplatePopover from './StatusTemplatePopover';
 import { StatusTemplateLine_node$key } from './__generated__/StatusTemplateLine_node.graphql';
 
@@ -69,40 +69,45 @@ const StatusTemplateLine: FunctionComponent<StatusTemplateLineProps> = ({
   const classes = useStyles();
   const data = useFragment(StatusTemplateLineFragment, node);
   return (
-    <ListItemButton classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon style={{ color: data.color }}>
-        <FactCheckOutlined />
-      </ListItemIcon>
-      <ListItemText
-        primary={
-          <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              {data.name}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.color.width }}
-            >
-              {data.color}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.usages.width }}
-            >
-              {data.usages}
-            </div>
-          </div>
+    <ListItemButton classes={{ root: classes.item }}
+      divider={true}
+    >
+      <ListItem
+        secondaryAction={
+          <StatusTemplatePopover
+            statusTemplateId={data.id}
+            paginationOptions={paginationOptions}
+          />
         }
-      />
-      <ListItemSecondaryAction>
-        <StatusTemplatePopover
-          statusTemplateId={data.id}
-          paginationOptions={paginationOptions}
+      >
+        <ListItemIcon style={{ color: data.color }}>
+          <FactCheckOutlined />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
+                {data.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.color.width }}
+              >
+                {data.color}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.usages.width }}
+              >
+                {data.usages}
+              </div>
+            </div>
+        }
         />
-      </ListItemSecondaryAction>
+      </ListItem>
     </ListItemButton>
   );
 };

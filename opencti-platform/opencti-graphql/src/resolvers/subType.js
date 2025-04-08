@@ -1,9 +1,10 @@
 import { findAll, findById as findSubTypeById, findById } from '../domain/subType';
-import { batchStatusesByType, createStatus, getTypeStatuses, statusDelete, statusEditField } from '../domain/status';
+import { batchGlobalStatusesByType, batchRequestAccessStatusesByType, createStatus, isGlobalWorkflowEnabled, statusDelete, statusEditField } from '../domain/status';
 import { batchEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
 import { batchLoader } from '../database/middleware';
 
-const statusesByTypeLoader = batchLoader(batchStatusesByType);
+const statusesGlobalByTypeLoader = batchLoader(batchGlobalStatusesByType);
+const statusesRequestAccessByTypeLoader = batchLoader(batchRequestAccessStatusesByType);
 const entitySettingsByTypeLoader = batchLoader(batchEntitySettingsByType);
 
 const subTypeResolvers = {
@@ -12,11 +13,9 @@ const subTypeResolvers = {
     subTypes: (_, args, context) => findAll(context, context.user, args),
   },
   SubType: {
-    workflowEnabled: async (current, _, context) => {
-      const statusesEdges = await getTypeStatuses(context, context.user, current.label);
-      return statusesEdges.edges.length > 0;
-    },
-    statuses: (current, _, context) => statusesByTypeLoader.load(current.id, context, context.user),
+    workflowEnabled: (current, _, context) => isGlobalWorkflowEnabled(context, context.user, current.id),
+    statuses: (current, _, context) => statusesGlobalByTypeLoader.load(current.id, context, context.user),
+    statusesRequestAccess: (current, _, context) => statusesRequestAccessByTypeLoader.load(current.id, context, context.user),
     settings: (current, _, context) => entitySettingsByTypeLoader.load(current.id, context, context.user), // Simpler before moving workflow
   },
   Mutation: {

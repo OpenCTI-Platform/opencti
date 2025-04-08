@@ -93,6 +93,11 @@ const Taxii = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
+        createButton={
+          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+            <TaxiiCollectionCreation paginationOptions={paginationOptions} />
+          </Security>
+        }
       >
         <QueryRenderer
           query={TaxiiLinesQuery}
@@ -124,9 +129,6 @@ const Taxii = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />
       <SharingMenu/>
       {taxiiState.view === 'lines' ? renderLines(paginationOptions) : null}
-      <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-        <TaxiiCollectionCreation paginationOptions={paginationOptions} />
-      </Security>
     </Box>
   );
 };

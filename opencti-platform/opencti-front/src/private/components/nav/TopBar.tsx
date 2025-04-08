@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Badge } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import { AccountCircleOutlined, AppsOutlined, AlarmOnOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, AlarmOnOutlined, AppsOutlined, NotificationsOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import Grid from '@mui/material/Grid';
 import MenuItem from '@mui/material/MenuItem';
@@ -18,20 +18,21 @@ import Box from '@mui/material/Box';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import DraftContextBanner from '@components/drafts/DraftContextBanner';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import { TopBarAskAINLQMutation, TopBarAskAINLQMutation$data } from '@components/nav/__generated__/TopBarAskAINLQMutation.graphql';
 import { useFormatter } from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { APP_BASE_PATH, fileUri, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import type { Theme } from '../../../components/Theme';
-import useGranted, { KNOWLEDGE } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { decodeSearchKeyword, handleSearchByKeyword } from '../../../utils/SearchUtils';
+import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from '../../../utils/SearchUtils';
 import octiDark from '../../../static/images/xtm/octi_dark.png';
 import octiLight from '../../../static/images/xtm/octi_light.png';
 import obasDark from '../../../static/images/xtm/obas_dark.png';
@@ -39,8 +40,12 @@ import obasLight from '../../../static/images/xtm/obas_light.png';
 import xtmhubDark from '../../../static/images/xtm/xtm_hub_dark.png';
 import xtmhubLight from '../../../static/images/xtm/xtm_hub_light.png';
 import { isNotEmptyField } from '../../../utils/utils';
-import useHelper from '../../../utils/hooks/useHelper';
 import ItemBoolean from '../../../components/ItemBoolean';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { RelayError } from '../../../relay/relayTypes';
+import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
+import UploadImport from '../../../components/UploadImport';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -70,9 +75,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     cursor: 'pointer',
     height: 35,
     marginRight: 4,
-  },
-  menuContainer: {
-    width: '30%',
   },
   barRight: {
     marginRight: theme.spacing(2),
@@ -134,14 +136,22 @@ const topBarQuery = graphql`
   }
 `;
 
+const topBarAskAINLQMutation = graphql`
+  mutation TopBarAskAINLQMutation($search: String!) {
+    aiNLQ(search: $search) {
+      filters
+      notResolvedValues
+    }
+  }
+`;
+
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
 }) => {
-  const { isFeatureEnable } = useHelper();
-  const isDraftFeatureEnabled = isFeatureEnable('DRAFT_WORKSPACE');
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const location = useLocation();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const {
@@ -154,6 +164,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const [notificationsNumber, setNotificationsNumber] = useState<null | number>(
     null,
   );
+  const [isNLQLoading, setIsNLQLoading] = useState(false);
+  const [commitMutationNLQ] = useApiMutation<TopBarAskAINLQMutation>(topBarAskAINLQMutation);
+
   const data = usePreloadedQuery(topBarQuery, queryRef);
   const page = usePage();
   const handleNewNotificationsNumber = (
@@ -216,8 +229,33 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const handleCloseXtm = () => {
     setXtmOpen({ open: false, anchorEl: null });
   };
-  const handleSearch = (searchKeyword: string) => {
-    handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
+  const handleSearch = (searchKeyword: string, askAI = false) => {
+    if (askAI && isEnterpriseEdition) {
+      setIsNLQLoading(true);
+      commitMutationNLQ({
+        variables: {
+          search: searchKeyword,
+        },
+        onCompleted: (response: TopBarAskAINLQMutation$data) => {
+          setIsNLQLoading(false);
+          const notResolvedValues = response.aiNLQ?.notResolvedValues ?? [];
+          const filters = response.aiNLQ?.filters;
+          if (notResolvedValues.length > 0) {
+            MESSAGING$.notifyNLQ(`${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`);
+          } else if (!filters || !isFilterGroupNotEmpty(JSON.parse(filters))) {
+            MESSAGING$.notifyNLQ(t_i18n('The NLQ model didn\'t find filters corresponding to your question'));
+          }
+          handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ?.filters);
+        },
+        onError: (error: Error) => {
+          setIsNLQLoading(false);
+          const { errors } = (error as unknown as RelayError).res;
+          MESSAGING$.notifyError(errors.at(0)?.message);
+        },
+      });
+    } else {
+      handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
+    }
   };
   const handleOpenDrawer = () => {
     setOpenDrawer(true);
@@ -230,7 +268,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   // global search keyword
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
   // draft
-  const draftModeEnabled = isDraftFeatureEnabled && draftContext;
   const draftModeColor = getDraftModeColor(theme);
   return (
     <AppBar
@@ -245,7 +282,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           alignItems: 'center',
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
           padding: 0,
-          borderBottom: draftModeEnabled ? `1px solid ${draftModeColor}` : 'initial',
+          borderBottom: draftContext ? `1px solid ${draftModeColor}` : 'initial',
         }}
       >
         <div className={classes.logoContainer} style={navOpen ? { width: OPEN_BAR_WIDTH } : {}}>
@@ -258,25 +295,36 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           </Link>
         </div>
         {hasKnowledgeAccess && (
-          <div className={classes.menuContainer} style={{ marginLeft: theme.spacing(3) }}>
+          <div
+            style={{ display: 'flex', marginLeft: theme.spacing(3) }}
+          >
             <SearchInput
               onSubmit={handleSearch}
               keyword={keyword}
               variant="topBar"
               placeholder={`${t_i18n('Search the platform')}...`}
               fullWidth={true}
+              isNLQLoading={isNLQLoading}
             />
           </div>
         )}
-        {draftModeEnabled && (
-          <DraftContextBanner/>
-        )}
         <div className={classes.barRight}>
+          {!!draftContext && (
+            <DraftContextBanner/>
+          )}
           <div className={classes.barRightContainer}>
-            {!draftModeEnabled && (
+            {!draftContext && (
             <Security needs={[KNOWLEDGE]}>
               <>
                 { ee.license_type === 'nfr' && <ItemBoolean variant="large" label={'EE DEV LICENSE'} status={false}/> }
+                <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+                  <UploadImport
+                    variant="icon"
+                    size="medium"
+                    fontSize="medium"
+                    color="inherit"
+                  />
+                </Security>
                 <Tooltip title={t_i18n('Notifications')}>
                   <IconButton
                     size="medium"

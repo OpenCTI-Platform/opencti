@@ -7,7 +7,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
 import { Launch, LockPattern, ProgressWrench } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
@@ -122,29 +121,33 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
         <List id="test">
           {sortedAttackPatternsElement.map((element) => (
             <div key={element.id}>
-              <ListItemButton
-                divider={true}
-                onClick={() => handleToggleLine(element.id)}
-              >
-                <ListItemIcon>
-                  <Launch color="primary" role="img" />
-                </ListItemIcon>
-                <ListItemText primary={`[${element.kill_chain_name}]  ${element.phase_name}`} />
-                <ListItemSecondaryAction>
+              <ListItem
+                disablePadding
+                secondaryAction={
                   <IconButton
                     onClick={() => handleToggleLine(element.id)}
                     aria-haspopup="true"
                     size="large"
                   >
                     {expandedLines[element.id]
-                      === false ? (
-                        <ExpandMore />
+                  === false ? (
+                    <ExpandMore />
                       ) : (
                         <ExpandLess />
                       )}
                   </IconButton>
-                </ListItemSecondaryAction>
-              </ListItemButton>
+              }
+              >
+                <ListItemButton
+                  divider={true}
+                  onClick={() => handleToggleLine(element.id)}
+                >
+                  <ListItemIcon>
+                    <Launch color="primary" role="img" />
+                  </ListItemIcon>
+                  <ListItemText primary={`[${element.kill_chain_name}]  ${element.phase_name}`} />
+                </ListItemButton>
+              </ListItem>
               <Collapse
                 in={expandedLines[element.id] !== false}
               >
@@ -154,33 +157,57 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                       const link = `/dashboard/techniques/attack_patterns/${attackPattern.id}`;
                       return (
                         <div key={attackPattern.id}>
-                          <ListItemButton
-                            style={{
-                              paddingLeft: theme.spacing(4),
-                            }}
+                          <ListItem
                             divider={true}
                             dense={true}
-                            component={coursesOfAction ? 'ul' : Link}
-                            to={coursesOfAction ? undefined : link}
-                            onClick={
-                              coursesOfAction
-                                ? () => handleToggleLine(attackPattern.id)
-                                : undefined
+                            disablePadding
+                            secondaryAction={
+                              <div
+                                style={{
+                                  paddingLeft: theme.spacing(4),
+                                }}
+                              >
+                                {coursesOfAction && (
+                                <IconButton
+                                  onClick={() => handleToggleLine(attackPattern.id)}
+                                  aria-haspopup="true"
+                                  size="large"
+                                >
+                                  {expandedLines[attackPattern.id] === false ? (
+                                    <ExpandMore/>
+                                  ) : (
+                                    <ExpandLess/>
+                                  )}
+                                </IconButton>
+                                )}
+                              </div>
                             }
                           >
-                            <ListItemIcon>
-                              <LockPattern color="primary" role="img" />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={
-                                <span>
-                                  <strong>
-                                    {attackPattern.x_mitre_id}
-                                  </strong>{' '}
-                                  - {attackPattern.name}
-                                </span>
+                            <ListItemButton
+                              style={{
+                                paddingLeft: theme.spacing(4),
+                              }}
+                              component={coursesOfAction ? 'ul' : Link}
+                              to={coursesOfAction ? undefined : link}
+                              onClick={
+                                coursesOfAction
+                                  ? () => handleToggleLine(attackPattern.id)
+                                  : undefined
+                              }
+                            >
+                              <ListItemIcon>
+                                <LockPattern color="primary" role="img"/>
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={
+                                  <span>
+                                    <strong>
+                                      {attackPattern.x_mitre_id}
+                                    </strong>{' '}
+                                    - {attackPattern.name}
+                                  </span>
                                         }
-                              secondary={
+                                secondary={
                                 attackPattern.description
                                 && attackPattern.description.length > 0 ? (
                                   <MarkdownDisplay
@@ -192,36 +219,17 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                     t_i18n('No description of this usage')
                                   )
                               }
-                            />
-                            <ItemMarkings
-                              variant="inList"
-                              markingDefinitions={
+                              />
+                              <ItemMarkings
+                                variant="inList"
+                                markingDefinitions={
                                 attackPattern.objectMarking ?? []
                               }
-                              limit={1}
-                            />
-                            <div
-                              style={{
-                                paddingLeft: theme.spacing(4),
-                              }}
-                            >
-                              <ListItemSecondaryAction>
-                                {coursesOfAction && (
-                                  <IconButton
-                                    onClick={() => handleToggleLine(attackPattern.id)}
-                                    aria-haspopup="true"
-                                    size="large"
-                                  >
-                                    {expandedLines[attackPattern.id] === false ? (
-                                      <ExpandMore />
-                                    ) : (
-                                      <ExpandLess />
-                                    )}
-                                  </IconButton>
-                                )}
-                              </ListItemSecondaryAction>
-                            </div>
-                          </ListItemButton>
+                                limit={1}
+                              />
+                            </ListItemButton>
+                          </ListItem>
+
                           {coursesOfAction && (
                           <Collapse
                             in={expandedLines[attackPattern.id] !== false}
@@ -234,13 +242,12 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                     const courseOfAction = courseOfActionEdge.node;
                                     const courseOfActionLink = `/dashboard/techniques/courses_of_action/${courseOfAction.id}`;
                                     return (
-                                      <ListItem
+                                      <ListItemButton
                                         key={courseOfAction.id}
                                         style={{
                                           paddingLeft: theme.spacing(8),
                                         }}
                                         divider={true}
-                                        button={true}
                                         dense={true}
                                         component={Link}
                                         to={courseOfActionLink}
@@ -271,7 +278,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                               )
                                           }
                                         />
-                                      </ListItem>
+                                      </ListItemButton>
                                     );
                                   },
                                 )}

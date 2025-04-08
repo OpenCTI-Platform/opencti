@@ -24,6 +24,7 @@ const rootSettingsFragment = graphql`
     platform_title
     platform_demo
     platform_banner_text
+    request_access_enabled
     platform_user_statuses {
       status
       message
@@ -117,6 +118,10 @@ const rootSettingsFragment = graphql`
         enabled
         protected_ids
       }
+      connector_reset {
+        enabled
+        protected_ids
+      }
     }
   }
 `;
@@ -136,6 +141,8 @@ const meUserFragment = graphql`
     draftContext {
       id
       name
+      draft_status
+      processingCount
     }
     effective_confidence_level {
       max_confidence
@@ -174,6 +181,14 @@ const meUserFragment = graphql`
       id
       name
       authorized_authorities
+    }
+    objectOrganization {
+      edges {
+        node {
+          id
+          name
+        }
+      }
     }
     allowed_marking {
       id

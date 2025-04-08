@@ -5,15 +5,16 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { parse } from 'src/utils/Time';
-import { InvestigationGraph_workspace$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_workspace.graphql';
+import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import { Dashboard_workspace$data } from './__generated__/Dashboard_workspace.graphql';
+import { buildDate } from '../../../../utils/Time';
 
 interface DashboardTimeFiltersProps {
-  workspace: Dashboard_workspace$data | InvestigationGraph_workspace$data;
+  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
   config?: {
     startDate: string | null
     endDate: string | null
@@ -71,7 +72,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           </Select>
         </FormControl>
         <DatePicker
-          value={config.startDate ? new Date(config.startDate) : null}
+          value={buildDate(config.startDate)}
           label={t_i18n('Start date')}
           disableFuture
           disabled={!!config.relativeDate}
@@ -85,7 +86,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
           }}
         />
         <DatePicker
-          value={config.endDate ? new Date(config.endDate) : null}
+          value={buildDate(config.endDate)}
           label={t_i18n('End date')}
           disabled={!!config.relativeDate}
           disableFuture

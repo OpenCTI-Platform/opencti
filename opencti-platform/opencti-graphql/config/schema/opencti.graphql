@@ -119,6 +119,7 @@ enum FilterOperator {
   nil
   not_nil
   search
+  within
 }
 
 # noinspection GraphQLSchemaValidation
@@ -681,6 +682,7 @@ type SubType {
   id: ID!
   label: String!
   statuses: [Status!]!
+  statusesRequestAccess: [Status!]!
   workflowEnabled: Boolean
   settings: EntitySetting # Simpler before moving workflow
 }
@@ -710,6 +712,12 @@ enum StatusOrdering {
   order
   _score
 }
+
+enum StatusScope {
+  GLOBAL
+  REQUEST_ACCESS
+}
+
 type Status {
   id: ID!
   template_id: String!
@@ -717,6 +725,7 @@ type Status {
   type: String!
   order: Int!
   disabled: Boolean
+  scope: StatusScope
 }
 type StatusConnection {
   pageInfo: PageInfo!
@@ -729,6 +738,7 @@ type StatusEdge {
 input StatusAddInput {
   template_id: String!
   order: Int!
+  scope: StatusScope!
 }
 input StatusTemplateAddInput {
   name: String! @constraint(minLength:2, format: "not-blank")
@@ -866,6 +876,7 @@ enum FileOrdering {
 type File {
   id: ID!
   entity_type: String!
+  draftVersion: DraftVersion
   name: String!
   size: Int
   lastModified: DateTime
@@ -1014,6 +1025,7 @@ enum BackgroundTaskActionType {
   SHARE_MULTIPLE
   UNSHARE_MULTIPLE
   REMOVE_AUTH_MEMBERS
+  REMOVE_FROM_DRAFT
 }
 enum BackgroundTaskContextType {
   ATTRIBUTE
@@ -1286,6 +1298,7 @@ type PlatformProtectedSensitiveConfig {
   roles: PlatformProtectedSubConfig!
   rules: PlatformProtectedSubConfig!
   ce_ee_toggle: PlatformProtectedSubConfig!
+  connector_reset: PlatformProtectedSubConfig!
   file_indexing: PlatformProtectedSubConfig!
   platform_organization: PlatformProtectedSubConfig!
 }
@@ -1365,6 +1378,7 @@ type Settings implements InternalObject & BasicObject {
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
   analytics_google_analytics_v4: String @auth
   playground_enabled: Boolean!
+  request_access_enabled: Boolean! @auth
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
 }
@@ -1518,15 +1532,24 @@ type Member {
   group_confidence_level: ConfidenceLevel
 }
 
+type MemberGroupRestriction {
+  id: String!
+  name: String!
+}
+
 type MemberAccess {
-  id: ID! # internal_id
+  id: String!
+  member_id: ID! # internal_id
   name: String!
   entity_type: String!
   access_right: String!
+  groups_restriction: [MemberGroupRestriction!]
 }
+
 input MemberAccessInput {
   id: ID! # internal_id
   access_right: String!
+  groups_restriction_ids: [ID!]
 }
 type OtpElement {
   secret: String!
@@ -1583,7 +1606,6 @@ type User implements BasicObject & InternalObject {
   description: String
   firstname: String
   otp_activated: Boolean
-  stateless_session: Boolean
   otp_qr: String
   otp_mandatory: Boolean
   lastname: String
@@ -1797,6 +1819,11 @@ enum ConnectorType {
   INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
   STREAM
+}
+
+input ConnectorWithConfig {
+  connectorId: String
+  configuration: String
 }
 
 input ExportAskInput {
@@ -12760,6 +12787,7 @@ type Query {
     filters: FilterGroup
   ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
+  guessMimeType(fileId: String!): String @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askAiActivity(busId: String, language: String, forceRefresh: Boolean): AiActivity @auth(for: [KNOWLEDGE])
 
   ######## INDEXED FILES
@@ -12869,6 +12897,10 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): StatusTemplateConnection @auth
+  statusTemplatesByStatusScope(
+    search: String
+    scope: StatusScope
+  ): [StatusTemplate] @auth
   status(id: String!): Status @auth
   statuses(
     first: Int
@@ -12877,6 +12909,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
+    scope: StatusScope
   ): StatusConnection @auth
   backgroundTask(id: String!): BackgroundTask @auth(for: [KNOWLEDGE])
   backgroundTasks(
@@ -14075,8 +14108,10 @@ type StixCoreObjectEditMutations {
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, fromTemplate: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  uploadAndAskJobImport(file: Upload!, connectors: [ConnectorWithConfig!], fileMarkings: [String!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT])
   exportAsk(input: ExportAskInput!): [File!]  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
+  removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES
@@ -14337,6 +14372,7 @@ type StixCoreRelationshipEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 
 ######## STIX SIGHTING RELATIONSHIPS
@@ -14351,6 +14387,7 @@ type StixSightingRelationshipEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  removeFromDraft: ID @auth(for: [KNOWLEDGE])
 }
 
 ######## STIX REF RELATIONSHIPS
@@ -14371,6 +14408,7 @@ type Mutation {
   ###### INTERNAL
   deleteImport(fileName: String): ID @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!, fileMarkings: [String]): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT])
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, file_markings: [String!], refreshEntity: Boolean): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode): File
   @auth(for: [KNOWLEDGE_KNASKIMPORT])

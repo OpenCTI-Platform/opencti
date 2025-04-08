@@ -7,12 +7,14 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Box from '@mui/material/Box';
 import { MoreVertOutlined } from '@mui/icons-material';
 import { AutoFix } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import Checkbox from '@mui/material/Checkbox';
+import { ListItemButton } from '@mui/material';
+import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -20,7 +22,7 @@ import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
-import { DraftChip } from '../draft/DraftChip';
+import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
 
 const styles = (theme) => ({
   item: {
@@ -54,6 +56,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
     const {
       fsd,
       t,
+      theme,
       classes,
       dataColumns,
       node,
@@ -70,131 +73,132 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
     const link = `${entityLink}/relations/${node.id}`;
     return (
       <ListItem
-        classes={{ root: classes.item }}
         divider={true}
-        button={true}
-        component={Link}
-        to={link}
-      >
-        <ListItemIcon
-          classes={{ root: classes.itemIcon }}
-          style={{ minWidth: 40 }}
-          onClick={(event) => (event.shiftKey
-            ? onToggleShiftEntity(index, node)
-            : onToggleEntity(node, event))
+        disablePadding
+        secondaryAction={node.is_inferred ? (
+          <Tooltip
+            title={
+            t('Inferred knowledge based on the rule ')
+            + R.head(node.x_opencti_inferences).rule.name
           }
+          >
+            <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+          </Tooltip>
+        ) : (
+          <StixCoreRelationshipPopover
+            stixCoreRelationshipId={node.id}
+            paginationOptions={paginationOptions}
+          />
+        )}
+      >
+        <ListItemButton
+          classes={{ root: classes.item }}
+          component={Link}
+          to={link}
         >
-          <Checkbox
-            edge="start"
-            checked={
+          <ListItemIcon
+            classes={{ root: classes.itemIcon }}
+            style={{ minWidth: 40 }}
+            onClick={(event) => (event.shiftKey
+              ? onToggleShiftEntity(index, node)
+              : onToggleEntity(node, event))
+          }
+          >
+            <Checkbox
+              edge="start"
+              checked={
               (selectAll && !(node.id in (deSelectedElements || {})))
               || node.id in (selectedElements || {})
             }
-            disableRipple={true}
-          />
-        </ListItemIcon>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.entity_type} />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.relationship_type.width }}
-              >
-                <ItemEntityType
-                  entityType={node.relationship_type}
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
-                <ItemEntityType
-                  entityType={node.from.entity_type}
-                  isRestricted={!node.from}
-                  size='large'
-                  showIcon
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{
-                  width: dataColumns.name
-                    ? dataColumns.name.width
-                    : dataColumns.observable_value.width,
-                }}
-              >
-                {!restricted ? getMainRepresentative(node.from) : t('Restricted')}
-                {node.from.draftVersion && (<DraftChip/>)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
-                {R.pathOr('', ['createdBy', 'name'], node)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.creator.width }}
-              >
-                {(node.creators ?? []).map((c) => c?.name).join(', ')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.start_time.width }}
-              >
-                {fsd(node.start_time)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.stop_time.width }}
-              >
-                {fsd(node.stop_time)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
-                {fsd(node.created_at)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.confidence.width }}
-              >
-                <ItemConfidence confidence={node.confidence} entityType={node.entity_type} variant="inList" />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectMarking.width }}
-              >
-                <ItemMarkings
-                  variant="inList"
-                  markingDefinitions={node.objectMarking ?? []}
-                  limit={1}
-                />
-              </div>
-            </div>
-          }
-        />
-        <ListItemSecondaryAction>
-          {node.is_inferred ? (
-            <Tooltip
-              title={
-                t('Inferred knowledge based on the rule ')
-                + R.head(node.x_opencti_inferences).rule.name
-              }
-            >
-              <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-            </Tooltip>
-          ) : (
-            <StixCoreRelationshipPopover
-              stixCoreRelationshipId={node.id}
-              paginationOptions={paginationOptions}
+              disableRipple={true}
             />
-          )}
-        </ListItemSecondaryAction>
+          </ListItemIcon>
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null } />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.relationship_type.width }}
+                >
+                  <ItemEntityType
+                    entityType={node.relationship_type}
+                  />
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.entity_type.width }}
+                >
+                  <ItemEntityType
+                    entityType={node.from.entity_type}
+                    isRestricted={!node.from}
+                    size='large'
+                    showIcon
+                  />
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{
+                    width: dataColumns.name
+                      ? dataColumns.name.width
+                      : dataColumns.observable_value.width,
+                  }}
+                >
+                  {!restricted ? getMainRepresentative(node.from) : t('Restricted')}
+                  {node.from.draftVersion && (<DraftChip/>)}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.createdBy.width }}
+                >
+                  {R.pathOr('', ['createdBy', 'name'], node)}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.creator.width }}
+                >
+                  {(node.creators ?? []).map((c) => c?.name).join(', ')}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.start_time.width }}
+                >
+                  {fsd(node.start_time)}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.stop_time.width }}
+                >
+                  {fsd(node.stop_time)}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.created_at.width }}
+                >
+                  {fsd(node.created_at)}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.confidence.width }}
+                >
+                  <ItemConfidence confidence={node.confidence} entityType={node.entity_type} variant="inList" />
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.objectMarking.width }}
+                >
+                  <ItemMarkings
+                    variant="inList"
+                    markingDefinitions={node.objectMarking ?? []}
+                    limit={1}
+                  />
+                </div>
+              </div>
+          }
+          />
+        </ListItemButton>
       </ListItem>
     );
   }
@@ -216,6 +220,10 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
     node: graphql`
       fragment EntityStixCoreRelationshipLineTo_node on StixCoreRelationship {
         id
+        draftVersion {
+          draft_id
+          draft_operation
+        }
         entity_type
         parent_types
         relationship_type
@@ -569,13 +577,22 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
 export const EntityStixCoreRelationshipLineTo = R.compose(
   inject18n,
   withStyles(styles),
+  withTheme,
 )(EntityStixCoreRelationshipLineToFragment);
 
 class EntityStixCoreRelationshipLineToDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        secondaryAction={
+          <Box sx={{ root: classes.itemIconDisabled }}>
+            <MoreVertOutlined/>
+          </Box>
+        }
+      >
         <ListItemIcon
           classes={{ root: classes.itemIconDisabled }}
           style={{ minWidth: 40 }}
@@ -710,9 +727,6 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined />
-        </ListItemSecondaryAction>
       </ListItem>
     );
   }

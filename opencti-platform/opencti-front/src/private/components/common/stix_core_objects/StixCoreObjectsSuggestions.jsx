@@ -10,7 +10,6 @@ import {
   IconButton,
   List,
   ListItem,
-  ListItemSecondaryAction,
   ListItemText,
   MenuItem,
   Select,
@@ -340,9 +339,9 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                     </ToggleButton>
                   </Tooltip>
                   <Dialog
-                    PaperProps={{ elevation: 1 }}
+                    slotProps={{ paper: { elevation: 1 } }}
                     open={displaySuggestions}
-                    TransitionComponent={Transition}
+                    slots={{ transition: Transition }}
                     onClose={() => setDisplaySuggestions(false)}
                     maxWidth="md"
                     fullWidth={true}
@@ -351,7 +350,48 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                     <DialogContent dividers={true}>
                       <List>
                         {suggestions.map((suggestion) => (
-                          <ListItem key={suggestion.type} disableGutters={true} divider={true}>
+                          <ListItem
+                            key={suggestion.type}
+                            disableGutters={true}
+                            divider={true}
+                            secondaryAction={
+                              <Tooltip title={t_i18n('Apply the suggestion')}>
+                                <IconButton
+                                  edge="end"
+                                  aria-label="apply"
+                                  onClick={() => applySuggestion(
+                                    suggestion.type,
+                                    containerProps.container.objects.edges.map(
+                                      (o) => ({
+                                        ...o.node,
+                                        types: o.types,
+                                      }),
+                                    ),
+                                  )
+                                  }
+                                  size="large"
+                                  color={
+                                    applied.some(
+                                      (a) => a[suggestion.type]
+                                        === selectedEntity[suggestion.type],
+                                    )
+                                      ? 'success'
+                                      : 'primary'
+                                  }
+                                  disabled={
+                                    applying.includes(suggestion.type)
+                                    || !selectedEntity[suggestion.type]
+                                  }
+                                >
+                                  {applying.includes(suggestion.type) ? (
+                                    <CircularProgress size={20} color="inherit" />
+                                  ) : (
+                                    <AddTaskOutlined />
+                                  )}
+                                </IconButton>
+                              </Tooltip>
+                            }
+                          >
                             <ListItemText
                               primary={
                                 <MarkdownDisplay
@@ -378,43 +418,6 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                                 </MenuItem>
                               ))}
                             </Select>
-                            <ListItemSecondaryAction>
-                              <Tooltip title={t_i18n('Apply the suggestion')}>
-                                <IconButton
-                                  edge="end"
-                                  aria-label="apply"
-                                  onClick={() => applySuggestion(
-                                    suggestion.type,
-                                    containerProps.container.objects.edges.map(
-                                      (o) => ({
-                                        ...o.node,
-                                        types: o.types,
-                                      }),
-                                    ),
-                                  )
-                                }
-                                  size="large"
-                                  color={
-                                  applied.some(
-                                    (a) => a[suggestion.type]
-                                      === selectedEntity[suggestion.type],
-                                  )
-                                    ? 'success'
-                                    : 'primary'
-                                }
-                                  disabled={
-                                applying.includes(suggestion.type)
-                                || !selectedEntity[suggestion.type]
-                                }
-                                >
-                                  {applying.includes(suggestion.type) ? (
-                                    <CircularProgress size={20} color="inherit" />
-                                  ) : (
-                                    <AddTaskOutlined />
-                                  )}
-                                </IconButton>
-                              </Tooltip>
-                            </ListItemSecondaryAction>
                           </ListItem>
                         ))}
                       </List>

@@ -771,7 +771,7 @@ const StixDomainPanel = ({
 
   return (
     <Dialog
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ paper: { elevation: 1 } }}
       open={true}
       onClose={onClose}
       fullWidth={true}
@@ -865,7 +865,7 @@ const StixDomainObjectCreation = ({
     <>
       {fabReplaced && !speeddial && (
         <CreateEntityControlledDial
-          entityType={'Entities'}
+          entityType={stixDomainObjectTypes}
           onOpen={stateHandleOpen}
           onClose={() => {}}
           style={controlledDialStyles}

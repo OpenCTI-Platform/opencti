@@ -4,7 +4,7 @@ import moment from 'moment';
 import { generateFileIndexId } from '../../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { elAggregationCount, elCount, elDeleteInstances, elIndex } from '../../../database/engine';
-import { INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
+import { INDEX_DRAFT_OBJECTS, INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { type EntityOptions, type FilterGroupWithNested, internalLoadById, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { type DomainFindById } from '../../../domain/domainTypes';
@@ -17,6 +17,9 @@ import { SYSTEM_USER } from '../../../utils/access';
 import { FROM_START_STR } from '../../../utils/format';
 import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../../../schema/general';
+import { getDraftContext } from '../../../utils/draftContext';
+import { DRAFT_OPERATION_CREATE } from '../../draftWorkspace/draftOperations';
+import { getDraftFilePrefix } from '../../../database/draft-utils';
 
 export const SUPPORT_STORAGE_PATH = 'support';
 export const IMPORT_STORAGE_PATH = 'import';
@@ -39,26 +42,35 @@ export const getIndexFromDate = async (context: AuthContext) => {
   return lastIndexedFile ? moment(lastIndexedFile.uploaded_at).toISOString() : FROM_START_STR;
 };
 
-export const buildFileDataForIndexing = (file: File) => {
+export const buildFileDataForIndexing = (file: File, draftContext?: string | undefined) => {
   const standardId = generateFileIndexId(file.id);
   const fileData = R.dissoc('id', file);
-  return {
+  const fileIndexData = {
     ...fileData,
     internal_id: file.id,
     standard_id: standardId,
     entity_type: ENTITY_TYPE_INTERNAL_FILE,
     [buildRefRelationKey(RELATION_OBJECT_MARKING)]: file.metaData?.file_markings ?? []
   };
+  if (draftContext) {
+    return { ...fileIndexData, draft_ids: [draftContext], draft_change: { draft_operation: DRAFT_OPERATION_CREATE } };
+  }
+  return fileIndexData;
 };
 
 export const indexFileToDocument = async (context: AuthContext, file: any) => {
-  const data = buildFileDataForIndexing(file);
+  const draftContext = getDraftContext(context);
+  const data = buildFileDataForIndexing(file, draftContext);
   const internalFile = await storeLoadById(context, SYSTEM_USER, data.internal_id, ENTITY_TYPE_INTERNAL_FILE);
+  let indexToTarget = INDEX_INTERNAL_OBJECTS;
+  // update existing internalFile (if file has been saved in another index)
+  // index file to draft index if context is currently in draft
   if (internalFile) {
-    // update existing internalFile (if file has been saved in another index)
-    return elIndex(internalFile._index, data);
+    indexToTarget = internalFile._index;
+  } else if (getDraftContext(context)) {
+    indexToTarget = INDEX_DRAFT_OBJECTS;
   }
-  return elIndex(INDEX_INTERNAL_OBJECTS, data);
+  return elIndex(indexToTarget, data);
 };
 
 export const deleteDocumentIndex = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -129,7 +141,8 @@ export const allFilesForPaths = async (context: AuthContext, user: AuthUser, pat
     orderOptions.orderBy = 'lastModified';
     orderOptions.orderMode = OrderingMode.Asc;
   }
-  const listOptions = { ...opts, ...findOpts, ...orderOptions, indices: [READ_INDEX_INTERNAL_OBJECTS] };
+  const indices = getDraftContext(context, user) ? [READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_DRAFT_OBJECTS] : [READ_INDEX_INTERNAL_OBJECTS];
+  const listOptions = { ...opts, ...findOpts, ...orderOptions, indices };
   return listAllEntities<BasicStoreEntityDocument>(context, user, [ENTITY_TYPE_INTERNAL_FILE], listOptions);
 };
 
@@ -163,8 +176,10 @@ export const allFilesMimeTypeDistribution = async (context: AuthContext, user: A
 // In progress virtual files from export
 export const paginatedForPathWithEnrichment = async (context: AuthContext, user: AuthUser, path: string, entity_id?: string, opts?: FilesOptions<BasicStoreEntityDocument>) => {
   const filterOpts = { ...opts, exact_path: isEmptyField(entity_id) };
+  const draftContext = getDraftContext(context, user);
+  const pathsToTarget = draftContext ? [`${getDraftFilePrefix(draftContext)}${path}`, path] : [path];
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
-    filters: buildFileFilters([path], filterOpts),
+    filters: buildFileFilters(pathsToTarget, filterOpts),
     noFiltersChecking: true // No associated model
   };
   const orderOptions: any = {};

@@ -169,6 +169,13 @@ export const LockTimeoutError = (data, reason) => error(TYPE_LOCK, reason ?? 'Ex
   ...data,
 });
 
+export const DRAFT_LOCKED_ERROR = 'DRAFT_LOCKED';
+export const DraftLockedError = (data) => error(DRAFT_LOCKED_ERROR, 'Draft is in a locked state, no request can be done within this draft', {
+  http_status: 400,
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
 export const FUNCTIONAL_ERRORS = [
   FUNCTIONAL_ERROR,
   ALREADY_DELETED_ERROR,

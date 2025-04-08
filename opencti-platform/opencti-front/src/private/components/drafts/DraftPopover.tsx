@@ -34,6 +34,7 @@ const draftPopoverDeleteMutation = graphql`
 
 interface DraftPopoverProps {
   draftId: string;
+  draftLocked: boolean;
   paginationOptions: DraftsLinesPaginationQuery$variables;
   updater?: (
     store: RecordSourceSelectorProxy<DraftContextBannerMutation$data>,
@@ -42,6 +43,7 @@ interface DraftPopoverProps {
 
 const DraftPopover: React.FC<DraftPopoverProps> = ({
   draftId,
+  draftLocked,
   paginationOptions,
   updater,
 }) => {
@@ -155,13 +157,13 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
           onClose={handleClose}
         >
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-          <MenuItem onClick={handleOpenSwitch}>{t_i18n('Switch to Draft')}</MenuItem>
+          <MenuItem onClick={handleOpenSwitch} disabled={draftLocked}>{t_i18n('Switch to Draft')}</MenuItem>
         </Menu>
         <Dialog
           open={openDelete}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={handleCloseDelete}
         >
           <DialogContent>
@@ -178,15 +180,15 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
         </Dialog>
         <Dialog
           open={openSwitch}
-          PaperProps={{ elevation: 1 }}
-          TransitionComponent={Transition}
+          slotProps={{ paper: { elevation: 1 } }}
+          slots={{ transition: Transition }}
           onClose={handleCloseSwitch}
           fullWidth={true}
           maxWidth="xs"
         >
           <DialogTitle>{t_i18n('Switch to Draft Mode')}</DialogTitle>
           <DialogContent>
-            <DialogContentText>{t_i18n('You are about to switch to Draft mode. All your OpenCTI Plateform will be in draft. The selected Draft will be the draft by default.')}</DialogContentText>
+            <DialogContentText>{t_i18n('You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.')}</DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseSwitch}>{t_i18n('Cancel')}</Button>
