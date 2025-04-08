@@ -26,11 +26,17 @@ import ListItemText from '@mui/material/ListItemText';
 import Alert from '@mui/material/Alert';
 import UpdateIcon from '@mui/icons-material/Update';
 import DialogTitle from '@mui/material/DialogTitle';
+import ManagedConnectorEdition from './ManagedConnectorEdition';
 import DangerZoneBlock from '../../common/danger_zone/DangerZoneBlock';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
-import { useGetConnectorAvailableFilterKeys, useGetConnectorFilterEntityTypes, getConnectorOnlyContextualStatus, getConnectorTriggerStatus } from '../../../../utils/Connector';
+import {
+  useGetConnectorAvailableFilterKeys, useGetConnectorFilterEntityTypes,
+  getConnectorOnlyContextualStatus,
+  getConnectorTriggerStatus,
+  useComputeConnectorStatus,
+} from '../../../../utils/Connector';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -47,6 +53,7 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import EditEntityControlledDial from "../../../../components/EditEntityControlledDial";
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -62,6 +69,8 @@ const useStyles = makeStyles((theme) => ({
   popover: {
     float: 'right',
     marginTop: '-13px',
+    display: 'flex',
+    alignItems: 'center',
   },
   paper: {
     marginTop: theme.spacing(1),
@@ -262,6 +271,8 @@ const ConnectorComponent = ({ connector, relay }) => {
 
   const { isSensitive } = useSensitiveModifications('connector_reset');
 
+  const [editionOpen, setEditionOpen] = useState(false);
+  const computeConnectorStatus = useComputeConnectorStatus();
   return (
     <>
       <>
@@ -272,10 +283,7 @@ const ConnectorComponent = ({ connector, relay }) => {
         >
           {connector.name}
         </Typography>
-        <ItemBoolean
-          status={connector.active}
-          label={connector.active ? t_i18n('Active') : t_i18n('Inactive')}
-        />
+        {computeConnectorStatus(connector)}
         <div className={classes.popover}>
           <Security needs={[MODULES_MODMANAGE]}>
             <Tooltip title={t_i18n('Reset the connector state')}>
@@ -292,7 +300,6 @@ const ConnectorComponent = ({ connector, relay }) => {
                       <Button
                         color="dangerZone"
                         variant="outlined"
-                        size="small"
                         disabled={disabled || !!connector.built_in}
                         onClick={handleOpenResetState}
                         style={{
@@ -339,10 +346,14 @@ const ConnectorComponent = ({ connector, relay }) => {
                 <DeleteOutlined />
               </IconButton>
             </Tooltip>
+            {connector.is_managed && (
+              <EditEntityControlledDial onOpen={() => setEditionOpen(true)} />
+            )}
           </Security>
         </div>
         <div className="clearfix" />
       </>
+      {editionOpen && (<ManagedConnectorEdition manager={connector.manager} connector={connector} onClose={() => setEditionOpen(false)} />)}
       <Grid
         container={true}
         spacing={3}
@@ -843,6 +854,19 @@ const Connector = createRefetchContainer(
         connector_scope
         connector_state
         connector_user_id
+        is_managed
+        manager{
+          id
+          connector_manager_contracts
+        }
+        manager_contract_configuration {
+          key
+          value
+        }
+        manager_current_status
+        manager_requested_status
+        manager_contract_image
+        manager_connector_logs
         connector_user {
           id
           name
