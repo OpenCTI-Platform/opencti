@@ -3,6 +3,7 @@
 ===========================================
 
 .. automodule:: pycti.entities.opencti_course_of_action
+   :members:
 
    .. contents::
       :local:

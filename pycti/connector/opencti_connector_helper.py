@@ -291,6 +291,11 @@ class ListenQueue(threading.Thread):
             {"tag": method.delivery_tag},
         )
 
+    def _set_draft_id(self, draft_id):
+        self.helper.draft_id = draft_id
+        self.helper.api.set_draft_id(draft_id)
+        self.helper.api_impersonate.set_draft_id(draft_id)
+
     def _data_handler(self, json_data) -> None:
         # Execute the callback
         try:
@@ -298,6 +303,7 @@ class ListenQueue(threading.Thread):
             entity_id = event_data.get("entity_id")
             entity_type = event_data.get("entity_type")
             validation_mode = event_data.get("validation_mode", "workbench")
+            force_validation = event_data.get("force_validation", False)
             # Set the API headers
             internal_data = json_data["internal"]
             work_id = internal_data["work_id"]
@@ -305,9 +311,9 @@ class ListenQueue(threading.Thread):
             self.helper.work_id = work_id
 
             self.helper.validation_mode = validation_mode
-            self.helper.draft_id = draft_id
-            self.helper.api.set_draft_id(draft_id)
-            self.helper.api_impersonate.set_draft_id(draft_id)
+            self.helper.force_validation = force_validation
+
+            self._set_draft_id(draft_id)
 
             self.helper.playbook = None
             self.helper.enrichment_shared_organizations = None
@@ -404,12 +410,14 @@ class ListenQueue(threading.Thread):
             message = self.callback(event_data)
             if work_id:
                 self.helper.api.work.to_processed(work_id, message)
+            self._set_draft_id("")
 
         except Exception as e:  # pylint: disable=broad-except
             self.helper.metric.inc("error_count")
             self.helper.connector_logger.error(
                 "Error in message processing, reporting error to API"
             )
+            self._set_draft_id("")
             if work_id:
                 try:
                     self.helper.api.work.to_processed(work_id, str(e), True)
@@ -1114,6 +1122,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         self.work_id = None
         self.validation_mode = "workbench"
+        self.force_validation = False
         self.draft_id = None
         self.playbook = None
         self.enrichment_shared_organizations = None
@@ -1764,6 +1773,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         update = kwargs.get("update", False)
         event_version = kwargs.get("event_version", None)
         bypass_validation = kwargs.get("bypass_validation", False)
+        force_validation = kwargs.get("force_validation", self.force_validation)
         entity_id = kwargs.get("entity_id", None)
         file_markings = kwargs.get("file_markings", None)
         file_name = kwargs.get("file_name", None)
@@ -1826,7 +1836,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         if not file_name and work_id:
             file_name = f"{work_id}.json"
 
-        if self.connect_validate_before_import and not bypass_validation and file_name:
+        if (
+            (self.connect_validate_before_import or force_validation)
+            and not bypass_validation
+            and file_name
+        ):
             if validation_mode == "workbench":
                 self.api.upload_pending_file(
                     file_name=file_name,
@@ -1843,6 +1857,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 if not draft_id:
                     self.connector_logger.error("Draft couldn't be created")
                     return []
+                if work_id:
+                    self.api.work.add_draft_context(work_id, draft_id)
 
         # If directory setup, write the bundle to the target directory
         if bundle_send_to_directory and bundle_send_to_directory_path is not None:
@@ -1916,8 +1932,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             raise ValueError("Nothing to import")
 
         if bundle_send_to_queue:
-            if work_id and draft_id:
-                self.api.work.add_draft_context(work_id, draft_id)
+            if work_id:
+                self.api.work.add_expectations(work_id, expectations_number)
+                if draft_id:
+                    self.api.work.add_draft_context(work_id, draft_id)
             if entities_types is None:
                 entities_types = []
             if self.queue_protocol == "amqp":

@@ -38,11 +38,14 @@ Classes
 - :py:class:`CaseRft`:
   Undocumented.
 
+- :py:class:`Channel`:
+  Undocumented.
+
 - :py:class:`Task`:
   Undocumented.
 
 - :py:class:`ConnectorType`:
-  Create a collection of name/value pairs.
+  An enumeration.
 
 - :py:class:`CourseOfAction`:
   Undocumented.
@@ -141,22 +144,22 @@ Classes
   Undocumented.
 
 - :py:class:`StixCyberObservable`:
-  Undocumented.
+  deprecated [>=6.2 & <6.5]`
 
 - :py:class:`StixNestedRefRelationship`:
   Undocumented.
 
 - :py:class:`StixCyberObservableTypes`:
-  Create a collection of name/value pairs.
+  An enumeration.
 
 - :py:class:`StixDomainObject`:
   Undocumented.
 
 - :py:class:`StixMetaTypes`:
-  Create a collection of name/value pairs.
+  An enumeration.
 
 - :py:class:`MultipleRefRelationship`:
-  Create a collection of name/value pairs.
+  An enumeration.
 
 - :py:class:`StixObjectOrStixRelationship`:
   Undocumented.
@@ -185,17 +188,53 @@ Classes
 - :py:class:`CustomObjectTask`:
   Task object.
 
+- :py:class:`CustomObjectChannel`:
+  Channel object.
+
+- :py:class:`CustomObservableCredential`:
+  Credential observable.
+
 - :py:class:`CustomObservableHostname`:
   Hostname observable.
 
 - :py:class:`CustomObservableUserAgent`:
   User-Agent observable.
 
+- :py:class:`CustomObservableBankAccount`:
+  Bank Account observable.
+
 - :py:class:`CustomObservableCryptocurrencyWallet`:
   Cryptocurrency wallet observable.
 
+- :py:class:`CustomObservablePaymentCard`:
+  Payment card observable.
+
+- :py:class:`CustomObservablePhoneNumber`:
+  Phone number observable.
+
+- :py:class:`CustomObservableTrackingNumber`:
+  Tracking number observable.
+
 - :py:class:`CustomObservableText`:
   Text observable.
+
+- :py:class:`CustomObservableMediaContent`:
+  Media-Content observable.
+
+- :py:class:`Capability`:
+  Represents a role capability on the OpenCTI platform
+
+- :py:class:`Role`:
+  Representation of a role in OpenCTI
+
+- :py:class:`Group`:
+  Representation of a Group in OpenCTI
+
+- :py:class:`User`:
+  Representation of a user on the OpenCTI platform
+
+- :py:class:`Settings`:
+  Represents the Settings object in OpenCTI
 
 
 .. autoclass:: AttackPattern
@@ -231,6 +270,13 @@ Classes
 
    .. rubric:: Inheritance
    .. inheritance-diagram:: CaseRft
+      :parts: 1
+
+.. autoclass:: Channel
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: Channel
       :parts: 1
 
 .. autoclass:: Task
@@ -576,6 +622,20 @@ Classes
    .. inheritance-diagram:: CustomObjectTask
       :parts: 1
 
+.. autoclass:: CustomObjectChannel
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: CustomObjectChannel
+      :parts: 1
+
+.. autoclass:: CustomObservableCredential
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: CustomObservableCredential
+      :parts: 1
+
 .. autoclass:: CustomObservableHostname
    :members:
 
@@ -590,6 +650,13 @@ Classes
    .. inheritance-diagram:: CustomObservableUserAgent
       :parts: 1
 
+.. autoclass:: CustomObservableBankAccount
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: CustomObservableBankAccount
+      :parts: 1
+
 .. autoclass:: CustomObservableCryptocurrencyWallet
    :members:
 
@@ -597,11 +664,74 @@ Classes
    .. inheritance-diagram:: CustomObservableCryptocurrencyWallet
       :parts: 1
 
+.. autoclass:: CustomObservablePaymentCard
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: CustomObservablePaymentCard
+      :parts: 1
+
+.. autoclass:: CustomObservablePhoneNumber
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: CustomObservablePhoneNumber
+      :parts: 1
+
+.. autoclass:: CustomObservableTrackingNumber
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: CustomObservableTrackingNumber
+      :parts: 1
+
 .. autoclass:: CustomObservableText
    :members:
 
    .. rubric:: Inheritance
    .. inheritance-diagram:: CustomObservableText
+      :parts: 1
+
+.. autoclass:: CustomObservableMediaContent
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: CustomObservableMediaContent
+      :parts: 1
+
+.. autoclass:: Capability
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: Capability
+      :parts: 1
+
+.. autoclass:: Role
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: Role
+      :parts: 1
+
+.. autoclass:: Group
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: Group
+      :parts: 1
+
+.. autoclass:: User
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: User
+      :parts: 1
+
+.. autoclass:: Settings
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: Settings
       :parts: 1
 
 
