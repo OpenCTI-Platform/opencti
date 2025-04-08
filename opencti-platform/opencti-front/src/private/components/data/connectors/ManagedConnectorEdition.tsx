@@ -1,9 +1,6 @@
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import CreatorField from '@components/common/form/CreatorField';
-import JsonForm from '@rjsf/mui';
-import { uiSchema } from '@components/settings/notifiers/NotifierUtils';
-import validator from '@rjsf/validator-ajv8';
 import Button from '@mui/material/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import React, { createRef } from 'react';
@@ -13,12 +10,19 @@ import CoreForm from '@rjsf/core';
 import { FormikHelpers } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
 import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
-import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { useComputeConnectorStatus } from '../../../../utils/Connector';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { JsonForms } from '@jsonforms/react';
+import { materialRenderers } from '@jsonforms/material-renderers';
+import { Validator } from '@cfworker/json-schema';
 import TextField from '../../../../components/TextField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useComputeConnectorStatus } from '../../../../utils/Connector';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import type { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
 
 const updateRequestedStatus = graphql`
   mutation ManagedConnectorEditionUpdateStatusMutation($input: RequestConnectorStatusInput!) {
@@ -69,13 +73,17 @@ const ManagedConnectorEdition = ({
   const theme = useTheme<Theme>();
 
   const contracts = manager.connector_manager_contracts.map((contract) => JSON.parse(contract));
-  const contract = contracts.find(({ container_image }) => container_image === connector.manager_contract_image);
-  contract.default = {};
-  (connector.manager_contract_configuration as { key: string, value: string }[]).forEach(({ key, value }) => {
+  const contract = contracts.find(({ container_image }) => connector.manager_contract_image?.startsWith(container_image));
+  const contractValues: Record<string, string | boolean> = {};
+  Object.keys(contract.properties).forEach((key) => {
+    const { value } = connector.manager_contract_configuration?.find((a) => a.key === key) ?? {};
+    if (!value) {
+      return;
+    }
     if (['true', 'false'].includes(value)) {
-      contract.default[key] = value === 'true';
+      contractValues[key] = value === 'true';
     } else {
-      contract.default[key] = value;
+      contractValues[key] = value;
     }
   });
 
@@ -108,6 +116,7 @@ const ManagedConnectorEdition = ({
   };
 
   const computeConnectorStatus = useComputeConnectorStatus();
+  const compiledValidator = new Validator(contract);
   return (
     <Drawer
       title={(
@@ -145,7 +154,7 @@ const ManagedConnectorEdition = ({
           contractValues: Yup.object().required(),
         })}
         initialValues={{
-          contractValues: {},
+          contractValues,
           creator: connector.connector_user ? { value: connector.connector_user.id, label: connector.connector_user.name } : undefined,
           name: connector.name,
         }}
@@ -153,6 +162,7 @@ const ManagedConnectorEdition = ({
         }}
       >
         {({ values, setFieldValue, isSubmitting, setSubmitting, resetForm, isValid }) => {
+          const errors = compiledValidator?.validate(values.contractValues)?.errors;
           return (
             <Form>
               <Field
@@ -172,19 +182,41 @@ const ManagedConnectorEdition = ({
                 name="creator"
                 required
               />
-              <JsonForm
-                uiSchema={{
-                  ...uiSchema,
-                  'ui:description': '',
-                  'ui:title': '',
+              <Alert
+                icon={false}
+                severity={errors[0] ? 'error' : 'success'}
+                variant="outlined"
+                slotProps={{
+                  message: {
+                    style: {
+                      width: '100%',
+                      overflow: 'hidden',
+                    },
+                  },
                 }}
-                showErrorList={false}
-                liveValidate
-                ref={formRef}
-                schema={contract}
-                validator={validator}
-                onChange={(newValue) => setFieldValue('contractValues', newValue.formData)}
-              />
+                style={{ position: 'relative', marginTop: theme.spacing(2) }}
+              >
+                <AlertTitle>{t_i18n('Connector configuration')}</AlertTitle>
+                <Box
+                  sx={{ color: theme.palette.text?.primary }}
+                >
+                  {errors[0] && (
+                    <Typography
+                      variant="subtitle2"
+                      color="error"
+                    >
+                      {errors[0].error}
+                    </Typography>
+                  )}
+                  <JsonForms
+                    data={values.contractValues}
+                    schema={contract}
+                    renderers={materialRenderers}
+                    validationMode={'NoValidation'}
+                    onChange={({ data }) => setFieldValue('contractValues', data)}
+                  />
+                </Box>
+              </Alert>
               <div style={{ marginTop: theme.spacing(2), gap: theme.spacing(1), display: 'flex', justifyContent: 'space-between' }}>
                 <Button
                   variant="outlined"
@@ -209,14 +241,12 @@ const ManagedConnectorEdition = ({
                     variant="contained"
                     color="primary"
                     onClick={() => {
-                      if (formRef.current?.validateForm()) {
-                        submitConnectorManagementCreation(values, {
-                          setSubmitting,
-                          resetForm,
-                        });
-                      }
+                      submitConnectorManagementCreation(values, {
+                        setSubmitting,
+                        resetForm,
+                      });
                     }}
-                    disabled={!isValid || isSubmitting}
+                    disabled={!isValid || isSubmitting || !!errors[0]}
                   >
                     {t_i18n('Update')}
                   </Button>

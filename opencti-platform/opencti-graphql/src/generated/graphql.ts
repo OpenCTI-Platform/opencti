@@ -2572,7 +2572,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
-  requestAccessConfiguration?: Maybe<RequestAccessConfiguration>;
+  requestAccessConfiguration?: Maybe<RfiRequestAccessConfiguration>;
   revoked: Scalars['Boolean']['output'];
   severity?: Maybe<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
@@ -3766,10 +3766,12 @@ export type Connector = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
+  manager?: Maybe<ConnectorManager>;
+  manager_connector_logs?: Maybe<Array<Scalars['String']['output']>>;
   manager_contract_configuration?: Maybe<Array<ManagerContractConfiguration>>;
+  manager_contract_hash?: Maybe<Scalars['String']['output']>;
   manager_contract_image?: Maybe<Scalars['String']['output']>;
   manager_current_status?: Maybe<Scalars['String']['output']>;
-  manager_id?: Maybe<Scalars['ID']['output']>;
   manager_requested_status?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   only_contextual?: Maybe<Scalars['Boolean']['output']>;
@@ -13239,12 +13241,12 @@ export type ManagedConnector = BasicObject & InternalObject & {
   connector_user_id?: Maybe<Scalars['ID']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  manager?: Maybe<ConnectorManager>;
   manager_connector_logs: Array<Scalars['String']['output']>;
   manager_contract_configuration: Array<ConnectorContractConfiguration>;
   manager_contract_hash: Scalars['String']['output'];
   manager_contract_image: Scalars['String']['output'];
   manager_current_status?: Maybe<Scalars['String']['output']>;
-  manager_id: Scalars['String']['output'];
   manager_requested_status: Scalars['String']['output'];
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -13687,7 +13689,8 @@ export type MemberAccess = {
   access_right: Scalars['String']['output'];
   entity_type: Scalars['String']['output'];
   groups_restriction?: Maybe<Array<MemberGroupRestriction>>;
-  id: Scalars['ID']['output'];
+  id: Scalars['String']['output'];
+  member_id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
 };
 
@@ -16147,8 +16150,10 @@ export type MutationUpdateConnectorTriggerArgs = {
 
 export type MutationUploadAndAskJobImportArgs = {
   connectors?: InputMaybe<Array<ConnectorWithConfig>>;
+  draftId?: InputMaybe<Scalars['String']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   validationMode?: InputMaybe<ValidationMode>;
 };
 
@@ -17431,6 +17436,7 @@ export type ObjectTotals = {
 
 export type ObservablesValues = {
   __typename?: 'ObservablesValues';
+  hashes?: Maybe<Array<Hash>>;
   type?: Maybe<Scalars['String']['output']>;
   value?: Maybe<Scalars['String']['output']>;
 };
@@ -19907,6 +19913,7 @@ export type Query = {
   groupingsNumber?: Maybe<Number>;
   groupingsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   groups?: Maybe<GroupConnection>;
+  guessMimeType?: Maybe<Scalars['String']['output']>;
   identities?: Maybe<IdentityConnection>;
   identity?: Maybe<Identity>;
   importFiles?: Maybe<FileConnection>;
@@ -20896,6 +20903,11 @@ export type QueryGroupsArgs = {
   orderBy?: InputMaybe<GroupsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryGuessMimeTypeArgs = {
+  fileId: Scalars['String']['input'];
 };
 
 
@@ -23700,6 +23712,12 @@ export enum RetentionUnit {
   Minutes = 'minutes'
 }
 
+export type RfiRequestAccessConfiguration = {
+  __typename?: 'RfiRequestAccessConfiguration';
+  configuration?: Maybe<RequestAccessConfiguration>;
+  isUserCanAction: Scalars['Boolean']['output'];
+};
+
 export type Role = BasicObject & InternalObject & {
   __typename?: 'Role';
   can_manage_sensitive_config?: Maybe<Scalars['Boolean']['output']>;
@@ -23819,14 +23837,14 @@ export type SavedFilter = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
-  scope?: Maybe<Scalars['String']['output']>;
+  scope: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
 };
 
 export type SavedFilterAddInput = {
   filters: Scalars['String']['input'];
   name: Scalars['String']['input'];
-  scope?: InputMaybe<Scalars['String']['input']>;
+  scope: Scalars['String']['input'];
 };
 
 export type SavedFilterConnection = {
@@ -24903,8 +24921,10 @@ export type StixCoreObjectEditMutationsRestrictionOrganizationDeleteArgs = {
 
 export type StixCoreObjectEditMutationsUploadAndAskJobImportArgs = {
   connectors?: InputMaybe<Array<ConnectorWithConfig>>;
+  draftId?: InputMaybe<Scalars['String']['input']>;
   file: Scalars['Upload']['input'];
   fileMarkings?: InputMaybe<Array<Scalars['String']['input']>>;
+  noTriggerImport?: InputMaybe<Scalars['Boolean']['input']>;
   validationMode?: InputMaybe<ValidationMode>;
 };
 
@@ -31153,7 +31173,7 @@ export type Workspace = BasicObject & InternalObject & {
   owner?: Maybe<Creator>;
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
-  tags?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  tags?: Maybe<Array<Scalars['String']['output']>>;
   toConfigurationExport: Scalars['String']['output'];
   toStixReportBundle?: Maybe<Scalars['String']['output']>;
   toWidgetExport: Scalars['String']['output'];
@@ -31183,7 +31203,7 @@ export type WorkspaceAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   investigated_entities_ids?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   name: Scalars['String']['input'];
-  tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  tags?: InputMaybe<Array<Scalars['String']['input']>>;
   type: Scalars['String']['input'];
 };
 
@@ -31197,7 +31217,7 @@ export type WorkspaceDuplicateInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   manifest?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  tags?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  tags?: InputMaybe<Array<Scalars['String']['input']>>;
   type: Scalars['String']['input'];
 };
 
@@ -32203,6 +32223,7 @@ export type ResolversTypes = ResolversObject<{
   RetentionRuleOrdering: RetentionRuleOrdering;
   RetentionRuleScope: RetentionRuleScope;
   RetentionUnit: RetentionUnit;
+  RfiRequestAccessConfiguration: ResolverTypeWrapper<Omit<RfiRequestAccessConfiguration, 'configuration'> & { configuration?: Maybe<ResolversTypes['RequestAccessConfiguration']> }>;
   Role: ResolverTypeWrapper<Omit<Role, 'capabilities' | 'editContext'> & { capabilities?: Maybe<Array<Maybe<ResolversTypes['Capability']>>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>> }>;
   RoleAddInput: RoleAddInput;
   RoleConnection: ResolverTypeWrapper<Omit<RoleConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['RoleEdge']>> }>;
@@ -33022,6 +33043,7 @@ export type ResolversParentTypes = ResolversObject<{
   RetentionRuleConnection: RetentionRuleConnection;
   RetentionRuleEdge: RetentionRuleEdge;
   RetentionRuleEditMutations: RetentionRuleEditMutations;
+  RfiRequestAccessConfiguration: Omit<RfiRequestAccessConfiguration, 'configuration'> & { configuration?: Maybe<ResolversParentTypes['RequestAccessConfiguration']> };
   Role: Omit<Role, 'capabilities' | 'editContext'> & { capabilities?: Maybe<Array<Maybe<ResolversParentTypes['Capability']>>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>> };
   RoleAddInput: RoleAddInput;
   RoleConnection: Omit<RoleConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['RoleEdge']>> };
@@ -34149,7 +34171,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRfiRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseRfiReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
-  requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
+  requestAccessConfiguration?: Resolver<Maybe<ResolversTypes['RfiRequestAccessConfiguration']>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -34478,10 +34500,12 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  manager?: Resolver<Maybe<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
+  manager_connector_logs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Maybe<Array<ResolversTypes['ManagerContractConfiguration']>>, ParentType, ContextType>;
+  manager_contract_hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_contract_image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  manager_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   manager_requested_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   only_contextual?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -37713,12 +37737,12 @@ export type ManagedConnectorResolvers<ContextType = any, ParentType extends Reso
   connector_user_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  manager?: Resolver<Maybe<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
   manager_connector_logs?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   manager_contract_configuration?: Resolver<Array<ResolversTypes['ConnectorContractConfiguration']>, ParentType, ContextType>;
   manager_contract_hash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   manager_contract_image?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  manager_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   manager_requested_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -37952,7 +37976,8 @@ export type MemberAccessResolvers<ContextType = any, ParentType extends Resolver
   access_right?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groups_restriction?: Resolver<Maybe<Array<ResolversTypes['MemberGroupRestriction']>>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  member_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -38754,6 +38779,7 @@ export type ObjectTotalsResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type ObservablesValuesResolvers<ContextType = any, ParentType extends ResolversParentTypes['ObservablesValues'] = ResolversParentTypes['ObservablesValues']> = ResolversObject<{
+  hashes?: Resolver<Maybe<Array<ResolversTypes['Hash']>>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -39658,6 +39684,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   groupingsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryGroupingsNumberArgs>>;
   groupingsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryGroupingsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
   groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<QueryGroupsArgs>>;
+  guessMimeType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryGuessMimeTypeArgs, 'fileId'>>;
   identities?: Resolver<Maybe<ResolversTypes['IdentityConnection']>, ParentType, ContextType, Partial<QueryIdentitiesArgs>>;
   identity?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<QueryIdentityArgs, 'id'>>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryImportFilesArgs>>;
@@ -40217,6 +40244,12 @@ export type RetentionRuleEditMutationsResolvers<ContextType = any, ParentType ex
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type RfiRequestAccessConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['RfiRequestAccessConfiguration'] = ResolversParentTypes['RfiRequestAccessConfiguration']> = ResolversObject<{
+  configuration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
+  isUserCanAction?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = ResolversObject<{
   can_manage_sensitive_config?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   capabilities?: Resolver<Maybe<Array<Maybe<ResolversTypes['Capability']>>>, ParentType, ContextType>;
@@ -40301,7 +40334,7 @@ export type SavedFilterResolvers<ContextType = any, ParentType extends Resolvers
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  scope?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -42781,7 +42814,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   owner?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  tags?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  tags?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toStixReportBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toWidgetExport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<WorkspaceToWidgetExportArgs, 'widgetId'>>;
@@ -43286,6 +43319,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   RetentionRuleConnection?: RetentionRuleConnectionResolvers<ContextType>;
   RetentionRuleEdge?: RetentionRuleEdgeResolvers<ContextType>;
   RetentionRuleEditMutations?: RetentionRuleEditMutationsResolvers<ContextType>;
+  RfiRequestAccessConfiguration?: RfiRequestAccessConfigurationResolvers<ContextType>;
   Role?: RoleResolvers<ContextType>;
   RoleConnection?: RoleConnectionResolvers<ContextType>;
   RoleEdge?: RoleEdgeResolvers<ContextType>;

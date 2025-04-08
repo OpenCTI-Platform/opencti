@@ -2,18 +2,22 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
 import CreatorField from '@components/common/form/CreatorField';
-import JsonForm from '@rjsf/mui';
-import { uiSchema } from '@components/settings/notifiers/NotifierUtils';
-import validator from '@rjsf/validator-ajv8';
+import { Validator } from '@cfworker/json-schema';
 import Button from '@mui/material/Button';
 import Drawer from '@components/common/drawer/Drawer';
-import React, { createRef } from 'react';
+import React, { createRef, useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { graphql } from 'react-relay';
 import CoreForm from '@rjsf/core';
 import { Option } from '@components/common/form/ReferenceField';
 import { FormikHelpers } from 'formik/dist/types';
 import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
+import { materialRenderers } from '@jsonforms/material-renderers';
+import { JsonForms } from '@jsonforms/react';
+import AlertTitle from '@mui/material/AlertTitle';
+import Alert from '@mui/material/Alert';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -25,7 +29,6 @@ const registerManagedConnectorMutation = graphql`
   mutation ManagedConnectorCreationMutation($input: AddManagedConnectorInput) {
     managedConnectorAdd(input: $input) {
       id
-      manager_id
       manager_contract_image
       manager_contract_hash
       manager_requested_status
@@ -88,6 +91,8 @@ const ManagedConnectorCreation = ({
       },
     });
   };
+
+  const [compiledValidator, setCompiledValidator] = useState<Validator | undefined>(undefined);
   return (
     <Drawer
       title={t_i18n('Create a connector')}
@@ -112,6 +117,13 @@ const ManagedConnectorCreation = ({
         }}
       >
         {({ values, setFieldValue, isSubmitting, setSubmitting, resetForm, isValid }) => {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          if (values.contract && (!compiledValidator || compiledValidator.schema.container_image !== contracts[values.contract]?.container_image)) {
+            setCompiledValidator(new Validator(contracts[values.contract]));
+            setFieldValue('contractValues', contracts[values.contract].default);
+          }
+          const errors = compiledValidator?.validate(values.contractValues)?.errors;
           return (
             <Form>
               <Field
@@ -130,7 +142,7 @@ const ManagedConnectorCreation = ({
                   </MenuItem>
                 ))}
               </Field>
-              {values.contract && (
+              {(values.contract) && (
                 <>
                   <Field
                     component={TextField}
@@ -148,19 +160,41 @@ const ManagedConnectorCreation = ({
                     name="creator"
                     required
                   />
-                  <JsonForm
-                    uiSchema={{
-                      ...uiSchema,
-                      'ui:description': '',
-                      'ui:title': '',
+                  <Alert
+                    icon={false}
+                    severity={errors?.[0] ? 'error' : 'success'}
+                    variant="outlined"
+                    slotProps={{
+                      message: {
+                        style: {
+                          width: '100%',
+                          overflow: 'hidden',
+                        },
+                      },
                     }}
-                    showErrorList={false}
-                    liveValidate
-                    ref={formRef}
-                    schema={contracts[values.contract]}
-                    validator={validator}
-                    onChange={(newValue) => setFieldValue('contractValues', newValue.formData)}
-                  />
+                    style={{ position: 'relative', marginTop: theme.spacing(2) }}
+                  >
+                    <AlertTitle>{t_i18n('Connector configuration')}</AlertTitle>
+                    <Box
+                      sx={{ color: theme.palette.text?.primary }}
+                    >
+                      {errors?.[0] && (
+                        <Typography
+                          variant="subtitle2"
+                          color="error"
+                        >
+                          {errors?.[0].error}
+                        </Typography>
+                      )}
+                      <JsonForms
+                        data={values.contractValues}
+                        schema={contracts[values.contract]}
+                        renderers={materialRenderers}
+                        validationMode={'NoValidation'}
+                        onChange={({ data }) => setFieldValue('contractValues', data)}
+                      />
+                    </Box>
+                  </Alert>
                 </>
               )}
               <div style={{ float: 'right', marginTop: theme.spacing(2), gap: theme.spacing(1), display: 'flex' }}>
@@ -177,14 +211,12 @@ const ManagedConnectorCreation = ({
                   variant="contained"
                   color="primary"
                   onClick={() => {
-                    if (formRef.current?.validateForm()) {
-                      submitConnectorManagementCreation(values, {
-                        setSubmitting,
-                        resetForm,
-                      });
-                    }
+                    submitConnectorManagementCreation(values, {
+                      setSubmitting,
+                      resetForm,
+                    });
                   }}
-                  disabled={!values.contract || !isValid || isSubmitting}
+                  disabled={!values.contract || !isValid || isSubmitting || !!errors?.[0]}
                 >
                   {t_i18n('Submit')}
                 </Button>
