@@ -11,12 +11,11 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { Option } from '../../common/form/ReferenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { DataSourceEditionOverview_dataSource$key } from './__generated__/DataSourceEditionOverview_dataSource.graphql';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
@@ -137,14 +136,14 @@ interface DataSourceEditionOverviewProps {
 interface DataSourceEditionFormValues {
   name: string;
   description: string | null;
-  x_opencti_workflow_id: Option;
-  createdBy: Option | undefined;
+  x_opencti_workflow_id: FieldOption;
+  createdBy: FieldOption | undefined;
   confidence: number | null;
   x_mitre_platforms: string[] | null;
   collection_layers: string[];
-  objectMarking: Option[];
+  objectMarking: FieldOption[];
   message?: string;
-  references?: Option[];
+  references?: FieldOption[];
 }
 
 const DataSourceEditionOverview: FunctionComponent<
@@ -213,12 +212,12 @@ DataSourceEditionOverviewProps
 
   const handleSubmitField = (
     name: string,
-    value: Option | string | string[] | number | number[],
+    value: FieldOption | string | string[] | number | number[],
   ) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       dataSourceValidator
         .validateAt(name, { [name]: value })
@@ -239,7 +238,7 @@ DataSourceEditionOverviewProps
     description: dataSource.description,
     createdBy: convertCreatedBy(dataSource),
     objectMarking: convertMarkings(dataSource),
-    x_opencti_workflow_id: convertStatus(t_i18n, dataSource) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, dataSource) as FieldOption,
     confidence: dataSource.confidence,
     x_mitre_platforms: dataSource.x_mitre_platforms || [],
     collection_layers: dataSource.collection_layers || [],

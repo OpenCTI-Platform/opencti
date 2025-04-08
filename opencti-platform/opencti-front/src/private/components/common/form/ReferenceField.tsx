@@ -1,9 +1,9 @@
 import { Field } from 'formik';
-import React, { FunctionComponent, ReactElement, ReactNode } from 'react';
+import React, { FunctionComponent, ReactElement } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ItemIcon from '../../../../components/ItemIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -20,15 +20,6 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export interface Option {
-  value: string;
-  label: string;
-  color?: string;
-  [key: string]: ReactNode;
-  type?: string;
-  standard_id?: string;
-}
-
 interface RelationFieldProps {
   name: string;
   label: string;
@@ -36,8 +27,8 @@ interface RelationFieldProps {
   helperText?: string;
   onFocus: () => void;
   noOptionsText?: string;
-  options: Option[];
-  onChange: (name: string, value: Option) => void;
+  options: FieldOption[];
+  onChange: (name: string, value: FieldOption) => void;
   onInputChange: (v: string | null) => void;
   value: unknown;
 }
@@ -72,7 +63,7 @@ const ReferenceField: FunctionComponent<RelationFieldProps> = ({
       onInputChange={(v: InputEvent) => onInputChange(v?.data ?? null)}
       value={value}
       onChange={onChange}
-      renderOption={(props: Record<string, unknown>, option: Option) => (
+      renderOption={(props: Record<string, unknown>, option: FieldOption) => (
         <li {...props}>
           <div className={classes.icon} style={{ color: option.color }}>
             <ItemIcon type={option.type} />

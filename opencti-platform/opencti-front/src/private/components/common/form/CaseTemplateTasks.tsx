@@ -14,10 +14,9 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { CaseTemplateTasksCreationMutation, TaskTemplateAddInput } from './__generated__/CaseTemplateTasksCreationMutation.graphql';
 import { CaseTemplateTasksSearchQuery$data } from './__generated__/CaseTemplateTasksSearchQuery.graphql';
-import { Option } from './ReferenceField';
 import ItemIcon from '../../../../components/ItemIcon';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -40,8 +39,8 @@ const useStyles = makeStyles(() => ({
 
 interface TaskTemplateFieldProps {
   caseTemplateId?: string;
-  onChange: (name: string, values: Option[]) => void;
-  values?: readonly Option[];
+  onChange: (name: string, values: FieldOption[]) => void;
+  values?: readonly FieldOption[];
 }
 
 const CaseTemplateTasksQuery = graphql`
@@ -75,7 +74,7 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [tasks, setTasks] = useState<Option[]>([...(values ?? [])]);
+  const [tasks, setTasks] = useState<FieldOption[]>([...(values ?? [])]);
   const [openCreation, setOpenCreation] = useState(false);
   const [commitTaskCreation] = useApiMutation<CaseTemplateTasksCreationMutation>(
     CaseTemplateTasksCreation,
@@ -144,7 +143,7 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: Option,
+          option: FieldOption,
         ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>

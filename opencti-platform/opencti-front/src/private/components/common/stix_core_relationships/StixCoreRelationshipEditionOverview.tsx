@@ -29,9 +29,8 @@ import {
   StixCoreRelationshipEditionOverview_stixCoreRelationship$data,
   StixCoreRelationshipEditionOverview_stixCoreRelationship$key,
 } from './__generated__/StixCoreRelationshipEditionOverview_stixCoreRelationship.graphql';
-import { Option } from '../form/ReferenceField';
 import type { Theme } from '../../../../components/Theme';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -196,12 +195,12 @@ interface StixCoreRelationshipAddInput {
   start_time: null | Date;
   stop_time: null | Date;
   description: string | null;
-  killChainPhases: Option[];
-  x_opencti_workflow_id: Option;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
+  killChainPhases: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
   message?: string;
-  references?: Option[];
+  references?: FieldOption[];
 }
 
 const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
@@ -297,8 +296,8 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
     stop_time: buildDate(stixCoreRelationship.stop_time),
     description: stixCoreRelationship.description ?? '',
     killChainPhases: convertKillChainPhases(stixCoreRelationship),
-    x_opencti_workflow_id: convertStatus(t_i18n, stixCoreRelationship) as Option,
-    createdBy: convertCreatedBy(stixCoreRelationship) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, stixCoreRelationship) as FieldOption,
+    createdBy: convertCreatedBy(stixCoreRelationship) as FieldOption,
     objectMarking: convertMarkings(stixCoreRelationship),
     references: [],
   };

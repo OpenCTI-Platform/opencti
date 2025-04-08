@@ -4,7 +4,7 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { AutoCompleteOption } from '../../../../utils/field';
+import { FieldOption } from '../../../../utils/field';
 
 interface MyOrganizationFieldProps {
   name: string;
@@ -12,7 +12,7 @@ interface MyOrganizationFieldProps {
   disabled:boolean;
   multiple:boolean;
   style?: CSSProperties;
-  onChange?: (name: string, value: AutoCompleteOption) => void;
+  onChange?: (name: string, value: FieldOption) => void;
 }
 
 const MyOrganizationField = (props: MyOrganizationFieldProps) => {
@@ -26,7 +26,7 @@ const MyOrganizationField = (props: MyOrganizationFieldProps) => {
   } = props;
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
-  const myOrganizationList: AutoCompleteOption[] = [];
+  const myOrganizationList: FieldOption[] = [];
   if (me.objectOrganization) {
     for (let i = 0; i < me.objectOrganization?.edges.length; i += 1) {
       const org = me.objectOrganization?.edges[i];

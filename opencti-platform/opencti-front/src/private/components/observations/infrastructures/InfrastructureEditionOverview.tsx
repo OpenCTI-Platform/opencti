@@ -17,12 +17,11 @@ import StatusField from '../../common/form/StatusField';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { InfrastructureEditionOverview_infrastructure$key } from './__generated__/InfrastructureEditionOverview_infrastructure.graphql';
-import { Option } from '../../common/form/ReferenceField';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -144,11 +143,11 @@ interface InfrastructureEditionOverviewProps {
 
 interface InfrastructureEditionFormValues {
   message?: string
-  references?: Option[]
-  createdBy: Option | undefined
-  x_opencti_workflow_id: Option
-  objectMarking?: Option[]
-  killChainPhases?: Option[];
+  references?: FieldOption[]
+  createdBy: FieldOption | undefined
+  x_opencti_workflow_id: FieldOption
+  objectMarking?: FieldOption[]
+  killChainPhases?: FieldOption[];
   first_seen: null | Date;
   last_seen: null | Date;
   confidence: number | null | undefined;
@@ -231,11 +230,11 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
     });
   };
 
-  const handleSubmitField = (name: string, value: Option | string | string[] | number | number[] | null) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | string[] | number | number[] | null) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       infrastructureValidator
         .validateAt(name, { [name]: value })
@@ -254,10 +253,10 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
   const initialValues = {
     name: infrastructure.name,
     description: infrastructure.description,
-    createdBy: convertCreatedBy(infrastructure) as Option,
+    createdBy: convertCreatedBy(infrastructure) as FieldOption,
     objectMarking: convertMarkings(infrastructure),
     killChainPhases: convertKillChainPhases(infrastructure),
-    x_opencti_workflow_id: convertStatus(t_i18n, infrastructure) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, infrastructure) as FieldOption,
     confidence: infrastructure.confidence,
     first_seen: buildDate(infrastructure.first_seen),
     last_seen: buildDate(infrastructure.last_seen),

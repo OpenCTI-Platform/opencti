@@ -3,7 +3,6 @@ import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import Axios from 'axios';
-import { Option } from '@components/common/form/ReferenceField';
 import ItemIcon from 'src/components/ItemIcon';
 import Loader from 'src/components/Loader';
 import Button from '@mui/material/Button';
@@ -14,7 +13,7 @@ import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { availableEntityTypes, exclusionListUpdateValidator } from '@components/settings/exclusion_lists/ExclusionListUtils';
 import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment'; import AutocompleteField from '../../../../components/AutocompleteField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
@@ -41,7 +40,7 @@ interface ExclusionListEditionComponentProps {
 interface ExclusionListEditionFormData {
   name: string;
   description?: string | null;
-  exclusion_list_entity_types: Option[];
+  exclusion_list_entity_types: FieldOption[];
   fileContent?: string;
   file?: File | null;
 }
@@ -84,7 +83,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
         return {
           key,
           value: key === 'exclusion_list_entity_types'
-            ? value.map((item: Option) => item.value)
+            ? value.map((item: FieldOption) => item.value)
             : value,
         };
       });
@@ -107,9 +106,9 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
     });
   };
 
-  const getExclusionListEntityTypes = (list: readonly string[]): Option[] => list.map((item) => ({ value: item, label: item }));
+  const getExclusionListEntityTypes = (list: readonly string[]): FieldOption[] => list.map((item) => ({ value: item, label: item }));
 
-  const entityTypesOptions: Option[] = entityTypes.map((type) => ({
+  const entityTypesOptions: FieldOption[] = entityTypes.map((type) => ({
     value: type.id,
     label: type.label,
   }));
@@ -184,7 +183,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                   options={entityTypesOptions}
                   renderOption={(
                     props: React.HTMLAttributes<HTMLLIElement>,
-                    option: Option,
+                    option: FieldOption,
                   ) => (
                     <li key={option.value} {...props}>
                       <ItemIcon type={option.value} />

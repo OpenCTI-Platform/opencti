@@ -11,8 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { VocabularyAddInput, VocabularyCategory, VocabularyCreationMutation } from './__generated__/VocabularyCreationMutation.graphql';
 import { insertNode } from '../../../../utils/store';
 import { VocabulariesLines_DataQuery$variables } from './__generated__/VocabulariesLines_DataQuery.graphql';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { Option } from '../../common/form/ReferenceField';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -143,7 +142,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                 options={[]}
                 renderOption={(
                   props: Record<string, unknown>,
-                  option: Option,
+                  option: FieldOption,
                 ) => (
                   <li {...props}>
                     <div className={classes.text}>{option.label}</div>

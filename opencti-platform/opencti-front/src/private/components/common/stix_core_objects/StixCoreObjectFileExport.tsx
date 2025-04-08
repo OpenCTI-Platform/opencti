@@ -16,7 +16,6 @@ import {
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
 import { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from '@components/common/stix_core_objects/StixCoreObjectContentFiles';
 import axios from 'axios';
-import { Option } from '@components/common/form/ReferenceField';
 import StixCoreObjectAskAI from '@components/common/stix_core_objects/StixCoreObjectAskAI';
 import { fileManagerExportMutation } from '../files/FileManager';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -28,6 +27,7 @@ import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPd
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import { FieldOption } from '../../../../utils/field';
 
 export const BUILT_IN_HTML_TO_PDF = {
   value: 'builtInHtmlToPdf',
@@ -207,7 +207,7 @@ const StixCoreObjectFileExportComponent = ({
     })),
   });
 
-  const templateOptions: Option[] = (stixCoreObject?.fintelTemplates ?? []).map((t) => ({
+  const templateOptions: FieldOption[] = (stixCoreObject?.fintelTemplates ?? []).map((t) => ({
     value: t.id,
     label: t.name,
   }));

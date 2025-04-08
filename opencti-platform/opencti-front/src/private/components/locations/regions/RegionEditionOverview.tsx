@@ -13,13 +13,12 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { adaptFieldValue } from '../../../../utils/String';
-import { Option } from '../../common/form/ReferenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { RegionEditionOverview_region$key } from './__generated__/RegionEditionOverview_region.graphql';
 import CommitMessage from '../../common/form/CommitMessage';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import RegionDeletion from './RegionDeletion';
@@ -126,12 +125,12 @@ interface RegionEdititionOverviewProps {
 interface RegionEditionFormValues {
   name: string;
   description: string | null;
-  createdBy: Option | undefined;
+  createdBy: FieldOption | undefined;
   confidence: number | undefined | null;
-  objectMarking: Option[];
-  x_opencti_workflow_id: Option;
+  objectMarking: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
   message?: string;
-  references?: Option[];
+  references?: FieldOption[];
 }
 
 const RegionEditionOverviewComponent: FunctionComponent<
@@ -187,11 +186,11 @@ RegionEdititionOverviewProps
       },
     });
   };
-  const handleSubmitField = (name: string, value: Option | string) => {
+  const handleSubmitField = (name: string, value: FieldOption | string) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       regionValidator
         .validateAt(name, { [name]: value })
@@ -212,7 +211,7 @@ RegionEdititionOverviewProps
     confidence: region.confidence,
     createdBy: convertCreatedBy(region),
     objectMarking: convertMarkings(region),
-    x_opencti_workflow_id: convertStatus(t_i18n, region) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, region) as FieldOption,
     references: [],
   };
   const { isFeatureEnable } = useHelper();

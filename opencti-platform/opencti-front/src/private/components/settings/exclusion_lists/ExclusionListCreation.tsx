@@ -6,7 +6,6 @@ import { Field, Form, Formik, FormikConfig } from 'formik';
 import { availableEntityTypes, exclusionListCreationValidator } from '@components/settings/exclusion_lists/ExclusionListUtils';
 import Button from '@mui/material/Button';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
-import { Option } from '@components/common/form/ReferenceField';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -17,7 +16,7 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useSchema from '../../../../utils/hooks/useSchema';
 import { now } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -44,7 +43,7 @@ const CreateExclusionListControlledDial = (
 interface ExclusionListCreationFormData {
   name: string;
   description: string;
-  exclusion_list_entity_types: Option[];
+  exclusion_list_entity_types: FieldOption[];
   file: File | null;
   content: string | null;
 }
@@ -118,7 +117,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
     content: null,
   };
 
-  const entityTypesOptions: Option[] = entityTypes.map((type) => ({
+  const entityTypesOptions: FieldOption[] = entityTypes.map((type) => ({
     value: type.id,
     label: type.label,
     type: type.id,
@@ -160,7 +159,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             options={entityTypesOptions}
             renderOption={(
               props: React.HTMLAttributes<HTMLLIElement>,
-              option: Option,
+              option: FieldOption,
             ) => (
               <li key={option.value} {...props}>
                 <ItemIcon type={option.type} />

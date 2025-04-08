@@ -21,8 +21,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
-import { Option } from '../../common/form/ReferenceField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -58,10 +57,10 @@ const dataSourceMutation = graphql`
 interface DataSourceAddInput {
   name: string;
   description: string;
-  createdBy: Option | null;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: Option[];
+  createdBy: FieldOption | null;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
   confidence: number | null;
   x_mitre_platforms: string[];
   collection_layers: string[];
@@ -80,8 +79,8 @@ interface DataSourceFormProps {
   onReset?: () => void;
   onCompleted?: () => void;
   inputValue?: string;
-  defaultCreatedBy?: Option;
-  defaultMarkingDefinitions?: Option[];
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   defaultConfidence?: number;
   bulkModalOpen?: boolean;
   onBulkModalClose: () => void;

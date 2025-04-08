@@ -26,7 +26,6 @@ import { FormikConfig } from 'formik/dist/types';
 import { FeedCreationAllTypesQuery$data } from '@components/data/feeds/__generated__/FeedCreationAllTypesQuery.graphql';
 import { FeedAttributeMappingInput } from '@components/data/feeds/__generated__/FeedEditionMutation.graphql';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
-import { Option } from '@components/common/form/ReferenceField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -46,7 +45,7 @@ import {
 } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -140,7 +139,7 @@ interface FeedAddInput {
   feed_types: string[];
   feed_public: boolean;
   feed_attributes: FeedAttributeMappingInput[];
-  authorized_members: Option[];
+  authorized_members: FieldOption[];
 }
 
 interface FeedCreationFormProps {

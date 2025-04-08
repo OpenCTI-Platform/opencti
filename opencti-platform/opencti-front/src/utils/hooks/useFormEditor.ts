@@ -2,10 +2,10 @@ import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag
 import { UseMutationConfig } from 'react-relay';
 import { ObjectSchema, SchemaObjectDescription } from 'yup';
 import { MutationParameters } from 'relay-runtime';
-import { Option } from '@components/common/form/ReferenceField';
 import { convertAssignees, convertExternalReferences, convertKillChainPhases, convertMarkings, convertParticipants } from '../edition';
 import useConfidenceLevel from './useConfidenceLevel';
 import useApiMutation from './useApiMutation';
+import { FieldOption } from '../field';
 
 export interface GenericData {
   id: string;
@@ -62,7 +62,7 @@ const useFormEditor = (
 
   const validate = (
     name: string,
-    values: number | number[] | string | Date | Option | Option[],
+    values: number | number[] | string | Date | FieldOption | FieldOption[],
     callback: () => void,
   ) => {
     if (schemaFields[name]) {
@@ -80,13 +80,13 @@ const useFormEditor = (
   // Multiple
   const changeMultiple = (
     name: string,
-    values: Option[],
+    values: FieldOption[],
     relation: string,
-    optionMapper: (data: unknown) => [Option],
+    optionMapper: (data: unknown) => [FieldOption],
   ) => {
     if (!enableReferences) {
       validate(name, values, () => {
-        const currentValues: [Option] = optionMapper(data);
+        const currentValues: [FieldOption] = optionMapper(data);
         const added = values.filter(
           (v) => !currentValues.map((c) => c.value).includes(v.value),
         );
@@ -116,21 +116,21 @@ const useFormEditor = (
       });
     }
   };
-  const changeMarking = (name: string, values: Option[], operation: string | undefined) => {
+  const changeMarking = (name: string, values: FieldOption[], operation: string | undefined) => {
     if (operation === 'replace') {
       commitFieldPatch({ variables: { id: data.id, input: [{ key: name, value: values.map((m) => m.value), operation }] } });
     } else changeMultiple(name, values, 'object-marking', convertMarkings);
   };
-  const changeAssignee = (name: string, values: Option[]) => {
+  const changeAssignee = (name: string, values: FieldOption[]) => {
     changeMultiple(name, values, 'object-assignee', convertAssignees);
   };
-  const changeParticipant = (name: string, values: Option[]) => {
+  const changeParticipant = (name: string, values: FieldOption[]) => {
     changeMultiple(name, values, 'object-participant', convertParticipants);
   };
-  const changeKillChainPhases = (name: string, values: Option[]) => {
+  const changeKillChainPhases = (name: string, values: FieldOption[]) => {
     changeMultiple(name, values, 'kill-chain-phase', convertKillChainPhases);
   };
-  const changeExternalReferences = (name: string, values: Option[]) => {
+  const changeExternalReferences = (name: string, values: FieldOption[]) => {
     changeMultiple(
       name,
       values,
@@ -140,7 +140,7 @@ const useFormEditor = (
   };
 
   // Simple
-  const changeCreated = (name: string, value: Option) => {
+  const changeCreated = (name: string, value: FieldOption) => {
     if (!enableReferences) {
       validate(name, value, () => {
         commitFieldPatch({
@@ -167,11 +167,11 @@ const useFormEditor = (
       },
     });
   };
-  const changeField = (name: string, value: number | number[] | string | Date | Option | Option[]) => {
+  const changeField = (name: string, value: number | number[] | string | Date | FieldOption | FieldOption[]) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       validate(name, value, () => {
         commitFieldPatch({
@@ -183,7 +183,7 @@ const useFormEditor = (
       });
     }
   };
-  const changeGrantableGroups = (name: string, values: Option[]) => {
+  const changeGrantableGroups = (name: string, values: FieldOption[]) => {
     validate(name, values, () => {
       const finalValues = values.map((v) => v.value);
       commitFieldPatch({
@@ -202,7 +202,7 @@ const useFormEditor = (
     commitFieldPatch(args);
   };
 
-  const checkAndCommitChangeField = (name: string, value: number | number[] | string | Date | Option | Option[]) => {
+  const checkAndCommitChangeField = (name: string, value: number | number[] | string | Date | FieldOption | FieldOption[]) => {
     if (!checkConfidenceForEntity(data, true)) return;
     changeField(name, value);
   };

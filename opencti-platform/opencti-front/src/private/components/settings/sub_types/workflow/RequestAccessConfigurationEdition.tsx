@@ -6,11 +6,10 @@ import Button from '@mui/material/Button';
 import { FormikConfig } from 'formik/dist/types';
 import StatusTemplateFieldScoped from '@components/settings/sub_types/workflow/StatusTemplateFieldScoped';
 import GroupField, { GroupFieldOption } from '@components/common/form/GroupField';
-import { Option } from '@components/common/form/ReferenceField';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { RequestAccessConfigurationEdition_requestAccess$key } from './__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
 import { RequestAccessConfigurationEditionMutation, RequestAccessConfigureInput } from './__generated__/RequestAccessConfigurationEditionMutation.graphql';
 
@@ -55,8 +54,8 @@ interface RequestAccessWorkflowProps {
 }
 
 interface RequestAccessEditionFormInputs {
-  acceptedTemplate: Option
-  declinedTemplate: Option
+  acceptedTemplate: FieldOption
+  declinedTemplate: FieldOption
   approvalAdmin: GroupFieldOption
 }
 

@@ -6,12 +6,12 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
-import { Option } from '@components/common/form/ReferenceField';
 import { useFormatter } from './i18n';
+import { FieldOption } from '../utils/field';
 
-type CheckboxesFieldProps = FieldProps<Option[]> & {
+type CheckboxesFieldProps = FieldProps<FieldOption[]> & {
   label: string
-  items: Option[]
+  items: FieldOption[]
 };
 
 const CheckboxesField = ({
@@ -25,9 +25,9 @@ const CheckboxesField = ({
   const { setFieldValue } = form;
   const { name, value } = field;
 
-  const isChecked = (val: Option) => value.includes(val);
+  const isChecked = (val: FieldOption) => value.includes(val);
 
-  const toggle = (val: Option) => {
+  const toggle = (val: FieldOption) => {
     if (isChecked(val)) {
       setFieldValue(name, value.filter((v) => v !== val));
     } else {

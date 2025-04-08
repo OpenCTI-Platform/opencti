@@ -17,7 +17,7 @@ import Transition from './Transition';
 import { RequestAccessDialogMutation$variables } from './__generated__/RequestAccessDialogMutation.graphql';
 import { handleErrorInForm } from '../relay/environment';
 import useAuth from '../utils/hooks/useAuth';
-import { AutoCompleteOption, fieldSpacingContainerStyle } from '../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../utils/field';
 import type { Theme } from './Theme';
 
 const requestAccessDialogMutation = graphql`
@@ -53,7 +53,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
   const theme = useTheme<Theme>();
   const { me } = useAuth();
   const meResolvedId = me.id;
-  let initialOrganization: AutoCompleteOption = { value: '', label: '' };
+  let initialOrganization: FieldOption = { value: '', label: '' };
   if (me?.objectOrganization && me?.objectOrganization?.edges?.length > 0) {
     const organizationData = me?.objectOrganization;
     initialOrganization = {

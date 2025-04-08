@@ -12,7 +12,6 @@ import React, { useState } from 'react';
 import { Form, Formik } from 'formik';
 import CommitMessage from '@components/common/form/CommitMessage';
 import type { FormikConfig } from 'formik/dist/types';
-import { Option } from '@components/common/form/ReferenceField';
 import { knowledgeGraphQueryCheckObjectQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import { KnowledgeGraphQueryCheckObjectQuery$data } from '@components/common/containers/__generated__/KnowledgeGraphQueryCheckObjectQuery.graphql';
 import Transition from '../../Transition';
@@ -23,10 +22,11 @@ import { fetchQuery } from '../../../relay/environment';
 import useKnowledgeGraphDeleteRelation from '../utils/useKnowledgeGraphDeleteRelation';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import useKnowledgeGraphDeleteObject from '../utils/useKnowledgeGraphDeleteObject';
+import { FieldOption } from '../../../utils/field';
 
 interface ReferenceFormData {
   message: string,
-  references: Option[]
+  references: FieldOption[]
 }
 
 export interface GraphToolbarDeleteConfirmProps {

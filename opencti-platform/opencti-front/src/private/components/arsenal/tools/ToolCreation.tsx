@@ -16,11 +16,10 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import { Option } from '../../common/form/ReferenceField';
 import { ToolCreationMutation, ToolCreationMutation$variables } from './__generated__/ToolCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -57,10 +56,10 @@ const TOOL_TYPE = 'Tool';
 interface ToolAddInput {
   name: string
   description: string
-  createdBy: Option | null
-  objectMarking: Option[]
-  killChainPhases: Option[]
-  objectLabel: Option[]
+  createdBy: FieldOption | null
+  objectMarking: FieldOption[]
+  killChainPhases: FieldOption[]
+  objectLabel: FieldOption[]
   externalReferences: { value: string }[]
   tool_types: string[]
   tool_version: string

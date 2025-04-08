@@ -13,7 +13,6 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import { StixCoreRelationshipCreationFromEntityQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
-import { Option } from '@components/common/form/ReferenceField';
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
 import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
 import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
@@ -46,6 +45,7 @@ import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
+import { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -477,10 +477,10 @@ interface StixCoreRelationshipCreationFromEntityForm {
   confidence: string;
   start_time: string;
   stop_time: string;
-  createdBy: Option;
-  killChainPhases: Option[];
-  objectMarking: Option[];
-  externalReferences: Option[];
+  createdBy: FieldOption;
+  killChainPhases: FieldOption[];
+  objectMarking: FieldOption[];
+  externalReferences: FieldOption[];
 }
 
 export interface TargetEntity {

@@ -10,14 +10,13 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
-import { Option } from '@components/common/form/ReferenceField';
 import { FormikConfig } from 'formik/dist/types';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { emptyFilterGroup, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
@@ -32,7 +31,7 @@ interface StreamCollectionCreationProps {
 }
 
 interface StreamCollectionCreationForm {
-  authorized_members: Option[]
+  authorized_members: FieldOption[]
   stream_public: boolean
   name: string
   description: string
@@ -144,7 +143,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
             name: '',
             description: '',
             stream_public: false,
-            authorized_members: [] as Option[],
+            authorized_members: [] as FieldOption[],
           }}
           validationSchema={streamCollectionCreationValidation(t_i18n('This field is required'))}
           onSubmit={onSubmit}

@@ -8,7 +8,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CaseTemplateFieldQuery } from './__generated__/CaseTemplateFieldQuery.graphql';
-import { Option } from './ReferenceField';
+import { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -41,8 +41,8 @@ const caseTemplateFieldQuery = graphql`
 `;
 
 interface CaseTemplateFieldComponentProps {
-  onChange?: (name: string, value: Option[]) => void
-  onSubmit?: (name: string, value: Option[]) => void
+  onChange?: (name: string, value: FieldOption[]) => void
+  onSubmit?: (name: string, value: FieldOption[]) => void
   containerStyle?: Record<string, string | number>
   helpertext?: string
   queryRef: PreloadedQuery<CaseTemplateFieldQuery>
@@ -74,7 +74,7 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
           label: t_i18n(label ?? 'Default case templates'),
           helperText: helpertext,
         }}
-        onChange={(name: string, value: Option[]) => {
+        onChange={(name: string, value: FieldOption[]) => {
           onChange?.(name, value);
           onSubmit?.(name, value);
         }}

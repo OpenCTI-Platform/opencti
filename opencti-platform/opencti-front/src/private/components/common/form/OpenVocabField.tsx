@@ -4,12 +4,12 @@ import MenuItem from '@mui/material/MenuItem';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { Option } from './ReferenceField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { OpenVocabFieldQuery } from './__generated__/OpenVocabFieldQuery.graphql';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RenderOption } from '../../../../components/list_lines';
+import { FieldOption } from '../../../../utils/field';
 
 interface OpenVocabProps {
   type: string;
@@ -17,7 +17,7 @@ interface OpenVocabProps {
   label: string;
   required?: boolean;
   variant?: string;
-  onFocus?: (name: string, value: Option) => void;
+  onFocus?: (name: string, value: FieldOption) => void;
   containerStyle?: Record<string, string | number>;
   editContext?: unknown;
   disabled?: boolean;
@@ -76,10 +76,10 @@ Omit<OpenVocabProps, 'type'>
       label: value,
       description,
     }));
-  let internalOnChange: ((n: string, v: Option | Option[]) => void) | undefined;
-  let internalOnSubmit: ((n: string, v: Option | Option[]) => void) | undefined;
+  let internalOnChange: ((n: string, v: FieldOption | FieldOption[]) => void) | undefined;
+  let internalOnSubmit: ((n: string, v: FieldOption | FieldOption[]) => void) | undefined;
   if (onChange) {
-    internalOnChange = (n: string, v: Option | Option[]) => (Array.isArray(v)
+    internalOnChange = (n: string, v: FieldOption | FieldOption[]) => (Array.isArray(v)
       ? onChange(
         n,
         v.map((nV) => nV?.value ?? nV),
@@ -87,7 +87,7 @@ Omit<OpenVocabProps, 'type'>
       : onChange(n, v?.value ?? v));
   }
   if (onSubmit) {
-    internalOnSubmit = (n: string, v: Option | Option[]) => (Array.isArray(v)
+    internalOnSubmit = (n: string, v: FieldOption | FieldOption[]) => (Array.isArray(v)
       ? onSubmit?.(
         n,
         v.map((nV) => nV?.value ?? nV),
@@ -111,7 +111,7 @@ Omit<OpenVocabProps, 'type'>
         name={name}
         required={required}
         onFocus={onFocus}
-        onChange={(n: string, v: Option & Option[]) => {
+        onChange={(n: string, v: FieldOption & FieldOption[]) => {
           internalOnChange?.(n, v);
           internalOnSubmit?.(n, v);
         }}
@@ -121,7 +121,7 @@ Omit<OpenVocabProps, 'type'>
         disabled={disabled}
         options={openVocabList}
         renderOption={renderOption}
-        isOptionEqualToValue={(option: Option, value: string) => option.value === value
+        isOptionEqualToValue={(option: FieldOption, value: string) => option.value === value
         }
         textfieldprops={{
           label,
@@ -144,7 +144,7 @@ Omit<OpenVocabProps, 'type'>
       style={containerStyle}
       options={openVocabList}
       renderOption={renderOption}
-      isOptionEqualToValue={(option: Option, value: string) => option.value === value
+      isOptionEqualToValue={(option: FieldOption, value: string) => option.value === value
       }
       textfieldprops={{
         label,

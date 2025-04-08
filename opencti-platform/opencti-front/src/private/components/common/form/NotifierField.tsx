@@ -5,9 +5,8 @@ import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { NotifierFieldSearchQuery$data } from './__generated__/NotifierFieldSearchQuery.graphql';
-import { Option } from './ReferenceField';
 import ItemIcon from '../../../../components/ItemIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -32,7 +31,7 @@ interface NotifierFieldProps {
   name: string;
   style?: { marginTop: number };
   helpertext?: string;
-  onChange: (name: string, value: Option[]) => void;
+  onChange: (name: string, value: FieldOption[]) => void;
   required?: boolean
 }
 
@@ -59,7 +58,7 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [notifiersTemplates, setNotifiersTemplates] = useState<Option[]>([]);
+  const [notifiersTemplates, setNotifiersTemplates] = useState<FieldOption[]>([]);
   const searchNotifiers = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(NotifierFieldQuery, {
       search: event && event.target.value ? event.target.value : '',
@@ -96,13 +95,13 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
         noOptionsText={t_i18n('No available options')}
         options={notifiersTemplates}
         onInputChange={searchNotifiers}
-        isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value
+        isOptionEqualToValue={(option: FieldOption, { value }: FieldOption) => option.value === value
         }
         onChange={onChange}
-        groupBy={(option: Option) => option.type}
+        groupBy={(option: FieldOption) => option.type}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: Option,
+          option: FieldOption,
         ) => (<li {...props} key={option.value}>
           <div className={classes.icon}>
             <ItemIcon type="Notifier" />
