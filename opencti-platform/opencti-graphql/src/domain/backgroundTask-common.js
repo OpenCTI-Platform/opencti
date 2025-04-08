@@ -20,6 +20,7 @@ import { extractFilterGroupValues, findFiltersFromKey, isFilterGroupNotEmpty } f
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -46,7 +47,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   const filters = isFilterGroupNotEmpty(baseFilterObject)
     ? (baseFilterObject?.filters ?? [])
     : [];
-  const entityTypeFilters = findFiltersFromKey(filters, 'entity_type');
+  const entityTypeFilters = findFiltersFromKey(filters, TYPE_FILTER);
   const entityTypeFiltersValues = entityTypeFilters.map((f) => f.values).flat();
   if (scope === BackgroundTaskScope.Settings) { // 01. Background task of scope Settings
     const isAuthorized = isUserHasCapability(user, SETTINGS_SETLABELS);
@@ -97,7 +98,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       if (!isNotifications) {
         throw ForbiddenAccess('The targeted ids are not notifications.');
       }
-      const userFilters = findFiltersFromKey(filters, 'user_id');
+      const userFilters = findFiltersFromKey(filters, USER_ID_FILTER);
       const isUserData = userFilters.length > 0
         && userFilters[0].values.length === 1
         && userFilters[0].values[0] === user.id;
