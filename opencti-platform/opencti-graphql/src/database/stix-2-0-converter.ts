@@ -2,10 +2,10 @@ import type { StoreEntity, StoreObject, StoreRelation } from '../types/store';
 import type * as S from '../types/stix-2-0-common';
 import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SMO from '../types/stix-2-0-smo';
-import { assertType, convertToStixDate, convertTypeToStixType, cleanObject } from './stix-2-1-converter';
 import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_MALWARE } from '../schema/stixDomainObject';
+import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
 
 // Meta
 const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Array<SMO.StixInternalKillChainPhase> => {
@@ -39,7 +39,7 @@ const buildStixObject = (instance: StoreObject): S.StixObject2 => {
     x_opencti_id: instance.id,
     spec_version: '2.0',
     x_opencti_type: ENTITY_TYPE_MALWARE,
-    type: convertTypeToStixType(instance.entity_type),
+    type: instance.entity_type.toLowerCase(),
     x_opencti_granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id)
   };
 };
