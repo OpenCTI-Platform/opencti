@@ -7,9 +7,9 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
-import { Option } from './ReferenceField';
 import { ObjectParticipantFieldMembersSearchQuery$data } from './__generated__/ObjectParticipantFieldMembersSearchQuery.graphql';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import { FieldOption } from '../../../../utils/field';
 
 export const objectParticipantFieldMembersSearchQuery = graphql`
   query ObjectParticipantFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
@@ -57,7 +57,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface OptionParticipant extends Option {
+interface OptionParticipant extends FieldOption {
   type: string;
   group: string;
 }

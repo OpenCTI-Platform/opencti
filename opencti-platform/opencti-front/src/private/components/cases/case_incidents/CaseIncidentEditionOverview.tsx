@@ -11,7 +11,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -22,7 +22,6 @@ import { ExternalReferencesValues } from '../../common/form/ExternalReferencesFi
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
@@ -158,11 +157,11 @@ interface CaseIncidentEditionOverviewProps {
 
 interface CaseIncidentEditionFormValues {
   message?: string
-  createdBy?: Option
-  objectMarking?: Option[]
-  objectAssignee?: Option[]
-  objectParticipant?: Option[]
-  x_opencti_workflow_id: Option
+  createdBy?: FieldOption
+  objectMarking?: FieldOption[]
+  objectAssignee?: FieldOption[]
+  objectParticipant?: FieldOption[]
+  x_opencti_workflow_id: FieldOption
   references: ExternalReferencesValues | undefined
 }
 
@@ -229,11 +228,11 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     });
   };
 
-  const handleSubmitField = (name: string, value: Option | string | string[] | number | number[] | null) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | string[] | number | number[] | null) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (['x_opencti_workflow_id'].includes(name)) {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       validator
         .validateAt(name, { [name]: value })
@@ -256,11 +255,11 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     severity: caseData.severity,
     response_types: caseData.response_types ?? [],
     confidence: caseData.confidence,
-    createdBy: convertCreatedBy(caseData) as Option,
+    createdBy: convertCreatedBy(caseData) as FieldOption,
     objectMarking: convertMarkings(caseData),
     objectAssignee: convertAssignees(caseData),
     objectParticipant: convertParticipants(caseData),
-    x_opencti_workflow_id: convertStatus(t_i18n, caseData) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, caseData) as FieldOption,
     references: [],
   };
 

@@ -11,10 +11,9 @@ import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
-import { AutoCompleteOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import NotifierConnectorField from '../../common/form/NotifierConnectorField';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import { Option } from '../../common/form/ReferenceField';
 import { NotifierEdition_edition$key } from './__generated__/NotifierEdition_edition.graphql';
 import { NotifierEditionQuery } from './__generated__/NotifierEditionQuery.graphql';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
@@ -89,8 +88,8 @@ interface NotifierEditionComponentProps {
 interface NotifierEditionValues {
   name: string
   description?: string | null
-  restricted_members?: AutoCompleteOption[] | null
-  notifier_connector_id?: Option
+  restricted_members?: FieldOption[] | null
+  notifier_connector_id?: FieldOption
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

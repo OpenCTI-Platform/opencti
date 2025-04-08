@@ -16,10 +16,10 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { RenderOption } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
 import { convertMarking } from '../../../../utils/edition';
-import { Option } from './ReferenceField';
 import { filterMarkingsOutFor } from '../../../../utils/markings/markingsFiltering';
 import { isEmptyField } from '../../../../utils/utils';
 import { fetchQuery } from '../../../../relay/environment';
+import { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -91,22 +91,27 @@ interface ObjectMarkingFieldProps {
   style?: React.CSSProperties;
   onChange?: (
     name: string,
-    values: Option[],
+    values: FieldOption[],
     operation?: string | undefined,
   ) => void;
-  isOptionEqualToValue?: (option: Option, value: Option) => boolean;
+  isOptionEqualToValue?: (option: FieldOption, value: FieldOption) => boolean;
   helpertext?: unknown;
   disabled?: boolean;
   label?: string;
   allowedMarkingOwnerId?: string;
-  setFieldValue?: (name: string, values: Option[]) => void;
+  setFieldValue?: (name: string, values: FieldOption[]) => void;
   limitToMaxSharing?: boolean;
   filterTargetIds?: string[];
 }
 
+interface MarkingOption extends FieldOption {
+  definition_type: string
+  x_opencti_order: number
+}
+
 interface OptionValues {
-  currentValues: Option[];
-  valueToReplace: Option;
+  currentValues: MarkingOption[];
+  valueToReplace: MarkingOption;
 }
 
 const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
@@ -126,7 +131,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [newMarking, setNewMarking] = useState<
-  Option[] | OptionValues | undefined
+  FieldOption[] | OptionValues | undefined
   >(undefined);
   const [operation, setOperation] = useState<string | undefined>(undefined);
   const [otherUserAllowedMarkingsData, setOtherUserAllowedMarkingsData] = useState(
@@ -219,13 +224,13 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         )
         .concat([markingAdded]);
 
-      onChange?.(name, markingsReplace as Option[], operation);
+      onChange?.(name, markingsReplace as FieldOption[], operation);
       setFieldValue?.(name, markingsReplace);
       setOperation(undefined);
       handleClose();
     }
   };
-  const handleOnChange = (n: string, values: Option[]) => {
+  const handleOnChange = (n: string, values: MarkingOption[]) => {
     const valueAdded = values[values.length - 1];
     const valueToReplace = values.find(
       (marking) => marking.definition_type === valueAdded.definition_type

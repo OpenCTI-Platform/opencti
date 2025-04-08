@@ -13,10 +13,9 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import { Option } from '../../common/form/ReferenceField';
 import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import NotifierConnectorField from '../../common/form/NotifierConnectorField';
 import { uiSchema } from './NotifierUtils';
@@ -58,8 +57,8 @@ const notifierMutation = graphql`
 interface NotifierAddInput {
   name: string;
   description: string;
-  notifier_connector_id?: Option;
-  authorized_members: Option[];
+  notifier_connector_id?: FieldOption;
+  authorized_members: FieldOption[];
 }
 
 interface NotifierFormProps {
@@ -87,7 +86,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
   const { t_i18n } = useFormatter();
   const formRef = createRef<CoreForm>();
   const [open, setOpen] = useState(false);
-  const [connector, setCurrentConnector] = useState<Option & { schema?: string; ui_schema?: string }>();
+  const [connector, setCurrentConnector] = useState<FieldOption & { schema?: string; ui_schema?: string }>();
   const initialValues: NotifierAddInput = {
     name: inputValue || '',
     description: '',

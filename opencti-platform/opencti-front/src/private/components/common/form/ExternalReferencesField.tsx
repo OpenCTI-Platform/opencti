@@ -17,7 +17,7 @@ import {
 import { externalReferenceLinesMutationRelationAdd } from '../../analyses/external_references/AddExternalReferencesLines';
 import ExternalReferenceCreation from '../../analyses/external_references/ExternalReferenceCreation';
 import { externalReferencesQueriesSearchQuery } from '../../analyses/external_references/ExternalReferencesQueries';
-import { Option } from './ReferenceField';
+import { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -53,7 +53,7 @@ interface ExternalReferencesFieldProps {
   name: string;
   label?: string;
   style?: { marginTop: number; width: string };
-  onChange?: (name: string, values: Option[]) => void;
+  onChange?: (name: string, values: FieldOption[]) => void;
   setFieldValue: (
     field: string,
     value: {
@@ -187,7 +187,7 @@ ExternalReferencesFieldProps
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: Option,
+          option: FieldOption,
         ) => (
           <li {...props} key={option.value}>
             <div className={classes.icon}>

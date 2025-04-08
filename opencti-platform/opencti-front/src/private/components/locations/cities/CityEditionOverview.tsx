@@ -16,11 +16,10 @@ import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
-import { Option } from '../../common/form/ReferenceField';
 import { CityEditionOverview_city$key } from './__generated__/CityEditionOverview_city.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import CityDeletion from './CityDeletion';
 
@@ -127,10 +126,10 @@ interface CityEditionOverviewProps {
 
 interface CityEditionFormValues {
   message?: string;
-  references?: Option[];
-  createdBy: Option | undefined;
-  x_opencti_workflow_id: Option;
-  objectMarking?: Option[];
+  references?: FieldOption[];
+  createdBy: FieldOption | undefined;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
 }
 
 const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
@@ -189,11 +188,11 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
       },
     });
   };
-  const handleSubmitField = (name: string, value: Option | string | null) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | null) => {
     if (!enableReferences) {
       let finalValue: string = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       cityValidator
         .validateAt(name, { [name]: value })
@@ -217,7 +216,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
     references: [],
     createdBy: convertCreatedBy(city),
     objectMarking: convertMarkings(city),
-    x_opencti_workflow_id: convertStatus(t_i18n, city) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, city) as FieldOption,
   };
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');

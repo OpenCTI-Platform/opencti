@@ -8,7 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { ObjectMembersFieldSearchQuery$data } from './__generated__/ObjectMembersFieldSearchQuery.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
-import { Option } from './ReferenceField';
+import { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -42,7 +42,7 @@ const objectMembersFieldSearchQuery = graphql`
     }
 `;
 
-export interface OptionMember extends Option {
+export interface OptionMember extends FieldOption {
   type: string;
 }
 
@@ -52,7 +52,7 @@ interface ObjectMembersFieldProps {
   name: string;
   label?: string;
   multiple?: boolean;
-  onChange?: (name: string, value: Option[]) => void;
+  onChange?: (name: string, value: FieldOption[]) => void;
   style?: Record<string, string | number>;
   helpertext?: string;
   disabled?: boolean;
@@ -112,7 +112,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
           onFocus: searchMembers,
         }}
         required={required}
-        onChange={(n: string, v: Option[]) => onChange?.(n, v)}
+        onChange={(n: string, v: FieldOption[]) => onChange?.(n, v)}
         style={style}
         noOptionsText={t_i18n('No available options')}
         options={members}

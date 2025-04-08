@@ -18,7 +18,7 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
@@ -29,7 +29,6 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { Option } from '../../common/form/ReferenceField';
 import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
 import RichTextField from '../../../../components/fields/RichTextField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -81,15 +80,15 @@ interface FormikCaseIncidentAddInput {
   description: string;
   content: string;
   file: File | undefined;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectAssignee: Option[];
-  objectParticipant: Option[];
-  objectLabel: Option[];
-  externalReferences: Option[];
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectAssignee: FieldOption[];
+  objectParticipant: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
   created: Date | null;
   response_types: string[];
-  caseTemplates?: Option[];
+  caseTemplates?: FieldOption[];
   authorized_members: {
     value: string,
     accessRight: string,

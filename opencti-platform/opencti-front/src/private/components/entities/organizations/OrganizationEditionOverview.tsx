@@ -5,7 +5,6 @@ import * as Yup from 'yup';
 import { OrganizationEditionOverview_organization$data } from '@components/entities/organizations/__generated__/OrganizationEditionOverview_organization.graphql';
 import { OrganizationEditionContainer_organization$data } from '@components/entities/organizations/__generated__/OrganizationEditionContainer_organization.graphql';
 import { FormikConfig } from 'formik/dist/types';
-import { Option } from '@components/common/form/ReferenceField';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
@@ -20,7 +19,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import StatusField from '../../common/form/StatusField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import OrganizationDeletion from './OrganizationDeletion';
@@ -92,9 +91,9 @@ interface OrganizationEditionOverviewComponentProps {
 
 interface OrganizationEditionFormValues {
   message?: string;
-  createdBy?: Option;
-  objectMarking?: Option[];
-  x_opencti_workflow_id: Option;
+  createdBy?: FieldOption;
+  objectMarking?: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
   references: ExternalReferencesValues | undefined;
 }
 
@@ -152,11 +151,11 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     });
   };
 
-  const handleSubmitField = (name: string, value: string | string[] | number | number[] | Option | null) => {
+  const handleSubmitField = (name: string, value: string | string[] | number | number[] | FieldOption | null) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       organizationValidator
         .validateAt(name, { [name]: value })
@@ -181,8 +180,8 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     contact_information: organization.contact_information,
     x_opencti_organization_type: organization.x_opencti_organization_type,
     x_opencti_reliability: organization.x_opencti_reliability,
-    x_opencti_workflow_id: convertStatus(t_i18n, organization) as Option,
-    createdBy: convertCreatedBy(organization) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, organization) as FieldOption,
+    createdBy: convertCreatedBy(organization) as FieldOption,
     objectMarking: convertMarkings(organization),
     references: [],
     confidence: organization.confidence,

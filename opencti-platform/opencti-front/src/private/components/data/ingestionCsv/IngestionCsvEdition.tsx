@@ -1,6 +1,5 @@
 import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent, useState } from 'react';
-import { Option } from '@components/common/form/ReferenceField';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
@@ -22,7 +21,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import { adaptFieldValue } from '../../../../utils/String';
 import TextField from '../../../../components/TextField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
 import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -99,9 +98,9 @@ interface IngestionCsvEditionForm {
   authentication_type: string,
   authentication_value?: string | null,
   ingestion_running?: boolean | null,
-  csv_mapper_id: string | Option,
-  user_id: string | Option,
-  markings: Option[],
+  csv_mapper_id: string | FieldOption,
+  user_id: string | FieldOption,
+  markings: FieldOption[],
 }
 
 const resolveHasUserChoiceCsvMapper = (option: CsvMapperFieldOption) => {
@@ -132,7 +131,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   ));
   const [creatorId, setCreatorId] = useState(ingestionCsvData.user?.id);
   const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
-  const onCreatorSelection = async (option: Option) => {
+  const onCreatorSelection = async (option: FieldOption) => {
     setCreatorId(option.value);
   };
   const { me } = useAuth();
@@ -178,7 +177,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
 
   const handleSubmitField = (
     name: string,
-    value: Option | Option[] | CsvMapperFieldOption | string | string[] | number | number[] | null,
+    value: FieldOption | FieldOption[] | CsvMapperFieldOption | string | string[] | number | number[] | null,
   ) => {
     let finalValue = value as string;
     let finalName = name;
@@ -214,14 +213,14 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     // end region authentication
 
     if (name === 'csv_mapper_id' || name === 'user_id') {
-      finalValue = (value as Option).value;
+      finalValue = (value as FieldOption).value;
     }
     if (name === 'csv_mapper_id') {
       const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(value as CsvMapperFieldOption);
       setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
     }
     if (name === 'user_id') {
-      onCreatorSelection(value as Option).then();
+      onCreatorSelection(value as FieldOption).then();
     }
     ingestionCsvValidator
       .validateAt(name, { [name]: value })
@@ -260,21 +259,21 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
 
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
 
-  const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as Option[];
+  const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as FieldOption[];
   const updateCsvMapper = async (
-    setFieldValue: (field: string, option: Option, shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>,
+    setFieldValue: (field: string, option: FieldOption, shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>,
     option: CsvMapperFieldOption,
   ) => {
     await setFieldValue('csv_mapper_id', option);
   };
   const updateObjectMarkingField = async (
-    setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>,
+    setFieldValue: (field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvEditionForm>>,
     values: IngestionCsvEditionForm,
     newHasUserChoiceCsvMapper: boolean,
   ) => {
     const markings = newHasUserChoiceCsvMapper ? values.markings : defaultMarkingOptions;
     await setFieldValue('markings', markings);
-    handleSubmitField('markings', markings.map(({ value }: Option) => value));
+    handleSubmitField('markings', markings.map(({ value }: FieldOption) => value));
   };
   return (
     <Formik<IngestionCsvEditionForm>
@@ -341,7 +340,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 </Box>
                 <CsvMapperField
                   name="csv_mapper_id"
-                  isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value }
+                  isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value }
                   onChange={async (_, option) => {
                     handleSubmitField('csv_mapper_id', option);
                     await updateCsvMapper(setFieldValue, option);
@@ -357,7 +356,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             hasUserChoiceCsvMapper && (
               <ObjectMarkingField
                 name="markings"
-                isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value}
+                isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value}
                 label={t_i18n('Marking definition levels')}
                 style={fieldSpacingContainerStyle}
                 allowedMarkingOwnerId={isGranted ? creatorId : undefined}

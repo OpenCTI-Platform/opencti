@@ -21,11 +21,10 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import type { Theme } from '../../../../components/Theme';
-import { Option } from '../../common/form/ReferenceField';
 import { AttackPatternCreationMutation, AttackPatternCreationMutation$variables } from './__generated__/AttackPatternCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -92,10 +91,10 @@ interface AttackPatternAddInput {
   description: string
   x_mitre_id: string
   confidence: number | undefined
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  killChainPhases: Option[]
-  objectLabel: Option[]
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  killChainPhases: FieldOption[]
+  objectLabel: FieldOption[]
   externalReferences: { value: string }[]
   file: File | undefined
 }

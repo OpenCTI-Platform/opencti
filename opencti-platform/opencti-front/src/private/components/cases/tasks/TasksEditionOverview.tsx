@@ -11,13 +11,12 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { convertAssignees, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
 import { TasksEditionOverview_task$key } from './__generated__/TasksEditionOverview_task.graphql';
 import { buildDate, formatDate } from '../../../../utils/Time';
@@ -133,10 +132,10 @@ interface TasksEditionFormValues {
   description: string | null;
   due_date: Date | null;
   message?: string;
-  objectMarking?: Option[];
-  objectAssignee?: Option[];
-  objectParticipant?: Option[]
-  x_opencti_workflow_id: Option;
+  objectMarking?: FieldOption[];
+  objectAssignee?: FieldOption[];
+  objectParticipant?: FieldOption[]
+  x_opencti_workflow_id: FieldOption;
 }
 
 const TASK_TYPE = 'Task';
@@ -210,7 +209,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     objectMarking: convertMarkings(taskData),
     objectAssignee: convertAssignees(taskData),
     objectParticipant: convertParticipants(taskData),
-    x_opencti_workflow_id: convertStatus(t_i18n, taskData) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, taskData) as FieldOption,
   };
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');

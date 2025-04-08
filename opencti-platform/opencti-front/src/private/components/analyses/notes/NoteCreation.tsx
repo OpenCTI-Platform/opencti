@@ -22,12 +22,11 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import type { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
-import { Option } from '../../common/form/ReferenceField';
 import SliderField from '../../../../components/fields/SliderField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
@@ -93,9 +92,9 @@ interface NoteAddInput {
   note_types: string[];
   confidence: number | undefined;
   likelihood?: number;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
   externalReferences: { value: string }[];
   file: File | undefined;
 }
@@ -111,8 +110,8 @@ interface NoteFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onClose?: () => void;
   inputValue?: string;
-  defaultCreatedBy?: Option;
-  defaultMarkingDefinitions?: Option[];
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   defaultConfidence?: number;
 }
 

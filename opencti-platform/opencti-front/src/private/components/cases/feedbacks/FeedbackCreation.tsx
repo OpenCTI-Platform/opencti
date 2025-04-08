@@ -8,11 +8,10 @@ import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import RatingField from '../../../../components/fields/RatingField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { Option } from '../../common/form/ReferenceField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -50,7 +49,7 @@ interface FormikFeedbackAddInput {
   rating: number | null
   objects: { value: string }[]
   file: File | undefined
-  objectLabel: Option[]
+  objectLabel: FieldOption[]
 }
 
 const FEEDBACK_TYPE = 'Feedback';

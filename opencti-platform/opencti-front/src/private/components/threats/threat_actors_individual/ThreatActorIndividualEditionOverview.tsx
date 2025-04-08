@@ -18,8 +18,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { Option } from '../../common/form/ReferenceField';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -132,12 +131,12 @@ interface ThreatActorIndividualEditionOverviewProps {
 
 interface ThreatActorIndividualEditionFormValues {
   message?: string;
-  references?: Option[];
-  createdBy: Option | undefined;
-  x_opencti_workflow_id: Option;
-  objectMarking?: Option[];
-  objectAssignee?: Option[];
-  killChainPhases?: Option[];
+  references?: FieldOption[];
+  createdBy: FieldOption | undefined;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
+  objectAssignee?: FieldOption[];
+  killChainPhases?: FieldOption[];
 }
 
 const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
@@ -215,7 +214,7 @@ ThreatActorIndividualEditionOverviewProps
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as unknown as Option).value;
+        finalValue = (value as unknown as FieldOption).value;
       }
       ThreatActorIndividualValidator.validateAt(name, { [name]: value })
         .then(() => {
@@ -238,11 +237,11 @@ ThreatActorIndividualEditionOverviewProps
   const initialValues = {
     name: threatActorIndividual.name,
     description: threatActorIndividual.description,
-    createdBy: convertCreatedBy(threatActorIndividual) as Option,
+    createdBy: convertCreatedBy(threatActorIndividual) as FieldOption,
     objectMarking: convertMarkings(threatActorIndividual),
     objectAssignee: convertAssignees(threatActorIndividual),
     killChainPhases: convertKillChainPhases(threatActorIndividual),
-    x_opencti_workflow_id: convertStatus(t_i18n, threatActorIndividual) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, threatActorIndividual) as FieldOption,
     confidence: threatActorIndividual.confidence,
     threat_actor_types: threatActorIndividual.threat_actor_types ?? [],
     references: [],

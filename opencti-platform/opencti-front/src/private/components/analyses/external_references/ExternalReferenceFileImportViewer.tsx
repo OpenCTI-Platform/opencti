@@ -19,7 +19,6 @@ import { FormikConfig } from 'formik/dist/types';
 import { FragmentRefs } from 'relay-runtime';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
-import { Option } from '@components/common/form/ReferenceField';
 import { CsvMapperFieldOption } from '@components/common/form/CsvMapperField';
 import { FileManagerAskJobImportMutation$variables } from '@components/common/files/__generated__/FileManagerAskJobImportMutation.graphql';
 import FileLine from '../../common/files/FileLine';
@@ -31,7 +30,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import { ExternalReferenceFileImportViewer_entity$data } from './__generated__/ExternalReferenceFileImportViewer_entity.graphql';
 import { FileLine_file$data } from '../../common/files/__generated__/FileLine_file.graphql';
 import { scopesConn } from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -108,7 +107,7 @@ ExternalReferenceFileImportViewerBaseProps
   const importConnsPerFormat = scopesConn(connectorsImport);
   const handleOpenImport = (file: FileLine_file$data | null | undefined) => setFileToImport(file);
   const handleCloseImport = () => setFileToImport(null);
-  const onSubmitImport: FormikConfig<{ connector_id: string, configuration: string, objectMarking: Option[] }>['onSubmit'] = (
+  const onSubmitImport: FormikConfig<{ connector_id: string, configuration: string, objectMarking: FieldOption[] }>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
   ) => {
@@ -241,7 +240,7 @@ ExternalReferenceFileImportViewerBaseProps
       <div>
         <Formik
           enableReinitialize={true}
-          initialValues={{ connector_id: '', configuration: '', objectMarking: [] as Option[] }}
+          initialValues={{ connector_id: '', configuration: '', objectMarking: [] as FieldOption[] }}
           validationSchema={importValidation(t_i18n, (selectedConnector?.configurations?.length ?? 0) > 0)}
           onSubmit={onSubmitImport}
           onReset={handleCloseImport}

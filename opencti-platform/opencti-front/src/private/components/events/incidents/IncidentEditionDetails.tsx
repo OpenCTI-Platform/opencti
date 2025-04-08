@@ -12,7 +12,6 @@ import CommitMessage from '../../common/form/CommitMessage';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { IncidentEditionDetailsFieldPatchMutation } from './__generated__/IncidentEditionDetailsFieldPatchMutation.graphql';
 import { IncidentEditionDetailsFocusMutation } from './__generated__/IncidentEditionDetailsFocusMutation.graphql';
-import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { parse } from '../../../../utils/Time';
@@ -20,6 +19,7 @@ import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
+import { FieldOption } from '../../../../utils/field';
 
 const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionDetailsFieldPatchMutation(
@@ -73,9 +73,9 @@ interface IncidentEditionDetailsProps {
 
 interface IncidentEditionDetailsFormValues {
   message?: string;
-  references?: Option[];
-  first_seen?: Option;
-  last_seen?: Option;
+  references?: FieldOption[];
+  first_seen?: FieldOption;
+  last_seen?: FieldOption;
 }
 const IncidentEditionDetails: FunctionComponent<
 IncidentEditionDetailsProps

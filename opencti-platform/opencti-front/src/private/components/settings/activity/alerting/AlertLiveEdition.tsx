@@ -13,11 +13,10 @@ import MarkdownField from '../../../../../components/fields/MarkdownField';
 import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
 import { convertNotifiers } from '../../../../../utils/edition';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import NotifierField from '../../../common/form/NotifierField';
-import { Option } from '../../../common/form/ReferenceField';
 import Filters from '../../../common/lists/Filters';
 import { AlertEditionQuery } from './__generated__/AlertEditionQuery.graphql';
 import { AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
@@ -133,7 +132,7 @@ const AlertLiveEdition: FunctionComponent<AlertLiveEditionProps> = ({
   };
   const handleSubmitField = (
     name: string,
-    value: Option | string | string[],
+    value: FieldOption | string | string[],
   ) => {
     return liveActivityTriggerValidation(t_i18n)
       .validateAt(name, { [name]: value })

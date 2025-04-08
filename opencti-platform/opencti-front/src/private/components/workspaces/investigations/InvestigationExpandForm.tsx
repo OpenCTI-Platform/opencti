@@ -7,7 +7,6 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { Option } from '@components/common/form/ReferenceField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import { InvestigationExpandFormTargetsDistributionFromQuery } from './__generated__/InvestigationExpandFormTargetsDistributionFromQuery.graphql';
@@ -17,6 +16,7 @@ import CheckboxesField from '../../../../components/CheckboxesField';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { GraphLink, GraphNode } from '../../../../components/graph/graph.types';
+import { FieldOption } from '../../../../utils/field';
 
 // The number of elements targeted by the given
 // entities ids, sorted by type of entity.
@@ -86,8 +86,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 type FormData = {
-  entity_types: Option[];
-  relationship_types: Option[];
+  entity_types: FieldOption[];
+  relationship_types: FieldOption[];
   reset_filters: boolean;
 };
 
@@ -132,8 +132,8 @@ const InvestigationExpandFormContent = ({
   );
 
   // List of items that are given to the Checkboxes component in the form.
-  const [targets, setTargets] = useState<Option[]>([]);
-  const [relationships, setRelationships] = useState<Option[]>([]);
+  const [targets, setTargets] = useState<FieldOption[]>([]);
+  const [relationships, setRelationships] = useState<FieldOption[]>([]);
 
   // Nodes and edges we have in our graph.
   // // Used to compute the difference between total count returned by

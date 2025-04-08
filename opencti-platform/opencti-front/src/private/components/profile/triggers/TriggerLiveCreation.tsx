@@ -23,11 +23,10 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { emptyFilterGroup, getDefaultFilterObject, serializeFilterGroupForBackend, stixFilters, useFilterDefinition } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
-import { Option } from '../../common/form/ReferenceField';
 import Filters from '../../common/lists/Filters';
 import { TriggerEventType, TriggerLiveCreationKnowledgeMutation, TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
@@ -197,7 +196,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   };
   const renderKnowledgeTrigger = (
     values: TriggerLiveAddInput,
-    setFieldValue: (key: string, value: (Option | string)[]) => void,
+    setFieldValue: (key: string, value: (FieldOption | string)[]) => void,
   ) => {
     return (
       <>

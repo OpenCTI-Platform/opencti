@@ -7,7 +7,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import { Option } from './ReferenceField';
+import { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -30,7 +30,7 @@ interface CountryFieldProps {
   id: string;
   name: string;
   label: string;
-  onChange?: (name: string, value: Option) => void;
+  onChange?: (name: string, value: FieldOption) => void;
   containerStyle?: Record<string, string | number>;
   helpertext?: string;
   required?: boolean;

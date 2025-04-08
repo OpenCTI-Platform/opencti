@@ -23,11 +23,10 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { Option } from '../../common/form/ReferenceField';
 import type { Theme } from '../../../../components/Theme';
 import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -82,11 +81,11 @@ interface ReportAddInput {
   confidence: number | undefined;
   report_types: string[];
   x_opencti_reliability: string | undefined
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
   objectAssignee: { value: string }[];
-  objectParticipant: Option[];
+  objectParticipant: FieldOption[];
   externalReferences: { value: string }[];
   file: File | undefined;
   authorized_members: {

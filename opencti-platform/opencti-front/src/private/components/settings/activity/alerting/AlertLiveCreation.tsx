@@ -21,12 +21,11 @@ import MarkdownField from '../../../../../components/fields/MarkdownField';
 import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
 import { handleErrorInForm } from '../../../../../relay/environment';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../../utils/store';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import NotifierField from '../../../common/form/NotifierField';
-import { Option } from '../../../common/form/ReferenceField';
 import Filters from '../../../common/lists/Filters';
 import { TriggersLinesPaginationQuery$variables } from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
@@ -91,8 +90,8 @@ export const liveActivityTriggerValidation = (t: (message: string) => string) =>
 interface TriggerActivityLiveAddInput {
   name: string;
   description: string;
-  notifiers: Option[];
-  recipients: Option[];
+  notifiers: FieldOption[];
+  recipients: FieldOption[];
 }
 
 interface TriggerLiveCreationProps {
@@ -162,7 +161,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     });
   };
 
-  const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: Option[]) => void) => {
+  const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: FieldOption[]) => void) => {
     return <>
       <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
         onChange={setFieldValue}

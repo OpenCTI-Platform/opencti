@@ -13,7 +13,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { WorkspaceTurnToContainerDialogMutation } from '@components/workspaces/__generated__/WorkspaceTurnToContainerDialogMutation.graphql';
-import { Option } from '@components/common/form/ReferenceField';
 import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
@@ -22,6 +21,7 @@ import { handleError } from '../../../relay/environment';
 import type { Theme } from '../../../components/Theme';
 import useSearchEntities, { EntityValue } from '../../../utils/filters/useSearchEntities';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { FieldOption } from '../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -48,7 +48,7 @@ interface ActionInputs {
   fieldType?: string;
   field?: string;
   inputValue?: string;
-  value?: Option;
+  value?: FieldOption;
 }
 
 interface StixContainer {

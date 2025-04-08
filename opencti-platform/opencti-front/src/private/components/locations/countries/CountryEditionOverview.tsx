@@ -14,12 +14,11 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { CountryEditionOverview_country$key } from './__generated__/CountryEditionOverview_country.graphql';
-import { Option } from '../../common/form/ReferenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import CountryDeletion from './CountryDeletion';
@@ -127,11 +126,11 @@ interface CountryEditionFormValues {
   name: string;
   description: string | null;
   confidence: number | undefined | null;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  x_opencti_workflow_id: Option;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
   message?: string;
-  references?: Option[];
+  references?: FieldOption[];
 }
 
 const CountryEditionOverviewComponent: FunctionComponent<
@@ -187,11 +186,11 @@ CountryEditionOverviewProps
       },
     });
   };
-  const handleSubmitField = (name: string, value: Option | string) => {
+  const handleSubmitField = (name: string, value: FieldOption | string) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       countryValidator
         .validateAt(name, { [name]: value })
@@ -211,9 +210,9 @@ CountryEditionOverviewProps
     description: country.description ?? '',
     references: [],
     confidence: country.confidence,
-    createdBy: convertCreatedBy(country) as Option,
+    createdBy: convertCreatedBy(country) as FieldOption,
     objectMarking: convertMarkings(country),
-    x_opencti_workflow_id: convertStatus(t_i18n, country) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, country) as FieldOption,
   };
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
