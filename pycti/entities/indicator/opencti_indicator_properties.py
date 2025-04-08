@@ -95,6 +95,10 @@ INDICATOR_PROPERTIES = """
     x_opencti_observable_values {
         type
         value
+        hashes {
+            algorithm
+            hash
+        }
     }
     x_mitre_platforms
     observables {
@@ -227,6 +231,10 @@ INDICATOR_PROPERTIES_WITH_FILES = """
     x_opencti_observable_values {
         type
         value
+        hashes {
+            algorithm
+            hash
+        }
     }
     x_mitre_platforms
     observables {
