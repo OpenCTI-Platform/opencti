@@ -6,6 +6,7 @@ import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabula
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../../../src/modules/notification/notification-types';
 import { TYPE_FILTER, USER_ID_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { BackgroundTaskScope } from '../../../src/generated/graphql';
 
 const filterEntityType = (entityType: string) => {
   return JSON.stringify({
@@ -55,7 +56,7 @@ describe('Background task validity check (checkActionValidity)', () => {
   ]);
 
   describe('Scope SETTINGS', () => {
-    const scope = 'SETTINGS';
+    const scope = BackgroundTaskScope.Settings;
 
     it('should throw an error if the user has no capa SETTINGS_SETLABELS', async () => {
       const user = userParticipate;
@@ -70,7 +71,7 @@ describe('Background task validity check (checkActionValidity)', () => {
   });
 
   describe('Scope KNOWLEDGE', () => {
-    const scope = 'KNOWLEDGE';
+    const scope = BackgroundTaskScope.Knowledge;
 
     it('should throw an error if the user has no capa KNOWLEDGE_UPDATE', async () => {
       const user = userParticipate;
@@ -124,7 +125,7 @@ describe('Background task validity check (checkActionValidity)', () => {
   });
 
   describe('Scope USER', () => {
-    const scope = 'USER';
+    const scope = BackgroundTaskScope.User;
 
     it('should throw an error if task QUERY and filter is not Notifications', async () => {
       const user = userUpdate;
@@ -147,6 +148,20 @@ describe('Background task validity check (checkActionValidity)', () => {
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
+      }).rejects.toThrowError('You are not allowed to do this.');
+      const input2 = {
+        actions: [{ type: ACTION_TYPE_ADD }],
+        filters: JSON.stringify({
+          mode: 'and',
+          filters: [
+            { key: TYPE_FILTER, values: [ENTITY_TYPE_NOTIFICATION] },
+            { key: USER_ID_FILTER, values: ['fake_user_id'] },
+          ],
+          filterGroups: []
+        }),
+      };
+      await expect(async () => {
+        await checkActionValidity(testContext, user, input2, scope, type);
       }).rejects.toThrowError('You are not allowed to do this.');
     });
 
@@ -177,7 +192,7 @@ describe('Background task validity check (checkActionValidity)', () => {
   });
 
   describe('Scope IMPORT', () => {
-    const scope = 'IMPORT';
+    const scope = BackgroundTaskScope.Import;
 
     it('should throw an error if the user has no capa KNOWLEDGE_KNASKIMPORT', async () => {
       const user = userParticipate;
@@ -203,7 +218,7 @@ describe('Background task validity check (checkActionValidity)', () => {
   });
 
   describe('Scope DASHBOARD', () => {
-    const scope = 'DASHBOARD';
+    const scope = BackgroundTaskScope.Dashboard;
 
     it('should throw an error if the user has no capa EXPLORE_EXUPDATE_EXDELETE', async () => {
       const user = userParticipate;
@@ -257,7 +272,7 @@ describe('Background task validity check (checkActionValidity)', () => {
   });
 
   describe('Scope INVESTIGATION', () => {
-    const scope = 'INVESTIGATION';
+    const scope = BackgroundTaskScope.Investigation;
 
     it('should throw an error if the user has no capa KNOWLEDGE_KNGETEXPORT_KNASKEXPORT', async () => {
       const user = userParticipate;
@@ -311,7 +326,7 @@ describe('Background task validity check (checkActionValidity)', () => {
   });
 
   describe('Scope PUBLIC_DASHBOARD', () => {
-    const scope = 'PUBLIC_DASHBOARD';
+    const scope = BackgroundTaskScope.PublicDashboard;
 
     it('should throw an error if the user has no capa EXPLORE_EXUPDATE_PUBLISH', async () => {
       const user = userParticipate;
