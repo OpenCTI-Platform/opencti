@@ -117,11 +117,11 @@ import {
   INPUT_OBJECTS,
   INPUT_PARTICIPANT
 } from '../schema/general';
-import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
+import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -157,10 +157,6 @@ export const assertType = (type: string, instanceType: string) => {
     throw UnsupportedError('Incompatible type', { instanceType, type });
   }
 };
-const isValidStix = (data: S.StixObject): boolean => {
-  // TODO @JRI @SAM
-  return !R.isEmpty(data);
-};
 export const cleanObject = <T>(data: T): T => {
   const obj: T = { ...data };
   // eslint-disable-next-line no-restricted-syntax
@@ -190,6 +186,11 @@ export const convertToStixDate = (date: Date | string | undefined): S.StixDate =
   }
   return date;
 };
+const isValidStix = (data: S.StixObject): boolean => {
+  // TODO @JRI @SAM
+  return !R.isEmpty(data);
+};
+
 export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => {
   const objectRefs = instance[INPUT_OBJECTS] ?? [];
   return objectRefs.filter((r) => {
