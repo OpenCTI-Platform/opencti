@@ -267,12 +267,6 @@ const SCO_DEFAULT_FIELD = [
   { type: 'X509-Certificate', field: 'hashes_MD5' },
 ];
 
-const stixCyberObservableValidation = () => Yup.object().shape({
-  x_opencti_score: Yup.number().nullable(),
-  x_opencti_description: Yup.string().nullable(),
-  createIndicator: Yup.boolean(),
-});
-
 const StixCyberObservableCreation = ({
   contextual,
   open,
@@ -606,6 +600,15 @@ const StixCyberObservableCreation = ({
                 initialValues[attribute.value] = '';
               }
             }
+
+            const stixCyberObservableValidation = () => Yup.object().shape({
+              x_opencti_score: Yup.number()
+                .nullable()
+                .min(0, t_i18n('The value must be greater than or equal to 0'))
+                .max(100, t_i18n('The value must be less than or equal to 100')),
+              x_opencti_description: Yup.string().nullable(),
+              createIndicator: Yup.boolean(),
+            });
 
             const stixCyberObservableValidationFinal = Yup.object().shape({
               ...stixCyberObservableValidation,
