@@ -13,7 +13,7 @@ const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Array<SMO.
     const data: SMO.StixInternalKillChainPhase = {
       kill_chain_name: k.kill_chain_name,
       phase_name: k.phase_name,
-      x_opencti_order: k.x_opencti_order, // TODO external_id and hashes ?
+      x_opencti_order: k.x_opencti_order,
     };
     return cleanObject(data);
   });
@@ -25,6 +25,8 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
       source_name: e.source_name,
       description: e.description,
       url: e.url,
+      hash: e.hashes, // key is "hash" in client python but should be "hashes"
+      external_id: e.external_id,
     };
     return cleanObject(data);
   });
@@ -51,9 +53,9 @@ const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObj
     revoked: instance.revoked,
     confidence: instance.confidence,
     // lang: instance.lang,
-    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value), // memo : x_opencti_labels for SCO
     object_marking_refs: (instance[INPUT_MARKINGS] ?? []).map((m) => m.standard_id),
-    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id, // memo: x_opencti_created_by_ref for SCO
     external_references: buildExternalReferences(instance),
   };
 };
@@ -75,5 +77,6 @@ export const convertMalwareToStix2 = (instance: StoreEntity, type: string): SDO.
     capabilities: instance.capabilities,
     operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
     sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
+    samples: (instance[INPUT_SAMPLE] ?? []).map((m) => { return { id: m.id, }; }),
   };
 };

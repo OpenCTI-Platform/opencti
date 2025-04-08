@@ -3,8 +3,8 @@ export interface StixInternalExternalReference {
   source_name: string;
   description: string;
   url: string;
-  // external_id: string; ?
-  // hashes: e.hashes, ?
+  hash: object;
+  external_id: string;
 }
 
 export interface StixInternalKillChainPhase {
