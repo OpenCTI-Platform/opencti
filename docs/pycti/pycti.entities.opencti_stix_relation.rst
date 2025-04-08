@@ -3,6 +3,7 @@
 ========================================
 
 .. automodule:: pycti.entities.opencti_stix_relation
+   :members:
 
    .. contents::
       :local:

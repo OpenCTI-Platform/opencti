@@ -3,6 +3,7 @@
 =========================================
 
 .. automodule:: pycti.entities.opencti_attack_pattern
+   :members:
 
    .. contents::
       :local:

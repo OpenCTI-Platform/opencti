@@ -40,6 +40,7 @@ SPEC_VERSION = "2.1"
 ERROR_TYPE_LOCK = "LOCK_ERROR"
 ERROR_TYPE_MISSING_REFERENCE = "MISSING_REFERENCE_ERROR"
 ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
+ERROR_TYPE_DRAFT_LOCK = "DRAFT_LOCKED"
 ERROR_TYPE_TIMEOUT = "Request timed out"
 
 # Extensions
@@ -2407,18 +2408,77 @@ class OpenCTIStix2:
 
         return bundle
 
+    def apply_patch_files(self, item):
+        field_patch = self.opencti.get_attribute_in_extension(
+            "opencti_field_patch", item
+        )
+        if field_patch is None:
+            field_patch = item["opencti_field_patch"]
+        field_patch_files = next(
+            (op for op in field_patch if op["key"] == "x_opencti_files"), None
+        )
+        do_add_file = self.opencti.stix_domain_object.add_file
+        if StixCyberObservableTypes.has_value(item["type"]):
+            do_add_file = self.opencti.stix_cyber_observable.add_file
+        elif item["type"] == "external-reference":
+            do_add_file = self.opencti.external_reference.add_file
+        if field_patch_files is not None:
+            for file in field_patch_files["value"]:
+                if "data" in file:
+                    do_add_file(
+                        id=item["id"],
+                        file_name=file["name"],
+                        version=file.get("version", None),
+                        data=base64.b64decode(file["data"]),
+                        fileMarkings=file.get("object_marking_refs", None),
+                        mime_type=file.get("mime_type", None),
+                        no_trigger_import=file.get("no_trigger_import", False),
+                    )
+
     def apply_patch(self, item):
-        input = item["opencti_field_patch"]
-        if item["type"] == "relationship":
-            self.opencti.stix_core_relationship.update_field(id=item["id"], input=input)
-        elif item["type"] == "sighting":
-            self.opencti.stix_sighting_relationship.update_field(
-                id=item["id"], input=input
-            )
-        elif StixCyberObservableTypes.has_value(item["type"]):
-            self.opencti.stix_cyber_observable.update_field(id=item["id"], input=input)
+        field_patch = self.opencti.get_attribute_in_extension(
+            "opencti_field_patch", item
+        )
+        if field_patch is None:
+            field_patch = item["opencti_field_patch"]
+        field_patch_without_files = [
+            op for op in field_patch if op["key"] != "x_opencti_files"
+        ]
+        if len(field_patch_without_files) > 0:
+            if item["type"] == "relationship":
+                self.opencti.stix_core_relationship.update_field(
+                    id=item["id"], input=field_patch_without_files
+                )
+            elif item["type"] == "sighting":
+                self.opencti.stix_sighting_relationship.update_field(
+                    id=item["id"], input=field_patch_without_files
+                )
+            elif StixCyberObservableTypes.has_value(item["type"]):
+                self.opencti.stix_cyber_observable.update_field(
+                    id=item["id"], input=field_patch_without_files
+                )
+            elif item["type"] == "external-reference":
+                self.opencti.external_reference.update_field(
+                    id=item["id"], input=field_patch_without_files
+                )
+            else:
+                self.opencti.stix_domain_object.update_field(
+                    id=item["id"], input=field_patch_without_files
+                )
+        self.apply_patch_files(item)
+
+    def apply_opencti_operation(self, item, operation):
+        if operation == "delete":
+            delete_id = item["id"]
+            self.opencti.stix.delete(id=delete_id)
+        elif operation == "merge":
+            target_id = item["merge_target_id"]
+            source_ids = item["merge_source_ids"]
+            self.opencti.stix.merge(id=target_id, object_ids=source_ids)
+        elif operation == "patch":
+            self.apply_patch(item=item)
         else:
-            self.opencti.stix_domain_object.update_field(id=item["id"], input=input)
+            raise ValueError("Not supported opencti_operation")
 
     def import_item(
         self,
@@ -2431,18 +2491,13 @@ class OpenCTIStix2:
         worker_logger = self.opencti.logger_class("worker")
         try:
             self.opencti.set_retry_number(processing_count)
-            if "opencti_operation" in item:
-                if item["opencti_operation"] == "delete":
-                    delete_id = item["id"]
-                    self.opencti.stix.delete(id=delete_id)
-                elif item["opencti_operation"] == "merge":
-                    target_id = item["merge_target_id"]
-                    source_ids = item["merge_source_ids"]
-                    self.opencti.stix.merge(id=target_id, object_ids=source_ids)
-                elif item["opencti_operation"] == "patch":
-                    self.apply_patch(item=item)
-                else:
-                    raise ValueError("Not supported opencti_operation")
+            opencti_operation = self.opencti.get_attribute_in_extension(
+                "opencti_operation", item
+            )
+            if opencti_operation is not None:
+                self.apply_opencti_operation(item, opencti_operation)
+            elif "opencti_operation" in item:
+                self.apply_opencti_operation(item, item["opencti_operation"])
             elif item["type"] == "relationship":
                 # Import relationship
                 self.import_relationship(item, update, types)
@@ -2621,6 +2676,19 @@ class OpenCTIStix2:
                 return self.import_item(
                     item, update, types, processing_count + 1, work_id
                 )
+            # A draft lock error occurs
+            elif ERROR_TYPE_DRAFT_LOCK in error_msg:
+                bundles_technical_error_counter.add(1)
+                if work_id is not None:
+                    self.opencti.work.api.set_draft_id("")
+                    self.opencti.work.report_expectation(
+                        work_id,
+                        {
+                            "error": error,
+                            "source": "Draft in read only",
+                        },
+                    )
+                return False
             # Platform does not know what to do and raises an error:
             # That also works for missing reference with too much execution
             else:
