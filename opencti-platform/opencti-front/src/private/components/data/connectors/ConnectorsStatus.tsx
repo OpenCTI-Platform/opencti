@@ -6,7 +6,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
-import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, PlaylistRemoveOutlined, SettingsOutlined } from '@mui/icons-material';
+import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -23,7 +23,6 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import ManagedConnectorCreation from '@components/data/connectors/ManagedConnectorCreation';
-import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -143,7 +142,10 @@ const connectorsStatusFragment = graphql`
       connector_type
       connector_scope
       is_managed
-      manager_id
+      manager {
+        id
+        connector_manager_contracts
+      }
       manager_current_status
       manager_requested_status
       manager_contract_image
@@ -202,7 +204,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const [sortBy, setSortBy] = useState<string>('name');
   const [orderAsc, setOrderAsc] = useState<boolean>(true);
   const [connectorIdToReset, setConnectorIdToReset] = useState<string>();
-  const [connectorToUpdate, setConnectorToUpdate] = useState<ConnectorsStatus_data$data['connectors'][0]>();
   const [connectorMessages, setConnectorMessages] = useState<string | number | null | undefined>();
   const [resetting, setResetting] = useState<boolean>(false);
 
@@ -317,8 +318,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
 
   const [manager, setManager] = useState<ConnectorsStatus_data$data['connectorManagers'][0]>();
 
-  const managerForConnectorToUpdate = connectorManagers.find(({ id }) => id === connectorToUpdate?.manager_id);
-
   const { isSensitive } = useSensitiveModifications('connector_reset');
   const { isFeatureEnable } = useHelper();
   const isComposerEnable = isFeatureEnable('COMPOSER');
@@ -379,7 +378,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             <div
               ref={(r) => setRef(r)}
               style={{
-                height: 200,
+                height: 100,
               }}
             >
               {ref && (
@@ -506,18 +505,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                   secondaryAction={
                     <Security needs={[MODULES_MODMANAGE]}>
                       <>
-                        {(connector.is_managed && isComposerEnable) && <Tooltip title={t_i18n('Update connector')}>
-                          <IconButton
-                            onClick={() => {
-                              setConnectorToUpdate(connector);
-                            }}
-                            aria-haspopup="true"
-                            color="primary"
-                            size="large"
-                          >
-                            <SettingsOutlined />
-                          </IconButton>
-                        </Tooltip>}
                         {!isSensitive && (
                           <Tooltip title={t_i18n('Reset the connector state')}>
                             <IconButton
@@ -611,13 +598,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             })}
           </List>
         </Paper>
-        {(connectorToUpdate && managerForConnectorToUpdate && isComposerEnable) && (
-          <ManagedConnectorEdition
-            connector={connectorToUpdate}
-            onClose={() => setConnectorToUpdate(undefined)}
-            manager={managerForConnectorToUpdate}
-          />
-        )}
       </div>
     </>
   );

@@ -2037,11 +2037,13 @@ type Connector implements BasicObject & InternalObject {
   config: ConnectorConfig
   works(status: String): [Work]
   is_managed: Boolean
-  manager_id: ID
+  manager: ConnectorManager
   manager_current_status: String
   manager_requested_status: String
   manager_contract_image: String
   manager_contract_configuration: [ManagerContractConfiguration!]
+  manager_connector_logs: [String!]
+  manager_contract_hash: String
   ## Built in Connector
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
@@ -2058,7 +2060,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   connector_user: User
   connector_state_timestamp: DateTime
   ## Manager
-  manager_id: String!
+  manager: ConnectorManager
   manager_contract_image: String!
   manager_current_status: String
   manager_requested_status: String!
