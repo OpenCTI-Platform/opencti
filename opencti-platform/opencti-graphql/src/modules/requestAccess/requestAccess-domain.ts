@@ -98,7 +98,12 @@ export const isRequestAccessEnabled = async (context: AuthContext, user: AuthUse
   return result.enabled === true;
 };
 
-export const checkRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
+const checkRequestAccessEnabled = async (context: AuthContext, user: AuthUser) => {
+  const draftContext = getDraftContext(context, user);
+  if (draftContext) {
+    // If request access get allowed in draft, remove also condition in middleware near isRequestAccessConfigured
+    throw ValidationError('Request access is not available in draft mode');
+  }
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS) as BasicStoreSettings;
   const rfiEntitySettings = await getRfiEntitySettings(context, user);
   const result = verifyRequestAccessEnabled(settings, rfiEntitySettings);
@@ -217,6 +222,11 @@ export const computeAuthorizedMembersForRequestAccess = async (context: AuthCont
 };
 
 export const isUserCanActionRequestAccess = async (context: AuthContext, user: AuthUser, rfi: BasicStoreEntityCaseRfi) => {
+  if (getDraftContext(context, user)) {
+    // Accept and Decline button on RFI should be hidden in draft context.
+    return false;
+  }
+
   // User need to have edit capability on the RFI
   const userAccessRight = getUserAccessRight(user, rfi);
   const isRfiRestricted = userAccessRight === MEMBER_ACCESS_RIGHT_ADMIN || userAccessRight === MEMBER_ACCESS_RIGHT_EDIT;
@@ -298,7 +308,6 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
 
   const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
 
-  const { approval_admin } = input;
   let approved_workflow_id;
   let declined_workflow_id;
   if (rfiEntitySettings.request_access_workflow) {
@@ -324,6 +333,10 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
     }
   }
 
+  let approval_admin: string [] = [];
+  if (input.approval_admin) {
+    approval_admin = input.approval_admin as string [];
+  }
   const newConfiguration = {
     approval_admin,
     approved_workflow_id,
@@ -332,33 +345,37 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
   const editInput: EditInput[] = [
     { key: 'request_access_workflow', value: [newConfiguration] }
   ];
-  logApp.debug('[OPENCTI-MODULE][Request access] - Update with', { editInput });
   const updated = await entitySettingEditField(context, user, rfiEntitySettings.id, editInput);
   logApp.debug('[OPENCTI-MODULE][Request access] - Update result', { updated });
 
-  const groupData: BasicGroupEntity = await findGroupById(context, user, approval_admin) as unknown as BasicGroupEntity;
-
-  const approvalAdmin: RequestAccessMember = {
-    id: groupData.id,
-    name: groupData.name,
-  };
-
+  const approvalAdminsMembers: RequestAccessMember[] = [];
+  if (approval_admin.length > 0) {
+    for (let i = 0; i < approval_admin.length; i += 1) {
+      const approvalAdminId = approval_admin[i];
+      if (approvalAdminId) {
+        const groupData: BasicGroupEntity = await findGroupById(context, user, approvalAdminId) as unknown as BasicGroupEntity;
+        if (groupData) {
+          approvalAdminsMembers.push({
+            id: groupData.id,
+            name: groupData.name,
+          });
+        }
+      }
+    }
+  }
   const requestAccessConfigResult: RequestAccessConfiguration = {
     declined_status: declinedStatusData,
     approved_status: approvedStatusData,
-    approval_admin: [approvalAdmin],
+    approval_admin: approvalAdminsMembers,
     id: REQUEST_ACCESS_CONFIGURATION_ID
   };
+  logApp.debug('[OPENCTI-MODULE][Request access] - requestAccessConfigResult', { requestAccessConfigResult });
   return requestAccessConfigResult;
 };
 
 export const addRequestAccess = async (context: AuthContext, user: AuthUser, input: RequestAccessAddInput) => {
   logApp.debug('[OPENCTI-MODULE][Request access] - addRequestAccess', { input });
-  await checkRequestAccessEnabled(context, user,);
-  const draftContext = getDraftContext(context, user);
-  if (draftContext) {
-    throw ValidationError('You cannot request access to an entity when in draft mode');
-  }
+  await checkRequestAccessEnabled(context, user);
 
   const requestedEntities = input.request_access_entities;
   const organizationId = input.request_access_members[0];
@@ -473,6 +490,7 @@ export const notifyRequestAccessResult = async (
 };
 
 export const approveRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
+  await checkRequestAccessEnabled(context, user);
   logApp.debug('[OPENCTI-MODULE][Request Access] Approving request access:', { id });
   const entityCaseRfi = await internalLoadById<BasicStoreEntityCaseRfi>(context, user, id);
   const isUserCanAction = await isUserCanActionRequestAccess(context, user, entityCaseRfi);
@@ -526,6 +544,7 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
 };
 
 export const declineRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
+  await checkRequestAccessEnabled(context, user);
   logApp.debug(`[OPENCTI-MODULE][Request Access] Reject for RFI ${id}`);
   // region Check validity
   const { action, x_opencti_workflow_id } = await checkRequestActionAndGetWorkflow(context, user, id, ActionStatus.DECLINED);

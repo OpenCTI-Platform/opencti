@@ -98,9 +98,9 @@ const RequestAccessConfigurationEdition: FunctionComponent<RequestAccessWorkflow
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: RequestAccessConfigureInput = {
-      approved_status_id: values.acceptedTemplate.value,
-      declined_status_id: values.declinedTemplate.value,
-      approval_admin: [values.approvalAdmin.value],
+      approved_status_id: values.acceptedTemplate ? values.acceptedTemplate.value : undefined,
+      declined_status_id: values.declinedTemplate ? values.declinedTemplate.value : undefined,
+      approval_admin: [values.approvalAdmin ? values.approvalAdmin.value : undefined],
     };
     commit({
       variables: {
