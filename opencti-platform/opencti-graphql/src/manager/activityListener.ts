@@ -29,6 +29,8 @@ import { REDACTED_INFORMATION } from '../database/utils';
 
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
+const REDACTED_SENSITIVE_FIELDS = [...LOGS_SENSITIVE_FIELDS, 'authentication_value'];
+const UNSUPPORTED_INTPUT_PROPS = ['_id', 'sort', 'i_attributes', 'i_relation']; // add 'objectOrganization' ?
 export const EVENT_SCOPE_VALUES = ['create', 'update', 'delete', 'read', 'search', 'enrich', 'download', 'import', 'export', 'login', 'logout', 'unauthorized', 'disseminate'];
 export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command'];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
@@ -53,7 +55,7 @@ const initActivityManager = () => {
     while (stack.length > 0) {
       const currentObj = stack.pop() as any;
       Object.keys(currentObj).forEach((key) => {
-        if (LOGS_SENSITIVE_FIELDS.includes(key)) {
+        if (REDACTED_SENSITIVE_FIELDS.includes(key)) {
           currentObj[key] = REDACTED_INFORMATION;
         }
         // Need special case to clean inputs
@@ -70,6 +72,12 @@ const initActivityManager = () => {
           currentObj[key] = preparedElements;
         }
         if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
+          if (key === 'input') {
+            // remove unsupported props in input like sort, _id that cause errors for old databases.
+            UNSUPPORTED_INTPUT_PROPS.forEach((prop) => {
+              delete currentObj[key][prop];
+            });
+          }
           stack.push(currentObj[key]);
         }
       });
