@@ -4,9 +4,9 @@ import Button from '@mui/material/Button';
 import { Field, Form, Formik } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
+import Tooltip from '@mui/material/Tooltip';
 import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
-import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -19,6 +19,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -60,6 +61,11 @@ const useStyles = makeStyles((theme) => ({
     lineHeight: 1,
     fontSize: 12,
     verticalAlign: 'middle',
+    textOverflow: 'ellipsis',
+    maxWidth: 180,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    padding: 8,
   },
   relationCreate: {
     position: 'relative',
@@ -122,18 +128,6 @@ const StixSightingRelationshipCreationForm = ({
   const isMultipleFrom = fromEntities.length > 1;
   const isMultipleTo = toEntities.length > 1;
 
-  const defaultName = (entity) => (entity ? truncate(
-    // eslint-disable-next-line no-nested-ternary
-    (entity.parent_types.includes('Stix-Cyber-Observable')
-      ? entity.observable_value
-      : entity.entity_type === 'stix_relation'
-        ? `${entity.from.name} ${String.fromCharCode(8594)} ${entity.to.name}`
-        : entity.name),
-    20,
-  )
-    : undefined
-  );
-
   const initialValues = useDefaultValues(
     STIX_SIGHTING_TYPE,
     {
@@ -190,11 +184,17 @@ const StixSightingRelationshipCreationForm = ({
                   </div>
                 </div>
                 <div className={classes.content}>
-                  <span className={classes.name}>
-                    {isMultipleFrom
-                      ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                      : (defaultName(fromEntity))}
-                  </span>
+                  {isMultipleFrom ? (
+                    <span className={classes.name}>
+                      <em>{t_i18n('Multiple entities selected')}</em>
+                    </span>
+                  ) : (
+                    <Tooltip title={getMainRepresentative(fromEntity)}>
+                      <span className={classes.name}>
+                        {getMainRepresentative(fromEntity)}
+                      </span>
+                    </Tooltip>
+                  )}
                 </div>
               </div>
               <div className={classes.middle} style={{ paddingTop: 25 }}>
@@ -239,11 +239,17 @@ const StixSightingRelationshipCreationForm = ({
                   </div>
                 </div>
                 <div className={classes.content}>
-                  <span className={classes.name}>
-                    {isMultipleTo
-                      ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                      : (defaultName(toEntity))}
-                  </span>
+                  {isMultipleTo ? (
+                    <span className={classes.name}>
+                      <em>{t_i18n('Multiple entities selected')}</em>
+                    </span>
+                  ) : (
+                    <Tooltip title={getMainRepresentative(toEntity)}>
+                      <span className={classes.name}>
+                        {getMainRepresentative(toEntity)}
+                      </span>
+                    </Tooltip>
+                  )}
                 </div>
 
               </div>
