@@ -130,7 +130,7 @@ describe('Indicator resolver standard behavior', () => {
         x_opencti_score: 142,
       },
     };
-    const indicator = await queryAsAdminWithSuccess({
+    const indicator = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: INDICATOR_TO_CREATE,
     });
