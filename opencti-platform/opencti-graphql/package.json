@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.5.10",
+  "version": "6.5.11",
   "main": "src/back.js",
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -112,7 +112,7 @@
     "graphql-rate-limit-directive": "2.0.6",
     "graphql-redis-subscriptions": "2.7.0",
     "graphql-relay": "0.10.2",
-    "graphql-scalars": "1.24.1",
+    "graphql-scalars": "1.24.2",
     "graphql-subscriptions": "2.0.0",
     "graphql-upload": "17.0.0",
     "graphql-ws": "5.16.2",

@@ -54,7 +54,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
     float: 'left',
   },
   button: {
-    float: 'right',
+    float: 'left',
+    marginTop: theme.spacing(2),
     backgroundColor: theme.palette.error.main,
     borderColor: theme.palette.error.main,
     color: theme.palette.common.white,

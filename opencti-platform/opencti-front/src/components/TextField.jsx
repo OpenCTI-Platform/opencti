@@ -96,7 +96,7 @@ const TextField = (props) => {
           startAdornment,
           endAdornment: askAi && (
             <TextFieldAskAI
-              currentValue={value}
+              currentValue={value ?? ''}
               setFieldValue={(val) => {
                 setFieldValue(name, val);
                 if (typeof onSubmit === 'function') {

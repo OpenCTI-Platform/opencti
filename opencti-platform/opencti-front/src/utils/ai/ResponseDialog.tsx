@@ -130,7 +130,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                   input: {
                     endAdornment: (
                       <TextFieldAskAI
-                        currentValue={content}
+                        currentValue={content ?? ''}
                         setFieldValue={(val) => {
                           setContent(val);
                         }}
