@@ -36,3 +36,6 @@ The platform administrator can promote/demote an organization admin through its 
 !!! info "Organization admin rights"
 
     The "Organization admin" has restricted access to Settings. They can only manage the members of the organizations for which they have been promoted as "admins".
+
+
+[Request for access on knowledge restricted by organization segregation](../request-access)
