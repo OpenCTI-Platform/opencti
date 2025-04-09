@@ -34,7 +34,6 @@ import {
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_VALUES,
-  objects,
   RELATION_GRANTED_TO,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
@@ -121,7 +120,7 @@ import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
-import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
+import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -151,40 +150,6 @@ export const convertTypeToStixType = (type: string): string => {
     return 'threat-actor';
   }
   return type.toLowerCase();
-};
-export const assertType = (type: string, instanceType: string) => {
-  if (instanceType !== type) {
-    throw UnsupportedError('Incompatible type', { instanceType, type });
-  }
-};
-export const cleanObject = <T>(data: T): T => {
-  const obj: T = { ...data };
-  // eslint-disable-next-line no-restricted-syntax
-  for (const key in data) {
-    // cleanup empty keys except object_refs
-    if (key !== objects.stixName && isEmptyField(obj[key])) {
-      delete obj[key];
-    }
-  }
-  return obj;
-};
-export const convertToStixDate = (date: Date | string | undefined): S.StixDate => {
-  if (date === undefined) {
-    return undefined;
-  }
-  // date type from graphql
-  if (date instanceof Date) {
-    const time = date.getTime();
-    if (time === FROM_START || time === UNTIL_END) {
-      return undefined;
-    }
-    return date.toISOString();
-  }
-  // date string from the database
-  if (date === FROM_START_STR || date === UNTIL_END_STR) {
-    return undefined;
-  }
-  return date;
 };
 const isValidStix = (data: S.StixObject): boolean => {
   // TODO @JRI @SAM
