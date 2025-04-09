@@ -1,9 +1,10 @@
 import moment from 'moment';
 import { getObservableValuesFromPattern } from './indicator-domain';
-import { buildKillChainPhases, buildMITREExtensions, buildStixDomain, cleanObject, convertToStixDate } from '../../database/stix-2-1-converter';
+import { buildKillChainPhases, buildMITREExtensions, buildStixDomain } from '../../database/stix-2-1-converter';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixIndicator, StoreEntityIndicator } from './indicator-types';
 import { isNotEmptyField } from '../../database/utils';
+import { cleanObject, convertToStixDate } from '../../database/stix-converter-utils';
 
 const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator => {
   const indicator = buildStixDomain(instance);
