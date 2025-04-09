@@ -2750,17 +2750,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@date-io/date-fns@npm:3.2.0":
-  version: 3.2.0
-  resolution: "@date-io/date-fns@npm:3.2.0"
+"@date-io/date-fns@npm:3.2.1":
+  version: 3.2.1
+  resolution: "@date-io/date-fns@npm:3.2.1"
   dependencies:
     "@date-io/core": "npm:^3.2.0"
   peerDependencies:
-    date-fns: ^3.2.0
+    date-fns: ^3.2.0 || ^4.1.0
   peerDependenciesMeta:
     date-fns:
       optional: true
-  checksum: 10/a1d49b5b70357684cd36cec67887c84b0ecefa298c536f62750e2ffc18027aea86846ae7de8ed3da59a195ffb2ece4cc162061512ed147464769d000a5694465
+  checksum: 10/60d82d64bfdd91c6b8e732f7d849f2d6d1d24cce4a23476a800a9f132286ce99261d50d953ae7fef442d3b4969a8d32be6f29e695d445e037fbd3a3be06e20a6
   languageName: node
   linkType: hard
 
@@ -17385,7 +17385,7 @@ __metadata:
     "@analytics/google-analytics": "npm:1.1.0"
     "@ckeditor/ckeditor5-react": "npm:9.5.0"
     "@date-fns/upgrade": "npm:1.0.3"
-    "@date-io/date-fns": "npm:3.2.0"
+    "@date-io/date-fns": "npm:3.2.1"
     "@fontsource/geologica": "npm:5.2.5"
     "@fontsource/ibm-plex-sans": "npm:5.2.5"
     "@graphiql/toolkit": "npm:0.11.1"
