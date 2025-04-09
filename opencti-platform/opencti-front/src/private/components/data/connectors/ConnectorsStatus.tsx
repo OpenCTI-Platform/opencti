@@ -368,7 +368,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             </>
           </Typography>
           <div className="clearfix" />
-          <Grid container>
+          <Grid spacing={3} container>
             {connectorManagers.map((m, id) => (
               <Grid size={3} key={`${m.name}-${id}`}>
                 <Card variant="outlined">
