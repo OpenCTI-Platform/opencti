@@ -70,6 +70,6 @@ When enabling clustering, the number of nodes is displayed in Settings > Paramet
 
 ### Managers and schedulers
 
-Also, since some managers like the rule engine, the task manager and the notification manager can take some resources in the OpenCTI NodeJS process, it is highly recommended to disable them in the frontend cluster. OpenCTI automatically handle the distribution and the launching of the engines across all nodes in the cluster except where they are explicitly [disabled in the configuration](configuration.md#schedules-engines).
+Also, since some managers like the rule engine, the task manager and the notification manager can take some resources in the OpenCTI NodeJS process, it is highly recommended to disable them in the frontend cluster. OpenCTI automatically handle the distribution and the launching of the engines across all nodes in the cluster except where they are explicitly [disabled in the configuration](configuration.md#engines-schedules-managers).
 
 ![Managers](assets/managers.png)

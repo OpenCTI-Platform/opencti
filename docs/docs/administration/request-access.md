@@ -4,7 +4,7 @@
 
     Platform segregation by organization is available under the "OpenCTI Enterprise Edition" license. Please read the [dedicated page](enterprise.md) to have all the information.
 
-Knowledge that exist in the platform can be shared to one organization but not another: some time existing knowledge is hidden to users because it's restricted to another organization than the user's one. See [organization segregation](../organization-segregation) to learn about organization sharing.
+Knowledge that exist in the platform can be shared to one organization but not another: some time existing knowledge is hidden to users because it's restricted to another organization than the user's one. See [organization segregation](organization-segregation.md) to learn about organization sharing.
 
 When users creates knowledge that already exists in the platform but is not visible for any restrictions reasons, a generic error message `Restricted entity already exists` is displayed.
 
@@ -24,11 +24,11 @@ Configure the "Specific workflow for request access:
 
 1. Configure all status that can be used for request access use case. Note that the `Request for Information` will be created with the first status in this list.
 
-1. Configure the status that will be used when the request is accepted
+2. Configure the status that will be used when the request is accepted
 
-1. Configure the status that will be used when the request is declined
+3. Configure the status that will be used when the request is declined
 
-1. Configure the group that will be allowed to see the `Request for Information` created automatically by the platform.
+4. Configure the group that will be allowed to see the `Request for Information` created automatically by the platform.
 
 
 ![Example of request access workflow configured](assets/request-access/specific-workflow-configured.png)
@@ -54,7 +54,7 @@ Will receive a dedicated Request for information for example:
 
 ![Example of dedicated Request for information](assets/request-access/rfi-dedicated.png)
 
-> Note that this specific Request for Information is automatically under [authorized member restricted access](../authorized-members) for confidentiality reason.
+> Note that this specific Request for Information is automatically under [authorized member restricted access](authorized-members.md) for confidentiality reason.
 
 The knowledge that is requested to be shared, can be found in related entities.
 There is two dedicated button "Validate" and "Decline": with one click on Validate, the knowledge will be shared as requested.
