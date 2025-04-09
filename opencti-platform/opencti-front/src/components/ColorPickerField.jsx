@@ -26,6 +26,7 @@ const ColorPickerField = (props) => {
     onSubmit,
   } = props;
   const [, meta] = useField(name);
+
   const internalOnChange = React.useCallback(
     (event) => {
       const { value } = event.target;
