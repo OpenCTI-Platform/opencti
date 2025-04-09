@@ -5,7 +5,7 @@ import type { StixInternalExternalReference } from './stix-2-1-smo';
 import { AuthorizedMember } from '../utils/access';
 
 export type StixDate = string | undefined;
-export type StixId = `${string}--${v4 | v5}`; // TODO shold we create a common type clas for STIX 2.0 and 2.1 ?
+export type StixId = `${string}--${v4 | v5}`; // TODO should we create a common type clas for STIX 2.0 and 2.1 ?
 
 export type StixKillChainPhase = {
   kill_chain_name: string;
