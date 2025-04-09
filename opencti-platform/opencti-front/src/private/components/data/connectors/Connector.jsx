@@ -116,7 +116,7 @@ export const connectorWorkDeleteMutation = graphql`
 `;
 
 const updateRequestedStatus = graphql`
-  mutation ManagedConnectorEditionUpdateStatusMutation($input: RequestConnectorStatusInput!) {
+  mutation ConnectorUpdateStatusMutation($input: RequestConnectorStatusInput!) {
     updateConnectorRequestedStatus(input: $input) {
       id
       manager_current_status
