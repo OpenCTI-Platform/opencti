@@ -63,7 +63,6 @@ const useStyles = makeStyles((theme) => ({
   bodyItem: {
     height: '100%',
     fontSize: 13,
-    color: theme.palette.common.white,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -149,7 +148,7 @@ const inlineStylesHeaders = {
   },
   labels: {
     float: 'left',
-    width: '16%',
+    width: '14%',
     fontSize: 12,
     fontWeight: '700',
     whiteSpace: 'nowrap',
@@ -228,7 +227,7 @@ const inlineStyles = {
   },
   labels: {
     float: 'left',
-    width: '16%',
+    width: '14%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -586,107 +585,112 @@ const SearchBulk = () => {
                 </ListItemIcon>
               </ListItem>
               {resolvedEntities.map((entity) => {
-                const inPlatform = entity.in_platform;
-                const link = inPlatform && `${resolveLink(entity.type)}/${entity.id}`;
-                const linkAnalyses = link && `${link}/analyses`;
-
+                if (entity.in_platform) {
+                  // found result, listItemButton component with link to entity
+                  const link = `${resolveLink(entity.type)}/${entity.id}`;
+                  const linkAnalyses = `${link}/analyses`;
+                  return (
+                    <ListItemButton
+                      key={entity.id}
+                      divider
+                      component={Link}
+                      classes={{ root: classes.item }}
+                      to={link}
+                      disablePadding
+                    >
+                      <ListItemIcon classes={{ root: classes.itemIcon }}>
+                        <ItemIcon type={entity.type} />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <>
+                            <div className={classes.bodyItem} style={inlineStyles.type}>
+                              <Chip
+                                classes={{ root: classes.chipInList }}
+                                style={{
+                                  backgroundColor: hexToRGB(itemColor(entity.type), 0.08),
+                                  color: itemColor(entity.type),
+                                  border: `1px solid ${itemColor(entity.type)}`,
+                                }}
+                                label={t_i18n(`entity_${entity.type}`)}
+                              />
+                            </div>
+                            <div className={classes.bodyItem} style={inlineStyles.value}>
+                              {entity.value}
+                            </div>
+                            <div className={classes.bodyItem} style={inlineStyles.author}>
+                              {entity.author}
+                            </div>
+                            <div className={classes.bodyItem} style={inlineStyles.creator}>
+                              {entity.creators}
+                            </div>
+                            <div className={classes.bodyItem} style={inlineStyles.labels}>
+                              {(
+                                <StixCoreObjectLabels variant="inList" labels={entity.labels} />
+                              )}
+                            </div>
+                            <div className={classes.bodyItem} style={inlineStyles.created_at}>
+                              {nsd(entity.created_at)}
+                            </div>
+                            <div className={classes.bodyItem} style={inlineStyles.analyses}>
+                              {(
+                                <>
+                                  {['Note', 'Opinion', 'Course-Of-Action', 'Data-Component', 'Data-Source'].includes(entity.type) ? (
+                                    <Chip classes={{ root: classes.chipNoLink }} label={n(entity.analyses)} />
+                                  ) : (
+                                    <Chip
+                                      classes={{ root: classes.chip }}
+                                      label={n(entity.analyses)}
+                                      component={Link}
+                                      to={linkAnalyses}
+                                    />
+                                  )}
+                                </>
+                              )}
+                            </div>
+                            <div className={classes.bodyItem} style={inlineStyles.markings}>
+                              {(
+                                <ItemMarkings variant="inList" markingDefinitions={entity.markings ?? []} limit={1} />
+                              )}
+                            </div>
+                          </>
+                        }
+                      />
+                      <ListItemIcon classes={{ root: classes.goIcon }}>
+                        <KeyboardArrowRightOutlined />
+                      </ListItemIcon>
+                    </ListItemButton>
+                  );
+                }
+                // else, no result found and not clickable, render "unknown" content inside ListItem without ListItemButton
                 return (
                   <ListItem
                     key={entity.id}
                     divider
-                    component={inPlatform ? Link : 'div'}
-                    to={inPlatform ? link : undefined}
+                    component={'div'}
+                    classes={{ root: classes.item }}
                     disablePadding
                   >
-                    {inPlatform ? (
-                      <ListItemButton component={Link} classes={{ root: classes.item }} to={link}>
-                        <ListItemIcon classes={{ root: classes.itemIcon }}>
-                          <ItemIcon type={entity.type} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <>
-                              <div className={classes.bodyItem} style={inlineStyles.type}>
-                                <Chip
-                                  classes={{ root: classes.chipInList }}
-                                  style={{
-                                    backgroundColor: hexToRGB(itemColor(entity.type), 0.08),
-                                    color: itemColor(entity.type),
-                                    border: `1px solid ${itemColor(entity.type)}`,
-                                  }}
-                                  label={t_i18n(`entity_${entity.type}`)}
-                                />
-                              </div>
-                              <div className={classes.bodyItem} style={inlineStyles.value}>
-                                {entity.value}
-                              </div>
-                              <div className={classes.bodyItem} style={inlineStyles.author}>
-                                {entity.author}
-                              </div>
-                              <div className={classes.bodyItem} style={inlineStyles.creator}>
-                                {entity.creators}
-                              </div>
-                              <div className={classes.bodyItem} style={inlineStyles.labels}>
-                                {(
-                                  <StixCoreObjectLabels variant="inList" labels={entity.labels} />
-                                )}
-                              </div>
-                              <div className={classes.bodyItem} style={inlineStyles.created_at}>
-                                {nsd(entity.created_at)}
-                              </div>
-                              <div className={classes.bodyItem} style={inlineStyles.analyses}>
-                                {(
-                                  <>
-                                    {['Note', 'Opinion', 'Course-Of-Action', 'Data-Component', 'Data-Source'].includes(entity.type) ? (
-                                      <Chip classes={{ root: classes.chipNoLink }} label={n(entity.analyses)} />
-                                    ) : (
-                                      <Chip
-                                        classes={{ root: classes.chip }}
-                                        label={n(entity.analyses)}
-                                        component={Link}
-                                        to={linkAnalyses}
-                                      />
-                                    )}
-                                  </>
-                                )}
-                              </div>
-                              <div className={classes.bodyItem} style={inlineStyles.markings}>
-                                {(
-                                  <ItemMarkings variant="inList" markingDefinitions={entity.markings ?? []} limit={1} />
-                                )}
-                              </div>
-                            </>
-                          }
-                        />
-                        <ListItemIcon classes={{ root: classes.goIcon }}>
-                          <KeyboardArrowRightOutlined />
-                        </ListItemIcon>
-                      </ListItemButton>
-                    ) : (
-                      <ListItemButton style={{ cursor: 'auto' }} classes={{ root: classes.item }}>
-                        {/* If not clickable, render content inside ListItem without ListItemButton */}
-                        <ListItemIcon classes={{ root: classes.itemIcon }}>
-                          <ItemIcon type={entity.type} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <>
-                              <div className={classes.bodyItem} style={inlineStyles.type}>
-                                <Chip
-                                  classes={{ root: classes.chipInList }}
-                                  variant="outlined"
-                                  color="error"
-                                  label={t_i18n('Unknown')}
-                                />
-                              </div>
-                              <div className={classes.bodyItem} style={inlineStyles.value}>
-                                {entity.value}
-                              </div>
-                            </>
-                            }
-                        />
-                      </ListItemButton>
-                    )}
+                    <ListItemIcon classes={{ root: classes.itemIcon }}>
+                      <ItemIcon type={entity.type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <>
+                          <div className={classes.bodyItem} style={inlineStyles.type}>
+                            <Chip
+                              classes={{ root: classes.chipInList }}
+                              variant="outlined"
+                              color="error"
+                              label={t_i18n('Unknown')}
+                            />
+                          </div>
+                          <div className={classes.bodyItem} style={inlineStyles.value}>
+                            {entity.value}
+                          </div>
+                        </>
+                        }
+                    />
                   </ListItem>
                 );
               })}
