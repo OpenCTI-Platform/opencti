@@ -238,7 +238,6 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     <>
       {queryRef && (
       <DataTable
-        variant={DataTableVariant.inline}
         dataColumns={dataColumns}
         resolvePath={(data: EntityStixCoreRelationshipsIndicatorsEntitiesView_data$data) => (data.indicators?.edges ?? []).map((n) => n?.node)}
         storageKey={localStorageKey}
