@@ -57,6 +57,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
       }}
       required={required}
       options={allObservableTypes}
+      getOptionLabel={(option: string) => t_i18n(`entity_${option}`)}
       onChange={typeof onChange === 'function' ? onChange : null}
       isOptionEqualToValue={(option: string, value: string) => option === value}
       style={style}
