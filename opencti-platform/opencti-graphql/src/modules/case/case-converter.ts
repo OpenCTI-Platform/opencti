@@ -1,7 +1,8 @@
-import { buildStixDomain, cleanObject } from '../../database/stix-2-1-converter';
+import { buildStixDomain } from '../../database/stix-2-1-converter';
 import { INPUT_OBJECTS } from '../../schema/general';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixCase, StoreEntityCase } from './case-types';
+import { cleanObject } from '../../database/stix-converter-utils';
 
 const convertCaseToStix = (instance: StoreEntityCase): StixCase => {
   const cases = buildStixDomain(instance);
