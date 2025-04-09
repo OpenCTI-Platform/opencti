@@ -1,6 +1,7 @@
-import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
+import { buildStixObject } from '../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixDeleteOperation, StoreEntityDeleteOperation } from './deleteOperation-types';
+import { cleanObject } from '../../database/stix-converter-utils';
 
 const convertDeleteOperationToStix = (instance: StoreEntityDeleteOperation): StixDeleteOperation => {
   const stixObject = buildStixObject(instance);
