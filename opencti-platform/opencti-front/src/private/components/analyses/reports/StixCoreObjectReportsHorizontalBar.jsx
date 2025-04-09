@@ -61,6 +61,7 @@ class StixCoreObjectReportsHorizontalBar extends Component {
       operation: 'count',
       limit: 20,
     };
+
     return (
       <QueryRenderer
         query={stixCoreObjectReportsHorizontalBarDistributionQuery}
