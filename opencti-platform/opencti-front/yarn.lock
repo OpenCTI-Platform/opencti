@@ -17511,7 +17511,7 @@ __metadata:
     react-virtualized: "npm:9.22.5"
     react-wordcloud: "npm:1.2.7"
     reactflow: "npm:11.11.4"
-    recharts: "npm:2.15.1"
+    recharts: "npm:2.15.2"
     relay-compiler: "npm:17.0.0"
     relay-runtime: "npm:17.0.0"
     relay-test-utils: "npm:17.0.0"
@@ -19053,9 +19053,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:2.15.1":
-  version: 2.15.1
-  resolution: "recharts@npm:2.15.1"
+"recharts@npm:2.15.2":
+  version: 2.15.2
+  resolution: "recharts@npm:2.15.2"
   dependencies:
     clsx: "npm:^2.0.0"
     eventemitter3: "npm:^4.0.1"
@@ -19068,7 +19068,7 @@ __metadata:
   peerDependencies:
     react: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/36e959b939b6835f0c6eb1632162a1d929dc60d63aa82cdf345e4e0019ad3393eb36e732e241246ef94f9b6b427f7d3c32bb8f035ab3bdfa52deec21d2f7a5af
+  checksum: 10/53bc5e7bb05968f192ae028f5d607ffec3187c8b505e85646768305080fb0da5eb8d6aa5eed6a28186293858c45ee330f029ca065f71ae3aafe3061a07dc400c
   languageName: node
   linkType: hard
 
