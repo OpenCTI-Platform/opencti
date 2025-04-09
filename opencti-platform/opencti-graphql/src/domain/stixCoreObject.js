@@ -123,7 +123,17 @@ export const findAll = async (context, user, args) => {
       event_type: 'command',
       event_scope: 'search',
       event_access: 'extended',
+      message: 'asks for `advanced search`',
       context_data: contextData,
+    });
+  } else if (args.bulkSearch) {
+    await publishUserAction({
+      user,
+      event_type: 'command',
+      event_scope: 'search',
+      event_access: 'extended',
+      message: 'asks for `bulk search`',
+      context_data: { input: args },
     });
   }
   return listEntitiesPaginated(context, user, types, args);

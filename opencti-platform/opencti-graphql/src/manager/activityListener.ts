@@ -202,8 +202,7 @@ const initActivityManager = () => {
       }
       if (action.event_type === 'command') {
         if (action.event_scope === 'search') {
-          const message = 'asks for `advanced search`';
-          await activityLogger(action, message);
+          await activityLogger(action, action.message);
         }
         if (action.event_scope === 'export') {
           const { format, entity_name } = action.context_data;

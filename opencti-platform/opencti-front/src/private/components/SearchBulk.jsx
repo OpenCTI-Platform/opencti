@@ -17,8 +17,8 @@ import { debounce } from 'rxjs/operators';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ListItemButton, ToggleButtonGroup } from '@mui/material';
+import { graphql } from 'react-relay';
 import { allEntitiesKeyList } from './common/bulk/utils/querySearchEntityByText';
-import { searchStixCoreObjectsLinesSearchQuery } from './Search';
 import ItemIcon from '../../components/ItemIcon';
 import { fetchQuery } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
@@ -34,6 +34,59 @@ import Breadcrumbs from '../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
+
+const searchBulkStixCoreObjectsLinesSearchQuery = graphql`
+  query SearchBulkStixCoreObjectsLinesSearchQuery(
+    $types: [String]
+    $filters: FilterGroup
+    $search: String
+  ) {
+    bulkSearch(types: $types, search: $search, filters: $filters) {
+      edges {
+        node {
+          id
+          entity_type
+          created_at
+          updated_at
+          draftVersion {
+            draft_id
+            draft_operation
+          }
+          ... on StixObject {
+            representative {
+              main
+              secondary
+            }
+          }
+          createdBy {
+            ... on Identity {
+              name
+            }
+          }
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          objectLabel {
+            id
+            value
+            color
+          }
+          creators {
+            id
+            name
+          }
+          containersNumber {
+            total
+          }
+        }
+      }
+    }
+  }
+`;
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -302,12 +355,12 @@ const SearchBulk = () => {
             };
             const result = (
               await fetchQuery(
-                searchStixCoreObjectsLinesSearchQuery,
+                searchBulkStixCoreObjectsLinesSearchQuery,
                 searchPaginationOptions,
               )
                 .toPromise()
                 .then((data) => {
-                  const stixCoreObjectsEdges = data.stixCoreObjects.edges;
+                  const stixCoreObjectsEdges = data.bulkSearch.edges;
                   const stixCoreObjects = stixCoreObjectsEdges.map(
                     (o) => o.node,
                   );

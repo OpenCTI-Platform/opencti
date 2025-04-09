@@ -21,6 +21,7 @@ export interface UserSearchActionContextData {
 export interface UserSearchAction extends BasicUserAction {
   event_type: 'command'
   event_scope: 'search'
+  message: string
   context_data: UserSearchActionContextData
 }
 

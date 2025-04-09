@@ -13019,6 +13019,15 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  bulkSearch(
+    first: Int
+    after: ID
+    search: String
+    types: [String]
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+  ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixCoreObjectsTimeSeries(
     authorId: String

@@ -19683,6 +19683,7 @@ export type Query = {
   backgroundTask?: Maybe<BackgroundTask>;
   backgroundTasks?: Maybe<BackgroundTaskConnection>;
   bookmarks?: Maybe<StixDomainObjectConnection>;
+  bulkSearch?: Maybe<StixCoreObjectConnection>;
   campaign?: Maybe<Campaign>;
   campaigns?: Maybe<CampaignConnection>;
   campaignsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
@@ -20134,6 +20135,17 @@ export type QueryBookmarksArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryBulkSearchArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
@@ -39341,6 +39353,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   backgroundTask?: Resolver<Maybe<ResolversTypes['BackgroundTask']>, ParentType, ContextType, RequireFields<QueryBackgroundTaskArgs, 'id'>>;
   backgroundTasks?: Resolver<Maybe<ResolversTypes['BackgroundTaskConnection']>, ParentType, ContextType, Partial<QueryBackgroundTasksArgs>>;
   bookmarks?: Resolver<Maybe<ResolversTypes['StixDomainObjectConnection']>, ParentType, ContextType, Partial<QueryBookmarksArgs>>;
+  bulkSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryBulkSearchArgs>>;
   campaign?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, Partial<QueryCampaignArgs>>;
   campaigns?: Resolver<Maybe<ResolversTypes['CampaignConnection']>, ParentType, ContextType, Partial<QueryCampaignsArgs>>;
   campaignsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryCampaignsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
