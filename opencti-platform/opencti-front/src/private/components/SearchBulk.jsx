@@ -17,8 +17,8 @@ import { debounce } from 'rxjs/operators';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ListItemButton, ToggleButtonGroup } from '@mui/material';
+import { graphql } from 'react-relay';
 import { allEntitiesKeyList } from './common/bulk/utils/querySearchEntityByText';
-import { searchStixCoreObjectsLinesSearchQuery } from './Search';
 import ItemIcon from '../../components/ItemIcon';
 import { fetchQuery } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
@@ -263,6 +263,80 @@ const inlineStyles = {
   },
 };
 
+export const searchBulkQuery = graphql`
+  query SearchBulkQuery(    
+    $types: [String]
+    $filters: FilterGroup
+    $search: String
+  ) {
+    globalSearch(types: $types, search: $search, filters: $filters) {
+      edges {
+        node {
+          id
+          entity_type
+          created_at
+          updated_at
+          draftVersion {
+            draft_id
+            draft_operation
+          }
+          ... on StixObject {
+            representative {
+              main
+              secondary
+            }
+          }
+          createdBy {
+            ... on Identity {
+              name
+            }
+          }
+          objectMarking {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+          objectLabel {
+            id
+            value
+            color
+          }
+          creators {
+            id
+            name
+          }
+          containersNumber {
+            total
+          }
+        }
+      }
+    }
+  }
+`;
+
+const buildQueryParams = (textFieldValue) => {
+  const values = textFieldValue
+    .split('\n')
+    .filter((o) => o.length > 1)
+    .map((val) => val.trim());
+  const searchPaginationOptions = {
+    filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: allEntitiesKeyList,
+          values,
+        },
+      ],
+      filterGroups: [],
+    },
+    count: 5000,
+  };
+  return { values, searchPaginationOptions };
+};
+
 const SearchBulk = () => {
   const { t_i18n, nsd, n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
@@ -281,33 +355,14 @@ const SearchBulk = () => {
     const subscription = SEARCH$.subscribe({
       next: () => {
         const fetchData = async () => {
-          const values = textFieldValue
-            .split('\n')
-            .filter((o) => o.length > 1)
-            .map((val) => val.trim());
+          const { values, searchPaginationOptions } = buildQueryParams(textFieldValue);
           if (values.length > 0) {
             setLoading(true);
-            const searchPaginationOptions = {
-              filters: {
-                mode: 'and',
-                filters: [
-                  {
-                    key: allEntitiesKeyList,
-                    values,
-                  },
-                ],
-                filterGroups: [],
-              },
-              count: 5000,
-            };
             const result = (
-              await fetchQuery(
-                searchStixCoreObjectsLinesSearchQuery,
-                searchPaginationOptions,
-              )
+              await fetchQuery(searchBulkQuery, searchPaginationOptions)
                 .toPromise()
                 .then((data) => {
-                  const stixCoreObjectsEdges = data.stixCoreObjects.edges;
+                  const stixCoreObjectsEdges = data.globalSearch.edges;
                   const stixCoreObjects = stixCoreObjectsEdges.map(
                     (o) => o.node,
                   );
@@ -601,14 +656,14 @@ const SearchBulk = () => {
                                 )}
                               </div>
                             </>
-                                        }
+                          }
                         />
                         <ListItemIcon classes={{ root: classes.goIcon }}>
                           <KeyboardArrowRightOutlined />
                         </ListItemIcon>
                       </ListItemButton>
                     ) : (
-                      <>
+                      <ListItemButton style={{ cursor: 'auto' }} classes={{ root: classes.item }}>
                         {/* If not clickable, render content inside ListItem without ListItemButton */}
                         <ListItemIcon classes={{ root: classes.itemIcon }}>
                           <ItemIcon type={entity.type} />
@@ -628,9 +683,9 @@ const SearchBulk = () => {
                                 {entity.value}
                               </div>
                             </>
-                                        }
+                            }
                         />
-                      </>
+                      </ListItemButton>
                     )}
                   </ListItem>
                 );
