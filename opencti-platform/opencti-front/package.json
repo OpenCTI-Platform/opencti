@@ -104,7 +104,7 @@
     "@rollup/plugin-graphql": "2.0.5",
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "6.6.3",
-    "@testing-library/react": "16.2.0",
+    "@testing-library/react": "16.3.0",
     "@testing-library/user-event": "14.6.1",
     "@types/d3-scale": "4.0.9",
     "@types/html-to-pdfmake": "2.4.4",
