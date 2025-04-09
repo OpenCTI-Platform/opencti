@@ -3,10 +3,9 @@ import * as Yup from 'yup';
 import CreatorField from '@components/common/form/CreatorField';
 import Button from '@mui/material/Button';
 import Drawer from '@components/common/drawer/Drawer';
-import React, { createRef } from 'react';
+import React from 'react';
 import { useTheme } from '@mui/styles';
 import { graphql } from 'react-relay';
-import CoreForm from '@rjsf/core';
 import { FormikHelpers } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
 import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
@@ -19,20 +18,9 @@ import { materialRenderers } from '@jsonforms/material-renderers';
 import { Validator } from '@cfworker/json-schema';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useComputeConnectorStatus } from '../../../../utils/Connector';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-
-const updateRequestedStatus = graphql`
-  mutation ManagedConnectorEditionUpdateStatusMutation($input: RequestConnectorStatusInput!) {
-    updateConnectorRequestedStatus(input: $input) {
-      id
-      manager_current_status
-      manager_requested_status
-    }
-  }
-`;
 
 const updateManagedConnector = graphql`
   mutation ManagedConnectorEditionMutation($input: EditManagedConnectorInput) {
@@ -87,9 +75,6 @@ const ManagedConnectorEdition = ({
     }
   });
 
-  const formRef = createRef<CoreForm>();
-
-  const [commitUpdateStatus] = useApiMutation(updateRequestedStatus);
   const [commitUpdate] = useApiMutation(updateManagedConnector);
   const [commitDelete] = useApiMutation(deleteManagedConnector);
   const submitConnectorManagementCreation = (values: ManagedConnectorValues, {
@@ -115,36 +100,12 @@ const ManagedConnectorEdition = ({
     });
   };
 
-  const computeConnectorStatus = useComputeConnectorStatus();
   const compiledValidator = new Validator(contract);
   return (
     <Drawer
-      title={(
-        <div style={{ display: 'flex', gap: theme.spacing(1) }}>
-          {t_i18n('Update a connector')}
-          {computeConnectorStatus(connector)}
-        </div>
-      )}
+      title={t_i18n('Update a connector')}
       open={!!manager}
       onClose={onClose}
-      header={(
-        <div style={{ display: 'flex', flex: 1, justifyContent: 'end', marginRight: theme.spacing(2) }}>
-          <Button
-            variant="outlined"
-            size="small"
-            color={connector.manager_current_status === 'started' ? 'error' : 'primary'}
-            onClick={() => commitUpdateStatus({
-              variables: {
-                input: {
-                  id: connector.id,
-                  status: connector.manager_current_status === 'started' ? 'stopping' : 'starting',
-                },
-              },
-              onCompleted: onClose,
-            })}
-          >{t_i18n(connector.manager_current_status === 'started' ? 'Stop' : 'Start')}</Button>
-        </div>
-      )}
     >
       <Formik<ManagedConnectorValues>
         onReset={onClose}

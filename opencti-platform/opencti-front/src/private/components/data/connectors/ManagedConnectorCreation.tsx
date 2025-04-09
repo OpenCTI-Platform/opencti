@@ -5,10 +5,9 @@ import CreatorField from '@components/common/form/CreatorField';
 import { Validator } from '@cfworker/json-schema';
 import Button from '@mui/material/Button';
 import Drawer from '@components/common/drawer/Drawer';
-import React, { createRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { graphql } from 'react-relay';
-import CoreForm from '@rjsf/core';
 import { Option } from '@components/common/form/ReferenceField';
 import { FormikHelpers } from 'formik/dist/types';
 import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
@@ -60,8 +59,6 @@ const ManagedConnectorCreation = ({
 
   const contracts = manager.connector_manager_contracts.map((contract) => JSON.parse(contract));
   const contractNames = contracts.map((contract) => contract.title);
-
-  const formRef = createRef<CoreForm>();
 
   const [commitRegister] = useApiMutation(registerManagedConnectorMutation);
   const submitConnectorManagementCreation = (values: ManagedConnectorValues, {
