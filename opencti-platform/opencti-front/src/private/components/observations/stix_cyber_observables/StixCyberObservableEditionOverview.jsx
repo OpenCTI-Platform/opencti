@@ -241,9 +241,9 @@ const StixCyberObservableEditionOverviewComponent = ({
 
   const stixCyberObservableValidation = Yup.object().shape({
     x_opencti_score: Yup.number()
-      .min(0, 'Score must be between 0 and 100')
-      .max(100, 'Score must be between 0 and 100')
-      .nullable(),
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
   });
 
   return (

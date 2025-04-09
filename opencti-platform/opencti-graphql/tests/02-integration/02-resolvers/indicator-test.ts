@@ -119,7 +119,7 @@ describe('Indicator resolver standard behavior', () => {
   let indicatorStixId = 'indicator--f6ad652c-166a-43e6-98b8-8ff078e2349f';
   const indicatorForTestName = 'Indicator in indicator-test';
 
-  it('should not create indicator with score value outside of 0 and 100', async () => {
+  it('should not create indicator with score value higher than 100', async () => {
     // Create the indicator
     const INDICATOR_TO_CREATE = {
       input: {
@@ -247,7 +247,7 @@ describe('Indicator resolver standard behavior', () => {
       expect(indicatorCreatedEarlier).toBeDefined();
     }
   });
-  it('should not update indicator with score value outside of 0 and 100', async () => {
+  it('should not update indicator with score negative value and value higher than 100', async () => {
     const queryResulAbove100 = await adminQuery({
       query: UPDATE_QUERY,
       variables: { id: firstIndicatorInternalId, input: { key: 'x_opencti_score', value: ['142'] } },
