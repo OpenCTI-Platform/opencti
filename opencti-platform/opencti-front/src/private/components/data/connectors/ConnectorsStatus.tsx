@@ -372,7 +372,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             {connectorManagers.map((m, id) => (
               <Grid size={3} key={`${m.name}-${id}`}>
                 <Card variant="outlined">
-                  <CardActionArea>
+                  <CardActionArea onClick={() => setManager(m)}>
                     <CardHeader
                       title={m.name}
                       avatar={<HubOutlined />}
@@ -380,7 +380,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                       action={
                         <IconButton
                           size="small"
-                          onClick={() => setManager(m)}
                           color="primary"
                         >
                           <Add />
