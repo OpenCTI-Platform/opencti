@@ -6,7 +6,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
-import { Add, DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
+import { Add, DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, InfoOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -27,6 +27,7 @@ import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import CardActionArea from '@mui/material/CardActionArea';
+import Alert from '@mui/material/Alert';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -43,6 +44,7 @@ import SortConnectorsHeader from './SortConnectorsHeader';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { emptyFilled } from '../../../../utils/String';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -200,6 +202,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
 
   const classes = useStyles(); // TODO remove as deprecated
   const theme = useTheme<Theme>();
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const navigate = useNavigate();
 
@@ -368,47 +371,57 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             </>
           </Typography>
           <div className="clearfix" />
-          <Grid spacing={3} container>
-            {connectorManagers.map((m, id) => (
-              <Grid size={3} key={`${m.name}-${id}`}>
-                <Card variant="outlined">
-                  <CardActionArea onClick={() => setManager(m)}>
-                    <CardHeader
-                      title={m.name}
-                      avatar={<HubOutlined />}
-                      subheader={computeConnectorStatus(m).render}
-                      action={
-                        <IconButton
-                          size="small"
-                          color="primary"
-                        >
-                          <Add />
-                        </IconButton>
-                      }
-                    />
-                    <CardContent>
-                      <Grid container spacing={1}>
-                        <Grid size={6}>
-                          <Typography variant="h4" style={{ margin: 0 }}>{t_i18n('Modification date')}</Typography>
+          {!isEnterpriseEdition ? (
+            <Alert
+              variant="outlined"
+              color="secondary"
+              icon={<InfoOutlined />}
+            >
+              {t_i18n('This feature is only available in OpenCTI Enterprise Edition.')}
+            </Alert>
+          ) : (
+            <Grid spacing={3} container>
+              {connectorManagers.map((m, id) => (
+                <Grid size={3} key={`${m.name}-${id}`}>
+                  <Card variant="outlined">
+                    <CardActionArea onClick={() => setManager(m)}>
+                      <CardHeader
+                        title={m.name}
+                        avatar={<HubOutlined />}
+                        subheader={computeConnectorStatus(m).render}
+                        action={
+                          <IconButton
+                            size="small"
+                            color="primary"
+                          >
+                            <Add />
+                          </IconButton>
+                        }
+                      />
+                      <CardContent>
+                        <Grid container spacing={1}>
+                          <Grid size={6}>
+                            <Typography variant="h4" style={{ margin: 0 }}>{t_i18n('Modification date')}</Typography>
+                          </Grid>
+                          <Grid size={6}>
+                            {nsdt(m.last_sync_execution)}
+                          </Grid>
+                          <Grid size={6}>
+                            <Typography variant="h4" style={{ margin: 0 }}>{t_i18n('Contracts')}</Typography>
+                          </Grid>
+                          <Grid size={6}>
+                            <Typography variant="body2">
+                              {emptyFilled(m.connector_manager_contracts.length)}
+                            </Typography>
+                          </Grid>
                         </Grid>
-                        <Grid size={6}>
-                          {nsdt(m.last_sync_execution)}
-                        </Grid>
-                        <Grid size={6}>
-                          <Typography variant="h4" style={{ margin: 0 }}>{t_i18n('Contracts')}</Typography>
-                        </Grid>
-                        <Grid size={6}>
-                          <Typography variant="body2">
-                            {emptyFilled(m.connector_manager_contracts.length)}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+                      </CardContent>
+                    </CardActionArea>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
         </div>
       )}
       {(manager && isComposerEnable) && <ManagedConnectorCreation manager={manager} onClose={() => setManager(undefined)} />}

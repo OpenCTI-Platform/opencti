@@ -36,6 +36,8 @@ declare module '@mui/material/Fab' {
 declare module '@mui/material/Alert' {
   interface AlertPropsColorOverrides {
     dangerZone: true
+    secondary: true
+    ee: true
   }
 }
 

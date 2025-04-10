@@ -7,7 +7,6 @@ import React from 'react';
 import { useTheme } from '@mui/styles';
 import { graphql } from 'react-relay';
 import { FormikHelpers } from 'formik/dist/types';
-import { Option } from '@components/common/form/ReferenceField';
 import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -17,7 +16,7 @@ import { JsonForms } from '@jsonforms/react';
 import { materialRenderers } from '@jsonforms/material-renderers';
 import { Validator } from '@cfworker/json-schema';
 import TextField from '../../../../components/TextField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -44,7 +43,7 @@ const deleteManagedConnector = graphql`
 
 interface ManagedConnectorValues {
   name: string
-  creator?: Option
+  creator?: FieldOption
   contractValues: Record<string, string | boolean>
 }
 
