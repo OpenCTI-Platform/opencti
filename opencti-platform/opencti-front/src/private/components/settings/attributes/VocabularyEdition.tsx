@@ -10,10 +10,9 @@ import { useFormatter } from '../../../../components/i18n';
 import formikFieldToEditInput from '../../../../utils/FormikUtils';
 import type { Theme } from '../../../../components/Theme';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { MESSAGING$ } from '../../../../relay/environment';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
-import { Option } from '../../common/form/ReferenceField';
 import { RelayError } from '../../../../relay/relayTypes';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -143,7 +142,7 @@ const VocabularyEdition = ({
             }))}
             renderOption={(
               props: Record<string, unknown>,
-              option: Option,
+              option: FieldOption,
             ) => (
               <li {...props}>
                 <div className={classes.text}>{option.label}</div>

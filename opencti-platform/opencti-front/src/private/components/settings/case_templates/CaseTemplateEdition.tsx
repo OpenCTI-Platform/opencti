@@ -8,10 +8,9 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import CaseTemplateTasks from '../../common/form/CaseTemplateTasks';
-import { Option } from '../../common/form/ReferenceField';
 import { CaseTemplateLine_node$data } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateTasksLines_DataQuery$variables } from './__generated__/CaseTemplateTasksLines_DataQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -82,14 +81,14 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
   const [commitDeleteTask] = useApiMutation(caseTemplateDeleteTask);
   const [commitFieldPatch] = useApiMutation(caseTemplateFieldPatch);
 
-  const existingTasks = useRef<Option[] | undefined>(undefined);
+  const existingTasks = useRef<FieldOption[] | undefined>(undefined);
   if (!existingTasks.current) {
     existingTasks.current = caseTemplate.tasks.edges.map(({ node }) => ({
       value: node.id,
       label: node.name,
     }));
   }
-  const submitTaskEdition = (values: Option[]) => {
+  const submitTaskEdition = (values: FieldOption[]) => {
     const added = R.difference(values, existingTasks.current ?? []).at(0);
     const removed = R.difference(existingTasks.current ?? [], values).at(0);
     if (added?.value) {

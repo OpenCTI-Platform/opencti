@@ -25,7 +25,6 @@ import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
-import { Option } from '../common/form/ReferenceField';
 import SwitchField from '../../../components/fields/SwitchField';
 import TextField from '../../../components/TextField';
 import { Policies$key } from './__generated__/Policies.graphql';
@@ -41,6 +40,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import Transition from '../../../components/Transition';
 import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { FieldOption } from '../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -148,7 +148,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Policies | Security | Settings'));
-  const handleSubmitField = (name: string, value: string | string[] | Option | null) => {
+  const handleSubmitField = (name: string, value: string | string[] | FieldOption | null) => {
     policiesValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -157,7 +157,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
             id: settings.id,
             input: {
               key: name,
-              value: ((value as Option)?.value ?? value) || '',
+              value: ((value as FieldOption)?.value ?? value) || '',
             },
           },
         });

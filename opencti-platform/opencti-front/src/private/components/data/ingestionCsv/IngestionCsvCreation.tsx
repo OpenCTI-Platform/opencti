@@ -9,7 +9,6 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
-import { Option } from '@components/common/form/ReferenceField';
 import { IngestionAuthType } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationMutation.graphql';
 import CsvMapperField, { csvMapperQuery } from '@components/common/form/CsvMapperField';
 import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
@@ -24,7 +23,7 @@ import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/d
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatorField from '../../common/form/CreatorField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/fields/SelectField';
 import type { Theme } from '../../../../components/Theme';
@@ -74,17 +73,17 @@ export interface IngestionCsvAddInput {
   references?: ExternalReferencesValues
   description?: string | null
   uri: string
-  csv_mapper_id: string | Option
+  csv_mapper_id: string | FieldOption
   authentication_type: IngestionAuthType | string
   authentication_value?: string | null
   ingestion_running?: boolean | null
-  user_id: string | Option
+  user_id: string | FieldOption
   username?: string
   password?: string
   cert?: string
   key?: string
   ca?: string
-  markings: Option[]
+  markings: FieldOption[]
 }
 
 interface IngestionCsvCreationProps {
@@ -94,7 +93,7 @@ interface IngestionCsvCreationProps {
   ingestionCsv?: IngestionCsvEditionFragment_ingestionCsv$key | null
 }
 
-const resolveHasUserChoiceCsvMapper = (option: Option & {
+const resolveHasUserChoiceCsvMapper = (option: FieldOption & {
   representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
 }) => {
   return option.representations.some(
@@ -125,24 +124,24 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
   const [creatorId, setCreatorId] = useState('');
 
-  const onCreatorSelection = async (option: Option) => {
+  const onCreatorSelection = async (option: FieldOption) => {
     setCreatorId(option.value);
   };
   const updateObjectMarkingField = async (
-    setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>,
+    setFieldValue: (field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>,
     values: IngestionCsvAddInput,
   ) => {
     await setFieldValue('markings', values.markings);
   };
   const onCsvMapperSelection = async (
-    option: Option & {
+    option: FieldOption & {
       representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
     },
     {
       setFieldValue,
       values,
     }:{
-      setFieldValue: ((field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>);
+      setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>);
       values: IngestionCsvAddInput
     },
   ) => {
@@ -300,7 +299,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
                 <CsvMapperField
                   name="csv_mapper_id"
                   onChange={(_, option) => onCsvMapperSelection(option, { setFieldValue, values })}
-                  isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
+                  isOptionEqualToValue={(option: FieldOption, { value }: FieldOption) => option.value === value}
                   queryRef={queryRef}
                 />
               </React.Suspense>

@@ -16,9 +16,8 @@ import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
@@ -149,12 +148,12 @@ interface IncidentEditionOverviewProps {
 
 interface IncidentEditionFormValues {
   message?: string;
-  references?: Option[];
-  createdBy: Option | undefined;
-  x_opencti_workflow_id: Option;
-  objectMarking?: Option[];
-  objectAssignee?: Option[];
-  objectParticipant?: Option[];
+  references?: FieldOption[];
+  createdBy: FieldOption | undefined;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
+  objectAssignee?: FieldOption[];
+  objectParticipant?: FieldOption[];
 
 }
 
@@ -221,7 +220,7 @@ IncidentEditionOverviewProps
     if (!enableReferences) {
       let finalValue: string = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as unknown as Option).value;
+        finalValue = (value as unknown as FieldOption).value;
       }
       incidentValidator
         .validateAt(name, { [name]: value })
@@ -242,11 +241,11 @@ IncidentEditionOverviewProps
     description: incident.description,
     incident_type: incident.incident_type,
     severity: incident.severity,
-    createdBy: convertCreatedBy(incident) as Option,
+    createdBy: convertCreatedBy(incident) as FieldOption,
     objectMarking: convertMarkings(incident),
     objectAssignee: convertAssignees(incident),
     objectParticipant: convertParticipants(incident),
-    x_opencti_workflow_id: convertStatus(t_i18n, incident) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, incident) as FieldOption,
     confidence: incident.confidence,
     references: [],
   };

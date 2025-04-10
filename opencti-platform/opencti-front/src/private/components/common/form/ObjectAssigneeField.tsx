@@ -2,7 +2,6 @@ import React, { FunctionComponent, useContext, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { Option } from '@components/common/form/ReferenceField';
 import { ObjectAssigneeFieldMembersSearchQuery$data } from '@components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -10,6 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { UserContext } from '../../../../utils/hooks/useAuth';
+import { FieldOption } from '../../../../utils/field';
 
 export const objectAssigneeFieldMembersSearchQuery = graphql`
   query ObjectAssigneeFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
@@ -66,7 +66,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface OptionAssignee extends Option {
+interface OptionAssignee extends FieldOption {
   type: string;
   group: string;
 }

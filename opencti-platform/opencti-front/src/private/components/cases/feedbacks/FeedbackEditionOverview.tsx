@@ -9,11 +9,10 @@ import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { FeedbackEditionOverview_case$key } from './__generated__/FeedbackEditionOverview_case.graphql';
 import TextField from '../../../../components/TextField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
@@ -141,10 +140,10 @@ interface FeedbackEditionOverviewProps {
 
 interface FeedbackEditionFormValues {
   message?: string
-  references?: Option[]
-  createdBy?: Option
-  x_opencti_workflow_id: Option
-  objectMarking?: Option[]
+  references?: FieldOption[]
+  createdBy?: FieldOption
+  x_opencti_workflow_id: FieldOption
+  objectMarking?: FieldOption[]
 }
 
 const FEEDBACK_TYPE = 'Feedback';
@@ -206,12 +205,12 @@ FeedbackEditionOverviewProps
 
   const handleSubmitField = (
     name: string,
-    value: Option | string | string[] | number | number[] | null,
+    value: FieldOption | string | string[] | number | number[] | null,
   ) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       validator
         .validateAt(name, { [name]: value })
@@ -232,10 +231,10 @@ FeedbackEditionOverviewProps
     description: feedbackData.description,
     rating: feedbackData.rating,
     confidence: feedbackData.confidence,
-    createdBy: convertCreatedBy(feedbackData) as Option,
+    createdBy: convertCreatedBy(feedbackData) as FieldOption,
     objectMarking: convertMarkings(feedbackData),
     objectAssignee: convertAssignees(feedbackData),
-    x_opencti_workflow_id: convertStatus(t_i18n, feedbackData) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, feedbackData) as FieldOption,
   };
   const { isFeatureEnable } = useHelper();
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');

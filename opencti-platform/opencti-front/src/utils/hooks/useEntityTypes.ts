@@ -2,7 +2,7 @@ import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import { environment } from '../../relay/environment';
 import { useEntityTypesQuery } from './__generated__/useEntityTypesQuery.graphql';
 import { useFormatter } from '../../components/i18n';
-import { Option } from '../../private/components/common/form/ReferenceField';
+import { FieldOption } from '../field';
 
 const entityTypesQuery = graphql`
   query useEntityTypesQuery {
@@ -41,7 +41,7 @@ const entityTypesQuery = graphql`
   }
 `;
 
-let EntityTypes: Record<string, Option[]> = {};
+let EntityTypes: Record<string, FieldOption[]> = {};
 const queryRef = loadQuery<useEntityTypesQuery>(
   environment,
   entityTypesQuery,

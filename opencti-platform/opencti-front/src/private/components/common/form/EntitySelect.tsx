@@ -1,6 +1,5 @@
 import { Autocomplete, TextField, Tooltip } from '@mui/material';
 import React, { Suspense, useMemo, useState } from 'react';
-import { Option } from '@components/common/form/ReferenceField';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -10,6 +9,7 @@ import Loader from '../../../../components/Loader';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import { FieldOption } from '../../../../utils/field';
 
 const entitySelectSearchQuery = graphql`
   query EntitySelectSearchQuery($search: String, $filters: FilterGroup) {
@@ -27,7 +27,7 @@ const entitySelectSearchQuery = graphql`
   }
 `;
 
-export type EntityOption = Pick<Option, 'label' | 'value'> & {
+export type EntityOption = Pick<FieldOption, 'label' | 'value'> & {
   type: string
 };
 

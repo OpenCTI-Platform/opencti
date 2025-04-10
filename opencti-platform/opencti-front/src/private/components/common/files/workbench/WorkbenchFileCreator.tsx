@@ -17,12 +17,11 @@ import AutocompleteFreeSoloField from '../../../../../components/AutocompleteFre
 import ItemIcon from '../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
-import { Option } from '../../form/ReferenceField';
 import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileViewer_entity.graphql';
 import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';
 import { fetchQuery } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -68,8 +67,8 @@ const fileValidation = (t: (value: string) => string) => Yup.object().shape({
 
 interface WorkbenchFileCreatorFormValues {
   name: string;
-  labels: Option[];
-  fileMarkings: Option[];
+  labels: FieldOption[];
+  fileMarkings: FieldOption[];
 }
 
 interface WorkbenchFileCreatorProps {
@@ -212,7 +211,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
                 options={[]}
                 renderOption={(
                   props: React.HTMLAttributes<HTMLLIElement>,
-                  option: Option,
+                  option: FieldOption,
                 ) => (
                   <li {...props}>
                     <div className={classes.icon}>

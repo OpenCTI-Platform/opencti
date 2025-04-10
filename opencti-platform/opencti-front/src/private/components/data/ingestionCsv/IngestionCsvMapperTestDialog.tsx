@@ -7,13 +7,13 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import CodeBlock from '@components/common/CodeBlock';
 import Alert from '@mui/material/Alert';
-import { Option } from '@components/common/form/ReferenceField';
 import { IngestionCsvMapperTestDialogMutation$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvMapperTestDialogMutation.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { handleError } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { getAuthenticationValue } from '../../../../utils/ingestionAuthentificationUtils';
+import { FieldOption } from '../../../../utils/field';
 
 const ingestionCsvMapperTestMutation = graphql`
   mutation IngestionCsvMapperTestDialogMutation($input: IngestionCsvAddInput!) {
@@ -35,9 +35,9 @@ interface IngestionCsvMapperTestDialogProps {
     authentication_value?: string | null,
     uri: string,
     ingestion_running?: boolean | null,
-    csv_mapper_id: string | Option,
-    user_id: string | Option
-    markings: Option[]
+    csv_mapper_id: string | FieldOption,
+    user_id: string | FieldOption
+    markings: FieldOption[]
   }
   setIsCreateDisabled?: React.Dispatch<React.SetStateAction<boolean>>
 }

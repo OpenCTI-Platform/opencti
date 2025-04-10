@@ -8,7 +8,6 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
-import { Option } from '@components/common/form/ReferenceField';
 import { StreamCollectionEdition_streamCollection$data } from '@components/data/stream/__generated__/StreamCollectionEdition_streamCollection.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
@@ -18,7 +17,7 @@ import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { AutoCompleteOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 
@@ -36,7 +35,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface StreamCollectionCreationForm {
-  restricted_members: AutoCompleteOption[] | null
+  restricted_members: FieldOption[] | null
   stream_public: boolean | null
   name: string | null
   description: string | null
@@ -69,7 +68,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
     description: streamCollection.description ?? '',
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(streamCollection.filters) ?? undefined);
-  const handleSubmitField = (name: string, value: Option[] | string) => {
+  const handleSubmitField = (name: string, value: FieldOption[] | string) => {
     streamCollectionValidation(t_i18n('This field is required'))
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -89,7 +88,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
       })
       .catch(() => false);
   };
-  const handleSubmitFieldOptions = (name: string, value: Option[]) => streamCollectionValidation(t_i18n('This field is required'))
+  const handleSubmitFieldOptions = (name: string, value: FieldOption[]) => streamCollectionValidation(t_i18n('This field is required'))
     .validateAt(name, { [name]: value })
     .then(() => {
       commitMutation({

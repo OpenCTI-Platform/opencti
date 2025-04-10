@@ -15,11 +15,10 @@ import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
-import { Option } from '../../common/form/ReferenceField';
 import { AdministrativeAreaEditionOverview_administrativeArea$key } from './__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import AdministrativeAreaDeletion from './AdministrativeAreaDeletion';
@@ -128,10 +127,10 @@ interface AdministrativeAreaEditionOverviewProps {
 
 interface AdministrativeAreaEditionFormValues {
   message?: string;
-  references?: Option[];
-  createdBy: Option | undefined;
-  x_opencti_workflow_id: Option;
-  objectMarking?: Option[];
+  references?: FieldOption[];
+  createdBy: FieldOption | undefined;
+  x_opencti_workflow_id: FieldOption;
+  objectMarking?: FieldOption[];
 }
 
 // eslint-disable-next-line max-len
@@ -202,11 +201,11 @@ AdministrativeAreaEditionOverviewProps
       },
     });
   };
-  const handleSubmitField = (name: string, value: Option | string | null) => {
+  const handleSubmitField = (name: string, value: FieldOption | string | null) => {
     if (!enableReferences) {
       let finalValue: string = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       administrativeAreaValidator
         .validateAt(name, { [name]: value })
@@ -229,7 +228,7 @@ AdministrativeAreaEditionOverviewProps
     confidence: administrativeArea.confidence,
     createdBy: convertCreatedBy(administrativeArea),
     objectMarking: convertMarkings(administrativeArea),
-    x_opencti_workflow_id: convertStatus(t_i18n, administrativeArea) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, administrativeArea) as FieldOption,
     references: [],
   };
   const { isFeatureEnable } = useHelper();

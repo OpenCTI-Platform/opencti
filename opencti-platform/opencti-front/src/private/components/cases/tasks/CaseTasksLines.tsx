@@ -18,7 +18,6 @@ import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
-import { Option } from '../../common/form/ReferenceField';
 import CaseTaskCreation from './CaseTaskCreation';
 import { caseSetTemplateQuery, generateConnectionId } from '../CaseUtils';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
@@ -28,6 +27,7 @@ import { tasksDataColumns } from './TasksLine';
 import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { FieldOption } from '../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -104,7 +104,7 @@ interface CaseTasksLinesProps {
   caseId: string;
   queryRef: PreloadedQuery<CaseTasksLinesQuery>;
   paginationOptions: CaseTasksLinesQuery$variables;
-  defaultMarkings?: Option[];
+  defaultMarkings?: FieldOption[];
   sortBy: string | undefined;
   orderAsc: boolean | undefined;
   handleSort?: (field: string, order: boolean) => void;

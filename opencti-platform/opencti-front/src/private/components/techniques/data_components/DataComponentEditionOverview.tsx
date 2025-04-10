@@ -13,9 +13,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { DataComponentEditionOverview_dataComponent$key } from './__generated__/DataComponentEditionOverview_dataComponent.graphql';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
@@ -132,12 +131,12 @@ interface DataComponentEditionOverviewComponentProps {
 interface DataComponentAddInput {
   name: string
   description: string | null
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  x_opencti_workflow_id: Option
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  x_opencti_workflow_id: FieldOption
   confidence: number | undefined
   message?: string
-  references?: Option[]
+  references?: FieldOption[]
 }
 
 const DataComponentEditionOverview: FunctionComponent<
@@ -206,12 +205,12 @@ DataComponentEditionOverviewComponentProps
 
   const handleSubmitField = (
     name: string,
-    value: string | Option | number | number[] | null,
+    value: string | FieldOption | number | number[] | null,
   ) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
-        finalValue = (value as Option).value;
+        finalValue = (value as FieldOption).value;
       }
       dataComponentValidator
         .validateAt(name, { [name]: value })
@@ -230,9 +229,9 @@ DataComponentEditionOverviewComponentProps
   const initialValues: DataComponentAddInput = {
     name: dataComponent.name,
     description: dataComponent.description ?? '',
-    createdBy: convertCreatedBy(dataComponent) as Option,
+    createdBy: convertCreatedBy(dataComponent) as FieldOption,
     objectMarking: convertMarkings(dataComponent),
-    x_opencti_workflow_id: convertStatus(t_i18n, dataComponent) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, dataComponent) as FieldOption,
     confidence: dataComponent.confidence ?? undefined,
     references: [],
   };

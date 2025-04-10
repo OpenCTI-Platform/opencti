@@ -34,7 +34,7 @@ import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { convertEventTypes, convertNotifiers, instanceEventTypesOptions } from '../../../../utils/edition';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { deleteNode, insertNode } from '../../../../utils/store';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { TriggerLiveAddInput, TriggerLiveCreationKnowledgeMutation } from '../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
@@ -42,7 +42,6 @@ import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEdition
 import { instanceTriggerDescription, triggerLiveKnowledgeCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
 import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
 import NotifierField from '../form/NotifierField';
-import { Option } from '../form/ReferenceField';
 import { deserializeFilterGroupForFrontend, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -51,8 +50,8 @@ interface InstanceTriggerEditionFormValues {
   id: string;
   name: string;
   description: string | null;
-  event_types: readonly Option[];
-  notifiers: readonly Option[];
+  event_types: readonly FieldOption[];
+  notifiers: readonly FieldOption[];
   filters: string | null;
 }
 

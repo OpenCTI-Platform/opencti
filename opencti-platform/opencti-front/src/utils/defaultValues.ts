@@ -1,8 +1,7 @@
-import { Option } from '@components/common/form/ReferenceField';
 import { AuthorizedMemberOption, INPUT_AUTHORIZED_MEMBERS } from './authorizedMembers';
-import { AutoCompleteOption } from './field';
+import { FieldOption } from './field';
 
-export type DefaultValues = AutoCompleteOption | AutoCompleteOption[] | Option | Option[] | string | (string | null)[] | boolean | null;
+export type DefaultValues = FieldOption | FieldOption[] | string | (string | null)[] | boolean | null;
 
 const isBoolean = (defaultValues: DefaultValues) => {
   return typeof defaultValues === 'boolean';
@@ -11,7 +10,7 @@ const isBoolean = (defaultValues: DefaultValues) => {
 const isSingleOption = (defaultValues: DefaultValues) => {
   return (
     typeof defaultValues === 'object'
-    && 'value' in (defaultValues as unknown as Option)
+    && 'value' in (defaultValues as unknown as FieldOption)
   );
 };
 
@@ -45,11 +44,11 @@ export const defaultValuesToStringArray = (
         }));
     } else if (isMultipleOption(defaultValues)) {
       // Handle multiple options
-      default_values = defaultValues.map((v) => (v as Option).value);
+      default_values = defaultValues.map((v) => (v as FieldOption).value);
     }
     // Handle single option
   } else if (isSingleOption(defaultValues)) {
-    default_values = [(defaultValues as Option).value];
+    default_values = [(defaultValues as FieldOption).value];
     // Handle single value
   } else if (isBoolean(defaultValues)) {
     default_values = [defaultValues.toString()];

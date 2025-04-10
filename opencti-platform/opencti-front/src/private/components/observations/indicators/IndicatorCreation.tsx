@@ -27,11 +27,10 @@ import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import type { Theme } from '../../../../components/Theme';
-import { Option } from '../../common/form/ReferenceField';
 import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
 import { parse } from '../../../../utils/Time';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -92,10 +91,10 @@ interface IndicatorAddInput {
   valid_from: Date | null
   valid_until: Date | null
   description: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  killChainPhases: Option[]
-  objectLabel: Option[]
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  killChainPhases: FieldOption[]
+  objectLabel: FieldOption[]
   externalReferences: { value: string }[]
   x_opencti_detection: boolean
   x_opencti_score: number

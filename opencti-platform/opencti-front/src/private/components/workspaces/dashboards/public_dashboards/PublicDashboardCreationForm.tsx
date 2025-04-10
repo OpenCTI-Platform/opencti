@@ -3,7 +3,6 @@ import React, { Suspense, useEffect } from 'react';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import InputAdornment from '@mui/material/InputAdornment';
 import Button from '@mui/material/Button';
-import { Option } from '@components/common/form/ReferenceField';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import Alert from '@mui/material/Alert';
@@ -13,7 +12,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PublicDashboardCreationFormDashboardsQuery } from '@components/workspaces/dashboards/public_dashboards/__generated__/PublicDashboardCreationFormDashboardsQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import SelectField from '../../../../../components/fields/SelectField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
@@ -50,7 +49,7 @@ export interface PublicDashboardCreationFormData {
   name: string;
   enabled: boolean;
   uri_key: string;
-  max_markings: Option[];
+  max_markings: FieldOption[];
   dashboard_id: string;
 }
 

@@ -10,13 +10,13 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import { CreatorFieldSearchQuery$data } from './__generated__/CreatorFieldSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
-import { Option } from './ReferenceField';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { FieldOption } from '../../../../utils/field';
 
 interface CreatorFieldProps {
   name: string;
   label: string;
-  onChange?: (name: string, value: Option) => void;
+  onChange?: (name: string, value: FieldOption) => void;
   containerStyle?: Record<string, string | number>;
   showConfidence?: boolean;
   helpertext?: string;
@@ -46,7 +46,7 @@ const CreatorFieldQuery = graphql`
 
 type CreatorNode = NonNullable<CreatorFieldSearchQuery$data['members']>['edges'][number]['node'];
 
-type CreatorOption = Option & {
+type CreatorOption = FieldOption & {
   extra?: ReactNode,
 };
 

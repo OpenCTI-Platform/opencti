@@ -14,11 +14,10 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatedByField from '../../common/form/CreatedByField';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { Option } from '../../common/form/ReferenceField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
 import SliderField from '../../../../components/fields/SliderField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
@@ -121,11 +120,11 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
 
   const handleSubmitField = (
     name: string,
-    value: Option | string | string[] | number | number[],
+    value: FieldOption | string | string[] | number | number[],
   ) => {
     let finalValue = value ?? '';
     if (name === 'x_opencti_workflow_id') {
-      finalValue = (value as Option).value;
+      finalValue = (value as FieldOption).value;
     }
     noteValidator
       .validateAt(name, { [name]: value })
@@ -147,9 +146,9 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
     confidence: note.confidence,
     note_types: note.note_types ?? [],
     likelihood: note.likelihood,
-    createdBy: convertCreatedBy(note) as Option,
+    createdBy: convertCreatedBy(note) as FieldOption,
     objectMarking: convertMarkings(note),
-    x_opencti_workflow_id: convertStatus(t_i18n, note) as Option,
+    x_opencti_workflow_id: convertStatus(t_i18n, note) as FieldOption,
   };
 
   const { isFeatureEnable } = useHelper();

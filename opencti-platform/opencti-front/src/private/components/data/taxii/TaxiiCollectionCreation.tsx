@@ -11,7 +11,6 @@ import Switch from '@mui/material/Switch';
 import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import { Option } from '@components/common/form/ReferenceField';
 import type { Theme } from '../../../../components/Theme';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { useFormatter } from '../../../../components/i18n';
@@ -20,7 +19,7 @@ import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { useAvailableFilterKeysForEntityTypes, emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
@@ -32,7 +31,7 @@ interface TaxiiCollectionCreationProps {
 }
 
 interface TaxiiCollectionCreationForm {
-  authorized_members: Option[]
+  authorized_members: FieldOption[]
   description: string
   include_inferences?: boolean
   name: string
