@@ -256,7 +256,6 @@ const ContainerStixDomainObjects = ({
             types={types ?? []}
             handleToggle={storageHelpers.handleToggleTypes}
             handleClear={storageHelpers.handleClearTypes}
-            openExports={openExports}
           />
         </React.Suspense>
       )}

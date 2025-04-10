@@ -129,7 +129,10 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
           <Typography variant="h3" gutterBottom>
             {t_i18n('Marking')}
           </Typography>
-          <ItemMarkings markingDefinitions={relatedContainer.objectMarking} />
+          <ItemMarkings
+            markingDefinitions={relatedContainer.objectMarking}
+            onClick={undefined}
+          />
         </Grid>
       </Grid>
 

@@ -116,11 +116,12 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
     restricted_members: convertAuthorizedMembers(data),
     notifier_connector_id: data?.notifier_connector ? { value: data.notifier_connector.id, label: data.notifier_connector.name } : undefined,
   };
+
   const submitForm = (
     setSubmitting: FormikHelpers<NotifierEditionValues>['setSubmitting'],
     setErrors: FormikHelpers<NotifierEditionValues>['setErrors'],
     values: NotifierEditionValues,
-    current: FormRef,
+    current: FormRef | null,
   ) => {
     notifierValidation(t_i18n)
       .validate(values)

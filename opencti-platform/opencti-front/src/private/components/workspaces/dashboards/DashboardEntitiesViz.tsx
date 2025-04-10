@@ -161,6 +161,7 @@ const DashboardEntitiesViz = ({
           withExportPopover={true}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
+          height={undefined}
         />
       );
     case 'polar-area':
@@ -252,6 +253,7 @@ const DashboardEntitiesViz = ({
           startDate={startDate}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
+          height={undefined}
         />
       );
     default:

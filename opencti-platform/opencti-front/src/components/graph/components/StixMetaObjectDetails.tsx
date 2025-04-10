@@ -95,6 +95,7 @@ StixMetaObjectDetailsComponentProps
           <ItemMarkings
             markingDefinitions={[stixMetaObject]}
             limit={2}
+            onClick={undefined}
           />
         </Tooltip>
       ) : (

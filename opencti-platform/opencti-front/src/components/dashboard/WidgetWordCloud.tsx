@@ -41,6 +41,7 @@ const WidgetWordCloud = ({ data, groupBy }: WidgetWordCloudProps) => {
   return (
     <ReactWordcloud
       words={wordCloudData}
+      minSize={[1, 1]}
       options={options}
     />
   );

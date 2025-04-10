@@ -211,6 +211,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
                 variant="inList"
                 markingDefinitions={note.objectMarking ?? []}
                 limit={1}
+                onClick={undefined}
               />
             </div>
           </div>

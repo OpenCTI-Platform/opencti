@@ -39,7 +39,7 @@ interface WorkspaceShareButtonProps {
 const WorkspaceShareButton = ({ workspaceId }: WorkspaceShareButtonProps) => {
   const { t_i18n } = useFormatter();
 
-  const idToDelete = useRef<string>();
+  const idToDelete = useRef<string>(undefined);
   const deletion = useDeletion({});
 
   const [drawerOpen, setDrawerOpen] = useState(false);

@@ -275,19 +275,19 @@ const stixCyberObservableValidation = () => Yup.object().shape({
 
 const StixCyberObservableCreation = ({
   contextual,
-  open,
-  handleClose,
+  open = false,
+  handleClose = () => {},
   type,
-  display,
-  speeddial,
+  display = false,
+  speeddial = false,
   inputValue,
   paginationKey,
-  paginationOptions,
-  controlledDialStyles,
+  paginationOptions = {},
+  controlledDialStyles = {},
   defaultCreatedBy,
-  defaultMarkingDefinitions,
-  isFromBulkRelation,
-  onCompleted,
+  defaultMarkingDefinitions = [],
+  isFromBulkRelation = false,
+  onCompleted = () => {},
 }) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -1052,16 +1052,6 @@ StixCyberObservableCreation.propTypes = {
   ),
   isFromBulkRelation: PropTypes.bool,
   onCompleted: PropTypes.func,
-};
-
-StixCyberObservableCreation.defaultProps = {
-  open: false,
-  display: false,
-  speeddial: false,
-  isFromBulkRelation: false,
-  defaultMarkingDefinitions: [],
-  paginationOptions: [],
-  controlledDialStyles: {},
 };
 
 export default StixCyberObservableCreation;

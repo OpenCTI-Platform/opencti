@@ -452,6 +452,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           type={missingEntity.key}
           contextual={true}
           isFromBulkRelation
+          defaultCreatedBy={undefined}
         />
       );
     }

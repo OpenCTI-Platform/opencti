@@ -1,5 +1,5 @@
 import { Button, IconButton, Tooltip, Typography } from '@mui/material';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, Suspense, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Add } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
@@ -286,6 +286,8 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         speeddial={true}
         open={openCreateObservable}
         handleClose={() => setOpenCreateObservable(false)}
+        type={undefined}
+        defaultCreatedBy={undefined}
       />
     </>);
   };
@@ -324,19 +326,21 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         entityTypes={targetStixCoreObjectTypes}
       >
         {(containerRef && queryRef) && (
-          <ContainerAddStixCreObjectsInLineLoader
-            queryRef={queryRef}
-            containerId={containerId}
-            buildColumns={buildColumns}
-            linesPaginationOptions={linesPaginationOptions}
-            knowledgeGraph={knowledgeGraph}
-            selectedElements={selectedElements}
-            handleSelect={handleSelect}
-            handleDeselect={handleDeselect}
-            helpers={helpers}
-            containerRef={containerRef}
-            enableReferences={enableReferences}
-          />
+          <Suspense>
+            <ContainerAddStixCreObjectsInLineLoader
+              queryRef={queryRef}
+              containerId={containerId}
+              buildColumns={buildColumns}
+              linesPaginationOptions={linesPaginationOptions}
+              knowledgeGraph={knowledgeGraph}
+              selectedElements={selectedElements}
+              handleSelect={handleSelect}
+              handleDeselect={handleDeselect}
+              helpers={helpers}
+              containerRef={containerRef}
+              enableReferences={enableReferences}
+            />
+          </Suspense>
         )}
       </ListLines>
     </Drawer>
