@@ -8,7 +8,6 @@ import Drawer from '@components/common/drawer/Drawer';
 import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { graphql } from 'react-relay';
-import { Option } from '@components/common/form/ReferenceField';
 import { FormikHelpers } from 'formik/dist/types';
 import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import { materialRenderers } from '@jsonforms/material-renderers';
@@ -20,7 +19,7 @@ import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 
@@ -43,7 +42,7 @@ const registerManagedConnectorMutation = graphql`
 interface ManagedConnectorValues {
   name: string
   contract?: number
-  creator?: Option
+  creator?: FieldOption
   contractValues: Record<string, string | boolean>
 }
 
