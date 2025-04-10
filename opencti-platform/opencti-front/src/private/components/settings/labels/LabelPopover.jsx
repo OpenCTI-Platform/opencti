@@ -22,6 +22,7 @@ import { deleteNode } from '../../../../utils/store';
 const styles = () => ({
   container: {
     margin: 0,
+    marginLeft: -10,
   },
 });
 
@@ -97,7 +98,6 @@ class LabelPopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          size="large"
           color="primary"
         >
           <MoreVert />

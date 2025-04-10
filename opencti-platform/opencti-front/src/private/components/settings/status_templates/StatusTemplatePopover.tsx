@@ -93,7 +93,7 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
 
   return (
     <div className={classes.container}>
-      <IconButton onClick={handleOpen} aria-haspopup="true" size="large" color="primary">
+      <IconButton onClick={handleOpen} aria-haspopup="true" color="primary">
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
