@@ -111,22 +111,13 @@ const extractStixCoreObjectTypesFromArgs = (args) => {
 
 export const findAll = async (context, user, args) => {
   const types = extractStixCoreObjectTypesFromArgs(args);
-  if (args.globalSearch) {
-    const contextData = {
-      input: R.omit(['search'], args)
-    };
-    if (args.search && args.search.length > 0) {
-      contextData.search = args.search;
-    }
-    await publishUserAction({
-      user,
-      event_type: 'command',
-      event_scope: 'search',
-      event_access: 'extended',
-      context_data: contextData,
-    });
-  }
   return listEntitiesPaginated(context, user, types, args);
+};
+
+export const globalSearch = async (context, user, args) => {
+  const context_data = { input: args, search: args.search };
+  await publishUserAction({ user, event_type: 'command', event_scope: 'search', event_access: 'extended', context_data });
+  return findAll(context, user, args);
 };
 
 export const findAllAuthMemberRestricted = async (context, user, args) => {
