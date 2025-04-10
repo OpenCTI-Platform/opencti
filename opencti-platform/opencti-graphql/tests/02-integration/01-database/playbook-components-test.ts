@@ -149,7 +149,6 @@ describe('playbook sharing component', () => {
       playbookNode,
       bundle
     });
-
     expect(result.bundle).toEqual(bundleToIngest);
   });
 });
