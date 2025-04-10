@@ -13,6 +13,7 @@ export enum DiamondEntityType {
   channel = 'Channel',
   tool = 'Tool',
   incident = 'Incident',
+  infrastructure = 'Infrastructure',
 }
 
 const filterContentFromEntityTypeAndNodeType = {
@@ -115,6 +116,20 @@ const filterContentFromEntityTypeAndNodeType = {
     },
   },
   [DiamondEntityType.incident]: {
+    [DiamondNodeType.adversary]: {
+      entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Campaign'],
+      relationships: ['attributed-to'],
+    },
+    [DiamondNodeType.infrastructure]: {
+      entityType: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
+      relationships: ['related-to', 'uses'],
+    },
+    [DiamondNodeType.capabilities]: {
+      entityType: ['Attack-Pattern', 'Malware', 'Tool', 'Channel'],
+      relationships: ['uses'],
+    },
+  },
+  [DiamondEntityType.infrastructure]: {
     [DiamondNodeType.adversary]: {
       entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Campaign'],
       relationships: ['attributed-to'],
