@@ -63,13 +63,15 @@ Fom the Content tab of a Container (Reports, Groupings and Cases), Ask AI can al
 
 A short video on the FiligranHQ YouTube channel presents tha capabilities of AskAI: https://www.youtube.com/watch?v=lsP3VVsk5ds.
 
+<a id="nlq-section"></a>
 ### Assistance for finding specific entities (Natural Language Query)
 
 An Ask AI button is available in the top search bar. It enables to switch the search bar in NLQ mode where you can write questions or assertions in natural language.
 ![Ask AI button in the top search bar](assets/nlq-button.png)
 
-The system uses a Large Language Model (LLM) to generate corresonding filters based on your question. The model constructs filters in the OpenCTI filters format with empty ``filterGroups``. Thus, filters are currently limited to one level of imbrication: a list of filters separated by a single and/or mode.
-The LLM constructs the filters with :
+The system uses a Large Language Model (LLM) to generate corresponding filters based on your question. The model constructs filters in the OpenCTI filters format with empty ``filterGroups``. Thus, filters are currently limited to one level of imbrication: a list of filters separated by a single and/or mode.
+The LLM constructs the filters with:
+
 - existing filter keys (attributes, relations input names and some special filter keys),
 - the available operators (equals, greater than, etc.),
 - existing entity and relationship types for the possible values of entity types filters.

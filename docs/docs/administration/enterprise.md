@@ -50,7 +50,7 @@ Automatic extraction of entities and relationships from raw text (PDF, etc.).
 
 ### Natural Language Query
 
-Automatic extraction of filters to display a filtered entities list from a question or assertion.
+Automatic extraction of filters to display a filtered entities list from a question or assertion (please read [Natural Language Query](../usage/ask-ai.md#nlq-section)).
 
 ### Fintel templates
 
