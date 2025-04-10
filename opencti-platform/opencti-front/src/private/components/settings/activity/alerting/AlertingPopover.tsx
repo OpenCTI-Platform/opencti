@@ -81,15 +81,14 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
   };
   // Loader
   return (
-    <div className={classes.container}>
+    <div style={{ marginLeft: -10 }}>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
         style={{ marginTop: 3 }}
-        size="large"
         color="primary"
       >
-        <MoreVert />
+        <MoreVert/>
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
@@ -108,10 +107,10 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         onClose={() => setDisplayEdit(false)}
                       >
         {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
-          {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
-        </React.Suspense>
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+            {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)}/>}
+            {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)}/>}
+          </React.Suspense>
         )}
       </Drawer>}
     </div>
