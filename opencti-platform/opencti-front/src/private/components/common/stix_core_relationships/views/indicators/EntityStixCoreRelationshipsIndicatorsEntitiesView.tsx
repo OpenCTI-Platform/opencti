@@ -20,7 +20,6 @@ import useAuth from '../../../../../../utils/hooks/useAuth';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../../utils/filters/filtersHelpers-types';
 import DataTable from '../../../../../../components/dataGrid/DataTable';
-import { DataTableVariant } from '../../../../../../components/dataGrid/dataTableTypes';
 import { useQueryLoadingWithLoadQuery } from '../../../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../../../utils/hooks/usePreloadedPaginationFragment';
 import { useFormatter } from '../../../../../../components/i18n';
