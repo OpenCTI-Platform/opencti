@@ -313,13 +313,14 @@ const ConnectorComponent = ({ connector, relay }) => {
         >
           {connector.name}
           <div style={{ display: 'inline-block' }}>
-            {computeConnectorStatus(connector)}
+            {computeConnectorStatus(connector).render}
           </div>
           {connector.is_managed && (
             <div>
               <Button
                 variant="outlined"
                 size="small"
+                disabled={computeConnectorStatus(connector).processing}
                 color={connector.manager_current_status === 'started' ? 'error' : 'primary'}
                 onClick={() => commitUpdateStatus({
                   variables: {

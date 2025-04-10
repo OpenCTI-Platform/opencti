@@ -73,28 +73,37 @@ export const useComputeConnectorStatus = () => {
   }: Partial<ConnectorsStatus_data$data['connectors'][0]>) => {
     if (manager_current_status && manager_requested_status) {
       if (manager_current_status.slice(0, 5) !== manager_requested_status.slice(0, 5)) {
-        return (
+        return {
+          processing: ['starting', 'stopping'].includes(manager_requested_status),
+          render: (
+            <ItemBoolean
+              status={['starting', 'stopping'].includes(manager_requested_status) ? undefined : true}
+              label={t_i18n(manager_requested_status)}
+              variant="inList"
+            />
+          ),
+        };
+      }
+      return {
+        processing: false,
+        render: (
           <ItemBoolean
-            status={['starting', 'stopping'].includes(manager_requested_status) ? undefined : true}
-            label={t_i18n(manager_requested_status)}
+            status={manager_current_status === 'started'}
+            label={t_i18n(manager_current_status)}
             variant="inList"
           />
-        );
-      }
-      return (
+        ),
+      };
+    }
+    return {
+      processing: false,
+      render: (
         <ItemBoolean
-          status={manager_current_status === 'started'}
-          label={t_i18n(manager_current_status)}
+          status={active}
+          label={active ? t_i18n('Active') : t_i18n('Inactive')}
           variant="inList"
         />
-      );
-    }
-    return (
-      <ItemBoolean
-        status={active}
-        label={active ? t_i18n('Active') : t_i18n('Inactive')}
-        variant="inList"
-      />
-    );
+      ),
+    };
   };
 };
