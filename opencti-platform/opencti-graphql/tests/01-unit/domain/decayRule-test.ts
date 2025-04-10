@@ -386,7 +386,7 @@ describe('Decay chart data generation', () => {
 
   it('should compute live score serie correctly', () => {
     // YYYY-MM-DDTHH:mm:ss.sssZ
-    const startDate = new Date('2023-12-15T00:00:00.000Z');
+    const startDate = new Date('2023-12-15T00:00:00.000');
 
     const computedScoreList: number[] = computeScoreList(100);
 
