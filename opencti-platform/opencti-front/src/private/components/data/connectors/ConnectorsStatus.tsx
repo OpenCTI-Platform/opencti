@@ -380,7 +380,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                     <CardHeader
                       title={m.name}
                       avatar={<HubOutlined />}
-                      subheader={computeConnectorStatus(m)}
+                      subheader={computeConnectorStatus(m).render}
                       action={
                         <IconButton
                           size="small"
@@ -568,7 +568,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                             className={classes.bodyItem}
                             style={inlineStyles.active}
                           >
-                            {computeConnectorStatus(connector)}
+                            {computeConnectorStatus(connector).render}
                           </div>
                           <div
                             className={classes.bodyItem}
