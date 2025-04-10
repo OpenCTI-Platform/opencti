@@ -92,7 +92,7 @@ services:
       - 5602 # Expose port 5601 for web access to OpenSearch Dashboards
     environment:
       OPENSEARCH_HOSTS: '["http://opencti-dev-opensearch:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
-      DISABLE_SECURITY_DASHBOARDS_PLUGIN: true
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: "true"
 
   opencti-dev-minio:
     container_name: opencti-dev-minio
@@ -115,6 +115,8 @@ services:
     container_name: opencti-dev-rabbitmq
     image: rabbitmq:4.0-management
     restart: unless-stopped
+    volumes:
+      - ./rabbitmq.config:/etc/rabbitmq/conf.d/90-userdefined.conf
     ports:
       - 5672:5672
       - 15672:15672
@@ -133,7 +135,7 @@ services:
     container_name: opencti-dev-jaegertracing
     image: jaegertracing/all-in-one:latest
     environment:
-      COLLECTOR_OTLP_ENABLED: true
+      COLLECTOR_OTLP_ENABLED: "true"
     ports:
       - "16686:16686"
       - "4318:4318"

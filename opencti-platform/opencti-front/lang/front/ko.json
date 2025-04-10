@@ -3086,6 +3086,7 @@
   "The value must be greater than or equal to 0": "값은 0 이상이어야 합니다",
   "The value must be greater than or equal to 1": "값은 1보다 크거나 같아야 합니다",
   "The value must be less than or equal to 100": "값은 100 이하이어야 합니다",
+  "The value should be between 0 and 100": "값은 0에서 100 사이여야 합니다",
   "The value must not be empty": "값이 비어 있지 않아야 합니다",
   "The value must not be empty.": "값이 비어 있지 않아야 합니다.",
   "The values do not match": "값이 일치하지 않습니다",

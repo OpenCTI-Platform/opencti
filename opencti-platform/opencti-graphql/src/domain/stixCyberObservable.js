@@ -22,7 +22,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from '../modules/indicator/indicator-domain';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, ValidationError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';
 import {
@@ -190,6 +190,9 @@ export const addStixCyberObservable = async (context, user, input) => {
   if (!input[graphQLType]) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
+  if (x_opencti_score < 0 || x_opencti_score > 100) {
+    throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
+  }
   const lowerCaseTypes = ['Domain-Name', 'Email-Addr'];
   if (lowerCaseTypes.includes(type) && input[graphQLType].value) {
     // eslint-disable-next-line no-param-reassign
@@ -292,6 +295,10 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     if (isNumericAttribute(key) && value === '') delete stixCyberObservable[key];
   });
   if (input[0].key === 'x_opencti_score') {
+    const newScore = parseInt(input[0].value[0], 10);
+    if (newScore < 0 || newScore > 100) {
+      throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
+    }
     const indicators = await listAllFromEntitiesThroughRelations(
       context,
       user,

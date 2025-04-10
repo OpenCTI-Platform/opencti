@@ -1,9 +1,10 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
+import * as R from 'ramda';
 import { assoc, difference, filter, fromPairs, head, includes, map, pick, pipe } from 'ramda';
 import { useNavigate } from 'react-router-dom';
-import * as R from 'ramda';
+import * as Yup from 'yup';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -237,6 +238,14 @@ const StixCyberObservableEditionOverviewComponent = ({
       }
     }
   };
+
+  const stixCyberObservableValidation = Yup.object().shape({
+    x_opencti_score: Yup.number()
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
+  });
+
   return (
     <QueryRenderer
       query={stixCyberObservablesLinesAttributesQuery}
@@ -298,6 +307,7 @@ const StixCyberObservableEditionOverviewComponent = ({
             <Formik
               enableReinitialize={true}
               initialValues={initialValues}
+              validationSchema={stixCyberObservableValidation}
               onSubmit={onSubmit}
             >
               {({ setFieldValue }) => (
