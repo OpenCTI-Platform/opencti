@@ -224,7 +224,6 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                 variant="inList"
                                 markingDefinitions={attackPattern.objectMarking ?? []}
                                 limit={1}
-                                onClick={undefined}
                               />
                             </ListItemButton>
                           </ListItem>

@@ -116,7 +116,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         variant="inList"
         markingDefinitions={allowed_markings ?? []}
         limit={2}
-        onClick={undefined}
       />
     ),
   },
@@ -632,7 +631,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         variant="inList"
         markingDefinitions={objectMarking ?? []}
         limit={1}
-        onClick={handleAddFilter}
+        onClick={(m) => handleAddFilter('objectMarking', m.id, 'eq')}
       />
     ),
   },

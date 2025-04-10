@@ -158,9 +158,7 @@ class SectorTargetedOrganizations extends Component {
                               <div style={{ width: 110, paddingRight: 20 }}>
                                 <ItemMarkings
                                   variant="inList"
-                                  markingDefinitions={
-                                    relation.objectMarking ?? []
-                                  }
+                                  markingDefinitions={relation.objectMarking ?? []}
                                   limit={1}
                                 />
                               </div>

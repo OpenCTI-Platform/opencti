@@ -182,9 +182,7 @@ const StixDomainObjectOverview = ({
                 {t_i18n('Marking')}
               </Typography>
               <ItemMarkings
-                markingDefinitions={
-                    stixDomainObject.objectMarking ?? []
-                  }
+                markingDefinitions={stixDomainObject.objectMarking ?? []}
               />
             </>
             )}

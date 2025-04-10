@@ -2582,9 +2582,7 @@ class DataTableToolBar extends Component {
                         <div style={{ marginRight: 50 }}>
                           <ItemMarkings
                             variant="inList"
-                            markingDefinitions={
-                              element.objectMarking ?? []
-                            }
+                            markingDefinitions={element.objectMarking ?? []}
                           />
                         </div>
                       </ListItem>
@@ -2645,9 +2643,7 @@ class DataTableToolBar extends Component {
                         {t('Marking')}
                       </Typography>
                       <ItemMarkings
-                        markingDefinitions={
-                          keptElement?.objectMarking || []
-                        }
+                        markingDefinitions={keptElement?.objectMarking || []}
                       />
                     </>
                   )}
