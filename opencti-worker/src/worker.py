@@ -2,7 +2,6 @@
 
 
 import base64
-import ctypes
 import datetime
 import functools
 import json
@@ -98,6 +97,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
     listen_api_https_proxy: str
     log_level: str = "info"
     json_logging: bool = True
+    _is_interrupted: bool = False
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -133,8 +133,6 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
         assert self.channel is not None
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
-
-        self._is_interrupted = False
 
     @property
     def id(self) -> Any:  # pylint: disable=inconsistent-return-statements
@@ -240,7 +238,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
                     {"tag": method.delivery_tag},
                 )
                 task_future = self.execution_pool.submit(
-                    self.data_handler, self.pika_connection, channel, method.delivery_tag, body
+                    self.data_handler, self.pika_connection, self.channel, method.delivery_tag, body
                 )
                 while task_future.running():  # Loop while the thread is processing
                     self.pika_connection.sleep(0.05)
@@ -263,6 +261,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     log_level: str
     ssl_verify: Union[bool, str] = False
     json_logging: bool = True
+    _is_interrupted = False
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -304,8 +303,6 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         assert self.channel is not None
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
-
-        self._is_interrupted = False
 
     @property
     def id(self) -> Any:  # pylint: disable=inconsistent-return-statements
@@ -754,7 +751,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 self.worker_logger.error(type(e).__name__, {"reason": str(e)})
                 time.sleep(60)
 
-def exit_handler(signum, frame):
+def exit_handler(_signum, _frame):
     worker.stop()
     sys.exit(0)
 
@@ -767,6 +764,6 @@ if __name__ == "__main__":
     try:
         worker.start()
     except Exception as e:  # pylint: disable=broad-except
-        self.worker_logger.error('Got unhandled Exception in main loop, exiting. exception: %s' % e)
-        self.stop()
+        # self.worker_logger.error('Got unhandled Exception in main loop, exiting. exception: %s' % e)
+        # self.stop()
         sys.exit(1)
