@@ -81,6 +81,11 @@ const useGraphInteractions = () => {
     graphRef3D.current?.zoomToFit(400, 0);
   };
 
+  const setZoom = (zoomLevel: NonNullable<GraphState['zoom']>) => {
+    graphRef2D.current?.zoom(zoomLevel.k, 400);
+    graphRef2D.current?.centerAt(zoomLevel.x, zoomLevel.y, 400);
+  };
+
   /**
    * Remove fx and fy positions responsible for fixed positions when
    * mode forces is on and reapply forces.
@@ -152,7 +157,7 @@ const useGraphInteractions = () => {
   };
 
   const saveZoom = (z: GraphState['zoom']) => {
-    const shouldIgnore = z?.k === 1 && z.x === 0 && z.y === 0;
+    const shouldIgnore = !z || (z.x === 0 && z.y === 0);
     if (shouldIgnore) return; // Those zoom values are from graph init, ignore.
     setGraphStateProp('zoom', z);
   };
@@ -477,6 +482,7 @@ const useGraphInteractions = () => {
     rebuildGraphData,
     setLoadingTotal,
     setLoadingCurrent,
+    setZoom,
   };
 };
 

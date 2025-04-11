@@ -88,6 +88,7 @@ export const graphStateToLocalStorage = (state: GraphState) => {
     mode3D,
     modeTree,
     withForces,
+    zoom,
   } = state;
 
   return {
@@ -97,5 +98,6 @@ export const graphStateToLocalStorage = (state: GraphState) => {
     mode3D,
     modeTree,
     withForces,
+    zoom,
   };
 };
