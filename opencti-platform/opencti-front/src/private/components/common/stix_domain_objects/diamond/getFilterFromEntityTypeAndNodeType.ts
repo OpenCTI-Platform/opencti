@@ -89,7 +89,7 @@ const filterContentFromEntityTypeAndNodeType = {
   },
   [DiamondEntityType.channel]: {
     [DiamondNodeType.adversary]: {
-      entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual'],
+      entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Incident'],
       relationships: ['uses'],
     },
     [DiamondNodeType.infrastructure]: {
@@ -131,16 +131,16 @@ const filterContentFromEntityTypeAndNodeType = {
   },
   [DiamondEntityType.infrastructure]: {
     [DiamondNodeType.adversary]: {
-      entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Campaign'],
-      relationships: ['attributed-to'],
+      entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Campaign', 'Incident'],
+      relationships: ['uses', 'hosts', 'owns'],
     },
     [DiamondNodeType.infrastructure]: {
       entityType: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
-      relationships: ['related-to', 'uses'],
+      relationships: ['with', 'consists'],
     },
     [DiamondNodeType.capabilities]: {
-      entityType: ['Attack-Pattern', 'Malware', 'Tool', 'Channel'],
-      relationships: ['uses'],
+      entityType: ['Malware', 'Tool'],
+      relationships: ['controls', 'hosts', 'delivers'],
     },
   },
 };
