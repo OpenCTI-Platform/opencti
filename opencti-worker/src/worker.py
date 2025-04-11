@@ -164,7 +164,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             )
 
     # Data handling
-    def data_handler(  # pylint: disable=too-many-statements, too-many-locals
+    def api_data_handler(  # pylint: disable=too-many-statements, too-many-locals
         self,
         connection: Any,
         channel: BlockingChannel,
@@ -211,15 +211,12 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             )
             error_msg = traceback.format_exc()
             if ERROR_TYPE_BAD_GATEWAY in error_msg or ERROR_TYPE_TIMEOUT in error_msg:
-                # Nack the message
+                # Nack the message and requeue
                 cb = functools.partial(self.nack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)
             else:
-                # Technical error, log and continue
-                # Reject the message
-                cb = functools.partial(
-                    self.nack_message, channel, delivery_tag, requeue=False
-                )
+                # Technical error, log and continue, Reject the message
+                cb = functools.partial(self.nack_message, channel, delivery_tag, False)
                 connection.add_callback_threadsafe(cb)
 
     def stop(self):
@@ -242,7 +239,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
                     {"tag": method.delivery_tag},
                 )
                 task_future = self.execution_pool.submit(
-                    self.data_handler,
+                    self.api_data_handler,
                     self.pika_connection,
                     self.channel,
                     method.delivery_tag,
@@ -349,8 +346,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         delivery_tag: str,
         data: Dict[str, Any],
     ) -> Optional[bool]:
+        imported_items = []
+        start_processing = datetime.datetime.now()
         try:
-            start_processing = datetime.datetime.now()
             # Set the API headers
             self.api.set_applicant_id_header(data.get("applicant_id"))
             self.api.set_playbook_id_header(data.get("playbook_id"))
@@ -362,14 +360,12 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             previous_standard = data.get("previous_standard")
             self.api.set_previous_standard_header(previous_standard)
             # Execute the import
-            imported_items = []
             event_type = data["type"] if "type" in data else "bundle"
             types = (
                 data["entities_types"]
                 if "entities_types" in data and len(data["entities_types"]) > 0
                 else None
             )
-
             if event_type == "bundle":
                 content = base64.b64decode(data["content"]).decode("utf-8")
                 content_json = json.loads(content)
@@ -469,20 +465,21 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     )
             else:
                 raise ValueError("Unsupported event type", {"event_type": event_type})
+            # Ack the message
+            cb = functools.partial(self.ack_message, channel, delivery_tag)
+            connection.add_callback_threadsafe(cb)
         except Exception as ex:
             # Technical unmanaged exception
             self.worker_logger.error(
                 "Error executing data handling", {"reason": str(ex)}
             )
-            cb = functools.partial(self.nack_message, channel, delivery_tag)
+            # Nack message and discard
+            cb = functools.partial(self.nack_message, channel, delivery_tag, False)
             connection.add_callback_threadsafe(cb)
         finally:
             bundles_global_counter.add(len(imported_items))
             processing_delta = datetime.datetime.now() - start_processing
             bundles_processing_time_gauge.record(processing_delta.seconds)
-            # Ack the message
-            cb = functools.partial(self.ack_message, channel, delivery_tag)
-            connection.add_callback_threadsafe(cb)
             return True
 
     def stop(self):
@@ -515,22 +512,14 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     while task_future.running():  # Loop while the thread is processing
                         self.pika_connection.sleep(0.05)
                     self.worker_logger.info("Message processed, thread terminated")
-                except ValueError as e:
-                    self.worker_logger.error(
-                        "Could not process message, body is not a valid JSON. Discarding.",
-                        {"body": body, "exception": e},
-                    )
-                    cb = functools.partial(
-                        self.nack_message, self.channel, method.delivery_tag, False
-                    )
-                    self.pika_connection.add_callback_threadsafe(cb)
                 except Exception as e:
                     self.worker_logger.error(
-                        "Could not process message. Will requeue",
+                        "Could not process message",
                         {"body": body, "exception": e},
                     )
+                    # Nack message, no requeue for this unprocessed message
                     cb = functools.partial(
-                        self.nack_message, self.channel, method.delivery_tag
+                        self.nack_message, self.channel, method.delivery_tag, False
                     )
                     self.pika_connection.add_callback_threadsafe(cb)
         except Exception as e:
