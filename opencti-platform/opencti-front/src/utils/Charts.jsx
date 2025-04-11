@@ -24,6 +24,16 @@ export const colors = (temp) => [
   C.grey[temp],
 ];
 
+const isColorTooLight = (hex) => {
+  if (!hex) return true;
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substr(0, 2), 16);
+  const g = parseInt(c.substr(2, 2), 16);
+  const b = parseInt(c.substr(4, 2), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.9; // filter on too white colors
+};
+
 const toolbarOptions = {
   show: false,
   export: {
@@ -908,10 +918,9 @@ export const treeMapOptions = (
     theme: {
       mode: theme.palette.mode,
     },
-    colors: [
-      theme.palette.primary.main,
-      ...colors(theme.palette.mode === 'dark' ? 400 : 600),
-    ],
+    colors: distributed
+      ? colors(theme.palette.mode === 'dark' ? 400 : 600).filter((c) => !isColorTooLight(c))
+      : [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
     fill: {
       opacity: 1,
     },
