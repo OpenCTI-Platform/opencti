@@ -1932,10 +1932,6 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             raise ValueError("Nothing to import")
 
         if bundle_send_to_queue:
-            if work_id:
-                self.api.work.add_expectations(work_id, expectations_number)
-                if draft_id:
-                    self.api.work.add_draft_context(work_id, draft_id)
             if entities_types is None:
                 entities_types = []
             if self.queue_protocol == "amqp":
