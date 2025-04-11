@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -28,6 +28,7 @@ const AttackPatternKnowledgeComponent = ({
     AttackPatternKnowledgeFragment,
     attackPatternData,
   );
+  const location = useLocation();
   const link = `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(attackPattern.entity_type, schema);
@@ -59,6 +60,7 @@ const AttackPatternKnowledgeComponent = ({
           path="/all"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={attackPattern.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
@@ -72,6 +74,7 @@ const AttackPatternKnowledgeComponent = ({
           path="/related"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={attackPattern.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
@@ -108,6 +111,7 @@ const AttackPatternKnowledgeComponent = ({
           path="/threat_actors"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={attackPattern.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Threat-Actor']}
@@ -120,6 +124,7 @@ const AttackPatternKnowledgeComponent = ({
           path="/intrusion_sets"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={attackPattern.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Intrusion-Set']}
@@ -132,6 +137,7 @@ const AttackPatternKnowledgeComponent = ({
           path="/campaigns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={attackPattern.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Campaign']}
@@ -145,6 +151,7 @@ const AttackPatternKnowledgeComponent = ({
           path="/incidents"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={attackPattern.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Incident']}
@@ -181,6 +188,7 @@ const AttackPatternKnowledgeComponent = ({
           path="/malwares"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={attackPattern.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Malware']}
@@ -193,6 +201,7 @@ const AttackPatternKnowledgeComponent = ({
           path="/tools"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={attackPattern.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Tool']}
@@ -205,6 +214,7 @@ const AttackPatternKnowledgeComponent = ({
           path="/vulnerabilities"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={attackPattern.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Vulnerability']}

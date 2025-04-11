@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import StixCoreObjectKnowledgeBar from '@components/common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
@@ -34,6 +34,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
     infrastructureKnowledgeFragment,
     infrastructure,
   );
+  const location = useLocation();
   const link = `/dashboard/observations/infrastructures/${infrastructureData.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(infrastructureData.entity_type, schema);
@@ -91,6 +92,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/all"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
@@ -104,6 +106,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/related"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
@@ -133,6 +136,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/infrastructures"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               relationshipTypes={[
                 'communicates-with',
@@ -175,6 +179,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/observed_data"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               stixCoreObjectTypes={['Observed-Data']}
               relationshipTypes={['consists-of']}
@@ -189,6 +194,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/threats"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               relationshipTypes={['compromises', 'uses']}
               entityLink={link}
@@ -208,6 +214,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/threat_actors"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               stixCoreObjectTypes={['Threat-Actor']}
               relationshipTypes={['compromises', 'uses']}
@@ -222,6 +229,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/intrusion_sets"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               stixCoreObjectTypes={['Intrusion-Set']}
               relationshipTypes={['compromises', 'uses']}
@@ -236,6 +244,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/campaigns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               stixCoreObjectTypes={['Campaign']}
               relationshipTypes={['compromises', 'uses']}
@@ -250,6 +259,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/malwares"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               stixCoreObjectTypes={['Malware']}
               relationshipTypes={['controls', 'delivers', 'hosts', 'uses']}
@@ -264,6 +274,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/tools"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               stixCoreObjectTypes={['Tool']}
               relationshipTypes={['hosts', 'uses']}
@@ -278,6 +289,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/vulnerabilities"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               relationshipTypes={['has']}
               stixCoreObjectTypes={['Vulnerability']}
@@ -313,6 +325,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           path="/incidents"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={infrastructureData.id}
               relationshipTypes={['uses', 'compromises']}
               stixCoreObjectTypes={['Incident']}

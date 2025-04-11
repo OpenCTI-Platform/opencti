@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -40,6 +40,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
     threatActorIndividualKnowledgeFragment,
     threatActorIndividualData,
   );
+  const location = useLocation();
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(threatActorIndividual.entity_type, schema);
@@ -77,6 +78,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/all"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={allRelationshipsTypes}
             entityLink={link}
@@ -90,6 +92,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/related"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={relatedRelationshipTypes}
             entityLink={link}
@@ -114,6 +117,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/threat_actors"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={[
               'part-of',
@@ -135,6 +139,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/intrusion_sets"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={['attributed-to']}
             stixCoreObjectTypes={['Intrusion-Set']}
@@ -149,6 +154,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/campaigns"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={['attributed-to', 'participates-in']}
             stixCoreObjectTypes={['Campaign']}
@@ -173,6 +179,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/malwares"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={['uses', 'authored-by']}
             stixCoreObjectTypes={['Malware']}
@@ -187,6 +194,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/channels"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={['uses']}
             stixCoreObjectTypes={['Channel']}
@@ -200,6 +208,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/narratives"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={['uses']}
             stixCoreObjectTypes={['Narrative']}
@@ -213,6 +222,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/tools"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={['uses']}
             stixCoreObjectTypes={['Tool']}
@@ -226,6 +236,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/vulnerabilities"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Vulnerability']}
@@ -239,6 +250,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/countries"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={['resides-in', 'citizen-of', 'national-of']}
             stixCoreObjectTypes={['Country']}
@@ -252,6 +264,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/organizations"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={['employed-by', 'impersonates']}
             stixCoreObjectTypes={['Organization']}
@@ -265,6 +278,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/incidents"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={['attributed-to']}
             stixCoreObjectTypes={['Incident']}
@@ -303,6 +317,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
         path="/infrastructures"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={threatActorIndividual.id}
             relationshipTypes={['uses', 'compromises']}
             stixCoreObjectTypes={['Infrastructure']}
