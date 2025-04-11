@@ -79,7 +79,8 @@ describe('playbook sharing component', () => {
             label: externalOrganizationEntity.name,
             value: externalOrganizationEntity.id
           }
-        ]
+        ],
+        all: true
       },
       id: '651475c0-04ae-423d-88d3-734c35e65c07',
       name: 'Share with organizations',
@@ -133,7 +134,37 @@ describe('playbook sharing component', () => {
           x_opencti_type: 'Campaign',
           type: 'campaign',
           x_opencti_granted_refs: [externalOrganizationEntity.standard_id]
-        }
+        },
+        {
+          id: 'campaign--fdcacc8e-de4d-5a13-8886-401d363664fd',
+          spec_version: '2.1',
+          type: 'campaign',
+          extensions: {
+            'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+              extension_type: 'property-extension',
+              id: '21df79ac-4edf-40c5-bc04-a0122dbc4e39',
+              type: 'Campaign',
+              created_at: '2015-05-15T09:12:16.432Z',
+              updated_at: '2025-03-26T10:00:10.363Z',
+              is_inferred: false,
+              creator_ids: [
+                '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+              ],
+              granted_refs: [externalOrganizationEntity.standard_id]
+            }
+          },
+          created: '2020-02-29T14:48:31.601Z',
+          modified: '2025-04-10T16:34:18.572Z',
+          revoked: false,
+          confidence: 100,
+          lang: 'en',
+          labels: [
+            'campaign'
+          ],
+          name: 'admin@338',
+          description: 'description',
+          first_seen: '2008-01-07T00:00:00.000Z',
+        },
       ],
       spec_version: '2.1',
       type: 'bundle'
