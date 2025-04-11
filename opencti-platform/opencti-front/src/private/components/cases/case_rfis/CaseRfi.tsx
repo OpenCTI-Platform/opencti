@@ -64,6 +64,11 @@ const caseRfiFragment = graphql`
       id
       name
     }
+    objectParticipant {
+      id
+      name
+      entity_type
+    }
     objectMarking {
       id
       definition_type
