@@ -3731,7 +3731,7 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact) 
           let source = `if(ctx._source[params.rel_key] != null){
               for (int i=params.cleanupIds.length-1; i>=0; i--) {
                 def cleanupIndex = ctx._source[params.rel_key].indexOf(params.cleanupIds[i]);
-                if(cleanupIndex !== 1){
+                if(cleanupIndex !== -1){
                   ctx._source[params.rel_key].remove(cleanupIndex);
                 }
             }
