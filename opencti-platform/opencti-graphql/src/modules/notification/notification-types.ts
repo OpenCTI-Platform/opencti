@@ -2,6 +2,7 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { AuthorizedMember } from '../../utils/access';
+import type { FilterGroup } from '../../generated/graphql';
 
 // Outcomes
 
@@ -19,12 +20,14 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   restricted_members: Array<AuthorizedMember>;
   instance_trigger: boolean
   filters: string
+  raw_filters: FilterGroup
 }
 
 export interface BasicStoreEntityLiveTrigger extends BasicStoreEntityTrigger {
   trigger_type: 'live'
   trigger_scope: 'knowledge' | 'activity'
   filters: string
+  raw_filters: FilterGroup
 }
 
 export interface BasicStoreEntityDigestTrigger extends BasicStoreEntityTrigger {
