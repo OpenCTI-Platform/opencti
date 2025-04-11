@@ -1887,10 +1887,10 @@ class DataTableToolBar extends Component {
           const isOnlyStixCyberObservablesTypes = entityTypeFilterValues.length > 0
             && entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
 
-          const cleanedSelectedTypes = selectedTypes.filter((type) => type !== 'Stix-Domain-Object' && type !== 'Stix-Core-Object');
+          const promotionTypesFiltered = entityTypeFilterValues.length > 0
+            && entityTypeFilterValues.every((id) => promotionTypes.includes(id));
 
-          const promotionTypesFiltered = cleanedSelectedTypes.length > 0
-            && cleanedSelectedTypes.every((type) => promotionTypes.includes(type));
+          const cleanedSelectedTypes = selectedTypes.filter((type) => type !== 'Stix-Domain-Object' && type !== 'Stix-Core-Object');
 
           const isManualPromoteSelect = !selectAll
             && cleanedSelectedTypes.length > 0
