@@ -31,5 +31,4 @@ export default class DashboardDetailsPage {
   getDuplicateButton() {
     return this.page.getByRole('button', { name: 'Duplicate' });
   }
-
 }
