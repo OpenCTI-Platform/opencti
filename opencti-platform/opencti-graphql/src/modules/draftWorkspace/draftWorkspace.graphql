@@ -36,6 +36,7 @@ enum DraftWorkspacesOrdering {
     created_at
     creator
     draft_status
+    _score
 }
 
 # Relay connections

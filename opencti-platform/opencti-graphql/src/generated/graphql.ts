@@ -6638,6 +6638,7 @@ export type DraftWorkspaceEdge = {
 };
 
 export enum DraftWorkspacesOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
   Creator = 'creator',
   DraftStatus = 'draft_status',
