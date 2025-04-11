@@ -262,7 +262,7 @@ const StixCoreObjectKnowledgeBar = ({
           label: 'Intrusion sets',
           iconType: 'Intrusion-Set',
           path: 'intrusion_sets',
-          count: distributions.withoutRelated['Intrusion-Set'] || 0,
+          count: distributions.coreObjects['Intrusion-Set'] || 0,
         },
         {
           label: 'Campaigns',

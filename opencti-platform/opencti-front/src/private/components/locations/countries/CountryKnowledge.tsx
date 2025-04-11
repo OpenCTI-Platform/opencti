@@ -91,8 +91,6 @@ const CountryKnowledgeComponent = ({
                 'Intrusion-Set',
                 'Campaign',
                 'Incident',
-                'Malware',
-                'Tool',
               ]}
             />
           }
