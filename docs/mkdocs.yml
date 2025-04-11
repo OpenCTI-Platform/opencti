@@ -126,6 +126,7 @@ nav:
       - Clustering: deployment/clustering.md
       - Indices and rollover: deployment/rollover.md
       - On-premise map server: deployment/map.md
+      - On-premise AI extraction: deployment/ai-import-document.md
       - Troubleshooting: deployment/troubleshooting.md
     - Breaking changes:
         - Index: deployment/breaking-changes.md
