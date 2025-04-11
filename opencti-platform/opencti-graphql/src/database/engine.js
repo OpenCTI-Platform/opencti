@@ -3729,18 +3729,13 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact) 
           const refField = isStixRefRelationship(relationType) && isInferredIndex(relationIndex) ? ID_INFERRED : ID_INTERNAL;
           const rel_key = buildRefRelationKey(relationType, refField);
           let source = `if(ctx._source[params.rel_key] != null){
-            Map foundIds = new HashMap();
-            for (int i=params.cleanupIds.length-1; i>=0; i--) {
-              boolean currentFound = false;
-              for (int j=ctx._source[params.rel_key].length-1; j>=0; j--) {
-                if (!currentFound && foundIds[j] != false && ctx._source[params.rel_key][j] == params.cleanupIds[i]) {
-                  currentFound = true;
-                  foundIds[j] = true;
-                  ctx._source[params.rel_key].remove(j);
+              for (int i=params.cleanupIds.length-1; i>=0; i--) {
+                def cleanupIndex = ctx._source[params.rel_key].indexOf(params.cleanupIds[i]);
+                if(cleanupIndex !== 1){
+                  ctx._source[params.rel_key].remove(cleanupIndex);
                 }
-              }
             }
-          }
+          }  
           `;
           // Only impact the updated at on the from side of the ref relationship
           const fromSide = side === 'from';
