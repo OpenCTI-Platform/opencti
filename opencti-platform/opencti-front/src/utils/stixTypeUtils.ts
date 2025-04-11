@@ -1,5 +1,6 @@
 export const isStixCyberObservables = (stixCoreObjectTypes?: string[]) => stixCoreObjectTypes?.includes('Stix-Cyber-Observable');
 export const isStixCoreObjects = (stixCoreObjectTypes?: string[]) => !stixCoreObjectTypes || stixCoreObjectTypes.includes('Stix-Core-Object');
+export const isStixCoreRelationships = (stixCoreObjectTypes?: string[]) => stixCoreObjectTypes?.includes('stix-core-relationship');
 
 export const computeTargetStixDomainObjectTypes = (stixCoreObjectTypes: string[]): string[] => {
   const finalStixCoreObjectTypes = stixCoreObjectTypes || ['Stix-Core-Object'];
