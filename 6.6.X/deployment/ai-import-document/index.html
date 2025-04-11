@@ -12,13 +12,13 @@
         <meta name="author" content="Filigran">
       
       
-        <link rel="canonical" href="https://docs.opencti.io/latest/development/environment_windows/">
+        <link rel="canonical" href="https://docs.opencti.io/latest/deployment/ai-import-document/">
       
       
-        <link rel="prev" href="../environment_ubuntu/">
+        <link rel="prev" href="../map/">
       
       
-        <link rel="next" href="../platform/">
+        <link rel="next" href="../troubleshooting/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Windows - OpenCTI Documentation</title>
+        <title>On-premise AI extraction - OpenCTI Documentation</title>
       
     
     
@@ -101,7 +101,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#prerequisites-windows" class="md-skip">
+        <a href="#deploy-on-premise-ai-import-document-extraction-service" class="md-skip">
           Skip to content
         </a>
       
@@ -272,17 +272,21 @@
         
   
   
+    
+  
   
     
     
       
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../deployment/overview/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../overview/" class="md-tabs__link">
           
   
   Deployment & Setup
@@ -362,21 +366,17 @@
         
   
   
-    
-  
   
     
     
       
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../environment_ubuntu/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../development/environment_ubuntu/" class="md-tabs__link">
           
   
   Development
@@ -464,25 +464,28 @@
       
   
   
+    
   
   
+  
     
     
     
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
       
         
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   <span class="md-ellipsis">
@@ -499,7 +502,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -567,7 +570,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/overview/" class="md-nav__link">
+      <a href="../overview/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -594,7 +597,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/installation/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -621,7 +624,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/configuration/" class="md-nav__link">
+      <a href="../configuration/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -648,7 +651,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/authentication/" class="md-nav__link">
+      <a href="../authentication/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -675,7 +678,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/upgrade/" class="md-nav__link">
+      <a href="../upgrade/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -760,7 +763,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/connectors/" class="md-nav__link">
+      <a href="../connectors/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -787,7 +790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/integrations/" class="md-nav__link">
+      <a href="../integrations/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -814,7 +817,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/resources/" class="md-nav__link">
+      <a href="../resources/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -846,8 +849,10 @@
                 
   
   
+    
   
   
+  
     
     
     
@@ -855,13 +860,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
         
           
           <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
@@ -881,7 +884,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -899,7 +902,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/managers/" class="md-nav__link">
+      <a href="../managers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -926,7 +929,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/clustering/" class="md-nav__link">
+      <a href="../clustering/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -953,7 +956,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/rollover/" class="md-nav__link">
+      <a href="../rollover/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -980,7 +983,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/map/" class="md-nav__link">
+      <a href="../map/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1004,10 +1007,36 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../deployment/ai-import-document/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    On-premise AI extraction
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -1022,6 +1051,109 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#login-to-private-filigran-docker-image-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Login to private Filigran Docker Image Repository
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-the-container-image-to-your-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add the container image to your stack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configure-the-connector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure the connector
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restart-the-connector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restart the connector
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1034,7 +1166,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1119,7 +1251,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/breaking-changes/" class="md-nav__link">
+      <a href="../breaking-changes/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1196,7 +1328,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders/" class="md-nav__link">
+      <a href="../breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1223,7 +1355,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/breaking-changes/6.3-removing-some-connectors/" class="md-nav__link">
+      <a href="../breaking-changes/6.3-removing-some-connectors/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1250,7 +1382,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/breaking-changes/6.2-promote-to-indicator/" class="md-nav__link">
+      <a href="../breaking-changes/6.2-promote-to-indicator/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1277,7 +1409,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/breaking-changes/6.2-saml-authentication/" class="md-nav__link">
+      <a href="../breaking-changes/6.2-saml-authentication/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1304,7 +1436,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/breaking-changes/5.12-filters/" class="md-nav__link">
+      <a href="../breaking-changes/5.12-filters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -4734,28 +4866,25 @@
       
   
   
-    
   
   
-  
     
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -4772,7 +4901,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -4787,8 +4916,6 @@
                 
   
   
-    
-  
   
   
     
@@ -4798,11 +4925,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_1" >
         
           
           <label class="md-nav__link" for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
@@ -4822,7 +4951,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6_1">
             <span class="md-nav__icon md-icon"></span>
             
@@ -4840,7 +4969,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../environment_ubuntu/" class="md-nav__link">
+      <a href="../../development/environment_ubuntu/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -4864,36 +4993,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    
-  
-    Windows
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../development/environment_windows/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -4908,70 +5011,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#docker-or-podman" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docker or podman
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#nodejs-and-yarn" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        NodeJS and yarn
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#python-runtime" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Python runtime
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#git-and-dev-tool" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Git and dev tool
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -4992,7 +5031,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../platform/" class="md-nav__link">
+      <a href="../../development/platform/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -5019,7 +5058,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../python/" class="md-nav__link">
+      <a href="../../development/python/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -5046,7 +5085,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../connectors/" class="md-nav__link">
+      <a href="../../development/connectors/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -5073,7 +5112,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-usage/" class="md-nav__link">
+      <a href="../../development/api-usage/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -5127,10 +5166,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#docker-or-podman" class="md-nav__link">
+  <a href="#introduction" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docker or podman
+        Introduction
       
     </span>
   </a>
@@ -5138,10 +5177,38 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#nodejs-and-yarn" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        NodeJS and yarn
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#login-to-private-filigran-docker-image-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Login to private Filigran Docker Image Repository
       
     </span>
   </a>
@@ -5149,10 +5216,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#python-runtime" class="md-nav__link">
+  <a href="#add-the-container-image-to-your-stack" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Python runtime
+        Add the container image to your stack
       
     </span>
   </a>
@@ -5160,10 +5227,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#git-and-dev-tool" class="md-nav__link">
+  <a href="#configure-the-connector" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Git and dev tool
+        Configure the connector
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restart-the-connector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restart the connector
       
     </span>
   </a>
@@ -5215,10 +5293,10 @@
     
     
       <li class="md-path__item">
-        <a href="../environment_ubuntu/" class="md-path__link">
+        <a href="../overview/" class="md-path__link">
           
   <span class="md-ellipsis">
-    Development
+    Deployment & Setup
   </span>
 
         </a>
@@ -5235,10 +5313,10 @@
     
     
       <li class="md-path__item">
-        <a href="../environment_ubuntu/" class="md-path__link">
+        <a href="../managers/" class="md-path__link">
           
   <span class="md-ellipsis">
-    Prerequisites
+    Advanced
   </span>
 
         </a>
@@ -5257,7 +5335,7 @@
 
 
   
-    <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/development/environment_windows.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/deployment/ai-import-document.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -5266,74 +5344,108 @@
     
       
     
-    <a href="https://github.com/OpenCTI-Platform/docs/raw/main/docs/development/environment_windows.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/OpenCTI-Platform/docs/raw/main/docs/deployment/ai-import-document.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
     </a>
   
 
 
-<h1 id="prerequisites-windows">Prerequisites Windows</h1>
-<p>Development stack require some base software that need to be installed.</p>
-<h2 id="docker-or-podman">Docker or podman</h2>
-<p>Platform dependencies in development are deployed through container management, so you need to install a container stack.</p>
-<p>We currently support docker and postman.</p>
-<p>Docker Desktop from - <a href="https://docs.docker.com/desktop/install/windows-install/">https://docs.docker.com/desktop/install/windows-install/</a></p>
+<h1 id="deploy-on-premise-ai-import-document-extraction-service">Deploy on-premise AI Import Document Extraction Service</h1>
+<h2 id="introduction">Introduction</h2>
+<p>By default, the <a href="https://github.com/OpenCTI-Platform/connectors/tree/master/internal-import-file/import-document-ai">Import Document AI</a> connector is leveraging an extraction service hosted on <code>https://importdoc.ariane.filigran.io</code>. In some cases like air-gaped environment, you may want to deploy this extraction service on-premise.  </p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>The extraction service providing NLP (turning raw document to STIX bundles) relies on an AI model trained by Filigran.</p>
+<h3 id="requirements">Requirements</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">GPU Deployment</th>
+<th>CPU Deployment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Computing</td>
+<td style="text-align: left;">GPU</td>
+<td>CPU &gt;= 3GHz</td>
+</tr>
+<tr>
+<td style="text-align: left;">RAM</td>
+<td style="text-align: left;">8GB</td>
+<td>16GB</td>
+</tr>
+<tr>
+<td style="text-align: left;">Disk Space</td>
+<td style="text-align: left;">16GB</td>
+<td>16GB</td>
+</tr>
+<tr>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">-</td>
+<td>-</td>
+</tr>
+<tr>
+<td style="text-align: left;">Average extraction time*</td>
+<td style="text-align: left;">5 to 10 secs</td>
+<td>30 secs to 2 minutes</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
 <ul>
-<li>Install new version of - <a href="https://docs.microsoft.com/windows/wsl/wsl2-kernel">https://docs.microsoft.com/windows/wsl/wsl2-kernel</a>. This will require a reboot.</li>
-<li>Shell out to CMD as Administrator and run the following <strong>powershell</strong> command: </li>
+<li>Depends on the size of the file.</li>
 </ul>
-<p><code>wsl --set-default-version 2</code></p>
-<ul>
-<li>Reboot computer and continue to next step       </li>
-<li>Load Docker Application</li>
-<li><strong>NOTE DOCKER LICENSE - You are agreeing to the licence for Non-commercial Open Source Project use. OpenCTI is Open Source and the version you would be possibly contributing to enhancing is the unpaid non-commercial/non-enterprise version. If you intention is different - please consult with your organization's legal/licensing department.</strong></li>
-<li>Leave Docker Desktop running</li>
-</ul>
-<h2 id="nodejs-and-yarn">NodeJS and yarn</h2>
-<p>The platform is developed on nodejs technology, so you need to install node and the yarn package manager.</p>
-<ul>
-<li>Install NodeJS from - <a href="https://nodejs.org/download/release/v16.20.0/node-v16.20.0-x64.msi">https://nodejs.org/download/release/v16.20.0/node-v16.20.0-x64.msi</a></li>
-<li>Select the option for installing Chocolatey on the Tools for Native Modules screen<ul>
-<li>Will do this install for you automatically - <a href="https://chocolatey.org/packages/visualstudio2019-workload-vctools">https://chocolatey.org/packages/visualstudio2019-workload-vctools</a></li>
-<li>Includes Python 3.11.4</li>
-</ul>
-</li>
-<li>
-<p>Shell out to CMD prompt as Administrator and install/run:</p>
-<ul>
-<li><code>pip3 install pywin32</code></li>
-</ul>
-</li>
-<li>
-<p>Configure Yarn (<a href="https://yarnpkg.com/getting-started/install">https://yarnpkg.com/getting-started/install</a>)</p>
-</li>
-<li>Open CMD as Administrator and run the following command:<ul>
-<li><code>corepack enable</code></li>
-</ul>
-</li>
-</ul>
-<h2 id="python-runtime">Python runtime</h2>
-<p>For worker and connectors, a python runtime is needed. Even if you already have a python runtime installed through node installation, 
-on windows some nodejs package will be recompiled with python and C++ runtime. </p>
-<p>For this reason <strong>Visual Studio Build Tools</strong> is required.</p>
-<ul>
-<li>Install Visual Studio Build Tools from - <a href="https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools">https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools</a></li>
-<li>Check off Desktop Development with C++</li>
-<li>Run install</li>
-</ul>
-<h2 id="git-and-dev-tool">Git and dev tool</h2>
-<ul>
-<li>Download GIT for Windows (64-bit Setup)- <a href="https://git-scm.com/download/win">https://git-scm.com/download/win</a></li>
-<li>
-<p>Just use defaults on each screen</p>
-</li>
-<li>
-<p>Install your preferred IDE</p>
-</li>
-<li>Intellij community edition - <a href="https://www.jetbrains.com/idea/download/">https://www.jetbrains.com/idea/download/</a></li>
-<li>VSCode - <a href="https://code.visualstudio.com/docs/?dv=win64">https://code.visualstudio.com/docs/?dv=win64</a></li>
-</ul>
+</blockquote>
+<h2 id="login-to-private-filigran-docker-image-repository">Login to private Filigran Docker Image Repository</h2>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>login<span class="w"> </span>--username<span class="w"> </span>filigrancustomers
+</span></code></pre></div>
+<p>Then enter the token provided by your Filigran CSM or Account Manager.</p>
+<h2 id="add-the-container-image-to-your-stack">Add the container image to your stack</h2>
+<p>The image is named <code>filigran/import-document-ai-webservice</code>, you can pull it and push it into your own Docker images repositories if necessary.</p>
+<blockquote>
+<p>By default, the configuration below expose the service to the port <code>80</code>, feel free to change this.</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>version: &#39;3&#39;
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>services:
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  service-import-document-ai-webservice:
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    image: filigran/import-document-ai-webservice
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    ports:
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>      - &quot;80:8000&quot;
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    # Only if you have GPU
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    deploy:
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>      resources:
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        reservations:
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>          devices:
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>            - driver: nvidia
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>              count: 1
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>              capabilities: [gpu]           
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    restart: always
+</span></code></pre></div>
+<h2 id="configure-the-connector">Configure the connector</h2>
+<p>Then, you've to configure the <a href="https://github.com/OpenCTI-Platform/connectors/tree/master/internal-import-file/import-document-ai">Import Document AI</a> connector to use the deployed web service:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Parameter (config.yml)</th>
+<th style="text-align: left;">Environment variable</th>
+<th style="text-align: left;">Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">connector_web_service_url</td>
+<td style="text-align: left;">CONNECTOR_WEB_SERVICE_URL</td>
+<td style="text-align: left;">http://{YOUR_WEBSERVICE}</td>
+<td>The address of your new webservice</td>
+</tr>
+</tbody>
+</table>
+<h2 id="restart-the-connector">Restart the connector</h2>
+<p>Restart your connector with the right configuration.</p>
+<p>You're good to go!</p>
 
 
 
@@ -5356,7 +5468,7 @@ on windows some nodejs package will be recompiled with python and C++ runtime. <
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 2, 2023 17:14:46"><span class="timeago" datetime="2023-07-02T17:14:46+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 2, 2023 17:14:46">2023-07-02</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 11, 2025 18:15:48"><span class="timeago" datetime="2025-04-11T18:15:48+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 11, 2025 18:15:48">2025-04-11</span>
   </span>
 
     
@@ -5366,7 +5478,7 @@ on windows some nodejs package will be recompiled with python and C++ runtime. <
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 19, 2023 21:31:16"><span class="timeago" datetime="2023-06-19T21:31:16+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 19, 2023 21:31:16">2023-06-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 11, 2025 18:15:48"><span class="timeago" datetime="2025-04-11T18:15:48+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 11, 2025 18:15:48">2025-04-11</span>
   </span>
 
     
@@ -5384,14 +5496,9 @@ on windows some nodejs package will be recompiled with python and C++ runtime. <
     
     <nav>
       
-        <a href="https://github.com/ParamConstructor" class="md-author" title="@ParamConstructor">
+        <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
           
-          <img src="https://avatars.githubusercontent.com/u/132086448?size=72" alt="ParamConstructor">
-        </a>
-      
-        <a href="https://github.com/richard-julien" class="md-author" title="@richard-julien">
-          
-          <img src="https://avatars.githubusercontent.com/u/285555?size=72" alt="richard-julien">
+          <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
         </a>
       
       
@@ -5425,7 +5532,7 @@ on windows some nodejs package will be recompiled with python and C++ runtime. <
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../environment_ubuntu/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Ubuntu">
+          <a href="../map/" class="md-footer__link md-footer__link--prev" aria-label="Previous: On-premise map server">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -5435,20 +5542,20 @@ on windows some nodejs package will be recompiled with python and C++ runtime. <
                 Previous
               </span>
               <div class="md-ellipsis">
-                Ubuntu
+                On-premise map server
               </div>
             </div>
           </a>
         
         
           
-          <a href="../platform/" class="md-footer__link md-footer__link--next" aria-label="Next: Platform">
+          <a href="../troubleshooting/" class="md-footer__link md-footer__link--next" aria-label="Next: Troubleshooting">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Platform
+                Troubleshooting
               </div>
             </div>
             <div class="md-footer__button md-icon">
