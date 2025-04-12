@@ -25,6 +25,14 @@ class StixSightingRelationship:
             created
             modified
             confidence
+            status {
+                id
+                template {
+                  id
+                  name
+                  color
+                }
+            }
             createdBy {
                 ... on Identity {
                     id

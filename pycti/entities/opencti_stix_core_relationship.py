@@ -26,6 +26,14 @@ class StixCoreRelationship:
             lang
             created
             modified
+            status {
+                id
+                template {
+                  id
+                  name
+                  color
+                }
+            }
             createdBy {
                 ... on Identity {
                     id
