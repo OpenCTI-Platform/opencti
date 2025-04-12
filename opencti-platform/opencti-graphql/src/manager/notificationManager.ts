@@ -159,7 +159,7 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
     trigger_scope: 'knowledge',
     event_types: ['create'],
     notifiers: user.personal_notifiers,
-    filters: JSON.stringify(filters),
+    raw_filters: filters,
     instance_trigger: false,
     restricted_members: []
   } as unknown as BasicStoreEntityLiveTrigger;
@@ -168,17 +168,19 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const nativeTriggers = platformUsers.map((user) => {
-    const builtTriggers = [
-      { users: [user], trigger: generateAssigneeTrigger(user) },
-      { users: [user], trigger: generatePlatformNotificationTrigger(user) }
-    ];
+  const notificationTriggers = [];
+  // nativeTriggers
+  for (let index = 0; index < platformUsers.length; index += 1) {
+    const user = platformUsers[index];
+    notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
+    notificationTriggers.push({ users: [user], trigger: generatePlatformNotificationTrigger(user) });
     if (user.id !== OPENCTI_ADMIN_UUID) { // Admin is a fallback in current alerting on RFI request access creation.
-      builtTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
+      notificationTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
     }
-    return builtTriggers;
-  }).flat();
-  const definedTriggers = triggers.map((trigger) => {
+  }
+  // definedTriggers
+  for (let index = 0; index < triggers.length; index += 1) {
+    const trigger = triggers[index];
     const triggerAuthorizedMembersIds = trigger.restricted_members?.map((member) => member.id) ?? [];
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
@@ -188,9 +190,9 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
     const withoutInternalUsers = [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]
       .filter((u) => INTERNAL_USERS[u.id] === undefined);
     const users = R.uniqBy(R.prop('id'), withoutInternalUsers);
-    return { users, trigger };
-  });
-  return [...nativeTriggers, ...definedTriggers];
+    notificationTriggers.push({ users, trigger });
+  }
+  return notificationTriggers;
 };
 
 export const getLiveNotifications = async (context: AuthContext): Promise<Array<ResolvedLive>> => {
@@ -455,10 +457,14 @@ export const buildTargetEvents = async (
   useSideEventMatching = false,
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
-  const { event_types, notifiers, instance_trigger, filters } = trigger;
-  let finalFilters = filters ? JSON.parse(filters) : null;
+  const { event_types, notifiers, instance_trigger, filters, raw_filters } = trigger;
+  let finalFilters = raw_filters;
+  if (filters) {
+    finalFilters = JSON.parse(filters);
+  }
   if (useSideEventMatching) { // modify filters to look for instance trigger side events
-    finalFilters = replaceFilterKey(JSON.parse(trigger.filters), CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER);
+    const sideFilters = raw_filters ?? JSON.parse(trigger.filters);
+    finalFilters = replaceFilterKey(sideFilters, CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER);
   }
   let triggerEventTypes = event_types;
   if (instance_trigger && event_types.includes(EVENT_TYPE_UPDATE)) {
@@ -537,7 +543,6 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
     const context = executionContext('notification_manager');
     const liveNotifications = await getLiveNotifications(context);
     const version = EVENT_NOTIFICATION_VERSION;
-
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
       const { data: { data, message: streamMessage, origin } } = streamEvent;

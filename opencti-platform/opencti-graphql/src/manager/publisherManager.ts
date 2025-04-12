@@ -204,6 +204,9 @@ const processDigestNotificationEvent = async (context: AuthContext, notification
 
 const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEvent>>) => {
   try {
+    if (streamEvents.length === 0) {
+      // return;
+    }
     const context = executionContext('publisher_manager');
     const notifications = await getNotifications(context);
     const notificationMap = new Map(notifications.map((n) => [n.trigger.internal_id, n.trigger]));
