@@ -44,6 +44,6 @@ export default class ReportPage {
   }
 
   checkItemInList(name: string) {
-    return this.getItemFromList(name).getByTestId('CheckBoxOutlineBlankIcon').click();
+    return this.getItemFromList(name).getByRole('checkbox').click();
   }
 }
