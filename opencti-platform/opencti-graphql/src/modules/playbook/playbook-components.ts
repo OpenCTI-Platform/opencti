@@ -522,6 +522,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
 
 export interface SharingConfiguration {
   organizations: string[] | { label: string, value: string }[]
+  all: boolean
 }
 const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = {
   type: 'object',
@@ -532,11 +533,12 @@ const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = 
       default: [],
       $ref: 'Target organizations',
       items: { type: 'string', oneOf: [] }
-    }
+    },
+    all: { type: 'boolean', $ref: 'Share all elements included in the bundle', default: false },
   },
   required: ['organizations'],
 };
-const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
+export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   id: 'PLAYBOOK_SHARING_COMPONENT',
   name: 'Share with organizations',
   description: 'Share with organizations within the platform',
@@ -548,7 +550,7 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   schema: async () => PLAYBOOK_SHARING_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
-    const { organizations } = playbookNode.configuration;
+    const { organizations, all } = playbookNode.configuration;
     const organizationsValues = organizations.map((o) => (typeof o !== 'string' ? o.value : o));
     const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, organizationsValues, {
       type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -559,8 +561,12 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
       return { output_port: 'out', bundle }; // nothing to do since organizations are empty
     }
     const organizationIds = organizationsByIds.map((o) => o.standard_id);
-    const baseData = bundle.objects.find((o) => o.id === dataInstanceId) as StixCoreObject;
-    baseData.extensions[STIX_EXT_OCTI].granted_refs = [...(baseData.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
+    for (let index = 0; index < bundle.objects.length; index += 1) {
+      const element = bundle.objects[index];
+      if (all || element.id === dataInstanceId) {
+        element.extensions[STIX_EXT_OCTI].granted_refs = [...(element.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
+      }
+    }
     return { output_port: 'out', bundle };
   }
 };
@@ -862,17 +868,22 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       // DATE_SEEN_RULE is only triggered on report creation / update
       if (isStixDomainObjectContainer(type)) {
         // Handle first seen synchro for reports creation / modification
+        logApp.info('executing rule ============', { type });
         const container = baseData as StixContainer;
         const objectRefsToResolve = [];
         if (container.object_refs && container.object_refs.length > 0) {
+          logApp.info('executing rule ============ objects ref');
           objectRefsToResolve.push(...container.object_refs);
         }
         if (inferences && container.extensions[STIX_EXT_OCTI].object_refs_inferred && container.extensions[STIX_EXT_OCTI].object_refs_inferred.length > 0) {
+          logApp.info('executing rule ============ objects ref inferred');
           objectRefsToResolve.push(...container.extensions[STIX_EXT_OCTI].object_refs_inferred);
         }
         const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, objectRefsToResolve);
+        logApp.info('executing rule ============ elements', { elements });
         if (elements.length > 0) {
           bundle.objects.push(...elements);
+          logApp.info('executing rule ============ bundle', { bundle });
           return { output_port: 'out', bundle };
         }
       }
