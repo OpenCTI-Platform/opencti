@@ -3595,9 +3595,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@google-cloud/translate@npm:8.5.1":
-  version: 8.5.1
-  resolution: "@google-cloud/translate@npm:8.5.1"
+"@google-cloud/translate@npm:8.5.0":
+  version: 8.5.0
+  resolution: "@google-cloud/translate@npm:8.5.0"
   dependencies:
     "@google-cloud/common": "npm:^5.0.0"
     "@google-cloud/promisify": "npm:^4.0.0"
@@ -3605,7 +3605,7 @@ __metadata:
     extend: "npm:^3.0.2"
     google-gax: "npm:^4.0.3"
     is-html: "npm:^2.0.0"
-  checksum: 10/9edbf10b66144f4d15444f78865c7bac38dc41da01ce60fe3e7adf01cb47667d04ae0ade3fd018e4d9be19a114b28bf755b0f7a553890d61356dc544b0e110fc
+  checksum: 10/40d6ef77e8c548e18d0e64ffa3bf5f02d532fe2084f07b49af22c5c3e69dd60d898ccea1d827fa26a58eed3504eb52b9f83417ab493eead3ddf296592b1241b6
   languageName: node
   linkType: hard
 
@@ -8765,6 +8765,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"axios@npm:1.7.9":
+  version: 1.7.9
+  resolution: "axios@npm:1.7.9"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.0"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10/b7a5f660ea53ba9c2a745bf5ad77ad8bf4f1338e13ccc3f9f09f810267d6c638c03dac88b55dae8dc98b79c57d2d6835be651d58d2af97c174f43d289a9fd007
+  languageName: node
+  linkType: hard
+
 "axios@npm:1.8.4":
   version: 1.8.4
   resolution: "axios@npm:1.8.4"
@@ -13611,14 +13622,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-entities@npm:2.6.0":
-  version: 2.6.0
-  resolution: "html-entities@npm:2.6.0"
-  checksum: 10/06d4e7a3ba6243bba558af176e56f85e09894b26d911bc1ef7b2b9b3f18b46604360805b32636f080e954778e9a34313d1982479a05a5aa49791afd6a4229346
-  languageName: node
-  linkType: hard
-
-"html-entities@npm:^2.5.2":
+"html-entities@npm:2.5.2, html-entities@npm:^2.5.2":
   version: 2.5.2
   resolution: "html-entities@npm:2.5.2"
   checksum: 10/4ec12ebdf2d5ba8192c68e1aef3c1e4a4f36b29246a0a88464fe278a54517d0196d3489af46a3145c7ecacb4fc5fd50497be19eb713b810acab3f0efcf36fdc2
@@ -13823,21 +13827,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18n-auto-translation@npm:2.1.3":
-  version: 2.1.3
-  resolution: "i18n-auto-translation@npm:2.1.3"
+"i18n-auto-translation@npm:2.1.1":
+  version: 2.1.1
+  resolution: "i18n-auto-translation@npm:2.1.1"
   dependencies:
-    "@google-cloud/translate": "npm:8.5.1"
-    axios: "npm:1.8.4"
+    "@google-cloud/translate": "npm:8.5.0"
+    axios: "npm:1.7.9"
     deep-object-diff: "npm:1.1.9"
     glob: "npm:11.0.1"
-    html-entities: "npm:2.6.0"
+    html-entities: "npm:2.5.2"
     just-extend: "npm:6.2.0"
     yargs: "npm:17.7.2"
-    yocto-spinner: "npm:0.2.1"
+    yocto-spinner: "npm:0.2.0"
   bin:
     i18n-auto-translation: dist/src/index.js
-  checksum: 10/ea7dc8ff6aa23b1b28e03bdbb6c2fd9303cfe319ff58f8c9a5cecf8849b67ad1e0cc7171d8d4e887beaf8e27034053b560dc68b2842c731c85465b4e140d34c8
+  checksum: 10/22678635cede99994a9063bc13f03dda9c3fd02bf34e18375cb3ea21d4e19e681e58199766dca0955963284835662a79b1bd851fc99c5eb24fa2b9632013b90d
   languageName: node
   linkType: hard
 
@@ -17200,7 +17204,7 @@ __metadata:
     html-to-image: "npm:1.11.13"
     html-to-pdfmake: "npm:2.5.23"
     http-proxy-middleware: "npm:3.0.3"
-    i18n-auto-translation: "npm:2.1.3"
+    i18n-auto-translation: "npm:2.1.1"
     invert-color: "npm:2.0.0"
     js-base64: "npm:3.7.7"
     js-file-download: "npm:0.4.12"
@@ -22305,12 +22309,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yocto-spinner@npm:0.2.1":
-  version: 0.2.1
-  resolution: "yocto-spinner@npm:0.2.1"
+"yocto-spinner@npm:0.2.0":
+  version: 0.2.0
+  resolution: "yocto-spinner@npm:0.2.0"
   dependencies:
     yoctocolors: "npm:^2.1.1"
-  checksum: 10/3e3cf49e12cc1223eb7d31770c740114f975eb135120d0769c18c0e0cec513a030c2914816ecabae83e585aca95b84901d5fd468c11b5c866bb9a04de2be7cc1
+  checksum: 10/d6b27a444187e0863cdddb72b7188ce807b67f1823c23835a065f1abf4e8013148d1f520182d100b96c3978ef7659634ec4157c0151b3b3ad529f3c0b45fd141
   languageName: node
   linkType: hard
 
