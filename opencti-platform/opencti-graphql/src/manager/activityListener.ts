@@ -202,7 +202,7 @@ const initActivityManager = () => {
       }
       if (action.event_type === 'command') {
         if (action.event_scope === 'search') {
-          const message = 'asks for `advanced search`';
+          const message = 'asks for `global search`';
           await activityLogger(action, message);
         }
         if (action.event_scope === 'export') {

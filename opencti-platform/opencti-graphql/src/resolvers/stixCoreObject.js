@@ -12,6 +12,7 @@ import {
   findAll,
   findAllAuthMemberRestricted,
   findById,
+  globalSearch,
   groupingsPaginated,
   notesPaginated,
   observedDataPaginated,
@@ -61,9 +62,9 @@ const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
 
 const stixCoreObjectResolvers = {
   Query: {
+    globalSearch: (_, args, context) => globalSearch(context, context.user, args),
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
-    globalSearch: (_, args, context) => findAll(context, context.user, { ...args, globalSearch: true }),
     stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
     stixCoreObjectsRestricted: (_, args, context) => findAllAuthMemberRestricted(context, context.user, args),
     stixCoreObjectsTimeSeries: (_, args, context) => {

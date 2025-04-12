@@ -84,59 +84,6 @@ const searchStixCoreObjectsLinesQuery = graphql`
   }
 `;
 
-export const searchStixCoreObjectsLinesSearchQuery = graphql`
-  query SearchStixCoreObjectsLinesSearchQuery(
-    $types: [String]
-    $filters: FilterGroup
-    $search: String
-  ) {
-    stixCoreObjects(types: $types, search: $search, filters: $filters) {
-      edges {
-        node {
-          id
-          entity_type
-          created_at
-          updated_at
-          draftVersion {
-            draft_id
-            draft_operation
-          }
-          ... on StixObject {
-            representative {
-              main
-              secondary
-            }
-          }
-          createdBy {
-            ... on Identity {
-              name
-            }
-          }
-          objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-          objectLabel {
-            id
-            value
-            color
-          }
-          creators {
-            id
-            name
-          }
-          containersNumber {
-            total
-          }
-        }
-      }
-    }
-  }
-`;
-
 export const searchStixCoreObjectsLinesFragment = graphql`
   fragment SearchStixCoreObjectsLines_data on Query
   @argumentDefinitions(

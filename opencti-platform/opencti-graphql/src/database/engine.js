@@ -3728,18 +3728,26 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact) 
           const [relationType, relationIndex, side, sideType] = typeAndIndex.split('|');
           const refField = isStixRefRelationship(relationType) && isInferredIndex(relationIndex) ? ID_INFERRED : ID_INTERNAL;
           const rel_key = buildRefRelationKey(relationType, refField);
-          let source = `if (ctx._source['${rel_key}'] != null) ctx._source['${rel_key}'] = ctx._source['${rel_key}'].stream().filter(id -> !params.cleanupIds.contains(id)).collect(Collectors.toList())`;
+          let source = `if(ctx._source[params.rel_key] != null){
+              for (int i=params.cleanupIds.length-1; i>=0; i--) {
+                def cleanupIndex = ctx._source[params.rel_key].indexOf(params.cleanupIds[i]);
+                if(cleanupIndex !== -1){
+                  ctx._source[params.rel_key].remove(cleanupIndex);
+                }
+            }
+          }  
+          `;
           // Only impact the updated at on the from side of the ref relationship
           const fromSide = side === 'from';
           if (fromSide && isStixRefRelationship(relationType)) {
             if (isUpdatedAtObject(sideType)) {
-              source += '; ctx._source[\'updated_at\'] = params.updated_at';
+              source += 'ctx._source[\'updated_at\'] = params.updated_at;';
             }
             if (isModifiedObject(sideType)) {
-              source += '; ctx._source[\'modified\'] = params.updated_at';
+              source += 'ctx._source[\'modified\'] = params.updated_at;';
             }
           }
-          const script = { source, params: { cleanupIds, updated_at: now() } };
+          const script = { source, params: { rel_key, cleanupIds, updated_at: now() } };
           updates.push([
             { update: { _index: fromIndex, _id: elId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
             { script },
@@ -3776,7 +3784,7 @@ export const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemoved
         elementsImpact[relation.fromId] = { [cleanKey]: [relation.toId] };
       } else {
         const current = elementsImpact[relation.fromId];
-        if (current[cleanKey] && !current[cleanKey].includes(relation.toId)) {
+        if (current[cleanKey]) {
           elementsImpact[relation.fromId][cleanKey].push(relation.toId);
         } else {
           elementsImpact[relation.fromId][cleanKey] = [relation.toId];
@@ -3791,7 +3799,7 @@ export const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemoved
         elementsImpact[relation.toId] = { [cleanKey]: [relation.fromId] };
       } else {
         const current = elementsImpact[relation.toId];
-        if (current[cleanKey] && !current[cleanKey].includes(relation.fromId)) {
+        if (current[cleanKey]) {
           elementsImpact[relation.toId][cleanKey].push(relation.fromId);
         } else {
           elementsImpact[relation.toId][cleanKey] = [relation.fromId];

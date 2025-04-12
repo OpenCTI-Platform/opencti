@@ -106,7 +106,7 @@ const IndicatorEditionOverviewComponent = ({
       }),
     x_mitre_platforms: Yup.array().nullable(),
     x_opencti_score: Yup.number()
-      .nullable()
+      .required(t_i18n('This field is required'))
       .min(0, t_i18n('The value must be greater than or equal to 0'))
       .max(100, t_i18n('The value must be less than or equal to 100')),
     description: Yup.string().nullable(),
@@ -180,15 +180,20 @@ const IndicatorEditionOverviewComponent = ({
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      editor.fieldPatch({
-        variables: {
-          id: indicator.id,
-          input: {
-            key: name,
-            value: finalValue ?? '',
-          },
-        },
-      });
+      indicatorValidator
+        .validateAt(name, { [name]: value })
+        .then(() => {
+          editor.fieldPatch({
+            variables: {
+              id: indicator.id,
+              input: {
+                key: name,
+                value: finalValue ?? '',
+              },
+            },
+          });
+        })
+        .catch(() => false);
     }
   };
 

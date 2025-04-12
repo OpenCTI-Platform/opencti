@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect } from 'react';
-import { graphql, createRefetchContainer, RelayRefetchProp } from 'react-relay';
+import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import { interval } from 'rxjs';
@@ -88,8 +88,8 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
                 workStatus={work.status}
                 workReceivedTime={work.received_time}
                 workEndTime={work.completed_time}
-                workExpectedNumber={work.tracking?.import_processed_number}
-                workProcessedNumber={work.tracking?.import_expected_number}
+                workExpectedNumber={work.tracking?.import_expected_number}
+                workProcessedNumber={work.tracking?.import_processed_number}
                 workErrors={work.errors}
                 readOnly
               />

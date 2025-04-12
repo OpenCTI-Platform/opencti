@@ -232,7 +232,6 @@ const ConnectorComponent = ({ connector, relay }) => {
 
   const optionsInProgress = {
     count: 50,
-    orderBy: 'created_at',
     orderMode: 'asc',
     filters: {
       mode: 'and',

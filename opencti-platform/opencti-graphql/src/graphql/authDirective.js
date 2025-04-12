@@ -5,7 +5,7 @@ import { filter, includes, map } from 'ramda';
 import { defaultFieldResolver } from 'graphql/index.js';
 import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
-import { BYPASS, VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SET_ACCESSES } from '../utils/access';
+import { BYPASS, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
 
 // eslint-disable-next-line
 export const authDirectiveBuilder = (directiveName) => {
@@ -42,14 +42,20 @@ export const authDirectiveBuilder = (directiveName) => {
               const isProtectedMethod = info.fieldName !== 'logout'
                 && info.fieldName !== 'otpLogin' && info.fieldName !== 'otpActivation' && info.fieldName !== 'otpGeneration';
               if (isProtectedMethod) {
+                // If the platform enforce OTP
                 if (otp_mandatory) {
-                  if (!user.otp_activated) {
-                    throw OtpRequiredActivation();
-                  }
+                  // If user have not validated is OTP in session
+                  // by default user_otp_validated is true for direct api usage
                   if (!user_otp_validated) {
+                    // If OTP is not setup, return a specific error
+                    if (!user.otp_activated) {
+                      throw OtpRequiredActivation();
+                    }
+                    // If already setup but not validated, return the validation screen
                     throw OtpRequired();
                   }
                 } else if (user.otp_activated && !user_otp_validated) {
+                  // If user self activate OTP, session must be validated
                   throw OtpRequired();
                 }
               }
