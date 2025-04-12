@@ -3140,9 +3140,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:0.3.40":
-  version: 0.3.40
-  resolution: "@langchain/core@npm:0.3.40"
+"@langchain/core@npm:0.3.44":
+  version: 0.3.44
+  resolution: "@langchain/core@npm:0.3.44"
   dependencies:
     "@cfworker/json-schema": "npm:^4.0.2"
     ansi-styles: "npm:^5.0.0"
@@ -3156,7 +3156,7 @@ __metadata:
     uuid: "npm:^10.0.0"
     zod: "npm:^3.22.4"
     zod-to-json-schema: "npm:^3.22.3"
-  checksum: 10/417ee5129d5bf106cf3c18cc8af484b40cc34410a614d057b4ab6ebeb2207d2d0db2c5ad090e8246db53a33b2f87a9d6655d2c5872f9dae8f48e4b29a41530b0
+  checksum: 10/98abdb422d9a6c4f4608a07187b55421fe5bcbe9361bff38adca12eadff9e249129fefe5e33631aaed14fe36ad954b3f8ba6ee3db33c70d6c12d7f5d306500fd
   languageName: node
   linkType: hard
 
@@ -11748,7 +11748,7 @@ __metadata:
     "@graphql-tools/schema": "npm:10.0.23"
     "@graphql-tools/utils": "npm:10.8.6"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:0.3.40"
+    "@langchain/core": "npm:0.3.44"
     "@langchain/mistralai": "npm:^0.2.0"
     "@langchain/openai": "npm:0.4.4"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
