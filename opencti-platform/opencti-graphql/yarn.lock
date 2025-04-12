@@ -3226,9 +3226,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@node-saml/node-saml@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "@node-saml/node-saml@npm:5.0.0"
+"@node-saml/node-saml@npm:^5.0.1":
+  version: 5.0.1
+  resolution: "@node-saml/node-saml@npm:5.0.1"
   dependencies:
     "@types/debug": "npm:^4.1.12"
     "@types/qs": "npm:^6.9.11"
@@ -3237,26 +3237,26 @@ __metadata:
     "@xmldom/is-dom-node": "npm:^1.0.1"
     "@xmldom/xmldom": "npm:^0.8.10"
     debug: "npm:^4.3.4"
-    xml-crypto: "npm:^6.0.0"
+    xml-crypto: "npm:^6.0.1"
     xml-encryption: "npm:^3.0.2"
     xml2js: "npm:^0.6.2"
     xmlbuilder: "npm:^15.1.1"
     xpath: "npm:^0.0.34"
-  checksum: 10/e886f0831321997f682e2f1c652dee4c42e47e417bbe09c7d0f237ccd4604c8212449091398157e09cef03d389e7009b01413d7dedc97f275590317aff7185ff
+  checksum: 10/65b31123733582ddb159fe2139349c766a5327fe12a141fac637ec8b5636be061c644e53486f17d2ffd67ef62d5497c90f76b5a6692a30a94d4114eae6124165
   languageName: node
   linkType: hard
 
-"@node-saml/passport-saml@npm:5.0.0":
-  version: 5.0.0
-  resolution: "@node-saml/passport-saml@npm:5.0.0"
+"@node-saml/passport-saml@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@node-saml/passport-saml@npm:5.0.1"
   dependencies:
-    "@node-saml/node-saml": "npm:^5.0.0"
+    "@node-saml/node-saml": "npm:^5.0.1"
     "@types/express": "npm:^4.17.21"
     "@types/passport": "npm:^1.0.16"
     "@types/passport-strategy": "npm:^0.2.38"
     passport: "npm:^0.7.0"
     passport-strategy: "npm:^1.0.0"
-  checksum: 10/3142f1f69c011288edd4c6a9d252b3186c3bcf7af6d0995b52258d7c1ba1c86a5b8ee5fa9306a522cf1d6c525da775439bc50164664a72aebb86ead7244fcc9e
+  checksum: 10/b921ceeff68326539591ec6ef805535e907b3a63182c8df3418d8b449b88b82fb0137117f087268a3ebc76ef294a37b3e1b4df675f1f1a57b95455b87366db8d
   languageName: node
   linkType: hard
 
@@ -11728,7 +11728,7 @@ __metadata:
     "@langchain/openai": "npm:0.4.4"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:1.3.6"
-    "@node-saml/passport-saml": "npm:5.0.0"
+    "@node-saml/passport-saml": "npm:5.0.1"
     "@opensearch-project/opensearch": "npm:2.13.0"
     "@opentelemetry/api": "npm:1.9.0"
     "@opentelemetry/api-metrics": "npm:0.33.0"
@@ -15051,14 +15051,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:^6.0.0":
-  version: 6.0.1
-  resolution: "xml-crypto@npm:6.0.1"
+"xml-crypto@npm:^6.0.1":
+  version: 6.1.0
+  resolution: "xml-crypto@npm:6.1.0"
   dependencies:
     "@xmldom/is-dom-node": "npm:^1.0.1"
     "@xmldom/xmldom": "npm:^0.8.10"
     xpath: "npm:^0.0.33"
-  checksum: 10/703d40b54333a50f74f2d4f3e37a7b9de7aa2dfde48b0418205261d2f66c9e3869babd96d7be18ec1661aaa3aea03a018279846f844cea607a57183a21a4748a
+  checksum: 10/70bdedf276038248906493047250c0e72d248b41c2626e8a563bb0e578f08f1028c850de53385988106d78e5bdbf9e6a3c685cc8d2b6ddf2b8b167fe5cc7587f
   languageName: node
   linkType: hard
 
