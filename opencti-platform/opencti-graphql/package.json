@@ -107,7 +107,7 @@
     "file-type": "20.4.1",
     "github-api": "3.4.0",
     "graphql": "16.10.0",
-    "graphql-constraint-directive": "5.4.3",
+    "graphql-constraint-directive": "6.0.0",
     "graphql-no-alias": "3.0.3",
     "graphql-rate-limit-directive": "2.0.6",
     "graphql-redis-subscriptions": "2.7.0",
