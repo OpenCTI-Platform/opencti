@@ -127,7 +127,7 @@
     "jwt-decode": "4.0.0",
     "lru-cache": "11.1.0",
     "migrate": "2.1.0",
-    "mime-types": "2.1.35",
+    "mime-types": "3.0.1",
     "moment": "2.30.1",
     "moment-range": "4.0.2",
     "nconf": "0.12.1",
