@@ -2967,7 +2967,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/utils@npm:^9.0.0, @graphql-tools/utils@npm:^9.2.1":
+"@graphql-tools/utils@npm:^9.2.1":
   version: 9.2.1
   resolution: "@graphql-tools/utils@npm:9.2.1"
   dependencies:
@@ -9165,16 +9165,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-constraint-directive@npm:5.4.3":
-  version: 5.4.3
-  resolution: "graphql-constraint-directive@npm:5.4.3"
+"graphql-constraint-directive@npm:6.0.0":
+  version: 6.0.0
+  resolution: "graphql-constraint-directive@npm:6.0.0"
   dependencies:
-    "@graphql-tools/schema": "npm:^9.0.0"
-    "@graphql-tools/utils": "npm:^9.0.0"
+    "@graphql-tools/schema": "npm:^10.0.0"
+    "@graphql-tools/utils": "npm:^10.0.0"
     validator: "npm:^13.6.0"
   peerDependencies:
     graphql: ">=14.0.0"
-  checksum: 10/1be31b75f981db291cfa7a0f6e1b70b734a2142d2b88d51b7a0e64284f0faefe4fb80be54fe9b3b5c52c8e49abbff623e4e0f1b1c685fe3b8a8a1670bff389cf
+  checksum: 10/b468aedc55a9c57538c7363db133ad6ee24b25910626fed036739e38fc0c903ba025800b8771d9d818227002bd9261f918711f1114e97a1962c55f24175cee66
   languageName: node
   linkType: hard
 
@@ -11853,7 +11853,7 @@ __metadata:
     file-type: "npm:20.4.1"
     github-api: "npm:3.4.0"
     graphql: "npm:16.10.0"
-    graphql-constraint-directive: "npm:5.4.3"
+    graphql-constraint-directive: "npm:6.0.0"
     graphql-no-alias: "npm:3.0.3"
     graphql-rate-limit-directive: "npm:2.0.6"
     graphql-redis-subscriptions: "npm:2.7.0"
