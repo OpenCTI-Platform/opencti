@@ -902,6 +902,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.opencti_token = get_config_variable(
             "OPENCTI_TOKEN", ["opencti", "token"], config
         )
+        self.opencti_custom_headers = get_config_variable(
+            "OPENCTI_CUSTOM_HEADERS",
+            ["opencti", "custom_headers"],
+            config,
+            default=None,
+        )
         self.opencti_ssl_verify = get_config_variable(
             "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, False, False
         )
@@ -1078,6 +1084,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.log_level,
             self.opencti_ssl_verify,
             json_logging=self.opencti_json_logging,
+            custom_headers=self.opencti_custom_headers,
             bundle_send_to_queue=self.bundle_send_to_queue,
         )
         # - Impersonate API that will use applicant id
@@ -1088,6 +1095,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.log_level,
             self.opencti_ssl_verify,
             json_logging=self.opencti_json_logging,
+            custom_headers=self.opencti_custom_headers,
             bundle_send_to_queue=self.bundle_send_to_queue,
         )
         self.connector_logger = self.api.logger_class(self.connect_name)
