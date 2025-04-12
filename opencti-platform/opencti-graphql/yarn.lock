@@ -3762,18 +3762,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pyroscope/nodejs@npm:0.4.3":
-  version: 0.4.3
-  resolution: "@pyroscope/nodejs@npm:0.4.3"
+"@pyroscope/nodejs@npm:0.4.5":
+  version: 0.4.5
+  resolution: "@pyroscope/nodejs@npm:0.4.5"
   dependencies:
     "@datadog/pprof": "npm:^5.4.1"
-    axios: "npm:^0.28.0"
     debug: "npm:^4.3.3"
-    form-data: "npm:^4.0.0"
     p-limit: "npm:^3.1.0"
     regenerator-runtime: "npm:^0.13.11"
     source-map: "npm:^0.7.3"
-  checksum: 10/a67c983e5bec780421581b7202775ebc5c3af9b5e81504781a07978553e3b3c50538ae04008141f2f34c8b588f266adf80f9e7451ff60d6ae8bf413d994f1b56
+  checksum: 10/a57ac0b76043950f858626011707fc0b33f976dafa563bfb778b5e0f8889ad767107e7041e86eaa3c499ea8172173598be2ee2ecef77106a95f8fc2a90dbe1b1
   languageName: node
   linkType: hard
 
@@ -11748,7 +11746,7 @@ __metadata:
     "@opentelemetry/sdk-trace-base": "npm:1.25.1"
     "@opentelemetry/sdk-trace-node": "npm:1.25.1"
     "@opentelemetry/semantic-conventions": "npm:1.25.1"
-    "@pyroscope/nodejs": "npm:0.4.3"
+    "@pyroscope/nodejs": "npm:0.4.5"
     "@rollup/plugin-graphql": "npm:2.0.5"
     "@sesamecare-oss/redlock": "npm:1.4.0"
     "@types/archiver": "npm:6.0.3"
