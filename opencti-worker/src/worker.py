@@ -49,44 +49,6 @@ bundles_processing_time_gauge = meter.create_histogram(
 )
 
 
-class PingAlive(threading.Thread):
-    def __init__(self, worker_logger, api) -> None:
-        threading.Thread.__init__(self)
-        self.worker_logger = worker_logger
-        self.api = api
-        self.exit_event = threading.Event()
-        self.in_error = False
-
-    def ping(self) -> None:
-        while not self.exit_event.is_set():
-            try:
-                self.worker_logger.debug("PingAlive running.")
-                self.api.query(
-                    """
-                    query workerPing {
-                      about {
-                        version
-                      }
-                    }
-                  """
-                )
-            except Exception as e:  # pylint: disable=broad-except
-                self.in_error = True
-                self.worker_logger.error(
-                    "Error pinging the API",
-                    {"reason": str(e), "headers": str(self.api.get_request_headers())},
-                )
-            self.exit_event.wait(30)
-        self.worker_logger.info("Thread for PingAlive terminated")
-
-    def run(self) -> None:
-        self.worker_logger.info("Starting PingAlive thread")
-        self.ping()
-
-    def stop(self) -> None:
-        self.exit_event.set()
-
-
 @dataclass(unsafe_hash=True)
 class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
     execution_pool: ThreadPoolExecutor
@@ -660,17 +622,10 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             self.prom_httpd.shutdown()
             self.prom_httpd.server_close()
             self.prom_t.join()
-        self.ping.stop()
-        self.ping.join()
         self.exit_event.set()
 
     # Start the main loop
     def start(self) -> None:
-        # Start ping
-        self.ping = PingAlive(self.worker_logger, self.api)
-        self.ping.name = "PingAlive"
-        self.ping.start()
-
         while not self.exit_event.is_set():
             try:
                 # Fetch queue configuration from API
