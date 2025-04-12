@@ -329,6 +329,7 @@ services:
       - pip install -e .[dev,doc]
       - while ! nc -z opencti-direct-start 4300 ; do sleep 1 ; done
       - cd /tmp/direct-start-worker
+      - sed -i '/^pycti==/d' src/requirements.txt
       - pip3 install -r src/requirements.txt
       - python3 src/worker.py
   - name: opencti-restore-start
