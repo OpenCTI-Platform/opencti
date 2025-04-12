@@ -877,29 +877,6 @@ const LeftBar = () => {
         <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
           <Divider />
           <MenuList component="nav">
-            {!draftContext && (
-              <Security needs={[KNOWLEDGE]}>
-                <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
-                  <MenuItem
-                    component={Link}
-                    to="/dashboard/drafts"
-                    selected={!navOpen && location.pathname.includes('/dashboard/drafts')}
-                    dense={true}
-                    classes={{ root: classes.menuItem }}
-                  >
-                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                      <ArchitectureOutlined/>
-                    </ListItemIcon>
-                    {navOpen && (
-                    <ListItemText
-                      classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Drafts')}
-                    />
-                    )}
-                  </MenuItem>
-                </StyledTooltip>
-              </Security>
-            )}
             <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <MenuItem
                 ref={anchors.data}
@@ -934,6 +911,29 @@ const LeftBar = () => {
                 ],
               )}
             </Security>
+            {!draftContext && (
+              <Security needs={[KNOWLEDGE]}>
+                <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
+                  <MenuItem
+                    component={Link}
+                    to="/dashboard/drafts"
+                    selected={!navOpen && location.pathname.includes('/dashboard/drafts')}
+                    dense={true}
+                    classes={{ root: classes.menuItem }}
+                  >
+                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                      <ArchitectureOutlined/>
+                    </ListItemIcon>
+                    {navOpen && (
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('Drafts')}
+                    />
+                    )}
+                  </MenuItem>
+                </StyledTooltip>
+              </Security>
+            )}
             {
               isTrashEnable() && (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
