@@ -17292,7 +17292,7 @@ __metadata:
     react-syntax-highlighter: "npm:15.6.1"
     react-test-renderer: "npm:18.3.1"
     react-transition-group: "npm:4.4.5"
-    react-virtualized: "npm:9.22.5"
+    react-virtualized: "npm:9.22.6"
     react-wordcloud: "npm:1.2.7"
     reactflow: "npm:11.11.4"
     recharts: "npm:2.15.2"
