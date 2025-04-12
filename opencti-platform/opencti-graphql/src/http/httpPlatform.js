@@ -15,7 +15,7 @@ import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
-import { sessionAuthenticateUser, authenticateUserFromRequest, HEADERS_AUTHENTICATORS, loginFromProvider, userWithOrigin } from '../domain/user';
+import { HEADERS_AUTHENTICATORS, loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
@@ -29,6 +29,7 @@ import { internalLoadById } from '../database/middleware-loader';
 import { delUserContext, redisIsAlive } from '../database/redis';
 import { rabbitMQIsAlive } from '../database/rabbitmq';
 import { isEngineAlive } from '../database/engine';
+import { createContext } from './httpServer';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -188,17 +189,15 @@ const createApp = async (app) => {
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
     try {
-      const executeContext = executionContext('storage_get');
-      executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
-      const auth = await authenticateUserFromRequest(executeContext, req);
-      if (!auth) {
+      const context = await createContext(req, res, 'storage_get');
+      if (!context.user) {
         res.sendStatus(403);
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(executeContext, auth, file);
+      const data = await loadFile(context, context.user, file);
       // If file is attach to a specific instance, we need to contr
-      await publishFileDownload(executeContext, auth, data);
+      await publishFileDownload(context, context.user, data);
       const stream = await downloadFile(file);
       res.attachment(file);
       stream.pipe(res);
@@ -212,16 +211,14 @@ const createApp = async (app) => {
   // -- File view
   app.get(`${basePath}/storage/view/:file(*)`, async (req, res) => {
     try {
-      const executeContext = executionContext('storage_view');
-      executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
-      const auth = await authenticateUserFromRequest(executeContext, req);
-      if (!auth) {
+      const context = await createContext(req, res, 'storage_view');
+      if (!context.user) {
         res.sendStatus(403);
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(executeContext, auth, file);
-      await publishFileRead(executeContext, auth, data);
+      const data = await loadFile(context, context.user, file);
+      await publishFileRead(context, context.user, data);
       res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
@@ -243,20 +240,19 @@ const createApp = async (app) => {
   // -- Pdf view
   app.get(`${basePath}/storage/html/:file(*)`, async (req, res) => {
     try {
-      const executeContext = executionContext('storage_html');
-      const auth = await authenticateUserFromRequest(executeContext, req);
-      if (!auth) {
+      const context = await createContext(req, res, 'storage_html');
+      if (!context.user) {
         res.sendStatus(403);
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(executeContext, auth, file);
+      const data = await loadFile(context, context.user, file);
       const { mimetype } = data.metaData;
       if (mimetype === 'text/markdown') {
         const markDownData = await getFileContent(file);
         const converter = new showdown.Converter();
         const html = converter.makeHtml(markDownData);
-        await publishFileRead(executeContext, auth, data);
+        await publishFileRead(context, context.user, data);
         res.set({ 'Content-Security-Policy': 'sandbox' });
         res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
         res.send(html);
@@ -273,16 +269,15 @@ const createApp = async (app) => {
   // -- Encrypted view
   app.get(`${basePath}/storage/encrypted/:file(*)`, async (req, res) => {
     try {
-      const executeContext = executionContext('storage_encrypted');
-      const auth = await authenticateUserFromRequest(executeContext, req);
-      if (!auth) {
+      const context = await createContext(req, res, 'storage_encrypted');
+      if (!context.user) {
         res.sendStatus(403);
         return;
       }
       const { file } = req.params;
-      const data = await loadFile(executeContext, auth, file);
+      const data = await loadFile(context, context.user, file);
       const { metaData: { filename } } = data;
-      await publishFileDownload(executeContext, auth, data);
+      await publishFileDownload(context, context.user, data);
       const archive = archiver.create('zip-encrypted', { zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
       archive.append(await downloadFile(file), { name: filename });
       await archive.finalize();
