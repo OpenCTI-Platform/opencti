@@ -1,6 +1,6 @@
 import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
-import React, { type MutableRefObject, ReactNode } from 'react';
+import React, { type MutableRefObject, ReactNode, useEffect } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useTheme } from '@mui/material/styles';
 import RectangleSelection from './components/RectangleSelection';
@@ -42,6 +42,8 @@ const Graph = ({
     setSelectedNodes,
     setIsAddRelationOpen,
     setRawPositions,
+    setZoom,
+    zoomToFit,
   } = useGraphInteractions();
 
   const {
@@ -61,6 +63,7 @@ const Graph = ({
       loadingTotal,
       search,
       detailsPreviewSelected,
+      zoom,
     },
   } = useGraphContext();
 
@@ -80,6 +83,14 @@ const Graph = ({
   });
 
   useGraphFilter();
+
+  useEffect(() => {
+    // A short timeout to be sure graph is ready.
+    setTimeout(() => {
+      if (zoom) setZoom(zoom);
+      else zoomToFit();
+    }, 100);
+  }, [mode3D]);
 
   const shouldDisplayLinks = graphData?.links.length ?? 0 < 200;
   const selectedEntities = [...selectedLinks, ...selectedNodes];
