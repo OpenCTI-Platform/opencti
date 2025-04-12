@@ -58,6 +58,64 @@ jobs:
           paths:
             - opencti
 
+  build_platform_rolling:
+    working_directory: ~/opencti
+    docker:
+      - image: nikolaik/python-nodejs:python3.10-nodejs18
+    resource_class: medium+
+    steps:
+      - run:
+          command: apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev curl g++ make python3 python3-dev
+      - run:
+          command: npm install -g node-gyp
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Replace pycti requirement of stable version with latest master branch code
+          command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;
+      - run:
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
+          command: yarn install
+      - run:
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
+          command: yarn build
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - opencti
+
+  build_platform_prerelease:
+    working_directory: ~/opencti
+    docker:
+      - image: nikolaik/python-nodejs:python3.10-nodejs18
+    resource_class: medium+
+    steps:
+      - run:
+          command: apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev curl g++ make python3 python3-dev
+      - run:
+          command: npm install -g node-gyp
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Replace pycti requirement of stable version with latest prerelease branch code
+          command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$CIRCLE_BRANCH|" -i {} \;          
+      - run:
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
+          command: yarn install
+      - run:
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
+          command: yarn build
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - opencti
+
   build_platform_musl:
     working_directory: ~/opencti_musl
     docker:
@@ -84,7 +142,65 @@ jobs:
           paths:
             - opencti_musl
 
-  tag_package_rolling:
+  build_platform_musl_rolling:
+    working_directory: ~/opencti_musl
+    docker:
+      - image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
+    resource_class: medium+
+    steps:
+      - run:
+          command: apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
+      - run:
+          command: npm install -g node-gyp
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Replace pycti requirement of stable version with latest master branch code
+          command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;          
+      - run:
+          working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
+          command: yarn install
+      - run:
+          working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
+          command: yarn build
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - opencti_musl
+
+  build_platform_musl_prerelease:
+    working_directory: ~/opencti_musl
+    docker:
+      - image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
+    resource_class: medium+
+    steps:
+      - run:
+          command: apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl
+      - run:
+          command: npm install -g node-gyp
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Replace pycti requirement of stable version with latest prerelease branch code
+          command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$CIRCLE_BRANCH|" -i {} \;                    
+      - run:
+          working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
+          command: yarn install
+      - run:
+          working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
+          command: yarn build
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - opencti_musl
+
+  tag_package:
     working_directory: ~/opencti
     docker:
       - image: circleci/node:current
@@ -160,7 +276,7 @@ jobs:
           event: fail
           template: basic_fail_1
 
-  tag_package_rolling_musl:
+  tag_package_musl:
     working_directory: ~/opencti_musl
     docker:
       - image: circleci/node:current
@@ -553,6 +669,9 @@ jobs:
           at: ~/
       - run: sudo apt-get update -qq && sudo apt install curl
       - run:
+          name: Replace pycti requirement of stable version with latest master branch code
+          command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;      
+      - run:
           name: Install buildx
           command: |
             BUILDX_BINARY_URL="https://github.com/docker/buildx/releases/download/v0.8.2/buildx-v0.8.2.linux-amd64"
@@ -594,6 +713,9 @@ jobs:
       - attach_workspace:
           at: ~/
       - run: sudo apt-get update -qq && sudo apt install curl
+      - run:
+          name: Replace pycti requirement of stable version with latest master branch code
+          command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;      
       - run:
           name: Install buildx
           command: |
@@ -683,45 +805,77 @@ workflows:
       - build_platform:
           filters:
             tags:
-              only: /.*/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
           requires:
             - build_frontend
+      - build_platform_rolling:
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build_frontend            
+      - build_platform_prerelease:
+          filters:
+            branches:
+              only:
+                - /release\/.*/
+          requires:
+            - build_frontend                        
       - build_platform_musl:
           filters:
             tags:
-              only: /.*/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
           requires:
             - build_frontend
+      - build_platform_musl_rolling:
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build_frontend
+      - build_platform_musl_prerelease:
+          filters:
+            branches:
+              only:
+                - /release\/.*/
+          requires:
+            - build_frontend                        
       - package_rolling:
           requires:
-            - build_platform
+            - build_platform_rolling
           filters:
             branches:
               only:
                 - master
-      - tag_package_rolling:
-          requires:
-            - build_platform
-          filters:
-            tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
       - package_rolling_musl:
           requires:
-            - build_platform_musl
+            - build_platform_musl_rolling
           filters:
             branches:
               only:
-                - master
-      - tag_package_rolling_musl:
+                - master                
+      - tag_package:
+          requires:
+            - build_platform
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
+      - tag_package_musl:
           requires:
             - build_platform_musl
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              ignore: /.*/
+              ignore: /.*/              
       - docker_build_platform_rolling:
           requires:
             - build_frontend
