@@ -59,12 +59,7 @@ export const jsonMapperRepresentationToFormData = (
     id: representation.id,
     type: representation.type,
     target_type: representation.target.entity_type,
-    column_based: representation.target.column_based?.column_reference ? {
-      enabled: true,
-      column_reference: representation.target.column_based.column_reference,
-      operator: representation.target.column_based.operator,
-      value: representation.target.column_based.value,
-    } : undefined,
+    target_path: representation.target.path,
     attributes: representation.attributes.reduce((acc, attribute) => {
       const schemaAttribute = entitySchemaAttributes.find((attr) => attr.name === attribute.key);
       return {
@@ -94,16 +89,12 @@ export const formDataToJsonMapperRepresentation = (
     type: data.type as JsonMapperRepresentationType,
     target: {
       entity_type: data.target_type ?? '',
-      column_based: data.column_based?.enabled ? {
-        column_reference: data.column_based.column_reference,
-        operator: data.column_based.operator,
-        value: data.column_based.value,
-      } : null,
+      path: data.target_path ?? '',
     },
     attributes: (Object.entries(data.attributes)).flatMap(([name, attribute]) => {
       const mapperAttribute = formDataToJsonMapperAttribute(attribute, name);
       return (
-        isEmptyField(mapperAttribute.column)
+        isEmptyField(mapperAttribute.attr_path)
         && isEmptyField(mapperAttribute.based_on)
         && isEmptyField(mapperAttribute.default_values)
       )

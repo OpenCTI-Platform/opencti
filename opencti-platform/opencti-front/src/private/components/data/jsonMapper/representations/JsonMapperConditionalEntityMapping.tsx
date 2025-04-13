@@ -18,7 +18,7 @@ JsonMapperConditionalEntityMappingProps
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
-  const columnBased = representation.column_based;
+  const jsonPath = representation.target_path;
 
   return (
     <div style={{
@@ -34,10 +34,10 @@ JsonMapperConditionalEntityMappingProps
         component={TextField}
         label={t_i18n('JSON Entity path')}
         name={`${representationName}.column_based.value`}
-        value={columnBased?.enabled ? columnBased.value : ''}
+        value={jsonPath}
         variant='standard'
         style={{ width: '100%' }}
-        error={!columnBased?.value && columnBased?.enabled}
+        error={!jsonPath}
       />
     </div>
   );

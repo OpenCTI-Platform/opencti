@@ -8,7 +8,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import { FormikConfig } from 'formik/dist/types';
-import { Option } from '@components/common/form/ReferenceField';
 import JsonMapperField, { jsonMapperQuery } from '@components/common/form/JsonMapperField';
 import IngestionJsonMapperTestDialog from '@components/data/ingestionJson/IngestionJsonMapperTestDialog';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
@@ -27,7 +26,7 @@ import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatorField from '../../common/form/CreatorField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import SelectField from '../../../../components/fields/SelectField';
 import type { Theme } from '../../../../components/Theme';
@@ -95,17 +94,17 @@ export interface IngestionJsonAddInput {
   headers: IngestionJsonHeader[]
   query_attributes: IngestionJsonAttributes[]
   description?: string | null
-  json_mapper_id: string | Option
+  json_mapper_id: string | FieldOption
   authentication_type: IngestionAuthType | string
   authentication_value?: string | null
   ingestion_running?: boolean | null
-  user_id: string | Option
+  user_id: string | FieldOption
   username?: string
   password?: string
   cert?: string
   key?: string
   ca?: string
-  markings: Option[]
+  markings: FieldOption[]
 }
 
 interface IngestionJsonCreationProps {
@@ -115,7 +114,7 @@ interface IngestionJsonCreationProps {
   ingestionJson?: IngestionJsonEditionFragment_ingestionJson$key | null
 }
 
-const resolveHasUserChoiceJsonMapper = (option: Option & {
+const resolveHasUserChoiceJsonMapper = (option: FieldOption & {
   representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
 }) => {
   return option.representations.some(
@@ -138,24 +137,24 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
   const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const { me } = useAuth();
 
-  const onCreatorSelection = async (option: Option) => {
+  const onCreatorSelection = async (option: FieldOption) => {
     setCreatorId(option.value);
   };
   const updateObjectMarkingField = async (
-    setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>,
+    setFieldValue: (field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>,
     values: IngestionJsonAddInput,
   ) => {
     await setFieldValue('markings', values.markings);
   };
   const onJsonMapperSelection = async (
-    option: Option & {
+    option: FieldOption & {
       representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
     },
     {
       setFieldValue,
       values,
     }:{
-      setFieldValue: ((field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>);
+      setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>);
       values: IngestionJsonAddInput
     },
   ) => {
@@ -418,7 +417,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 <JsonMapperField
                   name="json_mapper_id"
                   onChange={(_, option) => onJsonMapperSelection(option, { setFieldValue, values })}
-                  isOptionEqualToValue={(option: Option, { value }: Option) => option.value === value}
+                  isOptionEqualToValue={(option: FieldOption, { value }: FieldOption) => option.value === value}
                   queryRef={queryRef}
                 />
               </React.Suspense>

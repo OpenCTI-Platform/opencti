@@ -21,6 +21,7 @@ export const jsonMapperEditionContainerFragment = graphql`
       }
       attributes {
         key
+        mode
         attr_path {
           path
           configuration {
@@ -43,6 +44,7 @@ export const jsonMapperEditionContainerFragment = graphql`
           name
         }
         based_on {
+          identifier
           representations
         }
       }

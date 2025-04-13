@@ -12,19 +12,6 @@ import { isNotEmptyField } from '../../../../../../utils/utils';
 import { defaultValuesToStringArray } from '../../../../../../utils/defaultValues';
 import { useComputeDefaultValues } from '../../../../../../utils/hooks/useDefaultValues';
 
-export const alphabet = (size = 0) => {
-  const fn = () => Array.from(Array(26))
-    .map((_, i) => i + 65)
-    .map((x) => String.fromCharCode(x));
-  const letters: string[] = fn();
-  for (let step = 0; step < size; step += 1) {
-    const additionalLetters = fn();
-    const firstLetter = additionalLetters[step];
-    letters.push(...additionalLetters.map((l) => firstLetter.concat(l)));
-  }
-  return letters;
-};
-
 // -- GETTER --
 
 // try to compute a label from the attribute schema
@@ -39,7 +26,7 @@ export const getBasedOnRepresentations = (
   attribute: JsonMapperRepresentationAttributeFormData | undefined,
   representations: JsonMapperRepresentationFormData[],
 ) => {
-  return attribute?.based_on?.flatMap((r) => {
+  return (attribute?.based_on?.representations ?? []).flatMap((r) => {
     const rep = representations.find((o) => o.id === r);
     return rep ?? [];
   }) ?? [];
@@ -55,7 +42,7 @@ export const getInfoForRef = (
   const ref = attributes.find((attr) => attr.key === keyRef);
   let fromType: string | undefined;
   if (ref && isNotEmptyField(ref.based_on)) {
-    const firstRepresentationId = ref.based_on[0];
+    const firstRepresentationId = ref.based_on.representations?.[0];
     if (firstRepresentationId) {
       fromType = representations.find((r) => r.id === firstRepresentationId)
         ?.target_type;
@@ -82,9 +69,12 @@ export const jsonMapperAttributeToFormData = (
 ): JsonMapperRepresentationAttributeFormData => {
   return {
     key: attribute.key,
-    column_name: attribute.column?.column_name ?? undefined,
-    separator: attribute.column?.configuration?.separator ?? undefined,
-    pattern_date: attribute.column?.configuration?.pattern_date ?? undefined,
+    mode: attribute.mode,
+    attr_path: attribute.attr_path,
+    based_on: {
+      identifier: attribute.based_on?.identifier as string[],
+      representations: attribute.based_on?.representations as string[],
+    },
     default_values: schemaAttribute ? computeDefaultValues(
       entityType,
       attribute.key,
@@ -92,9 +82,6 @@ export const jsonMapperAttributeToFormData = (
       schemaAttribute.type,
       attribute.default_values ?? [],
     ) : null,
-    based_on: attribute.based_on?.representations
-      ? [...(attribute.based_on?.representations ?? [])]
-      : undefined,
   };
 };
 
@@ -109,33 +96,34 @@ export const formDataToJsonMapperAttribute = (
   data: JsonMapperRepresentationAttributeFormData,
   name?: string,
 ): JsonMapperRepresentationAttributeEdit => {
-  const based_on = isNotEmptyField(data.based_on)
-    ? { representations: data.based_on }
-    : null;
-
   const default_values = isNotEmptyField(data.default_values)
     ? defaultValuesToStringArray(data.default_values ?? null)
     : null;
 
-  const configuration = isNotEmptyField(data.pattern_date)
-    || isNotEmptyField(data.separator)
-    ? {
-      pattern_date: data.pattern_date ?? null,
-      separator: data.separator ?? null,
-    }
-    : null;
-
-  const column = isNotEmptyField(data.column_name) || isNotEmptyField(configuration)
-    ? {
-      column_name: data.column_name ?? null,
-      configuration,
-    }
-    : null;
+  // const configuration = isNotEmptyField(data.pattern_date)
+  //   || isNotEmptyField(data.separator)
+  //   ? {
+  //     pattern_date: data.pattern_date ?? null,
+  //     separator: data.separator ?? null,
+  //   }
+  //   : null;
+  //
+  // const column = isNotEmptyField(data.column_name) || isNotEmptyField(configuration)
+  //   ? {
+  //     column_name: data.column_name ?? null,
+  //     configuration,
+  //   }
+  //   : null;
 
   return {
+    complex_path: undefined,
     key: name ?? data.key,
-    column,
+    mode: data.mode,
+    attr_path: data.attr_path,
     default_values,
-    based_on,
+    based_on: {
+      identifier: data.based_on?.identifier,
+      representations: data.based_on?.representations,
+    },
   };
 };

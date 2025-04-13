@@ -12252,6 +12252,7 @@ type AttributeColumn {
 }
 
 type AttributeBasedOn {
+  identifier: [String!]
   representations: [String]
 }
 

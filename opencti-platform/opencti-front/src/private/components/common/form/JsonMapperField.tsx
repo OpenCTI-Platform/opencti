@@ -1,4 +1,3 @@
-import { Option } from '@components/common/form/ReferenceField';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
@@ -6,7 +5,7 @@ import { Field } from 'formik';
 import { JsonMapperFieldSearchQuery } from '@components/common/form/__generated__/JsonMapperFieldSearchQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ItemIcon from '../../../../components/ItemIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -26,10 +25,10 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export type JsonMapperFieldOption = Option & { representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[] };
+export type JsonMapperFieldOption = FieldOption & { representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[] };
 interface JsonMapperFieldComponentProps {
   name: string;
-  isOptionEqualToValue: (option: Option, value: Option) => boolean;
+  isOptionEqualToValue: (option: FieldOption, value: FieldOption) => boolean;
   onChange?: (name: string, value: JsonMapperFieldOption) => void;
   queryRef: PreloadedQuery<JsonMapperFieldSearchQuery>
   required?: boolean;
@@ -82,7 +81,7 @@ const JsonMapperField: FunctionComponent<JsonMapperFieldComponentProps> = ({
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: Option,
+          option: FieldOption,
         ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>

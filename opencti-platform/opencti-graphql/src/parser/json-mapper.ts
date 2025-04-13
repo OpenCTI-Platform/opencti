@@ -39,7 +39,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { BasicStoreObject, StoreCommon } from '../types/store';
 import { INPUT_MARKINGS } from '../schema/general';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import { convertStoreToStix } from '../database/stix-converter';
+import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { BundleBuilder } from './bundle-creator';
 import { handleInnerType } from '../domain/stixDomainObject';
 import { createStixPatternSync } from '../python/pythonBridge';
