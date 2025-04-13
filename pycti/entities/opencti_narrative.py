@@ -17,6 +17,14 @@ class Narrative:
             spec_version
             created_at
             updated_at
+            status {
+                id
+                template {
+                  id
+                  name
+                  color
+                }
+            }
             createdBy {
                 ... on Identity {
                     id
@@ -96,6 +104,14 @@ class Narrative:
             spec_version
             created_at
             updated_at
+            status {
+                id
+                template {
+                  id
+                  name
+                  color
+                }
+            }
             createdBy {
                 ... on Identity {
                     id
