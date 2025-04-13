@@ -33,6 +33,7 @@ from pycti.connector.opencti_connector_helper import (
 from pycti.utils.opencti_logger import logger
 from requests import RequestException, Timeout
 
+
 ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
 ERROR_TYPE_TIMEOUT = "Request timed out"
 
@@ -47,7 +48,14 @@ bundles_processing_time_gauge = meter.create_histogram(
     name="opencti_bundles_processing_time_gauge",
     description="processing time of bundles",
 )
-
+max_ingestion_units_count = meter.create_gauge(
+    name="opencti_max_ingestion_units",
+    description="Maximum number of ingestion units (configuration)",
+)
+running_ingestion_units_gauge = meter.create_gauge(
+        name="opencti_running_ingestion_units",
+        description="Number of running ingestion units",
+)
 
 @dataclass(unsafe_hash=True)
 class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
@@ -594,6 +602,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             )
             metrics.set_meter_provider(provider)
 
+
         # Check if openCTI is available
         self.api = OpenCTIApiClient(
             url=self.opencti_url,
@@ -628,6 +637,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
     def start(self) -> None:
         while not self.exit_event.is_set():
             try:
+                max_ingestion_units_count.set(self.opencti_pool_size)
+                running_ingestion_units_gauge.set(len(self.execution_pool._threads))
                 # Fetch queue configuration from API
                 self.queues = list()
                 self.connectors = self.api.connector.list()

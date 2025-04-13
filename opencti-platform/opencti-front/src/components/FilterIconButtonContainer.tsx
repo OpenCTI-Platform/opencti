@@ -219,7 +219,7 @@ FilterIconButtonContainerProps
   };
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   let classOperator = classes.operator1;
-  let margin = inPageContainer ? '0px' : '8px';
+  let margin = inPageContainer ? '0 0 0 0' : '0 0 8px 0';
   if (!isReadWriteFilter) {
     classOperator = classes.operator1ReadOnly;
     if (styleNumber === 2) {
@@ -232,14 +232,14 @@ FilterIconButtonContainerProps
   } else if (styleNumber === 2) {
     classFilter = classes.filter2;
     classOperator = classes.operator2;
-    margin = '10px';
+    margin = '10px 0 10px 0';
   } else if (styleNumber === 3) {
     classFilter = classes.filter3;
     classOperator = classes.operator3;
-    margin = '0px';
+    margin = '0 0 0 0';
   }
   let boxStyle = {
-    margin: `${margin} 0`,
+    margin: `${margin}`,
     display: 'flex',
     flexWrap: 'wrap',
     gap: 1,
@@ -248,7 +248,7 @@ FilterIconButtonContainerProps
   if (!isReadWriteFilter) {
     if (styleNumber !== 2) {
       boxStyle = {
-        margin: '0 0',
+        margin: '0 0 0 0',
         display: 'flex',
         flexWrap: 'no-wrap',
         gap: 0,
