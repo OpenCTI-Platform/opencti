@@ -12,7 +12,7 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import passport from 'passport/lib';
 import { makeServer } from 'graphql-ws';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
-import createApp, { createContext } from './httpPlatform';
+import createApp, { createAuthenticatedContext } from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
@@ -139,7 +139,7 @@ const createHttpServer = async () => {
       app,
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
-        const executeContext = await createContext(req, res, 'api');
+        const executeContext = await createAuthenticatedContext(req, res, 'api');
         // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
         if (executeContext.draft_context) {
           const draftWorkspaces = await getEntitiesMapFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);

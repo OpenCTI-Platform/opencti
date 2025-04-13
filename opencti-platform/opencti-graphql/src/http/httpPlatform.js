@@ -30,7 +30,7 @@ import { delUserContext, redisIsAlive } from '../database/redis';
 import { rabbitMQIsAlive } from '../database/rabbitmq';
 import { isEngineAlive } from '../database/engine';
 
-export const createContext = async (req, res, contextName) => {
+export const createAuthenticatedContext = async (req, res, contextName) => {
   const executeContext = executionContext(contextName);
   executeContext.req = req;
   executeContext.res = res;
@@ -225,7 +225,7 @@ const createApp = async (app) => {
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
     try {
-      const context = await createContext(req, res, 'storage_get');
+      const context = await createAuthenticatedContext(req, res, 'storage_get');
       if (!context.user) {
         res.sendStatus(403);
         return;
@@ -247,7 +247,7 @@ const createApp = async (app) => {
   // -- File view
   app.get(`${basePath}/storage/view/:file(*)`, async (req, res) => {
     try {
-      const context = await createContext(req, res, 'storage_view');
+      const context = await createAuthenticatedContext(req, res, 'storage_view');
       if (!context.user) {
         res.sendStatus(403);
         return;
@@ -276,7 +276,7 @@ const createApp = async (app) => {
   // -- Pdf view
   app.get(`${basePath}/storage/html/:file(*)`, async (req, res) => {
     try {
-      const context = await createContext(req, res, 'storage_html');
+      const context = await createAuthenticatedContext(req, res, 'storage_html');
       if (!context.user) {
         res.sendStatus(403);
         return;
@@ -305,7 +305,7 @@ const createApp = async (app) => {
   // -- Encrypted view
   app.get(`${basePath}/storage/encrypted/:file(*)`, async (req, res) => {
     try {
-      const context = await createContext(req, res, 'storage_encrypted');
+      const context = await createAuthenticatedContext(req, res, 'storage_encrypted');
       if (!context.user) {
         res.sendStatus(403);
         return;
