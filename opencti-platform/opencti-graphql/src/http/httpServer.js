@@ -12,16 +12,15 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import passport from 'passport/lib';
 import { makeServer } from 'graphql-ws';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
-import createApp from './httpPlatform';
+import createApp, { createAuthenticatedContext } from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { applicationSession } from '../database/session';
-import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
-import { authenticateUserFromRequest, userEditField, userWithOrigin } from '../domain/user';
+import { executionContext, SYSTEM_USER } from '../utils/access';
+import { userEditField } from '../domain/user';
 import { DraftLockedError, ForbiddenAccess } from '../config/errors';
-import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isNotEmptyField } from '../database/utils';
+import { getEntitiesMapFromCache } from '../database/cache';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
@@ -140,40 +139,7 @@ const createHttpServer = async () => {
       app,
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
-        const executeContext = executionContext('api');
-        executeContext.req = req;
-        executeContext.res = res;
-        const settings = await getEntityFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-        executeContext.otp_mandatory = settings.otp_mandatory ?? false;
-        executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
-        executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
-        executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
-        executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
-        executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
-        try {
-          const user = await authenticateUserFromRequest(executeContext, req);
-          if (user) {
-            if (!Object.keys(req.headers).some((k) => k === 'opencti-draft-id')) {
-              executeContext.draft_context = user.draft_context;
-            }
-            executeContext.user = userWithOrigin(req, user);
-            executeContext.user_otp_validated = true;
-            executeContext.user_with_session = isNotEmptyField(req.session?.user);
-            if (executeContext.user_with_session) {
-              executeContext.user_otp_validated = req.session?.user.otp_validated ?? false;
-            }
-            if (isBypassUser(executeContext.user)) {
-              executeContext.user_inside_platform_organization = true;
-            } else {
-              const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
-              executeContext.user_inside_platform_organization = settings.platform_organization
-                ? userOrganizationIds.includes(settings.platform_organization) : true;
-            }
-          }
-        } catch (error) {
-          logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });
-        }
-
+        const executeContext = await createAuthenticatedContext(req, res, 'api');
         // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
         if (executeContext.draft_context) {
           const draftWorkspaces = await getEntitiesMapFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
