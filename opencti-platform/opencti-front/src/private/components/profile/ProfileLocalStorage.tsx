@@ -33,11 +33,13 @@ const ProfileLocalStorage: React.FC = () => {
         >
           {t_i18n('Local settings')}
         </Typography>
-        <pre>
-          {
-            t_i18n('Your local storage contains the latest filters and searches used in most views of the platform. Clearing local storage might help to load a page crashing because of some filtering, searching or sorting issue.')
-          }
-        </pre>
+        <Alert
+          severity="info"
+          variant="outlined"
+          style={{ margin: '10px 0 0 0' }}
+        >
+          {t_i18n('Your local storage contains the latest filters and searches used in most views of the platform. Clearing local storage might help to load a page crashing because of some filtering, searching or sorting issue.')}
+        </Alert>
         <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
           <Button
             variant="contained"

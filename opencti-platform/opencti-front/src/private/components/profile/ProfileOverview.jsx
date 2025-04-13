@@ -470,7 +470,13 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('monochrome_labels', value)}
                 />
               </ListItem> */}
-              <pre>{t('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')}</pre>
+              <Alert
+                severity="info"
+                variant="outlined"
+                style={{ margin: '10px 0 0 0' }}
+              >
+                {t_i18n('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')}
+              </Alert>
               <NotifierField
                 label={t('Personal notifiers')}
                 name="personal_notifiers"
@@ -684,7 +690,6 @@ const ProfileOverviewComponent = (props) => {
           )}
         </div>
       </Paper>
-
       <ProfileLocalStorage />
     </div>
   );
