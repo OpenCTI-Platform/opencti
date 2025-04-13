@@ -1,6 +1,5 @@
 import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent, useState } from 'react';
-import { Option } from '@components/common/form/ReferenceField';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
@@ -25,7 +24,7 @@ import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import TextField from '../../../../components/TextField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
 import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -119,14 +118,14 @@ interface IngestionJsonEditionForm {
   authentication_type: string,
   authentication_value?: string | null,
   ingestion_running?: boolean | null,
-  json_mapper_id: string | Option,
-  user_id: string | Option,
+  json_mapper_id: string | FieldOption,
+  user_id: string | FieldOption,
   username?: string
   password?: string
   cert?: string
   key?: string
   ca?: string
-  markings: Option[],
+  markings: FieldOption[],
 }
 
 const resolveHasUserChoiceJsonMapper = (option: JsonMapperFieldOption) => {
@@ -248,15 +247,15 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
 
   const queryRef = useQueryLoading<JsonMapperFieldSearchQuery>(jsonMapperQuery);
 
-  const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as Option[];
+  const defaultMarkingOptions = (me.default_marking?.flatMap(({ values }) => (values ?? [{ id: '', definition: '' }])?.map(({ id, definition }) => ({ label: definition, value: id }))) ?? []) as FieldOption[];
   const updateJsonMapper = async (
-    setFieldValue: (field: string, option: Option, shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonEditionForm>>,
+    setFieldValue: (field: string, option: FieldOption, shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonEditionForm>>,
     option: JsonMapperFieldOption,
   ) => {
     await setFieldValue('json_mapper_id', option);
   };
   const updateObjectMarkingField = async (
-    setFieldValue: (field: string, value: Option[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonEditionForm>>,
+    setFieldValue: (field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonEditionForm>>,
     values: IngestionJsonEditionForm,
     newHasUserChoiceJsonMapper: boolean,
   ) => {
@@ -414,7 +413,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                 </Box>
                 <JsonMapperField
                   name="json_mapper_id"
-                  isOptionEqualToValue={(option: Option, value: Option) => option.value === value.value }
+                  isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value }
                   onChange={async (_, option) => {
                     await updateJsonMapper(setFieldValue, option);
                     const hasUserChoiceJsonMapperRepresentations = resolveHasUserChoiceJsonMapper(option as JsonMapperFieldOption);

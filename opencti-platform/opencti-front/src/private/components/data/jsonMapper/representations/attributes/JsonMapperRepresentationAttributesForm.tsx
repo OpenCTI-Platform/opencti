@@ -10,6 +10,7 @@ import {
 } from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { useJsonMappersData } from '../../jsonMappers.data';
 import { useFormatter } from '../../../../../../components/i18n';
+import TextField from '../../../../../../components/TextField';
 
 export const JsonMapperRepresentationAttributesFormFragment = graphql`
   fragment JsonMapperRepresentationAttributesForm_allSchemaAttributes on Query {
@@ -95,6 +96,14 @@ JsonMapperRepresentationAttributesFormProps
 
   return (
     <>
+      <Field
+        component={TextField}
+        label={t_i18n('JSON Entity path')}
+        name={`${representationName}.column_based.value`}
+        variant='standard'
+        style={{ width: '100%' }}
+        handleErrors={handleErrors}
+      />
       {[...mutableSchemaAttributes]
         .sort((a1, a2) => Number(a2.mandatory) - Number(a1.mandatory))
         .map((schemaAttribute) => {

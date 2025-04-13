@@ -7,25 +7,22 @@ import DialogActions from '@mui/material/DialogActions';
 import { CogOutline } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';
 import { Badge } from '@mui/material';
-import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMapper/representations/attributes/Attribute';
+import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import { useFormatter } from '../../../../../../components/i18n';
 
-interface CsvMapperRepresentationDialogOptionProps {
+interface JsonMapperRepresentationDialogOptionProps {
   children: ReactNode
-  configuration?: CsvMapperRepresentationAttributeFormData
+  configuration?: JsonMapperRepresentationAttributeFormData
 }
 
-const JsonMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresentationDialogOptionProps> = ({ children, configuration }) => {
+const JsonMapperRepresentationDialogOption: FunctionComponent<JsonMapperRepresentationDialogOptionProps> = ({ children, configuration }) => {
   const [open, setOpen] = React.useState(false);
   const { t_i18n } = useFormatter();
   const handleClickOpen = () => {
     setOpen(true);
   };
   const visible = useMemo(() => {
-    const hasDefaultValues = (!!configuration?.default_values || configuration?.default_values === false) && JSON.stringify(configuration.default_values) !== '[]';
-    const hasDatePattern = !!configuration?.pattern_date;
-    const hasSeparator = !!configuration?.separator;
-    return hasDefaultValues || hasDatePattern || hasSeparator;
+    return (!!configuration?.default_values || configuration?.default_values === false) && JSON.stringify(configuration.default_values) !== '[]';
   }, [configuration]);
 
   const handleClose = () => {

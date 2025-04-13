@@ -46,7 +46,7 @@ const JsonMapperCreation: FunctionComponent<JsonMapperCreationFormProps> = ({
   const data = useFragment<JsonMapperRepresentationAttributesForm_allSchemaAttributes$key>(
     JsonMapperRepresentationAttributesFormFragment,
     schemaAttributes,
-  ) || { jsonMapperSchemaAttributes: [] };
+  ) || { csvMapperSchemaAttributes: [] };
 
   const computeDefaultValues = useComputeDefaultValues();
   const jsonMapper = useFragment(
@@ -94,10 +94,7 @@ const JsonMapperCreation: FunctionComponent<JsonMapperCreationFormProps> = ({
   };
   if (isDuplicated && jsonMapper) {
     initialValues = jsonMapperToFormData(
-      {
-        ...jsonMapper,
-        name: `${jsonMapper.name} - copy`,
-      },
+      { ...jsonMapper, name: `${jsonMapper.name} - copy` },
       data.csvMapperSchemaAttributes,
       computeDefaultValues,
     );

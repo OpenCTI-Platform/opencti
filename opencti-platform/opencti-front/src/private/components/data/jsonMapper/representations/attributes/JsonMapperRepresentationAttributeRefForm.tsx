@@ -163,13 +163,19 @@ JsonMapperRepresentationAttributeRefFormProps
       // this attribute was not set yet, initialize
       const newAttribute: JsonMapperRepresentationAttributeFormData = {
         key: schemaAttribute.name,
-        based_on: ids,
+        mode: 'base',
+        based_on: {
+          representations: ids,
+        },
       };
       await setFieldValue(name, newAttribute);
     } else {
       const updateAttribute: JsonMapperRepresentationAttributeFormData = {
         ...value,
-        based_on: ids,
+        mode: 'base',
+        based_on: {
+          representations: ids,
+        },
       };
       await setFieldValue(name, updateAttribute);
     }

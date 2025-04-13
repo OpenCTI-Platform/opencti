@@ -1,10 +1,9 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Field, FieldProps } from 'formik';
+import { FieldProps } from 'formik';
 import JsonMapperRepresentationAttributesForm from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { SelectChangeEvent } from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import { Option } from '@components/common/form/ReferenceField';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { Accordion, AccordionDetails } from '@mui/material';
@@ -16,12 +15,12 @@ import { representationLabel } from '@components/data/jsonMapper/representations
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
-import JsonMapperConditionalEntityMapping from '@components/data/jsonMapper/representations/JsonMapperConditionalEntityMapping';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import type { Theme } from '../../../../../components/Theme';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
+import { FieldOption } from '../../../../../utils/field';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -45,7 +44,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export interface RepresentationFormEntityOption extends Option {
+export interface RepresentationFormEntityOption extends FieldOption {
   type: string;
   id: string;
 }
@@ -92,7 +91,7 @@ JsonMapperRepresentationFormProps
 
   // -- EVENTS --
 
-  const handleChangeEntityType = async (option: Option | null) => {
+  const handleChangeEntityType = async (option: FieldOption | null) => {
     const newValue: JsonMapperRepresentationFormData = {
       ...value,
       attributes: {},
@@ -181,13 +180,6 @@ JsonMapperRepresentationFormProps
               )}
             />
             <div style={{ marginTop: 20 }}>
-              {field.name.startsWith('entity_representation') && (
-              <Field
-                component={JsonMapperConditionalEntityMapping}
-                representation={value}
-                representationName={name}
-              />
-              )}
               <JsonMapperRepresentationAttributesForm
                 handleErrors={handleErrors}
                 representation={value}
