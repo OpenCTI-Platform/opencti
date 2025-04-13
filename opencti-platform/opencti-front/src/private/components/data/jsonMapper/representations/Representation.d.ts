@@ -14,7 +14,7 @@ export interface JsonMapperRepresentationFormData {
   id: string
   type: string
   target_type?: string
-  column_based?: JsonMapperColumnBasedFormData | null
+  target_path?: string
   attributes: {
     [key: string]: JsonMapperRepresentationAttributeFormData
   }

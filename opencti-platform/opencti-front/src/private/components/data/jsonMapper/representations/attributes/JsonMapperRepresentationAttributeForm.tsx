@@ -1,11 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import JsonMapperRepresentationAttributeOptions from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributeOptions';
-import { alphabet } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, FieldProps } from 'formik';
 import JsonMapperRepresentationDialogOption from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationDialogOption';
-import JsonMapperRepresentationAttributeSelectedConfigurations
-  from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributeSelectedConfigurations';
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import { SchemaAttribute } from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
 import { useFormatter } from '../../../../../../components/i18n';
@@ -50,14 +47,14 @@ JsonMapperRepresentationAttributeFormProps
   const { t_i18n } = useFormatter();
 
   const { name, value } = field;
-  const { setFieldValue } = form;
+  // const { setFieldValue } = form;
 
-  const options = alphabet(26);
+  // const options = alphabet(26);
 
   // -- ERRORS --
 
   const hasErrors = () => {
-    const missMandatoryValue = schemaAttribute.mandatory && isEmptyField(value?.column_name);
+    const missMandatoryValue = schemaAttribute.mandatory && isEmptyField(value?.attr_path?.path);
     const missSettingsDefaultValue = isEmptyField(schemaAttribute.defaultValues);
     const missDefaultValue = isEmptyField(value?.default_values);
     return missMandatoryValue && missSettingsDefaultValue && missDefaultValue;
@@ -79,22 +76,22 @@ JsonMapperRepresentationAttributeFormProps
     }
   }, [errors]);
 
-  const onColumnChange = async (column: string | null) => {
-    if (!value) {
-      // this attribute was not set yet, initialize
-      const newAttribute: JsonMapperRepresentationAttributeFormData = {
-        key: schemaAttribute.name,
-        column_name: column ?? undefined,
-      };
-      await setFieldValue(name, newAttribute);
-    } else {
-      const updateAttribute: JsonMapperRepresentationAttributeFormData = {
-        ...value,
-        column_name: column ?? undefined,
-      };
-      await setFieldValue(name, updateAttribute);
-    }
-  };
+  // const onColumnChange = async (column: string | null) => {
+  //   if (!value) {
+  //     // this attribute was not set yet, initialize
+  //     const newAttribute: JsonMapperRepresentationAttributeFormData = {
+  //       key: schemaAttribute.name,
+  //       column_name: column ?? undefined,
+  //     };
+  //     await setFieldValue(name, newAttribute);
+  //   } else {
+  //     const updateAttribute: JsonMapperRepresentationAttributeFormData = {
+  //       ...value,
+  //       column_name: column ?? undefined,
+  //     };
+  //     await setFieldValue(name, updateAttribute);
+  //   }
+  // };
 
   return (
     <div className={classes.container}>
@@ -122,7 +119,7 @@ JsonMapperRepresentationAttributeFormProps
         <Field
           component={TextField}
           variant="standard"
-          name="path"
+          name={name}
           label={t_i18n('JSON Path')}
           fullWidth={true}
         />
@@ -161,9 +158,6 @@ JsonMapperRepresentationAttributeFormProps
             </JsonMapperRepresentationDialogOption>
         }
       </div>
-      <JsonMapperRepresentationAttributeSelectedConfigurations
-        configuration={value}
-      />
     </div>
   );
 };

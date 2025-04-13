@@ -991,6 +991,7 @@ export type Attribute = {
 
 export type AttributeBasedOn = {
   __typename?: 'AttributeBasedOn';
+  identifier?: Maybe<Array<Scalars['String']['output']>>;
   representations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 
@@ -33848,6 +33849,7 @@ export type AttributeResolvers<ContextType = any, ParentType extends ResolversPa
 }>;
 
 export type AttributeBasedOnResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeBasedOn'] = ResolversParentTypes['AttributeBasedOn']> = ResolversObject<{
+  identifier?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   representations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
