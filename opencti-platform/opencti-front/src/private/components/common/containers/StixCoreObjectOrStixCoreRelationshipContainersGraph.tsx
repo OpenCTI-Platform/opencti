@@ -288,7 +288,7 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraphComponent = ({
   return (
     <div style={graphContainerStyle} ref={ref}>
       <Graph parentRef={ref} onPositionsChanged={savePositions}>
-        <GraphToolbar />
+        <GraphToolbar onUnfixNodes={() => savePositions({})} />
       </Graph>
     </div>
   );

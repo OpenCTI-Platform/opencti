@@ -520,6 +520,7 @@ const GraphContainerKnowledgeComponent = ({
       />
       <Graph parentRef={ref} onPositionsChanged={onPositionsChanged}>
         <GraphToolbar
+          onUnfixNodes={() => onPositionsChanged({})}
           enableReferences={enableReferences}
           stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
           relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}

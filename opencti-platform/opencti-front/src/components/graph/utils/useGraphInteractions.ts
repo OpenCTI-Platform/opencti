@@ -92,6 +92,11 @@ const useGraphInteractions = () => {
     graphRef2D.current?.centerAt(zoomLevel.x, zoomLevel.y, 400);
   };
 
+  const applyForces = () => {
+    graphRef2D.current?.d3ReheatSimulation();
+    graphRef3D.current?.d3ReheatSimulation();
+  };
+
   /**
    * Remove fx and fy positions responsible for fixed positions when
    * mode forces is on and reapply forces.
@@ -101,8 +106,7 @@ const useGraphInteractions = () => {
       node.fx = undefined; // eslint-disable-line no-param-reassign
       node.fy = undefined; // eslint-disable-line no-param-reassign
     });
-    graphRef2D.current?.d3ReheatSimulation();
-    graphRef3D.current?.d3ReheatSimulation();
+    applyForces();
   };
 
   const toggleSelectFreeRectangle = () => {
@@ -480,6 +484,7 @@ const useGraphInteractions = () => {
     resetFilters,
     selectBySearch,
     addNode,
+    applyForces,
     removeNode,
     removeNodes,
     addLink,

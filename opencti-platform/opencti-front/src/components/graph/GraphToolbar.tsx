@@ -6,7 +6,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import useGraphInteractions from './utils/useGraphInteractions';
 import SearchInput from '../SearchInput';
 import type { Theme } from '../Theme';
-import GraphToolbarDisplayTools from './components/GraphToolbarDisplayTools';
+import GraphToolbarDisplayTools, { GraphToolbarDisplayToolsProps } from './components/GraphToolbarDisplayTools';
 import GraphToolbarSelectTools from './components/GraphToolbarSelectTools';
 import GraphToolbarFilterTools from './components/GraphToolbarFilterTools';
 import GraphToolbarContentTools, { GraphToolbarContentToolsProps } from './components/GraphToolbarContentTools';
@@ -15,11 +15,12 @@ import { useGraphContext } from './GraphContext';
 import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
 import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './components/GraphToolbarExpandTools';
 
-export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps;
+export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps;
 
 const GraphToolbar = ({
   onInvestigationExpand,
   onInvestigationRollback,
+  onUnfixNodes,
   ...props
 }: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
@@ -72,7 +73,7 @@ const GraphToolbar = ({
         padding: `0 ${theme.spacing(1)}`,
       }}
       >
-        <GraphToolbarDisplayTools />
+        <GraphToolbarDisplayTools onUnfixNodes={onUnfixNodes} />
         <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
 
         <GraphToolbarSelectTools />

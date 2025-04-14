@@ -370,6 +370,7 @@ const GraphContainerCorrelationComponent = ({
     <div style={graphContainerStyle} ref={ref}>
       <Graph parentRef={ref} onPositionsChanged={onPositionsChanged}>
         <GraphToolbar
+          onUnfixNodes={() => onPositionsChanged({})}
           stixCoreObjectRefetchQuery={knowledgeCorrelationStixCoreObjectQuery}
           relationshipRefetchQuery={knowledgeCorrelationStixCoreRelationshipQuery}
         />
