@@ -77,8 +77,14 @@ const useGraphInteractions = () => {
   };
 
   const zoomToFit = () => {
-    graphRef2D.current?.zoomToFit(400, 100);
-    graphRef3D.current?.zoomToFit(400, 0);
+    const nbOfNodes = graphData?.nodes.length ?? 0;
+    let padding = 50;
+    if (nbOfNodes === 1) padding = 300;
+    else if (nbOfNodes < 4) padding = 200;
+    else if (nbOfNodes < 8) padding = 100;
+    // Different padding depending on the number of nodes in the graph.
+    graphRef2D.current?.zoomToFit(400, padding);
+    graphRef3D.current?.zoomToFit(400, padding);
   };
 
   const setZoom = (zoomLevel: NonNullable<GraphState['zoom']>) => {
