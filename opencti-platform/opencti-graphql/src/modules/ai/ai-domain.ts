@@ -14,8 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { callWithTimeout } from '@opentelemetry/sdk-metrics/build/esnext/utils';
+import { GraphQLError } from 'graphql/index';
 import { logApp } from '../../config/conf';
-import { FunctionalError, UnknownError } from '../../config/errors';
+import { FunctionalError, UnknownError, UNSUPPORTED_ERROR, UnsupportedError } from '../../config/errors';
 import { queryAi, queryNLQAi } from '../../database/ai-llm';
 import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
@@ -421,7 +422,11 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   try {
     rawResponse = await callWithTimeout(queryNLQAi(promptValue), NLQ_TIMEOUT);
   } catch (error) {
-    throw UnknownError('Error when calling the NLQ model', { error, promptValue });
+    if (error instanceof GraphQLError && error.extensions.code === UNSUPPORTED_ERROR) {
+      throw UnsupportedError('Incorrect AI configuration for NLQ', { error, promptValue });
+    } else {
+      throw UnknownError('Error when calling the NLQ model', { error, promptValue });
+    }
   }
   const parsedResponse = rawResponse
     ? { ...rawResponse, filterGroups: [] } as unknown as FilterGroup
