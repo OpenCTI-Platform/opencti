@@ -33,8 +33,8 @@ const resetValidation = (t: (v: string) => string) => Yup.object().shape({
     .email(t('The value must be an email address')),
 });
 
-const tokenValidation = (t: (v: string) => string) => Yup.object().shape({
-  code: Yup.string().required(t('This field is required')),
+const otpValidation = (t: (v: string) => string) => Yup.object().shape({
+  otp: Yup.string().required(t('This field is required')),
 });
 
 const passwordValidation = (t: (v: string) => string) => Yup.object().shape({
@@ -49,7 +49,7 @@ interface ResetFormValues {
 }
 
 interface ValidateTokenFormValues {
-  code: string;
+  otp: string;
 }
 
 interface ResetPasswordFormValues {
@@ -58,7 +58,7 @@ interface ResetPasswordFormValues {
 }
 
 const STEP_ASK_RESET = 'ask';
-const STEP_VALIDATE_TOKEN = 'validate';
+const STEP_VALIDATE_OTP = 'validate';
 const STEP_RESET_PASSWORD = 'reset';
 const FLASH_COOKIE = 'opencti_flash';
 
@@ -66,31 +66,37 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   const { t_i18n } = useFormatter();
   const [step, setStep] = useState(STEP_ASK_RESET);
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
+  const [email, setEmail] = useState('');
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
-  const [askSentOtpcommitMutation] = useApiMutation(
+  const [askSentOtpCommitMutation] = useApiMutation(
     AskSendOtpMutation,
     undefined,
     {
       successMessage: t_i18n('If your e-mail address is correct, an e-mail will be sent to you.'),
     },
   );
+  const [verifyOtpCommitMutation] = useApiMutation(
+    VerifyOtpMutation,
+    undefined,
+  );
 
-  const onSubmitAskToken: FormikConfig<ResetFormValues>['onSubmit'] = async (
+  const onSubmitAskOtp: FormikConfig<ResetFormValues>['onSubmit'] = async (
     values,
     { setSubmitting, resetForm, setErrors },
   ) => {
     setSubmitting(true);
-    askSentOtpcommitMutation({
+    askSentOtpCommitMutation({
       variables: {
         input: {
           email: values.email,
         },
       },
       onCompleted: () => {
+        setEmail(values.email);
         setSubmitting(false);
         resetForm();
-        setStep(STEP_VALIDATE_TOKEN);
+        setStep(STEP_VALIDATE_OTP);
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -99,9 +105,28 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
     });
   };
 
-  const onSubmitValidateToken: FormikConfig<ValidateTokenFormValues>['onSubmit'] = () => {
-    console.log('VALIDATE TOKEN');
-    setStep(STEP_RESET_PASSWORD);
+  const onSubmitValidateOtp: FormikConfig<ValidateTokenFormValues>['onSubmit'] = async (
+    values,
+    { setSubmitting, resetForm, setErrors },
+  ) => {
+    setSubmitting(true);
+    verifyOtpCommitMutation({
+      variables: {
+        input: {
+          otp: values.otp,
+          email,
+        },
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        setStep(STEP_RESET_PASSWORD);
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
+    });
   };
 
   const onSubmitValidatePassword: FormikConfig<ResetPasswordFormValues>['onSubmit'] = () => {
@@ -124,7 +149,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
               initialTouched={{ email: !R.isEmpty(flashError) }}
               initialErrors={{ email: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
               validationSchema={resetValidation(t_i18n)}
-              onSubmit={onSubmitAskToken}
+              onSubmit={onSubmitAskOtp}
             >
               {({ isSubmitting, isValid }) => (
                 <Form>
@@ -147,19 +172,19 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
               )}
             </Formik>
           )}
-          {step === STEP_VALIDATE_TOKEN && (
+          {step === STEP_VALIDATE_OTP && (
             <Formik
-              onSubmit={onSubmitValidateToken}
-              initialTouched={{ code: !R.isEmpty(flashError) }}
-              initialErrors={{ code: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
-              validationSchema={tokenValidation(t_i18n)}
-              initialValues={{ code: '' }}
+              onSubmit={onSubmitValidateOtp}
+              initialTouched={{ otp: !R.isEmpty(flashError) }}
+              initialErrors={{ otp: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
+              validationSchema={otpValidation(t_i18n)}
+              initialValues={{ otp: '' }}
             >
               {({ isSubmitting, isValid }) => (
                 <Form>
                   <Field
                     component={TextField}
-                    name="code"
+                    name="otp"
                     label={t_i18n('Enter code')}
                     fullWidth={true}
                   />
@@ -179,8 +204,8 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
           {step === STEP_RESET_PASSWORD && (
             <Formik
               onSubmit={onSubmitValidatePassword}
-              initialTouched={{ code: !R.isEmpty(flashError) }}
-              initialErrors={{ code: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
+              initialTouched={{ otp: !R.isEmpty(flashError) }}
+              initialErrors={{ otp: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
               validationSchema={passwordValidation(t_i18n)}
               initialValues={{ password: '', password_validation: '' }}
             >
