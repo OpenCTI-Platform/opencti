@@ -105,7 +105,7 @@ StixMetaObjectDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Type')}
       </Typography>
-      <ItemEntityType entityType={stixMetaObject.entity_type} />
+      <ItemEntityType entityType={stixMetaObject.entity_type} inList={false} />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Platform creation date')}
       </Typography>
