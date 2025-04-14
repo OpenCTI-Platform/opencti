@@ -28,6 +28,7 @@ export const INPUT_KILLCHAIN = 'killChainPhases'; // kill_chain_phases
 export const INPUT_CREATED_BY = 'createdBy'; // created_by_ref
 export const INPUT_LABELS = 'objectLabel'; // labels
 export const INPUT_MARKINGS = 'objectMarking'; // object_marking_refs
+export const INPUT_WORKFLOW_STATUS = 'x_opencti_workflow_id'; // object_marking_refs
 export const INPUT_ASSIGNEE = 'objectAssignee'; // object_assignee_refs (OCTI)
 export const INPUT_PARTICIPANT = 'objectParticipant';
 export const INPUT_OBJECTS = 'objects'; // object_refs

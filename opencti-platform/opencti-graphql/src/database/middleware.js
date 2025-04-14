@@ -105,7 +105,7 @@ import {
   IDS_STIX,
   INPUT_CREATED_BY,
   INPUT_LABELS,
-  INPUT_MARKINGS,
+  INPUT_MARKINGS, INPUT_WORKFLOW_STATUS,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
   REL_INDEX_PREFIX,
@@ -186,7 +186,7 @@ import {
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache, getEntityFromCache } from './cache';
+import {getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache} from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
@@ -231,6 +231,8 @@ import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUt
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
+import {findByType} from "../modules/entitySetting/entitySetting-domain";
+import {ENTITY_TYPE_DRAFT_WORKSPACE} from "../modules/draftWorkspace/draftWorkspace-types";
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2003,6 +2005,13 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
   if (!validateUserAccessOperation(user, initial, accessOperation)) {
     throw ForbiddenAccess();
+  }
+  // Validate workflow status value
+  const statusInput = inputs.find((inputData) => inputData.key === INPUT_WORKFLOW_STATUS);
+  if (statusInput && statusInput.value?.length > 0) {
+    const entitySettings = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_ENTITY_SETTING);
+    const currentEntitySettings = entitySettings.find((s) => s.type === initial.entity_type);
+    const statusValue = statusInput.value[0];
   }
   // Split attributes and meta
   // Supports inputs meta or stix meta
