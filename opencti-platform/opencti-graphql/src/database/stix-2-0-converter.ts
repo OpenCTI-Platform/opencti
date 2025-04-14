@@ -40,7 +40,8 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
     spec_version: '2.0',
     x_opencti_type: ENTITY_TYPE_MALWARE,
     type: instance.entity_type.toLowerCase(),
-    x_opencti_granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id)
+    x_opencti_granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
+    x_opencti_workflow_id: instance.x_opencti_workflow_id,
   };
 };
 
