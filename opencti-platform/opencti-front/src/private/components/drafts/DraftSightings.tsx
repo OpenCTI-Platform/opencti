@@ -328,8 +328,8 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
       isSortable: false,
       percentWidth: 10,
     },
-    x_opencti_negative: {},
-    attribute_count: {},
+    x_opencti_negative: { percentWidth: 14 },
+    attribute_count: { percentWidth: 4 },
     name: {
       label: 'Name',
       percentWidth: 10,
@@ -362,10 +362,10 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
               || `${fd(to.first_observed)} - ${fd(to.last_observed)}`
         : t_i18n('Restricted')),
     },
-    first_seen: {},
-    last_seen: {},
-    confidence: {},
-    x_opencti_workflow_id: {},
+    first_seen: { percentWidth: 12 },
+    last_seen: { percentWidth: 12 },
+    confidence: { percentWidth: 10 },
+    x_opencti_workflow_id: { percentWidth: 8 },
   };
 
   const preloadedPaginationProps = {
