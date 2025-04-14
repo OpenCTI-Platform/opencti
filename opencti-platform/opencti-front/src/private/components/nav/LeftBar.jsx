@@ -544,6 +544,7 @@ const LeftBar = () => {
                   primary={t_i18n('Investigations')}
                 />
                 )}
+                {navOpen && (selectedMenu.includes('investigations') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
               </MenuItem>
             </StyledTooltip>
             )}
@@ -930,6 +931,7 @@ const LeftBar = () => {
                       primary={t_i18n('Drafts')}
                     />
                     )}
+                    {navOpen && (selectedMenu.includes('drafts') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
                   </MenuItem>
                 </StyledTooltip>
               </Security>
@@ -955,6 +957,7 @@ const LeftBar = () => {
                         primary={t_i18n('Trash')}
                       />
                       )}
+                      {navOpen && (selectedMenu.includes('trash') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
                     </MenuItem>
                   </StyledTooltip>
                   )}
