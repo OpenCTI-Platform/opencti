@@ -178,9 +178,6 @@ const Graph = ({
               linkCanvasObjectMode={() => 'after'}
               linkCanvasObject={(link, ctx) => (shouldDisplayLinks ? linkLabelPaint(link, ctx) : null)}
               linkLineDash={(link) => (link.isNestedInferred ? [2, 1] : null)}
-              linkDirectionalParticles={(link) => (link.inferred ? 20 : 0)}
-              linkDirectionalParticleWidth={2}
-              linkDirectionalParticleSpeed={() => 0.002}
               linkColor={linkColorPaint}
               nodePointerAreaPaint={nodePointerAreaPaint} // What's for?
               nodeCanvasObject={(node, ctx) => nodePaint(node, ctx, {
