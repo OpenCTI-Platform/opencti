@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -24,6 +24,7 @@ const EventKnowledgeComponent = ({
     eventKnowledgeFragment,
     eventData,
   );
+  const location = useLocation();
   const link = `/dashboard/entities/events/${event.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(event.entity_type, schema);
@@ -62,6 +63,7 @@ const EventKnowledgeComponent = ({
           path="/all"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
@@ -75,6 +77,7 @@ const EventKnowledgeComponent = ({
           path="/threats"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={['targets']}
               isRelationReversed
@@ -95,6 +98,7 @@ const EventKnowledgeComponent = ({
           path="/related"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={['related-to']}
               entityLink={link}
@@ -106,6 +110,7 @@ const EventKnowledgeComponent = ({
           path="/locations"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['City', 'Country', 'Region']}
@@ -118,6 +123,7 @@ const EventKnowledgeComponent = ({
           path="/threat_actors"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Threat-Actor']}
@@ -130,6 +136,7 @@ const EventKnowledgeComponent = ({
           path="/intrusion_sets"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Intrusion-Set']}
@@ -142,6 +149,7 @@ const EventKnowledgeComponent = ({
           path="/campaigns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Campaign']}
@@ -154,6 +162,7 @@ const EventKnowledgeComponent = ({
           path="/incidents"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Incident']}
@@ -166,6 +175,7 @@ const EventKnowledgeComponent = ({
           path="/malwares"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Malware']}
@@ -178,6 +188,7 @@ const EventKnowledgeComponent = ({
           path="/attack_patterns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Attack-Pattern']}
@@ -190,6 +201,7 @@ const EventKnowledgeComponent = ({
           path="/tools"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Tool']}
@@ -202,6 +214,7 @@ const EventKnowledgeComponent = ({
           path="/observables"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={event.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}

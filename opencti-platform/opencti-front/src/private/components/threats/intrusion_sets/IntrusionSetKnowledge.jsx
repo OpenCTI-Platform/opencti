@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -31,6 +31,7 @@ const IntrusionSetKnowledgeComponent = ({
     IntrusionSetKnowledgeFragment,
     intrusionSetData,
   );
+  const location = useLocation();
   const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(intrusionSet.entity_type, schema);
@@ -70,6 +71,7 @@ const IntrusionSetKnowledgeComponent = ({
           path="/all"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={intrusionSet.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
@@ -83,6 +85,7 @@ const IntrusionSetKnowledgeComponent = ({
           path="/related"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={intrusionSet.id}
               relationshipTypes={['related-to']}
               entityLink={link}
@@ -96,6 +99,7 @@ const IntrusionSetKnowledgeComponent = ({
           path="/attribution"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={intrusionSet.id}
               relationshipTypes={['attributed-to']}
               stixCoreObjectTypes={['Threat-Actor']}
@@ -121,6 +125,7 @@ const IntrusionSetKnowledgeComponent = ({
           path="/campaigns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={intrusionSet.id}
               relationshipTypes={['attributed-to']}
               stixCoreObjectTypes={['Campaign']}
@@ -145,6 +150,7 @@ const IntrusionSetKnowledgeComponent = ({
           path="/malwares"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={intrusionSet.id}
               relationshipTypes={['uses', 'authored-by']}
               stixCoreObjectTypes={['Malware']}
@@ -160,6 +166,7 @@ const IntrusionSetKnowledgeComponent = ({
           path="/tools"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={intrusionSet.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Tool']}
@@ -174,6 +181,7 @@ const IntrusionSetKnowledgeComponent = ({
           path="/channels"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={intrusionSet.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Channel']}
@@ -188,6 +196,7 @@ const IntrusionSetKnowledgeComponent = ({
           path="/narratives"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={intrusionSet.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Narrative']}
@@ -202,6 +211,7 @@ const IntrusionSetKnowledgeComponent = ({
           path="/vulnerabilities"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={intrusionSet.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Vulnerability']}
@@ -216,6 +226,7 @@ const IntrusionSetKnowledgeComponent = ({
           path="/incidents"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={intrusionSet.id}
               relationshipTypes={['attributed-to']}
               stixCoreObjectTypes={['Incident']}
@@ -254,6 +265,7 @@ const IntrusionSetKnowledgeComponent = ({
           path="/infrastructures"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={intrusionSet.id}
               relationshipTypes={['uses', 'compromises']}
               stixCoreObjectTypes={['Infrastructure']}

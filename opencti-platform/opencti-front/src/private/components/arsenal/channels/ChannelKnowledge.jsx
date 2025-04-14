@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -27,6 +27,7 @@ const ChannelKnowledgeComponent = ({
     channelKnowledgeFragment,
     channelData,
   );
+  const location = useLocation();
   const link = `/dashboard/arsenal/channels/${channel.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(channel.entity_type, schema);
@@ -65,6 +66,7 @@ const ChannelKnowledgeComponent = ({
           path="/all"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={channel.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
@@ -78,6 +80,7 @@ const ChannelKnowledgeComponent = ({
           path="/related"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={channel.id}
               relationshipTypes={['related-to']}
               entityLink={link}
@@ -98,6 +101,7 @@ const ChannelKnowledgeComponent = ({
           path="/threats"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={channel.id}
               relationshipTypes={['uses']}
               isRelationReversed={true}
@@ -117,6 +121,7 @@ const ChannelKnowledgeComponent = ({
           path="/threat_actors"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={channel.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Threat-Actor']}
@@ -129,6 +134,7 @@ const ChannelKnowledgeComponent = ({
           path="/intrusion_sets"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={channel.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Intrusion-Set']}
@@ -141,6 +147,7 @@ const ChannelKnowledgeComponent = ({
           path="/campaigns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={channel.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Campaign']}
@@ -153,6 +160,7 @@ const ChannelKnowledgeComponent = ({
           path="/attack_patterns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={channel.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Attack-Pattern']}
@@ -165,6 +173,7 @@ const ChannelKnowledgeComponent = ({
           path="/channels"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={channel.id}
               relationshipTypes={['amplifies', 'derived-from']}
               stixCoreObjectTypes={['Channel']}
@@ -177,6 +186,7 @@ const ChannelKnowledgeComponent = ({
           path="/malwares"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={channel.id}
               relationshipTypes={['uses', 'delivers', 'drops']}
               stixCoreObjectTypes={['Malware']}
@@ -189,6 +199,7 @@ const ChannelKnowledgeComponent = ({
           path="/vulnerabilities"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={channel.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Vulnerability']}
@@ -201,6 +212,7 @@ const ChannelKnowledgeComponent = ({
           path="/incidents"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={channel.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Incident']}

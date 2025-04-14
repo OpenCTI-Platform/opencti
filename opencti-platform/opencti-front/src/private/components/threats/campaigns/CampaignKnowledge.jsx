@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -31,6 +31,7 @@ const CampaignKnowledgeComponent = ({
     CampaignKnowledgeFragment,
     campaignData,
   );
+  const location = useLocation();
   const link = `/dashboard/threats/campaigns/${campaign.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(campaign.entity_type, schema);
@@ -69,6 +70,7 @@ const CampaignKnowledgeComponent = ({
           path="/all"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={campaign.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
@@ -82,6 +84,7 @@ const CampaignKnowledgeComponent = ({
           path="/related"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={campaign.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
@@ -111,6 +114,7 @@ const CampaignKnowledgeComponent = ({
           path="/attribution"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={campaign.id}
               relationshipTypes={['attributed-to', 'participates-in']}
               stixCoreObjectTypes={['Threat-Actor', 'Intrusion-Set']}
@@ -146,6 +150,7 @@ const CampaignKnowledgeComponent = ({
           path="/malwares"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={campaign.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Malware']}
@@ -160,6 +165,7 @@ const CampaignKnowledgeComponent = ({
           path="/tools"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={campaign.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Tool']}
@@ -174,6 +180,7 @@ const CampaignKnowledgeComponent = ({
           path="/channels"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={campaign.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Channel']}
@@ -188,6 +195,7 @@ const CampaignKnowledgeComponent = ({
           path="/narratives"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={campaign.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Narrative']}
@@ -202,6 +210,7 @@ const CampaignKnowledgeComponent = ({
           path="/vulnerabilities"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={campaign.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Vulnerability']}
@@ -216,6 +225,7 @@ const CampaignKnowledgeComponent = ({
           path="/incidents"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={campaign.id}
               relationshipTypes={['attributed-to']}
               stixCoreObjectTypes={['Incident']}
@@ -254,6 +264,7 @@ const CampaignKnowledgeComponent = ({
           path="/infrastructures"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={campaign.id}
               relationshipTypes={['uses', 'compromises']}
               stixCoreObjectTypes={['Infrastructure']}

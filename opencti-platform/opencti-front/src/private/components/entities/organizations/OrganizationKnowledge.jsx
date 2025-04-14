@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -26,6 +26,7 @@ const OrganizationKnowledgeComponent = ({
     organizationKnowledgeFragment,
     organizationData,
   );
+  const location = useLocation();
   const link = `/dashboard/entities/organizations/${organization.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(organization.entity_type, schema);
@@ -68,6 +69,7 @@ const OrganizationKnowledgeComponent = ({
         path="/all"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={allRelationshipsTypes}
             entityLink={link}
@@ -81,6 +83,7 @@ const OrganizationKnowledgeComponent = ({
         path="/threats"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['targets']}
             isRelationReversed
@@ -101,6 +104,7 @@ const OrganizationKnowledgeComponent = ({
         path="/related"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['related-to']}
             entityLink={link}
@@ -112,6 +116,7 @@ const OrganizationKnowledgeComponent = ({
         path="/organizations"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['part-of', 'derived-from']}
             role="part-of_to"
@@ -125,6 +130,7 @@ const OrganizationKnowledgeComponent = ({
         path="/individuals"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['part-of']}
             stixCoreObjectTypes={['Individual']}
@@ -137,6 +143,7 @@ const OrganizationKnowledgeComponent = ({
         path="/locations"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['located-at']}
             stixCoreObjectTypes={['Location']}
@@ -149,6 +156,7 @@ const OrganizationKnowledgeComponent = ({
         path="/sectors"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['part-of']}
             stixCoreObjectTypes={['Sector']}
@@ -161,6 +169,7 @@ const OrganizationKnowledgeComponent = ({
         path="/used_tools"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['uses']}
             stixCoreObjectTypes={['Tool']}
@@ -173,6 +182,7 @@ const OrganizationKnowledgeComponent = ({
         path="/threat_actors"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['targets', 'employed-by']}
             stixCoreObjectTypes={['Threat-Actor']}
@@ -185,6 +195,7 @@ const OrganizationKnowledgeComponent = ({
         path="/intrusion_sets"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Intrusion-Set']}
@@ -197,6 +208,7 @@ const OrganizationKnowledgeComponent = ({
         path="/campaigns"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Campaign']}
@@ -209,6 +221,7 @@ const OrganizationKnowledgeComponent = ({
         path="/incidents"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Incident']}
@@ -221,6 +234,7 @@ const OrganizationKnowledgeComponent = ({
         path="/malwares"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Malware']}
@@ -233,6 +247,7 @@ const OrganizationKnowledgeComponent = ({
         path="/attack_patterns"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Attack-Pattern']}
@@ -245,6 +260,7 @@ const OrganizationKnowledgeComponent = ({
         path="/tools"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Tool']}
@@ -257,6 +273,7 @@ const OrganizationKnowledgeComponent = ({
         path="/vulnerabilities"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['related-to']}
             stixCoreObjectTypes={['Vulnerability']}
@@ -269,6 +286,7 @@ const OrganizationKnowledgeComponent = ({
         path="/observables"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={organization.id}
             relationshipTypes={['related-to']}
             stixCoreObjectTypes={['Stix-Cyber-Observable']}
