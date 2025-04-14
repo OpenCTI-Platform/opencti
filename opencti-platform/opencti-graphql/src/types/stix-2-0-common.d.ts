@@ -11,6 +11,7 @@ export interface StixObject {
   x_opencti_granted_refs?: string[]
   x_opencti_type: string;
   type: string;
+  x_opencti_workflow_id?: string;
 }
 
 // --- STIX Core Objects
