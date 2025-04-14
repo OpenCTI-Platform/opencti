@@ -5,6 +5,7 @@ import DataTableToolBar from '@components/data/DataTableToolBar';
 import { OperationType } from 'relay-runtime';
 import { GraphQLTaggedNode } from 'react-relay';
 import { useTheme } from '@mui/styles';
+import { Skeleton } from '@mui/material';
 import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
 import SearchInput from '../SearchInput';
 import { DataTableProps } from './dataTableTypes';
@@ -193,6 +194,15 @@ type OCTIDataTableProps = Pick<DataTableProps,
   createButton?: ReactNode
 } & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
 
+const DatatableDummy = () => (
+  <div style={{ width: '100%' }}>
+    <myComponent />
+    {Array(20).fill(0).map((value, index) => (
+      <Skeleton key={`${value}-${index}`} variant="text" height={35} />
+    ))}
+  </div>
+);
+
 const DataTable = (props: OCTIDataTableProps) => {
   const { schema } = useAuth();
 
@@ -242,41 +252,43 @@ const DataTable = (props: OCTIDataTableProps) => {
 
   return (
     <>
-      <DataTableComponent
-        {...props}
-        availableFilterKeys={availableFilterKeys}
-        dataQueryArgs={{ ...dataQueryArgs }}
-        useLineData={useLineData(lineFragment)}
-        useDataTable={useDataTable}
-        settingsMessagesBannerHeight={settingsMessagesBannerHeight}
-        filtersComponent={(
-          <DataTableInternalFilters
-            entityTypes={entityTypes}
-            additionalFilters={additionalFilters}
-            additionalFilterKeys={additionalFilterKeys}
-            additionalHeaderButtons={additionalHeaderButtons}
-            availableEntityTypes={availableEntityTypes}
-            availableRelationFilterTypes={availableRelationFilterTypes}
-            hideFilters={hideFilters}
-            hideSearch={hideSearch}
-            availableRelationshipTypes={availableRelationshipTypes}
-            currentView={currentView}
-            exportContext={exportContext}
-            searchContextFinal={computedSearchContextFinal}
-          />
+      <React.Suspense fallback={<DatatableDummy />}>
+        <DataTableComponent
+          {...props}
+          availableFilterKeys={availableFilterKeys}
+          dataQueryArgs={{ ...dataQueryArgs }}
+          useLineData={useLineData(lineFragment)}
+          useDataTable={useDataTable}
+          settingsMessagesBannerHeight={settingsMessagesBannerHeight}
+          filtersComponent={(
+            <DataTableInternalFilters
+              entityTypes={entityTypes}
+              additionalFilters={additionalFilters}
+              additionalFilterKeys={additionalFilterKeys}
+              additionalHeaderButtons={additionalHeaderButtons}
+              availableEntityTypes={availableEntityTypes}
+              availableRelationFilterTypes={availableRelationFilterTypes}
+              hideFilters={hideFilters}
+              hideSearch={hideSearch}
+              availableRelationshipTypes={availableRelationshipTypes}
+              currentView={currentView}
+              exportContext={exportContext}
+              searchContextFinal={computedSearchContextFinal}
+            />
       )}
-        dataTableToolBarComponent={(
-          <DataTableInternalToolbar
-            handleCopy={handleCopy}
-            taskScope={taskScope}
-            toolbarFilters={toolbarFilters}
-            globalSearch={globalSearch}
-            removeAuthMembersEnabled={removeAuthMembersEnabled}
-            removeFromDraftEnabled={removeFromDraftEnabled}
-            markAsReadEnabled={markAsReadEnabled}
-          />
+          dataTableToolBarComponent={(
+            <DataTableInternalToolbar
+              handleCopy={handleCopy}
+              taskScope={taskScope}
+              toolbarFilters={toolbarFilters}
+              globalSearch={globalSearch}
+              removeAuthMembersEnabled={removeAuthMembersEnabled}
+              removeFromDraftEnabled={removeFromDraftEnabled}
+              markAsReadEnabled={markAsReadEnabled}
+            />
       )}
-      />
+        />
+      </React.Suspense>
     </>
   );
 };
