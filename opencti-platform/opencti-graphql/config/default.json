@@ -38,6 +38,7 @@
         "secret",
         "token",
         "api_token",
+        "authentication_value",
         "enterprise_license"
       ],
       "extended_error_message": false
