@@ -531,7 +531,7 @@ const LeftBar = () => {
               <MenuItem
                 component={Link}
                 to="/dashboard/workspaces/investigations"
-                selected={!navOpen && location.pathname.includes('/dashboard/workspaces/investigations')}
+                selected={location.pathname.includes('/dashboard/workspaces/investigations')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
@@ -544,7 +544,6 @@ const LeftBar = () => {
                   primary={t_i18n('Investigations')}
                 />
                 )}
-                {navOpen && (selectedMenu.includes('investigations') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
               </MenuItem>
             </StyledTooltip>
             )}
@@ -918,7 +917,7 @@ const LeftBar = () => {
                   <MenuItem
                     component={Link}
                     to="/dashboard/drafts"
-                    selected={!navOpen && location.pathname.includes('/dashboard/drafts')}
+                    selected={location.pathname.includes('/dashboard/drafts')}
                     dense={true}
                     classes={{ root: classes.menuItem }}
                   >
@@ -931,7 +930,6 @@ const LeftBar = () => {
                       primary={t_i18n('Drafts')}
                     />
                     )}
-                    {navOpen && (selectedMenu.includes('drafts') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
                   </MenuItem>
                 </StyledTooltip>
               </Security>
@@ -944,7 +942,7 @@ const LeftBar = () => {
                     <MenuItem
                       component={Link}
                       to="/dashboard/trash"
-                      selected={!navOpen && location.pathname.includes('/dashboard/trash')}
+                      selected={location.pathname.includes('/dashboard/trash')}
                       dense={true}
                       classes={{ root: classes.menuItem }}
                     >
@@ -957,7 +955,6 @@ const LeftBar = () => {
                         primary={t_i18n('Trash')}
                       />
                       )}
-                      {navOpen && (selectedMenu.includes('trash') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
                     </MenuItem>
                   </StyledTooltip>
                   )}
