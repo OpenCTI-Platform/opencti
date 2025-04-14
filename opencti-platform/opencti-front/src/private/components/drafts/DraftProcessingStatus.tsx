@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import Alert from '@mui/material/Alert';
 import Tabs from '@mui/material/Tabs';
@@ -12,7 +12,10 @@ import useDraftContext from '../../../utils/hooks/useDraftContext';
 import DraftWorks from './DraftWorks';
 import DraftTasks from './DraftTasks';
 
-const DraftProcessingStatus = () => {
+interface DraftProcessingStatusProps {
+  forceRefetch: () => void;
+}
+const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ forceRefetch }) => {
   const { t_i18n } = useFormatter();
   const [displayProcesses, setDisplayProcesses] = useState(false);
   const [tabValue, setTabValue] = useState<string>('Works');
@@ -39,7 +42,7 @@ const DraftProcessingStatus = () => {
             color="warning"
           >
             <CircularProgress
-              onClick={() => { setDisplayProcesses(true); }}
+              onClick={() => { forceRefetch(); setDisplayProcesses(true); }}
               variant={'indeterminate'}
               size={25}
               style={{ cursor: 'pointer' }}

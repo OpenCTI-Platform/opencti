@@ -5,7 +5,7 @@ import { DraftSightingsLinesPaginationQuery, DraftSightingsLinesPaginationQuery$
 import { DraftSightingsLines_data$data } from '@components/drafts/__generated__/DraftSightingsLines_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -292,7 +292,6 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
   const initialValues = {
     filters: {
       ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['draft_change.draft_operation'], ['stix-core-relationship'], ['create', 'update', 'delete']),
     },
     searchTerm: '',
     sortBy: 'last_seen',
@@ -328,8 +327,8 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
       isSortable: false,
       percentWidth: 10,
     },
-    x_opencti_negative: {},
-    attribute_count: {},
+    x_opencti_negative: { percentWidth: 14 },
+    attribute_count: { percentWidth: 4 },
     name: {
       label: 'Name',
       percentWidth: 10,
@@ -362,10 +361,10 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
               || `${fd(to.first_observed)} - ${fd(to.last_observed)}`
         : t_i18n('Restricted')),
     },
-    first_seen: {},
-    last_seen: {},
-    confidence: {},
-    x_opencti_workflow_id: {},
+    first_seen: { percentWidth: 12 },
+    last_seen: { percentWidth: 12 },
+    confidence: { percentWidth: 10 },
+    x_opencti_workflow_id: { percentWidth: 8 },
   };
 
   const preloadedPaginationProps = {
