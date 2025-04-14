@@ -1,7 +1,7 @@
-import type { StixDomainObject2 } from './stix-2-0-common';
+import type { StixDomainObject } from './stix-2-0-common';
 import type { StixId, StixDate, StixKillChainPhase } from './stix-2-1-common';
 
-export interface StixMalware2 extends StixDomainObject2 {
+export interface StixMalware extends StixDomainObject {
   name: string; // optional
   description: string; // optional
   malware_types: Array<string>; // optional
