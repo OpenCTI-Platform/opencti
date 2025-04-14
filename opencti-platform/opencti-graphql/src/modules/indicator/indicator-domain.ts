@@ -365,6 +365,7 @@ export const restartDecayComputationOnEdit = (fromScore: number, indicatorBefore
 };
 
 export const indicatorEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[], opts = {}) => {
+  logApp.info('Initial input:', { input });
   const finalInput = [...input];
   const indicatorBeforeUpdate = await findById(context, user, id);
   if (!indicatorBeforeUpdate) {
@@ -386,7 +387,6 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     await validateIndicatorPattern(context, user, indicatorBeforeUpdate.pattern_type, patternEditInput.value[0]);
   }
   const scoreEditInput = input.find((e) => e.key === X_SCORE);
-  logApp.info('scoreEditInput:', { scoreEditInput });
   if (scoreEditInput) {
     const newScore = scoreEditInput.value[0];
     if (newScore < 0 || newScore > 100) {
@@ -395,13 +395,15 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   }
   // END Region Validation
 
-  // Region {Score, Valid until, Revoke} computation
-  const isDecayEnabledOnindicator: boolean = indicatorBeforeUpdate.decay_applied_rule !== undefined && indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score !== undefined;
+  // Region Decay and {Score, Valid until, Revoke} computation
+  const isDecayEnabledOnIndicator: boolean = indicatorBeforeUpdate.decay_applied_rule !== undefined && indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score !== undefined;
   const validUntilEditInput = input.find((e) => e.key === VALID_UNTIL);
   const revokedEditInput = input.find((e) => e.key === REVOKED);
   const nowDate = new Date();
   let hasRevokedChangedToTrue: boolean = false;
   let hasRevokedChangedToFalse: boolean = false;
+  logApp.info('Before decay computation: scoreEditInput:', { scoreEditInput, revokedEditInput, validUntilEditInput, isDecayEnabledOnIndicator });
+
   if (revokedEditInput) {
     hasRevokedChangedToTrue = revokedEditInput.value[0] === true && !indicatorBeforeUpdate.revoked;
     hasRevokedChangedToFalse = revokedEditInput.value[0] === false && indicatorBeforeUpdate.revoked;
@@ -420,7 +422,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     }
   }
 
-  if (isDecayEnabledOnindicator) {
+  if (isDecayEnabledOnIndicator) {
     const revokeScore = indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score;
     const baseScore = indicatorBeforeUpdate.decay_base_score;
 
@@ -428,7 +430,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     if (scoreEditInput && !scoreEditInput.value.includes(baseScore)) {
       const newScore = scoreEditInput.value[0];
       const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
-      logApp.info('Computed changes because score updated manually:', finalInput);
+      logApp.info('Computed changes because score updated in input:', finalInput);
       finalInput.push(...allChanges);
     }
 
@@ -470,7 +472,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     }
   }
 
-  // END Region {Score, Valid until, Revoke} computation
+  // END Decay and {Score, Valid until, Revoke} computation
   logApp.info('All changes to apply:', finalInput);
 
   return stixDomainObjectEditField(context, user, id, finalInput, opts);

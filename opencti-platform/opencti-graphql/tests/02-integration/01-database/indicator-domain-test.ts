@@ -21,6 +21,7 @@ import { logApp } from '../../../src/config/conf';
 describe('Testing field patch on indicator for trio {score, valid until, revoked}', () => {
   let indicatorWithDecay: BasicStoreEntityIndicator;
   let indicatorWithDecay2: BasicStoreEntityIndicator;
+  let indicatorWithDecay3: BasicStoreEntityIndicator;
   let indicatorWithoutDecay: BasicStoreEntityIndicator;
   let indicatorWithoutDecay2: BasicStoreEntityIndicator;
 
@@ -51,6 +52,19 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     expect(indicatorWithDecay2.x_opencti_score).toBeGreaterThan(indicatorWithDecay2.decay_applied_rule.decay_revoke_score);
     expect(new Date(indicatorWithDecay2.valid_until).getTime()).toBeGreaterThan(new Date().getTime());
 
+    const indicatorAddInput3: IndicatorAddInput = {
+      name: 'Indicator domain test with decay 3',
+      pattern: '[domain-name:value = \'montest.fr\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 99,
+    };
+    indicatorWithDecay3 = await addIndicator(testContext, ADMIN_USER, indicatorAddInput3);
+    expect(indicatorWithDecay3.revoked).toBeFalsy();
+    expect(indicatorWithDecay3.decay_applied_rule).toBeDefined();
+    expect(indicatorWithDecay3.decay_applied_rule.decay_revoke_score).toBeDefined();
+    expect(indicatorWithDecay3.x_opencti_score).toBeGreaterThan(indicatorWithDecay3.decay_applied_rule.decay_revoke_score);
+    expect(new Date(indicatorWithDecay3.valid_until).getTime()).toBeGreaterThan(new Date().getTime());
+
     const inPast90Days = new Date(new Date().getTime() - NO_DECAY_DEFAULT_VALID_PERIOD);
     const tomorow = new Date(new Date().getTime() + dayToMs(1));
     const indicatorNoDecayInput = {
@@ -79,6 +93,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   afterAll(async () => {
     await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorWithDecay.id);
     await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorWithDecay2.id);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorWithDecay3.id);
     await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorWithoutDecay.id);
     await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorWithoutDecay2.id);
   });
@@ -114,7 +129,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     // Move revoke to true
     // score should be set to the revoke number
     // indicator should have a valid until date in the past
-    const inputToRevoke: EditInput[] = [{ key: 'revoked', value: [true] }];
+    const inputToRevoke: EditInput[] = [{ key: 'revoked', value: ['true'] }];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputToRevoke);
 
     const indicatorUpdatedRevoked = await findById(testContext, ADMIN_USER, indicatorWithDecay.id);
@@ -136,7 +151,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     // Reverse: move revoke to false
     // score should be back to base score
     // indicator should have a valid until date in the future
-    const inputToUnrevoke: EditInput[] = [{ key: 'revoked', value: [false] }];
+    const inputToUnrevoke: EditInput[] = [{ key: 'revoked', value: ['false'] }];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputToUnrevoke);
 
     const indicatorUpdatedUnRevoked = await findById(testContext, ADMIN_USER, indicatorWithDecay.id);
@@ -158,8 +173,8 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     const yesterday: Date = new Date(utcDate().toDate().getTime() - dayToMs(1));
     const twoDaysAgo: Date = new Date(utcDate().toDate().getTime() - dayToMs(2));
     const inputToRevoke: EditInput[] = [
-      { key: VALID_FROM, value: [twoDaysAgo] },
-      { key: VALID_UNTIL, value: [yesterday] }];
+      { key: VALID_FROM, value: [twoDaysAgo.toISOString()] },
+      { key: VALID_UNTIL, value: [yesterday.toISOString()] }];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay2.id, inputToRevoke);
 
     const indicatorValidUntilYesterday = await findById(testContext, ADMIN_USER, indicatorWithDecay2.id);
@@ -184,7 +199,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
 
   it('no decay - revoke=false compute new score and new valid until', async () => {
     // Reverse: move revoke to false
-    const inputToUnrevoke: EditInput[] = [{ key: 'revoked', value: [false] }];
+    const inputToUnrevoke: EditInput[] = [{ key: 'revoked', value: ['false'] }];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputToUnrevoke);
 
     const indicatorUpdatedUnRevoked = await findById(testContext, ADMIN_USER, indicatorWithoutDecay.id);
@@ -197,13 +212,28 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     const yesterday: Date = new Date(utcDate().toDate().getTime() - dayToMs(1));
     const twoDaysAgo: Date = new Date(utcDate().toDate().getTime() - dayToMs(2));
     const inputToRevoke: EditInput[] = [
-      { key: VALID_FROM, value: [twoDaysAgo] },
-      { key: VALID_UNTIL, value: [yesterday] }];
+      { key: VALID_FROM, value: [twoDaysAgo.toISOString()] },
+      { key: VALID_UNTIL, value: [yesterday.toISOString()] }];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay2.id, inputToRevoke);
 
     const indicatorValidUntilYesterday = await findById(testContext, ADMIN_USER, indicatorWithoutDecay2.id);
     expect(indicatorValidUntilYesterday.revoked).toBeTruthy();
     expect(indicatorValidUntilYesterday.x_opencti_score).toBe(NO_DECAY_DEFAULT_REVOKED_SCORE);
     expect(new Date(indicatorValidUntilYesterday.valid_until).getTime()).toBeLessThan(new Date().getTime());
+  });
+
+  it.only('decay enabled - updating revoke and valid until and score should ??? what', async () => {
+    const tomorrow: Date = new Date(utcDate().toDate().getTime() + dayToMs(1));
+    const twoDaysAgo: Date = new Date(utcDate().toDate().getTime() - dayToMs(2));
+    const inputWithEverything: EditInput[] = [
+      { key: VALID_FROM, value: [twoDaysAgo.toISOString()] },
+      { key: VALID_UNTIL, value: [tomorrow.toISOString()] },
+      { key: X_SCORE, value: [12] },
+      { key: 'revoked', value: ['false'] },
+    ];
+    await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay3.id, inputWithEverything);
+
+    const indicatorWithAllChanges = await findById(testContext, ADMIN_USER, indicatorWithDecay3.id);
+    console.log('indicatorWithAllChanges:', indicatorWithAllChanges);
   });
 });
