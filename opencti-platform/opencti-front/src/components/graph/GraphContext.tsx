@@ -79,6 +79,7 @@ export const GraphProvider = ({
     selectedLinks: [],
     selectedNodes: [],
     isAddRelationOpen: false,
+    isExpandOpen: false,
   };
 
   const [graphState, setGraphState] = useState<GraphState>(() => {

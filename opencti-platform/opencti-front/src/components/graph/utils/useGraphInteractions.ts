@@ -440,6 +440,10 @@ const useGraphInteractions = () => {
     setGraphStateProp('isAddRelationOpen', val);
   };
 
+  const setIsExpandOpen = (val: boolean) => {
+    setGraphStateProp('isExpandOpen', val);
+  };
+
   return {
     toggleMode3D,
     toggleVerticalTree,
@@ -483,6 +487,7 @@ const useGraphInteractions = () => {
     setLoadingTotal,
     setLoadingCurrent,
     setZoom,
+    setIsExpandOpen,
   };
 };
 

@@ -93,7 +93,8 @@ export interface GraphState {
     x: number
     y: number
   }
-  // Put inside context because the dialog to create relationship can be
-  // opened by other source than click in toolbar (cf <RelationSelection />).
-  isAddRelationOpen: boolean
+  // Stuff put inside context because the dialog can be
+  // opened by other source than click in toolbar.
+  isAddRelationOpen: boolean // (cf <RelationSelection />)
+  isExpandOpen: boolean // (cf Graph.tsx)
 }
