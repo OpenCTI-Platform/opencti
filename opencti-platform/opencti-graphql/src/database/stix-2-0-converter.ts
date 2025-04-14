@@ -33,7 +33,7 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
 };
 
 // Builders
-const buildStixObject = (instance: StoreObject): S.StixObject2 => {
+const buildStixObject = (instance: StoreObject): S.StixObject => {
   return {
     id: instance.standard_id,
     x_opencti_id: instance.id,
@@ -45,7 +45,7 @@ const buildStixObject = (instance: StoreObject): S.StixObject2 => {
 };
 
 // General
-const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject2 => {
+const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
   return {
     ...buildStixObject(instance),
     created: convertToStixDate(instance.created),
@@ -60,7 +60,7 @@ const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObj
   };
 };
 
-export const convertMalwareToStix2 = (instance: StoreEntity, type: string): SDO.StixMalware2 => {
+export const convertMalwareToStix2 = (instance: StoreEntity, type: string): SDO.StixMalware => {
   assertType(ENTITY_TYPE_MALWARE, type);
   return {
     ...buildStixDomain(instance),

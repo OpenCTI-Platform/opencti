@@ -1,7 +1,7 @@
 import type { StixDate, StixId } from './stix-common';
 import type { StixInternalExternalReference } from './stix-2-0-smo';
 
-export interface StixObject2 {
+export interface StixObject {
   id: StixId;
   x_opencti_id: string;
   spec_version: string;
@@ -12,7 +12,7 @@ export interface StixObject2 {
 
 // --- STIX Core Objects
 // SDO
-export interface StixDomainObject2 extends StixObject2 {
+export interface StixDomainObject extends StixObject {
   created: StixDate;
   modified: StixDate;
   revoked: boolean; // optional
