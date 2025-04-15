@@ -82,10 +82,12 @@ const themesLineFragment = graphql`
 
 interface ThemesProps {
   handleRefetch: () => Disposable;
+  currentTheme: string;
 }
 
 const Themes: FunctionComponent<ThemesProps> = ({
   handleRefetch,
+  currentTheme,
 }) => {
   const { t_i18n } = useFormatter();
   const [displayCreation, setDisplayCreation] = useState<boolean>(false);
@@ -183,6 +185,7 @@ const Themes: FunctionComponent<ThemesProps> = ({
                 themeData={row}
                 handleRefetch={handleRefetch}
                 paginationOptions={paginationOptions.variables}
+                isCurrentTheme={row.id === currentTheme}
               />
             )}
             resolvePath={(data: ThemesLines_data$data) => data.themes?.edges?.map((n) => n?.node)}
