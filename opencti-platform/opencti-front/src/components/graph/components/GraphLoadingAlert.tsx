@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -7,16 +7,47 @@ import type { Theme } from '../../Theme';
 import { useFormatter } from '../../i18n';
 import { useGraphContext } from '../GraphContext';
 
+const MIN_DISPLAY_MS = 1500;
+
 const GraphLoadingAlert = () => {
+  const startTime = useRef<number>(undefined);
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
+  const [showAlert, setShowAlert] = useState(false);
+
   const {
     graphState: {
-      loadingCurrent = 1,
-      loadingTotal = 1,
+      loadingCurrent,
+      loadingTotal,
     },
   } = useGraphContext();
+
+  useEffect(() => {
+    const isLoadingData = loadingCurrent && loadingTotal && loadingCurrent < loadingTotal;
+
+    if (!isLoadingData) {
+      if (startTime.current) {
+        const durationDisplay = Date.now() - startTime.current;
+        const durationDelta = MIN_DISPLAY_MS - durationDisplay;
+        startTime.current = undefined;
+        // Ensure the alert is displayed long enough to let understand
+        // the user what is going on and avoid blink effect.
+        setTimeout(() => {
+          setShowAlert(false);
+        }, durationDelta < 0 ? 0 : durationDelta);
+      }
+    } else {
+      setShowAlert(true);
+      if (!startTime.current) {
+        startTime.current = Date.now();
+      }
+    }
+  }, [loadingCurrent, loadingTotal]);
+
+  if (!showAlert || !loadingTotal || !loadingCurrent) {
+    return null;
+  }
 
   const normaliseValue = (loadingCurrent * 100) / loadingTotal;
 

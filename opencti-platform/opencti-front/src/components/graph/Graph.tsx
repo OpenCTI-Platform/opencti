@@ -86,13 +86,17 @@ const Graph = ({
 
   useGraphFilter();
 
+  const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
+
   useEffect(() => {
     // A short timeout to be sure graph is ready.
     setTimeout(() => {
-      if (zoom) setZoom(zoom);
-      else zoomToFit();
-    }, 100);
-  }, [mode3D]);
+      if (!isLoadingData) {
+        if (zoom) setZoom(zoom);
+        else zoomToFit();
+      }
+    }, 200);
+  }, [mode3D, isLoadingData]);
 
   const shouldDisplayLinks = graphData?.links.length ?? 0 < 200;
   const selectedEntities = [...selectedLinks, ...selectedNodes];
@@ -123,8 +127,6 @@ const Graph = ({
     toggleNode(node, e);
   };
 
-  const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
-
   return (
     <RectangleSelection
       graphId={graphId}
@@ -132,7 +134,7 @@ const Graph = ({
       onSelection={selectFromFreeRectangle}
     >
       <div style={{ position: 'relative' }} id={graphId}>
-        {isLoadingData && <GraphLoadingAlert />}
+        <GraphLoadingAlert />
         {selectedEntities.length > 0 && <EntitiesDetailsRightsBar />}
         {mode3D ? (
           <ForceGraph3D<GraphNode, GraphLink>
