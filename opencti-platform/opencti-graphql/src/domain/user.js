@@ -823,7 +823,7 @@ export const meEditField = async (context, user, userId, inputs, password = null
     }
     // Check password confirmation in case of password change
     if (key === 'password') {
-      const dbPassword = user.session_password;
+      const dbPassword = user.password;
       const match = bcrypt.compareSync(password, dbPassword);
       if (!match) {
         throw FunctionalError('The current password you have provided is not valid');
