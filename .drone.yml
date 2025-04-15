@@ -13,11 +13,12 @@ steps:
       - chmod 777 scripts/*
       - ./scripts/clone-dependencies.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - ls -lart
+      # copy opencti-platform without nodes_modules
+      - cp -R opencti-platform /tmp/platform-reference
       - cd "$DRONE_WORKSPACE/client-python"
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
       - git log -n 1
-      - # copy opencti-platform without nodes_modules
-      - cp -R opencti-platform /tmp/platform-reference
+
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
