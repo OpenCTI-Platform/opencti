@@ -313,8 +313,8 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 10
-      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
       - apk add build-base git libffi-dev cargo
+      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
