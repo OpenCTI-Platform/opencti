@@ -73,9 +73,9 @@ const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
-        title={t_i18n('Do you want to delete this notifier?')}
         deletion={deletion}
         submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this notifier?')}
       />
       <Drawer
         title={t_i18n('Notifier edition')}

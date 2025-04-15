@@ -79,6 +79,7 @@ const StixCoreObjectContentFilesList = ({
   const { fld, t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const deletion = useDeletion({});
+  const { setDeleting, handleOpenDelete, handleCloseDelete, deleting } = deletion;
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -99,21 +100,21 @@ const StixCoreObjectContentFilesList = ({
   const submitDelete = () => {
     closePopover();
     if (!menuFile?.id) return;
-    deletion.handleCloseDelete();
-    deletion.setDeleting(true);
+    handleCloseDelete();
+    setDeleting(true);
     commitDelete({
       variables: { fileName: menuFile.id },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         onFileChange(menuFile.id, true);
       },
     });
   };
 
-  const handleDelete = () => deletion.handleOpenDelete();
+  const handleDelete = () => handleOpenDelete();
 
   const handleClose = () => {
-    deletion.handleCloseDelete();
+    handleCloseDelete();
     closePopover();
   };
 
@@ -172,7 +173,7 @@ const StixCoreObjectContentFilesList = ({
                 <ListItemButton
                   selected={file.id === currentFileId}
                   onClick={() => handleSelectFile(file.id)}
-                  disabled={deletion.deleting}
+                  disabled={deleting}
                 >
                   <ListItemIcon>
                     {renderIcon(fileMimeType)}
@@ -263,10 +264,10 @@ const StixCoreObjectContentFilesList = ({
           </MenuItem>
         </Security>
         <DeleteDialog
-          title={t_i18n('Are you sure you want to delete this file?')}
           deletion={deletion}
-          onClose={handleClose}
           submitDelete={submitDelete}
+          onClose={handleClose}
+          message={t_i18n('Do you want to delete this file?')}
         />
       </Menu>
     </List>

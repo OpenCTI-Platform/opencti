@@ -50,6 +50,8 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -115,7 +117,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
 > = ({ stixCoreObjectId, data, relay }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [displayDialog, setDisplayDialog] = useState(false);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
     undefined,
@@ -127,7 +128,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
       && selectedConnector?.configurations?.length === 0;
   const [externalReferenceToRemove, setExternalReferenceToRemove] = useState<externalReferenceEdge_type | null>(null);
-  const [removing, setRemoving] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [fileToImport, setFileToImport] = useState<FileLine_file$data | null>(null);
   const externalReferencesEdges = data.stixCoreObject
@@ -144,14 +144,17 @@ StixCoreObjectExternalReferencesLinesContainerProps
   const handleToggleExpand = () => {
     setExpanded(!expanded);
   };
+
+  const deletion = useDeletion({});
+  const { handleOpenDelete, handleCloseDelete, setDeleting } = deletion;
   const handleOpenDialog = (
     externalReferenceEdge: externalReferenceEdge_type,
   ) => {
-    setDisplayDialog(true);
+    handleOpenDelete();
     setExternalReferenceToRemove(externalReferenceEdge);
   };
   const handleCloseDialog = () => {
-    setDisplayDialog(false);
+    handleCloseDelete();
     setExternalReferenceToRemove(null);
   };
   const handleOpenExternalLink = (url: string) => {
@@ -187,7 +190,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         );
       },
       onCompleted: () => {
-        setRemoving(false);
+        setDeleting(false);
         handleCloseDialog();
       },
       optimisticUpdater: undefined,
@@ -197,7 +200,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
     });
   };
   const handleRemoval = () => {
-    setRemoving(true);
+    setDeleting(true);
     removeExternalReference(externalReferenceToRemove);
   };
   const handleOpenImport = (
@@ -481,27 +484,12 @@ StixCoreObjectExternalReferencesLinesContainerProps
           </Button>
         )}
       </Paper>
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayDialog}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={handleCloseDialog}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to remove this external reference?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} disabled={removing}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={handleRemoval} disabled={removing}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={handleRemoval}
+        message={t_i18n('Do you want to remove this external reference?')}
+      />
+
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={displayExternalLink}
@@ -509,6 +497,9 @@ StixCoreObjectExternalReferencesLinesContainerProps
         slots={{ transition: Transition }}
         onClose={handleCloseExternalLink}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to browse this external link?')}
@@ -517,7 +508,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         <DialogActions>
           <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={handleBrowseExternalLink}>
-            {t_i18n('Browse the link')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

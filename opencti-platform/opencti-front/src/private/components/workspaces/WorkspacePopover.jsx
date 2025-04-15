@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
 import Box from '@mui/material/Box';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
@@ -20,13 +15,14 @@ import { QueryRenderer } from '../../../relay/environment';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_EXDELETE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE_INDELETE } from '../../../utils/hooks/useGranted';
-import Transition from '../../../components/Transition';
 import { deleteNode, insertNode } from '../../../utils/store';
 import handleExportJson from './workspaceExportHandler';
 import WorkspaceDuplicationDialog from './WorkspaceDuplicationDialog';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import stopEvent from '../../../utils/domEvent';
+import DeleteDialog from '../../../components/DeleteDialog';
+import useDeletion from '../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -57,10 +53,8 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   const { t_i18n } = useFormatter();
 
   const [anchorEl, setAnchorEl] = useState(null);
-  const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
 
   const handleOpen = (event) => {
@@ -71,16 +65,6 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
   const handleClose = (event) => {
     stopEvent(event);
     setAnchorEl(null);
-  };
-
-  const handleOpenDelete = (event) => {
-    setDisplayDelete(true);
-    handleClose(event);
-  };
-
-  const handleCloseDelete = (event) => {
-    stopEvent(event);
-    setDisplayDelete(false);
   };
 
   const handleCloseDuplicate = (event) => {
@@ -95,6 +79,9 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
       insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');
     }
   };
+
+  const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
 
   const submitDelete = (event) => {
     stopEvent(event);
@@ -232,29 +219,13 @@ const WorkspacePopover = ({ workspace, paginationOptions }) => {
         updater={updater}
         paginationOptions={paginationOptions}
       />
-      <Dialog
-        open={displayDelete}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {workspace.type === 'investigation'
-              ? t_i18n('Do you want to delete this investigation?')
-              : t_i18n('Do you want to delete this dashboard?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={workspace.type === 'investigation'
+          ? t_i18n('Do you want to delete this investigation?')
+          : t_i18n('Do you want to delete this dashboard?')}
+      />
       <QueryRenderer
         query={workspaceEditionQuery}
         variables={{ id }}

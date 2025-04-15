@@ -25,6 +25,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Alert from '@mui/material/Alert';
 import UpdateIcon from '@mui/icons-material/Update';
+import DialogTitle from '@mui/material/DialogTitle';
 import DangerZoneBlock from '../../common/danger_zone/DangerZoneBlock';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -43,6 +44,8 @@ import ItemCopy from '../../../../components/ItemCopy';
 import Transition from '../../../../components/Transition';
 import ItemIcon from '../../../../components/ItemIcon';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 const interval$ = interval(FIVE_SECONDS);
@@ -120,8 +123,6 @@ const ConnectorComponent = ({ connector, relay }) => {
   const connectorAvailableFilterKeys = getConnectorAvailableFilterKeys(connector);
   const [filters, helpers] = useFiltersState(connectorFilters);
 
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [displayResetState, setDisplayResetState] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [displayClearWorks, setDisplayClearWorks] = useState(false);
@@ -161,14 +162,6 @@ const ConnectorComponent = ({ connector, relay }) => {
       submitUpdateConnectorTrigger(variables);
     }
   }, [filters]);
-
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
 
   const handleOpenResetState = () => {
     setDisplayResetState(true);
@@ -215,7 +208,8 @@ const ConnectorComponent = ({ connector, relay }) => {
       },
     });
   };
-
+  const deletion = useDeletion({});
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
@@ -713,34 +707,11 @@ const ConnectorComponent = ({ connector, relay }) => {
           </Paper>
         </Grid>
       </Grid>
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayDelete}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this connector?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this connector?')}
+      />
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={displayResetState}
@@ -748,6 +719,9 @@ const ConnectorComponent = ({ connector, relay }) => {
         slots={{ transition: Transition }}
         onClose={handleCloseResetState}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             <Alert
@@ -776,7 +750,7 @@ const ConnectorComponent = ({ connector, relay }) => {
             color={isSensitive ? 'dangerZone' : 'secondary'}
             disabled={resetting}
           >
-            {t_i18n('Reset')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -787,6 +761,9 @@ const ConnectorComponent = ({ connector, relay }) => {
         slots={{ transition: Transition }}
         onClose={handleCloseClearWorks}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to clear the works of this connector?')}
@@ -804,7 +781,7 @@ const ConnectorComponent = ({ connector, relay }) => {
             color="secondary"
             disabled={clearing}
           >
-            {t_i18n('Clear')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -270,6 +270,9 @@ class WorkbenchFileToolbar extends Component {
               slots={{ transition: Transition }}
               onClose={this.handleCloseDelete.bind(this)}
             >
+              <DialogTitle>
+                {t('Are you sure?')}
+              </DialogTitle>
               <DialogContent>
                 <DialogContentText>
                   {t('Do you want to remove these objects?')}
@@ -286,7 +289,7 @@ class WorkbenchFileToolbar extends Component {
                     submitDelete();
                   }}
                 >
-                  {t('Remove')}
+                  {t('Confirm')}
                 </Button>
               </DialogActions>
             </Dialog>

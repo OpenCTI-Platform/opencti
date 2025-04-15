@@ -15,6 +15,8 @@ import Security from '../../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import WorkspaceWidgetConfig from './WorkspaceWidgetConfig';
 import Transition from '../../../../components/Transition';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -37,15 +39,15 @@ const WorkspaceWidgetPopover = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [displayDelete, setDisplayDelete] = useState(false);
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
+  const handleClose = () => {
     setAnchorEl(null);
   };
+  const deletion = useDeletion({ handleClose });
+  const { handleOpenDelete } = deletion;
   const handleOpenDuplicate = () => {
     setDisplayDuplicate(true);
-    setAnchorEl(null);
+    handleClose();
   };
   const handleExportWidget = () => {
     handleWidgetExportJson(workspace.id, widget);
@@ -85,26 +87,11 @@ const WorkspaceWidgetPopover = ({
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Security>
       </Menu>
-      <Dialog
-        open={displayDelete}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={() => setDisplayDelete(false)}
-        className="noDrag"
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this widget?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDisplayDelete(false)}>{t_i18n('Cancel')}</Button>
-          <Button onClick={onDelete} color="secondary">
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={onDelete}
+        message={t_i18n('Do you want to delete this widget?')}
+      />
       <Dialog
         open={displayDuplicate}
         slotProps={{ paper: { elevation: 1 } }}

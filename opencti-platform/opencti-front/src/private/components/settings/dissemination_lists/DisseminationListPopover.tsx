@@ -86,9 +86,9 @@ const DisseminationListPopover: FunctionComponent<DisseminationListPopoverProps>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
-        title={t_i18n('Do you want to delete this dissemination list?')}
         deletion={deletion}
         submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this dissemination list?')}
       />
       <DisseminationListEdition
         data={data}

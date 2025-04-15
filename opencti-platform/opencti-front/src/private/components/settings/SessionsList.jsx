@@ -6,21 +6,17 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { DeleteOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import { interval } from 'rxjs';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import { commitMutation } from '../../../relay/environment';
 import { FIVE_SECONDS, timestamp } from '../../../utils/Time';
 import { userSessionKillMutation } from './users/User';
 import ItemIcon from '../../../components/ItemIcon';
-import Transition from '../../../components/Transition';
 import { useFormatter } from '../../../components/i18n';
+import DeleteDialog from '../../../components/DeleteDialog';
+import useDeletion from '../../../utils/hooks/useDeletion';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -78,9 +74,9 @@ const useStyles = makeStyles((theme) => ({
 const SessionsListComponent = ({ relay, data, keyword }) => {
   const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
-  const [displayKillSession, setDisplayKillSession] = useState(false);
-  const [killing, setKilling] = useState(false);
   const [sessionToKill, setSessionToKill] = useState(null);
+  const deletion = useDeletion({});
+  const { handleOpenDelete, handleCloseDelete, setDeleting } = deletion;
 
   useEffect(() => {
     const subscription = interval$.subscribe(() => relay.refetch());
@@ -90,28 +86,28 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
   }, []);
 
   const handleOpenKillSession = (session) => {
-    setDisplayKillSession(true);
+    handleOpenDelete();
     setSessionToKill(session);
   };
 
   const handleCloseKillSession = () => {
-    setDisplayKillSession(false);
+    handleCloseDelete();
     setSessionToKill(null);
   };
 
   const submitKillSession = () => {
-    setKilling(true);
+    setDeleting(true);
     commitMutation({
       mutation: userSessionKillMutation,
       variables: {
         id: sessionToKill,
       },
       onCompleted: () => {
-        setKilling(false);
+        setDeleting(false);
         handleCloseKillSession();
       },
       onError: () => {
-        setKilling(false);
+        setDeleting(false);
       },
     });
   };
@@ -197,34 +193,12 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
           );
         })}
       </List>
-      <Dialog
-        open={displayKillSession}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={handleCloseKillSession}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to kill this session?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseKillSession}
-            disabled={killing}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={submitKillSession}
-            color="primary"
-            disabled={killing}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitKillSession}
+        message={t_i18n('Do you want to kill this session?')}
+      />
     </>
   );
 };

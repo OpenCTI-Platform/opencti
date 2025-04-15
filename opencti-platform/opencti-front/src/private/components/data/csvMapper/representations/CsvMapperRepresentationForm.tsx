@@ -207,9 +207,9 @@ CsvMapperRepresentationFormProps
         </AccordionDetails>
       </Accordion>
       <DeleteDialog
-        title={t_i18n('Do you want to delete this representation?')}
         deletion={deletion}
         submitDelete={deleteRepresentation}
+        message={t_i18n('Do you want to delete this representation?')}
       />
     </>
   );

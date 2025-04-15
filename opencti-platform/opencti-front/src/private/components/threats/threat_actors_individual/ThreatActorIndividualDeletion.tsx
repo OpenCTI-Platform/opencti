@@ -1,19 +1,15 @@
 import React from 'react';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { RelayError } from '../../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DeleteDialog from '../../../../components/DeleteDialog';
 
 const ThreatActorIndividualDeletionDeleteMutation = graphql`
   mutation ThreatActorIndividualDeletionDeleteMutation($id: ID!) {
@@ -34,13 +30,8 @@ const ThreatActorIndividualDeletion = ({ id }: { id: string }) => {
     { successMessage: deleteSuccessMessage },
   );
   const handleClose = () => { };
-  const {
-    deleting,
-    handleOpenDelete,
-    displayDelete,
-    handleCloseDelete,
-    setDeleting,
-  } = useDeletion({ handleClose });
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, deleting } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -71,26 +62,11 @@ const ThreatActorIndividualDeletion = ({ id }: { id: string }) => {
           {t_i18n('Delete')}
         </Button>
       </Security>
-      <Dialog
-        open={displayDelete}
-        slotProps={{ paper: { elevation: 1 } }}
-        slots={{ transition: Transition }}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this threat actor individual?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this threat actor individual?')}
+      />
     </>
   );
 };

@@ -13,6 +13,7 @@ import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
 import DialogContentText from '@mui/material/DialogContentText';
 import { ReportPopoverDeletionQuery$data } from '@components/analyses/reports/__generated__/ReportPopoverDeletionQuery.graphql';
+import DialogTitle from '@mui/material/DialogTitle';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -73,6 +74,9 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
       slotProps={{ paper: { elevation: 1 } }}
       onClose={handleCloseDelete}
     >
+      <DialogTitle>
+        {t_i18n('Are you sure?')}
+      </DialogTitle>
       <DialogContent>
         <DialogContentText>
           {t_i18n('Do you want to delete this report?')}
@@ -120,7 +124,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
           {t_i18n('Cancel')}
         </Button>
         <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-          {t_i18n('Delete')}
+          {t_i18n('Confirm')}
         </Button>
       </DialogActions>
     </Dialog>

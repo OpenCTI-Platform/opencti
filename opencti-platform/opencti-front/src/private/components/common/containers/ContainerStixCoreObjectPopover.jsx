@@ -17,6 +17,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
 import { Form, Formik } from 'formik';
+import DialogTitle from '@mui/material/DialogTitle';
 import CommitMessage from '../form/CommitMessage';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -317,6 +318,9 @@ class ContainerStixCoreObjectPopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDeleteMapping.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete the mapping for this entity?')}
@@ -334,7 +338,7 @@ class ContainerStixCoreObjectPopover extends Component {
               onClick={this.handleSubmitDeleteMapping.bind(this)}
               disabled={this.state.deletingMapping}
             >
-              {t('Delete mapping')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -345,6 +349,9 @@ class ContainerStixCoreObjectPopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseRemove.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to remove the entity from this container?')}
@@ -362,7 +369,7 @@ class ContainerStixCoreObjectPopover extends Component {
               onClick={this.handleSubmitRemove.bind(this)}
               disabled={this.state.removing}
             >
-              {t('Remove')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -399,10 +406,13 @@ class ContainerStixCoreObjectPopover extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this entity?')}
-              <Alert severity="warning" style={{ marginTop: 20 }}>
+              <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
                 {t(
                   'You are about to completely delete the entity from the platform (not only from the container), be sure of what you are doing.',
                 )}
@@ -421,7 +431,7 @@ class ContainerStixCoreObjectPopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
