@@ -148,16 +148,15 @@ const Themes: FunctionComponent<ThemesProps> = ({
               aria-label={t_i18n('Add')}
               onClick={handleOpenCreation}
               size="large"
+              data-testid='create-theme-btn'
             >
               <Add fontSize="small" />
             </IconButton>
           </Tooltip>
-          <Tooltip title={t_i18n('Import a theme')}>
-            <ThemeImporter
-              handleRefetch={handleRefetch}
-              paginationOptions={paginationOptions.variables}
-            />
-          </Tooltip>
+          <ThemeImporter
+            handleRefetch={handleRefetch}
+            paginationOptions={paginationOptions.variables}
+          />
         </div>
       </div>
       <div className="clearfix" />
