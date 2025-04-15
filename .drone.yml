@@ -59,6 +59,9 @@ steps:
       - yarn check-ts
       - yarn lint
       - if [ $(wget --server-response "http://opencti-raw-start:4100/health?health_access_key=cihealthkey" -O opencti-raw-start-health 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-raw-start has not start correctly"; exit 1; fi
+      - if [ $(wget --server-response "http://opencti-live-start:4200/health?health_access_key=cihealthkey" -O opencti-live-start-health 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-live-start has not start correctly"; exit 1; fi
+      - if [ $(wget --server-response "http://opencti-direct-start:4300/health?health_access_key=cihealthkey" -O opencti-direct-start 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-direct-start has not start correctly"; exit 1; fi
+      - if [ $(wget --server-response "http://opencti-restore-start:4400/health?health_access_key=cihealthkey" -O opencti-restore-start 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-restore-start has not start correctly"; exit 1; fi
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
     depends_on:
       - dependencies-checkout
@@ -262,6 +265,7 @@ services:
         from_secret: ee_license
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
+      APP__HEALTH_ACCESS_KEY: cihealthkey
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: live-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -296,6 +300,7 @@ services:
         from_secret: ee_license
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
+      APP__HEALTH_ACCESS_KEY: cihealthkey
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: direct-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -308,7 +313,7 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 10
-      - cp -a /tmp/platform-reference/* /tmp/direct-start-platform/
+      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
@@ -352,6 +357,7 @@ services:
         from_secret: ee_license
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
+      APP__HEALTH_ACCESS_KEY: cihealthkey
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: restore-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -365,7 +371,7 @@ services:
     commands:
       - sleep 10
       - apk add build-base git libffi-dev cargo
-      - cp -a /tmp/platform-reference/* /tmp/restore-start-platform/
+      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/restore-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
