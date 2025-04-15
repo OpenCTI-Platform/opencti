@@ -66,21 +66,29 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
     theme_accent: Yup.string()
       .matches(/^#[0-9a-fA-F]{6}$/)
       .required(t_i18n('This field is required')),
+    theme_text_color: Yup.string()
+      .required(t_i18n('This field is required')),
     theme_logo: Yup.string().nullable(),
     theme_logo_collapsed: Yup.string().nullable(),
     theme_logo_login: Yup.string().nullable(),
   });
 
   const handleSubmit = (values: ThemeType, { setSubmitting }: FormikHelpers<ThemeType>) => {
-    const { id, name: _, ...valuesToSerialize } = values;
+    const { id, name, ...valuesToSerialize } = values;
     const manifest = serializeThemeManifest(valuesToSerialize);
     commit({
       variables: {
         id,
-        input: [{
-          key: 'manifest',
-          value: manifest,
-        }],
+        input: [
+          {
+            key: 'name',
+            value: name,
+          },
+          {
+            key: 'manifest',
+            value: manifest,
+          },
+        ],
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -106,6 +114,15 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
         >
           <Form>
             <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t_i18n('Name')}
+              style={{ marginTop: 0 }}
+              fullWidth
+              disabled={theme.system_default}
+            />
+            <Field
               component={ColorPickerField}
               name="theme_background"
               label={t_i18n('Background color')}
@@ -114,6 +131,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
                 shrink: true,
               }}
               fullWidth
+              style={{ marginTop: 20 }}
               variant="standard"
             />
             <Field
@@ -174,6 +192,18 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
               }}
               fullWidth
               style={{ marginTop: 20 }}
+              variant="standard"
+            />
+            <Field
+              component={ColorPickerField}
+              name="theme_text_color"
+              label={t_i18n('Text color')}
+              placeholder={t_i18n('Default')}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              style={{ marginTop: 20 }}
+              fullWidth
               variant="standard"
             />
             <Field

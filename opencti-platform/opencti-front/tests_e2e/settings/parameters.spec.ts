@@ -21,7 +21,7 @@ test('Check Logo replacement', async ({ page }) => {
 
   // Set platform theme to be Dark
   await page.locator("#mui-component-select-platform_theme").click();
-  await page.locator('li[data-value="Dark"]').click();
+  await page.getByTestId('Dark-li').click();
 
   let logoSrc = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');
   expect(logoSrc).toContain('static/images/logo');

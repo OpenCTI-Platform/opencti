@@ -9,6 +9,15 @@ import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/h
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 import { RootPrivateQuery$data } from '../private/__generated__/RootPrivateQuery.graphql';
 import { deserializeThemeManifest } from '../private/components/settings/themes/ThemeType';
+import { commitMutation, defaultCommitMutation } from '../relay/environment';
+
+const setUserThemeMutation = graphql`
+  mutation AppThemeProviderSetUserThemeMutation($input: [EditInput!]!) {
+    meEdit(input: $input) {
+      theme
+    }
+  }
+`;
 
 interface AppThemeProviderProps {
   children: React.ReactNode;
@@ -27,6 +36,7 @@ interface AppThemeType {
   theme_logo: string;
   theme_logo_collapsed: string;
   theme_logo_login: string;
+  theme_text_color: string;
 }
 
 const themeBuilder = (
@@ -40,6 +50,7 @@ const themeBuilder = (
   const platformThemePrimary = theme?.theme_primary ?? null;
   const platformThemeSecondary = theme?.theme_secondary ?? null;
   const platformThemeAccent = theme?.theme_accent ?? null;
+  const platformThemeTextColor = theme?.theme_text_color ?? 'rgba(255, 255, 255, 0.7)';
   if (theme?.name === 'Light') {
     // needed until everything is customizable, like text colors
     return themeLight(
@@ -51,6 +62,7 @@ const themeBuilder = (
       platformThemePrimary,
       platformThemeSecondary,
       platformThemeAccent,
+      platformThemeTextColor,
     );
   }
   return themeDark(
@@ -62,6 +74,7 @@ const themeBuilder = (
     platformThemePrimary,
     platformThemeSecondary,
     platformThemeAccent,
+    platformThemeTextColor,
   );
 };
 
@@ -73,9 +86,9 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   const { me } = useContext<UserContextType>(UserContext);
   useDocumentFaviconModifier(settings?.platform_favicon);
   // region theming
-  const defaultThemeName = settings?.platform_theme ?? null;
-  const defaultTheme = {
-    name: 'dark',
+
+  const defaultTheme: AppThemeType = {
+    name: 'Dark',
     theme_accent: '#0f1e38',
     theme_background: '#070d19',
     theme_logo: '',
@@ -85,26 +98,75 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     theme_paper: '#09101e',
     theme_primary: '#0fbcff',
     theme_secondary: '#00f1bd',
+    theme_text_color: '#ffffff',
   };
-  const platformTheme = defaultThemeName !== null && defaultThemeName !== 'auto' ? defaultThemeName : 'dark';
-  const themeName = me?.theme && me.theme !== 'default' ? me.theme : platformTheme;
-  const theme: AppThemeType = themes?.edges
-    ?.filter((node) => !!node)
+
+  // The ID of the platform's default theme
+  const defaultThemeId = settings?.platform_theme ?? null;
+  const platformThemeId = defaultThemeId !== null && defaultThemeId !== 'auto'
+    ? defaultThemeId
+    : 'Dark';
+
+  // The current user's theme ID
+  const userThemeId = me?.theme;
+
+  // Use the user's theme if present and not default
+  const themeId = me?.theme && me.theme !== 'default' ? userThemeId : platformThemeId;
+
+  // The themes from the query, filter out any null nodes
+  const filteredThemes = themes?.edges?.filter((node) => !!node) ?? [];
+
+  // Map the filtered themes to their deserialized format
+  const mappedThemes = filteredThemes
     .map(({ node }) => {
       const manifestFields = deserializeThemeManifest(node.manifest);
       return {
+        id: node.id,
         name: node.name,
         ...manifestFields,
         theme_logo: manifestFields.theme_logo ?? '',
         theme_logo_collapsed: manifestFields.theme_logo_collapsed ?? '',
         theme_logo_login: manifestFields.theme_logo_login ?? '',
       };
-    })
-    .find(({ name }) => name === themeName)
-    ?? defaultTheme;
-  const themeComponent = themeBuilder(theme);
+    }) ?? [];
+
+  // Find the matching theme by ID
+  const theme = mappedThemes.find(({ id }) => id === themeId);
+
+  // If the user's theme ID is not amongst the available themes, change their
+  // theme to the system default. This could happen if the user's selected
+  // theme is deleted by an admin.
+  if (!theme) {
+    commitMutation({
+      ...defaultCommitMutation,
+      mutation: setUserThemeMutation,
+      variables: {
+        input: [{
+          key: 'theme',
+          value: 'default',
+        }],
+      },
+    });
+  }
+
+  // Construct app theme for theme builder
+  const appTheme: AppThemeType = {
+    name: theme?.name ?? defaultTheme.name,
+    theme_accent: theme?.theme_accent ?? defaultTheme.theme_accent,
+    theme_background: theme?.theme_background ?? defaultTheme.theme_background,
+    theme_logo: theme?.theme_logo ?? defaultTheme.theme_logo,
+    theme_logo_collapsed: theme?.theme_logo_collapsed ?? defaultTheme.theme_logo_collapsed,
+    theme_logo_login: theme?.theme_logo_login ?? defaultTheme.theme_logo_login,
+    theme_nav: theme?.theme_nav ?? defaultTheme.theme_nav,
+    theme_paper: theme?.theme_paper ?? defaultTheme.theme_paper,
+    theme_primary: theme?.theme_primary ?? defaultTheme.theme_primary,
+    theme_secondary: theme?.theme_secondary ?? defaultTheme.theme_secondary,
+    theme_text_color: theme?.theme_text_color ?? defaultTheme.theme_text_color,
+  };
+
+  const themeComponent = themeBuilder(appTheme);
   const muiTheme = createTheme(themeComponent as ThemeOptions);
-  useDocumentThemeModifier(themeName);
+  useDocumentThemeModifier(appTheme.name);
   // endregion
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;
 };

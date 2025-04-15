@@ -17,12 +17,14 @@ interface ThemePopoverProps {
   themeData: ThemesLine_data$data;
   handleRefetch: () => Disposable;
   paginationOptions: ThemesLinesSearchQuery$variables;
+  isCurrentTheme: boolean;
 }
 
 const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
   themeData,
   handleRefetch,
   paginationOptions,
+  isCurrentTheme,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<(EventTarget & Element) | null>(null);
@@ -91,6 +93,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
             <MenuItem
               onClick={deletion.handleOpenDelete}
               aria-label={t_i18n('Delete')}
+              disabled={isCurrentTheme}
             >
               {t_i18n('Delete')}
             </MenuItem>

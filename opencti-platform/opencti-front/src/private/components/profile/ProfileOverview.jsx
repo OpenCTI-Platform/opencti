@@ -409,7 +409,7 @@ const ProfileOverviewComponent = (props) => {
               >
                 <MenuItem value="default">{t('Default')}</MenuItem>
                 {themeList.map(({ id, name }) => (
-                  <MenuItem key={id} value={name}>{name}</MenuItem>
+                  <MenuItem key={id} value={id}>{name}</MenuItem>
                 ))}
               </Field>
               <Field

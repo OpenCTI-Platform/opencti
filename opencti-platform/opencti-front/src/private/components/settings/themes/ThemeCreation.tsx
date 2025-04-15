@@ -69,6 +69,8 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
     theme_accent: Yup.string()
       .matches(/^#[0-9a-fA-F]{6}$/)
       .required(t_i18n('This field is required')),
+    theme_text_color: Yup.string()
+      .required(t_i18n('This field is required')),
     theme_logo: Yup.string().nullable(),
     theme_logo_collapsed: Yup.string().nullable(),
     theme_logo_login: Yup.string().nullable(),
@@ -82,6 +84,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
     theme_primary: '',
     theme_secondary: '',
     theme_accent: '',
+    theme_text_color: '',
     theme_logo: '',
     theme_logo_collapsed: '',
     theme_logo_login: '',
@@ -207,6 +210,18 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               component={ColorPickerField}
               name="theme_accent"
               label={t_i18n('Accent color')}
+              placeholder={t_i18n('Default')}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              style={{ marginTop: 20 }}
+              fullWidth
+              variant="standard"
+            />
+            <Field
+              component={ColorPickerField}
+              name="theme_text_color"
+              label={t_i18n('Text color')}
               placeholder={t_i18n('Default')}
               InputLabelProps={{
                 shrink: true,

@@ -1,6 +1,6 @@
 import { toBase64 } from 'openai/core';
 import type { FileHandle } from 'fs/promises';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { listEntitiesPaginated, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
@@ -17,12 +17,12 @@ import { checkConfigurationImport } from '../workspace/workspace-domain';
 
 const defaultLightTheme: ThemeAddInput = {
   name: 'Light',
-  manifest: 'eyJ0aGVtZV9iYWNrZ3JvdW5kIjoiI2Y4ZjhmOCIsInRoZW1lX3BhcGVyIjoiI2ZmZmZmZiIsInRoZW1lX25hdiI6IiNmZmZmZmYiLCJ0aGVtZV9wcmltYXJ5IjoiIzAwMWJkYSIsInRoZW1lX3NlY29uZGFyeSI6IiMwYzdlNjkiLCJ0aGVtZV9hY2NlbnQiOiIjZWVlZWVlIiwidGhlbWVfbG9nbyI6IiIsInRoZW1lX2xvZ29fY29sbGFwc2VkIjoiIiwidGhlbWVfbG9nb19sb2dpbiI6IiIsInN5c3RlbV9kZWZhdWx0Ijp0cnVlfQ==',
+  manifest: 'eyJ0aGVtZV9iYWNrZ3JvdW5kIjoiI2Y4ZjhmOCIsInRoZW1lX3BhcGVyIjoiI2ZmZmZmZiIsInRoZW1lX25hdiI6IiNmZmZmZmYiLCJ0aGVtZV9wcmltYXJ5IjoiIzAwMWJkYSIsInRoZW1lX3NlY29uZGFyeSI6IiMwYzdlNjkiLCJ0aGVtZV9hY2NlbnQiOiIjZWVlZWVlIiwidGhlbWVfdGV4dF9jb2xvciI6IiMwMDAwMDAiLCJ0aGVtZV9sb2dvIjoiIiwidGhlbWVfbG9nb19jb2xsYXBzZWQiOiIiLCJ0aGVtZV9sb2dvX2xvZ2luIjoiIiwic3lzdGVtX2RlZmF1bHQiOnRydWV9',
 };
 
 const defaultDarkTheme: ThemeAddInput = {
   name: 'Dark',
-  manifest: 'eyJ0aGVtZV9iYWNrZ3JvdW5kIjoiIzA3MGQxOSIsInRoZW1lX3BhcGVyIjoiIzA5MTAxZSIsInRoZW1lX25hdiI6IiMwNzBkMTkiLCJ0aGVtZV9wcmltYXJ5IjoiIzBmYmNmZiIsInRoZW1lX3NlY29uZGFyeSI6IiMwMGYxYmQiLCJ0aGVtZV9hY2NlbnQiOiIjMGYxZTM4IiwidGhlbWVfbG9nbyI6IiIsInRoZW1lX2xvZ29fY29sbGFwc2VkIjoiIiwidGhlbWVfbG9nb19sb2dpbiI6IiIsInN5c3RlbV9kZWZhdWx0Ijp0cnVlfQ==',
+  manifest: 'eyJ0aGVtZV9iYWNrZ3JvdW5kIjoiIzA3MGQxOSIsInRoZW1lX3BhcGVyIjoiIzA5MTAxZSIsInRoZW1lX25hdiI6IiMwNzBkMTkiLCJ0aGVtZV9wcmltYXJ5IjoiIzBmYmNmZiIsInRoZW1lX3NlY29uZGFyeSI6IiMwMGYxYmQiLCJ0aGVtZV9hY2NlbnQiOiIjMGYxZTM4IiwidGhlbWVfdGV4dF9jb2xvciI6IiNmZmZmZmYiLCJ0aGVtZV9sb2dvIjoiIiwidGhlbWVfbG9nb19jb2xsYXBzZWQiOiIiLCJ0aGVtZV9sb2dvX2xvZ2luIjoiIiwic3lzdGVtX2RlZmF1bHQiOnRydWV9',
 };
 
 export const findById = (
@@ -141,6 +141,17 @@ export const editTheme = async (
 
 const convertThemeManifestIds = (manifest: string) => {
   const parsedManifest = JSON.parse(fromBase64(manifest) ?? '{}');
+
+  // Disable system default flag on export, so importing these themes don't
+  // produce undeletable themes.
+  try {
+    if (parsedManifest?.system_default) {
+      parsedManifest.system_default = false;
+    }
+  } catch {
+    logApp.error('[THEME] Failed to disable system default flag in exported theme');
+  }
+
   if (parsedManifest && isNotEmptyField(parsedManifest)) {
     return toBase64(JSON.stringify(parsedManifest)) as string;
   }

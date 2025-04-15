@@ -1,6 +1,6 @@
 import React, { FormEvent, FunctionComponent } from 'react';
 import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
-import { IconButton } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import { FileUpload } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -53,16 +53,19 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
   };
 
   return (
-    <IconButton
-      color="primary"
-      aria-label={t_i18n('Import')}
-      size="large"
-      component="label"
-      onChange={handleImport}
-    >
-      <FileUpload fontSize="small" />
-      <VisuallyHiddenInput type="file" accept={'application/json'} />
-    </IconButton>
+    <Tooltip title={t_i18n('Import a theme')}>
+      <IconButton
+        color="primary"
+        aria-label={t_i18n('Import')}
+        size="large"
+        component="label"
+        onChange={handleImport}
+        data-testid='import-theme-btn'
+      >
+        <FileUpload fontSize="small" />
+        <VisuallyHiddenInput type="file" accept={'application/json'} />
+      </IconButton>
+    </Tooltip>
   );
 };
 
