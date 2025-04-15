@@ -8,9 +8,8 @@ import { DataID, RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { PaginationOptions } from '../../../../components/list_lines';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 const roleMutation = graphql`
@@ -38,8 +37,6 @@ const RoleCreation = ({ paginationOptions }: {
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const roleValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
@@ -105,8 +102,7 @@ const RoleCreation = ({ paginationOptions }: {
   return (
     <Drawer
       title={t_i18n('Create a role')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreateRoleControlledDial : undefined}
+      controlledDial={CreateRoleControlledDial}
     >
       {({ onClose }) => (
         <Formik

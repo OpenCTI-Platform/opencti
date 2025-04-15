@@ -10,7 +10,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import GroupField, { groupsQuery } from '../../common/form/GroupField';
 import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -23,7 +23,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import SwitchField from '../../../../components/fields/SwitchField';
 
@@ -73,8 +72,6 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
   const { groups: defaultGroups } = usePreloadedQuery(groupsQuery, defaultGroupsQueryRef);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const { objectOrganization, groups, user_confidence_level, ...rest } = values;
@@ -110,11 +107,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   return (
     <Drawer
       title={t_i18n('Create a user')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced
-        ? CreateUserControlledDial
-        : undefined
-      }
+      controlledDial={CreateUserControlledDial}
     >
       {({ onClose }) => (
         <>

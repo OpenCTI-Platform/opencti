@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -16,7 +16,6 @@ import { insertNode } from '../../../../utils/store';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const styles = (theme) => ({
   buttons: {
@@ -54,9 +53,6 @@ const CreateIngestionTaxiiCollectionControlledDial = (props) => (
 const IngestionTaxiiCollectionCreation = (props) => {
   const { t, classes } = props;
 
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const authorized_members = values.authorized_members.map(({ value }) => ({
       id: value,
@@ -93,8 +89,7 @@ const IngestionTaxiiCollectionCreation = (props) => {
   return (
     <Drawer
       title={t('Create a TAXII Push ingester')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreateIngestionTaxiiCollectionControlledDial : undefined}
+      controlledDial={CreateIngestionTaxiiCollectionControlledDial}
     >
       {({ onClose }) => (
         <Formik

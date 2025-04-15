@@ -10,7 +10,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import makeStyles from '@mui/styles/makeStyles';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import SimpleTextField from '../../../../components/SimpleTextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
@@ -20,7 +20,6 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import type { Theme } from '../../../../components/Theme';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { LabelAddInput, LabelCreationContextualMutation$data } from './__generated__/LabelCreationContextualMutation.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const useStyles = makeStyles<Theme>(() => ({
   dialog: {
@@ -80,8 +79,6 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const labelValidation = Yup.object().shape({
     value: Yup.string().required(t_i18n('This field is required')),
     color: Yup.string().required(t_i18n('This field is required')),
@@ -158,11 +155,7 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
     return (
       <Drawer
         title={t_i18n('Create a label')}
-        variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-        controlledDial={isFABReplaced
-          ? CreateLabelsControlledDial
-          : undefined
-        }
+        controlledDial={CreateLabelsControlledDial}
       >
         {({ onClose }) => (
           <Formik

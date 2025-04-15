@@ -20,11 +20,10 @@ import Filters from '../../common/lists/Filters';
 import { useAvailableFilterKeysForEntityTypes, emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 interface TaxiiCollectionCreationProps {
   paginationOptions: PaginationOptions
@@ -98,8 +97,6 @@ const CreateTaxiiCollectionControlledDial = (props: DrawerControlledDialProps) =
 const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -138,8 +135,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
   return (
     <Drawer
       title={t_i18n('Create a TAXII collection')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreateTaxiiCollectionControlledDial : undefined}
+      controlledDial={CreateTaxiiCollectionControlledDial}
       onClose={helpers.handleClearAllFilters}
     >
       {({ onClose }) => (

@@ -7,8 +7,7 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { insertNode } from '../../../../utils/store';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
@@ -41,8 +40,6 @@ KillChainPhaseCreationProps
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const killChainPhaseValidation = Yup.object().shape({
     kill_chain_name: Yup.string().required(t_i18n('This field is required')),
     phase_name: Yup.string().required(t_i18n('This field is required')),
@@ -85,11 +82,7 @@ KillChainPhaseCreationProps
   return (
     <Drawer
       title={t_i18n('Create a kill chain phase')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced
-        ? CreateKillChainPhaseControlledDial
-        : undefined
-                }
+      controlledDial={CreateKillChainPhaseControlledDial}
     >
       {({ onClose }) => (
         <Formik

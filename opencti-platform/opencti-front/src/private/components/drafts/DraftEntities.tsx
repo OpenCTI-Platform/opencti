@@ -13,7 +13,6 @@ import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../..
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
-import useHelper from '../../../utils/hooks/useHelper';
 import { computeLink } from '../../../utils/Entity';
 
 const draftEntitiesLineFragment = graphql`
@@ -130,8 +129,6 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   isReadOnly,
 }) => {
   const { draftId } = useParams() as { draftId: string };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [open, setOpen] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
@@ -250,7 +247,6 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           paginationKey="Pagination_draftWorkspaceEntities"
           paginationOptions={queryPaginationOptions}
           speeddial={false}
-          fabReplaced={isFABReplaced}
           controlledDialStyles={{ marginLeft: 1 }}
           open={openCreateEntity}
           handleClose={handleCloseCreateEntity}

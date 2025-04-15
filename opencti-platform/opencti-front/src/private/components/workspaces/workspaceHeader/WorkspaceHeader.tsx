@@ -21,10 +21,8 @@ import { useFormatter } from 'src/components/i18n';
 import WorkspaceManageAccessDialog from 'src/private/components/workspaces/WorkspaceManageAccessDialog';
 import { useGetCurrentUserAccessRight } from 'src/utils/authorizedMembers';
 import { truncate } from 'src/utils/String';
-import useHelper from 'src/utils/hooks/useHelper';
 import WorkspaceWidgetConfig from 'src/private/components/workspaces/dashboards/WorkspaceWidgetConfig';
 import WorkspaceHeaderTagManager from '@components/workspaces/workspaceHeader/WorkspaceHeaderTagManager';
-import DashboardTimeFilters from '@components/workspaces/dashboards/DashboardTimeFilters';
 import { WorkspaceHeaderToStixReportBundleQuery$data } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderToStixReportBundleQuery.graphql';
 import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
 
@@ -51,15 +49,11 @@ type WorkspaceHeaderProps = {
 
 const WorkspaceHeader = ({
   workspace,
-  config,
   variant,
   adjust = () => {},
-  handleDateChange = () => {},
   handleAddWidget = () => {},
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const [displayDuplicate, setDisplayDuplicate] = useState<boolean>(false);
   const [duplicating, setDuplicating] = useState<boolean>(false);
@@ -110,13 +104,6 @@ const WorkspaceHeader = ({
             paginationOptions={undefined}
           />
         </Security>
-        {variant === 'dashboard' && !isFABReplaced && (
-          <DashboardTimeFilters
-            workspace={workspace}
-            config={config}
-            handleDateChange={handleDateChange}
-          />
-        )}
       </div>
       <div style={{ display: 'flex' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginRight: 7 }}>
@@ -182,19 +169,17 @@ const WorkspaceHeader = ({
           handleDashboardDuplication={isGrantedToUpdateDashboard && handleDashboardDuplication}
           variant={variant}
         />
-        {variant === 'dashboard' && (
+        {variant === 'dashboard' && (<>
           <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
             <WorkspaceShareButton workspaceId={workspace.id} />
           </Security>
-        )}
-        {variant === 'dashboard' && isFABReplaced && (
           <Security
             needs={[EXPLORE_EXUPDATE]}
             hasAccess={canEdit}
           >
             <WorkspaceWidgetConfig onComplete={handleAddWidget} workspace={workspace} />
           </Security>
-        )}
+        </>)}
         <WorkspaceDuplicationDialog
           workspace={workspace}
           displayDuplicate={displayDuplicate}

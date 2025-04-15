@@ -11,7 +11,6 @@ import { ListItemButton } from '@mui/material';
 import AccessesMenu from '../AccessesMenu';
 import { useFormatter } from '../../../../components/i18n';
 import { Role_role$data, Role_role$key } from './__generated__/Role_role.graphql';
-import RolePopover, { roleEditionQuery } from './RolePopover';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
@@ -24,7 +23,14 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import type { Theme } from '../../../../components/Theme';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import useHelper from '../../../../utils/hooks/useHelper';
+
+const roleEditionQuery = graphql`
+  query RoleEditionQuery($id: String!) {
+    role(id: $id) {
+      ...RoleEdition_role
+    }
+  }
+`;
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -38,10 +44,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   title: {
     float: 'left',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
   },
   paper: {
     marginTop: theme.spacing(1),
@@ -75,8 +77,6 @@ const Role = ({
   groupsQueryRef: PreloadedQuery<GroupsSearchQuery>;
 }) => {
   const classes = useStyles();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
   const groupNodes = (role: Role_role$data) => {
@@ -106,14 +106,6 @@ const Role = ({
         >
           {role.name}
         </Typography>
-        {!isFABReplaced && <div className={classes.popover}>
-          <RolePopover
-            roleId={role.id}
-            disabled={!isAllowed && isSensitive}
-            isSensitive={isSensitive}
-            roleEditionData={roleEditionData}
-          />
-        </div>}
         <RoleEdition
           roleEditionData={roleEditionData}
           disabled={!isAllowed && isSensitive}

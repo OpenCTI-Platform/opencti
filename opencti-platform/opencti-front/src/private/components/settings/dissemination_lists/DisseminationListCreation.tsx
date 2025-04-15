@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { FormikConfig } from 'formik';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { formatEmailsForApi } from '@components/settings/dissemination_lists/DisseminationListUtils';
 import { graphql } from 'react-relay';
 import { DisseminationListsLinesPaginationQuery$variables } from '@components/settings/dissemination_lists/__generated__/DisseminationListsLinesPaginationQuery.graphql';
@@ -10,7 +10,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 export interface DisseminationListCreationFormData {
@@ -44,7 +43,6 @@ const DisseminationListCreation: FunctionComponent<DisseminationListCreationProp
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy, rootField: string) => {
     insertNode(
       store,
@@ -53,8 +51,6 @@ const DisseminationListCreation: FunctionComponent<DisseminationListCreationProp
       rootField,
     );
   };
-
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const [commit] = useApiMutation(disseminationListCreationMutation);
 
@@ -88,11 +84,7 @@ const DisseminationListCreation: FunctionComponent<DisseminationListCreationProp
   return (
     <Drawer
       title={t_i18n('Create a dissemination list')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced
-        ? CreateDisseminationListControlledDial
-        : undefined
-      }
+      controlledDial={CreateDisseminationListControlledDial}
     >
       {({ onClose }) => (
         <DisseminationListForm

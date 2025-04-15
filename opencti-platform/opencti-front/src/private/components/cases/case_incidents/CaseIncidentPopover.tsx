@@ -29,7 +29,7 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-  const [displayEnrichment, setDisplayEnrichment] = useState<boolean>(false);
+  const [_, setDisplayEnrichment] = useState<boolean>(false);
   const [displayEnroll, setDisplayEnroll] = useState<boolean>(false);
   const [commit] = useApiMutation(caseIncidentPopoverDeletionMutation);
   const queryRef = useQueryLoading<CaseIncidentEditionContainerCaseQuery>(
@@ -52,9 +52,6 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
   const handleOpenEnrichment = () => {
     setDisplayEnrichment(true);
     handleClose();
-  };
-  const handleCloseEnrichment = () => {
-    setDisplayEnrichment(false);
   };
   const handleOpenEnroll = () => {
     setDisplayEnroll(true);
@@ -104,7 +101,7 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Security>
       </Menu>
-      <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
+      <StixCoreObjectEnrichment stixCoreObjectId={id} />
       <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
       <DeleteDialog
         deletion={deletion}

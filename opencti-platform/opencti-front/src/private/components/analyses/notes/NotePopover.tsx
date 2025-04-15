@@ -51,7 +51,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-  const [displayEnrichment, setDisplayEnrichment] = useState<boolean>(false);
+  const [_, setDisplayEnrichment] = useState<boolean>(false);
   const [displayEnroll, setDisplayEnroll] = useState(false);
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -94,9 +94,6 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   const handleOpenEnrichment = () => {
     setDisplayEnrichment(true);
     handleClose();
-  };
-  const handleCloseEnrichment = () => {
-    setDisplayEnrichment(false);
   };
   const handleOpenEnroll = () => {
     setDisplayEnroll(true);
@@ -147,7 +144,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </CollaborativeSecurity>
       </Menu>
-      <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
+      <StixCoreObjectEnrichment stixCoreObjectId={id} />
       <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
       <DeleteDialog
         deletion={deletion}

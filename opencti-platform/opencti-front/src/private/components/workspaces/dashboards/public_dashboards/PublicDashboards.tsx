@@ -13,7 +13,6 @@ import { DataTableProps } from '../../../../../components/dataGrid/dataTableType
 import { defaultRender } from '../../../../../components/dataGrid/dataTableUtils';
 import Security from '../../../../../utils/Security';
 import { EXPLORE_EXUPDATE_PUBLISH } from '../../../../../utils/hooks/useGranted';
-import useHelper from '../../../../../utils/hooks/useHelper';
 import { PublicDashboardsListQuery, PublicDashboardsListQuery$variables } from './__generated__/PublicDashboardsListQuery.graphql';
 import { PublicDashboardsFragment$data } from './__generated__/PublicDashboardsFragment.graphql';
 import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
@@ -102,7 +101,6 @@ const LOCAL_STORAGE_KEY = 'PublicDashboard';
 
 const PublicDashboards = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Public dashboards'));
@@ -213,21 +211,13 @@ const PublicDashboards = () => {
               paginationOptions={queryPaginationOptions}
             />
           )}
-          createButton={isFeatureEnable('FAB_REPLACEMENT') && (
+          createButton={(
             <Security needs={[EXPLORE_EXUPDATE_PUBLISH]}>
               <PublicDashboardCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
           taskScope='PUBLIC_DASHBOARD'
         />
-      )}
-
-      {!isFeatureEnable('FAB_REPLACEMENT') && (
-        <Security needs={[EXPLORE_EXUPDATE_PUBLISH]}>
-          <PublicDashboardCreation
-            paginationOptions={queryPaginationOptions}
-          />
-        </Security>
       )}
     </>
   );

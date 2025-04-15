@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import UserEditionConfidence from './edition/UserEditionConfidence';
 import UserEditionOrganizationsAdmin from './edition/UserEditionOrganizationsAdmin';
@@ -15,7 +15,6 @@ import { UserEdition_user$key } from './__generated__/UserEdition_user.graphql';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEditionQuery.graphql';
 import Loader from '../../../../components/Loader';
-import useHelper from '../../../../utils/hooks/useHelper';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const UserEditionFragment = graphql`
@@ -116,22 +115,14 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);
   };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <Drawer
       title={t_i18n('Update a user')}
-      variant={open == null && !isFABReplaced
-        ? DrawerVariant.updateWithPanel
-        : undefined}
       open={open}
       onClose={handleClose}
       context={user?.editContext}
-      controlledDial={isFABReplaced
-        ? UpdateUserControlledDial
-        : undefined
-      }
+      controlledDial={UpdateUserControlledDial}
     >
       {user ? (<>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

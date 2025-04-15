@@ -18,13 +18,12 @@ import { emptyFilterGroup, serializeFilterGroupForBackend, stixFilters } from '.
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { PaginationOptions } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StreamCollectionCreationProps {
   paginationOptions: PaginationOptions
@@ -94,8 +93,6 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const onSubmit: FormikConfig<StreamCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
@@ -133,8 +130,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
   return (
     <Drawer
       title={t_i18n('Create a stream')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreateStreamCollectionControlledDial : undefined}
+      controlledDial={CreateStreamCollectionControlledDial}
       onClose={helpers.handleClearAllFilters}
     >
       {({ onClose }) => (

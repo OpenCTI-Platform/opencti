@@ -18,7 +18,7 @@ const ReportPopover = ({ id }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
-  const [displayEnrichment, setDisplayEnrichment] = useState(false);
+  const [_, setDisplayEnrichment] = useState(false);
   const [displayEnroll, setDisplayEnroll] = useState(false);
 
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
@@ -38,9 +38,6 @@ const ReportPopover = ({ id }) => {
   const handleOpenEnrichment = () => {
     setDisplayEnrichment(true);
     handleClose();
-  };
-  const handleCloseEnrichment = () => {
-    setDisplayEnrichment(false);
   };
   const handleOpenEnroll = () => {
     setDisplayEnroll(true);
@@ -71,7 +68,7 @@ const ReportPopover = ({ id }) => {
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Security>
       </Menu>
-      <StixCoreObjectEnrichment stixCoreObjectId={id} open={displayEnrichment} handleClose={handleCloseEnrichment} />
+      <StixCoreObjectEnrichment stixCoreObjectId={id} />
       <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
       <ReportPopoverDeletion
         reportId={id}

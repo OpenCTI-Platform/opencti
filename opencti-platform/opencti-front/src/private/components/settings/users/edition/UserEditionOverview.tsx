@@ -12,7 +12,6 @@ import SelectField from '../../../../../components/fields/SelectField';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
 import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
-
 import { useFormatter } from '../../../../../components/i18n';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
@@ -21,7 +20,6 @@ import { isOnlyOrganizationAdmin } from '../../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import PasswordTextField from '../../../../../components/PasswordTextField';
 import type { Theme } from '../../../../../components/Theme';
-import useHelper from '../../../../../utils/hooks/useHelper';
 import UserDeletionDialog from '../UserDeletionDialog';
 
 export const userMutationFieldPatch = graphql`
@@ -105,8 +103,6 @@ UserEditionOverviewComponentProps
   const [commitFieldPatch] = useApiMutation(userMutationFieldPatch);
   const [commitOrganizationAdd] = useApiMutation(userMutationOrganizationAdd);
   const [commitOrganizationDelete] = useApiMutation(userMutationOrganizationDelete);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const userIsOnlyOrganizationAdmin = isOnlyOrganizationAdmin();
   const external = user.external === true;
@@ -327,9 +323,7 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onChange={handleSubmitField}
           />
-          {isFABReplaced && (
-            <UserDeletionDialog userId={user.id} />
-          )}
+          <UserDeletionDialog userId={user.id} />
         </Form>
       )}
     </Formik>
