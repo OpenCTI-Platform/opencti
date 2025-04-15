@@ -9,12 +9,12 @@ steps:
       GITHUB_TOKEN:
           from_secret: github_token
     commands:
+      # copy opencti-platform without nodes_modules
+      - cp -R opencti-platform platform-reference
       - apk add git github-cli
       - chmod 777 scripts/*
       - ./scripts/clone-dependencies.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - ls -lart
-      # copy opencti-platform without nodes_modules
-      - cp -R opencti-platform /tmp/platform-reference
       - cd "$DRONE_WORKSPACE/client-python"
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
       - git log -n 1
@@ -58,6 +58,7 @@ steps:
       - yarn build
       - yarn check-ts
       - yarn lint
+      - if [ $(wget --server-response "http://opencti-raw-start:4100/health?health_access_key=cihealthkey" -O opencti-raw-start-health 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-raw-start has not start correctly"; exit 1; fi
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
     depends_on:
       - dependencies-checkout
@@ -224,6 +225,7 @@ services:
         from_secret: ee_license
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
+      APP__HEALTH_ACCESS_KEY: cihealthkey
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: raw-start
       ELASTICSEARCH__URL: http://elastic:9200
@@ -238,7 +240,7 @@ services:
       - sleep 10
       - ls -lart
       - apk add build-base git libffi-dev cargo
-      - cp -a /tmp/platform-reference/* /tmp/raw-start-platform/
+      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/raw-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
@@ -246,6 +248,7 @@ services:
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+
   - name: opencti-live-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
