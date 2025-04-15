@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -27,6 +27,7 @@ const SystemKnowledgeComponent = ({
     systemKnowledgeFragment,
     systemData,
   );
+  const location = useLocation();
   const link = `/dashboard/entities/systems/${system.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(system.entity_type, schema);
@@ -70,6 +71,7 @@ const SystemKnowledgeComponent = ({
           path="/all"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
@@ -83,6 +85,7 @@ const SystemKnowledgeComponent = ({
           path="/threats"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={['targets']}
               isRelationReversed
@@ -103,6 +106,7 @@ const SystemKnowledgeComponent = ({
           path="/related"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={['related-to']}
               entityLink={link}
@@ -114,6 +118,7 @@ const SystemKnowledgeComponent = ({
           path="/systems"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={['part-of']}
               stixCoreObjectTypes={['System']}
@@ -126,6 +131,7 @@ const SystemKnowledgeComponent = ({
           path="/locations"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={['localization']}
               stixCoreObjectTypes={['City', 'Country', 'Region']}
@@ -138,6 +144,7 @@ const SystemKnowledgeComponent = ({
           path="/threat_actors"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               stixCoreObjectTypes={['Threat-Actor']}
               entityLink={link}
@@ -149,6 +156,7 @@ const SystemKnowledgeComponent = ({
           path="/intrusion_sets"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               stixCoreObjectTypes={['Intrusion-Set']}
               entityLink={link}
@@ -160,6 +168,7 @@ const SystemKnowledgeComponent = ({
           path="/campaigns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Campaign']}
@@ -172,6 +181,7 @@ const SystemKnowledgeComponent = ({
           path="/incidents"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Incident']}
@@ -184,6 +194,7 @@ const SystemKnowledgeComponent = ({
           path="/malwares"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Malware']}
@@ -196,6 +207,7 @@ const SystemKnowledgeComponent = ({
           path="/attack_patterns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Attack-Pattern']}
@@ -208,6 +220,7 @@ const SystemKnowledgeComponent = ({
           path="/tools"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Tool']}
@@ -220,6 +233,7 @@ const SystemKnowledgeComponent = ({
           path="/observables"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}
@@ -244,6 +258,7 @@ const SystemKnowledgeComponent = ({
           path="/vulnerabilities"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={system.id}
               relationshipTypes={['has']}
               stixCoreObjectTypes={['Vulnerability']}

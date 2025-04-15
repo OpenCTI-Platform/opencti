@@ -6,7 +6,13 @@ import { useFormatter } from '../../i18n';
 import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 
-const GraphToolbarDisplayTools = () => {
+export interface GraphToolbarDisplayToolsProps {
+  onUnfixNodes: () => void
+}
+
+const GraphToolbarDisplayTools = ({
+  onUnfixNodes,
+}: GraphToolbarDisplayToolsProps) => {
   const { t_i18n } = useFormatter();
 
   const {
@@ -25,6 +31,11 @@ const GraphToolbarDisplayTools = () => {
     zoomToFit,
     unfixNodes,
   } = useGraphInteractions();
+
+  const resetLayout = () => {
+    unfixNodes();
+    onUnfixNodes();
+  };
 
   return (
     <>
@@ -69,7 +80,7 @@ const GraphToolbarDisplayTools = () => {
         Icon={<AutoFix />}
         disabled={!withForces}
         color="primary"
-        onClick={unfixNodes}
+        onClick={resetLayout}
         title={t_i18n('Unfix the nodes and re-apply forces')}
       />
     </>

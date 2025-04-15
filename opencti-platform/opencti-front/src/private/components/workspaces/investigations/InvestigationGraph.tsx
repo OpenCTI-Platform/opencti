@@ -443,9 +443,10 @@ const InvestigationGraphComponent = ({
   const [commitUpdateEntities] = useInvestigationGraphUpdateEntities();
 
   const headerHeight = 64;
-  const paddingHeight = 25;
-  const titleHeight = 44;
-  const totalHeight = bannerHeight + headerHeight + paddingHeight + titleHeight;
+  const paddingHeight = 24;
+  const titleHeight = 36;
+  const toolbarHeight = 54;
+  const totalHeight = bannerHeight + headerHeight + paddingHeight + titleHeight + toolbarHeight;
   const graphContainerStyle: CSSProperties = {
     margin: `0 -${theme.spacing(3)}`,
     height: `calc(100vh - ${totalHeight}px)`,
@@ -514,6 +515,7 @@ const InvestigationGraphComponent = ({
       <div style={graphContainerStyle} ref={ref}>
         <Graph parentRef={ref} onPositionsChanged={savePositions}>
           <GraphToolbar
+            onUnfixNodes={() => savePositions({})}
             stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
             relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
             entity={investigation}

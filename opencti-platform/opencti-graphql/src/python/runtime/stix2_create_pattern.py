@@ -36,7 +36,7 @@ PATTERN_MAPPING = {
     "Url": ["value"],
     "Cryptographic-Key": ["value"],
     "Cryptocurrency-Wallet": ["value"],
-    "User-Account": ["acount_login"],
+    "User-Account": ["account_login"],
     "User-Agent": ["value"],
     "Windows-Registry-Key": ["key"],
     "Windows-Registry-Value-Type": ["name"],

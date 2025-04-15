@@ -77,13 +77,24 @@ const useGraphInteractions = () => {
   };
 
   const zoomToFit = () => {
-    graphRef2D.current?.zoomToFit(400, 100);
-    graphRef3D.current?.zoomToFit(400, 0);
+    const nbOfNodes = graphData?.nodes.length ?? 0;
+    let padding = 50;
+    if (nbOfNodes === 1) padding = 300;
+    else if (nbOfNodes < 4) padding = 200;
+    else if (nbOfNodes < 8) padding = 100;
+    // Different padding depending on the number of nodes in the graph.
+    graphRef2D.current?.zoomToFit(400, padding);
+    graphRef3D.current?.zoomToFit(400, padding);
   };
 
   const setZoom = (zoomLevel: NonNullable<GraphState['zoom']>) => {
     graphRef2D.current?.zoom(zoomLevel.k, 400);
     graphRef2D.current?.centerAt(zoomLevel.x, zoomLevel.y, 400);
+  };
+
+  const applyForces = () => {
+    graphRef2D.current?.d3ReheatSimulation();
+    graphRef3D.current?.d3ReheatSimulation();
   };
 
   /**
@@ -95,8 +106,7 @@ const useGraphInteractions = () => {
       node.fx = undefined; // eslint-disable-line no-param-reassign
       node.fy = undefined; // eslint-disable-line no-param-reassign
     });
-    graphRef2D.current?.d3ReheatSimulation();
-    graphRef3D.current?.d3ReheatSimulation();
+    applyForces();
   };
 
   const toggleSelectFreeRectangle = () => {
@@ -440,6 +450,10 @@ const useGraphInteractions = () => {
     setGraphStateProp('isAddRelationOpen', val);
   };
 
+  const setIsExpandOpen = (val: boolean) => {
+    setGraphStateProp('isExpandOpen', val);
+  };
+
   return {
     toggleMode3D,
     toggleVerticalTree,
@@ -470,6 +484,7 @@ const useGraphInteractions = () => {
     resetFilters,
     selectBySearch,
     addNode,
+    applyForces,
     removeNode,
     removeNodes,
     addLink,
@@ -483,6 +498,7 @@ const useGraphInteractions = () => {
     setLoadingTotal,
     setLoadingCurrent,
     setZoom,
+    setIsExpandOpen,
   };
 };
 

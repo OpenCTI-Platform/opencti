@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -26,6 +26,7 @@ const IndividualKnowledgeComponent = ({
     individualKnowledgeFragment,
     individualData,
   );
+  const location = useLocation();
   const link = `/dashboard/entities/individuals/${individual.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(individual.entity_type, schema);
@@ -68,6 +69,7 @@ const IndividualKnowledgeComponent = ({
         path="/all"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={allRelationshipsTypes}
             entityLink={link}
@@ -81,6 +83,7 @@ const IndividualKnowledgeComponent = ({
         path="/threats"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['targets']}
             isRelationReversed
@@ -101,6 +104,7 @@ const IndividualKnowledgeComponent = ({
         path="/related"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['related-to']}
             entityLink={link}
@@ -112,6 +116,7 @@ const IndividualKnowledgeComponent = ({
         path="/organizations"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['part-of']}
             stixCoreObjectTypes={['Organization']}
@@ -124,6 +129,7 @@ const IndividualKnowledgeComponent = ({
         path="/locations"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['located-at']}
             stixCoreObjectTypes={['City', 'Country', 'Region']}
@@ -136,6 +142,7 @@ const IndividualKnowledgeComponent = ({
         path="/threat_actors"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Threat-Actor']}
@@ -148,6 +155,7 @@ const IndividualKnowledgeComponent = ({
         path="/intrusion_sets"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Intrusion-Set']}
@@ -160,6 +168,7 @@ const IndividualKnowledgeComponent = ({
         path="/campaigns"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Campaign']}
@@ -172,6 +181,7 @@ const IndividualKnowledgeComponent = ({
         path="/incidents"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Incident']}
@@ -184,6 +194,7 @@ const IndividualKnowledgeComponent = ({
         path="/malwares"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Malware']}
@@ -196,6 +207,7 @@ const IndividualKnowledgeComponent = ({
         path="/attack_patterns"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Attack-Pattern']}
@@ -208,6 +220,7 @@ const IndividualKnowledgeComponent = ({
         path="/tools"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['targets']}
             stixCoreObjectTypes={['Tool']}
@@ -220,6 +233,7 @@ const IndividualKnowledgeComponent = ({
         path="/observables"
         element={
           <EntityStixCoreRelationships
+            key={location.pathname}
             entityId={individual.id}
             relationshipTypes={['related-to']}
             stixCoreObjectTypes={['Stix-Cyber-Observable']}

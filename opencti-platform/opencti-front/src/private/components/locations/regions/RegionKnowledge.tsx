@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
@@ -30,6 +30,7 @@ const RegionKnowledgeComponent = ({
     regionKnowledgeFragment,
     regionData,
   );
+  const location = useLocation();
   const link = `/dashboard/locations/regions/${region.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(region.entity_type, schema);
@@ -67,6 +68,7 @@ const RegionKnowledgeComponent = ({
           path="/all"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
@@ -80,6 +82,7 @@ const RegionKnowledgeComponent = ({
           path="/threats"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['targets']}
               isRelationReversed
@@ -100,6 +103,7 @@ const RegionKnowledgeComponent = ({
           path="/related"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
@@ -127,6 +131,7 @@ const RegionKnowledgeComponent = ({
           path="/regions"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Region']}
@@ -139,6 +144,7 @@ const RegionKnowledgeComponent = ({
           path="/countries"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Country']}
@@ -151,6 +157,7 @@ const RegionKnowledgeComponent = ({
           path="/areas"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Administrative-Area']}
@@ -163,6 +170,7 @@ const RegionKnowledgeComponent = ({
           path="/cities"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['City']}
@@ -175,6 +183,7 @@ const RegionKnowledgeComponent = ({
           path="/organizations"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Organization']}
@@ -187,6 +196,7 @@ const RegionKnowledgeComponent = ({
           path="/threat_actors"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Threat-Actor']}
@@ -199,6 +209,7 @@ const RegionKnowledgeComponent = ({
           path="/intrusion_sets"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Intrusion-Set']}
@@ -211,6 +222,7 @@ const RegionKnowledgeComponent = ({
           path="/campaigns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Campaign']}
@@ -223,6 +235,7 @@ const RegionKnowledgeComponent = ({
           path="/incidents"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Incident']}
@@ -235,6 +248,7 @@ const RegionKnowledgeComponent = ({
           path="/malwares"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Malware']}
@@ -247,6 +261,7 @@ const RegionKnowledgeComponent = ({
           path="/attack_patterns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Attack-Pattern']}
@@ -259,6 +274,7 @@ const RegionKnowledgeComponent = ({
           path="/tools"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Tool']}
@@ -271,6 +287,7 @@ const RegionKnowledgeComponent = ({
           path="/observables"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={region.id}
               relationshipTypes={['related-to', 'located-at']}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}

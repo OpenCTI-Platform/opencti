@@ -1731,7 +1731,7 @@ export const elLoadById = async (context, user, id, opts = {}) => {
 export const elBatchIds = async (context, user, elements) => {
   const ids = elements.map((e) => e.id);
   const types = elements.map((e) => e.type);
-  const hits = await elFindByIds(context, user, ids, { type: types });
+  const hits = await elFindByIds(context, user, ids, { type: types, includeDeletedInDraft: true });
   return ids.map((id) => R.find((h) => h.internal_id === id, hits));
 };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -26,6 +26,7 @@ const NarrativeKnowledgeComponent = ({
     NarrativeKnowledgeFragment,
     narrativeData,
   );
+  const location = useLocation();
   const link = `/dashboard/techniques/narratives/${narrative.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(narrative.entity_type, schema);
@@ -63,6 +64,7 @@ const NarrativeKnowledgeComponent = ({
           path="/all"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={narrative.id}
               relationshipTypes={allRelationshipsTypes}
               defaultStartTime={narrative.startTime}
@@ -76,6 +78,7 @@ const NarrativeKnowledgeComponent = ({
           path="/related"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={narrative.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
@@ -103,6 +106,7 @@ const NarrativeKnowledgeComponent = ({
           path="/threat_actors"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={narrative.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Threat-Actor']}
@@ -115,6 +119,7 @@ const NarrativeKnowledgeComponent = ({
           path="/intrusion_sets"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={narrative.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Intrusion-Set']}
@@ -127,6 +132,7 @@ const NarrativeKnowledgeComponent = ({
           path="/campaigns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={narrative.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Campaign']}
@@ -139,6 +145,7 @@ const NarrativeKnowledgeComponent = ({
           path="/channels"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={narrative.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Channel']}
@@ -151,6 +158,7 @@ const NarrativeKnowledgeComponent = ({
           path="/incidents"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={narrative.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Incident']}

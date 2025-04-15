@@ -5,13 +5,15 @@ import { ACTION_TYPE_ADD } from '../../../src/domain/backgroundTask';
 import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../../../src/modules/notification/notification-types';
+import { TYPE_FILTER, USER_ID_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { BackgroundTaskScope } from '../../../src/generated/graphql';
 
 const filterEntityType = (entityType: string) => {
   return JSON.stringify({
     mode: 'and',
     filters: [
       {
-        key: ['entity_type'],
+        key: [TYPE_FILTER],
         values: [entityType],
         operator: 'eq',
         mode: 'or'
@@ -26,7 +28,7 @@ const filterWorkspaceType = (type: 'dashboard' | 'investigation') => {
     mode: 'and',
     filters: [
       {
-        key: ['entity_type'],
+        key: [TYPE_FILTER],
         values: [ENTITY_TYPE_WORKSPACE],
         operator: 'eq',
         mode: 'or'
@@ -54,65 +56,65 @@ describe('Background task validity check (checkActionValidity)', () => {
   ]);
 
   describe('Scope SETTINGS', () => {
-    const scope = 'SETTINGS';
+    const scope = BackgroundTaskScope.Settings;
 
-    it('should throw an error if the user has no capa SETTINGS_SETLABELS', () => {
+    it('should throw an error if the user has no capa SETTINGS_SETLABELS', async () => {
       const user = userParticipate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }]
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('You are not allowed to do this.');
     });
   });
 
   describe('Scope KNOWLEDGE', () => {
-    const scope = 'KNOWLEDGE';
+    const scope = BackgroundTaskScope.Knowledge;
 
-    it('should throw an error if the user has no capa KNOWLEDGE_UPDATE', () => {
+    it('should throw an error if the user has no capa KNOWLEDGE_UPDATE', async () => {
       const user = userParticipate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }]
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('You are not allowed to do this.');
     });
 
-    it('should throw an error if deletion actions and no capa KNOWLEDGE_DELETE', () => {
+    it('should throw an error if deletion actions and no capa KNOWLEDGE_DELETE', async () => {
       const user = userUpdate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }]
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('You are not allowed to do this.');
     });
 
-    it('should throw an error if task QUERY and targeting vocabularies', () => {
+    it('should throw an error if task QUERY and targeting vocabularies', async () => {
       const user = userUpdate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }],
         filters: filterEntityType(ENTITY_TYPE_VOCABULARY)
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('The targeted ids are not knowledge.');
     });
 
-    it('should throw an error if task QUERY and targets are not knowledge', () => {
+    it('should throw an error if task QUERY and targets are not knowledge', async () => {
       const user = userUpdate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }],
         filters: filterEntityType(ENTITY_TYPE_WORKSPACE)
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('The targeted ids are not knowledge.');
     });
@@ -123,30 +125,61 @@ describe('Background task validity check (checkActionValidity)', () => {
   });
 
   describe('Scope USER', () => {
-    const scope = 'USER';
+    const scope = BackgroundTaskScope.User;
 
-    it('should throw an error if task QUERY and filter is not Notifications', () => {
+    it('should throw an error if task QUERY and filter is not Notifications', async () => {
       const user = userUpdate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }],
         filters: filterEntityType(ENTITY_TYPE_WORKSPACE)
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('The targeted ids are not notifications.');
     });
 
-    it('should throw an error if task QUERY and user has no capa SETTINGS_SET_ACCESSES and not own data', () => {
+    it('should throw an error if task QUERY and user has no capa SETTINGS_SET_ACCESSES and not own data', async () => {
       const user = userUpdate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }],
         filters: filterEntityType(ENTITY_TYPE_NOTIFICATION)
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('You are not allowed to do this.');
+      const input2 = {
+        actions: [{ type: ACTION_TYPE_ADD }],
+        filters: JSON.stringify({
+          mode: 'and',
+          filters: [
+            { key: TYPE_FILTER, values: [ENTITY_TYPE_NOTIFICATION] },
+            { key: USER_ID_FILTER, values: ['fake_user_id'] },
+          ],
+          filterGroups: []
+        }),
+      };
+      await expect(async () => {
+        await checkActionValidity(testContext, user, input2, scope, type);
+      }).rejects.toThrowError('You are not allowed to do this.');
+    });
+
+    it('should NOT throw an error if task QUERY and filter is Notification of the user', async () => {
+      const user = userUpdate;
+      const type = TASK_TYPE_QUERY;
+      const input = {
+        actions: [{ type: ACTION_TYPE_DELETE }],
+        filters: JSON.stringify({
+          mode: 'and',
+          filters: [
+            { key: TYPE_FILTER, values: [ENTITY_TYPE_NOTIFICATION] },
+            { key: USER_ID_FILTER, values: [user.id] },
+          ],
+          filterGroups: []
+        }),
+      };
+      await checkActionValidity(testContext, user, input, scope, type);
     });
 
     it.skip('should throw an error if task LIST and targets are not Notifications', () => {
@@ -159,76 +192,76 @@ describe('Background task validity check (checkActionValidity)', () => {
   });
 
   describe('Scope IMPORT', () => {
-    const scope = 'IMPORT';
+    const scope = BackgroundTaskScope.Import;
 
-    it('should throw an error if the user has no capa KNOWLEDGE_KNASKIMPORT', () => {
+    it('should throw an error if the user has no capa KNOWLEDGE_KNASKIMPORT', async () => {
       const user = userParticipate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }]
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('You are not allowed to do this.');
     });
 
-    it('should throw an error if some actions are not deletions', () => {
+    it('should throw an error if some actions are not deletions', async () => {
       const user = userEditor;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }, { type: ACTION_TYPE_ADD }]
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('Background tasks of scope Import can only be deletions.');
     });
   });
 
   describe('Scope DASHBOARD', () => {
-    const scope = 'DASHBOARD';
+    const scope = BackgroundTaskScope.Dashboard;
 
-    it('should throw an error if the user has no capa EXPLORE_EXUPDATE_EXDELETE', () => {
+    it('should throw an error if the user has no capa EXPLORE_EXUPDATE_EXDELETE', async () => {
       const user = userParticipate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }]
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('You are not allowed to do this.');
     });
 
-    it('should throw an error if some actions are not deletions', () => {
+    it('should throw an error if some actions are not deletions', async () => {
       const user = userEditor;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }, { type: ACTION_TYPE_ADD }]
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('Background tasks of scope dashboard can only be deletions.');
     });
 
-    it('should throw an error if task QUERY and filter is not Workspace', () => {
+    it('should throw an error if task QUERY and filter is not Workspace', async () => {
       const user = userEditor;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }],
         filters: filterEntityType(ENTITY_TYPE_NOTIFICATION)
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('The targeted ids are not dashboard.');
     });
 
-    it('should throw an error if task QUERY and filter type is not dashboard', () => {
+    it('should throw an error if task QUERY and filter type is not dashboard', async () => {
       const user = userEditor;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }],
         filters: filterWorkspaceType('investigation')
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('The targeted ids are not dashboard.');
     });
@@ -239,50 +272,50 @@ describe('Background task validity check (checkActionValidity)', () => {
   });
 
   describe('Scope INVESTIGATION', () => {
-    const scope = 'INVESTIGATION';
+    const scope = BackgroundTaskScope.Investigation;
 
-    it('should throw an error if the user has no capa KNOWLEDGE_KNGETEXPORT_KNASKEXPORT', () => {
+    it('should throw an error if the user has no capa KNOWLEDGE_KNGETEXPORT_KNASKEXPORT', async () => {
       const user = userParticipate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }]
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('You are not allowed to do this.');
     });
 
-    it('should throw an error if some actions are not deletions', () => {
+    it('should throw an error if some actions are not deletions', async () => {
       const user = userEditor;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }, { type: ACTION_TYPE_ADD }]
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('Background tasks of scope investigation can only be deletions.');
     });
 
-    it('should throw an error if task QUERY and filter is not Workspace', () => {
+    it('should throw an error if task QUERY and filter is not Workspace', async () => {
       const user = userEditor;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }],
         filters: filterEntityType(ENTITY_TYPE_NOTIFICATION)
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('The targeted ids are not investigations.');
     });
 
-    it('should throw an error if task QUERY and filter type is not investigation', () => {
+    it('should throw an error if task QUERY and filter type is not investigation', async () => {
       const user = userEditor;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }],
         filters: filterWorkspaceType('dashboard')
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('The targeted ids are not investigations.');
     });
@@ -293,38 +326,38 @@ describe('Background task validity check (checkActionValidity)', () => {
   });
 
   describe('Scope PUBLIC_DASHBOARD', () => {
-    const scope = 'PUBLIC_DASHBOARD';
+    const scope = BackgroundTaskScope.PublicDashboard;
 
-    it('should throw an error if the user has no capa EXPLORE_EXUPDATE_PUBLISH', () => {
+    it('should throw an error if the user has no capa EXPLORE_EXUPDATE_PUBLISH', async () => {
       const user = userParticipate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_ADD }]
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('You are not allowed to do this.');
     });
 
-    it('should throw an error if some actions are not deletions', () => {
+    it('should throw an error if some actions are not deletions', async () => {
       const user = userEditor;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }, { type: ACTION_TYPE_ADD }]
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('Background tasks of scope Public dashboard can only be deletions.');
     });
 
-    it('should throw an error if task QUERY and filter is not PublicDashboard', () => {
+    it('should throw an error if task QUERY and filter is not PublicDashboard', async () => {
       const user = userEditor;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }],
         filters: filterEntityType(ENTITY_TYPE_NOTIFICATION)
       };
-      expect(async () => {
+      await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('The targeted ids are not public dashboards.');
     });

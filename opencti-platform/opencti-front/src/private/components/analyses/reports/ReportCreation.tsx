@@ -298,6 +298,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             label={t_i18n('Content')}
             required={mandatoryAttributes.includes('content')}
             fullWidth={true}
+            askAi={true}
             style={{
               ...fieldSpacingContainerStyle,
               minHeight: 200,

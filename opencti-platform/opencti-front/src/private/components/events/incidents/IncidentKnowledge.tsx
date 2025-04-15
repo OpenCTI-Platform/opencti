@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
@@ -35,6 +35,7 @@ const IncidentKnowledge = ({
     IncidentKnowledgeFragment,
     incidentData,
   );
+  const location = useLocation();
   const link = `/dashboard/events/incidents/${incident.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(incident.entity_type, schema);
@@ -74,6 +75,7 @@ const IncidentKnowledge = ({
           path="/all"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={incident.id}
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
@@ -87,6 +89,7 @@ const IncidentKnowledge = ({
           path="/related"
           element={ (
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={incident.id}
               relationshipTypes={['related-to']}
               entityLink={link}
@@ -100,6 +103,7 @@ const IncidentKnowledge = ({
           path="/attribution"
           element={ (
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={incident.id}
               relationshipTypes={['attributed-to']}
               stixCoreObjectTypes={[
@@ -140,6 +144,7 @@ const IncidentKnowledge = ({
           path="/malwares"
           element={ (
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={incident.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Malware']}
@@ -154,6 +159,7 @@ const IncidentKnowledge = ({
           path="/narratives"
           element={ (
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={incident.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Narrative']}
@@ -168,6 +174,7 @@ const IncidentKnowledge = ({
           path="/channels"
           element={ (
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={incident.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Channel']}
@@ -182,6 +189,7 @@ const IncidentKnowledge = ({
           path="/tools"
           element={ (
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={incident.id}
               relationshipTypes={['uses']}
               stixCoreObjectTypes={['Tool']}
@@ -196,6 +204,7 @@ const IncidentKnowledge = ({
           path="/vulnerabilities"
           element={ (
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={incident.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Vulnerability']}
@@ -210,6 +219,7 @@ const IncidentKnowledge = ({
           path="/observables"
           element={ (
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={incident.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}

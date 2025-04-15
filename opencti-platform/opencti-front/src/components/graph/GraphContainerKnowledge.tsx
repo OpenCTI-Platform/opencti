@@ -492,11 +492,12 @@ const GraphContainerKnowledgeComponent = ({
   }, [totalData, currentData]);
 
   const headerHeight = 64;
-  const paddingHeight = 25;
+  const paddingHeight = 16;
   const breadcrumbHeight = 38;
   const titleHeight = 44;
-  const tabsHeight = 72;
-  const totalHeight = bannerHeight + headerHeight + paddingHeight + breadcrumbHeight + titleHeight + tabsHeight;
+  const tabsHeight = 48;
+  const toolbarHeight = 54;
+  const totalHeight = bannerHeight + headerHeight + paddingHeight + breadcrumbHeight + titleHeight + tabsHeight + toolbarHeight;
   const graphContainerStyle: CSSProperties = {
     margin: `-${theme.spacing(3)}`,
     height: `calc(100vh - ${totalHeight}px)`,
@@ -519,6 +520,7 @@ const GraphContainerKnowledgeComponent = ({
       />
       <Graph parentRef={ref} onPositionsChanged={onPositionsChanged}>
         <GraphToolbar
+          onUnfixNodes={() => onPositionsChanged({})}
           enableReferences={enableReferences}
           stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
           relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}

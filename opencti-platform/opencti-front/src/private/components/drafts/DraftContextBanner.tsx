@@ -136,7 +136,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
     <div style={{ padding: '0 12px', flex: 1 }}>
       <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
         <div style={{ padding: '0 12px' }}>
-          <DraftProcessingStatus/>
+          <DraftProcessingStatus forceRefetch={refetch}/>
         </div>
         <div style={{ padding: '0 12px', flex: 1 }}>
           <DraftBlock body={truncate(name, 40)}/>
