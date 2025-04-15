@@ -222,7 +222,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     expect(new Date(indicatorValidUntilYesterday.valid_until).getTime()).toBeLessThan(new Date().getTime());
   });
 
-  it.only('decay enabled - updating revoke and valid until and score should ??? what', async () => {
+  it.only('decay enabled - updating revoke and valid until and score should valid until wins', async () => {
     const tomorrow: Date = new Date(utcDate().toDate().getTime() + dayToMs(1));
     const twoDaysAgo: Date = new Date(utcDate().toDate().getTime() - dayToMs(2));
     const inputWithEverything: EditInput[] = [
@@ -234,6 +234,10 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay3.id, inputWithEverything);
 
     const indicatorWithAllChanges = await findById(testContext, ADMIN_USER, indicatorWithDecay3.id);
+    expect(indicatorWithAllChanges.valid_until.getTime()).toBeCloseTo(tomorrow.getTime());
+    expect(indicatorWithAllChanges.x_opencti_score).toBeGreaterThan(indicatorWithAllChanges.decay_applied_rule.decay_revoke_score);
+    expect(indicatorWithAllChanges.revoked).toBeFalsy();
+
     console.log('indicatorWithAllChanges:', indicatorWithAllChanges);
   });
 });
