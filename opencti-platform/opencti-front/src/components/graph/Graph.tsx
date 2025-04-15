@@ -45,6 +45,7 @@ const Graph = ({
     setRawPositions,
     setZoom,
     zoomToFit,
+    applyForces,
     setIsExpandOpen,
   } = useGraphInteractions();
 
@@ -94,6 +95,7 @@ const Graph = ({
       if (!isLoadingData) {
         if (zoom) setZoom(zoom);
         else zoomToFit();
+        if (withForces) applyForces();
       }
     }, 200);
   }, [mode3D, isLoadingData]);

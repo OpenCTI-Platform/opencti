@@ -511,6 +511,7 @@ const InvestigationGraphComponent = ({
       <div style={graphContainerStyle} ref={ref}>
         <Graph parentRef={ref} onPositionsChanged={savePositions}>
           <GraphToolbar
+            onUnfixNodes={() => savePositions({})}
             stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
             relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
             entity={investigation}
