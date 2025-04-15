@@ -185,6 +185,7 @@ const ThemeDark = (
   primary: string | null = null,
   secondary: string | null = null,
   accent: string | null = null,
+  text_color = 'rgba(255, 255, 255, 0.7)',
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
@@ -235,12 +236,15 @@ const ThemeDark = (
     body2: {
       fontSize: '0.8rem',
       lineHeight: '1.2rem',
+      color: text_color,
     },
     body1: {
       fontSize: '0.9rem',
+      color: text_color,
     },
     overline: {
       fontWeight: 500,
+      color: text_color,
     },
     h1: {
       margin: '0 0 10px 0',
@@ -248,6 +252,7 @@ const ThemeDark = (
       fontWeight: 400,
       fontSize: 22,
       fontFamily: '"Geologica", sans-serif',
+      color: text_color,
     },
     h2: {
       margin: '0 0 10px 0',
@@ -256,6 +261,7 @@ const ThemeDark = (
       fontSize: 16,
       textTransform: 'uppercase',
       fontFamily: '"Geologica", sans-serif',
+      color: text_color,
     },
     h3: {
       margin: '0 0 10px 0',
@@ -263,6 +269,7 @@ const ThemeDark = (
       fontWeight: 400,
       fontSize: 13,
       fontFamily: '"Geologica", sans-serif',
+      color: text_color,
     },
     h4: {
       height: 15,
@@ -271,24 +278,26 @@ const ThemeDark = (
       textTransform: 'uppercase',
       fontSize: 12,
       fontWeight: 500,
-      color: '#a8a8a8',
+      color: text_color,
     },
     h5: {
       fontWeight: 400,
       fontSize: 13,
       textTransform: 'uppercase',
       marginTop: -4,
+      color: text_color,
     },
     h6: {
       fontWeight: 400,
       fontSize: 18,
-      color: primary || THEME_DARK_DEFAULT_PRIMARY,
+      // color: primary || THEME_DARK_DEFAULT_PRIMARY,
+      color: text_color,
       fontFamily: '"Geologica", sans-serif',
     },
     subtitle2: {
       fontWeight: 400,
       fontSize: 18,
-      color: 'rgba(255, 255, 255, 0.7)',
+      color: text_color,
     },
   },
   components: {
@@ -333,15 +342,37 @@ const ThemeDark = (
       defaultProps: {
         variant: 'standard',
       },
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
     },
     MuiTextField: {
       defaultProps: {
         variant: 'standard',
       },
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
     },
     MuiSelect: {
       defaultProps: {
         variant: 'standard',
+      },
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
       },
     },
     MuiCssBaseline: {
@@ -357,7 +388,8 @@ const ThemeDark = (
             WebkitFontSmoothing: 'auto',
           },
           a: {
-            color: primary || THEME_DARK_DEFAULT_PRIMARY,
+            // color: primary || THEME_DARK_DEFAULT_PRIMARY,
+            color: text_color,
           },
           'input:-webkit-autofill': {
             WebkitAnimation: 'autofill 0s forwards',
@@ -371,7 +403,7 @@ const ThemeDark = (
           },
           pre: {
             fontFamily: 'Consolas, monaco, monospace',
-            color: '#ffffff !important',
+            color: `${text_color} !important`,
             background: `${accent || THEME_DARK_DEFAULT_ACCENT} !important`,
             borderRadius: 4,
           },
@@ -382,7 +414,7 @@ const ThemeDark = (
           },
           code: {
             fontFamily: 'Consolas, monaco, monospace',
-            color: '#ffffff !important',
+            color: `${text_color} !important`,
             background: `${accent || THEME_DARK_DEFAULT_ACCENT} !important`,
             padding: 3,
             fontSize: 12,
@@ -407,20 +439,20 @@ const ThemeDark = (
           '.mde-header': {
             border: '0 !important',
             backgroundColor: 'transparent !important',
-            color: '#ffffff !important',
+            color: `${text_color} !important`,
           },
           '.mde-header-item button': {
             fontFamily: '"IBM Plex Sans", sans-serif',
-            color: '#ffffff !important',
+            color: `${text_color} !important`,
           },
           '.mde-tabs button': {
             fontFamily: '"IBM Plex Sans", sans-serif',
-            color: '#ffffff !important',
+            color: `${text_color} !important`,
           },
           '.mde-textarea-wrapper textarea': {
             fontFamily: '"IBM Plex Sans", sans-serif',
             fontSize: 13,
-            color: '#ffffff',
+            color: text_color,
             background: 'transparent',
             borderBottom: '1px solid rgba(255, 255, 255, 0.7) !important',
             transition: 'borderBottom .3s',
@@ -432,7 +464,8 @@ const ThemeDark = (
             },
           },
           '.mde-preview .mde-preview-content a': {
-            color: `${primary || THEME_DARK_DEFAULT_PRIMARY} !important`,
+            // color: `${primary || THEME_DARK_DEFAULT_PRIMARY} !important`,
+            color: `${text_color} !important`,
           },
           '.react-grid-placeholder': {
             backgroundColor: `${accent || THEME_DARK_DEFAULT_ACCENT} !important`,
@@ -477,6 +510,27 @@ const ThemeDark = (
             boxShadow: `2px 0 ${primary || THEME_DARK_DEFAULT_PRIMARY} inset`,
             backgroundColor: `${hexToRGB(primary || THEME_DARK_DEFAULT_PRIMARY, 0.32)}`,
           },
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          color: text_color,
         },
       },
     },
