@@ -148,8 +148,6 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 id="response-dialog-editor"
                 data={content}
                 onChange={(_, editor) => {
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
                   setContent(editor.getData());
                 }}
                 disabled={isDisabled}
