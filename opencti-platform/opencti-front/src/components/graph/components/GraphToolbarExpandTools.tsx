@@ -581,15 +581,16 @@ const GraphToolbarExpandTools = ({
     graphState: {
       selectedNodes,
       selectedLinks,
+      isExpandOpen,
     },
   } = useGraphContext();
 
   const {
     setLinearProgress,
     rebuildGraphData,
+    setIsExpandOpen,
   } = useGraphInteractions();
 
-  const [expandOpen, setExpandOpen] = useState(false);
   const [rollBackOpen, setRollBackOpen] = useState(false);
 
   const onRollbackExpand = () => {
@@ -684,7 +685,7 @@ const GraphToolbarExpandTools = ({
       <GraphToolbarItem
         Icon={<OpenWithOutlined />}
         color="primary"
-        onClick={() => setExpandOpen(true)}
+        onClick={() => setIsExpandOpen(true)}
         title={t_i18n('Expand')}
         disabled={selectedNodes.length === 0}
       />
@@ -692,15 +693,15 @@ const GraphToolbarExpandTools = ({
       <Dialog
         fullWidth
         maxWidth="sm"
-        open={expandOpen}
-        PaperProps={{ elevation: 1 }}
-        onClose={() => setExpandOpen(false)}
+        open={isExpandOpen}
+        slotProps={{ paper: { elevation: 1 } }}
+        onClose={() => setIsExpandOpen(false)}
       >
         <InvestigationExpandForm
           links={graphData?.links ?? []}
           selectedNodes={selectedNodes}
           onSubmit={onExpand}
-          onReset={() => setExpandOpen(false)}
+          onReset={() => setIsExpandOpen(false)}
         />
       </Dialog>
     </>

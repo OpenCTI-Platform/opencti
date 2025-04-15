@@ -1,12 +1,12 @@
 import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
-import React, { type MutableRefObject, ReactNode, useEffect } from 'react';
+import React, { type MutableRefObject, ReactNode, useEffect, useRef } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useTheme } from '@mui/material/styles';
 import RectangleSelection from './components/RectangleSelection';
 import { useGraphContext } from './GraphContext';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
-import { GraphLink, GraphNode, OctiGraphPositions } from './graph.types';
+import { GraphLink, GraphNode, LibGraphProps, OctiGraphPositions } from './graph.types';
 import useGraphPainter from './utils/useGraphPainter';
 import useGraphInteractions from './utils/useGraphInteractions';
 import LassoSelection from './components/LassoSelection';
@@ -30,6 +30,7 @@ const Graph = ({
   const graphId = `graph-${uuid()}`;
   const theme = useTheme<Theme>();
   const { width, height } = useResizeObserver(parentRef);
+  const nodeClicked = useRef<{ node?: GraphNode, time?: number }>({});
 
   const {
     saveZoom,
@@ -44,6 +45,7 @@ const Graph = ({
     setRawPositions,
     setZoom,
     zoomToFit,
+    setIsExpandOpen,
   } = useGraphInteractions();
 
   const {
@@ -105,6 +107,22 @@ const Graph = ({
     onPositionsChanged?.(newPositions);
   };
 
+  const onNodeClick: LibGraphProps['onNodeClick'] = (node, e) => {
+    let isDoubleClick = false;
+    const now = new Date().getTime();
+    if (!e.ctrlKey && !e.shiftKey && !e.altKey) {
+      if (nodeClicked.current.time && nodeClicked.current.node?.id === node.id) {
+        isDoubleClick = now - nodeClicked.current.time < 500;
+      }
+      nodeClicked.current = isDoubleClick ? {} : { node, time: now };
+      if (isDoubleClick && context === 'investigation') {
+        setIsExpandOpen(true);
+        return;
+      }
+    }
+    toggleNode(node, e);
+  };
+
   const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
 
   return (
@@ -138,7 +156,7 @@ const Graph = ({
             nodeThreeObject={nodeThreePaint}
             onLinkClick={toggleLink}
             onBackgroundClick={clearSelection}
-            onNodeClick={toggleNode}
+            onNodeClick={onNodeClick}
             onNodeDrag={moveSelection}
             onNodeDragEnd={onNodeDragEnd}
           />
@@ -189,7 +207,7 @@ const Graph = ({
               onZoomEnd={saveZoom}
               onLinkClick={toggleLink}
               onBackgroundClick={clearSelection}
-              onNodeClick={toggleNode}
+              onNodeClick={onNodeClick}
               onNodeDrag={moveSelection}
               onNodeDragEnd={onNodeDragEnd}
             />
