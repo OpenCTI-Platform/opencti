@@ -15,7 +15,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import RoleEdition from './RoleEdition';
-import { RolePopoverEditionQuery } from './__generated__/RolePopoverEditionQuery.graphql';
+import { RoleEditionQuery } from './__generated__/RoleEditionQuery.graphql';
 import CapabilitiesList from './CapabilitiesList';
 import { groupsSearchQuery } from '../Groups';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
@@ -91,7 +91,7 @@ const Role = ({
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
   );
-  const roleEditionData = useLazyLoadQuery<RolePopoverEditionQuery>(
+  const roleEditionData = useLazyLoadQuery<RoleEditionQuery>(
     roleEditionQuery,
     { id: role.id },
   );

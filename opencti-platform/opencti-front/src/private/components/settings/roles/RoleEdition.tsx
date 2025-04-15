@@ -11,7 +11,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { RoleEdition_role$key } from './__generated__/RoleEdition_role.graphql';
-import { RolePopoverEditionQuery$data } from './__generated__/RolePopoverEditionQuery.graphql';
+import { RoleEditionQuery$data } from './__generated__/RoleEditionQuery.graphql';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const RoleEditionFragment = graphql`
@@ -27,7 +27,7 @@ const RoleEditionFragment = graphql`
 `;
 
 interface RoleEditionDrawerProps {
-  roleRef: RolePopoverEditionQuery$data['role']
+  roleRef: RoleEditionQuery$data['role']
   handleClose?: () => void
   open?: boolean
   disabled?: boolean
@@ -82,7 +82,7 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
 };
 
 interface RoleEditionProps {
-  roleEditionData?: RolePopoverEditionQuery$data
+  roleEditionData?: RoleEditionQuery$data
   handleClose?: () => void
   open?: boolean
   disabled?: boolean

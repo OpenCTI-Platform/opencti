@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import { Add, ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
+import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
@@ -17,8 +17,8 @@ import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import Fab from '@mui/material/Fab';
 import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
 import ImportMenu from '../ImportMenu';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
@@ -51,10 +51,6 @@ const useStyles = makeStyles(() => ({
   itemHead: {
     paddingLeft: 10,
     textTransform: 'uppercase',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
   },
 }));
 
@@ -165,6 +161,7 @@ const ImportContentComponent = ({
   isNewImportScreensEnabled,
   inDraftOverview,
 }) => {
+  const theme = useTheme();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
@@ -306,15 +303,26 @@ const ImportContentComponent = ({
     const connector = connectors.find((c) => c.id === value);
     setSelectedConnector(connector);
   };
-
+  const buttonValue = t_i18n('Create Workbench');
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
   return (
     <div style={{ paddingRight: isNewImportScreensEnabled && !inDraftOverview ? 200 : 0 }}>
-      {!inDraftOverview && (
-      <Breadcrumbs
-        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
-      />
-      )}
+      {!inDraftOverview && (<>
+        <Breadcrumbs
+          elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+        />
+        <Button
+          onClick={handleOpenCreate}
+          color="primary"
+          size="small"
+          variant="contained"
+          aria-label={buttonValue}
+          title={buttonValue}
+          sx={{ float: 'right', marginLeft: theme.spacing(1) }}
+        >
+          {buttonValue}
+        </Button>
+      </>)}
       {isNewImportScreensEnabled && !inDraftOverview && <ImportMenu/>}
       <Grid
         container={true}
@@ -607,17 +615,6 @@ const ImportContentComponent = ({
         />
         )}
       </div>
-      {!inDraftOverview && (
-      <Fab
-        onClick={handleOpenCreate}
-        color="primary"
-        aria-label="Add"
-        className={classes.createButton}
-        style={{ right: isNewImportScreensEnabled ? 230 : 30 }}
-      >
-        <Add />
-      </Fab>
-      )}
     </div>
   );
 };

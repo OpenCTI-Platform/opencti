@@ -13,7 +13,7 @@ import UserEditionGroups from './edition/UserEditionGroups';
 import { useFormatter } from '../../../../components/i18n';
 import { UserEdition_user$key } from './__generated__/UserEdition_user.graphql';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEditionQuery.graphql';
+import { RootUserEditionQuery$data } from './__generated__/RootUserEditionQuery.graphql';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
@@ -92,7 +92,7 @@ const UserEditionFragment = graphql`
 
 interface UserEditionDrawerProps {
   handleClose?: () => void;
-  userRef: UserPopoverEditionQuery$data['user'];
+  userRef: RootUserEditionQuery$data['user'];
   open?: boolean;
 }
 
@@ -163,7 +163,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
 };
 
 interface UserEditionProps {
-  userEditionData?: UserPopoverEditionQuery$data;
+  userEditionData?: RootUserEditionQuery$data;
   handleClose?: () => void;
   open?: boolean;
 }
