@@ -101,6 +101,7 @@ const StixCoreRelationshipInference = ({ stixRelationship, inference }) => {
       />
       <div ref={parentRef} style={{ height: 430 }}>
         <SimpleGraph2D
+          showParticules
           onReady={(graphRef) => {
             graphRef.d3Force('link').distance(80);
             graphRef.zoomToFit(200, 140);

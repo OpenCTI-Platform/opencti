@@ -8,11 +8,13 @@ import { GraphRef2D } from './GraphContext';
 interface SimpleGraph2DProps extends ForceGraphProps<GraphNode, GraphLink> {
   parentRef: MutableRefObject<HTMLDivElement | null>
   onReady?: (graphRef: GraphRef2D) => void
+  showParticules?: boolean
 }
 
 const SimpleGraph2D = ({
   parentRef,
   onReady,
+  showParticules = false,
   ...graphProps
 }: SimpleGraph2DProps) => {
   const initialized = useRef(false);
@@ -47,9 +49,9 @@ const SimpleGraph2D = ({
       linkCanvasObjectMode={() => 'after'}
       linkCanvasObject={(link, ctx) => linkLabelPaint(link, ctx)}
       linkLineDash={(link) => (link.isNestedInferred ? [2, 1] : null)}
-      linkDirectionalParticles={(link) => (link.inferred ? 20 : 0)}
-      linkDirectionalParticleWidth={2}
-      linkDirectionalParticleSpeed={() => 0.002}
+      linkDirectionalParticles={(link) => (link.inferred && showParticules ? 20 : 0)}
+      linkDirectionalParticleWidth={showParticules ? 2 : undefined}
+      linkDirectionalParticleSpeed={showParticules ? 0.002 : undefined}
       linkColor={linkColorPaint}
       nodePointerAreaPaint={nodePointerAreaPaint} // What's for?
       nodeCanvasObject={(node, ctx) => nodePaint(node, ctx)}
