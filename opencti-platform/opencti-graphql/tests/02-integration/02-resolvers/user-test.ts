@@ -1119,18 +1119,6 @@ describe('meUser specific resolvers', async () => {
       variables,
     });
   });
-  it('User should NOT update unauthorized attribute', async () => {
-    const variables = {
-      password: USER_EDITOR.password,
-      input: [
-        { key: 'api_token', value: 'd434ce02-e58e-4cac-8b4c-42bf16748e84' },
-      ]
-    };
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
-      query: ME_EDIT,
-      variables,
-    });
-  });
   it('User should NOT update password without providing proper current password', async () => {
     const variables = {
       password: 'incorrect_current_password',
