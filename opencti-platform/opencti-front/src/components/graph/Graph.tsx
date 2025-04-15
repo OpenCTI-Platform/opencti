@@ -92,10 +92,12 @@ const Graph = ({
   useEffect(() => {
     // A short timeout to be sure graph is ready.
     setTimeout(() => {
-      if (!isLoadingData) {if (zoom) setZoom(zoom);
-      else zoomToFit();
-      if (withForces) applyForces();
-    }}, 200);
+      if (!isLoadingData) {
+        if (zoom) setZoom(zoom);
+        else zoomToFit();
+        if (withForces) applyForces();
+      }
+    }, 200);
   }, [mode3D, isLoadingData]);
 
   const shouldDisplayLinks = graphData?.links.length ?? 0 < 200;
