@@ -115,7 +115,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => {
     setContent('');
-    setDisplayAskAI(false)
+    setDisplayAskAI(false);
   };
 
   const [commitMutationFixSpelling] = useApiMutation<TextFieldAskAIFixSpellingMutation>(textFieldAskAIFixSpellingMutation);
