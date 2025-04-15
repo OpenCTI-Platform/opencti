@@ -23,7 +23,7 @@ import {
 } from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
-import { adminQueryWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { adminQueryWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member } from '../../../src/generated/graphql';
 
@@ -1115,6 +1115,30 @@ describe('meUser specific resolvers', async () => {
       ]
     };
     await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: ME_EDIT,
+      variables,
+    });
+  });
+  it('User should NOT update unauthorized attribute', async () => {
+    const variables = {
+      password: USER_EDITOR.password,
+      input: [
+        { key: 'api_token', value: 'd434ce02-e58e-4cac-8b4c-42bf16748e84' },
+      ]
+    };
+    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      query: ME_EDIT,
+      variables,
+    });
+  });
+  it('User should NOT update password without providing proper current password', async () => {
+    const variables = {
+      password: 'incorrect_current_password',
+      input: [
+        { key: 'password', value: 'new_password' },
+      ]
+    };
+    await queryAsUserIsExpectedError(USER_EDITOR.client, {
       query: ME_EDIT,
       variables,
     });
