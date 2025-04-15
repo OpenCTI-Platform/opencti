@@ -519,8 +519,12 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
                     }
                   >
                     {themes.edges?.filter((node) => !!node).map(({ node }) => (
-                      <MenuItem key={node.id} value={node.name}>
-                        {deserializeThemeManifest(node.manifest)
+                      <MenuItem
+                        key={node.id}
+                        value={node.id}
+                        data-testid={`${node.name}-li`}
+                      >
+                        {deserializeThemeManifest(node.manifest).system_default
                           ? t_i18n(node.name)
                           : node.name}
                       </MenuItem>
@@ -687,7 +691,10 @@ const Settings = (queryRef: PreloadedQuery<SettingsQuery>) => {
           />
         </Grid>
         <Grid item xs={8}>
-          <Themes handleRefetch={handleRefetch} />
+          <Themes
+            handleRefetch={handleRefetch}
+            currentTheme={settings.platform_theme ?? ''}
+          />
         </Grid>
         <Grid item xs={4}>
           <Typography variant="h4" gutterBottom={true}>
