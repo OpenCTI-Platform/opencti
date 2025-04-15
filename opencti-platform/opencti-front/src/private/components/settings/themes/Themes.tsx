@@ -82,10 +82,12 @@ const themesLineFragment = graphql`
 
 interface ThemesProps {
   handleRefetch: () => Disposable;
+  currentTheme: string;
 }
 
 const Themes: FunctionComponent<ThemesProps> = ({
   handleRefetch,
+  currentTheme,
 }) => {
   const { t_i18n } = useFormatter();
   const [displayCreation, setDisplayCreation] = useState<boolean>(false);
@@ -146,16 +148,15 @@ const Themes: FunctionComponent<ThemesProps> = ({
               aria-label={t_i18n('Add')}
               onClick={handleOpenCreation}
               size="large"
+              data-testid='create-theme-btn'
             >
               <Add fontSize="small" />
             </IconButton>
           </Tooltip>
-          <Tooltip title={t_i18n('Import a theme')}>
-            <ThemeImporter
-              handleRefetch={handleRefetch}
-              paginationOptions={paginationOptions.variables}
-            />
-          </Tooltip>
+          <ThemeImporter
+            handleRefetch={handleRefetch}
+            paginationOptions={paginationOptions.variables}
+          />
         </div>
       </div>
       <div className="clearfix" />
@@ -183,6 +184,7 @@ const Themes: FunctionComponent<ThemesProps> = ({
                 themeData={row}
                 handleRefetch={handleRefetch}
                 paginationOptions={paginationOptions.variables}
+                isCurrentTheme={row.id === currentTheme}
               />
             )}
             resolvePath={(data: ThemesLines_data$data) => data.themes?.edges?.map((n) => n?.node)}

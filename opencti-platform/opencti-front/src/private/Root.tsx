@@ -231,6 +231,7 @@ const rootPrivateQuery = graphql`
     themes {
       edges {
         node {
+          id
           name
           manifest
         }
