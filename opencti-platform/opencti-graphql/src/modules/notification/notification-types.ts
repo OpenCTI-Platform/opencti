@@ -74,6 +74,7 @@ export interface NotificationAddInput {
     events: Array<NotificationContentEvent>
   }>
   trigger_id?: string
+  user_id: string
 }
 
 // region Database types

@@ -324,7 +324,7 @@ export const notificationEditRead = async (context: AuthContext, user: AuthUser,
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFICATION].EDIT_TOPIC, element, user);
 };
 export const addNotification = async (context: AuthContext, user: AuthUser, notification: NotificationAddInput) => {
-  const members = [{ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
+  const members = [{ id: notification.user_id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
   const notificationWithAuthorized = {
     ...notification,
     restricted_members: members,
