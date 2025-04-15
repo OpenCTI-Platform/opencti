@@ -89,6 +89,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const navigate = useNavigate();
   const isKnowledgeUploader = useGranted([KNOWLEDGE_KNUPLOAD]);
   const defaultLanguageName = getDefaultAiLanguage();
+
   const [language, setLanguage] = useState(defaultLanguageName);
   const [content, setContent] = useState('');
   const [acceptedResult, setAcceptedResult] = useState<string | null>(null);
@@ -102,12 +103,18 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const [disableResponse, setDisableResponse] = useState(false);
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
+
   const action = 'container-report' as 'container-report' | 'summarize-files' | 'convert-files';
   const handleOpenAskAI = () => setDisplayAskAI(true);
-  const handleCloseAskAI = () => setDisplayAskAI(false);
+  const handleCloseAskAI = () => {
+    setContent('');
+    setDisplayAskAI(false);
+  }
+
   const [commitMutationUpdateContent] = useApiMutation<StixCoreObjectMappableContentFieldPatchMutation>(stixCoreObjectMappableContentFieldPatchMutation);
   const [commitMutationCreateFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(stixCoreObjectContentFilesUploadStixCoreObjectMutation);
   const [commitMutationContainerReport] = useApiMutation<StixCoreObjectAskAIContainerReportMutation>(stixCoreObjectAskAIContainerReportMutation);
+
   const handleAskAiContent = () => {
     handleCloseOptions();
     setDisableResponse(true);
@@ -133,6 +140,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
       },
     });
   };
+
   const handleAskAi = () => {
     // check paragraphs value is correct
     if (action === 'container-report' || action === 'summarize-files') {
@@ -147,10 +155,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
       handleAskAiContent();
     }
   };
+
   const handleCancelDestination = () => {
     setAcceptedResult(null);
     setDisplayAskAI(true);
   };
+
   const submitAcceptedResult = () => {
     setIsSubmitting(true);
     if (destination === 'content') {
@@ -205,6 +215,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
       });
     }
   };
+
   return (
     <>
       <Dialog
