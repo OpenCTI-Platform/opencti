@@ -30,7 +30,6 @@ import { getDraftContext } from '../utils/draftContext';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 
-const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
 export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
 
@@ -40,13 +39,21 @@ const isStreamPublishable = (opts: EventOpts) => {
   return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
 };
 
-const redisOptions = async (autoReconnect = false): Promise<RedisOptions> => {
+const redisOptions = async (autoReconnect = false, clusterMode = false): Promise<RedisOptions> => {
   const baseAuth = { username: conf.get('redis:username'), password: conf.get('redis:password') };
   const userPasswordAuth = await enrichWithRemoteCredentials('redis', baseAuth);
+  const USE_SSL = booleanConf('redis:use_ssl', false);
+  let tlsOption;
+  if (clusterMode) {
+    // In cluster mode RedisOption are applied to every hostname of redis:hostnames; redis:hostname should not be required.
+    tlsOption = USE_SSL ? { ...configureCA(REDIS_CA) } : undefined;
+  } else {
+    tlsOption = USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined;
+  }
   return {
     keyPrefix: REDIS_PREFIX,
     ...userPasswordAuth,
-    tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
+    tls: tlsOption,
     retryStrategy: /* v8 ignore next */ (times) => {
       if (getStoppingState()) {
         return null;
@@ -86,7 +93,7 @@ export const generateNatMap = (mappings: string[]): Record<string, { host: strin
 };
 
 const clusterOptions = async (): Promise<ClusterOptions> => {
-  const redisOpts = await redisOptions();
+  const redisOpts = await redisOptions(false, true);
   return {
     keyPrefix: REDIS_PREFIX,
     lazyConnect: true,
@@ -126,7 +133,7 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
     const sentinelOpts = await sentinelOptions(clusterNodes);
     client = new Redis(sentinelOpts);
   } else {
-    const singleOptions = await redisOptions(autoReconnect);
+    const singleOptions = await redisOptions(autoReconnect, false);
     client = new Redis({ ...singleOptions, db: conf.get('redis:database') ?? 0, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
 
