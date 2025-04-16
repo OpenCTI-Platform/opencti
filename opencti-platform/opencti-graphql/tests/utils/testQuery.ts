@@ -78,6 +78,7 @@ interface QueryOption {
   eventId?: string
   previousStandard?: string
   synchronizedUpsert?: string
+  applicantId?: string
 }
 export const executeInternalQuery = async (client: AxiosInstance, query: unknown, variables = {}, options: QueryOption = {}) => {
   const headers: any = {};
@@ -85,12 +86,13 @@ export const executeInternalQuery = async (client: AxiosInstance, query: unknown
   if (options.eventId) headers['opencti-event-id'] = options.eventId;
   if (options.previousStandard) headers['previous-standard'] = options.previousStandard;
   if (options.synchronizedUpsert) headers['synchronized-upsert'] = options.synchronizedUpsert;
+  if (options.applicantId) headers['opencti-applicant-id'] = options.applicantId;
   const response = await client.post(`${API_URI}/graphql`, { query, variables }, { withCredentials: true, headers });
   return response.data;
 };
 const adminClient = createHttpClient();
-export const internalAdminQuery = async (query: unknown, variables = {}) => {
-  return executeInternalQuery(adminClient, query, variables);
+export const internalAdminQuery = async (query: unknown, variables = {}, options: QueryOption = {}) => {
+  return executeInternalQuery(adminClient, query, variables, options);
 };
 
 // Roles
@@ -510,8 +512,8 @@ const assignOrganizationToUser = async (organization: OrganizationTestData, user
 };
 // endregion
 
-export const adminQuery = async (request: any) => {
-  return internalAdminQuery(print(request.query), request.variables);
+export const adminQuery = async (request: any, options: QueryOption = {}) => {
+  return internalAdminQuery(print(request.query), request.variables, options);
 };
 
 export const editorQuery = async (request: any, options: QueryOption = {}) => {

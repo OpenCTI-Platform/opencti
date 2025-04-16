@@ -18,12 +18,21 @@ import {
   testContext,
   TESTING_GROUPS,
   TESTING_USERS,
+  USER_CONNECTOR,
   USER_DISINFORMATION_ANALYST,
   USER_EDITOR
 } from '../../utils/testQuery';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
-import { adminQueryWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import {
+  adminQueryWithSuccess,
+  enableCEAndUnSetOrganization,
+  enableEEAndSetOrganization,
+  queryAsAdminWithSuccess,
+  queryAsUserIsExpectedError,
+  queryAsUserIsExpectedForbidden,
+  queryAsUserWithSuccess
+} from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member } from '../../../src/generated/graphql';
 
@@ -1130,5 +1139,37 @@ describe('meUser specific resolvers', async () => {
       query: ME_EDIT,
       variables,
     });
+  });
+});
+
+describe('User is impersonated', async () => {
+  it('Applicant user without any organization is rejected when a platform organization is set', async () => {
+    await enableEEAndSetOrganization(TEST_ORGANIZATION);
+
+    const CREATE_REPORT_QUERY = gql`
+      mutation ReportAdd($input: ReportAddInput!) {
+        reportAdd(input: $input) {
+          id
+          standard_id
+          name
+          description
+          published
+        }
+      }
+    `;
+    // Report to create: creation should fail
+    const REPORT_TO_CREATE = {
+      input: {
+        name: 'ReportCreationFail',
+      },
+    };
+    const reportQuery = await adminQuery({
+      query: CREATE_REPORT_QUERY,
+      variables: REPORT_TO_CREATE,
+    }, { applicantId: USER_CONNECTOR.id });
+    expect(reportQuery.errors).toBeDefined();
+
+    // revert platform orga
+    await enableCEAndUnSetOrganization();
   });
 });
