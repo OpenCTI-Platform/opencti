@@ -52,6 +52,7 @@ export interface StixIdentityExtension extends StixOpenctiExtension {
   lastname: string;
   organization_type: string;
   reliability: string;
+  score: number;
 }
 // name, description, roles, identity_class, sectors, contact_information
 export interface StixIdentity extends StixDomainObject {
