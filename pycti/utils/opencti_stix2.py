@@ -48,6 +48,7 @@ STIX_EXT_OCTI = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
 STIX_EXT_OCTI_SCO = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
 STIX_EXT_MITRE = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
 PROCESSING_COUNT: int = 4
+MAX_PROCESSING_COUNT: int = 100
 
 meter = metrics.get_meter(__name__)
 bundles_timeout_error_counter = meter.create_counter(
@@ -2489,6 +2490,20 @@ class OpenCTIStix2:
         work_id: str = None,
     ):
         worker_logger = self.opencti.logger_class("worker")
+        # Ultimate protection to avoid infinite retry
+        if processing_count > MAX_PROCESSING_COUNT:
+            if work_id is not None:
+                item_str = json.dumps(item)
+                self.opencti.work.report_expectation(
+                    work_id,
+                    {
+                        "error": "Max number of retries reached, please see error logs of workers for more details",
+                        "source": (
+                            item_str if len(item_str) < 50000 else "Bundle too large"
+                        ),
+                    },
+                )
+                return False
         try:
             self.opencti.set_retry_number(processing_count)
             opencti_operation = self.opencti.get_attribute_in_extension(
