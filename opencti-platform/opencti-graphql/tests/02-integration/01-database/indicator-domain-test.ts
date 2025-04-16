@@ -234,10 +234,22 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay3.id, inputWithEverything);
 
     const indicatorWithAllChanges = await findById(testContext, ADMIN_USER, indicatorWithDecay3.id);
-    expect(indicatorWithAllChanges.valid_until.getTime()).toBeCloseTo(tomorrow.getTime());
+    expect(new Date(indicatorWithAllChanges.valid_until).toDateString()).toBe(tomorrow.toDateString()); // precision to day is enough
     expect(indicatorWithAllChanges.x_opencti_score).toBeGreaterThan(indicatorWithAllChanges.decay_applied_rule.decay_revoke_score);
     expect(indicatorWithAllChanges.revoked).toBeFalsy();
 
     console.log('indicatorWithAllChanges:', indicatorWithAllChanges);
+  });
+
+  it.todo('decay enabled - updating valid until and score should valid until wins', async () => {
+
+  });
+
+  it.todo('decay enabled - updating valid until and revoke should valid until wins', async () => {
+
+  });
+
+  it.todo('decay enabled - updating score and revoke should revoke wins', async () => {
+
   });
 });

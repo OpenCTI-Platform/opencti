@@ -404,7 +404,8 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   let hasRevokedChangedToFalse: boolean = false;
   logApp.info('Before decay computation: scoreEditInput:', { scoreEditInput, revokedEditInput, validUntilEditInput, isDecayEnabledOnIndicator });
 
-  if (revokedEditInput) {
+  // Revoke value is taken only if valid until and score are not updated at the same time too.
+  if (revokedEditInput && !validUntilEditInput && !scoreEditInput) {
     hasRevokedChangedToTrue = revokedEditInput.value[0] === true && !indicatorBeforeUpdate.revoked;
     hasRevokedChangedToFalse = revokedEditInput.value[0] === false && indicatorBeforeUpdate.revoked;
   }
