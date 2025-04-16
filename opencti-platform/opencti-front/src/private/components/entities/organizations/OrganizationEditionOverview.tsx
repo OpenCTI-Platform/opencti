@@ -115,6 +115,10 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     x_opencti_reliability: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
+    x_opencti_score: Yup.number()
+      .required(t_i18n('This field is required'))
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
   };
   const organizationValidator = useSchemaEditionValidation('Organization', basicShape);
 
@@ -181,6 +185,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     x_opencti_organization_type: organization.x_opencti_organization_type,
     x_opencti_reliability: organization.x_opencti_reliability,
     x_opencti_workflow_id: convertStatus(t_i18n, organization) as FieldOption,
+    x_opencti_score: organization.x_opencti_score,
     createdBy: convertCreatedBy(organization) as FieldOption,
     objectMarking: convertMarkings(organization),
     references: [],
@@ -277,6 +282,23 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
             variant="edit"
             containerStyle={fieldSpacingContainerStyle}
           />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_opencti_score"
+            label={t_i18n('Score')}
+            type="number"
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus
+                context={context}
+                fieldName="x_opencti_score"
+              />
+            }
+          />
           {organization.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
@@ -342,6 +364,7 @@ export default createFragmentContainer(OrganizationEditionOverviewComponent, {
         contact_information
         x_opencti_organization_type
         x_opencti_reliability
+        x_opencti_score
         createdBy {
           ... on Identity {
             id
