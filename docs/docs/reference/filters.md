@@ -2,7 +2,6 @@
 
 In OpenCTI, you can filter data to target or view entities that have particular attributes.
 
-
 ## Filters usages
 
 There are two types of filters that are used in many locations in the platform:

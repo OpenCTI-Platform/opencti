@@ -1,4 +1,4 @@
-# Data intelligence
+# Data processing
 
 As a cyber threat intelligence platform, OpenCTI offers functionalities that enable users to move quickly from raw data to operational intelligence by building up high-quality, structured information.
 

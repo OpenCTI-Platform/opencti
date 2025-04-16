@@ -145,9 +145,11 @@ nav:
       - Deduplication: usage/deduplication.md
       - Reliability and confidence: usage/reliability-confidence.md
       - Meaning of dates: usage/dates.md
+      - CTI Copilot ✨: usage/copilot.md
     - Explore knowledge:
       - Overview: usage/overview.md
       - Search for knowledge: usage/search.md
+      - Insights and summaries ✨: usage/insights.md
       - Explore by entity types:
         - Analysis: usage/exploring-analysis.md
         - Cases: usage/exploring-cases.md
@@ -169,7 +171,7 @@ nav:
       - Inferences and reasoning: usage/inferences.md
       - Enrichment connectors: usage/enrichment.md
       - Merge objects: usage/merging.md
-      - Ask AI: usage/ask-ai.md
+      - Refine content ✨: usage/refine-content.md
     - Act on knowledge:
       - Case management: usage/case-management.md
       - Notifications and alerting: usage/notifications.md
@@ -225,8 +227,9 @@ nav:
   - Reference:
     - Data:
       - Data model: reference/data-model.md
-      - Data Intelligence: reference/data-intelligence.md
+      - Data processing: reference/data-processing.md
       - Taxonomy: reference/taxonomy.md
+      - Artificial intelligence: reference/artificial-intelligence.md
     - APIs and feeds:
       - GraphQL API: reference/api.md
       - Filters:
