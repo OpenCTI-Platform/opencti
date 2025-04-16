@@ -392,8 +392,8 @@ export const computeScoreFromValidUntil = (revokeInDaysFromNow: number, rule: De
     return rule.decay_revoke_score;
   }
 
-  const baseScore: number = rule.decay_revoke_score === 0 ? 1 : rule.decay_revoke_score;
-  return baseScore / (1 - ((revokeInDaysFromNow / rule.decay_lifetime) ** (1 / (DECAY_FACTOR * rule.decay_pound))));
+  const revokeScore: number = rule.decay_revoke_score === 0 ? 1 : rule.decay_revoke_score;
+  return revokeScore / (1 - ((revokeInDaysFromNow / rule.decay_lifetime) ** (1 / (DECAY_FACTOR * rule.decay_pound))));
 };
 
 export const computeDecayPointReactionDate = (initialScore: number, model: DecayModel, startDate: Moment, decayPoint: number) => {
