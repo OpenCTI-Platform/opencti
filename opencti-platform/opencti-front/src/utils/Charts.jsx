@@ -1,6 +1,7 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
 import { truncate } from './String';
+import { isColorCloseToWhite } from './Colors';
 
 export const colors = (temp) => [
   C.red[temp],
@@ -23,16 +24,6 @@ export const colors = (temp) => [
   C.orange[temp],
   C.grey[temp],
 ];
-
-const isColorCloseToWhite = (hex, threshold = 0.9) => {
-  if (!hex) return false;
-  const c = hex.replace('#', '');
-  const r = parseInt(c.substr(0, 2), 16);
-  const g = parseInt(c.substr(2, 2), 16);
-  const b = parseInt(c.substr(4, 2), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance >= threshold; // filter on too white colors
-};
 
 const toolbarOptions = {
   show: false,
