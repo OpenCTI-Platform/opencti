@@ -1402,7 +1402,6 @@ export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) =
   if (platformUsers.has(tokenOrId)) {
     let authenticatedUser = platformUsers.get(tokenOrId);
     const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    validateUser(authenticatedUser, settings);
     const applicantId = req.headers['opencti-applicant-id'];
     if (applicantId && isBypassUser(authenticatedUser)) {
       authenticatedUser = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
@@ -1410,6 +1409,7 @@ export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) =
         throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
       }
     }
+    validateUser(authenticatedUser, settings);
     return userWithOrigin(req, authenticatedUser);
   }
   throw FunctionalError(`Cant identify with ${tokenOrId}`);
