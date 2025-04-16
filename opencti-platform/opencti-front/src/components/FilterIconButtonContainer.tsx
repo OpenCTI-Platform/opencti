@@ -256,6 +256,8 @@ FilterIconButtonContainerProps
       };
     }
   }
+  const allFilterKeys = displayedFilters.map((filter) => filter.key);
+  const allRegardingOf = allFilterKeys.every((key) => key === 'regardingOf');
   const tooltipContent = (
     <Box>
       {displayedFilters.map((currentFilter, index) => {
@@ -293,7 +295,14 @@ FilterIconButtonContainerProps
   );
 
   return (
-    <Tooltip title={tooltipContent} arrow placement="top-start">
+    <Tooltip
+      title={
+        allRegardingOf
+          ? undefined
+          : tooltipContent
+    }
+      arrow placement="top-start"
+    >
       <Box sx={boxStyle}>
         {displayedFilters.map((currentFilter, index) => {
           const filterKey = currentFilter.key;
