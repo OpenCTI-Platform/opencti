@@ -1409,6 +1409,7 @@ export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) =
       if (!authenticatedUser) {
         throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
       }
+      validateUser(authenticatedUser, settings);
     }
     return userWithOrigin(req, authenticatedUser);
   }
