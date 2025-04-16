@@ -11,7 +11,6 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
 import ReportKnowledgeCorrelation, { reportKnowledgeCorrelationQuery } from './ReportKnowledgeCorrelation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import ReportPopover from './ReportPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import ReportKnowledgeTimeLine, { reportKnowledgeTimeLineQuery } from './ReportKnowledgeTimeLine';
@@ -317,7 +316,6 @@ class ReportKnowledgeComponent extends Component {
         {mode !== 'graph' && (
         <ContainerHeader
           container={report}
-          PopoverComponent={<ReportPopover />}
           link={`/dashboard/analyses/reports/${report.id}/knowledge`}
           modes={['graph', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
@@ -472,9 +470,6 @@ class ReportKnowledgeComponent extends Component {
 
 ReportKnowledgeComponent.propTypes = {
   report: PropTypes.object,
-  mode: PropTypes.string,
-  classes: PropTypes.object,
-  t: PropTypes.func,
   navigate: PropTypes.func,
   enableReferences: PropTypes.bool,
 };

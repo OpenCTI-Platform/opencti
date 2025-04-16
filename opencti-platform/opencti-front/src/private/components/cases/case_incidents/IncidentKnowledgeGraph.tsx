@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import { graphql } from 'react-relay';
-import IncidentPopover from './CaseIncidentPopover';
 import { IncidentKnowledgeGraphQuery$data } from './__generated__/IncidentKnowledgeGraphQuery.graphql';
 import useIncidentKnowledgeGraphDeleteRelation from './useIncidentKnowledgeGraphDeleteRelation';
 import { OctiGraphPositions } from '../../../../components/graph/graph.types';
@@ -102,7 +101,6 @@ const IncidentKnowledgeGraph = ({
           modes: ['graph', 'content', 'timeline', 'correlation', 'matrix'],
           mode,
           link: `/dashboard/cases/incidents/${id}/knowledge`,
-          PopoverComponent: <IncidentPopover id={id} />,
         }}
         onAddRelation={addRelationInGraph}
         onDeleteRelation={deleteRelationInGraph}

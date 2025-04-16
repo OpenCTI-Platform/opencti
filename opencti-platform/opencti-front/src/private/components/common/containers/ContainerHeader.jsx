@@ -22,7 +22,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
@@ -433,9 +433,7 @@ const containerHeaderEditAuthorizedMembersMutation = graphql`
 const ContainerHeader = (props) => {
   const {
     container,
-    PopoverComponent,
     EditComponent,
-    popoverSecurity,
     link,
     modes,
     currentMode,
@@ -506,7 +504,6 @@ const ContainerHeader = (props) => {
   };
   const isAuthorizedMembersEnabled = !disableAuthorizedMembers;
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
-  const canEdit = currentAccessRight.canEdit || !isAuthorizedMembersEnabled;
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
   const disableOrgaSharingButton = (!enableManageAuthorizedMembers && currentAccessRight.canEdit) || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
@@ -692,11 +689,6 @@ const ContainerHeader = (props) => {
             )}
             {enableEnrollPlaybook && (
               <StixCoreObjectEnrollPlaybook stixCoreObjectId={container.id} />
-            )}
-            {!knowledge && PopoverComponent && (
-              <Security needs={popoverSecurity || [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT]} hasAccess={canEdit}>
-                {React.cloneElement(PopoverComponent, { id: container.id })}
-              </Security>
             )}
             {EditComponent}
           </div>

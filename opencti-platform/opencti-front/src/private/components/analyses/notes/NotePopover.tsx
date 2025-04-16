@@ -12,8 +12,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
-import Security, { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { CollaborativeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
@@ -51,7 +51,6 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
-  const [_, setDisplayEnrichment] = useState<boolean>(false);
   const [displayEnroll, setDisplayEnroll] = useState(false);
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -91,10 +90,6 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
     }
     handleClose();
   };
-  const handleOpenEnrichment = () => {
-    setDisplayEnrichment(true);
-    handleClose();
-  };
   const handleOpenEnroll = () => {
     setDisplayEnroll(true);
     handleClose();
@@ -131,11 +126,6 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
             {t_i18n('Remove from this entity')}
           </MenuItem>
         )}
-        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-          <MenuItem onClick={handleOpenEnrichment}>
-            {t_i18n('Enrich')}
-          </MenuItem>
-        </Security>
         <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
         <CollaborativeSecurity
           data={note}

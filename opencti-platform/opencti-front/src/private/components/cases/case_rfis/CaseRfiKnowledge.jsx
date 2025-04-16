@@ -12,7 +12,6 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
-import CaseRfiPopover from './CaseRfiPopover';
 import CaseRfiKnowledgeGraph, { caseRfiKnowledgeGraphQuery } from './CaseRfiKnowledgeGraph';
 import CaseRfiKnowledgeTimeLine, { caseRfiKnowledgeTimeLineQuery } from './CaseRfiKnowledgeTimeLine';
 import CaseRfiKnowledgeCorrelation, { caseRfiKnowledgeCorrelationQuery } from './CaseRfiKnowledgeCorrelation';
@@ -317,7 +316,6 @@ class CaseRfiKnowledgeComponent extends Component {
         {mode !== 'graph' && (
         <ContainerHeader
           container={caseData}
-          PopoverComponent={<CaseRfiPopover id={caseData.id}/>}
           link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
           modes={['graph', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
@@ -475,9 +473,6 @@ class CaseRfiKnowledgeComponent extends Component {
 
 CaseRfiKnowledgeComponent.propTypes = {
   caseData: PropTypes.object,
-  mode: PropTypes.string,
-  classes: PropTypes.object,
-  t: PropTypes.func,
   enableReferences: PropTypes.bool,
   navigate: PropTypes.func,
 };
