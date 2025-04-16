@@ -39,7 +39,7 @@ The platform can easily [generate insights and summaries](../usage/insights.md) 
 
     Insights capabilities help analysts to understand trends and forecast about a threat or a victim (sector, geography, etc.) but also quickly access to summarized information of latest reports or cases.
 
-### CTI Copilot (interaction) ✨
+### Platform assistant (interaction) ✨
 
 !!! warning "Partially available"
 
@@ -49,7 +49,7 @@ It is currently possible to ask questions to the platform in natural language an
 
 !!! info "Outcomes"
 
-    AI Copilot allows analysts to interact with the platform, ask questions, get relevant knowledge and take actions.
+    Platform assistant allows analysts to interact with the platform, ask questions, get relevant knowledge and take actions.
 
 ### What's next in this category?
 
