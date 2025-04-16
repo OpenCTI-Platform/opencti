@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Button, Paper } from '@mui/material';
+import { Button, Paper, Alert } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
@@ -10,6 +10,7 @@ import { graphql } from 'react-relay';
 import { useFormatter } from '../../components/i18n';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../relay/environment';
+import AlertInfo from '../../components/AlertInfo';
 
 interface ResetProps {
   onCancel: () => void;
@@ -67,6 +68,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   const [step, setStep] = useState(STEP_ASK_RESET);
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const [email, setEmail] = useState('');
+  const [otpError, setOtpError] = useState(false);
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
   const [askSentOtpCommitMutation] = useApiMutation(
@@ -124,6 +126,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        setOtpError(true);
         setSubmitting(false);
       },
     });
@@ -182,6 +185,19 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
             >
               {({ isSubmitting, isValid }) => (
                 <Form>
+                  {otpError ? (
+                    <Alert severity="warning" style={{ marginBottom: 10 }}>
+                      {t_i18n(
+                        'The reset code you entered is invalid or has expired. Please request a new code to proceed.',
+                      )}
+                    </Alert>
+                  ) : (
+                    <AlertInfo
+                      content={t_i18n(
+                        'If the email address you entered is associated with an account, you’ll receive a confirmation email with a reset code shortly.',
+                      )}
+                    />
+                  )}
                   <Field
                     component={TextField}
                     name="otp"
