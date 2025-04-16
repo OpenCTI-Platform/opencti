@@ -4,7 +4,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PopoverProps } from '@mui/material/Popover';
 import Drawer from '@components/common/drawer/Drawer';
@@ -16,14 +15,6 @@ import { deleteNode } from '../../../../utils/store';
 import { StatusTemplatePopoverEditionQuery$data } from './__generated__/StatusTemplatePopoverEditionQuery.graphql';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
 
 const statusTemplatePopoverDeletionMutation = graphql`
   mutation StatusTemplatePopoverDeletionMutation($id: ID!) {
@@ -48,7 +39,6 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
   statusTemplateId,
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -92,7 +82,7 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
   };
 
   return (
-    <div className={classes.container}>
+    <>
       <IconButton onClick={handleOpen} aria-haspopup="true" color="primary">
         <MoreVert />
       </IconButton>
@@ -130,7 +120,7 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this template?')}
       />
-    </div>
+    </>
   );
 };
 

@@ -22,7 +22,6 @@ import { deleteNode } from '../../../../utils/store';
 const styles = () => ({
   container: {
     margin: 0,
-    marginLeft: -10,
   },
 });
 
