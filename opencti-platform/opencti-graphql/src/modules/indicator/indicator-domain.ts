@@ -406,11 +406,13 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
 
   // Revoke value is taken only if valid until and score are not updated at the same time too.
   if (revokedEditInput && !validUntilEditInput && !scoreEditInput) {
+    logApp.info('Revoked in input');
     hasRevokedChangedToTrue = revokedEditInput.value[0] === true && !indicatorBeforeUpdate.revoked;
     hasRevokedChangedToFalse = revokedEditInput.value[0] === false && indicatorBeforeUpdate.revoked;
   }
 
   if (validUntilEditInput) {
+    logApp.info('Valid until in input');
     const untilDateTime = utcDate(validUntilEditInput?.value[0]).toDate();
     if (untilDateTime < nowDate && !indicatorBeforeUpdate.revoked) {
       finalInput.push({ key: REVOKED, value: [true] });
@@ -424,42 +426,52 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   }
 
   if (isDecayEnabledOnIndicator) {
+    logApp.info('Decay enabled');
     const revokeScore = indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score;
     const baseScore = indicatorBeforeUpdate.decay_base_score;
 
     // Check if score is in input, unless it's the original score
-    if (scoreEditInput && !scoreEditInput.value.includes(baseScore)) {
+    // Only if there is no valid until in input too
+    if (scoreEditInput && !scoreEditInput.value.includes(baseScore) && !validUntilEditInput) {
       const newScore = scoreEditInput.value[0];
       const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
-      logApp.info('Computed changes because score updated in input:', finalInput);
+      logApp.info('Computed changes because score updated in input:', { finalInput, allChanges });
       finalInput.push(...allChanges);
-    }
+    } else {
+      // score has not been changed, but maybe decay need to be computed again anyway
+      logApp.info('Score not changed, but revoked might changed:');
+      if (validUntilEditInput) {
+        // const newScore = computeScoreFromExpectedTime();
+        // const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
+        // logApp.info('Computed changes because score updated in input:', { finalInput, allChanges });
+        // finalInput.push(...allChanges);
+      } else {
+        if (hasRevokedChangedToTrue) {
+          finalInput.push({ key: X_SCORE, value: [revokeScore] });
+          finalInput.push({ key: X_DETECTION, value: [false] });
+          finalInput.push({ key: VALID_UNTIL, value: [nowDate.toISOString()] });
 
-    if (!scoreEditInput) {
-      if (hasRevokedChangedToTrue) {
-        finalInput.push({ key: X_SCORE, value: [revokeScore] });
-        finalInput.push({ key: X_DETECTION, value: [false] });
-        finalInput.push({ key: VALID_UNTIL, value: [nowDate.toISOString()] });
+          const decayHistory: DecayHistory[] = [...(indicatorBeforeUpdate.decay_history ?? [])];
+          decayHistory.push({
+            updated_at: nowDate,
+            score: revokeScore,
+          });
+          finalInput.push({ key: 'decay_history', value: decayHistory });
+        }
 
-        const decayHistory: DecayHistory[] = [...(indicatorBeforeUpdate.decay_history ?? [])];
-        decayHistory.push({
-          updated_at: nowDate,
-          score: revokeScore,
-        });
-        finalInput.push({ key: 'decay_history', value: decayHistory });
-      }
-
-      if (hasRevokedChangedToFalse) {
-        // Restart decay as if the score has been put to decay_base_score manually.
-        const newScore = indicatorBeforeUpdate.decay_base_score;
-        const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
-        logApp.info('Computed changes because revoked moved from true to false:', finalInput);
-        finalInput.push(...allChanges);
-        finalInput.push({ key: X_SCORE, value: [newScore] });
+        if (hasRevokedChangedToFalse) {
+          // Restart decay as if the score has been put to decay_base_score manually.
+          const newScore = indicatorBeforeUpdate.decay_base_score;
+          const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
+          logApp.info('Computed changes because revoked moved from true to false:', finalInput);
+          finalInput.push(...allChanges);
+          finalInput.push({ key: X_SCORE, value: [newScore] });
+        }
       }
     }
   } else {
     // No decay on indicator
+    logApp.info('Decay disabled', { hasRevokedChangedToTrue, hasRevokedChangedToFalse });
     if (hasRevokedChangedToTrue) {
       finalInput.push({ key: X_SCORE, value: [NO_DECAY_DEFAULT_REVOKED_SCORE] });
       finalInput.push({ key: X_DETECTION, value: [false] });

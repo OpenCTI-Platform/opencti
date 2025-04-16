@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, it, expect } from 'vitest';
+import { afterAll, describe, it, expect } from 'vitest';
 import {
   addIndicator,
   findById,
@@ -19,86 +19,59 @@ import { dayToMs } from '../../../src/modules/decayRule/decayRule-domain';
 import { logApp } from '../../../src/config/conf';
 
 describe('Testing field patch on indicator for trio {score, valid until, revoked}', () => {
-  let indicatorWithDecay: BasicStoreEntityIndicator;
-  let indicatorWithDecay2: BasicStoreEntityIndicator;
-  let indicatorWithDecay3: BasicStoreEntityIndicator;
-  let indicatorWithoutDecay: BasicStoreEntityIndicator;
-  let indicatorWithoutDecay2: BasicStoreEntityIndicator;
+  const indicatorCreatedIds : string[] = [];
+  const inPast90Days = new Date(new Date().getTime() - NO_DECAY_DEFAULT_VALID_PERIOD);
+  const tomorrow = new Date(new Date().getTime() + dayToMs(1));
+  const yesterday: Date = new Date(utcDate().toDate().getTime() - dayToMs(1));
+  const twoDaysAgo: Date = new Date(utcDate().toDate().getTime() - dayToMs(2));
 
-  beforeAll(async () => {
+  const createIndicator = async (input: IndicatorAddInput, withDecay: boolean): Promise<BasicStoreEntityIndicator> => {
+    if (withDecay) {
+      const indicatorWithDecay = await addIndicator(testContext, ADMIN_USER, input);
+      indicatorCreatedIds.push(indicatorWithDecay.id);
+      if (!indicatorWithDecay.revoked) {
+        expect(indicatorWithDecay.decay_applied_rule).toBeDefined();
+        expect(indicatorWithDecay.decay_applied_rule.decay_revoke_score).toBeDefined();
+      }
+      return indicatorWithDecay;
+    }
+
+    // bypass addIndicator to have indicator without decay rules
+    const indicatorWithoutDecay = await createEntity(testContext, ADMIN_USER, input, ENTITY_TYPE_INDICATOR) as BasicStoreEntityIndicator;
+    indicatorCreatedIds.push(indicatorWithoutDecay.id);
+    expect(indicatorWithoutDecay.decay_applied_rule).toBeUndefined();
+    return indicatorWithoutDecay;
+  };
+
+  afterAll(async () => {
+    for (let i = 0; i < indicatorCreatedIds.length; i += 1) {
+      logApp.info(`Delete ${indicatorCreatedIds[i]}`);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorCreatedIds[i]);
+    }
+    logApp.info(`${indicatorCreatedIds.length} indicators created and deleted.`);
+  });
+
+  it('valid until and valid from should be in right order', async () => {
+    // GIVEN some indicators
     const indicatorAddInput: IndicatorAddInput = {
-      name: 'Indicator domain test with decay',
+      name: 'Indicator domain - with decay - validate valid from and until timeline',
       pattern: '[file:hashes.\'SHA-256\' = \'4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877\']',
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 87,
     };
-    indicatorWithDecay = await addIndicator(testContext, ADMIN_USER, indicatorAddInput);
-    expect(indicatorWithDecay.revoked).toBeFalsy();
-    expect(indicatorWithDecay.decay_applied_rule).toBeDefined();
-    expect(indicatorWithDecay.decay_applied_rule.decay_revoke_score).toBeDefined();
-    expect(indicatorWithDecay.x_opencti_score).toBeGreaterThan(indicatorWithDecay.decay_applied_rule.decay_revoke_score);
-    expect(new Date(indicatorWithDecay.valid_until).getTime()).toBeGreaterThan(new Date().getTime());
+    const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
 
-    const indicatorAddInput2: IndicatorAddInput = {
-      name: 'Indicator domain test with decay 2',
-      pattern: '[file:hashes.\'SHA-256\' = \'4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f666\']',
-      pattern_type: STIX_PATTERN_TYPE,
-      x_opencti_score: 91,
-    };
-    indicatorWithDecay2 = await addIndicator(testContext, ADMIN_USER, indicatorAddInput2);
-    expect(indicatorWithDecay2.revoked).toBeFalsy();
-    expect(indicatorWithDecay2.decay_applied_rule).toBeDefined();
-    expect(indicatorWithDecay2.decay_applied_rule.decay_revoke_score).toBeDefined();
-    expect(indicatorWithDecay2.x_opencti_score).toBeGreaterThan(indicatorWithDecay2.decay_applied_rule.decay_revoke_score);
-    expect(new Date(indicatorWithDecay2.valid_until).getTime()).toBeGreaterThan(new Date().getTime());
-
-    const indicatorAddInput3: IndicatorAddInput = {
-      name: 'Indicator domain test with decay 3',
-      pattern: '[domain-name:value = \'montest.fr\']',
-      pattern_type: STIX_PATTERN_TYPE,
-      x_opencti_score: 99,
-    };
-    indicatorWithDecay3 = await addIndicator(testContext, ADMIN_USER, indicatorAddInput3);
-    expect(indicatorWithDecay3.revoked).toBeFalsy();
-    expect(indicatorWithDecay3.decay_applied_rule).toBeDefined();
-    expect(indicatorWithDecay3.decay_applied_rule.decay_revoke_score).toBeDefined();
-    expect(indicatorWithDecay3.x_opencti_score).toBeGreaterThan(indicatorWithDecay3.decay_applied_rule.decay_revoke_score);
-    expect(new Date(indicatorWithDecay3.valid_until).getTime()).toBeGreaterThan(new Date().getTime());
-
-    const inPast90Days = new Date(new Date().getTime() - NO_DECAY_DEFAULT_VALID_PERIOD);
-    const tomorow = new Date(new Date().getTime() + dayToMs(1));
     const indicatorNoDecayInput = {
-      name: 'Indicator domain test without decay',
+      name: 'Indicator domain - no decay - validate valid from and until timeline',
       pattern: '[file:hashes.\'SHA-256\' = \'aaa27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f666\']',
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 85,
       valid_from: inPast90Days,
-      valid_until: tomorow
+      valid_until: tomorrow
     };
-    // bypass addIndicator to have one without decay rules
-    indicatorWithoutDecay = await createEntity(testContext, ADMIN_USER, indicatorNoDecayInput, ENTITY_TYPE_INDICATOR);
+    const indicatorWithoutDecay = await createIndicator(indicatorNoDecayInput, false);
 
-    const indicatorNoDecayInput2 = {
-      name: 'Indicator domain test without decay',
-      pattern: '[file:hashes.\'SHA-256\' = \'bbb27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f666\']',
-      pattern_type: STIX_PATTERN_TYPE,
-      x_opencti_score: 92,
-      valid_from: inPast90Days,
-      valid_until: tomorow
-    };
-    // bypass addIndicator to have one without decay rules
-    indicatorWithoutDecay2 = await createEntity(testContext, ADMIN_USER, indicatorNoDecayInput2, ENTITY_TYPE_INDICATOR);
-  });
-
-  afterAll(async () => {
-    await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorWithDecay.id);
-    await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorWithDecay2.id);
-    await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorWithDecay3.id);
-    await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorWithoutDecay.id);
-    await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorWithoutDecay2.id);
-  });
-
-  it('valid until and valid from should be in right order', async () => {
+    // WHEN indicators are updated with wrong dates
     const futureValidFrom = new Date(new Date(indicatorWithDecay.valid_until).getTime() + dayToMs(1));
     const input: EditInput[] = [{ key: VALID_FROM, value: [futureValidFrom.toUTCString()] }];
     await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, input)).rejects.toThrowError('The valid until date must be greater than the valid from date');
@@ -111,6 +84,26 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   });
 
   it('On update, input score should be between 0 and 100', async () => {
+    // GIVEN some indicators
+    const indicatorAddInput: IndicatorAddInput = {
+      name: 'Indicator domain test - with decay - validate score input',
+      pattern: '[file:hashes.\'SHA-256\' = \'bbbb27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 87,
+    };
+    const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
+
+    const indicatorNoDecayInput = {
+      name: 'Indicator domain test - no decay - validate score input',
+      pattern: '[file:hashes.\'SHA-256\' = \'cccc7393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f666\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 85,
+      valid_from: inPast90Days,
+      valid_until: tomorrow
+    };
+    const indicatorWithoutDecay = await createIndicator(indicatorNoDecayInput, false);
+
+    // WHEN indicators are updated with wrong score values
     const inputBelow: EditInput[] = [{ key: X_SCORE, value: [-12] }];
     await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputBelow)).rejects.toThrowError('The score should be between 0 and 100');
     await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputBelow)).rejects.toThrowError('The score should be between 0 and 100');
@@ -125,11 +118,21 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   });
 
   it('decay enabled - revoke=true compute new score and new valid until', async () => {
+    // GIVEN some indicators
+    const indicatorAddInput: IndicatorAddInput = {
+      name: 'Indicator domain - decay enabled - revoke=true compute new score and new valid until',
+      pattern: '[domain-name:value = \'coucou.fr\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 87,
+    };
+    const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
+    expect(indicatorWithDecay.revoked).toBeFalsy();
+
     // --------------------
-    // Move revoke to true
+    // Move revoke from false to true
     // score should be set to the revoke number
     // indicator should have a valid until date in the past
-    const inputToRevoke: EditInput[] = [{ key: 'revoked', value: ['true'] }];
+    const inputToRevoke: EditInput[] = [{ key: 'revoked', value: [true] }];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputToRevoke);
 
     const indicatorUpdatedRevoked = await findById(testContext, ADMIN_USER, indicatorWithDecay.id);
@@ -147,11 +150,26 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   });
 
   it('decay enabled - revoke=false compute new score and new valid until', async () => {
+    // GIVEN a revoked indicator
+    const indicatorAddInput: IndicatorAddInput = {
+      name: 'Indicator domain test with decay - already revoked',
+      pattern: '[file:hashes.\'SHA-256\' = \'eeee27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 95,
+    };
+    const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
+    const inputToRevoke: EditInput[] = [{ key: 'revoked', value: [true] }];
+    await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputToRevoke);
+    const indicatorUpdatedRevoked = await findById(testContext, ADMIN_USER, indicatorWithDecay.id);
+    expect(indicatorUpdatedRevoked.revoked).toBeTruthy();
+
     // --------------------
-    // Reverse: move revoke to false
-    // score should be back to base score
-    // indicator should have a valid until date in the future
-    const inputToUnrevoke: EditInput[] = [{ key: 'revoked', value: ['false'] }];
+    // WHEN move revoke to false
+    // THEN:
+    // - score should be back to base score
+    // - indicator should have a valid until date in the future
+    // - indicator history curve should be updated
+    const inputToUnrevoke: EditInput[] = [{ key: 'revoked', value: [false] }];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputToUnrevoke);
 
     const indicatorUpdatedUnRevoked = await findById(testContext, ADMIN_USER, indicatorWithDecay.id);
@@ -170,24 +188,42 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   });
 
   it('decay enabled - valid until is moved to past date, indicator should be revoked', async () => {
-    const yesterday: Date = new Date(utcDate().toDate().getTime() - dayToMs(1));
-    const twoDaysAgo: Date = new Date(utcDate().toDate().getTime() - dayToMs(2));
+    // GIVEN some indicators
+    const indicatorAddInput: IndicatorAddInput = {
+      name: 'Indicator domain test with decay',
+      pattern: '[file:hashes.\'SHA-256\' = \'eeee27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 87,
+    };
+    const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
+
     const inputToRevoke: EditInput[] = [
       { key: VALID_FROM, value: [twoDaysAgo.toISOString()] },
       { key: VALID_UNTIL, value: [yesterday.toISOString()] }];
-    await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay2.id, inputToRevoke);
+    await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputToRevoke);
 
-    const indicatorValidUntilYesterday = await findById(testContext, ADMIN_USER, indicatorWithDecay2.id);
+    const indicatorValidUntilYesterday = await findById(testContext, ADMIN_USER, indicatorWithDecay.id);
     expect(indicatorValidUntilYesterday.revoked).toBeTruthy();
-    expect(indicatorValidUntilYesterday.x_opencti_score).toBe(indicatorWithDecay2.decay_applied_rule.decay_revoke_score);
+    expect(indicatorValidUntilYesterday.x_opencti_score).toBe(indicatorWithDecay.decay_applied_rule.decay_revoke_score);
     expect(new Date(indicatorValidUntilYesterday.valid_until).getTime()).toBeLessThan(new Date().getTime());
     expect(
       indicatorValidUntilYesterday.decay_history.pop()?.score,
       'The lifecycle history should have a new entry with the score updated'
-    ).toBe(indicatorWithDecay2.decay_applied_rule.decay_revoke_score);
+    ).toBe(indicatorWithDecay.decay_applied_rule.decay_revoke_score);
   });
 
   it('no decay - revoke=true compute new score and new valid until', async () => {
+    // GIVEN some indicators
+    const indicatorNoDecayInput = {
+      name: 'Indicator domain test without decay - revoke=true',
+      pattern: '[domain-name:value = \'nodecay.com\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 85,
+      valid_from: inPast90Days,
+      valid_until: tomorrow
+    };
+    const indicatorWithoutDecay = await createIndicator(indicatorNoDecayInput, false);
+
     const inputToRevoke: EditInput[] = [{ key: 'revoked', value: [true] }];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputToRevoke);
 
@@ -198,8 +234,27 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   });
 
   it('no decay - revoke=false compute new score and new valid until', async () => {
-    // Reverse: move revoke to false
-    const inputToUnrevoke: EditInput[] = [{ key: 'revoked', value: ['false'] }];
+    // GIVEN an indicator that is created and then revoked.
+    const indicatorNoDecayInput = {
+      name: 'Indicator domain test without decay',
+      pattern: '[file:hashes.\'SHA-256\' = \'gggg7393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f666\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 85,
+      valid_from: inPast90Days,
+      valid_until: tomorrow
+    };
+    const indicatorWithoutDecay = await createIndicator(indicatorNoDecayInput, false);
+    const inputToRevoke: EditInput[] = [{ key: 'revoked', value: [true] }];
+    await indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputToRevoke);
+    const indicatorUpdatedRevoked = await findById(testContext, ADMIN_USER, indicatorWithoutDecay.id);
+    expect(indicatorUpdatedRevoked.revoked).toBeTruthy();
+
+    // --------------------
+    // WHEN move revoke to false
+    // THEN:
+    // - score should be back to default score
+    // - indicator should have a valid until date in the future
+    const inputToUnrevoke: EditInput[] = [{ key: 'revoked', value: [false] }];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputToUnrevoke);
 
     const indicatorUpdatedUnRevoked = await findById(testContext, ADMIN_USER, indicatorWithoutDecay.id);
@@ -209,31 +264,45 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   });
 
   it('no decay - valid until is moved to past date, indicator should be revoked', async () => {
-    const yesterday: Date = new Date(utcDate().toDate().getTime() - dayToMs(1));
-    const twoDaysAgo: Date = new Date(utcDate().toDate().getTime() - dayToMs(2));
+    const indicatorNoDecayInput = {
+      name: 'Indicator domain test without decay',
+      pattern: '[file:hashes.\'SHA-256\' = \'gggg7393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f666\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 85,
+      valid_from: inPast90Days,
+      valid_until: tomorrow
+    };
+    const indicatorWithoutDecay = await createIndicator(indicatorNoDecayInput, false);
+
     const inputToRevoke: EditInput[] = [
       { key: VALID_FROM, value: [twoDaysAgo.toISOString()] },
       { key: VALID_UNTIL, value: [yesterday.toISOString()] }];
-    await indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay2.id, inputToRevoke);
+    await indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputToRevoke);
 
-    const indicatorValidUntilYesterday = await findById(testContext, ADMIN_USER, indicatorWithoutDecay2.id);
+    const indicatorValidUntilYesterday = await findById(testContext, ADMIN_USER, indicatorWithoutDecay.id);
     expect(indicatorValidUntilYesterday.revoked).toBeTruthy();
     expect(indicatorValidUntilYesterday.x_opencti_score).toBe(NO_DECAY_DEFAULT_REVOKED_SCORE);
     expect(new Date(indicatorValidUntilYesterday.valid_until).getTime()).toBeLessThan(new Date().getTime());
   });
 
   it.only('decay enabled - updating revoke and valid until and score should valid until wins', async () => {
-    const tomorrow: Date = new Date(utcDate().toDate().getTime() + dayToMs(1));
-    const twoDaysAgo: Date = new Date(utcDate().toDate().getTime() - dayToMs(2));
+    const indicatorAddInput: IndicatorAddInput = {
+      name: 'Indicator domain test with decay - updating all in once',
+      pattern: '[domain-name:value = \'all-in-one.org\']',
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_score: 92,
+    };
+    const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
+
     const inputWithEverything: EditInput[] = [
       { key: VALID_FROM, value: [twoDaysAgo.toISOString()] },
       { key: VALID_UNTIL, value: [tomorrow.toISOString()] },
       { key: X_SCORE, value: [12] },
-      { key: 'revoked', value: ['false'] },
+      { key: 'revoked', value: [false] },
     ];
-    await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay3.id, inputWithEverything);
+    await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputWithEverything);
 
-    const indicatorWithAllChanges = await findById(testContext, ADMIN_USER, indicatorWithDecay3.id);
+    const indicatorWithAllChanges = await findById(testContext, ADMIN_USER, indicatorWithDecay.id);
     expect(new Date(indicatorWithAllChanges.valid_until).toDateString()).toBe(tomorrow.toDateString()); // precision to day is enough
     expect(indicatorWithAllChanges.x_opencti_score).toBeGreaterThan(indicatorWithAllChanges.decay_applied_rule.decay_revoke_score);
     expect(indicatorWithAllChanges.revoked).toBeFalsy();

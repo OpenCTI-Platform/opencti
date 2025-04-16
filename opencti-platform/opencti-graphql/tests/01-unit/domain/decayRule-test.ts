@@ -10,7 +10,8 @@ import {
   computeTimeFromExpectedScore,
   computeScoreList,
   computeChartDecayAlgoSerie,
-  type ComputeDecayChartInput
+  type ComputeDecayChartInput,
+  computeScoreFromValidUntil
 } from '../../../src/modules/decayRule/decayRule-domain';
 
 const indicator_fallback_applied_rule: IndicatorDecayRule = {
@@ -29,6 +30,19 @@ const TEST_DEFAULT_DECAY_RULE: DecayRuleConfiguration = {
   decay_pound: 1.0,
   decay_points: [80, 60, 40, 20],
   decay_revoke_score: 0,
+  decay_observable_types: [], // no observable means any
+  order: 0,
+  active: true,
+};
+
+const TEST_DEFAULT_LINEAR_DECAY_RULE: DecayRuleConfiguration = {
+  id: 'test-defaut-rule',
+  name: 'Default Decay Rule',
+  description: 'Built-in decay rule for all indicators',
+  decay_lifetime: 100,
+  decay_pound: 0.3333,
+  decay_points: [80, 60, 40, 20],
+  decay_revoke_score: 10,
   decay_observable_types: [], // no observable means any
   order: 0,
   active: true,
@@ -61,6 +75,26 @@ export const TEST_IP_DECAY_RULE: DecayRuleConfiguration = {
 };
 
 const BUILT_IN_DECAY_RULES_FOR_TEST = [TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RULE, TEST_URL_DECAY_RULE];
+
+describe.only('Decay formula testing', () => {
+  it.only('should compute today score from valid until input in days', () => {
+    const computeTodayScore = computeScoreFromValidUntil(0, TEST_DEFAULT_LINEAR_DECAY_RULE);
+    expect(computeTodayScore).toBe(10);
+
+    const computeFiveDaysScore = computeScoreFromValidUntil(TEST_DEFAULT_LINEAR_DECAY_RULE.decay_lifetime, TEST_DEFAULT_LINEAR_DECAY_RULE);
+    expect(computeFiveDaysScore).toBe(100);
+
+    // const computeHalfLifetimeDaysScore2 = computeScoreFromValidUntil(50, TEST_DEFAULT_LINEAR_DECAY_RULE);
+
+    console.log(`expire in 10d => ${computeScoreFromValidUntil(10, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
+    console.log(`expire in 30d => ${computeScoreFromValidUntil(30, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
+    console.log(`expire in 50d => ${computeScoreFromValidUntil(50, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
+    console.log(`expire in 70d => ${computeScoreFromValidUntil(70, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
+
+    console.log(`score at 50d => ${computeScoreFromExpectedTime(100, 50, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
+    console.log(`score at 50d => ${computeScoreFromExpectedTime(50, 50, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
+  });
+});
 
 describe('Decay formula testing', () => {
   it('should compute score', () => {

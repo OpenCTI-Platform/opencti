@@ -9,7 +9,7 @@ import { now } from '../../utils/format';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { SYSTEM_USER } from '../../utils/access';
-import { FunctionalError } from '../../config/errors';
+import { FunctionalError, ValidationError } from '../../config/errors';
 import { deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { BUS_TOPICS } from '../../config/conf';
@@ -376,6 +376,24 @@ export const computeScoreFromExpectedTime = (initialScore: number, daysFromStart
   if (daysFromStart > rule.decay_lifetime) return 0;
   if (daysFromStart <= 0) return initialScore;
   return initialScore * (1 - ((daysFromStart / rule.decay_lifetime) ** (1 / (DECAY_FACTOR * rule.decay_pound))));
+};
+
+export const computeScoreFromValidUntil = (revokeInDaysFromNow: number, rule: DecayModel) => {
+  if (revokeInDaysFromNow > rule.decay_lifetime) {
+    throw ValidationError('The valid until date cannot be greater than the decay lifetime', 'valid_until', { rule, revokeInDaysFromNow });
+  }
+
+  if (revokeInDaysFromNow === rule.decay_lifetime) {
+    // To avoid having NaN in the rule.
+    return 100;
+  }
+
+  if (revokeInDaysFromNow <= 0) {
+    return rule.decay_revoke_score;
+  }
+
+  const baseScore: number = rule.decay_revoke_score === 0 ? 1 : rule.decay_revoke_score;
+  return baseScore / (1 - ((revokeInDaysFromNow / rule.decay_lifetime) ** (1 / (DECAY_FACTOR * rule.decay_pound))));
 };
 
 export const computeDecayPointReactionDate = (initialScore: number, model: DecayModel, startDate: Moment, decayPoint: number) => {
