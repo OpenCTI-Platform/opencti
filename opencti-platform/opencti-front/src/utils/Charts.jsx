@@ -24,7 +24,7 @@ export const colors = (temp) => [
   C.grey[temp],
 ];
 
-const isColorTooLight = (hex) => {
+const isColorCloseToWhite = (hex, threshold = 0.9) => {
   if (!hex) return true;
   const c = hex.replace('#', '');
   const r = parseInt(c.substr(0, 2), 16);
