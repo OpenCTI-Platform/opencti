@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Button, Paper, Alert } from '@mui/material';
+import { Alert, Button, Paper } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
@@ -199,7 +199,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
             {({ isSubmitting, isValid }) => (
               <Form>
                 {otpError && (
-                  <Alert severity="warning" style={{ marginBottom: 10 }}>
+                  <Alert severity="error" style={{ marginBottom: 10 }}>
                     {t_i18n(
                       'The reset code you entered is invalid or has expired. Please request a new code to proceed.',
                     )}
@@ -242,6 +242,11 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
           >
             {({ isSubmitting, isValid }) => (
               <Form>
+                <Alert severity="success" style={{ marginBottom: 10 }}>
+                  {t_i18n(
+                    'You can now set a new password for your account.',
+                  )}
+                </Alert>
                 <Field
                   component={TextField}
                   name="password"
