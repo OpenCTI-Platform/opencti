@@ -8,12 +8,7 @@ import { FilterMode, OrderingMode } from '../generated/graphql';
 import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { stixLoadByIds } from '../database/middleware';
-import {
-  type EntityOptions,
-  internalFindByIds,
-  listAllEntities,
-  listAllRelations
-} from '../database/middleware-loader';
+import { type EntityOptions, internalFindByIds, listAllEntities, listAllRelations } from '../database/middleware-loader';
 import { pubSubSubscription } from '../database/redis';
 import { connectors as findConnectors } from '../database/repository';
 import { buildCompleteUsers, resolveUserById } from '../domain/user';
@@ -51,11 +46,7 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { fromBase64, isNotEmptyField } from '../database/utils';
 import { findAllPlaybooks } from '../modules/playbook/playbook-domain';
-import {
-  type BasicStoreEntityPublicDashboard,
-  ENTITY_TYPE_PUBLIC_DASHBOARD,
-  type PublicDashboardCached
-} from '../modules/publicDashboard/publicDashboard-types';
+import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
@@ -117,6 +108,12 @@ const platformResolvedFilters = (context: AuthContext) => {
   };
   const refreshFilter = async (values: Map<string, StixObject>, instance: BasicStoreCommon) => {
     const filteringIds = [];
+    // Stream filters
+    // TODO
+    // Trigger filters
+    // TODO
+    // Connectors filters (for enrichment connectors)
+    // TODO
     // Playbook filters
     if (instance.entity_type === ENTITY_TYPE_PLAYBOOK) {
       const playbookFilterIds = ((JSON.parse(instance.playbook_definition)) as ComponentDefinition)
