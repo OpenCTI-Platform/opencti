@@ -67,6 +67,7 @@ const UPDATE_QUERY = gql`
     organizationFieldPatch(id: $id, input: $input) {
       id
       name
+      x_opencti_score
     }
   }
 `;
@@ -87,6 +88,7 @@ describe('Organization resolver standard behavior', () => {
           id
           name
           description
+          x_opencti_score
         }
       }
     `;
