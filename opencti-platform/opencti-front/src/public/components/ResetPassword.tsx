@@ -133,6 +133,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
         },
       },
       onCompleted: () => {
+        setOtpError(false);
         setSubmitting(false);
         resetForm();
         setStep(STEP_RESET_PASSWORD);
