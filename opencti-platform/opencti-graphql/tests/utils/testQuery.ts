@@ -15,6 +15,7 @@ import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKIN
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
 import type { ConfidenceLevel } from '../../src/generated/graphql';
+import { findById } from '../../src/domain/user';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -628,6 +629,13 @@ export const getUserIdByEmail = async (email: string) => {
     return null;
   }
   return data.users.edges[0].node.id;
+};
+export const getAuthUser = async (id: string) => {
+  const user = await findById(testContext, ADMIN_USER, id);
+  return {
+    ...user,
+    origin: { referer: 'test', user_id: user.internal_id },
+  } as AuthUser;
 };
 
 // endregion
