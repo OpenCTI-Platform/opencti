@@ -1,6 +1,7 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
 import { truncate } from './String';
+import { isColorCloseToWhite } from './Colors';
 
 export const colors = (temp) => [
   C.red[temp],
@@ -908,10 +909,9 @@ export const treeMapOptions = (
     theme: {
       mode: theme.palette.mode,
     },
-    colors: [
-      theme.palette.primary.main,
-      ...colors(theme.palette.mode === 'dark' ? 400 : 600),
-    ],
+    colors: distributed
+      ? colors(theme.palette.mode === 'dark' ? 400 : 600).filter((c) => !isColorCloseToWhite(c))
+      : [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
     fill: {
       opacity: 1,
     },
@@ -945,7 +945,7 @@ export const treeMapOptions = (
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
         fontWeight: 600,
-        colors: [theme.palette.text.primary],
+        colors: [theme.palette.text.primary, theme.palette.text.secondary],
       },
       background: {
         enabled: false,
