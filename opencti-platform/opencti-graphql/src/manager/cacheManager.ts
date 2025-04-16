@@ -8,7 +8,12 @@ import { FilterMode, OrderingMode } from '../generated/graphql';
 import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { stixLoadByIds } from '../database/middleware';
-import { type EntityOptions, internalFindByIds, listAllEntities, listAllRelations } from '../database/middleware-loader';
+import {
+  type EntityOptions,
+  internalFindByIds,
+  listAllEntities,
+  listAllRelations
+} from '../database/middleware-loader';
 import { pubSubSubscription } from '../database/redis';
 import { connectors as findConnectors } from '../database/repository';
 import { buildCompleteUsers, resolveUserById } from '../domain/user';
@@ -46,11 +51,14 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { fromBase64, isNotEmptyField } from '../database/utils';
 import { findAllPlaybooks } from '../modules/playbook/playbook-domain';
-import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
+import {
+  type BasicStoreEntityPublicDashboard,
+  ENTITY_TYPE_PUBLIC_DASHBOARD,
+  type PublicDashboardCached
+} from '../modules/publicDashboard/publicDashboard-types';
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
-import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
@@ -108,11 +116,29 @@ const platformResolvedFilters = (context: AuthContext) => {
     return new Map();
   };
   const refreshFilter = async (values: Map<string, StixObject>, instance: BasicStoreCommon) => {
-    const currentFiltersValues = values;
-    if (currentFiltersValues?.has(instance.internal_id)) {
-      const convertedInstance = convertStoreToStix(instance);
-      currentFiltersValues.set(instance.internal_id, convertedInstance);
+    const filteringIds = [];
+    // Playbook filters
+    if (instance.entity_type === ENTITY_TYPE_PLAYBOOK) {
+      const playbookFilterIds = ((JSON.parse(instance.playbook_definition)) as ComponentDefinition)
+        .nodes.map((n) => JSON.parse(n.configuration))
+        .map((config) => config.filters)
+        .filter((f) => isNotEmptyField(f))
+        .map((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)))
+        .flat();
+      filteringIds.push(...playbookFilterIds);
     }
+    // Resolve filteringIds
+    const currentFiltersValues = values; // current map values
+    const idsToSolve: string[] = [];
+    filteringIds.forEach((idToSolve) => {
+      if (!currentFiltersValues?.has(idToSolve)) {
+        idsToSolve.push(idToSolve);
+      }
+    });
+    const resolvingIds = R.uniq(idsToSolve);
+    const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, resolvingIds);
+    // Add resolved entities to the cache map
+    loadedDependencies.forEach((l: StixObject) => currentFiltersValues.set(l.extensions[STIX_EXT_OCTI].id, l));
     return currentFiltersValues;
   };
   return { values: null, fn: reloadFilters, refresh: refreshFilter };
