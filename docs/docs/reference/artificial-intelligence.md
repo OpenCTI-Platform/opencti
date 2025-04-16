@@ -93,12 +93,12 @@ The platform can help [generating reports about a given entity](../usage/export.
 
 !!! info "Outcomes"
 
-    Insights capabilities help analysts to understand trends and forecast about a threat or a victim (sector, geography, etc.) but also quickly access to summarized information of latest reports or cases.
+    AI can help generating full-fledged reports from threats or incident response, allowing analysts to quickly generating reports or to leverage AI to quickly fill some blank parts of finished intelligence templates.
 
 ### What's next in this category?
 
 We are working on:
 
-| Feature                    | Description                                                                           | 
-|:---------------------------|:--------------------------------------------------------------------------------------|
-| `Evaluating data sources`  | Help understanding the relevance of data sources, scoring and overlaps between feeds. |
+| Feature                   | Description                                                  | 
+|:--------------------------|:-------------------------------------------------------------|
+| `Generating dashboards`   | Ability to generate dashboards leveraging AI capabilities.   |
