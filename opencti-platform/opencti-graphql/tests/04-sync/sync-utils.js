@@ -3,7 +3,7 @@ import { elAggregationCount } from '../../src/database/engine';
 import { ADMIN_USER, createHttpClient, executeExternalQuery, testContext } from '../utils/testQuery';
 import { READ_DATA_INDICES } from '../../src/database/utils';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
-import { convertStoreToStix } from '../../src/database/stix-2-1-converter';
+import { convertStoreToStix } from '../../src/database/stix-converter';
 import { checkInstanceDiff } from '../utils/testStream';
 import { logAudit } from '../../src/config/conf';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../../src/modules/deleteOperation/deleteOperation-types';
@@ -65,7 +65,7 @@ export const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
 export const VOCABULARY_NUMBERS = 343;
 export const INDICATOR_NUMBERS = 28;
 export const MALWARE_NUMBERS = 27;
-export const LABEL_NUMBERS = 13;
+export const LABEL_NUMBERS = 17;
 export const UPLOADED_FILE_SIZE = 42204;
 
 const filterOutDeleteOperationRefs = {
@@ -89,7 +89,7 @@ export const checkPreSyncContent = async () => {
   // Relations
   const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type', filters: filterOutDeleteOperationRefs });
   const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
-  expect(relMap.get('Object')).toEqual(193);
+  expect(relMap.get('Object')).toEqual(191);
   expect(relMap.get('Indicates')).toEqual(59);
   expect(relMap.get('Uses')).toEqual(28);
   // Report content
