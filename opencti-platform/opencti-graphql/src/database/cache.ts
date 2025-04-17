@@ -76,7 +76,7 @@ const handleCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommo
     const type = types[index];
     if (cache[type]) {
       if (cache[type][fn]) {
-        if (cache[type][fn].values) { // modify cache only if it has been initialized
+        if (cache[type].values) { // modify cache only if it has been initialized
           logApp.debug(`${fn} reset cache for entity`, { type });
           cache[type].values = await cache[type][fn](cache[type].values, instance);
         }
