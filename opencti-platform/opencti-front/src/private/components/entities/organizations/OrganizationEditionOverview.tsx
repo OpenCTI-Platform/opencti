@@ -116,9 +116,10 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
     x_opencti_score: Yup.number()
-      .required(t_i18n('This field is required'))
+      .nullable()
       .min(0, t_i18n('The value must be greater than or equal to 0'))
-      .max(100, t_i18n('The value must be less than or equal to 100')),
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .test('Digits only', t_i18n('The value must contain digits only'), (val) => /^\d+$/.test(String(val))),
   };
   const organizationValidator = useSchemaEditionValidation('Organization', basicShape);
 

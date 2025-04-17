@@ -59,7 +59,7 @@ interface OrganizationAddInput {
   confidence: number | null
   x_opencti_reliability: string | undefined
   x_opencti_organization_type: string | undefined
-  x_opencti_score: number
+  x_opencti_score: number | null
   createdBy: FieldOption | null
   objectMarking: FieldOption[]
   objectLabel: FieldOption[]
@@ -105,7 +105,8 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     x_opencti_score: Yup.number()
       .nullable()
       .min(0, t_i18n('The value must be greater than or equal to 0'))
-      .max(100, t_i18n('The value must be less than or equal to 100')),
+      .max(100, t_i18n('The value must be less than or equal to 100'))
+      .test('Digits only', t_i18n('The value must contain digits only'), (val) => /^\d+$/.test(String(val))),
   };
   const organizationValidator = useSchemaCreationValidation(ORGANIZATION_TYPE, basicShape);
 
@@ -185,7 +186,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       objectLabel: [],
       externalReferences: [],
       file: null,
-      x_opencti_score: 50,
+      x_opencti_score: null,
     },
   );
 
@@ -231,14 +232,6 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
         </ProgressBar>
         <Form>
           <Field
-            component={TextField}
-            variant="standard"
-            name="x_opencti_score"
-            label={t_i18n('Score')}
-            fullWidth={true}
-            type="number"
-          />
-          <Field
             component={BulkTextField}
             variant="standard"
             name="name"
@@ -275,6 +268,15 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_opencti_score"
+            label={t_i18n('Score')}
+            fullWidth={true}
+            type="number"
+            style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
