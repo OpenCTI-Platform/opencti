@@ -24,6 +24,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   todayMorning.setUTCHours(0, 0, 0, 0);
   const inPast90Days = new Date(todayMorning.getTime() - NO_DECAY_DEFAULT_VALID_PERIOD);
   const tomorrow = new Date(todayMorning.getTime() + dayToMs(1));
+  const in300Days = new Date(todayMorning.getTime() + dayToMs(300));
   const yesterday: Date = new Date(todayMorning.getTime() - dayToMs(1));
   const twoDaysAgo: Date = new Date(todayMorning.getTime() - dayToMs(2));
 
@@ -297,15 +298,14 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
 
     const inputWithEverything: EditInput[] = [
-      { key: VALID_FROM, value: [twoDaysAgo] },
-      { key: VALID_UNTIL, value: [tomorrow] },
+      { key: VALID_UNTIL, value: [in300Days] },
       { key: X_SCORE, value: [12] },
-      { key: 'revoked', value: [false] },
+      { key: 'revoked', value: [true] },
     ];
     await indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputWithEverything);
 
     const indicatorWithAllChanges = await findById(testContext, ADMIN_USER, indicatorWithDecay.id);
-    expect(new Date(indicatorWithAllChanges.valid_until).toDateString()).toBe(tomorrow.toDateString()); // precision to day is enough
+    expect(new Date(indicatorWithAllChanges.valid_until).toDateString()).toBe(in300Days.toDateString()); // precision to day is enough
     expect(indicatorWithAllChanges.x_opencti_score).toBeGreaterThan(indicatorWithAllChanges.decay_applied_rule.decay_revoke_score);
     expect(indicatorWithAllChanges.revoked).toBeFalsy();
 
