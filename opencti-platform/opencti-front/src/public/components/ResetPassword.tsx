@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Alert, Button, Paper } from '@mui/material';
+import { Alert, Button } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
@@ -155,161 +155,156 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
     onCancel();
   };
 
+  const onCompletedVerify2fa = () => {
+    setStep(STEP_RESET_PASSWORD);
+  };
+
   return (
-    <div style={{
-      textAlign: 'center',
-      margin: '0 auto',
-      width: 400,
-    }}
-    >
-      <Paper variant="outlined">
-        <div style={{ padding: 15 }}>
-          {step === STEP_ASK_RESET && (
-          <Formik
-            initialValues={{ email: '' }}
-            initialTouched={{ email: !R.isEmpty(flashError) }}
-            initialErrors={{ email: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
-            validationSchema={resetValidation(t_i18n)}
-            onSubmit={onSubmitAskOtp}
-          >
-            {({ isSubmitting, isValid }) => (
-              <Form>
-                <Field
-                  component={TextField}
-                  name="email"
-                  label={t_i18n('Email address')}
-                  fullWidth={true}
-                />
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  disabled={isSubmitting || !isValid}
-                  style={{ marginTop: 20 }}
-                >
-                  {t_i18n('Send reset code')}
-                </Button>
-              </Form>
-            )}
-          </Formik>
+    <div style={{ padding: 15 }}>
+      {step === STEP_ASK_RESET && (
+        <Formik
+          initialValues={{ email: '' }}
+          initialTouched={{ email: !R.isEmpty(flashError) }}
+          initialErrors={{ email: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
+          validationSchema={resetValidation(t_i18n)}
+          onSubmit={onSubmitAskOtp}
+        >
+          {({ isSubmitting, isValid }) => (
+            <Form>
+              <Field
+                component={TextField}
+                name="email"
+                label={t_i18n('Email address')}
+                fullWidth={true}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={isSubmitting || !isValid}
+                style={{ marginTop: 30 }}
+              >
+                {t_i18n('Send reset code')}
+              </Button>
+            </Form>
           )}
-          {step === STEP_VALIDATE_OTP && (
-          <Formik
-            onSubmit={onSubmitValidateOtp}
-            initialTouched={{ otp: !R.isEmpty(flashError) }}
-            initialErrors={{ otp: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
-            validationSchema={otpValidation(t_i18n)}
-            initialValues={{ otp: '' }}
-          >
-            {({ isSubmitting, isValid }) => (
-              <Form>
-                {otpError && (
-                  <Alert severity="error" style={{ marginBottom: 10 }}>
-                    {t_i18n(
-                      'The reset code you entered is invalid or has expired. Please request a new code to proceed.',
-                    )}
-                  </Alert>
-                )}
-                {!otpError && (
-                  <Alert
-                    severity="info"
-                    icon={false}
-                    variant="outlined"
-                    style={{ marginBottom: 10 }}
-                  >
-                    {t_i18n(
-                      'If the email address you entered is associated with an account, you’ll receive a confirmation email with a reset code shortly.',
-                    )}
-                  </Alert>
-                )}
-                <Field
-                  component={TextField}
-                  name="otp"
-                  label={t_i18n('Enter code')}
-                  fullWidth={true}
-                />
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  disabled={isSubmitting || !isValid}
-                  style={{ marginTop: 20 }}
-                >
-                  {t_i18n('Continue')}
-                </Button>
-              </Form>
-            )}
-          </Formik>
-          )}
-          {step === STEP_2FA && (
-            <OTPForm variant="resetPassword" email={email} setStep={setStep} />
-          )}
-          {step === STEP_RESET_PASSWORD && (
-          <Formik
-            onSubmit={onSubmitValidatePassword}
-            initialTouched={{ otp: !R.isEmpty(flashError) }}
-            initialErrors={{ otp: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
-            validationSchema={passwordValidation(t_i18n)}
-            initialValues={{ password: '', password_validation: '' }}
-          >
-            {({ isSubmitting, isValid }) => (
-              <Form>
-                <Alert severity="success" style={{ marginBottom: 10 }}>
+        </Formik>
+      )}
+      {step === STEP_VALIDATE_OTP && (
+        <Formik
+          onSubmit={onSubmitValidateOtp}
+          initialTouched={{ otp: !R.isEmpty(flashError) }}
+          initialErrors={{ otp: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
+          validationSchema={otpValidation(t_i18n)}
+          initialValues={{ otp: '' }}
+        >
+          {({ isSubmitting, isValid }) => (
+            <Form>
+              {otpError && (
+                <Alert severity="error" style={{ marginBottom: 15 }}>
                   {t_i18n(
-                    'You can now set a new password for your account.',
+                    'The reset code you entered is invalid or has expired. Please request a new code to proceed.',
                   )}
                 </Alert>
-                <Field
-                  component={TextField}
-                  name="password"
-                  label={t_i18n('Password')}
-                  type="password"
-                  fullWidth={true}
-                />
-                <Field
-                  component={TextField}
-                  name="password_validation"
-                  label={t_i18n('Password validation')}
-                  type="password"
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                />
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  disabled={isSubmitting || !isValid}
-                  style={{ marginTop: 20 }}
+              )}
+              {!otpError && (
+                <Alert
+                  severity="info"
+                  icon={false}
+                  variant="outlined"
+                  style={{ marginBottom: 15 }}
                 >
-                  {t_i18n('Change your password')}
-                </Button>
-              </Form>
-            )}
-          </Formik>
+                  {t_i18n(
+                    'If the email address you entered is associated with an account, you’ll receive a confirmation email with a reset code shortly.',
+                  )}
+                </Alert>
+              )}
+              <Field
+                component={TextField}
+                name="otp"
+                label={t_i18n('Enter code')}
+                fullWidth={true}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={isSubmitting || !isValid}
+                style={{ marginTop: 30 }}
+              >
+                {t_i18n('Continue')}
+              </Button>
+            </Form>
           )}
-          <div style={{
-            marginTop: 10,
-            display: 'flex',
-            justifyContent: otpError ? 'space-between' : 'center',
-          }}
+        </Formik>
+      )}
+      {step === STEP_2FA && (
+        <OTPForm variant="resetPassword" email={email} onCompleted={onCompletedVerify2fa} />
+      )}
+      {step === STEP_RESET_PASSWORD && (
+        <Formik
+          onSubmit={onSubmitValidatePassword}
+          initialTouched={{ otp: !R.isEmpty(flashError) }}
+          initialErrors={{ otp: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
+          validationSchema={passwordValidation(t_i18n)}
+          initialValues={{ password: '', password_validation: '' }}
+        >
+          {({ isSubmitting, isValid }) => (
+            <Form>
+              <Alert severity="success" style={{ marginBottom: 15 }}>
+                {t_i18n(
+                  'You can now set a new password for your account.',
+                )}
+              </Alert>
+              <Field
+                component={TextField}
+                name="password"
+                label={t_i18n('Password')}
+                type="password"
+                fullWidth={true}
+              />
+              <Field
+                component={TextField}
+                name="password_validation"
+                label={t_i18n('Password validation')}
+                type="password"
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={isSubmitting || !isValid}
+                style={{ marginTop: 30 }}
+              >
+                {t_i18n('Change your password')}
+              </Button>
+            </Form>
+          )}
+        </Formik>
+      )}
+      <div style={{
+        marginTop: 10,
+        display: 'flex',
+        justifyContent: otpError ? 'space-between' : 'center',
+      }}
+      >
+        <a
+          style={{ cursor: 'pointer' }}
+          onClick={() => onCancel()}
+        >
+          {t_i18n('Back to login')}
+        </a>
+        {otpError && (
+          <a
+            style={{ cursor: 'pointer' }}
+            onClick={handleResendOtp}
           >
-            <a
-              style={{ cursor: 'pointer' }}
-              onClick={() => onCancel()}
-            >
-              {t_i18n('Back to login')}
-            </a>
-            {otpError && (
-            <a
-              style={{ cursor: 'pointer' }}
-              onClick={handleResendOtp}
-            >
-              {t_i18n('Resend code')}
-            </a>
-            )}
-          </div>
-        </div>
-      </Paper>
+            {t_i18n('Resend code')}
+          </a>
+        )}
+      </div>
     </div>
   );
 };
