@@ -7,7 +7,7 @@ export default class FiltersPageModel {
     await this.page.getByLabel('Add filter').click();
     await this.page.getByRole('option', { name: filterKey }).click();
     if (!autoOpen) {
-      await this.page.getByRole('button', { name: filterKey }).click();
+      await this.page.getByRole('button', { name: `${filterKey} =` }).click();
     }
     await this.page.getByRole('combobox', { name: filterKey }).click();
     await this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox').check();
