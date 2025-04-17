@@ -75,7 +75,7 @@ export default {
           user: origin,
           type: operationType + (isCallError ? '_ERROR' : ''),
           inner_relation_creation: innerRelationCount,
-          operation: context.request.operationName ?? 'Unspecified',
+          operation: context.operationName ?? 'Unspecified',
           time: elapsed,
           size,
         };

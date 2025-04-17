@@ -33,7 +33,7 @@ const computeMissingRelationsForType = async (context, relationType) => {
     const query = {
       index: READ_RELATIONSHIPS_INDICES,
       _source_includes: ['internal_id', 'entity_type', 'connections'],
-      track_total_hits: true,
+      track_total_hits: true, // Very important for pagination
       body,
     };
     const queryRelations = await elRawSearch(context, SYSTEM_USER, relationType, query);
