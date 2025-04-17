@@ -4,7 +4,7 @@ import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, writeCa
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { FilterMode, OrderingMode } from '../generated/graphql';
+import { FilterMode, OrderingMode, type StreamCollection } from '../generated/graphql';
 import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { stixLoadByIds } from '../database/middleware';
@@ -51,6 +51,7 @@ import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-d
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -69,13 +70,9 @@ const workflowStatuses = (context: AuthContext) => {
   return { values: null, fn: reloadStatuses };
 };
 const platformResolvedFilters = (context: AuthContext) => {
+  const initialFilterGroup = JSON.stringify(emptyFilterGroup);
   const reloadFilters = async () => {
     const filteringIds = [];
-    const initialFilterGroup = JSON.stringify({
-      mode: 'and',
-      filters: [],
-      filterGroups: [],
-    });
     // Stream filters
     const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
     filteringIds.push(...streams.map((s) => extractFilterGroupValuesToResolveForCache(JSON.parse(s.filters ?? initialFilterGroup))).flat());
@@ -107,16 +104,32 @@ const platformResolvedFilters = (context: AuthContext) => {
     return new Map();
   };
   const refreshFilter = async (values: Map<string, StixObject>, instance: BasicStoreCommon) => {
-    const filteringIds = [];
+    const filteringIds = []; // will contain the ids that are in the instance filters values
     // Stream filters
-    // TODO
+    if (instance.entity_type === ENTITY_TYPE_STREAM_COLLECTION) {
+      const streamFilterIds = extractFilterGroupValuesToResolveForCache(
+        JSON.parse((instance as StreamCollection).filters ?? initialFilterGroup)
+      );
+      filteringIds.push(streamFilterIds);
+    }
     // Trigger filters
-    // TODO
+    if (instance.entity_type === ENTITY_TYPE_TRIGGER) {
+      const triggerFilterIds = extractFilterGroupValuesToResolveForCache(
+        JSON.parse((instance as BasicStoreEntityTrigger).filters ?? initialFilterGroup)
+      );
+      filteringIds.push(triggerFilterIds);
+    }
     // Connectors filters (for enrichment connectors)
-    // TODO
+    if (instance.entity_type === ENTITY_TYPE_CONNECTOR) {
+      const connFilters = (instance as BasicStoreEntityConnector).connector_trigger_filters?.length > 0
+        ? (instance as BasicStoreEntityConnector).connector_trigger_filters
+        : initialFilterGroup;
+      const connFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse(connFilters));
+      filteringIds.push(connFilterIds);
+    }
     // Playbook filters
     if (instance.entity_type === ENTITY_TYPE_PLAYBOOK) {
-      const playbookFilterIds = ((JSON.parse(instance.playbook_definition)) as ComponentDefinition)
+      const playbookFilterIds = ((JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition)) as ComponentDefinition)
         .nodes.map((n) => JSON.parse(n.configuration))
         .map((config) => config.filters)
         .filter((f) => isNotEmptyField(f))
@@ -124,17 +137,16 @@ const platformResolvedFilters = (context: AuthContext) => {
         .flat();
       filteringIds.push(...playbookFilterIds);
     }
-    // Resolve filteringIds
-    const currentFiltersValues = values; // current map values
-    const idsToSolve: string[] = [];
-    filteringIds.forEach((idToSolve) => {
-      if (!currentFiltersValues?.has(idToSolve)) {
-        idsToSolve.push(idToSolve);
+    // Resolve filters ids that are not already in the cache
+    const currentFiltersValues = values; // current cache map
+    const idsToSolve: string[] = []; // will contain the ids to resolve that are not already in the cache
+    filteringIds.flat().forEach((id) => {
+      if (!currentFiltersValues.has(id)) {
+        idsToSolve.push(id);
       }
     });
-    const resolvingIds = R.uniq(idsToSolve);
-    const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, resolvingIds);
-    // Add resolved entities to the cache map
+    const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, R.uniq(idsToSolve)); // fetch the stix instance of the ids
+    // Add resolved stix entities to the cache map
     loadedDependencies.forEach((l: StixObject) => currentFiltersValues.set(l.extensions[STIX_EXT_OCTI].id, l));
     return currentFiltersValues;
   };
