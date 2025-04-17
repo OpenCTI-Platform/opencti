@@ -10,7 +10,6 @@ import { graphql } from 'react-relay';
 import { useFormatter } from '../../components/i18n';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../relay/environment';
-import AlertInfo from '../../components/AlertInfo';
 
 interface ResetProps {
   onCancel: () => void;
@@ -207,12 +206,16 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
                   </Alert>
                 )}
                 {!otpError && (
-                  <AlertInfo
+                  <Alert
+                    severity="info"
+                    icon={false}
+                    variant="outlined"
                     style={{ marginBottom: 10 }}
-                    content={t_i18n(
+                  >
+                    {t_i18n(
                       'If the email address you entered is associated with an account, you’ll receive a confirmation email with a reset code shortly.',
                     )}
-                  />
+                  </Alert>
                 )}
                 <Field
                   component={TextField}
