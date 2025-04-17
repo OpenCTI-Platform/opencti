@@ -340,7 +340,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
 /**
  * Compute decay data when it's needed from indicator updates.
- * Return keys for 'decay_history', 'decay_next_reaction_date', 'valid_until', 'valid_from'
+ * Return keys for 'decay_history', 'decay_next_reaction_date', 'valid_until'
  * @param fromScore
  * @param indicatorBeforeUpdate
  */
@@ -364,7 +364,6 @@ export const restartDecayComputationOnEdit = (fromScore: number, indicatorBefore
   }
   const newValidUntilDate = computeDecayPointReactionDate(fromScore, indicatorDecayRule, updateDate, revokeScore);
   inputToAdd.push({ key: VALID_UNTIL, value: [newValidUntilDate.toISOString()] });
-  inputToAdd.push({ key: VALID_FROM, value: [nowDate.toISOString()] });
   return inputToAdd;
 };
 

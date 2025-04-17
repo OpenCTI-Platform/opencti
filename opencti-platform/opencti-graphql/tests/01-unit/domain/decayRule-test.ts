@@ -48,6 +48,32 @@ const TEST_DEFAULT_LINEAR_DECAY_RULE: DecayRuleConfiguration = {
   active: true,
 };
 
+const TEST_DECAY_RULE_FAST: DecayRuleConfiguration = {
+  id: 'test-decay-fast',
+  name: 'Default Decay Rule fast',
+  description: 'Built-in decay rule for all indicators',
+  decay_lifetime: 200,
+  decay_pound: 0.1,
+  decay_points: [80, 60, 40, 20],
+  decay_revoke_score: 20,
+  decay_observable_types: [], // no observable means any
+  order: 0,
+  active: true,
+};
+
+const TEST_DECAY_RULE_SLOW: DecayRuleConfiguration = {
+  id: 'test-decay-fast',
+  name: 'Default Decay Rule slow',
+  description: 'Built-in decay rule for all indicators',
+  decay_lifetime: 50,
+  decay_pound: 2,
+  decay_points: [80, 60, 40, 20],
+  decay_revoke_score: 25,
+  decay_observable_types: [], // no observable means any
+  order: 0,
+  active: true,
+};
+
 export const TEST_URL_DECAY_RULE: DecayRuleConfiguration = {
   id: 'test-url-rule',
   name: 'URL Decay Rule',
@@ -79,13 +105,13 @@ const BUILT_IN_DECAY_RULES_FOR_TEST = [TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RU
 describe('Decay formula testing', () => {
   it('should compute today score from valid until input in days', () => {
     const computeTodayScore = computeScoreFromValidUntil(0, TEST_DEFAULT_LINEAR_DECAY_RULE);
-    expect(computeTodayScore).toBe(10);
+    expect(computeTodayScore).toBe(TEST_DEFAULT_LINEAR_DECAY_RULE.decay_revoke_score);
 
     const computeFiveDaysScore = computeScoreFromValidUntil(TEST_DEFAULT_LINEAR_DECAY_RULE.decay_lifetime, TEST_DEFAULT_LINEAR_DECAY_RULE);
     expect(computeFiveDaysScore).toBe(100);
 
     // Validate that the mathematical function and the reverse one works well together.
-    const allRulesToTest = [TEST_DEFAULT_LINEAR_DECAY_RULE, TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RULE, TEST_URL_DECAY_RULE];
+    const allRulesToTest = [TEST_DEFAULT_LINEAR_DECAY_RULE, TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RULE, TEST_URL_DECAY_RULE, TEST_DECAY_RULE_SLOW, TEST_DECAY_RULE_FAST];
     for (let ruleI = 0; ruleI < allRulesToTest.length; ruleI += 1) {
       const rule = allRulesToTest[ruleI];
       const step = rule.decay_lifetime / 10;
