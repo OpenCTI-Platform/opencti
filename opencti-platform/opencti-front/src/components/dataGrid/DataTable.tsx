@@ -9,7 +9,7 @@ import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
 import SearchInput from '../SearchInput';
 import { DataTableProps } from './dataTableTypes';
 import useAuth from '../../utils/hooks/useAuth';
-import { useDataTable, useLineData } from './dataTableHooks';
+import { useLineData } from './dataTableHooks';
 import DataTableComponent from './components/DataTableComponent';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { FilterIconButtonProps } from '../FilterIconButton';
