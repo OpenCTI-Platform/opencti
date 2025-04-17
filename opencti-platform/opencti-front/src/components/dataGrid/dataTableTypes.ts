@@ -3,6 +3,8 @@ import type { Dispatch, MutableRefObject, ReactNode, SetStateAction } from 'reac
 import React from 'react';
 import { GraphQLTaggedNode } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover/Popover';
+import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
+import { OperationType } from 'relay-runtime';
 import type { LocalStorage } from '../../utils/hooks/useLocalStorageModel';
 import { NumberOfElements, PaginationLocalStorage, UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
@@ -46,7 +48,7 @@ export interface DataTableContextProps {
   resolvePath: (data: any) => any
   redirectionModeEnabled?: boolean
   useLineData: DataTableProps['useLineData']
-  useDataTable: ReturnType<DataTableProps['useDataTable']>
+  dataQueryArgs: UsePreloadedPaginationFragment<OperationType>,
   useDataCellHelpers: DataTableProps['useDataCellHelpers']
   useDataTableToggle: ReturnType<DataTableProps['useDataTableToggle']>
   useComputeLink: (entity: any) => string | undefined
