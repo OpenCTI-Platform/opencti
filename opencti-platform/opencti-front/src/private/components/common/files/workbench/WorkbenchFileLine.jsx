@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
@@ -11,22 +11,19 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Link } from 'react-router-dom';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import Chip from '@mui/material/Chip';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
-import inject18n from '../../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import { toB64 } from '../../../../../utils/String';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ItemMarkings from '../../../../../components/ItemMarkings';
+import DeleteDialog from '../../../../../components/DeleteDialog';
+import useDeletion from '../../../../../utils/hooks/useDeletion';
 
 const styles = (theme) => ({
   itemNested: {
@@ -109,15 +106,9 @@ Transition.displayName = 'TransitionSlide';
 
 const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, nested, nsdt }) => {
   const { me } = useAuth();
-  const [displayDelete, setDisplayDelete] = useState(false);
-
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
+  const { t_i18n } = useFormatter();
+  const deletion = useDeletion({});
+  const { handleOpenDelete, handleCloseDelete } = deletion;
 
   const executeRemove = (mutation, variables) => {
     commitMutation({
@@ -139,9 +130,9 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
     });
   };
 
-  const handleRemoveFile = (name) => {
-    executeRemove(WorkbenchFileLineDeleteMutation, { fileName: name });
-    setDisplayDelete(false);
+  const handleRemoveFile = () => {
+    executeRemove(WorkbenchFileLineDeleteMutation, { fileName: file.id });
+    handleCloseDelete();
   };
 
   const { uploadStatus, metaData } = file;
@@ -247,29 +238,11 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
       </ListItem>
 
       <FileWork file={file} />
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayDelete}
-        slots={{ transition: Transition }}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t('Do you want to delete this workbench?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete}>
-            {t('Cancel')}
-          </Button>
-          <Button
-            onClick={() => handleRemoveFile(file.id)}
-            color="secondary"
-          >
-            {t('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={handleRemoveFile}
+        message={t_i18n('Do you want to delete this workbench?')}
+      />
     </>
   );
 };

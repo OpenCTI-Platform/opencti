@@ -73,8 +73,9 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
   const [commit] = useApiMutation(csvMapperPopoverDelete);
 
   const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commit({
       variables: {
         id: csvMapperId,
@@ -88,7 +89,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
         );
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         handleClose();
       },
     });
@@ -122,7 +123,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
-        <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
       </Menu>
       {queryRef && (
@@ -142,9 +143,9 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
         </React.Suspense>
       )}
       <DeleteDialog
-        title={t_i18n('Do you want to delete this CSV mapper?')}
         deletion={deletion}
         submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this CSV mapper?')}
       />
     </>
   );

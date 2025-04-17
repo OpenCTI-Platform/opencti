@@ -19,7 +19,7 @@ test('Create a new investigations page', async ({ page }) => {
   await expect(investigationDetailsPage.getTag('Add Test Tag e2e')).toBeVisible();
   await investigationDetailsPage.openPopUpButton().click();
   await investigationDetailsPage.getDeleteButton().click();
-  await investigationDetailsPage.getDelete().click();
+  await investigationDetailsPage.getConfirmButton().click();
   await page.goto('/dashboard/workspaces/investigations');
   await expect(page.getByRole('link', { name: 'Test e2e' })).toBeHidden();
 });

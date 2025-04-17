@@ -18,6 +18,8 @@ import IngestionTaxiiEdition, { ingestionTaxiiMutationFieldPatch } from './Inges
 import { deleteNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Transition from '../../../../components/Transition';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const ingestionTaxiiPopoverDeletionMutation = graphql`
   mutation IngestionTaxiiPopoverDeletionMutation($id: ID!) {
@@ -63,8 +65,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [displayStart, setDisplayStart] = useState(false);
   const [starting, setStarting] = useState(false);
   const [displayStop, setDisplayStop] = useState(false);
@@ -87,15 +87,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
 
   const handleCloseUpdate = () => {
     setDisplayUpdate(false);
-  };
-
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
   };
 
   const handleOpenResetState = () => {
@@ -126,6 +117,8 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   };
 
   const [commitDelete] = useApiMutation(ingestionTaxiiPopoverDeletionMutation);
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitDelete({
@@ -244,34 +237,11 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
           return <div />;
         }}
       />
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayDelete}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this TAXII ingester?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this TAXII ingester?')}
+      />
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={displayResetState}

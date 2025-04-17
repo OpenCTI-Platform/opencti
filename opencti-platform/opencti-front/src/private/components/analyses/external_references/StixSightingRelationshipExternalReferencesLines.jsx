@@ -21,6 +21,7 @@ import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
+import DialogTitle from '@mui/material/DialogTitle';
 import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -395,6 +396,9 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           slots={{ transition: Transition }}
           onClose={this.handleCloseDialog.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to remove this external reference?')}
@@ -412,7 +416,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
               color="primary"
               disabled={this.state.removing}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

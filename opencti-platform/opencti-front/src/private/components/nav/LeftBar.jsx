@@ -531,7 +531,7 @@ const LeftBar = () => {
               <MenuItem
                 component={Link}
                 to="/dashboard/workspaces/investigations"
-                selected={!navOpen && location.pathname.includes('/dashboard/workspaces/investigations')}
+                selected={location.pathname.includes('/dashboard/workspaces/investigations')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
@@ -917,7 +917,7 @@ const LeftBar = () => {
                   <MenuItem
                     component={Link}
                     to="/dashboard/drafts"
-                    selected={!navOpen && location.pathname.includes('/dashboard/drafts')}
+                    selected={location.pathname.includes('/dashboard/drafts')}
                     dense={true}
                     classes={{ root: classes.menuItem }}
                   >
@@ -942,7 +942,7 @@ const LeftBar = () => {
                     <MenuItem
                       component={Link}
                       to="/dashboard/trash"
-                      selected={!navOpen && location.pathname.includes('/dashboard/trash')}
+                      selected={location.pathname.includes('/dashboard/trash')}
                       dense={true}
                       classes={{ root: classes.menuItem }}
                     >

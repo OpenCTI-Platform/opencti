@@ -26,11 +26,14 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
+import DialogTitle from '@mui/material/DialogTitle';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import PlaybookEdition, { playbookMutationFieldPatch } from './PlaybookEdition';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -65,8 +68,6 @@ const PlaybookPopover = (props) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayUpdate, setDisplayUpdate] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [displayStart, setDisplayStart] = useState(false);
   const [starting, setStarting] = useState(false);
   const [displayStop, setDisplayStop] = useState(false);
@@ -83,15 +84,8 @@ const PlaybookPopover = (props) => {
     setDisplayUpdate(true);
     handleClose(event);
   };
-  const handleOpenDelete = (event) => {
-    setDisplayDelete(true);
-    handleClose(event);
-  };
-  const handleCloseDelete = (event) => {
-    stopEvent(event);
-    setDisplayDelete(false);
-  };
   const handleOpenStart = (event) => {
+    setAnchorEl(null);
     setDisplayStart(true);
     handleClose(event);
   };
@@ -103,6 +97,8 @@ const PlaybookPopover = (props) => {
     setDisplayStop(true);
     handleClose(event);
   };
+  const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
+  const { setDeleting, handleOpenDelete } = deletion;
   const handleCloseStop = (event) => {
     setDisplayStop(false);
     stopEvent(event);
@@ -130,7 +126,6 @@ const PlaybookPopover = (props) => {
         if (!paginationOptions) {
           navigate('/dashboard/data/processing/automation');
         }
-        setDisplayDelete(true);
       },
     });
   };
@@ -203,27 +198,11 @@ const PlaybookPopover = (props) => {
           return <div />;
         }}
       />
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayDelete}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={() => setDisplayDelete(false)}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this playbook?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this playbook?')}
+      />
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={displayStart}
@@ -231,6 +210,9 @@ const PlaybookPopover = (props) => {
         slots={{ transition: Transition }}
         onClose={() => setDisplayStart(false)}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to start this playbook?')}
@@ -241,7 +223,7 @@ const PlaybookPopover = (props) => {
             {t_i18n('Cancel')}
           </Button>
           <Button onClick={submitStart} color="secondary" disabled={starting}>
-            {t_i18n('Start')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -252,6 +234,9 @@ const PlaybookPopover = (props) => {
         slots={{ transition: Transition }}
         onClose={() => setDisplayStop(false)}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to stop this playbook?')}
@@ -262,7 +247,7 @@ const PlaybookPopover = (props) => {
             {t_i18n('Cancel')}
           </Button>
           <Button onClick={submitStop} color="secondary" disabled={stopping}>
-            {t_i18n('Stop')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

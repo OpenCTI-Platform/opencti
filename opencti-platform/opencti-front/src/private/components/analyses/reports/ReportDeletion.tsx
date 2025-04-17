@@ -3,6 +3,7 @@ import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertTitle, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, FormControlLabel, FormGroup } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import DialogTitle from '@mui/material/DialogTitle';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Security from '../../../../utils/Security';
@@ -90,6 +91,9 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
         slotProps={{ paper: { elevation: 1 } }}
         onClose={handleCloseDelete}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to delete this report?')}
@@ -137,7 +141,7 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
             {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -20,6 +20,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
 import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
+import DialogTitle from '@mui/material/DialogTitle';
 import { ListItemButton } from '@mui/material';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -291,6 +292,9 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
         slots={{ transition: Transition }}
         onClose={() => setConnectorIdToReset(undefined)}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
@@ -313,7 +317,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
             color="secondary"
             disabled={resetting}
           >
-            {t_i18n('Reset')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

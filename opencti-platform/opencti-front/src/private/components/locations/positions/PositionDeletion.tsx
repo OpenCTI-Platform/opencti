@@ -1,12 +1,13 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText } from '@mui/material';
+import { Button } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import Transition from '../../../../components/Transition';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const positionDeletionMutation = graphql`
   mutation PositionDeletionMutation($id: ID!) {
@@ -27,8 +28,6 @@ const PositionDeletion: FunctionComponent<PositionDeletionProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Position') },
@@ -39,12 +38,8 @@ const PositionDeletion: FunctionComponent<PositionDeletionProps> = ({
     { successMessage: deleteSuccessMessage },
   );
 
-  const handleOpenDelete = () => setDisplayDelete(true);
-  const handleCloseDelete = () => {
-    setDeleting(false);
-    setDisplayDelete(false);
-  };
-
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, deleting } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
@@ -70,26 +65,11 @@ const PositionDeletion: FunctionComponent<PositionDeletionProps> = ({
           {t_i18n('Delete')}
         </Button>
       </Security>
-      <Dialog
-        open={displayDelete}
-        slots={{ transition: Transition }}
-        slotProps={{ paper: { elevation: 1 } }}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this position?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this position?')}
+      />
     </>
   );
 };

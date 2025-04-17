@@ -7,6 +7,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import DialogTitle from '@mui/material/DialogTitle';
 import { commitMutation } from '../../../../../relay/environment';
 import PlaybookAddComponents from '../PlaybookAddComponents';
 import Transition from '../../../../../components/Transition';
@@ -828,6 +829,9 @@ const useManipulateComponents = (playbook, playbookComponents) => {
             setAction(null);
           }}
         >
+          <DialogTitle>
+            {t_i18n('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t_i18n('Do you want to delete this node?')}
@@ -843,7 +847,7 @@ const useManipulateComponents = (playbook, playbookComponents) => {
               {t_i18n('Cancel')}
             </Button>
             <Button color="secondary" onClick={deleteNode}>
-              {t_i18n('Delete')}
+              {t_i18n('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

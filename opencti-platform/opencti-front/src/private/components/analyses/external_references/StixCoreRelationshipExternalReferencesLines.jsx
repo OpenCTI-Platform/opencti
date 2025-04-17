@@ -20,6 +20,7 @@ import { interval } from 'rxjs';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
+import DialogTitle from '@mui/material/DialogTitle';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import inject18n from '../../../../components/i18n';
@@ -397,6 +398,9 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
           slots={{ transition: Transition }}
           onClose={this.handleCloseDialog.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to remove this external reference?')}
@@ -414,7 +418,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
               onClick={this.handleRemoval.bind(this)}
               disabled={this.state.removing}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
