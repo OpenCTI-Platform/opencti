@@ -4,7 +4,7 @@ import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, writeCa
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { FilterMode, OrderingMode, type StreamCollection } from '../generated/graphql';
+import { FilterMode, OrderingMode } from '../generated/graphql';
 import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { stixLoadByIds } from '../database/middleware';
@@ -76,12 +76,12 @@ const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
   const filteringIds = []; // will contain the ids that are in the instance filters values
   if (instance.entity_type === ENTITY_TYPE_STREAM_COLLECTION) {
     const streamFilterIds = extractFilterGroupValuesToResolveForCache(
-      JSON.parse((instance as StreamCollection).filters ?? initialFilterGroup)
+      JSON.parse((instance as BasicStreamEntity).filters ?? initialFilterGroup)
     );
     filteringIds.push(...streamFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_TRIGGER) {
     const triggerFilterIds = extractFilterGroupValuesToResolveForCache(
-      JSON.parse((instance as BasicStoreEntityTrigger).filters ?? initialFilterGroup)
+      JSON.parse((instance as BasicTriggerEntity).filters ?? initialFilterGroup)
     );
     filteringIds.push(...triggerFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_CONNECTOR) {
@@ -99,7 +99,7 @@ const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
       .flat();
     filteringIds.push(...playbookFilterIds);
   } else {
-    throw FunctionalError(`Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for ${instance.entity_type}`);
+    throw FunctionalError('Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type', { entity_type: instance.entity_type });
   }
   return filteringIds;
 };
