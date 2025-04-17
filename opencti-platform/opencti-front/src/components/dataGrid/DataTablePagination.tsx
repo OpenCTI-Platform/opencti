@@ -31,6 +31,9 @@ const DataTablePagination = ({
       },
       helpers,
     },
+    useDataTable: {
+      hasMore,
+    },
   } = useDataTableContext();
 
   const numberOfElements = unstoreNOE ?? storedNOE;
@@ -145,7 +148,7 @@ const DataTablePagination = ({
             <Typography variant="body2">
               <span>{`${lastItem ? firstItem : 0} - ${lastItem} `}</span>
               <span style={{ opacity: 0.6 }}>
-                {`/ ${numberOfElements.number}${numberOfElements.symbol}`}
+                {`/ ${numberOfElements.number}${numberOfElements.symbol}${(numberOfElements.original ?? 0) > 10000 ? '+' : ''}`}
               </span>
             </Typography>
           </Box>
@@ -153,7 +156,7 @@ const DataTablePagination = ({
         <Button
           onClick={() => fetchMore('forward')}
           size="small"
-          disabled={lastItem === numberOfElements.original}
+          disabled={hasMore ? !hasMore() : (lastItem === numberOfElements.original)}
           style={{ paddingLeft: 0, paddingRight: 0, minWidth: 24 }}
         >
           <ArrowRight />

@@ -209,6 +209,7 @@ const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
 
 const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
 export const BULK_TIMEOUT = '5m';
+export const ES_MAX_TRACK_TOTAL_HITS = 10000;
 const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 const ES_MAX_MAPPINGS = 3000;
 export const ES_RETRY_ON_CONFLICT = 5;
@@ -1624,7 +1625,7 @@ export const computeQueryIndices = (indices, typeOrTypes, withInferences = true)
 export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices, baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, toMap = false, mapWithAllIds = false, type = null } = opts;
-  const { orderBy = 'created_at', orderMode = 'asc' } = opts;
+  const { orderBy = null, orderMode = 'asc' } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -1671,14 +1672,22 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     // Handle draft
     const draftMust = buildDraftFilter(context, user, opts);
     const body = {
-      sort: [{ [orderBy]: orderMode }],
       query: {
         bool: {
-          must: [...mustTerms, ...draftMust],
-          must_not: markingRestrictions.must_not,
-        },
+          // Put everything under filter to prevent score computation
+          // Search without score when no sort is applied is faster
+          filter: [{
+            bool: {
+              must: [...mustTerms, ...draftMust],
+              must_not: markingRestrictions.must_not,
+            },
+          }]
+        }
       },
     };
+    if (orderBy) {
+      body.sort = [{ [orderBy]: orderMode }];
+    }
     let searchAfter;
     let hasNextPage = true;
     while (hasNextPage) {
@@ -1688,6 +1697,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       const query = {
         index: computedIndices,
         size: ES_MAX_PAGINATION,
+        track_total_hits: false,
         _source: baseData ? baseFields : true,
         body,
       };
@@ -3031,15 +3041,16 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const orderConfiguration = isEmptyField(orderBy) ? [] : orderBy;
   const orderCriterion = Array.isArray(orderConfiguration) ? orderConfiguration : [orderConfiguration];
   let scoreSearchOrder = orderMode;
+  const searchMust = [];
   if (search !== null && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search, options);
-    const bool = {
+    const searchBool = {
       bool: {
         should: shouldSearch,
         minimum_should_match: 1,
       },
     };
-    mustFilters.push(bool);
+    searchMust.push(searchBool);
     // When using a search, force a score ordering if nothing specified
     if (orderCriterion.length === 0) {
       orderCriterion.unshift('_score');
@@ -3059,8 +3070,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
       }
     }
     // Add standard_id if not specify to ensure ordering uniqueness
-    if (!orderCriterion.includes('standard_id')) {
-      ordering.push({ 'standard_id.keyword': 'asc' });
+    if (!orderCriterion.includes('_doc')) {
+      ordering.push({ _doc: 'asc' });
     }
     // Build runtime mappings
     const runtime = RUNTIME_ATTRIBUTES[orderBy];
@@ -3073,7 +3084,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       };
     }
   } else { // If not ordering criteria, order by standard_id
-    ordering.push({ 'standard_id.keyword': 'asc' });
+    ordering.push({ _doc: 'asc' });
   }
   // Handle draft
   const draftMust = buildDraftFilter(context, user, options);
@@ -3081,8 +3092,15 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const body = {
     query: {
       bool: {
-        must: [...accessMust, ...mustFilters, ...draftMust],
-        must_not: accessMustNot,
+        // Score only on the search
+        must: searchMust,
+        // Other filters are not scored to improve performance
+        filter: [{
+          bool: {
+            must: [...accessMust, ...mustFilters, ...draftMust],
+            must_not: accessMustNot,
+          },
+        }]
       },
     },
   };
@@ -3405,7 +3423,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   }
   const query = {
     index: getIndicesToQuery(context, user, indexName),
-    track_total_hits: true,
+    track_total_hits: false,
     _source: false,
     body,
   };
@@ -3442,7 +3460,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   }
   const query = {
     index: getIndicesToQuery(context, user, indexName),
-    track_total_hits: true,
+    track_total_hits: ES_MAX_TRACK_TOTAL_HITS,
     _source: baseData ? baseFields : true,
     body,
   };
