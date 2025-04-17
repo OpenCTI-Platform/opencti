@@ -201,10 +201,8 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
           {({ isSubmitting, isValid }) => (
             <Form>
               {otpError && (
-                <Alert severity="error" style={{ marginBottom: 15 }}>
-                  {t_i18n(
-                    'The reset code you entered is invalid or has expired. Please request a new code to proceed.',
-                  )}
+                <Alert severity="error" variant="outlined" style={{ marginBottom: 15 }}>
+                  {t_i18n('The reset code you entered is invalid or has expired. Please request a new code to proceed.')}
                 </Alert>
               )}
               {!otpError && (
@@ -214,9 +212,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
                   variant="outlined"
                   style={{ marginBottom: 15 }}
                 >
-                  {t_i18n(
-                    'If the email address you entered is associated with an account, you’ll receive a confirmation email with a reset code shortly.',
-                  )}
+                  {t_i18n('If the email address you entered is associated with an account, you’ll receive a confirmation email with a reset code shortly.')}
                 </Alert>
               )}
               <Field
@@ -251,10 +247,8 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
         >
           {({ isSubmitting, isValid }) => (
             <Form>
-              <Alert severity="success" style={{ marginBottom: 15 }}>
-                {t_i18n(
-                  'You can now set a new password for your account.',
-                )}
+              <Alert severity="success" variant="outlined" style={{ marginBottom: 15 }}>
+                {t_i18n('You can now set a new password for your account.')}
               </Alert>
               <Field
                 component={TextField}

@@ -58,7 +58,6 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   } catch (e) {
     // Prevent wrong email address, but return true too if it fails
     // logApp.error('Error occurred while sending password reset email:', { cause: e });
-    // console.error('Error occurred while sending password reset email:', e);
   }
   return true;
 };
@@ -72,10 +71,7 @@ export const verifyOtp = async (context: AuthContext, input: VerifyOtpInput) => 
   if (storedOtp !== input.otp) {
     throw UnsupportedError('Invalid OTP. Please check the code and try again.');
   }
-  if (otp_activated !== undefined && otp_activated !== null) {
-    return { otp_activated };
-  }
-  throw UnsupportedError('No 2FA information founded');
+  return { otp_activated: otp_activated ? otp_activated : false };
 };
 
 export const verify2fa = async (input: Verify2faInput) => {
