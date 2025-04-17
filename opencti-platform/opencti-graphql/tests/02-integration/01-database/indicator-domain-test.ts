@@ -20,10 +20,12 @@ import { logApp } from '../../../src/config/conf';
 
 describe('Testing field patch on indicator for trio {score, valid until, revoked}', () => {
   const indicatorCreatedIds : string[] = [];
-  const inPast90Days = new Date(new Date().getTime() - NO_DECAY_DEFAULT_VALID_PERIOD);
-  const tomorrow = new Date(new Date().getTime() + dayToMs(1));
-  const yesterday: Date = new Date(utcDate().toDate().getTime() - dayToMs(1));
-  const twoDaysAgo: Date = new Date(utcDate().toDate().getTime() - dayToMs(2));
+  const todayMorning = new Date();
+  todayMorning.setUTCHours(0, 0, 0, 0);
+  const inPast90Days = new Date(todayMorning.getTime() - NO_DECAY_DEFAULT_VALID_PERIOD);
+  const tomorrow = new Date(todayMorning.getTime() + dayToMs(1));
+  const yesterday: Date = new Date(todayMorning.getTime() - dayToMs(1));
+  const twoDaysAgo: Date = new Date(todayMorning.getTime() - dayToMs(2));
 
   const createIndicator = async (input: IndicatorAddInput, withDecay: boolean): Promise<BasicStoreEntityIndicator> => {
     if (withDecay) {
@@ -295,8 +297,8 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     const indicatorWithDecay = await createIndicator(indicatorAddInput, true);
 
     const inputWithEverything: EditInput[] = [
-      { key: VALID_FROM, value: [twoDaysAgo.toISOString()] },
-      { key: VALID_UNTIL, value: [tomorrow.toISOString()] },
+      { key: VALID_FROM, value: [twoDaysAgo] },
+      { key: VALID_UNTIL, value: [tomorrow] },
       { key: X_SCORE, value: [12] },
       { key: 'revoked', value: [false] },
     ];

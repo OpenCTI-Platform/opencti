@@ -68,6 +68,10 @@ export const dayToMs = (days: number) => {
   return days * 24 * 60 * 60 * 1000;
 };
 
+export const msToDay = (milliseconds: number) => {
+  return milliseconds / 1000 / 24 / 60 / 60;
+};
+
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
 };

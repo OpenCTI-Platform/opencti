@@ -48,7 +48,9 @@ import {
   computeScoreFromExpectedTime,
   computeTimeFromExpectedScore,
   computeDecayPointReactionDate,
-  dayToMs
+  dayToMs,
+  computeScoreFromValidUntil,
+  msToDay
 } from '../decayRule/decayRule-domain';
 import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
@@ -338,6 +340,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
 /**
  * Compute decay data when it's needed from indicator updates.
+ * Return keys for 'decay_history', 'decay_next_reaction_date', 'valid_until', 'valid_from'
  * @param fromScore
  * @param indicatorBeforeUpdate
  */
@@ -361,6 +364,7 @@ export const restartDecayComputationOnEdit = (fromScore: number, indicatorBefore
   }
   const newValidUntilDate = computeDecayPointReactionDate(fromScore, indicatorDecayRule, updateDate, revokeScore);
   inputToAdd.push({ key: VALID_UNTIL, value: [newValidUntilDate.toISOString()] });
+  inputToAdd.push({ key: VALID_FROM, value: [nowDate.toISOString()] });
   return inputToAdd;
 };
 
@@ -441,10 +445,12 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
       // score has not been changed, but maybe decay need to be computed again anyway
       logApp.info('Score not changed, but revoked might changed:');
       if (validUntilEditInput) {
-        // const newScore = computeScoreFromExpectedTime();
-        // const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
-        // logApp.info('Computed changes because score updated in input:', { finalInput, allChanges });
-        // finalInput.push(...allChanges);
+        const validUntilValue = validUntilEditInput.value[0];
+        const daysBetweenValidUntilsAndNow = msToDay(new Date(validUntilValue).getTime() - nowDate.getTime());
+        const newScore = Math.round(computeScoreFromValidUntil(daysBetweenValidUntilsAndNow, indicatorBeforeUpdate.decay_applied_rule));
+        const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
+        logApp.info('Computed changes because score updated in input:', { finalInput, allChanges });
+        finalInput.push(...allChanges);
       } else {
         if (hasRevokedChangedToTrue) {
           finalInput.push({ key: X_SCORE, value: [revokeScore] });
@@ -482,11 +488,12 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
       const in90Days = new Date(nowDate.getTime() + NO_DECAY_DEFAULT_VALID_PERIOD);
       finalInput.push({ key: X_SCORE, value: [INDICATOR_DEFAULT_SCORE] });
       finalInput.push({ key: VALID_UNTIL, value: [in90Days.toISOString()] });
+      finalInput.push({ key: VALID_FROM, value: [nowDate.toISOString()] });
     }
   }
 
   // END Decay and {Score, Valid until, Revoke} computation
-  logApp.info('All changes to apply:', finalInput);
+  logApp.info('All changes to apply:', { finalInput: JSON.stringify(finalInput) });
 
   return stixDomainObjectEditField(context, user, id, finalInput, opts);
 };

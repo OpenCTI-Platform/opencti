@@ -36,7 +36,7 @@ const TEST_DEFAULT_DECAY_RULE: DecayRuleConfiguration = {
 };
 
 const TEST_DEFAULT_LINEAR_DECAY_RULE: DecayRuleConfiguration = {
-  id: 'test-defaut-rule',
+  id: 'test-defaut-linear-rule',
   name: 'Default Decay Rule',
   description: 'Built-in decay rule for all indicators',
   decay_lifetime: 100,
@@ -76,23 +76,27 @@ export const TEST_IP_DECAY_RULE: DecayRuleConfiguration = {
 
 const BUILT_IN_DECAY_RULES_FOR_TEST = [TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RULE, TEST_URL_DECAY_RULE];
 
-describe.only('Decay formula testing', () => {
-  it.only('should compute today score from valid until input in days', () => {
+describe('Decay formula testing', () => {
+  it('should compute today score from valid until input in days', () => {
     const computeTodayScore = computeScoreFromValidUntil(0, TEST_DEFAULT_LINEAR_DECAY_RULE);
     expect(computeTodayScore).toBe(10);
 
     const computeFiveDaysScore = computeScoreFromValidUntil(TEST_DEFAULT_LINEAR_DECAY_RULE.decay_lifetime, TEST_DEFAULT_LINEAR_DECAY_RULE);
     expect(computeFiveDaysScore).toBe(100);
 
-    // const computeHalfLifetimeDaysScore2 = computeScoreFromValidUntil(50, TEST_DEFAULT_LINEAR_DECAY_RULE);
-
-    console.log(`expire in 10d => ${computeScoreFromValidUntil(10, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
-    console.log(`expire in 30d => ${computeScoreFromValidUntil(30, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
-    console.log(`expire in 50d => ${computeScoreFromValidUntil(50, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
-    console.log(`expire in 70d => ${computeScoreFromValidUntil(70, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
-
-    console.log(`score at 50d => ${computeScoreFromExpectedTime(100, 50, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
-    console.log(`score at 50d => ${computeScoreFromExpectedTime(50, 50, TEST_DEFAULT_LINEAR_DECAY_RULE)}`);
+    // Validate that the mathematical function and the reverse one works well together.
+    const allRulesToTest = [TEST_DEFAULT_LINEAR_DECAY_RULE, TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RULE, TEST_URL_DECAY_RULE];
+    for (let ruleI = 0; ruleI < allRulesToTest.length; ruleI += 1) {
+      const rule = allRulesToTest[ruleI];
+      const step = rule.decay_lifetime / 10;
+      for (let i = 0; i < step; i += 1) {
+        const scoreTodayForValidUtilNextXdays = computeScoreFromValidUntil(10 * i, rule);
+        const scoreAtRevokeDate = computeScoreFromExpectedTime(scoreTodayForValidUtilNextXdays, 10 * i, rule);
+        // console.log(`${rule.name} - scoreTodayForValidUtilNext30days => ${scoreTodayForValidUtilNextXdays} ; scoreAtRevokeDate => ${scoreAtRevokeDate}`);
+        expect(scoreAtRevokeDate).toBeGreaterThanOrEqual(rule.decay_revoke_score - 1);
+        expect(scoreAtRevokeDate).toBeLessThanOrEqual(rule.decay_revoke_score + 1);
+      }
+    }
   });
 });
 
