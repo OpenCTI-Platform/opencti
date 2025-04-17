@@ -17,7 +17,6 @@ import Incident from './Incident';
 import IncidentKnowledge from './IncidentKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import IncidentPopover from './IncidentPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -30,7 +29,6 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
 import IncidentEdition from './IncidentEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -88,8 +86,6 @@ const RootIncidentComponent = ({ queryRef }) => {
     [incidentId],
   );
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const data = usePreloadedQuery(incidentQuery, queryRef);
@@ -142,8 +138,7 @@ const RootIncidentComponent = ({ queryRef }) => {
             <StixDomainObjectHeader
               entityType="Incident"
               stixDomainObject={incident}
-              PopoverComponent={IncidentPopover}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IncidentEdition incidentId={incident.id} />
                 </Security>

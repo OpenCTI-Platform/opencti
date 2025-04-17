@@ -14,7 +14,6 @@ import Event from './Event';
 import EventKnowledge from './EventKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import EventPopover from './EventPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -27,7 +26,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import EventEdition from './EventEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootEventsSubscription($id: ID!) {
@@ -85,8 +83,6 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
   }), [eventId]);
 
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription<RootEventsSubscription>(subConfig);
 
@@ -138,8 +134,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               entityType="Event"
               stixDomainObject={event}
               enableQuickSubscription={true}
-              PopoverComponent={<EventPopover id={event.id}/>}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <EventEdition eventId={event.id} />
                 </Security>

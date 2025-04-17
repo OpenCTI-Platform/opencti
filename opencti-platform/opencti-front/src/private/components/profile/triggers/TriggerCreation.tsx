@@ -1,34 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { FunctionComponent, useState } from 'react';
-import { BackupTableOutlined, CampaignOutlined } from '@mui/icons-material';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import SpeedDial from '@mui/material/SpeedDial';
-import makeStyles from '@mui/styles/makeStyles';
+import { Button } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggerDigestCreation from './TriggerDigestCreation';
 import TriggerLiveCreation from './TriggerLiveCreation';
 import { TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 1100,
-  },
-  speedDialButton: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
-  },
-}));
 
 interface TriggerCreationProps {
   contextual?: boolean;
@@ -42,7 +21,6 @@ interface TriggerCreationProps {
 
 const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
   contextual,
-  hideSpeedDial,
   inputValue,
   paginationOptions,
   creationCallback,
@@ -50,53 +28,43 @@ const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
   open,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
-  const [openSpeedDial, setOpenSpeedDial] = useState(false);
+  const theme = useTheme<Theme>();
   // Live
   const [openLive, setOpenLive] = useState(false);
   const handleOpenCreateLive = () => {
-    setOpenSpeedDial(false);
     setOpenLive(true);
   };
   // Digest
   const [openDigest, setOpenDigest] = useState(false);
   const handleOpenCreateDigest = () => {
-    setOpenSpeedDial(false);
     setOpenDigest(true);
   };
   return (
     <>
-      {hideSpeedDial !== true && (
-        <SpeedDial
-          className={classes.createButton}
-          ariaLabel="Create"
-          icon={<SpeedDialIcon />}
-          onClose={() => setOpenSpeedDial(false)}
-          onOpen={() => setOpenSpeedDial(true)}
-          open={openSpeedDial}
-          FabProps={{ color: 'primary' }}
-        >
-          <SpeedDialAction
-            title={t_i18n('Live trigger')}
-            icon={<CampaignOutlined />}
-            tooltipTitle={t_i18n('Create a live trigger')}
-            onClick={handleOpenCreateLive}
-            FabProps={{ classes: { root: classes.speedDialButton } }}
-          />
-          <SpeedDialAction
-            title={t_i18n('Regular digest')}
-            icon={<BackupTableOutlined />}
-            tooltipTitle={t_i18n('Create a regular digest')}
-            onClick={handleOpenCreateDigest}
-            FabProps={{ classes: { root: classes.speedDialButton } }}
-          />
-        </SpeedDial>
-      )}
+      <Button
+        variant='contained'
+        sx={{ marginRight: theme.spacing(1) }}
+        onClick={handleOpenCreateDigest}
+      >
+        {t_i18n('', {
+          id: 'Create ...',
+          values: { entity_type: t_i18n('Regular digest') },
+        })}
+      </Button>
+      <Button
+        variant='contained'
+        onClick={handleOpenCreateLive}
+      >
+        {t_i18n('', {
+          id: 'Create ...',
+          values: { entity_type: t_i18n('Live trigger') },
+        })}
+      </Button>
       <TriggerLiveCreation
         contextual={contextual}
         inputValue={inputValue}
         paginationOptions={paginationOptions}
-        open={open !== undefined ? open : openLive}
+        open={open ?? openLive}
         handleClose={() => {
           if (handleClose) {
             handleClose();

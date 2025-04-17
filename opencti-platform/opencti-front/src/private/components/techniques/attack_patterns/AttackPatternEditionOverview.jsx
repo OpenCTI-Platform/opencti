@@ -21,7 +21,6 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import AttackPatternDeletion from './AttackPatternDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const attackPatternMutationFieldPatch = graphql`
   mutation AttackPatternEditionOverviewFieldPatchMutation(
@@ -90,8 +89,6 @@ const ATTACK_PATTERN_TYPE = 'Attack-Pattern';
 const AttackPatternEditionOverviewComponent = (props) => {
   const { attackPattern, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const theme = useTheme();
   const { mandatoryAttributes } = useIsMandatoryAttribute(ATTACK_PATTERN_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -306,11 +303,9 @@ const AttackPatternEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <AttackPatternDeletion
-                  id={attackPattern.id}
-                />
-              : <div/>}
+            <AttackPatternDeletion
+              id={attackPattern.id}
+            />
             {enableReferences && (
             <CommitMessage
               submitForm={submitForm}

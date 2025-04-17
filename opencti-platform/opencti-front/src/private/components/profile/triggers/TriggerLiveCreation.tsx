@@ -308,7 +308,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const renderClassic = () => (
     <Drawer
       title={t_i18n('Create a live trigger')}
-      variant={DrawerVariant.create}
       open={open}
       onClose={onReset}
     >

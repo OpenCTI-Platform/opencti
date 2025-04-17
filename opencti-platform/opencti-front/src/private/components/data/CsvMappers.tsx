@@ -3,14 +3,11 @@ import makeStyles from '@mui/styles/makeStyles';
 import CsvMapperLines from '@components/data/csvMapper/CsvMapperLines';
 import CsvMapperCreationContainer from '@components/data/csvMapper/CsvMapperCreationContainer';
 import { CsvMapperLine_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
-import { CancelOutlined, CheckCircleOutlined, CloudUploadOutlined, WidgetsOutlined } from '@mui/icons-material';
+import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
 import ProcessingMenu from '@components/data/ProcessingMenu';
 import CsvMappersProvider, { mappersQuery, schemaAttributesQuery } from '@components/data/csvMapper/csvMappers.data';
 import { csvMappers_MappersQuery, csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { csvMappers_SchemaAttributesQuery } from '@components/data/csvMapper/__generated__/csvMappers_SchemaAttributesQuery.graphql';
-import { SpeedDialIcon } from '@mui/material';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import SpeedDial from '@mui/material/SpeedDial';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
 import { CsvMappersImportQuery$data } from '@components/data/__generated__/CsvMappersImportQuery.graphql';
@@ -25,22 +22,14 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import type { Theme } from '../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   container: {
     paddingRight: '200px',
-  },
-  speedDialButton: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
   },
 }));
 
@@ -87,8 +76,6 @@ export const csvMappersImportQuery = graphql`
 const CsvMappers = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('CSV Mappers | Processing | Data'));
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<csvMappers_MappersQuery$variables>(
@@ -133,9 +120,6 @@ const CsvMappers = () => {
         );
       },
     },
-  };
-  const onClick = () => {
-    setOpen(true);
   };
 
   const handleClose = () => {
@@ -183,54 +167,24 @@ const CsvMappers = () => {
               numberOfElements={viewStorage.numberOfElements}
               createButton={(
                 <>
-                  {isFABReplaced && (
-                    <>
-                      <Button
-                        variant='outlined'
-                        disableElevation
-                        sx={{ marginLeft: 1 }}
-                        onClick={() => inputFileRef?.current?.click()}
-                      >
-                        {t_i18n('Import a CSV mapper')}
-                      </Button>
-                      <Button
-                        variant='contained'
-                        disableElevation
-                        sx={{ marginLeft: 1 }}
-                        onClick={() => setOpen(true)}
-                      >
-                        {t_i18n('Create a CSV mapper')}
-                      </Button>
-                    </>
-                  )}
-                  {!isFABReplaced && (
-                    <SpeedDial
-                      style={{
-                        position: 'fixed',
-                        bottom: 30,
-                        right: 230,
-                        zIndex: 1100,
-                      }}
-                      ariaLabel="Create"
-                      icon={<SpeedDialIcon/>}
-                      FabProps={{ color: 'primary' }}
+                  <>
+                    <Button
+                      variant='outlined'
+                      disableElevation
+                      sx={{ marginLeft: 1 }}
+                      onClick={() => inputFileRef?.current?.click()}
                     >
-                      <SpeedDialAction
-                        title={t_i18n('Create a CSV mapper')}
-                        icon={<WidgetsOutlined/>}
-                        tooltipTitle={t_i18n('Create a CSV mapper')}
-                        onClick={onClick}
-                        FabProps={{ classes: { root: classes.speedDialButton } }}
-                      />
-                      <SpeedDialAction
-                        title={t_i18n('Import a CSV mapper')}
-                        icon={<CloudUploadOutlined/>}
-                        tooltipTitle={t_i18n('Import a CSV mapper')}
-                        onClick={() => inputFileRef?.current?.click()}
-                        FabProps={{ classes: { root: classes.speedDialButton } }}
-                      />
-                    </SpeedDial>
-                  )}
+                      {t_i18n('Import a CSV mapper')}
+                    </Button>
+                    <Button
+                      variant='contained'
+                      disableElevation
+                      sx={{ marginLeft: 1 }}
+                      onClick={() => setOpen(true)}
+                    >
+                      {t_i18n('Create a CSV mapper')}
+                    </Button>
+                  </>
                 </>
               )}
             >

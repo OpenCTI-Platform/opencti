@@ -21,7 +21,6 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFi
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variables } from './narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
-import useHelper from '../../../utils/hooks/useHelper';
 import SearchInput from '../../../components/SearchInput';
 import ViewSwitchingButtons from '../../../components/ViewSwitchingButtons';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -33,8 +32,6 @@ const LOCAL_STORAGE_KEY = 'narratives';
 
 const Narratives: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const theme = useTheme<Theme>();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Narratives | Techniques'));
@@ -106,11 +103,9 @@ const Narratives: FunctionComponent = () => {
                 enableSubEntityLines={true}
               />
             </ToggleButtonGroup>
-            {isFABReplaced && (
-              <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-                <NarrativeCreation paginationOptions={queryPaginationOptions} />
-              </Security>
-            )}
+            <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+              <NarrativeCreation paginationOptions={queryPaginationOptions} />
+            </Security>
           </div>
         </div>
         <div className="clearfix" />
@@ -205,7 +200,7 @@ const Narratives: FunctionComponent = () => {
                   </ToggleButton>
                 </Tooltip>
               )]}
-            createButton={isFABReplaced && (
+            createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
                 <NarrativeCreation paginationOptions={queryPaginationOptions} />
               </Security>
@@ -220,11 +215,6 @@ const Narratives: FunctionComponent = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Narratives'), current: true }]} />
       {view === 'lines' ? renderLines() : ''}
       {view === 'subEntityLines' ? renderSubEntityLines() : ''}
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-          <NarrativeCreation paginationOptions={queryPaginationOptions} />
-        </Security>
-      )}
     </ExportContextProvider>
   );
 };

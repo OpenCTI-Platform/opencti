@@ -20,7 +20,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const groupingMutationFieldPatch = graphql`
   mutation GroupingEditionOverviewFieldPatchMutation(
@@ -87,8 +86,6 @@ const GROUPING_TYPE = 'Grouping';
 const GroupingEditionOverviewComponent = (props) => {
   const { grouping, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
 
@@ -293,12 +290,9 @@ const GroupingEditionOverviewComponent = (props) => {
               onChange={editor.changeMarking}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-              {isFABReplaced
-                ? <GroupingDeletion
-                    groupingId={grouping.id}
-                  />
-                : <div/>
-              }
+              <GroupingDeletion
+                groupingId={grouping.id}
+              />
               {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}

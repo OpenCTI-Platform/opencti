@@ -3,7 +3,7 @@ import { FormikConfig } from 'formik/dist/types';
 import React from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import GroupField from '@components/common/form/GroupField';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import OpenVocabField from '@components/common/form/OpenVocabField';
@@ -21,7 +21,6 @@ import DashboardField from '../../common/form/DashboardField';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
 const organizationMutationFieldPatch = graphql`
@@ -114,8 +113,6 @@ const SettingsOrganizationEdition = ({
 }: SettingsOrganizationEditionProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -197,12 +194,8 @@ const SettingsOrganizationEdition = ({
   return (
     <Drawer
       title={t_i18n('Update the organization')}
-      variant={isFABReplaced ? undefined : DrawerVariant.updateWithPanel}
       context={context}
-      controlledDial={isFABReplaced
-        ? UpdateSettingsOrganizationControlledDial
-        : undefined
-      }
+      controlledDial={UpdateSettingsOrganizationControlledDial}
     >
       {({ onClose }) => (
         <Formik<SettingsOrganizationFormValues>

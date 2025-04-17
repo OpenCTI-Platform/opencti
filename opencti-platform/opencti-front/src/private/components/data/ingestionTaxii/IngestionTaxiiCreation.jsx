@@ -8,7 +8,7 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
 import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, getAuthenticationValue } from '../../../../utils/ingestionAuthentificationUtils';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -20,7 +20,6 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const styles = (theme) => ({
   buttons: {
@@ -70,9 +69,6 @@ const CreateIngestionTaxiiControlledDial = (props) => (
 const IngestionTaxiiCreation = (props) => {
   const { t, classes } = props;
 
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const authentifcationValueResolved = getAuthenticationValue(values);
 
@@ -112,8 +108,7 @@ const IngestionTaxiiCreation = (props) => {
   return (
     <Drawer
       title={t('Create a TAXII ingester')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreateIngestionTaxiiControlledDial : undefined}
+      controlledDial={CreateIngestionTaxiiControlledDial}
     >
       {({ onClose }) => (
         <Formik

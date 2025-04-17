@@ -3,9 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { AttackPattern_attackPattern$key } from '@components/techniques/attack_patterns/__generated__/AttackPattern_attackPattern.graphql';
 import AttackPatternDetails from './AttackPatternDetails';
-import AttackPatternEdition from './AttackPatternEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -13,7 +10,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const attackPatternFragment = graphql`
   fragment AttackPattern_attackPattern on AttackPattern {
@@ -74,8 +70,6 @@ interface AttackPatternProps {
 const AttackPattern: React.FC<AttackPatternProps> = ({ attackPatternData }) => {
   const attackPattern = useFragment<AttackPattern_attackPattern$key>(attackPatternFragment, attackPatternData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(attackPattern.entity_type);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -147,11 +141,6 @@ const AttackPattern: React.FC<AttackPatternProps> = ({ attackPatternData }) => {
           })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AttackPatternEdition attackPatternId={attackPattern.id} />
-        </Security>
-      )}
     </>
   );
 };

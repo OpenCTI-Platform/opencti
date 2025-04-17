@@ -3,7 +3,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
-import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -151,9 +150,6 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
     x_opencti_workflow_id: convertStatus(t_i18n, note) as FieldOption,
   };
 
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
   return (
     <Formik
       enableReinitialize={true}
@@ -287,9 +283,7 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          {isFABReplaced && <NoteDeletion
-            id={note.id}
-                            />}
+          <NoteDeletion id={note.id} />
         </Form>
       )}
     </Formik>

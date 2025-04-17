@@ -2,7 +2,6 @@ import { graphql } from 'relay-runtime';
 import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { Individual_individual$key } from './__generated__/Individual_individual.graphql';
 import IndividualDetails from './IndividualDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -11,9 +10,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import IndividualEdition from './IndividualEdition';
 
 const individualFragment = graphql`
   fragment Individual_individual on Individual {
@@ -82,8 +78,6 @@ const Individual: React.FC<IndividualProps> = ({ individualData, viewAs }) => {
   const lastReportsProps = viewAs === 'knowledge'
     ? { stixCoreObjectOrStixRelationshipId: individual.id }
     : { authorId: individual.id };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <>
       <Grid
@@ -128,11 +122,6 @@ const Individual: React.FC<IndividualProps> = ({ individualData, viewAs }) => {
         stixCoreObjectOrStixCoreRelationshipId={individual.id}
         defaultMarkings={individual.objectMarking ?? []}
       />
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IndividualEdition individualId={individual.id} />
-        </Security>
-      )}
     </>
   );
 };

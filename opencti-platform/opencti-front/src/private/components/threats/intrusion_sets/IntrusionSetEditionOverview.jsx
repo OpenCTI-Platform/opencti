@@ -19,7 +19,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import IntrusionSetDeletion from './IntrusionSetDeletion';
 
 const intrusionSetMutationFieldPatch = graphql`
@@ -89,8 +88,6 @@ const INTRUSION_SET_TYPE = 'Intrusion-Set';
 const IntrusionSetEditionOverviewComponent = (props) => {
   const { intrusionSet, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const theme = useTheme();
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
@@ -281,12 +278,9 @@ const IntrusionSetEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <IntrusionSetDeletion
-                  id={intrusionSet.id}
-                />
-              : <div />
-            }
+            <IntrusionSetDeletion
+              id={intrusionSet.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

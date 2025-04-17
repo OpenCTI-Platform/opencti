@@ -1,18 +1,13 @@
 import { Grid } from '@mui/material';
 import React from 'react';
-import useHelper from 'src/utils/hooks/useHelper';
-import Security from 'src/utils/Security';
-import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
 import StixDomainObjectOverview from '@components/common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectLatestHistory from '@components/common/stix_core_objects/StixCoreObjectLatestHistory';
 import { graphql, useFragment } from 'react-relay';
-import ReportEdition from './ReportEdition';
 import ReportDetails from './ReportDetails';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import { Report_report$key } from './__generated__/Report_report.graphql';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
 const reportComponentFragment = graphql`
   fragment Report_report on Report {
@@ -86,11 +81,8 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
     reportComponentFragment,
     reportFragment,
   );
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const reportOverviewLayoutCustomization = useOverviewLayoutCustomization(report.entity_type);
-  const { canEdit } = useGetCurrentUserAccessRight(report.currentUserAccessRight);
 
   return (<>
     <Grid
@@ -148,11 +140,6 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
         })
       }
     </Grid>
-    {!isFABReplaced && (
-      <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
-        <ReportEdition reportId={report.id} />
-      </Security>
-    )}
   </>);
 };
 

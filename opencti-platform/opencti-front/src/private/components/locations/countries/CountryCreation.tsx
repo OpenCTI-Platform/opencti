@@ -6,7 +6,7 @@ import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -22,7 +22,6 @@ import { CountryCreationMutation, CountryCreationMutation$variables } from './__
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -289,10 +288,8 @@ const CountryCreation = ({
 }: {
   paginationOptions: CountriesLinesPaginationQuery$variables;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_countries', paginationOptions, 'countryAdd');
 
   const CreateCountryControlledDial = (props: DrawerControlledDialProps) => (
@@ -301,9 +298,8 @@ const CountryCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a country')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
-      controlledDial={isFABReplaced ? CreateCountryControlledDial : undefined}
+      controlledDial={CreateCountryControlledDial}
     >
       {({ onClose }) => (
         <CountryCreationForm

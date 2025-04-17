@@ -22,7 +22,6 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import { ThreatActorIndividualEditionOverview_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionOverview_ThreatActorIndividual.graphql';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import ThreatActorIndividualDeletion from './ThreatActorIndividualDeletion';
 import type { Theme } from '../../../../components/Theme';
 
@@ -145,8 +144,6 @@ ThreatActorIndividualEditionOverviewProps
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const threatActorIndividual = useFragment(
     threatActorIndividualEditionOverviewFragment,
     threatActorIndividualRef,
@@ -350,12 +347,9 @@ ThreatActorIndividualEditionOverviewProps
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <ThreatActorIndividualDeletion
-                  id={threatActorIndividual.id}
-                />
-              : <div />
-            }
+            <ThreatActorIndividualDeletion
+              id={threatActorIndividual.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

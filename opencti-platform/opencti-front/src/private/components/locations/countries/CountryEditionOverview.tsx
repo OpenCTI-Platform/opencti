@@ -4,7 +4,6 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import useHelper from 'src/utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -214,8 +213,6 @@ CountryEditionOverviewProps
     objectMarking: convertMarkings(country),
     x_opencti_workflow_id: convertStatus(t_i18n, country) as FieldOption,
   };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <Formik
       enableReinitialize={true}
@@ -267,7 +264,7 @@ CountryEditionOverviewProps
             editContext={context}
             variant="edit"
           />
-          {country?.workflowEnabled && (
+          {country.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Country"
@@ -302,12 +299,9 @@ CountryEditionOverviewProps
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <CountryDeletion
-                  id={country.id}
-                />
-              : <div/>
-              }
+            <CountryDeletion
+              id={country.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

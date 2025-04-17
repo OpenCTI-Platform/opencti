@@ -3,9 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { Channel_channel$key } from '@components/arsenal/channels/__generated__/Channel_channel.graphql';
 import ChannelDetails from './ChannelDetails';
-import ChannelEdition from './ChannelEdition';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -13,7 +10,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const channelFragment = graphql`
   fragment Channel_channel on Channel {
@@ -74,8 +70,6 @@ interface ChannelProps {
 const Channel: React.FC<ChannelProps> = ({ channelData }) => {
   const channel = useFragment<Channel_channel$key>(channelFragment, channelData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(channel.entity_type);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -147,11 +141,6 @@ const Channel: React.FC<ChannelProps> = ({ channelData }) => {
           })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ChannelEdition channelId={channel.id} />
-        </Security>
-      )}
     </>
   );
 };

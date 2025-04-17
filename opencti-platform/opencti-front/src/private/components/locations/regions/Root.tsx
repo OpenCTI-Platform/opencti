@@ -16,7 +16,6 @@ import Region from './Region';
 import RegionKnowledge from './RegionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import RegionPopover from './RegionPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
@@ -32,7 +31,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import RegionEdition from './RegionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -90,8 +88,6 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
@@ -140,8 +136,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               entityType="Region"
               disableSharing={true}
               stixDomainObject={region}
-              PopoverComponent={<RegionPopover id={region.id} />}
-              EditComponent={isFABReplaced && (
+              EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <RegionEdition regionId={region.id} />
                 </Security>

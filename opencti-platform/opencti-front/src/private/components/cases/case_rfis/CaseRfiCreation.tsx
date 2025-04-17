@@ -7,7 +7,7 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { handleErrorInForm } from 'src/relay/environment';
 import { CaseRfisLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRfisLinesCasesPaginationQuery.graphql';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
@@ -35,7 +35,6 @@ import RichTextField from '../../../../components/fields/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import Security from '../../../../utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
@@ -419,14 +418,12 @@ const CaseRfiCreation = ({
   paginationOptions: CaseRfisLinesCasesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_case_caseRfis',
     paginationOptions,
     'caseRfiAdd',
   );
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateCaseRfiControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Case-Rfi' {...props} />
   );
@@ -434,8 +431,7 @@ const CaseRfiCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a request for information')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateCaseRfiControlledDial : undefined}
+      controlledDial={CreateCaseRfiControlledDial}
     >
       <CaseRfiCreationForm updater={updater} />
     </Drawer>

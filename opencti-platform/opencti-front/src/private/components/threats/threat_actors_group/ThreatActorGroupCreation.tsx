@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -23,7 +23,6 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { ThreatActorGroupCreationMutation, ThreatActorGroupCreationMutation$variables } from './__generated__/ThreatActorGroupCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import { splitMultilines } from '../../../../utils/String';
@@ -323,7 +322,6 @@ const ThreatActorGroupCreation = ({
 }: {
   paginationOptions: ThreatActorsGroupCardsPaginationQuery$variables;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
 
@@ -334,7 +332,6 @@ const ThreatActorGroupCreation = ({
     'threatActorGroupAdd',
   );
 
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateThreatActorGroupControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Threat-Actor-Group' {...props} />
   );
@@ -342,8 +339,7 @@ const ThreatActorGroupCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a threat actor group')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateThreatActorGroupControlledDial : undefined}
+      controlledDial={CreateThreatActorGroupControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >
       {({ onClose }) => (

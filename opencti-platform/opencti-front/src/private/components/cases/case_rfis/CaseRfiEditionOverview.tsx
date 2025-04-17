@@ -4,7 +4,6 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
-import useHelper from 'src/utils/hooks/useHelper';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -265,8 +264,6 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
     x_opencti_workflow_id: convertStatus(t_i18n, caseData) as FieldOption,
     references: [],
   };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   let statusScope = StatusScopeEnum.GLOBAL;
   if (caseData.x_opencti_request_access) {
@@ -432,10 +429,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <CaseRfiDeletion id={caseData.id}/>
-              : <div/>
-              }
+            <CaseRfiDeletion id={caseData.id}/>
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

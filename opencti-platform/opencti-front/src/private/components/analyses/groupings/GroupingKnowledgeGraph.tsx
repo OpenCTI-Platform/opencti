@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import { graphql } from 'react-relay';
-import GroupingPopover from './GroupingPopover';
 import { GroupingKnowledgeGraphQuery$data } from './__generated__/GroupingKnowledgeGraphQuery.graphql';
 import useGroupingKnowledgeGraphDeleteRelation from './useGroupingKnowledgeGraphDeleteRelation';
 import { OctiGraphPositions } from '../../../../components/graph/graph.types';
@@ -102,7 +101,6 @@ const GroupingKnowledgeGraph = ({
           modes: ['graph', 'content', 'correlation', 'matrix'],
           mode,
           link: `/dashboard/analyses/groupings/${id}/knowledge`,
-          PopoverComponent: <GroupingPopover id={id} />,
         }}
         onAddRelation={addRelationInGraph}
         onDeleteRelation={deleteRelationInGraph}

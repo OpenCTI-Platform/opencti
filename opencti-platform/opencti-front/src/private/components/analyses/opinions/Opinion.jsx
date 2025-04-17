@@ -8,9 +8,8 @@ import OpinionEdition from './OpinionEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import OpinionPopover from './OpinionPopover';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -31,15 +30,12 @@ const OpinionComponent = ({ opinion, enableReferences }) => {
         placeholder={
           <ContainerHeader
             container={opinion}
-            PopoverComponent={<OpinionPopover opinion={opinion} />}
             disableAuthorizedMembers={true}
           />
         }
       >
         <ContainerHeader
           container={opinion}
-          PopoverComponent={<OpinionPopover opinion={opinion} />}
-          popoverSecurity={[KNOWLEDGE_KNPARTICIPATE]}
           disableAuthorizedMembers={true}
         />
       </CollaborativeSecurity>

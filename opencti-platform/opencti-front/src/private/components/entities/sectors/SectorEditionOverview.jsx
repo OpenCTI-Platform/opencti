@@ -18,7 +18,6 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import SectorDeletion from './SectorDeletion';
 
 const sectorMutationFieldPatch = graphql`
@@ -83,8 +82,6 @@ const sectorMutationRelationDelete = graphql`
 const SectorEditionOverviewComponent = (props) => {
   const { sector, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -251,11 +248,9 @@ const SectorEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <SectorDeletion
-                  id={sector.id}
-                />
-              : <div />}
+            <SectorDeletion
+              id={sector.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

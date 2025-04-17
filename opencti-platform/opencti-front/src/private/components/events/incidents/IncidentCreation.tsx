@@ -7,8 +7,7 @@ import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
-import useHelper from 'src/utils/hooks/useHelper';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { IncidentsLinesQuery$variables } from '@components/events/incidents/__generated__/IncidentsLinesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -306,17 +305,14 @@ const IncidentCreation = ({
   paginationOptions: IncidentsLinesQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateIncidentControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Incident' {...props} />
   );
   return (
     <Drawer
       title={t_i18n('Create an incident')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateIncidentControlledDial : undefined}
+      controlledDial={CreateIncidentControlledDial}
     >
       {({ onClose }) => (
         <IncidentCreationForm

@@ -1,7 +1,6 @@
 import React from 'react';
 import { EventsLinesPaginationQuery, EventsLinesPaginationQuery$variables } from '@components/entities/events/__generated__/EventsLinesPaginationQuery.graphql';
 import { EventLineDummy } from '@components/entities/events/EventLine';
-import useHelper from 'src/utils/hooks/useHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import EventsLines, { eventsLinesQuery } from './events/EventsLines';
 import EventCreation from './events/EventCreation';
@@ -18,8 +17,6 @@ const LOCAL_STORAGE_KEY = 'events';
 
 const Events = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Events | Entities'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<EventsLinesPaginationQuery$variables>(
@@ -92,9 +89,11 @@ const Events = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={isFABReplaced && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <EventCreation paginationOptions={paginationOptions} />
-        </Security>}
+        createButton={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <EventCreation paginationOptions={paginationOptions} />
+          </Security>
+        )}
       >
         {queryRef && (
           <React.Suspense
@@ -126,11 +125,6 @@ const Events = () => {
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Events'), current: true }]} />
       {renderLines()}
-      {!isFABReplaced
-        && <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <EventCreation paginationOptions={paginationOptions} />
-        </Security>
-      }
     </>
   );
 };

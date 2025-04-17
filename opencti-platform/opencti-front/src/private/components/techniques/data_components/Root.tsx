@@ -14,7 +14,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import DataComponent from './DataComponent';
-import DataComponentPopover from './DataComponentPopover';
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -27,7 +26,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import DataComponentEdition from './DataComponentEdition';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -86,8 +84,6 @@ const RootDataComponent = () => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   return (
     <>
@@ -110,10 +106,7 @@ const RootDataComponent = () => {
                   <StixDomainObjectHeader
                     entityType="Data-Component"
                     stixDomainObject={props.dataComponent}
-                    PopoverComponent={
-                      <DataComponentPopover dataComponentId={dataComponentId}/>
-                    }
-                    EditComponent={isFABReplaced && (
+                    EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <DataComponentEdition dataComponentId={dataComponent.id} />
                       </Security>

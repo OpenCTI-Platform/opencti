@@ -1,8 +1,6 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -12,8 +10,6 @@ import { DataSource_dataSource$key } from './__generated__/DataSource_dataSource
 import DataSourceDetailsComponent from './DataSourceDetails';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import useHelper from '../../../../utils/hooks/useHelper';
-import DataSourceEdition from './DataSourceEdition';
 
 const dataSourceFragment = graphql`
   fragment DataSource_dataSource on DataSource {
@@ -75,8 +71,6 @@ interface DataSourceProps {
 const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
   const dataSource = useFragment<DataSource_dataSource$key>(dataSourceFragment, dataSourceData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(dataSource.entity_type);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   return (
     <>
@@ -149,11 +143,6 @@ const DataSourceComponent: React.FC<DataSourceProps> = ({ dataSourceData }) => {
           })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DataSourceEdition dataSourceId={dataSource.id} />
-        </Security>
-      )}
     </>
   );
 };

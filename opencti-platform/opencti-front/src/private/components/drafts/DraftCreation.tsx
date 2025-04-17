@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { DraftCreationMutation, DraftCreationMutation$variables } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
@@ -14,7 +14,6 @@ import { handleErrorInForm } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import useHelper from '../../../utils/hooks/useHelper';
 
 export const draftCreationMutation = graphql`
     mutation DraftCreationMutation($input: DraftWorkspaceAddInput!) {
@@ -117,8 +116,6 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
 
 const DraftCreation = ({ paginationOptions }: { paginationOptions: DraftsLinesPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_draftWorkspaces',
@@ -131,8 +128,7 @@ const DraftCreation = ({ paginationOptions }: { paginationOptions: DraftsLinesPa
   return (
     <Drawer
       title={t_i18n('Create a Draft')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateDraftControlledDial : undefined}
+      controlledDial={CreateDraftControlledDial}
     >
       {({ onClose }) => (
         <DraftCreationForm

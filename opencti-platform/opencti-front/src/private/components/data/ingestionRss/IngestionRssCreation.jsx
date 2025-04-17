@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -18,7 +18,6 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { insertNode } from '../../../../utils/store';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const styles = (theme) => ({
   createButton: {
@@ -87,9 +86,6 @@ const CreateIngestionRssControlledDial = (props) => (
 const IngestionRssCreation = (props) => {
   const { t, classes } = props;
 
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const input = {
       name: values.name,
@@ -119,8 +115,7 @@ const IngestionRssCreation = (props) => {
   return (
     <Drawer
       title={t('Create a RSS ingester')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced ? CreateIngestionRssControlledDial : undefined}
+      controlledDial={CreateIngestionRssControlledDial}
     >
       {({ onClose }) => (
         <Formik

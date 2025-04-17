@@ -15,7 +15,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
-import useHelper from '../../../utils/hooks/useHelper';
 import DraftPopover from './DraftPopover';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -119,8 +118,6 @@ const Drafts: React.FC = () => {
   const draftColor = getDraftModeColor(theme);
   const validatedDraftColor = theme.palette.success.main;
   const draftContext = useDraftContext();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Drafts'));
 
@@ -217,7 +214,7 @@ const Drafts: React.FC = () => {
         lineFragment={DraftLineFragment}
         exportContext={{ entity_type: 'DraftWorkspace' }}
         redirectionModeEnabled
-        createButton={!draftContext && isFABReplaced && (
+        createButton={!draftContext && (
           <DraftCreation paginationOptions={queryPaginationOptions} />
         )}
         actions={(row) => (
@@ -228,9 +225,6 @@ const Drafts: React.FC = () => {
           />
         )}
       />
-      )}
-      {!draftContext && !isFABReplaced && (
-        <DraftCreation paginationOptions={queryPaginationOptions} />
       )}
     </span>
   );

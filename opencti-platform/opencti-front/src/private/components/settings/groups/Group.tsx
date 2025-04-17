@@ -25,14 +25,12 @@ import Triggers from '../common/Triggers';
 import GroupUsers from '../users/GroupUsers';
 import { Group_group$key } from './__generated__/Group_group.graphql';
 import GroupEdition from './GroupEdition';
-import GroupPopover from './GroupPopover';
 import ItemIcon from '../../../../components/ItemIcon';
 import GroupHiddenTypesChipList from './GroupHiddenTypesChipList';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { checkIsMarkingAllowed } from '../../../../utils/markings/markingsFiltering';
 import type { Theme } from '../../../../components/Theme';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -46,10 +44,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   title: {
     float: 'left',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
   },
   paper: {
     marginTop: theme.spacing(1),
@@ -126,8 +120,6 @@ const groupFragment = graphql`
 const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const group = useFragment<Group_group$key>(groupFragment, groupData);
   const { isAllowed, isSensitive } = useSensitiveModifications('groups', group.standard_id);
@@ -162,9 +154,6 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
       >
         {group.name}
       </Typography>
-      {!isFABReplaced && <div className={classes.popover}>
-        <GroupPopover groupId={group.id} disabled={!isAllowed && isSensitive} />
-      </div>}
       <GroupEdition
         groupId={group.id}
         disabled={!isAllowed && isSensitive}

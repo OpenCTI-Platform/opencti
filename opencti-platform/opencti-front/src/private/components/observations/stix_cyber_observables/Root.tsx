@@ -106,10 +106,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
             { label: stixCyberObservable.observable_value, current: true },
           ]}
           />
-          <StixCyberObservableHeader
-            stixCyberObservable={stixCyberObservable}
-            isArtifact={false}
-          />
+          <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} />
           <Box
             sx={{
               borderBottom: 1,

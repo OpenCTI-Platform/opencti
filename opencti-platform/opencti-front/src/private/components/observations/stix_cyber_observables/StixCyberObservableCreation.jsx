@@ -19,7 +19,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useTheme } from '@mui/styles';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -286,7 +285,6 @@ const StixCyberObservableCreation = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { booleanAttributes, dateAttributes, multipleAttributes, numberAttributes, ignoredAttributes } = useAttributes();
   const [status, setStatus] = useState({ open: false, type: type ?? null });
@@ -333,7 +331,6 @@ const StixCyberObservableCreation = ({
   const handleOpen = () => setStatus({ open: true, type: status.type });
   const localHandleClose = () => setStatus({ open: false, type: type ?? null });
   const selectType = (selected) => setStatus({ open: status.open, type: selected });
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     let adaptedValues = [values];
@@ -917,21 +914,12 @@ const StixCyberObservableCreation = ({
   const renderClassic = () => {
     return (
       <>
-        {isFABReplaced
-          ? <CreateEntityControlledDial
-              entityType={type ?? 'Observable'}
-              onOpen={handleOpen}
-              onClose={() => {}}
-              style={controlledDialStyles}
-            />
-          : <Fab
-              onClick={handleOpen}
-              color="primary"
-              aria-label="Add"
-              className={classes.createButton}
-            >
-            <Add />
-          </Fab>}
+        <CreateEntityControlledDial
+          entityType={type ?? 'Observable'}
+          onOpen={handleOpen}
+          onClose={() => {}}
+          style={controlledDialStyles}
+        />
         <Drawer
           open={status.open}
           anchor="right"

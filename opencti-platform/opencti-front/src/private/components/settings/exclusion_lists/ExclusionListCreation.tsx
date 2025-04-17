@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik, FormikConfig } from 'formik';
@@ -21,7 +21,6 @@ import useSchema from '../../../../utils/hooks/useSchema';
 import { now } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const exclusionListCreationFileMutation = graphql`
   mutation ExclusionListCreationFileAddMutation($input: ExclusionListFileAddInput!) {
@@ -229,8 +228,6 @@ const ExclusionListCreation: FunctionComponent<ExclusionListCreationProps> = ({
   refetchStatus,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy, rootField: string) => {
     insertNode(
       store,
@@ -243,11 +240,7 @@ const ExclusionListCreation: FunctionComponent<ExclusionListCreationProps> = ({
   return (
     <Drawer
       title={t_i18n('Create an exclusion list')}
-      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced
-        ? CreateExclusionListControlledDial
-        : undefined
-      }
+      controlledDial={CreateExclusionListControlledDial}
     >
       {({ onClose }) => (
         <ExclusionListCreationForm

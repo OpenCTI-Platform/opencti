@@ -11,7 +11,6 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import IncidentKnowledgeGraph, { incidentKnowledgeGraphQuery } from './IncidentKnowledgeGraph';
 import IncidentKnowledgeCorrelation, { incidentKnowledgeCorrelationQuery } from './IncidentKnowledgeCorrelation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import CaseIncidentPopover from './CaseIncidentPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import IncidentKnowledgeTimeLine, { incidentKnowledgeTimeLineQuery } from './IncidentKnowledgeTimeLine';
@@ -317,7 +316,6 @@ class IncidentKnowledgeComponent extends Component {
         {mode !== 'graph' && (
         <ContainerHeader
           container={caseData}
-          PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
           link={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
           modes={['graph', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
@@ -472,9 +470,6 @@ class IncidentKnowledgeComponent extends Component {
 
 IncidentKnowledgeComponent.propTypes = {
   caseData: PropTypes.object,
-  mode: PropTypes.string,
-  classes: PropTypes.object,
-  t: PropTypes.func,
   navigate: PropTypes.func,
   enableReferences: PropTypes.bool,
 };

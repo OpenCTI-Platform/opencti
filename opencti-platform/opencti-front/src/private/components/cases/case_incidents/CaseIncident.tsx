@@ -4,13 +4,10 @@ import React, { useRef } from 'react';
 import { useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import useHelper from 'src/utils/hooks/useHelper';
 import { CaseUtils_case$key } from '@components/cases/__generated__/CaseUtils_case.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { convertMarkings } from '../../../../utils/edition';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Security from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
@@ -20,14 +17,12 @@ import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__g
 import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseIncidentDetails from './CaseIncidentDetails';
-import CaseIncidentEdition from './CaseIncidentEdition';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { tasksDataColumns } from '../tasks/TasksLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import type { Theme } from '../../../../components/Theme';
 
@@ -51,9 +46,6 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
   const caseIncident = useFragment(caseFragment, caseIncidentData);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const { canEdit } = useGetCurrentUserAccessRight(caseIncident.currentUserAccessRight);
 
   const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseIncident.id}-caseTask`;
 
@@ -237,11 +229,6 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
           })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
-          <CaseIncidentEdition caseId={caseIncident.id} />
-        </Security>
-      )}
     </>
   );
 };

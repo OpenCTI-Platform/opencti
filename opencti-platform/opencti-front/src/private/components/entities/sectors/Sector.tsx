@@ -10,10 +10,6 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import useHelper from '../../../../utils/hooks/useHelper';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import SectorEdition from './SectorEdition';
 
 const sectorFragment = graphql`
   fragment Sector_sector on Sector {
@@ -76,8 +72,6 @@ const Sector: React.FC<SectorProps> = ({ sectorData }) => {
     sectorFragment,
     sectorData,
   );
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <>
       <Grid
@@ -115,11 +109,6 @@ const Sector: React.FC<SectorProps> = ({ sectorData }) => {
         stixCoreObjectOrStixCoreRelationshipId={sector.id}
         defaultMarkings={sector.objectMarking ?? []}
       />
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <SectorEdition sectorId={sector.id} />
-        </Security>
-      )}
     </>
   );
 };

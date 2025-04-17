@@ -4,12 +4,9 @@ import React, { useRef } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import useHelper from 'src/utils/hooks/useHelper';
 import { CaseRfi_caseRfi$key } from '@components/cases/case_rfis/__generated__/CaseRfi_caseRfi.graphql';
 import { convertMarkings } from '../../../../utils/edition';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Security from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
@@ -17,7 +14,6 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import CaseRfiDetails from './CaseRfiDetails';
-import CaseRfiEdition from './CaseRfiEdition';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
@@ -123,8 +119,6 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
   const caseRfi = useFragment(caseRfiFragment, caseRfiData);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRfi.entity_type);
 
   const LOCAL_STORAGE_KEY = `cases-${caseRfi.id}-caseTask`;
@@ -308,11 +302,6 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
           })
         }
       </Grid>
-      {!isFABReplaced && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <CaseRfiEdition caseId={caseRfi.id} />
-        </Security>
-      )}
     </>
   );
 };

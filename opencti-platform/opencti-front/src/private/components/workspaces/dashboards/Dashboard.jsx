@@ -16,10 +16,8 @@ import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import WorkspaceWidgetPopover from './WorkspaceWidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
-import WorkspaceWidgetConfig from './WorkspaceWidgetConfig';
 import { ErrorBoundary } from '../../Error';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const COL_WIDTH = 30;
 
@@ -34,8 +32,6 @@ const dashboardLayoutMutation = graphql`
 const DashboardComponent = ({ workspace, noToolbar }) => {
   const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
   const theme = useTheme();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const [deleting, setDeleting] = useState(false);
   const [idToResize, setIdToResize] = useState();
@@ -209,18 +205,14 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             handleAddWidget={handleAddWidget}
             workspace={workspace}
             variant="dashboard"
-            config={manifest.config}
-            handleDateChange={handleDateChange}
           />
-          {isFABReplaced && (
-            <div style={{ marginTop: 8 }}>
-              <DashboardTimeFilters
-                workspace={workspace}
-                config={manifest.config}
-                handleDateChange={handleDateChange}
-              />
-            </div>
-          )}
+          <div style={{ marginTop: 8 }}>
+            <DashboardTimeFilters
+              workspace={workspace}
+              config={manifest.config}
+              handleDateChange={handleDateChange}
+            />
+          </div>
         </>
       )}
       <ReactGridLayout
@@ -287,13 +279,6 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           );
         })}
       </ReactGridLayout>
-
-      {!noToolbar && userCanEdit && !isFABReplaced && (
-        <WorkspaceWidgetConfig
-          onComplete={handleAddWidget}
-          workspace={workspace}
-        />
-      )}
     </div>
   );
 };

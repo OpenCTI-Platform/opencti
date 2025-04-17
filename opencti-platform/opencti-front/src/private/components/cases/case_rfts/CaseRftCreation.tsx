@@ -1,5 +1,5 @@
 import Button from '@mui/material/Button';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
@@ -35,7 +35,6 @@ import RichTextField from '../../../../components/fields/RichTextField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import Security from '../../../../utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
@@ -418,14 +417,12 @@ const CaseRftCreation = ({
   paginationOptions: CaseRftsLinesCasesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_case_caseRfts',
     paginationOptions,
     'caseRftAdd',
   );
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateCaseRftControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Case-Rft' {...props} />
   );
@@ -433,8 +430,7 @@ const CaseRftCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a request for takedown')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateCaseRftControlledDial : undefined}
+      controlledDial={CreateCaseRftControlledDial}
     >
       <CaseRftCreationForm updater={updater} />
     </Drawer>

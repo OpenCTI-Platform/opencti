@@ -19,7 +19,6 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import ChannelDeletion from './ChannelDeletion';
 
 const channelMutationFieldPatch = graphql`
@@ -83,8 +82,6 @@ const channelMutationRelationDelete = graphql`
 const ChannelEditionOverviewComponent = (props) => {
   const { channel, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     CHANNEL_TYPE,
   );
@@ -275,11 +272,9 @@ const ChannelEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <ChannelDeletion
-                  id={channel.id}
-                />
-              : <div />}
+            <ChannelDeletion
+              id={channel.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

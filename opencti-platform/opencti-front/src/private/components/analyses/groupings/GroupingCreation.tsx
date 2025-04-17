@@ -1,14 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useNavigate } from 'react-router-dom';
-import useHelper from 'src/utils/hooks/useHelper';
 import { GroupingsLinesPaginationQuery$variables } from '@components/analyses/__generated__/GroupingsLinesPaginationQuery.graphql';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import Typography from '@mui/material/Typography';
@@ -359,8 +358,6 @@ const GroupingCreation = ({
   paginationOptions: GroupingsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   const CreateGroupingControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Grouping' {...props} />
@@ -368,8 +365,7 @@ const GroupingCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a grouping')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateGroupingControlledDial : undefined}
+      controlledDial={CreateGroupingControlledDial}
     >
       <GroupingCreationForm updater={updater} />
     </Drawer>

@@ -6,14 +6,12 @@ import { useTheme } from '@mui/material/styles';
 import { DraftChip } from '../../common/draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
-import StixCyberObservablePopover from './StixCyberObservablePopover';
 import { truncate } from '../../../../utils/String';
 import StixCoreObjectEnrichment from '../../common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObjectSharing';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
 import Security from '../../../../utils/Security';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -30,13 +28,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const StixCyberObservableHeaderComponent = ({
-  stixCyberObservable,
-  isArtifact,
-}) => {
+const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
   const theme = useTheme();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const classes = useStyles();
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
@@ -65,15 +58,7 @@ const StixCyberObservableHeaderComponent = ({
           {isKnowledgeEnricher && (
             <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
           )}
-          {isFABReplaced && (
-            <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixCyberObservable.id} />
-          )}
-          {!isFABReplaced && (
-            <StixCyberObservablePopover
-              stixCyberObservableId={stixCyberObservable.id}
-              isArtifact={isArtifact}
-            />
-          )}
+          <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixCyberObservable.id} />
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCyberObservableEdition
               stixCyberObservableId={stixCyberObservable.id}

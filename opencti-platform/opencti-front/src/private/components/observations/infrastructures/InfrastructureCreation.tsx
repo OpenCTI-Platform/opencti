@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -26,7 +26,6 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import { InfrastructuresLinesPaginationQuery$variables } from '../__generated__/InfrastructuresLinesPaginationQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
@@ -363,7 +362,6 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
 const InfrastructureCreation = ({ paginationOptions }: {
   paginationOptions: InfrastructuresLinesPaginationQuery$variables
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
@@ -373,7 +371,6 @@ const InfrastructureCreation = ({ paginationOptions }: {
     'infrastructureAdd',
   );
 
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateInfrastructureControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Infrastructure' {...props} />
   );
@@ -381,8 +378,7 @@ const InfrastructureCreation = ({ paginationOptions }: {
   return (
     <Drawer
       title={t_i18n('Create an infrastructure')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateInfrastructureControlledDial : undefined}
+      controlledDial={CreateInfrastructureControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >
       {({ onClose }) => (

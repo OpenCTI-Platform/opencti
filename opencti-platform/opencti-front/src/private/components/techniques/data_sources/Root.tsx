@@ -16,7 +16,6 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { RootDataSourceQuery } from './__generated__/RootDataSourceQuery.graphql';
 import { RootDataSourcesSubscription } from './__generated__/RootDataSourcesSubscription.graphql';
-import DataSourcePopover from './DataSourcePopover';
 import DataSourceKnowledgeComponent from './DataSourceKnowledge';
 import DataSource from './DataSource';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -27,7 +26,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import DataSourceEdition from './DataSourceEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -84,8 +82,6 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   );
   useSubscription(subConfig);
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
@@ -104,8 +100,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             entityType="Data-Source"
             noAliases={true}
             stixDomainObject={dataSource}
-            PopoverComponent={<DataSourcePopover id={dataSource.id}/>}
-            EditComponent={isFABReplaced && (
+            EditComponent={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <DataSourceEdition dataSourceId={dataSource.id} />
               </Security>

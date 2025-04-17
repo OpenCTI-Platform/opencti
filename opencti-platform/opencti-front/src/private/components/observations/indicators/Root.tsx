@@ -20,7 +20,6 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import IndicatorPopover from './IndicatorPopover';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -28,7 +27,6 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import IndicatorEdition from './IndicatorEdition';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -86,8 +84,6 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
   }), [indicatorId]);
 
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   useSubscription<RootIndicatorSubscription>(subConfig);
 
@@ -113,8 +109,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
           <StixDomainObjectHeader
             entityType="Indicator"
             stixDomainObject={indicator}
-            PopoverComponent={<IndicatorPopover id={indicator.id}/>}
-            EditComponent={isFABReplaced && (
+            EditComponent={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <IndicatorEdition indicatorId={indicator.id} />
               </Security>

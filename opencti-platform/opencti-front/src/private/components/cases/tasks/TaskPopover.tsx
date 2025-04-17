@@ -19,7 +19,6 @@ import { TasksEditionContainerQuery } from './__generated__/TasksEditionContaine
 import { deleteNode } from '../../../../utils/store';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -98,56 +97,52 @@ const TaskPopover = ({
       },
     });
   };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
-  return (isFABReplaced && variant !== 'inLine')
-    ? (<></>)
-    : (
-      <div className={classes.container} onClick={(e) => e.stopPropagation()}>
-        {variant === 'inLine' ? (
-          <IconButton
-            onClick={handleOpen}
-            aria-haspopup="true"
-            style={{ marginTop: 3 }}
-            size="large"
-            color="primary"
-          >
-            <MoreVert />
-          </IconButton>
-        ) : (
-          <ToggleButton
-            value="popover"
-            size="small"
-            onClick={handleOpen}
-          >
-            <MoreVert fontSize="small" color="primary" />
-          </ToggleButton>
-        )}
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-          <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-          </Security>
-        </Menu>
-        <DeleteDialog
-          deletion={deletion}
-          submitDelete={submitDelete}
-          message={t_i18n('Do you want to delete this task?')}
-        />
-        {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
-            <TasksEditionContainer
-              queryRef={queryRef}
-              handleClose={handleCloseEdit}
-              open={displayEdit}
-            />
-          </React.Suspense>
-        )}
-      </div>
-    );
+  return (
+    <div className={classes.container} onClick={(e) => e.stopPropagation()}>
+      {variant === 'inLine' ? (
+        <IconButton
+          onClick={handleOpen}
+          aria-haspopup="true"
+          style={{ marginTop: 3 }}
+          size="large"
+          color="primary"
+        >
+          <MoreVert />
+        </IconButton>
+      ) : (
+        <ToggleButton
+          value="popover"
+          size="small"
+          onClick={handleOpen}
+        >
+          <MoreVert fontSize="small" color="primary" />
+        </ToggleButton>
+      )}
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        </Security>
+      </Menu>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this task?')}
+      />
+      {queryRef && (
+        <React.Suspense
+          fallback={<Loader variant={LoaderVariant.inElement} />}
+        >
+          <TasksEditionContainer
+            queryRef={queryRef}
+            handleClose={handleCloseEdit}
+            open={displayEdit}
+          />
+        </React.Suspense>
+      )}
+    </div>
+  );
 };
 
 export default TaskPopover;

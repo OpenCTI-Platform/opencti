@@ -20,7 +20,6 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import CampaignDeletion from './CampaignDeletion';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const campaignMutationFieldPatch = graphql`
   mutation CampaignEditionOverviewFieldPatchMutation(
@@ -91,8 +90,6 @@ const CampaignEditionOverviewComponent = (props) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
 
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     CAMPAIGN_TYPE,
   );
@@ -274,12 +271,9 @@ const CampaignEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <CampaignDeletion
-                  id={campaign.id}
-                />
-              : <div />
-            }
+            <CampaignDeletion
+              id={campaign.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

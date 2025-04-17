@@ -43,7 +43,6 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -233,11 +232,9 @@ const StixDomainObjectHeader = (props) => {
   const {
     stixDomainObject,
     isOpenctiAlias,
-    PopoverComponent,
     EditComponent,
     viewAs,
     onViewAs,
-    disablePopover,
     disableSharing,
     noAliases,
     entityType, // Should migrate all the parent component to call the useIsEnforceReference as the top
@@ -254,8 +251,6 @@ const StixDomainObjectHeader = (props) => {
   const [aliasToDelete, setAliasToDelete] = useState(null);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const handleToggleOpenAliases = () => {
     setOpenAliases(!openAliases);
@@ -586,24 +581,8 @@ const StixDomainObjectHeader = (props) => {
             {(enableEnricher && isKnowledgeEnricher) && (
               <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
             )}
-            {isFABReplaced && enableEnrollPlaybook && (
+            {enableEnrollPlaybook && (
               <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixDomainObject.id} />
-            )}
-            {isKnowledgeUpdater && (
-              <div>
-                {/* TODO remove this when all components are pure function without compose() */}
-                {!React.isValidElement(PopoverComponent) ? (
-                  <PopoverComponent
-                    disabled={disablePopover}
-                    id={stixDomainObject.id}
-                  />
-                ) : (
-                  React.cloneElement(PopoverComponent, {
-                    id: stixDomainObject.id,
-                    disabled: disablePopover,
-                  })
-                )}
-              </div>
             )}
             {EditComponent}
           </div>

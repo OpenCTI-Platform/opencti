@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import { graphql } from 'react-relay';
-import CaseRfiPopover from './CaseRfiPopover';
 import { CaseRfiKnowledgeGraphQuery$data } from './__generated__/CaseRfiKnowledgeGraphQuery.graphql';
 import useCaseRfiKnowledgeGraphDeleteRelation from './useCaseRfiKnowledgeGraphDeleteRelation';
 import { OctiGraphPositions } from '../../../../components/graph/graph.types';
@@ -102,7 +101,6 @@ const CaseRfiKnowledgeGraph = ({
           modes: ['graph', 'content', 'timeline', 'correlation', 'matrix'],
           mode,
           link: `/dashboard/cases/rfis/${id}/knowledge`,
-          PopoverComponent: <CaseRfiPopover id={id} />,
         }}
         onAddRelation={addRelationInGraph}
         onDeleteRelation={deleteRelationInGraph}

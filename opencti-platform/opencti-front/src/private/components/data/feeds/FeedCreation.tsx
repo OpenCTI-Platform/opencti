@@ -46,14 +46,13 @@ import {
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { FilterDefinition } from '../../../../utils/hooks/useAuth';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -170,8 +169,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { onDrawerClose, open, paginationOptions, isDuplicated, feed } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const [selectedTypes, setSelectedTypes] = useState(feed?.feed_types ?? []);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed?.filters) ?? emptyFilterGroup);
@@ -357,8 +354,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   return (
     <Drawer
       title={isDuplicated ? (t_i18n('Duplicate a feed')) : (t_i18n('Create a feed'))}
-      variant={isFABReplaced || isDuplicated ? undefined : DrawerVariant.createWithPanel}
-      controlledDial={isFABReplaced && !isDuplicated ? CreateFeedControlledDial : undefined }
+      controlledDial={!isDuplicated ? CreateFeedControlledDial : undefined }
       open={open}
       onClose={onHandleClose}
     >

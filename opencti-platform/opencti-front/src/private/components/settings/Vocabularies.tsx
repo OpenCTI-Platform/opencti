@@ -144,6 +144,12 @@ const Vocabularies = () => {
         secondaryAction={true}
         keyword={paginationOptions.search}
         filters={viewStorage.filters}
+        createButton={(
+          <VocabularyCreation
+            category={category}
+            paginationOptions={paginationOptions}
+          />
+        )}
       >
         {queryRef && (
           <>
@@ -190,10 +196,6 @@ const Vocabularies = () => {
         { label: category, current: true }]}
       />
       {renderLines()}
-      <VocabularyCreation
-        category={category}
-        paginationOptions={paginationOptions}
-      />
     </div>
   );
 };

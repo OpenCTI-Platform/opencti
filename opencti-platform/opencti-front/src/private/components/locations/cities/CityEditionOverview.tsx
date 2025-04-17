@@ -5,7 +5,6 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import useHelper from 'src/utils/hooks/useHelper';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -218,8 +217,6 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
     objectMarking: convertMarkings(city),
     x_opencti_workflow_id: convertStatus(t_i18n, city) as FieldOption,
   };
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   return (
     <Formik
       enableReinitialize={true}
@@ -299,7 +296,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
               <SubscriptionFocus context={context} fieldName="longitude" />
             }
           />
-          {city?.workflowEnabled && (
+          {city.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="City"
@@ -334,12 +331,9 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <CityDeletion
-                  id={city.id}
-                />
-              : <div/>
-              }
+            <CityDeletion
+              id={city.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

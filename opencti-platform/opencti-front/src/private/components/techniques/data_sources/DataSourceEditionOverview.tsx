@@ -21,7 +21,6 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import DataSourceDeletion from './DataSourceDeletion';
 
 const dataSourceMutationFieldPatch = graphql`
@@ -151,8 +150,6 @@ DataSourceEditionOverviewProps
 > = ({ data, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_SOURCE_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
@@ -300,7 +297,7 @@ DataSourceEditionOverviewProps
               <SubscriptionFocus context={context} fieldName="description" />
             }
           />
-          {dataSource?.workflowEnabled && (
+          {dataSource.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Data-Source"
@@ -362,11 +359,9 @@ DataSourceEditionOverviewProps
             editContext={context}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <DataSourceDeletion
-                  id={dataSource.id}
-                />
-              : <div />}
+            <DataSourceDeletion
+              id={dataSource.id}
+            />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

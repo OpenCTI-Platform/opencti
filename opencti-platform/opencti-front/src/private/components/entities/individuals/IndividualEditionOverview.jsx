@@ -19,7 +19,6 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import useHelper from '../../../../utils/hooks/useHelper';
 import IndividualDeletion from './IndividualDeletion';
 
 const individualMutationFieldPatch = graphql`
@@ -87,8 +86,6 @@ const individualMutationRelationDelete = graphql`
 const IndividualEditionOverviewComponent = (props) => {
   const { individual, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const basicShape = {
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -284,11 +281,9 @@ const IndividualEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
-            {isFABReplaced
-              ? <IndividualDeletion
-                  id={individual.id}
-                />
-              : <div />}
+            <IndividualDeletion
+              id={individual.id}
+            />
             {enableReferences && (
             <CommitMessage
               submitForm={submitForm}

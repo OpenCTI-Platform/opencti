@@ -8,7 +8,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectEnrollPlaybookLines, { stixCoreObjectEnrollPlaybookLinesQuery } from './StixCoreObjectEnrollPlaybookLines';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StixCoreObjectEnrollPlaybookLinesProps {
   stixCoreObjectId: string,
@@ -18,8 +17,6 @@ interface StixCoreObjectEnrollPlaybookLinesProps {
 
 const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybookLinesProps> = ({ stixCoreObjectId, handleClose, open }) => {
   const [openDrawer, setOpenDrawer] = useState(false);
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const disabledInDraft = !!draftContext;
@@ -32,7 +29,7 @@ const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybo
   };
   return (
     <>
-      {(isFABReplaced || !handleClose) && (
+      {!handleClose && (
         <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Enroll in playbook')}>
           <ToggleButton
             onClick={() => !disabledInDraft && handleOpenEnrollPlaybook()}

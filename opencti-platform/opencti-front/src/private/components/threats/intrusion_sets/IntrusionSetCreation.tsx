@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -22,7 +22,6 @@ import { IntrusionSetsCardsPaginationQuery$variables } from './__generated__/Int
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
@@ -307,7 +306,6 @@ const IntrusionSetCreation = ({
 }: {
   paginationOptions: IntrusionSetsCardsPaginationQuery$variables;
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
 
@@ -318,7 +316,6 @@ const IntrusionSetCreation = ({
     'intrusionSetAdd',
   );
 
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const CreateIntrusionSetControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Intrusion-Set' {...props} />
   );
@@ -326,8 +323,7 @@ const IntrusionSetCreation = ({
   return (
     <Drawer
       title={t_i18n('Create an intrusion set')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateIntrusionSetControlledDial : undefined}
+      controlledDial={CreateIntrusionSetControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >
       {({ onClose }) => (

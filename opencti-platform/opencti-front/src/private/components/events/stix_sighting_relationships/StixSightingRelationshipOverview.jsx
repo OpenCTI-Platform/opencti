@@ -12,8 +12,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Fab from '@mui/material/Fab';
-import { ArrowRightAlt, Edit } from '@mui/icons-material';
+import { ArrowRightAlt } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
@@ -26,14 +25,12 @@ import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
-import StixSightingRelationshipEdition, { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
+import { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
 import { commitMutation } from '../../../../relay/environment';
 import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixSightingRelationshipExternalReferences from '../../analyses/external_references/StixSightingRelationshipExternalReferences';
 import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
@@ -211,8 +208,6 @@ class StixSightingRelationshipContainer extends Component {
       nsdt,
       classes,
       stixSightingRelationship,
-      paddingRight,
-      isFABReplaced = false,
     } = this.props;
     const { from } = stixSightingRelationship;
     const { to } = stixSightingRelationship;
@@ -581,27 +576,6 @@ class StixSightingRelationshipContainer extends Component {
             </>
           )}
         </Grid>
-        {!isFABReplaced && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <Fab
-              onClick={this.handleOpenEdition.bind(this)}
-              color="secondary"
-              aria-label="Edit"
-              className={
-                paddingRight ? classes.editButtonWithPadding : classes.editButton
-              }
-            >
-              <Edit />
-            </Fab>
-            <StixSightingRelationshipEdition
-              open={this.state.openEdit}
-              stixSightingRelationshipId={stixSightingRelationship.id}
-              inferred={stixSightingRelationship.x_opencti_inferences !== null}
-              handleClose={this.handleCloseEdition.bind(this)}
-              handleDelete={this.handleOpenDelete.bind(this)}
-            />
-          </Security>
-        )}
         <Dialog
           open={this.state.displayDelete}
           slotProps={{ paper: { elevation: 1 } }}
