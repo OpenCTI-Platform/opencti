@@ -40,7 +40,7 @@ const ResetPassword2faMutation = graphql`
   }
 `;
 
-const OTPForm = ({ variant = 'login', email, setStep }: { variant?: 'login' | 'resetPassword', email?: string, setStep?: Function }) => {
+const OTPForm = ({ variant = 'login', email, setStep }: { variant?: 'login' | 'resetPassword', email?: string, setStep?: React.Dispatch<React.SetStateAction<string>> }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [code, setCode] = useState('');

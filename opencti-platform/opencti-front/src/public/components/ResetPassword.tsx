@@ -152,7 +152,6 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   };
 
   const onSubmitValidatePassword: FormikConfig<ResetPasswordFormValues>['onSubmit'] = () => {
-    console.log('RESET PASSWORD');
     onCancel();
   };
 
