@@ -50,6 +50,7 @@ export const REVOKED = 'revoked';
 export const X_MITRE_ID_FIELD = 'x_mitre_id';
 export const X_DETECTION = 'x_opencti_detection';
 export const X_WORKFLOW_ID = 'x_opencti_workflow_id';
+export const X_SCORE = 'x_opencti_score';
 // endregion
 
 export const normalizeName = (name) => {
