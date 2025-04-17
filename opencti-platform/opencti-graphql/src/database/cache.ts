@@ -74,7 +74,7 @@ const handleCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommo
   const types = R.uniq(instances.map((i) => [i.entity_type, ...(STORE_ENTITIES_LINKS[i.entity_type] ?? [])]).flat());
   for (let index = 0; index < types.length; index += 1) {
     const type = types[index];
-    if (cache[type]) {
+    if (cache[type] && cache[type].values) {
       if (cache[type][fn]) {
         logApp.debug(`${fn} reset cache for entity`, { type });
         cache[type].values = await cache[type][fn](cache[type].values, instance);
@@ -83,7 +83,7 @@ const handleCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommo
         cache[type].values = undefined;
       }
     } else {
-      // This entity type is not part of the caching system
+      // This entity type is not part of the caching system or it has not been initialized yet
     }
   }
 };
