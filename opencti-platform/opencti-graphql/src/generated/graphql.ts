@@ -14063,7 +14063,8 @@ export type Mutation = {
   userNoteAdd?: Maybe<Note>;
   userOpinionAdd?: Maybe<Opinion>;
   userSessionsKill?: Maybe<Array<Maybe<Scalars['ID']['output']>>>;
-  verifyOtp?: Maybe<Scalars['Boolean']['output']>;
+  verify2fa?: Maybe<Scalars['Boolean']['output']>;
+  verifyOtp?: Maybe<VerifyOtp>;
   vocabularyAdd?: Maybe<Vocabulary>;
   vocabularyDelete?: Maybe<Scalars['ID']['output']>;
   vocabularyFieldPatch?: Maybe<Vocabulary>;
@@ -16139,6 +16140,11 @@ export type MutationUserOpinionAddArgs = {
 
 export type MutationUserSessionsKillArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationVerify2faArgs = {
+  input: Verify2faInput;
 };
 
 
@@ -29524,6 +29530,7 @@ export type User = BasicObject & InternalObject & {
   otp_activated?: Maybe<Scalars['Boolean']['output']>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   otp_qr?: Maybe<Scalars['String']['output']>;
+  otp_secret?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
@@ -30105,6 +30112,16 @@ export enum ValidationMode {
   Draft = 'draft',
   Workbench = 'workbench'
 }
+
+export type Verify2faInput = {
+  code: Scalars['String']['input'];
+  email: Scalars['String']['input'];
+};
+
+export type VerifyOtp = {
+  __typename?: 'VerifyOtp';
+  otp_activated: Scalars['Boolean']['output'];
+};
 
 export type VerifyOtpInput = {
   email: Scalars['String']['input'];
@@ -32393,6 +32410,8 @@ export type ResolversTypes = ResolversObject<{
   UserStatus: ResolverTypeWrapper<UserStatus>;
   UsersOrdering: UsersOrdering;
   ValidationMode: ValidationMode;
+  Verify2faInput: Verify2faInput;
+  VerifyOtp: ResolverTypeWrapper<VerifyOtp>;
   VerifyOtpInput: VerifyOtpInput;
   Vocabulary: ResolverTypeWrapper<BasicStoreEntityVocabulary>;
   VocabularyAddInput: VocabularyAddInput;
@@ -33167,6 +33186,8 @@ export type ResolversParentTypes = ResolversObject<{
   UserOTPLoginInput: UserOtpLoginInput;
   UserSession: UserSession;
   UserStatus: UserStatus;
+  Verify2faInput: Verify2faInput;
+  VerifyOtp: VerifyOtp;
   VerifyOtpInput: VerifyOtpInput;
   Vocabulary: BasicStoreEntityVocabulary;
   VocabularyAddInput: VocabularyAddInput;
@@ -38289,7 +38310,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
   userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;
-  verifyOtp?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerifyOtpArgs, 'input'>>;
+  verify2fa?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationVerify2faArgs, 'input'>>;
+  verifyOtp?: Resolver<Maybe<ResolversTypes['VerifyOtp']>, ParentType, ContextType, RequireFields<MutationVerifyOtpArgs, 'input'>>;
   vocabularyAdd?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyAddArgs, 'input'>>;
   vocabularyDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationVocabularyDeleteArgs, 'id'>>;
   vocabularyFieldPatch?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyFieldPatchArgs, 'id' | 'input'>>;
@@ -42185,6 +42207,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  otp_secret?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -42343,6 +42366,11 @@ export type UserSessionResolvers<ContextType = any, ParentType extends Resolvers
 export type UserStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserStatus'] = ResolversParentTypes['UserStatus']> = ResolversObject<{
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type VerifyOtpResolvers<ContextType = any, ParentType extends ResolversParentTypes['VerifyOtp'] = ResolversParentTypes['VerifyOtp']> = ResolversObject<{
+  otp_activated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -43364,6 +43392,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   UserEditMutations?: UserEditMutationsResolvers<ContextType>;
   UserSession?: UserSessionResolvers<ContextType>;
   UserStatus?: UserStatusResolvers<ContextType>;
+  VerifyOtp?: VerifyOtpResolvers<ContextType>;
   Vocabulary?: VocabularyResolvers<ContextType>;
   VocabularyConnection?: VocabularyConnectionResolvers<ContextType>;
   VocabularyDefinition?: VocabularyDefinitionResolvers<ContextType>;

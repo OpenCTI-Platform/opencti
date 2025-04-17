@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { askSendToken, generateCode, getUser } from '../../../src/modules/auth/auth-domain';
+import { askSendOtp, generateOtp, getUser } from '../../../src/modules/auth/auth-domain';
 import { AuthenticationFailure } from '../../../src/config/errors';
 import { testContext } from '../../utils/testQuery';
 
@@ -23,22 +23,22 @@ describe('getUser', () => {
 
 describe('generateCode', () => {
   it('Should return a 8 char code', async () => {
-    const result = generateCode();
+    const result = generateOtp();
     expect(result.length).toEqual(8);
   });
   it('Should dont have alphabetic char', async () => {
-    const result = parseInt(generateCode());
+    const result = parseInt(generateOtp());
     expect(result).not.toBeNaN();
   });
 });
 
 describe('askSendToken', () => {
   it('Should return true with an existed user', () => {
-    const result = askSendToken(testContext, 'anais@opencti.io');
+    const result = askSendOtp(testContext, { email: 'anais@opencti.io' });
     expect(result).toBeTruthy();
   });
   it('Should return true with an wrong email', () => {
-    const result = askSendToken(testContext, 'noResul@opencti.io');
+    const result = askSendOtp(testContext, { email: 'noResul@opencti.io' });
     expect(result).toBeTruthy();
   });
 });

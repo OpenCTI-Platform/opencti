@@ -1697,6 +1697,7 @@ type User implements BasicObject & InternalObject {
   otp_activated: Boolean
   otp_qr: String
   otp_mandatory: Boolean
+  otp_secret: String
   lastname: String
   theme: String
   language: String
@@ -9093,7 +9094,8 @@ type Mutation {
   fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
   askSendToken(email: String!): Boolean
   askSendOtp(input: AskSendOtpInput!): Boolean
-  verifyOtp(input: VerifyOtpInput!): Boolean
+  verifyOtp(input: VerifyOtpInput!): VerifyOtp
+  verify2fa(input: Verify2faInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12843,4 +12845,13 @@ input AskSendOtpInput {
 input VerifyOtpInput {
   email: String!
   otp: String!
+}
+
+input Verify2faInput {
+  code: String!
+  email: String!
+}
+
+type VerifyOtp {
+  otp_activated: Boolean!
 }

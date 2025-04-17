@@ -7,8 +7,18 @@ input VerifyOtpInput {
   otp : String!
 }
 
+input Verify2faInput {
+  code: String!
+  email: String!
+}
+
+type VerifyOtp {
+  otp_activated: Boolean!
+}
+
 ## Mutations
 type Mutation {
   askSendOtp(input: AskSendOtpInput!): Boolean @public
-  verifyOtp(input: VerifyOtpInput!): Boolean @public
+  verifyOtp(input: VerifyOtpInput!): VerifyOtp @public
+  verify2fa(input: Verify2faInput!): Boolean @public
 }

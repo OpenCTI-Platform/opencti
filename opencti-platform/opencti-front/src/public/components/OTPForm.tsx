@@ -34,7 +34,13 @@ const logoutMutation = graphql`
   }
 `;
 
-const OTPForm = () => {
+const ResetPassword2faMutation = graphql`
+  mutation OTPFormResetPasswordOtpLoginMutation($input: Verify2faInput!) {
+    verify2fa(input: $input)
+  }
+`;
+
+const OTPForm = ({ variant = 'login', email, setStep }: { variant?: 'login' | 'resetPassword', email?: string, setStep?: Function }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [code, setCode] = useState('');
@@ -42,7 +48,7 @@ const OTPForm = () => {
   const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data: string) => setCode(data);
   const [commitLogoutMutation] = useApiMutation(logoutMutation);
-  const [commitOtpMutation] = useApiMutation(otpMutation);
+  const [commitOtpMutation] = useApiMutation(variant === 'login' ? otpMutation : ResetPassword2faMutation);
   const handleLogout = () => {
     commitLogoutMutation({
       variables: {},
@@ -53,7 +59,7 @@ const OTPForm = () => {
     setInputDisable(true);
     commitOtpMutation({
       variables: {
-        input: { code },
+        input: variant === 'login' ? { code } : { code, email },
       },
       onError: () => {
         setInputDisable(false);
@@ -61,7 +67,11 @@ const OTPForm = () => {
         setError(t_i18n('The code is not correct'));
       },
       onCompleted: () => {
-        window.location.reload();
+        if (variant === 'resetPassword' && setStep) {
+          setStep('reset');
+        } else {
+          window.location.reload();
+        }
       },
     });
   }
