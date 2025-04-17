@@ -4,7 +4,7 @@ import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
-import React from 'react';
+import React, { useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
@@ -41,6 +41,7 @@ const ListFilters = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const [currentSavedFilter, setCurrentSavedFilter] = useState();
 
   const isSavedFiltersFeatureEnabled = isFeatureEnable('SAVED_FILTERS');
 
@@ -139,7 +140,7 @@ const ListFilters = ({
             )}
             renderOption={(props, option) => <li {...props}>{option.label}</li>}
           />
-          {isSavedFiltersFeatureEnabled && isDatatable && <SavedFilters />}
+          {isSavedFiltersFeatureEnabled && isDatatable && <SavedFilters setCurrentSavedFilter={setCurrentSavedFilter} />}
           <Tooltip title={t_i18n('Clear filters')}>
             <IconButton
               color={color}
@@ -149,7 +150,7 @@ const ListFilters = ({
               <FilterListOffOutlined fontSize={size || 'small'} />
             </IconButton>
           </Tooltip>
-          {isSavedFiltersFeatureEnabled && isDatatable && <SavedFilterButton />}
+          {isSavedFiltersFeatureEnabled && isDatatable && <SavedFilterButton currentSavedFilter={currentSavedFilter} />}
         </>
       )}
       <Popover

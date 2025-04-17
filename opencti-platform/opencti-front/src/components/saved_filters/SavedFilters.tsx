@@ -4,7 +4,7 @@ import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { SavedFiltersQuery, SavedFiltersQuery$variables } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
-import SavedFilterSelection from './SavedFilterSelection';
+import SavedFilterSelection, { type SavedFiltersSelectionData } from './SavedFilterSelection';
 import SavedFiltersAutocomplete from './SavedFiltersAutocomplete';
 
 const savedFiltersQuery = graphql`
@@ -24,20 +24,26 @@ const savedFiltersQuery = graphql`
 
 type SavedFiltersComponentProps = {
   queryRef: PreloadedQuery<SavedFiltersQuery>;
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData) => void;
 };
 
-const SavedFiltersComponent = ({ queryRef }: SavedFiltersComponentProps) => {
+const SavedFiltersComponent = ({ queryRef, setCurrentSavedFilter }: SavedFiltersComponentProps) => {
   const { savedFilters } = usePreloadedQuery(savedFiltersQuery, queryRef);
 
   return (
     <SavedFilterSelection
       isDisabled={!savedFilters?.edges?.length}
       data={savedFilters?.edges?.map(({ node }) => node) ?? []}
+      setCurrentSavedFilter={setCurrentSavedFilter}
     />
   );
 };
 
-const SavedFilters = () => {
+type SavedFiltersProps = {
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData) => void;
+};
+
+const SavedFilters = ({ setCurrentSavedFilter }: SavedFiltersProps) => {
   const {
     useDataTablePaginationLocalStorage: {
       localStorageKey,
@@ -55,7 +61,7 @@ const SavedFilters = () => {
   return (
     <>
       {queryRef
-        ? <SavedFiltersComponent queryRef={queryRef} />
+        ? <SavedFiltersComponent queryRef={queryRef} setCurrentSavedFilter={setCurrentSavedFilter} />
         : <SavedFiltersAutocomplete isDisabled />
       }
     </>

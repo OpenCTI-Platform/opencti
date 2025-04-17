@@ -9,6 +9,7 @@ export type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuer
 type SavedFilterSelectionProps = {
   isDisabled: boolean;
   data: SavedFiltersSelectionData[];
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData) => void;
 };
 
 export type AutocompleteOptionType = {
@@ -16,7 +17,7 @@ export type AutocompleteOptionType = {
   value: SavedFiltersSelectionData;
 };
 
-const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) => {
+const SavedFilterSelection = ({ isDisabled, data, setCurrentSavedFilter }: SavedFilterSelectionProps) => {
   const {
     useDataTablePaginationLocalStorage: {
       helpers,
@@ -35,6 +36,7 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
 
   const handleResetInput = () => {
     setSelectedSavedFilter(undefined);
+    setCurrentSavedFilter(undefined);
     setInputValue('');
   };
 
@@ -52,6 +54,7 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
 
   const handleSelect = (selectionOption: AutocompleteOptionType) => {
     setSelectedSavedFilter(selectionOption);
+    setCurrentSavedFilter(selectionOption.value);
     setInputValue(selectionOption.label);
     helpers.handleSetFilters(JSON.parse(selectionOption.value.filters));
   };
