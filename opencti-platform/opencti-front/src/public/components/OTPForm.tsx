@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
@@ -22,6 +22,12 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
+interface OTPFormProps {
+  variant?: 'login' | 'resetPassword',
+  email?: string,
+  onCompleted?: () => void
+}
+
 const otpMutation = graphql`
   mutation OTPFormMutation($input: UserOTPLoginInput) {
     otpLogin(input: $input)
@@ -40,7 +46,7 @@ const ResetPassword2faMutation = graphql`
   }
 `;
 
-const OTPForm = ({ variant = 'login', email, setStep }: { variant?: 'login' | 'resetPassword', email?: string, setStep?: React.Dispatch<React.SetStateAction<string>> }) => {
+const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, onCompleted }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [code, setCode] = useState('');
@@ -67,8 +73,8 @@ const OTPForm = ({ variant = 'login', email, setStep }: { variant?: 'login' | 'r
         setError(t_i18n('The code is not correct'));
       },
       onCompleted: () => {
-        if (variant === 'resetPassword' && setStep) {
-          setStep('reset');
+        if (onCompleted) {
+          onCompleted();
         } else {
           window.location.reload();
         }
@@ -88,8 +94,9 @@ const OTPForm = ({ variant = 'login', email, setStep }: { variant?: 'login' | 'r
       ) : (
         <Alert
           severity="info"
+          icon={false}
           variant="outlined"
-          style={{ margin: '15px 0', justifyContent: 'center' }}
+          style={{ margin: '0 0 15px 0', justifyContent: 'center' }}
         >
           {t_i18n(
             'You need to validate your two-factor authentication. Please type the code generated in your application',
@@ -103,15 +110,17 @@ const OTPForm = ({ variant = 'login', email, setStep }: { variant?: 'login' | 'r
           isDisabled={inputDisable}
         />
       </div>
-      <Button
-        type="submit"
-        variant="contained"
-        color="primary"
-        onClick={handleLogout}
-        style={{ marginTop: 30 }}
-      >
-        {t_i18n('Cancel')}
-      </Button>
+      {variant === 'login' && (
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          onClick={handleLogout}
+          style={{ marginTop: 30 }}
+        >
+          {t_i18n('Cancel')}
+        </Button>
+      )}
     </div>
   );
 };
