@@ -30,17 +30,14 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [_, setOpenSpeedDial] = useState(false);
   // Live
   const [openLive, setOpenLive] = useState(false);
   const handleOpenCreateLive = () => {
-    setOpenSpeedDial(false);
     setOpenLive(true);
   };
   // Digest
   const [openDigest, setOpenDigest] = useState(false);
   const handleOpenCreateDigest = () => {
-    setOpenSpeedDial(false);
     setOpenDigest(true);
   };
   return (
