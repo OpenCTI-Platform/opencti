@@ -10,6 +10,7 @@ import { useDataTable } from '../dataTableHooks';
 
 const DataTableBody = ({
   settingsMessagesBannerHeight = 0,
+  data,
   hasFilterComponent,
   dataTableToolBarComponent,
   pageStart,
@@ -38,11 +39,14 @@ const DataTableBody = ({
   } = useDataTableContext();
 
   const {
-    data: queryData,
+    data: paginatedData,
     isLoading,
     loadMore,
     hasMore,
   } = useDataTable(dataQueryArgs);
+
+  // data is from datatableWithoutFragment
+  const queryData = data ?? paginatedData;
 
   const resolvedData = useMemo(() => {
     if (!queryData) {

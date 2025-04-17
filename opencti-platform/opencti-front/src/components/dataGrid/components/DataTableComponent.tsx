@@ -26,6 +26,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'variant'
 | 'actions'
 | 'icon'
+| 'data'
 | 'availableFilterKeys'
 | 'initialValues'
 | 'disableNavigation'
@@ -50,6 +51,7 @@ const DataTableComponent = ({
   initialValues,
   availableFilterKeys,
   dataQueryArgs,
+  data,
   redirectionModeEnabled = false,
   useLineData,
   useComputeLink,
@@ -175,6 +177,7 @@ const DataTableComponent = ({
         redirectionModeEnabled,
         useLineData,
         dataQueryArgs,
+        data,
         useDataCellHelpers: useDataCellHelpers(helpers, variant),
         useDataTableToggle: useDataTableToggle(storageKey),
         useComputeLink: useComputeLink ?? defaultComputeLink,
