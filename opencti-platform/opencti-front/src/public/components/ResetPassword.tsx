@@ -10,6 +10,8 @@ import { graphql } from 'react-relay';
 import { useFormatter } from '../../components/i18n';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../relay/environment';
+import OTPForm from './OTPForm';
+import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } from './__generated__/ResetPasswordVerifyOtpMutation.graphql';
 
 interface ResetProps {
   onCancel: () => void;
@@ -23,7 +25,9 @@ mutation ResetPasswordAskSendOtpMutation($input: AskSendOtpInput!){
 
 export const VerifyOtpMutation = graphql`
 mutation ResetPasswordVerifyOtpMutation($input: VerifyOtpInput!){
-  verifyOtp(input: $input)
+  verifyOtp(input: $input) {
+    otp_activated
+  }
 }
 `;
 
@@ -59,6 +63,7 @@ interface ResetPasswordFormValues {
 
 const STEP_ASK_RESET = 'ask';
 const STEP_VALIDATE_OTP = 'validate';
+const STEP_2FA = '2fa';
 const STEP_RESET_PASSWORD = 'reset';
 const FLASH_COOKIE = 'opencti_flash';
 
@@ -79,7 +84,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
       successMessage: t_i18n('If your e-mail address is correct, an e-mail will be sent to you.'),
     },
   );
-  const [verifyOtpCommitMutation] = useApiMutation(
+  const [verifyOtpCommitMutation] = useApiMutation<ResetPasswordVerifyOtpMutation>(
     VerifyOtpMutation,
     undefined,
   );
@@ -131,11 +136,12 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
           email,
         },
       },
-      onCompleted: () => {
+      onCompleted: (response: ResetPasswordVerifyOtpMutation$data) => {
+        const mfaActivated = response.verifyOtp?.otp_activated;
         setOtpError(false);
         setSubmitting(false);
         resetForm();
-        setStep(STEP_RESET_PASSWORD);
+        setStep(mfaActivated ? STEP_2FA : STEP_RESET_PASSWORD);
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -235,6 +241,9 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
               </Form>
             )}
           </Formik>
+          )}
+          {step === STEP_2FA && (
+            <OTPForm variant="resetPassword" email={email} setStep={setStep} />
           )}
           {step === STEP_RESET_PASSWORD && (
           <Formik

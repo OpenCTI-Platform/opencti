@@ -1,15 +1,16 @@
 import ejs from 'ejs';
 import { getUserByEmail } from '../../domain/user';
-import { UnsupportedError } from '../../config/errors';
+import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
 import { sendMail } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
-import type { AskSendOtpInput, User } from '../../generated/graphql';
+import type { AskSendOtpInput, Verify2faInput, User, VerifyOtpInput } from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { ADMIN_USER } from '../../../tests/utils/testQuery';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
 import { redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../database/redis';
+import { authenticator } from 'otplib';
 
 export const getUser = async (email: string): Promise<User> => {
   const user: any = await getUserByEmail(email);
@@ -62,13 +63,30 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   return true;
 };
 
-export const verifyOtp = async (context: AuthContext, input: { email: string, otp: string }) => {
+export const verifyOtp = async (context: AuthContext, input: VerifyOtpInput) => {
   const storedOtp = await redisGetForgotPasswordOtp(input.email);
+  const { otp_activated } = await getUser(input.email);
   if (!storedOtp) {
     throw UnsupportedError('OTP expired or not found. Please request a new one.');
   }
   if (storedOtp !== input.otp) {
     throw UnsupportedError('Invalid OTP. Please check the code and try again.');
   }
-  return true;
+  if (otp_activated !== undefined && otp_activated !== null) {
+    return { otp_activated: otp_activated };
+  } else {
+    throw UnsupportedError('No 2FA information founded');
+  }
+};
+
+export const verify2fa = async (input: Verify2faInput) => {
+  const user = await getUser(input.email);
+  if (!user.otp_activated || !user.otp_secret) {
+    throw AuthenticationFailure();
+  }
+  const isValidated = authenticator.check(input.code, user.otp_secret);
+  if (!isValidated) {
+    throw AuthenticationFailure();
+  }
+  return isValidated;
 };
