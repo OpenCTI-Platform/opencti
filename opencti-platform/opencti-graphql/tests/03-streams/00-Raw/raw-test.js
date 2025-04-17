@@ -26,7 +26,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes['kill-chain-phase'].length).toBe(3);
       expect(createEventsByTypes['course-of-action'].length).toBe(3);
       expect(createEventsByTypes.label.length).toBe(15);
-      expect(createEventsByTypes.identity.length).toBe(38);
+      expect(createEventsByTypes.identity.length).toBe(36);
       expect(createEventsByTypes.location.length).toBe(16);
       expect(createEventsByTypes.relationship.length).toBe(138);
       expect(createEventsByTypes.sighting.length).toBe(4);
@@ -40,7 +40,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes['ipv4-addr'].length).toBe(1);
       expect(createEventsByTypes['data-component'].length).toBe(5);
       expect(createEventsByTypes['data-source'].length).toBe(1);
-      expect(createEventsByTypes.malware.length).toBe(49);
+      expect(createEventsByTypes.malware.length).toBe(47);
       expect(createEventsByTypes.software.length).toBe(1);
       expect(createEventsByTypes.file.length).toBe(4);
       expect(createEventsByTypes.campaign.length).toBe(5);
@@ -63,7 +63,7 @@ describe('Raw streams tests', () => {
       expect(updateEventsByTypes['campaign'].length).toBe(7);
       expect(updateEventsByTypes['relationship'].length).toBe(8);
       expect(updateEventsByTypes['identity'].length).toBe(23);
-      expect(updateEventsByTypes['malware'].length).toBe(20);
+      expect(updateEventsByTypes['malware'].length).toBe(19);
       expect(updateEventsByTypes['intrusion-set'].length).toBe(4);
       expect(updateEventsByTypes['data-component'].length).toBe(4);
       expect(updateEventsByTypes['location'].length).toBe(14);
@@ -99,7 +99,7 @@ describe('Raw streams tests', () => {
       }
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
-      expect(deleteEvents.length).toBe(174);
+      expect(deleteEvents.length).toBe(170);
       // const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       for (let delIndex = 0; delIndex < deleteEvents.length; delIndex += 1) {
         const { data: insideData, origin, type } = deleteEvents[delIndex];
