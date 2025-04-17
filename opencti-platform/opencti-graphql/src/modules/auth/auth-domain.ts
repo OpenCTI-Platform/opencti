@@ -1,4 +1,5 @@
 import ejs from 'ejs';
+import { authenticator } from 'otplib';
 import { getUserByEmail } from '../../domain/user';
 import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
 import { sendMail } from '../../database/smtp';
@@ -10,7 +11,6 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { ADMIN_USER } from '../../../tests/utils/testQuery';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
 import { redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../database/redis';
-import { authenticator } from 'otplib';
 
 export const getUser = async (email: string): Promise<User> => {
   const user: any = await getUserByEmail(email);
@@ -58,7 +58,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   } catch (e) {
     // Prevent wrong email address, but return true too if it fails
     // logApp.error('Error occurred while sending password reset email:', { cause: e });
-    console.error('Error occurred while sending password reset email:', e);
+    // console.error('Error occurred while sending password reset email:', e);
   }
   return true;
 };
@@ -73,10 +73,9 @@ export const verifyOtp = async (context: AuthContext, input: VerifyOtpInput) => 
     throw UnsupportedError('Invalid OTP. Please check the code and try again.');
   }
   if (otp_activated !== undefined && otp_activated !== null) {
-    return { otp_activated: otp_activated };
-  } else {
-    throw UnsupportedError('No 2FA information founded');
+    return { otp_activated };
   }
+  throw UnsupportedError('No 2FA information founded');
 };
 
 export const verify2fa = async (input: Verify2faInput) => {
