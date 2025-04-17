@@ -50,7 +50,7 @@ describe('Database sync raw', () => {
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
       // to uncomment for debug if counters are failing
-      // expect(execution.messages.length, `Execution messages ${JSON.stringify(execution.messages)}`).toEqual(0);
+      expect(execution.messages.length, `Execution messages ${JSON.stringify(execution.messages)}`).toEqual(0);
 
       const queryResultAfter = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 500 } });
 
