@@ -464,7 +464,7 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
-      after: 'WyJ2b2NhYnVsYXJ5LS1mZGYyNTVhOC01ZjM3LTVmZWMtYWRmYS0xZGYwYjdkM2QwY2UiXQ==',
+      after: 'WzM3OCwibGFiZWwtLTFmOWE4ODJmLTI0NjUtNTc1ZC1iMmZlLTg5MWI2MTNkYzRlMiJd',
       first: ES_MAX_PAGINATION,
     });
     expect(data).not.toBeNull();
