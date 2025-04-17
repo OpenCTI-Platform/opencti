@@ -44,7 +44,9 @@ const createNotificationForUser = async (context: AuthContext, user: AuthUser) =
     notification_content: [{
       title: '',
       events: []
-    }] };
+    }],
+    user_id: user.id,
+  };
   return addNotification(context, user, notificationInput);
 };
 
