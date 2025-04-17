@@ -50,8 +50,9 @@ import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, typ
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
-import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
+import { FunctionalError } from '../config/errors';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -69,37 +70,49 @@ const workflowStatuses = (context: AuthContext) => {
   };
   return { values: null, fn: reloadStatuses };
 };
-const platformResolvedFilters = (context: AuthContext) => {
-  const reloadFilters = async () => {
-    const filteringIds = [];
-    const initialFilterGroup = JSON.stringify({
-      mode: 'and',
-      filters: [],
-      filterGroups: [],
-    });
-    // Stream filters
-    const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
-    filteringIds.push(...streams.map((s) => extractFilterGroupValuesToResolveForCache(JSON.parse(s.filters ?? initialFilterGroup))).flat());
-    // Trigger filters
-    const triggers = await listAllEntities<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
-    filteringIds.push(...triggers.map((s) => extractFilterGroupValuesToResolveForCache(JSON.parse(s.filters ?? initialFilterGroup))).flat());
-    // Connectors filters (for enrichment connectors)
-    const connectors = await listAllEntities<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false });
-    filteringIds.push(...connectors.map((s) => {
-      const connFilters = s.connector_trigger_filters?.length > 0 ? s.connector_trigger_filters : initialFilterGroup;
-      return extractFilterGroupValuesToResolveForCache(JSON.parse(connFilters));
-    }).flat());
-    // Playbook filters
-    const playbooks = await listAllEntities<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
-    const playbookFilterIds = playbooks
-      .map((p) => JSON.parse(p.playbook_definition) as ComponentDefinition)
-      .map((c) => c.nodes.map((n) => JSON.parse(n.configuration))).flat()
+// extract the filters of the instance in case of resolved filters cache update
+const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
+  const initialFilterGroup = JSON.stringify(emptyFilterGroup);
+  const filteringIds = []; // will contain the ids that are in the instance filters values
+  if (instance.entity_type === ENTITY_TYPE_STREAM_COLLECTION) {
+    const streamFilterIds = extractFilterGroupValuesToResolveForCache(
+      JSON.parse((instance as BasicStreamEntity).filters ?? initialFilterGroup)
+    );
+    filteringIds.push(...streamFilterIds);
+  } else if (instance.entity_type === ENTITY_TYPE_TRIGGER) {
+    const triggerFilterIds = extractFilterGroupValuesToResolveForCache(
+      JSON.parse((instance as BasicTriggerEntity).filters ?? initialFilterGroup)
+    );
+    filteringIds.push(...triggerFilterIds);
+  } else if (instance.entity_type === ENTITY_TYPE_CONNECTOR) {
+    const connFilters = (instance as BasicStoreEntityConnector).connector_trigger_filters?.length > 0
+      ? (instance as BasicStoreEntityConnector).connector_trigger_filters
+      : initialFilterGroup;
+    const connFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse(connFilters));
+    filteringIds.push(...connFilterIds);
+  } else if (instance.entity_type === ENTITY_TYPE_PLAYBOOK) {
+    const playbookFilterIds = ((JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition)) as ComponentDefinition)
+      .nodes.map((n) => JSON.parse(n.configuration))
       .map((config) => config.filters)
       .filter((f) => isNotEmptyField(f))
       .map((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)))
       .flat();
     filteringIds.push(...playbookFilterIds);
-    // Resolve filteringIds
+  } else {
+    throw FunctionalError('Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type', { entity_type: instance.entity_type });
+  }
+  return filteringIds;
+};
+const platformResolvedFilters = (context: AuthContext) => {
+  const reloadFilters = async () => {
+    // Fetch streams, triggers, connectors (for enrichment connectors) and playbooks
+    const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
+    const triggers = await listAllEntities<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
+    const connectors = await listAllEntities<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false });
+    const playbooks = await listAllEntities<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
+    // Fetch the filters of those entities
+    const filteringIds = [...streams, ...triggers, ...connectors, ...playbooks].map((s) => extractResolvedFiltersFromInstance(s)).flat();
+    // Resolve the filters ids
     if (filteringIds.length > 0) {
       const resolvingIds = R.uniq(filteringIds);
       const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, resolvingIds);
@@ -108,11 +121,18 @@ const platformResolvedFilters = (context: AuthContext) => {
     return new Map();
   };
   const refreshFilter = async (values: Map<string, StixObject>, instance: BasicStoreCommon) => {
-    const currentFiltersValues = values;
-    if (currentFiltersValues?.has(instance.internal_id)) {
-      const convertedInstance = convertStoreToStix(instance);
-      currentFiltersValues.set(instance.internal_id, convertedInstance);
-    }
+    const filteringIds = extractResolvedFiltersFromInstance(instance);
+    // Resolve filters ids that are not already in the cache
+    const currentFiltersValues = values; // current cache map
+    const idsToSolve: string[] = []; // will contain the ids to resolve that are not already in the cache
+    filteringIds.forEach((id) => {
+      if (!currentFiltersValues.has(id)) {
+        idsToSolve.push(id);
+      }
+    });
+    const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, R.uniq(idsToSolve)); // fetch the stix instance of the ids
+    // Add resolved stix entities to the cache map
+    loadedDependencies.forEach((l: StixObject) => currentFiltersValues.set(l.extensions[STIX_EXT_OCTI].id, l));
     return currentFiltersValues;
   };
   return { values: null, fn: reloadFilters, refresh: refreshFilter };
