@@ -9,7 +9,7 @@ import { truncate } from '../utils/String';
 import { DataColumns } from './list_lines';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
-import { filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
+import { convertOperatorToIcon, filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
 import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
@@ -273,6 +273,9 @@ FilterIconButtonContainerProps
                 {t_i18n(filterOperator)}
               </Box>
             )}
+            {isOperatorDisplayed
+              ? convertOperatorToIcon(filterOperator ?? 'eq')
+              : currentFilter.values.length > 0 && ':'}
           </>
         );
 
