@@ -7,6 +7,7 @@ import { Link, useLocation } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
+import EETooltip from '../private/components/common/entreprise_edition/EETooltip';
 import { useFormatter } from './i18n';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../utils/hooks/useGranted';
@@ -14,6 +15,7 @@ import useAuth from '../utils/hooks/useAuth';
 import EnterpriseEditionAgreement from '../private/components/common/entreprise_edition/EnterpriseEditionAgreement';
 import FeedbackCreation from '../private/components/cases/feedbacks/FeedbackCreation';
 import Loader from './Loader';
+import useAI from '../utils/hooks/useAI';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -70,6 +72,7 @@ const SearchInput = (props) => {
   const classes = useStyles();
   const location = useLocation();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { enabled, configured } = useAI();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const {
@@ -114,15 +117,11 @@ const SearchInput = (props) => {
   }
 
   const handleChangeAskAI = () => {
-    if (isEnterpriseEdition) {
-      if (!askAI && searchValue && searchValue.length > 0) {
-        onSubmit(searchValue, true);
-        setAskAI(true);
-      }
-      setAskAI(!askAI);
-    } else {
-      setDisplayEEDialog(true);
+    if (!askAI && searchValue && searchValue.length > 0) {
+      onSubmit(searchValue, true);
+      setAskAI(true);
     }
+    setAskAI(!askAI);
   };
   const handleRemoveAskAI = () => {
     if (isEnterpriseEdition && askAI) {
@@ -206,15 +205,15 @@ const SearchInput = (props) => {
                 <ContentPasteSearchOutlined fontSize="medium"/>
               </IconButton>
             </Tooltip>
-            <Tooltip title={t_i18n('Ask AI')}>
+            <EETooltip forAi={true} title={t_i18n('Ask AI')}>
               <IconButton
                 size="medium"
                 style={{ color: theme.palette.ai.main }}
-                onClick={handleChangeAskAI}
+                onClick={(isEnterpriseEdition && enabled && configured) ? handleChangeAskAI : null}
               >
                 <AutoAwesomeOutlined fontSize='medium'/>
               </IconButton>
-            </Tooltip>
+            </EETooltip>
           </InputAdornment>
           ),
           classes: {
