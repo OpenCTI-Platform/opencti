@@ -47,7 +47,6 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
     <div style={{ marginLeft: theme.spacing(1) }}>
       <Button
         variant='contained'
-        size='small'
         sx={{ marginRight: theme.spacing(1) }}
         onClick={handleOpenCreateDigest}
       >
@@ -58,7 +57,6 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
       </Button>
       <Button
         variant='contained'
-        size='small'
         onClick={handleOpenCreateLive}
       >
         {t_i18n('', {

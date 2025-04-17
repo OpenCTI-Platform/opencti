@@ -4,7 +4,7 @@ import { Field, Form, Formik, FormikConfig } from 'formik';
 import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -14,6 +14,7 @@ import { VocabulariesLines_DataQuery$variables } from './__generated__/Vocabular
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 interface VocabularyCreationProps {
   paginationOptions: VocabulariesLines_DataQuery$variables;
@@ -93,10 +94,14 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
     });
   };
 
+  const CreateVocabularyControlledDial = (props: DrawerControlledDialProps) => (
+    <CreateEntityControlledDial entityType='Vocabulary' {...props} />
+  );
+
   return (
     <Drawer
       title={t_i18n('Create a vocabulary')}
-      variant={DrawerVariant.createWithPanel}
+      controlledDial={CreateVocabularyControlledDial}
     >
       {({ onClose }) => (
         <Formik<FormInterface>

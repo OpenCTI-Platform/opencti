@@ -314,7 +314,6 @@ const ImportContentComponent = ({
         <Button
           onClick={handleOpenCreate}
           color="primary"
-          size="small"
           variant="contained"
           aria-label={buttonValue}
           title={buttonValue}
