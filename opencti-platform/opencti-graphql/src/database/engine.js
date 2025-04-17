@@ -3070,8 +3070,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
       }
     }
     // Add standard_id if not specify to ensure ordering uniqueness
-    if (!orderCriterion.includes('_doc')) {
-      ordering.push({ _doc: 'asc' });
+    if (!orderCriterion.includes('standard_id')) {
+      ordering.push({ 'standard_id.keyword': 'asc' });
     }
     // Build runtime mappings
     const runtime = RUNTIME_ATTRIBUTES[orderBy];
@@ -3083,8 +3083,9 @@ const elQueryBodyBuilder = async (context, user, options) => {
         script: { source, params },
       };
     }
-  } else { // If not ordering criteria, order by standard_id
+  } else { // If not ordering criteria, order by _doc and standard_id
     ordering.push({ _doc: 'asc' });
+    ordering.push({ 'standard_id.keyword': 'asc' });
   }
   // Handle draft
   const draftMust = buildDraftFilter(context, user, options);
