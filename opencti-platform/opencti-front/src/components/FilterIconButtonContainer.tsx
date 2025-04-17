@@ -258,26 +258,34 @@ FilterIconButtonContainerProps
   }
   const allFilterKeys = displayedFilters.map((filter) => filter.key);
   const allRegardingOf = allFilterKeys.every((key) => key === 'regardingOf');
+  const buildKeyLabel = (filterOperator: string, filterLabel: string, values: any[]) => {
+    const isOperatorDisplayed = filterOperatorsWithIcon.includes(filterOperator);
+    return (
+      <>
+        {truncate(filterLabel, 20)}
+        {isOperatorDisplayed ? (
+          <Box component="span" sx={{ padding: '0 4px', fontWeight: 'normal' }}>
+            {convertOperatorToIcon(filterOperator)}
+          </Box>
+        ) : (
+          <>
+            <Box component="span" sx={{ padding: '0 4px', fontWeight: 'normal' }}>
+              {t_i18n(filterOperator)}
+            </Box>
+            {values.length > 0 && ':'}
+          </>
+        )}
+      </>
+    );
+  };
+
   const tooltipContent = (
     <Box>
       {displayedFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
         const filterOperator = currentFilter.operator ?? 'eq';
-        const isOperatorDisplayed = filterOperatorsWithIcon.includes(filterOperator ?? 'eq');
-        const keyLabel = (
-          <>
-            {truncate(filterLabel, 20)}
-            {!isOperatorDisplayed && (
-              <Box component="span" sx={{ padding: '0 4px', fontWeight: 'normal' }}>
-                {t_i18n(filterOperator)}
-              </Box>
-            )}
-            {isOperatorDisplayed
-              ? convertOperatorToIcon(filterOperator ?? 'eq')
-              : currentFilter.values.length > 0 && ':'}
-          </>
-        );
+        const keyLabel = buildKeyLabel(filterOperator, filterLabel, currentFilter.values);
 
         return (
           <Box key={currentFilter.id ?? `tooltip-${index}`}>
@@ -311,7 +319,6 @@ FilterIconButtonContainerProps
           const filterKey = currentFilter.key;
           const filterOperator = currentFilter.operator ?? 'eq';
           const filterValues = currentFilter.values;
-          const isOperatorDisplayed = filterOperatorsWithIcon.includes(filterOperator ?? 'eq');
           const isNotLastFilter = index < displayedFilters.length - 1;
 
           const chipVariant = currentFilter.values.length === 0 && !['nil', 'not_nil'].includes(filterOperator)
@@ -323,16 +330,7 @@ FilterIconButtonContainerProps
             : undefined;
           const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
 
-          const keyLabel = (
-            <>
-              {truncate(filterLabel, 20)}
-              {!isOperatorDisplayed && (
-                <Box component="span" sx={{ padding: '0 4px', fontWeight: 'normal' }}>
-                  {t_i18n(filterOperator)}
-                </Box>
-              )}
-            </>
-          );
+          const keyLabel = buildKeyLabel(filterOperator, filterLabel, currentFilter.values);
           const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
             && isFilterEditable(filtersRestrictions, filterKey, filterValues);
           return (
