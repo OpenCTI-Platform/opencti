@@ -93,7 +93,8 @@ const SearchInput = (props) => {
     }
   }, [keyword]);
 
-  const isAIEnabled = variant === 'topBar' && isEnterpriseEdition && askAI;
+  const isAIEnabled = variant === 'topBar' && isEnterpriseEdition && enabled && configured;
+  const isNLQActivated = isAIEnabled && askAI;
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const { settings: { id: settingsId } } = useAuth();
 
@@ -124,7 +125,7 @@ const SearchInput = (props) => {
     setAskAI(!askAI);
   };
   const handleRemoveAskAI = () => {
-    if (isEnterpriseEdition && askAI) {
+    if (askAI) {
       setAskAI(false);
     }
   };
@@ -136,7 +137,7 @@ const SearchInput = (props) => {
         value={searchValue}
         variant="outlined"
         size="small"
-        placeholder={isAIEnabled ? `${t_i18n('Ask your question')}...` : placeholder}
+        placeholder={isNLQActivated ? `${t_i18n('Ask your question')}...` : placeholder}
         onChange={(event) => {
           const { value } = event.target;
           setSearchValue(value);
@@ -144,10 +145,10 @@ const SearchInput = (props) => {
         onKeyDown={(event) => {
           const { value } = event.target;
           if (typeof onSubmit === 'function' && event.key === 'Enter') {
-            onSubmit(value, askAI);
+            onSubmit(value, isNLQActivated);
           }
         }}
-        sx={isAIEnabled ? {
+        sx={isNLQActivated ? {
           borderColor: 'red',
           '& .MuiOutlinedInput-root': {
             '& fieldset': {
@@ -162,15 +163,15 @@ const SearchInput = (props) => {
         } : undefined}
         InputProps={{
           startAdornment: (
-            <InputAdornment position="start" style={{ color: isAIEnabled ? theme.palette.ai.main : undefined }} >
-              {isAIEnabled
+            <InputAdornment position="start" style={{ color: isNLQActivated ? theme.palette.ai.main : undefined }} >
+              {isNLQActivated
                 ? <AutoAwesomeOutlined fontSize="small" />
                 : <Search fontSize="small"/>}
             </InputAdornment>
           ),
           endAdornment: variant === 'topBar' && (
           <InputAdornment position="end">
-            {askAI && isNLQLoading
+            {isNLQActivated && isNLQLoading
               && <div>
                 <Loader variant="inline" />
               </div>
@@ -184,7 +185,7 @@ const SearchInput = (props) => {
                 color={
                   location.pathname.includes('/dashboard/search')
                   && !location.pathname.includes('/dashboard/search_bulk')
-                  && !askAI ? 'primary' : 'inherit'
+                  && !isNLQActivated ? 'primary' : 'inherit'
                 }
               >
                 <BiotechOutlined fontSize='medium'/>
@@ -197,7 +198,7 @@ const SearchInput = (props) => {
                 to="/dashboard/search_bulk"
                 size="medium"
                 color={
-                  location.pathname.includes('/dashboard/search_bulk') && !askAI
+                  location.pathname.includes('/dashboard/search_bulk') && !isNLQActivated
                     ? 'primary'
                     : 'inherit'
                 }
@@ -209,7 +210,7 @@ const SearchInput = (props) => {
               <IconButton
                 size="medium"
                 style={{ color: theme.palette.ai.main }}
-                onClick={(isEnterpriseEdition && enabled && configured) ? handleChangeAskAI : null}
+                onClick={isAIEnabled ? handleChangeAskAI : null}
               >
                 <AutoAwesomeOutlined fontSize='medium'/>
               </IconButton>
