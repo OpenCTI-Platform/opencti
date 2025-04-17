@@ -247,7 +247,6 @@ const DataTable = (props: OCTIDataTableProps) => {
         availableFilterKeys={availableFilterKeys}
         dataQueryArgs={{ ...dataQueryArgs }}
         useLineData={useLineData(lineFragment)}
-        useDataTable={useDataTable}
         settingsMessagesBannerHeight={settingsMessagesBannerHeight}
         filtersComponent={(
           <DataTableInternalFilters
