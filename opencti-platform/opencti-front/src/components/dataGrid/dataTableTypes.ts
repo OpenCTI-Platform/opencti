@@ -49,6 +49,7 @@ export interface DataTableContextProps {
   redirectionModeEnabled?: boolean
   useLineData: DataTableProps['useLineData']
   dataQueryArgs: UsePreloadedPaginationFragment<OperationType>,
+  data: unknown,
   useDataCellHelpers: DataTableProps['useDataCellHelpers']
   useDataTableToggle: ReturnType<DataTableProps['useDataTableToggle']>
   useComputeLink: (entity: any) => string | undefined
@@ -88,6 +89,7 @@ export interface DataTableProps {
   handleCopy?: () => void
   lineFragment?: GraphQLTaggedNode
   dataQueryArgs: any
+  data?: unknown
   availableFilterKeys?: string[] | undefined;
   redirectionModeEnabled?: boolean
   additionalFilters?: FilterGroup

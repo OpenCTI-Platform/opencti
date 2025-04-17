@@ -26,7 +26,6 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'variant'
 | 'actions'
 | 'icon'
-| 'data'
 | 'availableFilterKeys'
 | 'initialValues'
 | 'disableNavigation'
@@ -42,6 +41,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'useComputeLink'
 | 'selectOnLineClick'
 | 'onLineClick'
+| 'data'
 | 'disableLineSelection'>;
 
 const DataTableComponent = ({

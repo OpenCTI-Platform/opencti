@@ -10,7 +10,6 @@ import { useDataTable } from '../dataTableHooks';
 
 const DataTableBody = ({
   settingsMessagesBannerHeight = 0,
-  data,
   hasFilterComponent,
   dataTableToolBarComponent,
   pageStart,
@@ -36,6 +35,7 @@ const DataTableBody = ({
     useDataTablePaginationLocalStorage: {
       viewStorage: { filters },
     },
+    data,
   } = useDataTableContext();
 
   const {
