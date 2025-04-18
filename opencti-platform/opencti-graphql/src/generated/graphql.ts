@@ -3183,6 +3183,11 @@ export enum CasesOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type ChangePasswordInput = {
+  email: Scalars['String']['input'];
+  newPassword: Scalars['String']['input'];
+};
+
 export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Channel';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -13753,6 +13758,7 @@ export type Mutation = {
   caseTemplateFieldPatch?: Maybe<CaseTemplate>;
   caseTemplateRelationAdd?: Maybe<CaseTemplate>;
   caseTemplateRelationDelete?: Maybe<CaseTemplate>;
+  changePassword?: Maybe<Scalars['Boolean']['output']>;
   channelAdd?: Maybe<Channel>;
   channelContextClean?: Maybe<Channel>;
   channelContextPatch?: Maybe<Channel>;
@@ -14369,6 +14375,11 @@ export type MutationCaseTemplateRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationChangePasswordArgs = {
+  input: ChangePasswordInput;
 };
 
 
@@ -31651,6 +31662,7 @@ export type ResolversTypes = ResolversObject<{
   CaseTemplateEdge: ResolverTypeWrapper<Omit<CaseTemplateEdge, 'node'> & { node: ResolversTypes['CaseTemplate'] }>;
   CaseTemplatesOrdering: CaseTemplatesOrdering;
   CasesOrdering: CasesOrdering;
+  ChangePasswordInput: ChangePasswordInput;
   Channel: ResolverTypeWrapper<BasicStoreEntityChannel>;
   ChannelAddInput: ChannelAddInput;
   ChannelConnection: ResolverTypeWrapper<Omit<ChannelConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ChannelEdge']>>> }>;
@@ -32543,6 +32555,7 @@ export type ResolversParentTypes = ResolversObject<{
   CaseTemplateAddInput: CaseTemplateAddInput;
   CaseTemplateConnection: Omit<CaseTemplateConnection, 'edges'> & { edges: Array<ResolversParentTypes['CaseTemplateEdge']> };
   CaseTemplateEdge: Omit<CaseTemplateEdge, 'node'> & { node: ResolversParentTypes['CaseTemplate'] };
+  ChangePasswordInput: ChangePasswordInput;
   Channel: BasicStoreEntityChannel;
   ChannelAddInput: ChannelAddInput;
   ChannelConnection: Omit<ChannelConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ChannelEdge']>>> };
@@ -38003,6 +38016,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   caseTemplateFieldPatch?: Resolver<Maybe<ResolversTypes['CaseTemplate']>, ParentType, ContextType, RequireFields<MutationCaseTemplateFieldPatchArgs, 'id' | 'input'>>;
   caseTemplateRelationAdd?: Resolver<Maybe<ResolversTypes['CaseTemplate']>, ParentType, ContextType, RequireFields<MutationCaseTemplateRelationAddArgs, 'id' | 'input'>>;
   caseTemplateRelationDelete?: Resolver<Maybe<ResolversTypes['CaseTemplate']>, ParentType, ContextType, RequireFields<MutationCaseTemplateRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  changePassword?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationChangePasswordArgs, 'input'>>;
   channelAdd?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelAddArgs, 'input'>>;
   channelContextClean?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelContextCleanArgs, 'id'>>;
   channelContextPatch?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelContextPatchArgs, 'id' | 'input'>>;
