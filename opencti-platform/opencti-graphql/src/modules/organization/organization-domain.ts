@@ -34,9 +34,9 @@ export const findAll = (context: AuthContext, user: AuthUser, args: EntityOption
 };
 
 export const addOrganization = async (context: AuthContext, user: AuthUser, organization: OrganizationAddInput) => {
-  if (organization.x_opencti_score === null
-    || organization.x_opencti_score === undefined
-    || (organization.x_opencti_score && (organization.x_opencti_score < 0 || organization.x_opencti_score > 100))) {
+  if (organization.x_opencti_score !== null
+    && organization.x_opencti_score !== undefined
+    && (organization.x_opencti_score && (organization.x_opencti_score < 0 || organization.x_opencti_score > 100))) {
     throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
   }
   const organizationWithClass = { identity_class: ENTITY_TYPE_IDENTITY_ORGANIZATION.toLowerCase(), ...organization };

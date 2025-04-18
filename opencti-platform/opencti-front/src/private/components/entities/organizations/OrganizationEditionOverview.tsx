@@ -116,7 +116,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
     x_opencti_score: Yup.number()
-      .nullable(),
+      .nullable()
       .min(0, t_i18n('The value must be greater than or equal to 0'))
       .max(100, t_i18n('The value must be less than or equal to 100')),
   };
