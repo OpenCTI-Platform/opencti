@@ -374,7 +374,8 @@
     "access_key": "ChangeMe",
     "secret_key": "ChangeMe",
     "use_aws_role": false,
-    "excluded_files": [".DS_Store"]
+    "excluded_files": [".DS_Store"],
+    "disable_data_protections": false
   },
   "rabbitmq": {
     "queue_prefix": "",
