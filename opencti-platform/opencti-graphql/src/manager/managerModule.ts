@@ -28,7 +28,7 @@ export interface ManagerStreamScheduler {
   handler: () => void;
   interval: number;
   lockKey: string;
-  streamOpts?: { withInternal: boolean, streamName: string };
+  streamOpts?: { withInternal: boolean, streamName: string, bufferTime: number };
   streamProcessorStartFrom: () => string;
 }
 
