@@ -45,7 +45,7 @@ const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
 const useSslConnection = booleanConf('minio:use_ssl', false);
 const useAwsRole = booleanConf('minio:use_aws_role', false);
 const useAwsLogs = booleanConf('minio:use_aws_logs', false);
-const disableDefaultDataProtection = booleanConf('minio:disable_data_protections', false);
+const disableChecksumValidation = booleanConf('minio:disable_checksum_validation', false);
 export const defaultValidationMode = conf.get('app:validation_mode');
 
 let s3Client; // Client reference
@@ -94,8 +94,8 @@ export const initializeFileStorageClient = async () => {
     credentialDefaultProvider: await buildCredentialProvider(),
     logger: useAwsLogs ? logS3Debug : undefined,
     tls: useSslConnection,
-    requestChecksumCalculation: disableDefaultDataProtection ? 'WHEN_REQUIRED' : 'WHEN_SUPPORTED',
-    responseChecksumValidation: disableDefaultDataProtection ? 'WHEN_REQUIRED' : 'WHEN_SUPPORTED'
+    requestChecksumCalculation: disableChecksumValidation ? 'WHEN_REQUIRED' : 'WHEN_SUPPORTED',
+    responseChecksumValidation: disableChecksumValidation ? 'WHEN_REQUIRED' : 'WHEN_SUPPORTED'
   });
 };
 
