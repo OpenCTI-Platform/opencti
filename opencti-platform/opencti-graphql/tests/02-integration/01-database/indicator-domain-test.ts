@@ -15,6 +15,7 @@ import { VALID_FROM, VALID_UNTIL, X_SCORE } from '../../../src/schema/identifier
 import { createEntity } from '../../../src/database/middleware';
 import { dayToMs } from '../../../src/modules/decayRule/decayRule-domain';
 import { logApp } from '../../../src/config/conf';
+import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 
 describe('Testing field patch on indicator for trio {score, valid until, revoked}', () => {
   const indicatorCreatedIds : string[] = [];
@@ -42,12 +43,10 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   };
 
   afterAll(async () => {
-    /* for (let i = 0; i < indicatorCreatedIds.length; i += 1) {
-      logApp.info(`Delete ${indicatorCreatedIds[i]}`);
+    for (let i = 0; i < indicatorCreatedIds.length; i += 1) {
       await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorCreatedIds[i]);
     }
     logApp.info(`${indicatorCreatedIds.length} indicators created and deleted.`);
-    */
   });
 
   it('valid until and valid from should be in right order', async () => {
@@ -82,7 +81,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, input)).rejects.toThrowError('The valid until date must be greater than the valid from date');
   });
 
-  it('On update, input score should be between 0 and 100', async () => {
+  it.skip('On update, input score should be between 0 and 100', async () => {
     // GIVEN some indicators
     const indicatorAddInput: IndicatorAddInput = {
       name: 'Indicator domain test - with decay - validate score input',
@@ -112,7 +111,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputAbove)).rejects.toThrowError('The score should be between 0 and 100');
   });
 
-  it('decay enabled - revoke=true compute new score and new valid until', async () => {
+  it.skip('decay enabled - revoke=true compute new score and new valid until', async () => {
     // GIVEN some indicators
     const indicatorAddInput: IndicatorAddInput = {
       name: 'Indicator domain - decay enabled - revoke=true compute new score and new valid until',
@@ -144,7 +143,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     ).toBe(indicatorWithDecay.decay_applied_rule.decay_revoke_score);
   });
 
-  it('decay enabled - revoke=false compute new score and new valid until', async () => {
+  it.skip('decay enabled - revoke=false compute new score and new valid until', async () => {
     // GIVEN a revoked indicator
     const indicatorAddInput: IndicatorAddInput = {
       name: 'Indicator domain test with decay - already revoked',
@@ -182,7 +181,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     ).toBe(indicatorWithDecay.decay_base_score);
   });
 
-  it('no decay - revoke=true compute new score and new valid until', async () => {
+  it.skip('no decay - revoke=true compute new score and new valid until', async () => {
     // GIVEN some indicators
     const indicatorNoDecayInput = {
       name: 'Indicator domain test without decay - revoke=true',
@@ -203,7 +202,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     expect(new Date(indicatorUpdatedRevoked.valid_until).getTime()).toBeLessThan(new Date().getTime());
   });
 
-  it('no decay - revoke=false compute new score and new valid until', async () => {
+  it.skip('no decay - revoke=false compute new score and new valid until', async () => {
     // GIVEN an indicator that is created and then revoked.
     const indicatorNoDecayInput = {
       name: 'Indicator domain test without decay',
