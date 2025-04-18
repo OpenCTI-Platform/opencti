@@ -34,7 +34,6 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'resolvePath'
 | 'redirectionModeEnabled'
 | 'useLineData'
-| 'useDataTable'
 | 'rootRef'
 | 'createButton'
 | 'disableToolBar'
@@ -42,6 +41,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'useComputeLink'
 | 'selectOnLineClick'
 | 'onLineClick'
+| 'data'
 | 'disableLineSelection'>;
 
 const DataTableComponent = ({
@@ -51,9 +51,9 @@ const DataTableComponent = ({
   initialValues,
   availableFilterKeys,
   dataQueryArgs,
+  data,
   redirectionModeEnabled = false,
   useLineData,
-  useDataTable,
   useComputeLink,
   settingsMessagesBannerHeight,
   filtersComponent,
@@ -176,7 +176,8 @@ const DataTableComponent = ({
         resolvePath,
         redirectionModeEnabled,
         useLineData,
-        useDataTable: useDataTable(dataQueryArgs),
+        dataQueryArgs,
+        data,
         useDataCellHelpers: useDataCellHelpers(helpers, variant),
         useDataTableToggle: useDataTableToggle(storageKey),
         useComputeLink: useComputeLink ?? defaultComputeLink,

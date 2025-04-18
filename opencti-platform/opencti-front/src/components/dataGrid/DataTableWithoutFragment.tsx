@@ -29,7 +29,7 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps) => {
   return (
     <DataTableComponent
       {...props}
-      useDataTable={() => ({ data })}
+      data={data}
       useLineData={(line) => line}
       dataQueryArgs={(line: never) => line}
       resolvePath={(a) => a}
