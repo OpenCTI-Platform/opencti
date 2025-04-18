@@ -144,7 +144,7 @@ const ManagedConnectorEdition = ({
               />
               <Alert
                 icon={false}
-                severity={errors[0] ? 'error' : 'success'}
+                severity={errors?.[0] ? 'error' : 'success'}
                 variant="outlined"
                 slotProps={{
                   message: {
@@ -206,7 +206,7 @@ const ManagedConnectorEdition = ({
                         resetForm,
                       });
                     }}
-                    disabled={!isValid || isSubmitting || !!errors[0]}
+                    disabled={!isValid || isSubmitting || !!errors?.[0]}
                   >
                     {t_i18n('Update')}
                   </Button>
