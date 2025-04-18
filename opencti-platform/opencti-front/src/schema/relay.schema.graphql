@@ -1697,6 +1697,7 @@ type User implements BasicObject & InternalObject {
   otp_activated: Boolean
   otp_qr: String
   otp_mandatory: Boolean
+  otp_secret: String
   lastname: String
   theme: String
   language: String
@@ -9085,6 +9086,10 @@ type Mutation {
   savedFilterDelete(id: ID!): ID
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
+  askSendOtp(input: AskSendOtpInput!): Boolean
+  verifyOtp(input: VerifyOtpInput!): VerifyOtp
+  verify2fa(input: Verify2faInput!): Boolean
+  changePassword(input: ChangePasswordInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12786,4 +12791,27 @@ input RequestAccessConfigureInput {
   approved_status_id: ID
   declined_status_id: ID
   approval_admin: [ID]
+}
+
+input AskSendOtpInput {
+  email: String!
+}
+
+input VerifyOtpInput {
+  email: String!
+  otp: String!
+}
+
+input Verify2faInput {
+  code: String!
+  email: String!
+}
+
+input ChangePasswordInput {
+  email: String!
+  newPassword: String!
+}
+
+type VerifyOtp {
+  otp_activated: Boolean!
 }

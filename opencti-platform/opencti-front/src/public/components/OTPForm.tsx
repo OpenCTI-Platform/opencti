@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
@@ -22,6 +22,12 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
+interface OTPFormProps {
+  variant?: 'login' | 'resetPassword',
+  email?: string,
+  onCompleted?: () => void
+}
+
 const otpMutation = graphql`
   mutation OTPFormMutation($input: UserOTPLoginInput) {
     otpLogin(input: $input)
@@ -34,7 +40,13 @@ const logoutMutation = graphql`
   }
 `;
 
-const OTPForm = () => {
+const ResetPassword2faMutation = graphql`
+  mutation OTPFormResetPasswordOtpLoginMutation($input: Verify2faInput!) {
+    verify2fa(input: $input)
+  }
+`;
+
+const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, onCompleted }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [code, setCode] = useState('');
@@ -42,7 +54,7 @@ const OTPForm = () => {
   const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data: string) => setCode(data);
   const [commitLogoutMutation] = useApiMutation(logoutMutation);
-  const [commitOtpMutation] = useApiMutation(otpMutation);
+  const [commitOtpMutation] = useApiMutation(variant === 'login' ? otpMutation : ResetPassword2faMutation);
   const handleLogout = () => {
     commitLogoutMutation({
       variables: {},
@@ -53,7 +65,7 @@ const OTPForm = () => {
     setInputDisable(true);
     commitOtpMutation({
       variables: {
-        input: { code },
+        input: variant === 'login' ? { code } : { code, email },
       },
       onError: () => {
         setInputDisable(false);
@@ -61,7 +73,11 @@ const OTPForm = () => {
         setError(t_i18n('The code is not correct'));
       },
       onCompleted: () => {
-        window.location.reload();
+        if (onCompleted) {
+          onCompleted();
+        } else {
+          window.location.reload();
+        }
       },
     });
   }
@@ -78,8 +94,9 @@ const OTPForm = () => {
       ) : (
         <Alert
           severity="info"
+          icon={false}
           variant="outlined"
-          style={{ margin: '15px 0', justifyContent: 'center' }}
+          style={{ margin: '0 0 15px 0', justifyContent: 'center' }}
         >
           {t_i18n(
             'You need to validate your two-factor authentication. Please type the code generated in your application',
@@ -93,15 +110,17 @@ const OTPForm = () => {
           isDisabled={inputDisable}
         />
       </div>
-      <Button
-        type="submit"
-        variant="contained"
-        color="primary"
-        onClick={handleLogout}
-        style={{ marginTop: 30 }}
-      >
-        {t_i18n('Cancel')}
-      </Button>
+      {variant === 'login' && (
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          onClick={handleLogout}
+          style={{ marginTop: 30 }}
+        >
+          {t_i18n('Cancel')}
+        </Button>
+      )}
     </div>
   );
 };
