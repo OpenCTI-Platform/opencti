@@ -106,7 +106,6 @@ import {
   INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS,
-  INPUT_WORKFLOW_STATUS,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
   REL_INDEX_PREFIX,
@@ -1630,11 +1629,12 @@ const prepareAttributesForUpdate = async (context, user, instance, elements, ups
       const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
       return { key: input.key, value: uniqAliases };
     }
-    // For upsert, workflow cant be reset or setup on un-existing workflow
+    // For upsert or update, workflow cant be reset or setup on un-existing workflow
     if (input.key === X_WORKFLOW_ID && upsert) {
       const workflowId = R.head(input.value);
-      const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
-      if (isEmptyField(workflowStatus)) { // If workflow is not found, remove the input
+      const instanceTypeStatuses = platformStatuses.filter((status) => status.type === instance.entity_type);
+      // If workflow is not found for current entity type, remove the input
+      if (instanceTypeStatuses?.length === 0 || !instanceTypeStatuses.some((entityStatus) => entityStatus.internal_id === workflowId)) {
         return null;
       }
     }
@@ -1967,7 +1967,7 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
 
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
-  let updates = Array.isArray(inputs) ? inputs : [inputs];
+  const updates = Array.isArray(inputs) ? inputs : [inputs];
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Region - Pre-Check
   const references = opts.references ? await internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : [];
@@ -2004,17 +2004,6 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
   if (!validateUserAccessOperation(user, initial, accessOperation)) {
     throw ForbiddenAccess();
-  }
-  // Validate workflow status value
-  const statusInput = updates.find((update) => update.key === INPUT_WORKFLOW_STATUS);
-  if (statusInput && statusInput.value?.length > 0) {
-    const statusInputValue = statusInput.value[0];
-    const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
-    const entitySettings = platformStatuses.filter((status) => status.type === initial.entity_type);
-    if (entitySettings?.length === 0 || !entitySettings.some((entityStatus) => entityStatus.internal_id === statusInputValue)) {
-      logApp.warn('Entity status to modify was not found in entity status configuration', { statusInputValue, entitySettings });
-      updates = updates.filter((update) => update.key !== INPUT_WORKFLOW_STATUS);
-    }
   }
   // Split attributes and meta
   // Supports inputs meta or stix meta
