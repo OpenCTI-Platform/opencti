@@ -1,15 +1,12 @@
 import React, { CSSProperties, FunctionComponent, useEffect, useState } from 'react';
 import { interval } from 'rxjs';
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import CardContent from '@mui/material/CardContent';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
-import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
+import { Add, DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, InfoOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -18,17 +15,27 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link, useNavigate } from 'react-router-dom';
 import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
-import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
+import { ConnectorsStatus_data$data, ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
 import DialogTitle from '@mui/material/DialogTitle';
-import { ListItemButton } from '@mui/material';
+import { Grid2 as Grid, ListItemButton } from '@mui/material';
+import EEChip from '@components/common/entreprise_edition/EEChip';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/styles';
+import ManagedConnectorCreation from '@components/data/connectors/ManagedConnectorCreation';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import CardActionArea from '@mui/material/CardActionArea';
+import Alert from '@mui/material/Alert';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
-import { type Connector, getConnectorTriggerStatus } from '../../../../utils/Connector';
+import { type Connector, getConnectorTriggerStatus, useComputeConnectorStatus } from '../../../../utils/Connector';
 import { connectorDeletionMutation, connectorResetStateMutation } from './Connector';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import type { Theme } from '../../../../components/Theme';
@@ -36,12 +43,15 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import SortConnectorsHeader from './SortConnectorsHeader';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { emptyFilled } from '../../../../utils/String';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const interval$ = interval(FIVE_SECONDS);
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>({
   linesContainer: {
     marginTop: 10,
   },
@@ -63,10 +73,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-}));
+});
 
 const inlineStyles: Record<string, CSSProperties> = {
   name: {
@@ -123,14 +130,38 @@ export const connectorsStatusQuery = graphql`
 
 const connectorsStatusFragment = graphql`
   fragment ConnectorsStatus_data on Query {
+    connectorManagers {
+      id
+      name
+      active
+      last_sync_execution
+      connector_manager_contracts
+    }
     connectors {
       id
       name
       active
       auto
+      is_managed
       connector_trigger_filters
       connector_type
       connector_scope
+      is_managed
+      manager {
+        id
+        connector_manager_contracts
+      }
+      manager_current_status
+      manager_requested_status
+      manager_contract_image
+      manager_contract_configuration{
+        key
+        value
+      }
+      connector_user {
+        id
+        name
+      }
       updated_at
       config {
         listen
@@ -171,12 +202,18 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   const { t_i18n, nsdt, n } = useFormatter();
 
   const classes = useStyles(); // TODO remove as deprecated
+  const theme = useTheme<Theme>();
+  const isEnterpriseEdition = useEnterpriseEdition();
+
   const navigate = useNavigate();
+
   const [sortBy, setSortBy] = useState<string>('name');
   const [orderAsc, setOrderAsc] = useState<boolean>(true);
   const [connectorIdToReset, setConnectorIdToReset] = useState<string>();
   const [connectorMessages, setConnectorMessages] = useState<string | number | null | undefined>();
   const [resetting, setResetting] = useState<boolean>(false);
+
+  const computeConnectorStatus = useComputeConnectorStatus();
 
   const data = usePreloadedFragment<ConnectorsStatusQuery,
   ConnectorsStatus_data$key>({
@@ -241,6 +278,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   };
 
   const queues = data.rabbitMQMetrics?.queues ?? [];
+  const connectorManagers = data.connectorManagers ?? [];
   const connectorsWithMessages = data.connectors?.map((connector) => {
     const queueName = connector.connector_type === 'INTERNAL_ENRICHMENT'
       ? `listen_${connector.id}`
@@ -282,7 +320,11 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     return valueA > valueB ? -1 : 1;
   });
 
+  const [manager, setManager] = useState<ConnectorsStatus_data$data['connectorManagers'][0]>();
+
   const { isSensitive } = useSensitiveModifications('connector_reset');
+  const { isFeatureEnable } = useHelper();
+  const isComposerEnable = isFeatureEnable('COMPOSER');
   return (
     <>
       <Dialog
@@ -321,13 +363,87 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
           </Button>
         </DialogActions>
       </Dialog>
-      <Card variant="outlined">
-        <CardHeader
-          avatar={<ExtensionOutlined className={classes.icon} />}
-          title={t_i18n('Registered connectors')}
-          style={{ paddingBottom: 0 }}
-        />
-        <CardContent style={{ paddingTop: 0 }}>
+      {isComposerEnable && (
+        <div>
+          <Typography
+            variant="h4"
+            style={{ float: 'left', marginBottom: 15 }}
+          >
+            <>
+              {t_i18n('Registered manager')}
+              <EEChip feature="Registered manager" />
+            </>
+          </Typography>
+          <div className="clearfix" />
+          {!isEnterpriseEdition ? (
+            <Alert
+              variant="outlined"
+              color="secondary"
+              icon={<InfoOutlined />}
+            >
+              {t_i18n('This feature is only available in OpenCTI Enterprise Edition.')}
+            </Alert>
+          ) : (
+            <Grid spacing={3} container>
+              {connectorManagers.map((m, id) => (
+                <Grid size={3} key={`${m.name}-${id}`}>
+                  <Card variant="outlined">
+                    <CardActionArea onClick={() => setManager(m)}>
+                      <CardHeader
+                        title={m.name}
+                        avatar={<HubOutlined />}
+                        subheader={computeConnectorStatus(m).render}
+                        action={
+                          <IconButton
+                            size="small"
+                            color="primary"
+                          >
+                            <Add />
+                          </IconButton>
+                        }
+                      />
+                      <CardContent>
+                        <Grid container spacing={1}>
+                          <Grid size={6}>
+                            <Typography variant="h4" style={{ margin: 0 }}>{t_i18n('Modification date')}</Typography>
+                          </Grid>
+                          <Grid size={6}>
+                            {nsdt(m.last_sync_execution)}
+                          </Grid>
+                          <Grid size={6}>
+                            <Typography variant="h4" style={{ margin: 0 }}>{t_i18n('Contracts')}</Typography>
+                          </Grid>
+                          <Grid size={6}>
+                            <Typography variant="body2">
+                              {emptyFilled(m.connector_manager_contracts.length)}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </CardContent>
+                    </CardActionArea>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+        </div>
+      )}
+      {(manager && isComposerEnable) && <ManagedConnectorCreation manager={manager} onClose={() => setManager(undefined)} />}
+      <div>
+        <Typography
+          variant="h4"
+          style={{ float: 'left', marginBottom: 15 }}
+        >
+          {t_i18n('Registered connectors')}
+        </Typography>
+        <div className="clearfix" />
+        <Paper
+          className={'paper-for-grid'}
+          style={{
+            padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+          }}
+          variant="outlined"
+        >
           <List classes={{ root: classes.linesContainer }}>
             <ListItem
               classes={{ root: classes.itemHead }}
@@ -342,9 +458,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
                     fontWeight: 700,
                     fontSize: 12,
                   }}
-                >
-                  #
-                </span>
+                />
               </ListItemIcon>
               <ListItemText
                 primary={
@@ -376,111 +490,115 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
               />
             </ListItem>
 
-            {sortedConnectors && sortedConnectors.map((connector) => (
-              <ListItem
-                key={connector.id}
-                divider={true}
-                disablePadding
-                secondaryAction={
-                  <Security needs={[MODULES_MODMANAGE]}>
-                    <>
-                      {!isSensitive && (
-                        <Tooltip title={t_i18n('Reset the connector state')}>
+            {sortedConnectors && sortedConnectors.map((connector) => {
+              let ConnectorIcon = ExtensionOutlined;
+              if (connector.is_managed) {
+                ConnectorIcon = HubOutlined;
+              } else if (connector.built_in) {
+                ConnectorIcon = DeveloperBoardOutlined;
+              }
+              return (
+                <ListItem
+                  key={connector.id}
+                  divider={true}
+                  disablePadding
+                  secondaryAction={
+                    <Security needs={[MODULES_MODMANAGE]}>
+                      <>
+                        {!isSensitive && (
+                          <Tooltip title={t_i18n('Reset the connector state')}>
+                            <IconButton
+                              onClick={() => {
+                                setConnectorIdToReset(connector.id);
+                                setConnectorMessages(connector.messages);
+                              }}
+                              aria-haspopup="true"
+                              color="primary"
+                              size="large"
+                              disabled={!!connector.built_in}
+                            >
+                              <PlaylistRemoveOutlined />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        <Tooltip title={t_i18n('Clear this connector')}>
                           <IconButton
                             onClick={() => {
-                              setConnectorIdToReset(connector.id);
-                              setConnectorMessages(connector.messages);
+                              if (connector.id) handleDelete(connector.id);
                             }}
                             aria-haspopup="true"
                             color="primary"
+                            disabled={!!connector.active || !!connector.built_in}
                             size="large"
-                            disabled={!!connector.built_in}
                           >
-                            <PlaylistRemoveOutlined />
+                            <DeleteOutlined />
                           </IconButton>
                         </Tooltip>
-                      )}
-                      <Tooltip title={t_i18n('Clear this connector')}>
-                        <IconButton
-                          onClick={() => {
-                            if (connector.id) handleDelete(connector.id);
-                          }}
-                          aria-haspopup="true"
-                          color="primary"
-                          disabled={!!connector.active || !!connector.built_in}
-                          size="large"
-                        >
-                          <DeleteOutlined />
-                        </IconButton>
-                      </Tooltip>
-                    </>
-                  </Security>
-                }
-              >
-                <ListItemButton
-                  component={Link}
-                  classes={{ root: classes.item }}
-                  to={`/dashboard/data/ingestion/connectors/${connector.id}`}
-                >
-                  <ListItemIcon>
-                    {connector.built_in ? <DeveloperBoardOutlined /> : <ExtensionOutlined />}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.name}
-                        >
-                          {connector.name}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.connector_type}
-                        >
-                          {t_i18n(connector.connector_type)}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.auto}
-                        >
-                          <ItemBoolean
-                            label={connector.connectorTriggerStatus.label}
-                            status={connector.connectorTriggerStatus.status}
-                            variant="inList"
-                          />
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.messages}
-                        >
-                          {n(connector.messages)}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.active}
-                        >
-                          <ItemBoolean
-                            status={connector.active}
-                            label={connector.active ? t_i18n('Active') : t_i18n('Inactive')}
-                            variant="inList"
-                          />
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.updated_at}
-                        >
-                          {nsdt(connector.updated_at)}
-                        </div>
-                      </div>
+                      </>
+                    </Security>
                   }
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
+                >
+                  <ListItemButton
+                    component={Link}
+                    classes={{ root: classes.item }}
+                    to={`/dashboard/data/ingestion/connectors/${connector.id}`}
+                  >
+                    <ListItemIcon>
+                      <ConnectorIcon />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.name}
+                          >
+                            {connector.name}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.connector_type}
+                          >
+                            {t_i18n(connector.connector_type)}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.auto}
+                          >
+                            <ItemBoolean
+                              label={connector.connectorTriggerStatus.label}
+                              status={connector.connectorTriggerStatus.status}
+                              variant="inList"
+                            />
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.messages}
+                          >
+                            {n(connector.messages)}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.active}
+                          >
+                            {computeConnectorStatus(connector).render}
+                          </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={inlineStyles.updated_at}
+                          >
+                            {nsdt(connector.updated_at)}
+                          </div>
+                        </div>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
           </List>
-        </CardContent>
-      </Card>
+        </Paper>
+      </div>
     </>
   );
 };
