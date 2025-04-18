@@ -250,7 +250,7 @@ const initPublisherManager = () => {
       lock = await lockResources([PUBLISHER_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-PUBLISHER] Running publisher manager');
-      const opts = { withInternal: false, streamName: NOTIFICATION_STREAM_NAME };
+      const opts = { withInternal: false, streamName: NOTIFICATION_STREAM_NAME, bufferTime: 5000 };
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Publisher manager', publisherStreamHandler, opts);
       await streamProcessor.start('live');
       while (!shutdown && streamProcessor.running()) {

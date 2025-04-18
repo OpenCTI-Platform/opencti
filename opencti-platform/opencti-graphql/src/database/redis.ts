@@ -8,7 +8,7 @@ import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, waitInSec } from './utils';
+import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, wait, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
@@ -696,6 +696,7 @@ export interface StreamProcessor {
 
 interface StreamOption {
   withInternal?: boolean;
+  bufferTime?: number;
   autoReconnect?: boolean;
   streamName?: string;
 }
@@ -739,7 +740,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
       } else {
         await processStreamResult([], callback, opts.withInternal);
       }
-      await waitInSec(5);
+      await wait(opts.bufferTime ?? 50);
     } catch (err) {
       logApp.error('Redis stream consume fail', { cause: err, provider });
       if (opts.autoReconnect) {
