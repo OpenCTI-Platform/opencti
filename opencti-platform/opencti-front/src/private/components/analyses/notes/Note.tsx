@@ -78,15 +78,16 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const overviewLayoutCustomization = useOverviewLayoutCustomization(note.entity_type);
 
-  return (<>
-    <Grid
-      container={true}
-      spacing={3}
-      style={{
-        marginBottom: 20,
-      }}
-    >
-      {
+  return (
+    <div data-testid="note-details-page">
+      <Grid
+        container={true}
+        spacing={3}
+        style={{
+          marginBottom: 20,
+        }}
+      >
+        {
         overviewLayoutCustomization.map(({ key, width }) => {
           switch (key) {
             case 'details':
@@ -132,13 +133,13 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
           }
         })
       }
-    </Grid>
-    {!isFABReplaced && (
+      </Grid>
+      {!isFABReplaced && (
       <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
         <NoteEdition noteId={note.id} />
       </CollaborativeSecurity>
-    )}
-  </>);
+      )}
+    </div>);
 };
 
 export default NoteComponent;
