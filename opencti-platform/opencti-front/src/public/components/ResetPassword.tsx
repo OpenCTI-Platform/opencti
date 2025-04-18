@@ -12,6 +12,8 @@ import useApiMutation from '../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../relay/environment';
 import OTPForm from './OTPForm';
 import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } from './__generated__/ResetPasswordVerifyOtpMutation.graphql';
+import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAskSendOtpMutation.graphql';
+import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
 
 interface ResetProps {
   onCancel: () => void;
@@ -28,6 +30,12 @@ mutation ResetPasswordVerifyOtpMutation($input: VerifyOtpInput!){
   verifyOtp(input: $input) {
     otp_activated
   }
+}
+`;
+
+export const ChangePasswordMutation = graphql`
+mutation ResetPasswordChangePasswordMutation($input: ChangePasswordInput!){
+  changePassword(input: $input)
 }
 `;
 
@@ -77,7 +85,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
 
-  const [askSentOtpCommitMutation] = useApiMutation(
+  const [askSentOtpCommitMutation] = useApiMutation<ResetPasswordAskSendOtpMutation>(
     AskSendOtpMutation,
     undefined,
     {
@@ -86,6 +94,11 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   );
   const [verifyOtpCommitMutation] = useApiMutation<ResetPasswordVerifyOtpMutation>(
     VerifyOtpMutation,
+    undefined,
+  );
+
+  const [changePasswordCommitMutation] = useApiMutation<ResetPasswordChangePasswordMutation>(
+    ChangePasswordMutation,
     undefined,
   );
 
@@ -151,8 +164,28 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
     });
   };
 
-  const onSubmitValidatePassword: FormikConfig<ResetPasswordFormValues>['onSubmit'] = () => {
-    onCancel();
+  const onSubmitValidatePassword: FormikConfig<ResetPasswordFormValues>['onSubmit'] = async (
+    values,
+    { setSubmitting, resetForm, setErrors },
+  ) => {
+    setSubmitting(true);
+    changePasswordCommitMutation({
+      variables: {
+        input: {
+          newPassword: values.password,
+          email,
+        },
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        onCancel();
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
+    });
   };
 
   const onCompletedVerify2fa = () => {

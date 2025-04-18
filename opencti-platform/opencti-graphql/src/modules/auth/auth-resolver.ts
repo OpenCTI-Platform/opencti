@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { askSendOtp, verify2fa, verifyOtp } from './auth-domain';
+import { askSendOtp, changePassword, verify2fa, verifyOtp } from './auth-domain';
 
 const authResolvers: Resolvers = {
   Query: {},
@@ -12,6 +12,9 @@ const authResolvers: Resolvers = {
     },
     verify2fa: (_, { input }) => {
       return verify2fa(input);
+    },
+    changePassword: (_, { input }, context) => {
+      return changePassword(context, input);
     },
   },
 };
