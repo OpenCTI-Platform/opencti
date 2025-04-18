@@ -3091,7 +3091,6 @@
   "The value must be greater than or equal to 0": "The value must be greater than or equal to 0",
   "The value must be greater than or equal to 1": "The value must be greater than or equal to 1",
   "The value must be less than or equal to 100": "The value must be less than or equal to 100",
-  "The value must contain digits only": "The value must contain digits only",
   "The value must not be empty": "The value must not be empty",
   "The value must not be empty.": "The value must not be empty.",
   "The value should be between 0 and 100": "The value should be between 0 and 100",

@@ -118,8 +118,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     x_opencti_score: Yup.number()
       .nullable()
       .min(0, t_i18n('The value must be greater than or equal to 0'))
-      .max(100, t_i18n('The value must be less than or equal to 100'))
-      .test('Digits only', t_i18n('The value must contain digits only'), (val) => /^\d+$/.test(String(val))),
+      .max(100, t_i18n('The value must be less than or equal to 100')),
   };
   const organizationValidator = useSchemaEditionValidation('Organization', basicShape);
 
