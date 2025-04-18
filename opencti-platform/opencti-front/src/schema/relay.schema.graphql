@@ -9090,6 +9090,7 @@ type Mutation {
   askSendOtp(input: AskSendOtpInput!): Boolean
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verify2fa(input: Verify2faInput!): Boolean
+  changePassword(input: ChangePasswordInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12805,6 +12806,11 @@ input VerifyOtpInput {
 input Verify2faInput {
   code: String!
   email: String!
+}
+
+input ChangePasswordInput {
+  email: String!
+  newPassword: String!
 }
 
 type VerifyOtp {
