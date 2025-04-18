@@ -8,9 +8,9 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { json } from 'body-parser';
 import cors from 'cors';
 import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import passport from 'passport/lib';
-import { makeServer } from 'graphql-ws';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
 import createApp, { createAuthenticatedContext } from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
@@ -65,8 +65,7 @@ const createHttpServer = async () => {
   wsServer.on('error', (e) => {
     throw e;
   });
-  // Create the GraphQL WebSocket server (this automatically ties the WebSocket server to GraphQL)
-  makeServer({
+  const serverCleanup = useServer({
     schema,
     context: async (ctx) => {
       const req = ctx.extra.request;
@@ -99,18 +98,14 @@ const createHttpServer = async () => {
       }
       throw ForbiddenAccess('User must be authenticated');
     },
-  });
-  // The WebSocket server will automatically handle connections and route them to GraphQL
-  wsServer.on('connection', () => {
-    logApp.info('[LOCAL] New GraphQL WebSocket connection');
-  });
+  }, wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
   apolloServer.addPlugin({
     async serverWillStart() {
       return {
         async drainServer() {
-          wsServer.close();
+          await serverCleanup.dispose();
         },
         async renderLandingPage() {
           const html = `
