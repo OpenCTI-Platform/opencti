@@ -30,6 +30,7 @@ import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextM
 import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
+import TextField from '../../../../components/TextField';
 
 const organizationMutation = graphql`
   mutation OrganizationCreationMutation($input: OrganizationAddInput!) {
@@ -57,6 +58,7 @@ interface OrganizationAddInput {
   confidence: number | null
   x_opencti_reliability: string | undefined
   x_opencti_organization_type: string | undefined
+  x_opencti_score: string | null
   createdBy: FieldOption | null
   objectMarking: FieldOption[]
   objectLabel: FieldOption[]
@@ -99,6 +101,10 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       .nullable(),
     x_opencti_reliability: Yup.string()
       .nullable(),
+    x_opencti_score: Yup.number()
+      .nullable()
+      .min(0, t_i18n('The value must be greater than or equal to 0'))
+      .max(100, t_i18n('The value must be less than or equal to 100')),
   };
   const organizationValidator = useSchemaCreationValidation(ORGANIZATION_TYPE, basicShape);
 
@@ -140,6 +146,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
         description: values.description,
         x_opencti_reliability: values.x_opencti_reliability,
         x_opencti_organization_type: values.x_opencti_organization_type,
+        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : null,
         createdBy: values.createdBy?.value,
         confidence: parseInt(String(values.confidence), 10),
         objectMarking: values.objectMarking.map((v) => v.value),
@@ -177,6 +184,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       objectLabel: [],
       externalReferences: [],
       file: null,
+      x_opencti_score: null,
     },
   );
 
@@ -258,6 +266,15 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_opencti_score"
+            label={t_i18n('Score')}
+            fullWidth={true}
+            type="number"
+            style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"

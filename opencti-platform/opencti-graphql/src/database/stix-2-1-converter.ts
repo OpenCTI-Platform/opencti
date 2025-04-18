@@ -386,8 +386,9 @@ export const convertIdentityToStix = (instance: StoreEntityIdentity, type: strin
         firstname: instance.x_opencti_firstname,
         lastname: instance.x_opencti_lastname,
         organization_type: instance.x_opencti_organization_type,
-        reliability: instance.x_opencti_reliability
-      })
+        reliability: instance.x_opencti_reliability,
+        score: instance.x_opencti_score,
+      }),
     }
   };
 };

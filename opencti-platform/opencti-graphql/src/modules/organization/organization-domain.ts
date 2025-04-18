@@ -19,7 +19,7 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicObject, OrganizationAddInput, ResolversTypes } from '../../generated/graphql';
-import { AlreadyDeletedError, FunctionalError } from '../../config/errors';
+import { AlreadyDeletedError, FunctionalError, ValidationError } from '../../config/errors';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { BasicStoreCommon, BasicStoreEntity } from '../../types/store';
@@ -34,6 +34,11 @@ export const findAll = (context: AuthContext, user: AuthUser, args: EntityOption
 };
 
 export const addOrganization = async (context: AuthContext, user: AuthUser, organization: OrganizationAddInput) => {
+  if (organization.x_opencti_score !== null
+    && organization.x_opencti_score !== undefined
+    && (organization.x_opencti_score && (organization.x_opencti_score < 0 || organization.x_opencti_score > 100))) {
+    throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
+  }
   const organizationWithClass = { identity_class: ENTITY_TYPE_IDENTITY_ORGANIZATION.toLowerCase(), ...organization };
   const created = await createEntity(context, user, organizationWithClass, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
