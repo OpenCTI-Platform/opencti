@@ -9,7 +9,6 @@ import {
 } from '../../../src/modules/indicator/indicator-domain';
 import type { EditInput, IndicatorAddInput } from '../../../src/generated/graphql';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { STIX_PATTERN_TYPE } from '../../../src/utils/syntax';
 import { VALID_FROM, VALID_UNTIL, X_SCORE } from '../../../src/schema/identifier';
@@ -43,11 +42,12 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   };
 
   afterAll(async () => {
-    for (let i = 0; i < indicatorCreatedIds.length; i += 1) {
+    /* for (let i = 0; i < indicatorCreatedIds.length; i += 1) {
       logApp.info(`Delete ${indicatorCreatedIds[i]}`);
       await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorCreatedIds[i]);
     }
     logApp.info(`${indicatorCreatedIds.length} indicators created and deleted.`);
+    */
   });
 
   it('valid until and valid from should be in right order', async () => {
