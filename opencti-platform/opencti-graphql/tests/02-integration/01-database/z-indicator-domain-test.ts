@@ -15,6 +15,7 @@ import { VALID_FROM, VALID_UNTIL, X_SCORE } from '../../../src/schema/identifier
 import { createEntity } from '../../../src/database/middleware';
 import { dayToMs } from '../../../src/modules/decayRule/decayRule-domain';
 import { logApp } from '../../../src/config/conf';
+import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 
 describe('Testing field patch on indicator for trio {score, valid until, revoked}', () => {
   const indicatorCreatedIds : string[] = [];
@@ -42,12 +43,10 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
   };
 
   afterAll(async () => {
-    /* for (let i = 0; i < indicatorCreatedIds.length; i += 1) {
-      logApp.info(`Delete ${indicatorCreatedIds[i]}`);
+    for (let i = 0; i < indicatorCreatedIds.length; i += 1) {
       await stixDomainObjectDelete(testContext, ADMIN_USER, indicatorCreatedIds[i]);
     }
     logApp.info(`${indicatorCreatedIds.length} indicators created and deleted.`);
-    */
   });
 
   it('valid until and valid from should be in right order', async () => {

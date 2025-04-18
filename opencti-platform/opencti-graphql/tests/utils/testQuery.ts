@@ -15,6 +15,7 @@ import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKIN
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
 import type { ConfidenceLevel } from '../../src/generated/graphql';
+import { findById } from '../../src/domain/user';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -22,7 +23,7 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 1217;
+export const RAW_EVENTS_SIZE = 1234;
 export const SYNC_LIVE_EVENTS_SIZE = 613;
 
 export const PYTHON_PATH = './src/python/testing';
@@ -630,6 +631,13 @@ export const getUserIdByEmail = async (email: string) => {
     return null;
   }
   return data.users.edges[0].node.id;
+};
+export const getAuthUser = async (id: string) => {
+  const user = await findById(testContext, ADMIN_USER, id);
+  return {
+    ...user,
+    origin: { referer: 'test', user_id: user.internal_id },
+  } as AuthUser;
 };
 
 // endregion
