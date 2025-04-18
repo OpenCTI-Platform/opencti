@@ -1629,11 +1629,12 @@ const prepareAttributesForUpdate = async (context, user, instance, elements, ups
       const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
       return { key: input.key, value: uniqAliases };
     }
-    // For upsert, workflow cant be reset or setup on un-existing workflow
+    // For upsert or update, workflow cant be reset or setup on un-existing workflow
     if (input.key === X_WORKFLOW_ID && upsert) {
       const workflowId = R.head(input.value);
-      const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
-      if (isEmptyField(workflowStatus)) { // If workflow is not found, remove the input
+      const instanceTypeStatuses = platformStatuses.filter((status) => status.type === instance.entity_type);
+      // If workflow is not found for current entity type, remove the input
+      if (instanceTypeStatuses?.length === 0 || !instanceTypeStatuses.some((entityStatus) => entityStatus.internal_id === workflowId)) {
         return null;
       }
     }
