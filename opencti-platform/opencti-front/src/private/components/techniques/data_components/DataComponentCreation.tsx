@@ -186,8 +186,8 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     <Formik<DataComponentAddInput>
       initialValues={initialValues}
       validationSchema={dataComponentValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >

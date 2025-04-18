@@ -182,8 +182,8 @@ ThreatActorGroupFormProps
     <Formik<ThreatActorGroupAddInput>
       initialValues={initialValues}
       validationSchema={threatActorGroupValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >
