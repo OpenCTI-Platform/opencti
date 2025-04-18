@@ -235,8 +235,8 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
     <Formik<IndicatorAddInput>
       initialValues={initialValues}
       validationSchema={indicatorValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >

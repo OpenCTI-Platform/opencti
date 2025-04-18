@@ -150,8 +150,8 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
         ? (
           <Formik<ExclusionListEditionFormData>
             enableReinitialize={true}
-            validateOnBlur={false}
-            validateOnChange={false}
+            validateOnBlur={true}
+            validateOnChange={true}
             initialValues={initialValues}
             validationSchema={exclusionListUpdateValidator(t_i18n)}
             onSubmit={onSubmit}

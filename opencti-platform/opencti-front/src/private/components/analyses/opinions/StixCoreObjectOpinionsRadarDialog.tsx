@@ -193,8 +193,8 @@ StixCoreObjectOpinionsRadarDialogProps
               enableReinitialize={true}
               initialValues={initialValues}
               validationSchema={opinionValidator}
-              validateOnChange={false} // Validation will occur on submission, required fields all have *'s
-              validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
+              validateOnChange={true}
+              validateOnBlur={true}
               onSubmit={onSubmit}
               onReset={handleClose}
             >

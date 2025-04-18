@@ -150,8 +150,8 @@ const StixSightingRelationshipCreationForm = ({
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={stixSightingRelationshipValidator}
-      validateOnBlur={false}
-      validateOnChange={false}
+      validateOnBlur={true}
+      validateOnChange={true}
       onSubmit={onSubmit}
       onReset={handleClose}
     >
