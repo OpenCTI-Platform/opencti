@@ -72,15 +72,16 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
   const note = useFragment(NoteComponentFragment, noteFragment);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(note.entity_type);
 
-  return (<>
-    <Grid
-      container={true}
-      spacing={3}
-      style={{
-        marginBottom: 20,
-      }}
-    >
-      {
+  return (
+    <div data-testid="note-details-page">
+      <Grid
+        container={true}
+        spacing={3}
+        style={{
+          marginBottom: 20,
+        }}
+      >
+        {
         overviewLayoutCustomization.map(({ key, width }) => {
           switch (key) {
             case 'details':
@@ -126,8 +127,9 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
           }
         })
       }
-    </Grid>
-  </>);
+      </Grid>
+
+    </div>);
 };
 
 export default NoteComponent;
