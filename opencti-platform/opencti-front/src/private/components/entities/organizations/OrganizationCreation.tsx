@@ -59,7 +59,7 @@ interface OrganizationAddInput {
   confidence: number | null
   x_opencti_reliability: string | undefined
   x_opencti_organization_type: string | undefined
-  x_opencti_score: number | null
+  x_opencti_score: string | null
   createdBy: FieldOption | null
   objectMarking: FieldOption[]
   objectLabel: FieldOption[]
@@ -147,7 +147,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
         description: values.description,
         x_opencti_reliability: values.x_opencti_reliability,
         x_opencti_organization_type: values.x_opencti_organization_type,
-        x_opencti_score: parseInt(String(values.x_opencti_score), 10),
+        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : null,
         createdBy: values.createdBy?.value,
         confidence: parseInt(String(values.confidence), 10),
         objectMarking: values.objectMarking.map((v) => v.value),

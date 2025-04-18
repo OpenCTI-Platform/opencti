@@ -14,7 +14,7 @@ import {
 import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -201,6 +201,13 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   const stixDomainObject = await storeLoadById(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
+  }
+  const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
+  if (scoreEditInput) {
+    const newScore = scoreEditInput.value[0];
+    if (newScore === null || newScore === undefined || (newScore && (newScore < 0 || newScore > 100))) {
+      throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
+    }
   }
   // Validate specific relations, created by and markings
   const markingsInput = input.find((inputData) => inputData.key === INPUT_MARKINGS);
