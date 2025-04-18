@@ -1660,7 +1660,11 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       if (types.length === 1) {
         if (types[0] === ENTITY_TYPE_MARKING_DEFINITION) {
           const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-          return asyncMap(workingIds, (id) => markings.get(id), (marking) => isNotEmptyField(marking));
+          const cacheHits = await asyncMap(workingIds, (id) => markings.get(id), (marking) => isNotEmptyField(marking));
+          if (toMap) {
+            return elConvertHitsToMap(cacheHits, { mapWithAllIds });
+          }
+          return cacheHits;
         }
       }
       // No cache management is possible, just put the type in the filtering
