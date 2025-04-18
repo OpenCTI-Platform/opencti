@@ -114,7 +114,7 @@ import {
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
-import { getEntitiesListFromCache, getEntityFromCache } from './cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
 import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
@@ -183,6 +183,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
+import { asyncMap } from '../utils/data-processing';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1654,6 +1655,15 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     };
     mustTerms.push(should);
     if (types && types.length > 0) {
+      // Cache management if requirements are respected
+      // Entity type must be uniq, and cache must handle this entity type
+      if (types.length === 1) {
+        if (types[0] === ENTITY_TYPE_MARKING_DEFINITION) {
+          const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+          return asyncMap(workingIds, (id) => markings.get(id), (marking) => isNotEmptyField(marking));
+        }
+      }
+      // No cache management is possible, just put the type in the filtering
       const shouldType = {
         bool: {
           should: [
@@ -1701,7 +1711,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         _source: baseData ? baseFields : true,
         body,
       };
-      logApp.debug('[SEARCH] elInternalLoadById', { query });
+      logApp.debug('[SEARCH] elFindByIds', { query });
       const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
       const data = await elRawSearch(context, user, searchType, query).catch((err) => {
         throw DatabaseError('Find direct ids fail', { cause: err, query });
