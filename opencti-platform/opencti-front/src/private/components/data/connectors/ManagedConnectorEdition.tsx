@@ -160,12 +160,12 @@ const ManagedConnectorEdition = ({
                 <Box
                   sx={{ color: theme.palette.text?.primary }}
                 >
-                  {errors[0] && (
+                  {errors?.[0] && (
                     <Typography
                       variant="subtitle2"
                       color="error"
                     >
-                      {errors[0].error}
+                      {errors?.[0].error}
                     </Typography>
                   )}
                   <JsonForms
