@@ -39,14 +39,11 @@ const DataTableBody = ({
   } = useDataTableContext();
 
   const {
-    data: paginatedData,
+    data: queryData,
     isLoading,
     loadMore,
     hasMore,
-  } = useDataTable(dataQueryArgs);
-
-  // data is from datatableWithoutFragment
-  const queryData = data ?? paginatedData;
+  } = data ? { data } : useDataTable(dataQueryArgs); // data is from datatableWithoutFragment
 
   const resolvedData = useMemo(() => {
     if (!queryData) {
