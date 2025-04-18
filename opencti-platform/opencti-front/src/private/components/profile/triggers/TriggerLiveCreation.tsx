@@ -292,6 +292,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
           }}
           filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
+          styleNumber={2}
         />
       ) : (
         <FilterIconButton
@@ -300,9 +301,9 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           redirection
           searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
           entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+          styleNumber={2}
         />
       )}
-
     </React.Fragment>
   );
 
