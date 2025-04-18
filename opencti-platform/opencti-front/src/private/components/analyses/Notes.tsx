@@ -201,7 +201,7 @@ const Notes: FunctionComponent = () => {
   } as UsePreloadedPaginationFragment<NotesLinesPaginationQuery>;
 
   return (
-    <>
+    <span data-testid="notes-page">
       <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Notes'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -220,7 +220,7 @@ const Notes: FunctionComponent = () => {
           )}
         />
       )}
-    </>
+    </span>
   );
 };
 
