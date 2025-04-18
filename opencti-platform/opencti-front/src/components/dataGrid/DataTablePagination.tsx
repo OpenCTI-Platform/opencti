@@ -10,6 +10,7 @@ import { useFormatter } from '../i18n';
 import { NumberOfElements } from '../../utils/hooks/useLocalStorage';
 import NestedMenuButton from '../nested_menu/NestedMenuButton';
 import { useDataTableContext } from './components/DataTableContext';
+import { useDataTable } from './dataTableHooks';
 
 const DataTablePagination = ({
   page,
@@ -31,10 +32,9 @@ const DataTablePagination = ({
       },
       helpers,
     },
-    useDataTable: {
-      hasMore,
-    },
+    dataQueryArgs,
   } = useDataTableContext();
+  const { hasMore } = useDataTable(dataQueryArgs);
 
   const numberOfElements = unstoreNOE ?? storedNOE;
 
