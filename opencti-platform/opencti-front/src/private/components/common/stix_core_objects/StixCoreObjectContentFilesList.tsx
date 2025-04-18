@@ -194,9 +194,8 @@ const StixCoreObjectContentFilesList = ({
                           {fld(file.lastModified ?? moment())}
                         </span>
                         <ItemMarkings
-                          markingDefinitions={file.objectMarking}
+                          markingDefinitions={file.objectMarking ?? []}
                           limit={1}
-                          onClick={undefined}
                         />
                       </div>
                 )}

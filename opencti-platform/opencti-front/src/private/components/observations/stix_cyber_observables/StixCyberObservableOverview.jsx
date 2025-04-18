@@ -133,9 +133,7 @@ class StixCyberObservableOverview extends Component {
                 {t('Marking')}
               </Typography>
               <ItemMarkings
-                markingDefinitions={
-                  stixCyberObservable.objectMarking ?? []
-                }
+                markingDefinitions={stixCyberObservable.objectMarking ?? []}
               />
               <Typography
                 variant="h3"

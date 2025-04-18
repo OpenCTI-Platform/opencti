@@ -66,7 +66,6 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
         <ItemMarkings
           markingDefinitions={relation.markedBy}
           limit={2}
-          onClick={undefined}
         />
       ) : ('-')}
     </div>

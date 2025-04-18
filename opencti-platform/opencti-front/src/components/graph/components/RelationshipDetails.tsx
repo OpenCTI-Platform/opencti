@@ -397,7 +397,6 @@ RelationshipDetailsComponentProps
           <ItemMarkings
             markingDefinitions={stixRelationship.objectMarking}
             limit={2}
-            onClick={undefined}
           />
         ) : ('-')}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>

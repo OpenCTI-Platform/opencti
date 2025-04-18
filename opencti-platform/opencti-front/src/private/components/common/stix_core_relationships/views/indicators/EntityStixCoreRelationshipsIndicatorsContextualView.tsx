@@ -185,7 +185,6 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
           variant="inList"
           markingDefinitions={stixCoreObject.objectMarking ?? []}
           limit={1}
-          onClick={undefined}
         />
       ),
     },

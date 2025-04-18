@@ -42,6 +42,7 @@ export const stixCoreObjectOpinionsListQuery = graphql`
             id
           }
           objectMarking {
+            id
             definition_type
             definition
           }
@@ -131,7 +132,6 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                       variant="inList"
                       markingDefinitions={opinion?.objectMarking ?? []}
                       limit={1}
-                      onClick={undefined}
                     />
                   </div>
                 </ListItemButton>

@@ -273,7 +273,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               variant="inList"
               markingDefinitions={fileMarkings}
               limit={1}
-              onClick={undefined}
             />
             )}
             {!disableImport && (

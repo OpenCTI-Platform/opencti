@@ -138,7 +138,6 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
                 variant="inList"
                 markingDefinitions={data.objectMarking ?? []}
                 limit={1}
-                onClick={undefined}
               />
             </Box>
           </div>

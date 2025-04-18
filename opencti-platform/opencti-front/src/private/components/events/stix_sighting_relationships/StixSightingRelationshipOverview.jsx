@@ -370,9 +370,7 @@ class StixSightingRelationshipContainer extends Component {
                       {t('Marking')}
                     </Typography>
                     <ItemMarkings
-                      markingDefinitions={
-                        stixSightingRelationship.objectMarking ?? []
-                      }
+                      markingDefinitions={stixSightingRelationship.objectMarking ?? []}
                     />
                     <Typography
                       variant="h3"

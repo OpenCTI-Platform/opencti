@@ -127,7 +127,6 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
               </Typography>
               <ItemMarkings
                 markingDefinitions={data.objectMarking}
-                onClick={undefined}
               />
             </>
           )}
