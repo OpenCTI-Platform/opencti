@@ -221,6 +221,22 @@ const CKEditor = (props: CKEditorProps<ClassicEditor>) => {
       editor={ClassicEditor}
       config={config}
       {...props}
+      onReady={(editor) => { // to detect changes in source editing mode
+        props.onReady?.(editor); // call parent-provided onReady if defined
+        if (editor.plugins.has('SourceEditing')) {
+          const sourceEditingPlugin = editor.plugins.get('SourceEditing');
+          sourceEditingPlugin.on('change:isSourceEditingMode', (evt, _, isSourceEditingMode) => {
+            if (isSourceEditingMode) {
+              const textarea = document.querySelector('.ck-source-editing-area textarea') as HTMLTextAreaElement;
+              if (textarea) {
+                textarea.addEventListener('input', () => {
+                  props.onChange?.(evt, editor); // trigger manually onChange
+                });
+              }
+            }
+          });
+        }
+      }}
     />
   );
 };
