@@ -3263,8 +3263,8 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
   const aggBody = await elQueryBodyBuilder(context, user, { ...aggregationFilters, noSize: true, noSort: true });
   return {
     bool: {
-      must: extractNestedQueriesFromBool(aggBody.query.bool.must ?? []),
-      must_not: extractNestedQueriesFromBool(aggBody.query.bool.must_not ?? []),
+      must: extractNestedQueriesFromBool(aggBody.query.bool.filter[0].bool.must ?? []),
+      must_not: extractNestedQueriesFromBool(aggBody.query.bool.filter[0].bool.must_not ?? []),
     },
   };
 };
