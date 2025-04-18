@@ -6,9 +6,12 @@ import { initializeFileStorageClient } from '../../src/database/file-storage';
 import { initExclusionListCache } from '../../src/database/exclusionListCache';
 import { initLockFork } from '../../src/lock/master-lock';
 
+/**
+ * This is run before every test file.
+ */
 await initializeRedisClients();
 await searchEngineInit();
 await initializeFileStorageClient();
 cacheManager.init();
 await initExclusionListCache();
-initLockFork();
+// initLockFork();
