@@ -23,6 +23,7 @@ import {
 } from '../../../src/database/engine';
 import {
   DEPRECATED_INDICES,
+  ES_INDEX_PREFIX,
   INDEX_INTERNAL_OBJECTS,
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
@@ -31,12 +32,13 @@ import {
   READ_RELATIONSHIPS_INDICES,
   WRITE_PLATFORM_INDICES
 } from '../../../src/database/utils';
+import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER, buildStandardUser, testContext, TESTING_GROUPS, TESTING_ORGS, TESTING_ROLES, TESTING_USERS } from '../../utils/testQuery';
 import { BASE_TYPE_RELATION, buildRefRelationKey, ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
-import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { buildAggregationRelationFilter } from '../../../src/database/middleware-loader';
-import { mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
+import { mapCountPerEntityType, mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
 
 const elWhiteUser = async () => {
   const opts = { types: ['Marking-Definition'], connectionFormat: false };
