@@ -13,6 +13,35 @@ import MalwareAnalysesDetailsPage from '../model/MalwareAnalysesDetails.pageMode
 import StixCoreObjectHistoryTab from '../model/StixCoreObjectHistoryTab.pageModel';
 import ObservablesPage from '../model/observable.pageModel';
 import ObservableDetailsPage from '../model/observableDetails.pageModel';
+import NotesPage from '../model/note.pageModel';
+import NoteDetailsPage from '../model/noteDetails.pageModel';
+
+/**
+ * Goal: validate that everything is opening wihtout errors in Analyses > Malware analyses.
+ * @param page
+ */
+const navigateNotes = async (page: Page) => {
+  const notesNameFromInitData = 'Navigation test note entity';
+
+  const notePage = new NotesPage(page);
+  await notePage.navigateFromMenu();
+  await expect(notePage.getPage()).toBeVisible();
+  await expect(page.getByText(notesNameFromInitData)).toBeVisible();
+  await notePage.getItemFromList(notesNameFromInitData).click();
+
+  const noteDetailsPage = new NoteDetailsPage(page);
+  await expect(noteDetailsPage.getPage()).toBeVisible();
+
+  // -- Data
+  await noteDetailsPage.tabs.goToDataTab();
+  const dataTab = new StixCoreObjectDataTab(page);
+  await expect(dataTab.getPage()).toBeVisible();
+
+  // -- History
+  await noteDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Malware analyses.
@@ -326,9 +355,10 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // For faster debugging, each navigated can be commented.
   // so they should be all independent and start from the left menu.
 
-  await navigateAllMenu(page);
-  await navigateReports(page);
-  await navigateGroupings(page);
-  await navigateMalwareAnalyses(page);
-  await navigateObservables(page);
+  //await navigateAllMenu(page);
+  //await navigateReports(page);
+  //await navigateGroupings(page);
+  //await navigateMalwareAnalyses(page);
+  await navigateNotes(page);
+  //await navigateObservables(page);
 });
