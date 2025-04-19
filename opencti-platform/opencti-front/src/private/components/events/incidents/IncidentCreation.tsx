@@ -182,8 +182,8 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     <Formik<IncidentAddInput>
       initialValues={initialValues}
       validationSchema={incidentValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >

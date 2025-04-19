@@ -204,8 +204,8 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
     <Formik<InfrastructureAddInput>
       initialValues={initialValues}
       validationSchema={infrastructureValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >

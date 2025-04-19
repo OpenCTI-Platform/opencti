@@ -326,8 +326,8 @@ ThreatActorIndividualFormProps
     <Formik<ThreatActorIndividualAddInput>
       initialValues={initialValues}
       validationSchema={threatActorIndividualValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >
