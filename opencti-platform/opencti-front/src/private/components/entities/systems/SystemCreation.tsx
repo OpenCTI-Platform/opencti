@@ -94,6 +94,8 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     confidence: Yup.number().nullable(),
     x_opencti_reliability: Yup.string()
       .nullable(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const systemValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 

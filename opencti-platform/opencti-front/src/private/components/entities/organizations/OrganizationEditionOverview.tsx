@@ -119,6 +119,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
       .nullable()
       .min(0, t_i18n('The value must be greater than or equal to 0'))
       .max(100, t_i18n('The value must be less than or equal to 100')),
+    createdBy: Yup.object().nullable(),
     objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const organizationValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);

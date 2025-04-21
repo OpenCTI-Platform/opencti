@@ -104,6 +104,8 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .min(Yup.ref('start_time'), 'The end date can\'t be before start date')
       .nullable(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const eventValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 

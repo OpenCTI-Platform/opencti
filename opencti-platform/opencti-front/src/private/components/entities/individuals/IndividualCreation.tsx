@@ -95,6 +95,8 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     confidence: Yup.number().nullable(),
     x_opencti_reliability: Yup.string()
       .nullable(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const individualValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 

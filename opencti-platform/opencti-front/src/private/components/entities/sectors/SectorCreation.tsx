@@ -111,6 +111,8 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     name: Yup.string().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
   const sectorValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
