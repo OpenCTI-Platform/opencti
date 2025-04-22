@@ -538,8 +538,8 @@ class StixCoreObjectContentComponent extends Component {
                 >
                   <CKEditor
                     data={currentContent ?? ''}
-                    onChange={() => {
-                      this.setState({ changed: true });
+                    onChange={(_, editor) => {
+                      this.setState({ currentContent: editor.getData(), changed: true });
                     }}
                     onBlur={(_, editor) => {
                       this.onHtmlFieldChange(editor.getData());
