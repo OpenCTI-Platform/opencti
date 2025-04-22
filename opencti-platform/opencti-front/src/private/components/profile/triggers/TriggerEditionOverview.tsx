@@ -440,6 +440,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                     redirection
                     entityTypes={['Instance']}
                     filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
+                    styleNumber={2}
                   />
                 ) : (
                   <FilterIconButton
@@ -448,6 +449,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                     redirection
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                     entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+                    styleNumber={2}
                   />)
               }
             </span>

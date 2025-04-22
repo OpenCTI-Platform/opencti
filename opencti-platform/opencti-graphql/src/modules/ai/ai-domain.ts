@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { callWithTimeout } from '@opentelemetry/sdk-metrics/build/esnext/utils';
+import { TimeoutError } from '@opentelemetry/sdk-metrics';
 import { logApp } from '../../config/conf';
 import { FunctionalError, UnknownError } from '../../config/errors';
 import { queryAi, queryNLQAi } from '../../database/ai-llm';
@@ -421,7 +422,11 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
   try {
     rawResponse = await callWithTimeout(queryNLQAi(promptValue), NLQ_TIMEOUT);
   } catch (error) {
-    throw UnknownError('Error when calling the NLQ model', { error, promptValue });
+    if (error instanceof TimeoutError) {
+      throw UnknownError('The NLQ model takes too long to respond', { error, promptValue });
+    } else {
+      throw error;
+    }
   }
   const parsedResponse = rawResponse
     ? { ...rawResponse, filterGroups: [] } as unknown as FilterGroup

@@ -92,21 +92,23 @@ const useGraphInteractions = () => {
     graphRef2D.current?.centerAt(zoomLevel.x, zoomLevel.y, 400);
   };
 
+  /**
+   * Configure the forces of the lib react-force-graph.
+   * Those values are the ones taken from previous version of graphs.
+   */
+  const initForces = () => {
+    if (modeTree) {
+      graphRef2D.current?.d3Force('charge')?.strength(-1000);
+      graphRef3D.current?.d3Force('charge')?.strength(-1000);
+    } else {
+      graphRef2D.current?.d3Force('link')?.distance(50);
+      graphRef3D.current?.d3Force('link')?.distance(50);
+    }
+  };
+
   const applyForces = () => {
     graphRef2D.current?.d3ReheatSimulation();
     graphRef3D.current?.d3ReheatSimulation();
-  };
-
-  /**
-   * Remove fx and fy positions responsible for fixed positions when
-   * mode forces is on and reapply forces.
-   */
-  const unfixNodes = () => {
-    graphData?.nodes.forEach((node) => {
-      node.fx = undefined; // eslint-disable-line no-param-reassign
-      node.fy = undefined; // eslint-disable-line no-param-reassign
-    });
-    applyForces();
   };
 
   const toggleSelectFreeRectangle = () => {
@@ -366,7 +368,7 @@ const useGraphInteractions = () => {
     setGraphStateProp('selectedTimeRangeInterval', undefined);
   };
 
-  const rebuildGraphData = (objects: ObjectToParse[]) => {
+  const rebuildGraphData = (objects: ObjectToParse[], resetPositions = false) => {
     const filteredObjects = context === 'correlation' && graphState.correlationMode === 'observables'
       ? objects.filter((o) => (
         o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
@@ -374,8 +376,24 @@ const useGraphInteractions = () => {
       : objects;
     setRawObjects(filteredObjects);
     setGraphData(context === 'correlation'
-      ? buildCorrelationData(filteredObjects, rawPositions)
-      : buildGraphData(filteredObjects, rawPositions));
+      ? buildCorrelationData(filteredObjects, resetPositions ? {} : rawPositions)
+      : buildGraphData(filteredObjects, resetPositions ? {} : rawPositions));
+  };
+
+  /**
+   * Remove fx and fy positions responsible for fixed positions when
+   * mode forces is on and reapply forces.
+   */
+  const unfixNodes = () => {
+    // --- Alternative way of unfixing nodes, not used for now.
+    // graphData?.nodes.forEach((node) => {
+    //   node.fx = undefined; // eslint-disable-line no-param-reassign
+    //   node.fy = undefined; // eslint-disable-line no-param-reassign
+    // });
+    // applyForces();
+    // --- Hard way of unfixing nodes, chosen one for now.
+    rebuildGraphData(rawObjects, true);
+    applyForces();
   };
 
   const addNode = (data: ObjectToParse) => {
@@ -485,6 +503,7 @@ const useGraphInteractions = () => {
     selectBySearch,
     addNode,
     applyForces,
+    initForces,
     removeNode,
     removeNodes,
     addLink,

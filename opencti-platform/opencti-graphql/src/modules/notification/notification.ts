@@ -118,6 +118,8 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
       upsert: false,
       isFilterable: false
     },
+    authorizedMembers,
+    authorizedAuthorities,
   ],
   relations: [],
   representative: (stix: StixNotification) => {

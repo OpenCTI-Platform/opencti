@@ -8091,9 +8091,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apexcharts@npm:4.5.0":
-  version: 4.5.0
-  resolution: "apexcharts@npm:4.5.0"
+"apexcharts@npm:4.6.0":
+  version: 4.6.0
+  resolution: "apexcharts@npm:4.6.0"
   dependencies:
     "@svgdotjs/svg.draggable.js": "npm:^3.0.4"
     "@svgdotjs/svg.filter.js": "npm:^3.0.8"
@@ -8101,7 +8101,7 @@ __metadata:
     "@svgdotjs/svg.resize.js": "npm:^2.0.2"
     "@svgdotjs/svg.select.js": "npm:^4.0.1"
     "@yr/monotone-cubic-spline": "npm:^1.0.3"
-  checksum: 10/640e389e702f3806b9ad4ae62b5c23064db86319e7fc238675f768b71eed5e49776520492d7c816084866bfb6959d7f66cb8187111d26022e4c23c80263078f7
+  checksum: 10/9a41fe21517dc2c815236c30b0383f9790e1e314baa40eeb291059053d8f1f2cab6e22285348096f05c08aad05415a40b79c42c60f67366be6c971aa7b244cab
   languageName: node
   linkType: hard
 
@@ -12518,22 +12518,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-ws@npm:6.0.4":
-  version: 6.0.4
-  resolution: "graphql-ws@npm:6.0.4"
+"graphql-ws@npm:5.16.2":
+  version: 5.16.2
+  resolution: "graphql-ws@npm:5.16.2"
   peerDependencies:
-    "@fastify/websocket": ^10 || ^11
-    graphql: ^15.10.1 || ^16
-    uWebSockets.js: ^20
-    ws: ^8
-  peerDependenciesMeta:
-    "@fastify/websocket":
-      optional: true
-    uWebSockets.js:
-      optional: true
-    ws:
-      optional: true
-  checksum: 10/9cfd6bdf03a65c2b390e049b0e6ce43dd3e428eb7df74afaad45bbfe1f074687a507509f5ab3f9467fea90a7fbe468558621e8c7be06729ea9dc56e116f236da
+    graphql: ">=0.11 <=16"
+  checksum: 10/6647bfe640b467f27aaf5ee044c1d114fe266e82cda4ebbb4368d5a4e98df5d2de9d6be70d28eb5e821d87fbf8964c3a8a18abf87c76d4f148800fd8e0488c3d
   languageName: node
   linkType: hard
 
@@ -12953,9 +12943,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18n-auto-translation@npm:2.1.3":
-  version: 2.1.3
-  resolution: "i18n-auto-translation@npm:2.1.3"
+"i18n-auto-translation@npm:2.2.0":
+  version: 2.2.0
+  resolution: "i18n-auto-translation@npm:2.2.0"
   dependencies:
     "@google-cloud/translate": "npm:8.5.1"
     axios: "npm:1.8.4"
@@ -12967,7 +12957,7 @@ __metadata:
     yocto-spinner: "npm:0.2.1"
   bin:
     i18n-auto-translation: dist/src/index.js
-  checksum: 10/ea7dc8ff6aa23b1b28e03bdbb6c2fd9303cfe319ff58f8c9a5cecf8849b67ad1e0cc7171d8d4e887beaf8e27034053b560dc68b2842c731c85465b4e140d34c8
+  checksum: 10/b22135483ad8b44a4450c2a51a64a1dcb7ccd268559f7738ef4cd50ff9781deb1cb41400a0a36f120cd9ea99f12ad1e7622d28908ffd420e0d98ab20a6ed39b0
   languageName: node
   linkType: hard
 
@@ -16010,7 +16000,7 @@ __metadata:
     "@types/relay-test-utils": "npm:18.0.0"
     "@vitejs/plugin-react": "npm:4.3.4"
     analytics: "npm:0.8.16"
-    apexcharts: "npm:4.5.0"
+    apexcharts: "npm:4.6.0"
     axios: "npm:1.8.4"
     babel-plugin-relay: "npm:18.2.0"
     buffer: "npm:6.0.3"
@@ -16047,12 +16037,12 @@ __metadata:
     fs-extra: "npm:11.3.0"
     graphiql: "npm:3.8.3"
     graphql: "npm:16.10.0"
-    graphql-ws: "npm:6.0.4"
+    graphql-ws: "npm:5.16.2"
     html-react-parser: "npm:5.2.3"
     html-to-image: "npm:1.11.13"
     html-to-pdfmake: "npm:2.5.23"
     http-proxy-middleware: "npm:3.0.5"
-    i18n-auto-translation: "npm:2.1.3"
+    i18n-auto-translation: "npm:2.2.0"
     invert-color: "npm:2.0.0"
     js-base64: "npm:3.7.7"
     js-file-download: "npm:0.4.12"

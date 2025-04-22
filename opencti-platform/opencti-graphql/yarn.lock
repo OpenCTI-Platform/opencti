@@ -1616,14 +1616,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elastic/elasticsearch@npm:8.17.1":
-  version: 8.17.1
-  resolution: "@elastic/elasticsearch@npm:8.17.1"
+"@elastic/elasticsearch@npm:8.18.0":
+  version: 8.18.0
+  resolution: "@elastic/elasticsearch@npm:8.18.0"
   dependencies:
     "@elastic/transport": "npm:^8.9.1"
     apache-arrow: "npm:^18.0.0"
     tslib: "npm:^2.4.0"
-  checksum: 10/98b98c81df2dbeeeff2642959b7ad0c4650db04579a0e4518c70612dd6524516eb225631bba13d331639fc51960710f00b310a1b6bc892eb59e2e54edc0572ea
+  checksum: 10/9e4e5151ca0991d29d2ba2524491741c2d6b41a9014a5c8683271581f832af6ad43aade64e72f1556e4d59523055a804626bac4740c90da0b0fbd2e31147d09d
   languageName: node
   linkType: hard
 
@@ -9247,12 +9247,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-subscriptions@npm:3.0.0":
-  version: 3.0.0
-  resolution: "graphql-subscriptions@npm:3.0.0"
+"graphql-subscriptions@npm:2.0.0":
+  version: 2.0.0
+  resolution: "graphql-subscriptions@npm:2.0.0"
+  dependencies:
+    iterall: "npm:^1.3.0"
   peerDependencies:
     graphql: ^15.7.2 || ^16.0.0
-  checksum: 10/9dbee94d1f8a8742631e6deba33fed4a688b893bb5e287c346b5d01a237b80f96eb4ed2576a3b44c608e553cfd1f2cb400f88b0ffc882cb4effaa4db789f1ce0
+  checksum: 10/fcf47bd8cef90f3d38f07b49b4b0e70514c22d56e3604a6cde03a250d3129a6c5b3e8420953a6fe5dab68e48d092a4d13fa39bcc61610bdd6c4a0804b9ee2f82
   languageName: node
   linkType: hard
 
@@ -9291,22 +9293,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-ws@npm:6.0.4":
-  version: 6.0.4
-  resolution: "graphql-ws@npm:6.0.4"
+"graphql-ws@npm:5.16.2":
+  version: 5.16.2
+  resolution: "graphql-ws@npm:5.16.2"
   peerDependencies:
-    "@fastify/websocket": ^10 || ^11
-    graphql: ^15.10.1 || ^16
-    uWebSockets.js: ^20
-    ws: ^8
-  peerDependenciesMeta:
-    "@fastify/websocket":
-      optional: true
-    uWebSockets.js:
-      optional: true
-    ws:
-      optional: true
-  checksum: 10/9cfd6bdf03a65c2b390e049b0e6ce43dd3e428eb7df74afaad45bbfe1f074687a507509f5ab3f9467fea90a7fbe468558621e8c7be06729ea9dc56e116f236da
+    graphql: ">=0.11 <=16"
+  checksum: 10/6647bfe640b467f27aaf5ee044c1d114fe266e82cda4ebbb4368d5a4e98df5d2de9d6be70d28eb5e821d87fbf8964c3a8a18abf87c76d4f148800fd8e0488c3d
   languageName: node
   linkType: hard
 
@@ -10245,7 +10237,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iterall@npm:1.3.0":
+"iterall@npm:1.3.0, iterall@npm:^1.3.0":
   version: 1.3.0
   resolution: "iterall@npm:1.3.0"
   checksum: 10/700c3e9ae194a00b66dc8dcb449195f84add4e64afaf7ed624177e19565393f9bddd34d621ea70c8eceab87a8536fc0e45bb1c9d1ea7c710d41ed0c3d937b19f
@@ -11688,7 +11680,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:4.93.0, openai@npm:^4.87.3":
+"openai@npm:4.95.0":
+  version: 4.95.0
+  resolution: "openai@npm:4.95.0"
+  dependencies:
+    "@types/node": "npm:^18.11.18"
+    "@types/node-fetch": "npm:^2.6.4"
+    abort-controller: "npm:^3.0.0"
+    agentkeepalive: "npm:^4.2.1"
+    form-data-encoder: "npm:1.7.2"
+    formdata-node: "npm:^4.3.2"
+    node-fetch: "npm:^2.6.7"
+  peerDependencies:
+    ws: ^8.18.0
+    zod: ^3.23.8
+  peerDependenciesMeta:
+    ws:
+      optional: true
+    zod:
+      optional: true
+  bin:
+    openai: bin/cli
+  checksum: 10/36db438d7fe5cd616802e8dc9579e263a8b68859fdaf4eceb0639f4cf69c0ebaeae34dd4f9922c497763533c35bd188bc4e368e11dbdcdc10b486d7907c3203c
+  languageName: node
+  linkType: hard
+
+"openai@npm:^4.87.3":
   version: 4.93.0
   resolution: "openai@npm:4.93.0"
   dependencies:
@@ -11724,7 +11741,7 @@ __metadata:
     "@aws-sdk/lib-storage": "npm:3.787.0"
     "@aws-sdk/property-provider": "npm:3.374.0"
     "@datadog/pprof": "npm:5.7.1"
-    "@elastic/elasticsearch": "npm:8.17.1"
+    "@elastic/elasticsearch": "npm:8.18.0"
     "@escape.tech/graphql-armor": "npm:3.1.2"
     "@graphql-codegen/cli": "npm:5.0.5"
     "@graphql-codegen/client-preset": "npm:4.8.0"
@@ -11828,10 +11845,10 @@ __metadata:
     graphql-redis-subscriptions: "npm:2.7.0"
     graphql-relay: "npm:0.10.2"
     graphql-scalars: "npm:1.24.2"
-    graphql-subscriptions: "npm:3.0.0"
+    graphql-subscriptions: "npm:2.0.0"
     graphql-tag: "npm:2.12.6"
     graphql-upload: "npm:17.0.0"
-    graphql-ws: "npm:6.0.4"
+    graphql-ws: "npm:5.16.2"
     helmet: "npm:8.1.0"
     http-proxy-agent: "npm:7.0.2"
     https-proxy-agent: "npm:7.0.6"
@@ -11851,7 +11868,7 @@ __metadata:
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.3.1"
     nodemailer: "npm:6.10.1"
-    openai: "npm:4.93.0"
+    openai: "npm:4.95.0"
     openid-client: "npm:5.6.5"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:12.0.1"

@@ -1,9 +1,9 @@
 import type { ChatPromptValueInterface } from '@langchain/core/prompt_values';
 import { ChatMistralAI } from '@langchain/mistralai';
-import { ChatOpenAI, AzureChatOpenAI } from '@langchain/openai';
+import { AzureChatOpenAI, ChatOpenAI } from '@langchain/openai';
 import { Mistral } from '@mistralai/mistralai';
 import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
-import { AzureOpenAI, OpenAI } from 'openai';
+import { AuthenticationError, AzureOpenAI, OpenAI } from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { UnknownError, UnsupportedError } from '../config/errors';
 import { OutputSchema } from '../modules/ai/ai-nlq-schema';
@@ -194,13 +194,14 @@ export const queryAi = async (busId: string | null, developerMessage: string | n
 
 // NLQ AI Query with LangChain's Chat Models
 export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
+  const badAiConfigError = UnsupportedError('Incorrect AI configuration for NLQ', {
+    enabled: AI_ENABLED,
+    type: AI_TYPE,
+    endpoint: AI_ENDPOINT,
+    model: AI_MODEL,
+  });
   if (!nlqChat) {
-    throw UnsupportedError('Incorrect AI configuration for NLQ', {
-      enabled: AI_ENABLED,
-      type: AI_TYPE,
-      endpoint: AI_ENDPOINT,
-      model: AI_MODEL,
-    });
+    throw badAiConfigError;
   }
 
   await addNlqQueryCount();
@@ -209,6 +210,9 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
   try {
     return await nlqChat.withStructuredOutput(OutputSchema).invoke(promptValue);
   } catch (err) {
-    throw UnknownError('[NLQ] Error querying AI model', { cause: err });
+    if (err instanceof AuthenticationError) {
+      throw badAiConfigError;
+    }
+    throw UnknownError('Error when calling the NLQ model', { cause: err, promptValue });
   }
 };

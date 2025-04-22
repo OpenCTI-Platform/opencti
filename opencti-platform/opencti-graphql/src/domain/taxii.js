@@ -16,6 +16,9 @@ import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
 import { authorizedMembers } from '../schema/attribute-definition';
+import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { ABSTRACT_STIX_OBJECT } from '../schema/general';
 
 const MAX_TAXII_PAGINATION = conf.get('app:data_sharing:taxii:max_pagination_result') || 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
@@ -117,7 +120,11 @@ export const collectionQuery = async (context, user, collection, args) => {
     throw FunctionalError('Invalid version provided, only \'last\' supported', { version });
   }
   const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
-  const options = await convertFiltersToQueryOptions(filters, { after: added_after, after_exclude: true });
+  const options = await convertFiltersToQueryOptions(filters, {
+    defaultTypes: [STIX_CORE_RELATIONSHIPS, STIX_SIGHTING_RELATIONSHIP, ABSTRACT_STIX_OBJECT],
+    after: added_after,
+    after_exclude: true
+  });
   options.after = next;
   options.bypassSizeLimit = true;
   let maxSize = MAX_TAXII_PAGINATION;

@@ -293,7 +293,8 @@ export const notificationGet = (context: AuthContext, user: AuthUser, narrativeI
   return storeLoadById(context, user, narrativeId, ENTITY_TYPE_NOTIFICATION) as unknown as BasicStoreEntityNotification;
 };
 export const notificationsFind = (context: AuthContext, user: AuthUser, opts: QueryNotificationsArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityNotification>(context, user, [ENTITY_TYPE_NOTIFICATION], opts);
+  const queryArgs = { ...opts, includeAuthorities: true };
+  return listEntitiesPaginated<BasicStoreEntityNotification>(context, user, [ENTITY_TYPE_NOTIFICATION], queryArgs);
 };
 export const myNotificationsFind = (context: AuthContext, user: AuthUser, opts: QueryNotificationsArgs) => {
   const queryFilters = addFilter(opts.filters, 'user_id', user.id);
@@ -323,7 +324,13 @@ export const notificationEditRead = async (context: AuthContext, user: AuthUser,
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFICATION].EDIT_TOPIC, element, user);
 };
 export const addNotification = async (context: AuthContext, user: AuthUser, notification: NotificationAddInput) => {
-  const created = await createEntity(context, user, notification, ENTITY_TYPE_NOTIFICATION);
+  const members = [{ id: notification.user_id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
+  const notificationWithAuthorized = {
+    ...notification,
+    restricted_members: members,
+    authorized_authorities: [SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN] // Add extra capabilities
+  };
+  const created = await createEntity(context, user, notificationWithAuthorized, ENTITY_TYPE_NOTIFICATION);
   const unreadNotificationsCount = await myUnreadNotificationsCount(context, user, created.user_id);
   await notify(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC, { count: unreadNotificationsCount, user_id: created.user_id }, user);
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFICATION].ADDED_TOPIC, created, user);

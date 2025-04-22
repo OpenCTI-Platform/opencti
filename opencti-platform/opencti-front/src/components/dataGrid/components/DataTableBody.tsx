@@ -6,6 +6,7 @@ import DataTableLine, { DataTableLinesDummy } from './DataTableLine';
 import { useDataTableContext } from './DataTableContext';
 import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
+import { useDataTable } from '../dataTableHooks';
 
 const DataTableBody = ({
   settingsMessagesBannerHeight = 0,
@@ -26,12 +27,7 @@ const DataTableBody = ({
     endsWithAction,
     actions,
     columns,
-    useDataTable: {
-      data: queryData,
-      isLoading,
-      loadMore,
-      hasMore,
-    },
+    dataQueryArgs,
     useDataTableToggle: {
       selectedElements,
       onToggleEntity,
@@ -39,7 +35,15 @@ const DataTableBody = ({
     useDataTablePaginationLocalStorage: {
       viewStorage: { filters },
     },
+    data,
   } = useDataTableContext();
+
+  const {
+    data: queryData,
+    isLoading,
+    loadMore,
+    hasMore,
+  } = data ? { data } : useDataTable(dataQueryArgs); // data is from datatableWithoutFragment
 
   const resolvedData = useMemo(() => {
     if (!queryData) {
