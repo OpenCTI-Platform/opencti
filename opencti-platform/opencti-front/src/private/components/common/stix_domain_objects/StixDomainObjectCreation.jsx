@@ -849,7 +849,7 @@ const StixDomainObjectCreation = ({
     <>
       {!speeddial && (
         <CreateEntityControlledDial
-          entityType={stixDomainObjectTypes}
+          entityType={stixDomainObjectTypes.length > 1 ? undefined : stixDomainObjectTypes[0]}
           onOpen={stateHandleOpen}
           onClose={() => {}}
           style={controlledDialStyles}
