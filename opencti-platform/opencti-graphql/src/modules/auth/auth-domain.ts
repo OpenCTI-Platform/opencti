@@ -45,12 +45,10 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     const { user_email, name } = user;
     const email = user_email.toLowerCase();
     await redisSetForgotPasswordOtp(email, resetOtp);
-    const body = `Hi ${
-      name
-    },</br>`
-      + 'A request has been made to reset your OpenCTI password.</br>'
-      + `Enter the following password recovery code: ${
-        resetOtp}`;
+    const body = `Hi ${name},</br>`
+        + 'A request has been made to reset your OpenCTI password.</br></br>'
+        + 'Enter the following password recovery code:</br></br>'
+        + `<b>${resetOtp}</b>`;
 
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
