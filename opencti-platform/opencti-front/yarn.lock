@@ -17268,7 +17268,7 @@ __metadata:
     react-force-graph-2d: "npm:1.27.1"
     react-force-graph-3d: "npm:1.24.4"
     react-grid-layout: "npm:1.5.1"
-    react-intl: "npm:7.1.10"
+    react-intl: "npm:7.1.11"
     react-leaflet: "npm:4.2.1"
     react-markdown: "npm:10.1.0"
     react-material-ui-carousel: "npm:3.4.2"
@@ -18204,9 +18204,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-intl@npm:7.1.10":
-  version: 7.1.10
-  resolution: "react-intl@npm:7.1.10"
+"react-intl@npm:7.1.11":
+  version: 7.1.11
+  resolution: "react-intl@npm:7.1.11"
   dependencies:
     "@formatjs/ecma402-abstract": "npm:2.3.4"
     "@formatjs/icu-messageformat-parser": "npm:2.11.2"
@@ -18222,7 +18222,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10/ebcf56f52f313ee2b80ee9bf9a6211625c3234cdae2867f13e9b48a78f68d42ce67709823c2499ed9b94e34ae92ee1753eac5c5996a1d26847cd1572f3a85cac
+  checksum: 10/ea642c0e04f8186d9141a36a4804afe24810f8b6a96a47c8dc4388663f03c9acfa7b1d093fa65b47bd3f3b62217b8d33f90a7bb5d74d1a420aa1ecd3c6a88014
   languageName: node
   linkType: hard
 
