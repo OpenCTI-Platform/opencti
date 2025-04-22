@@ -45,10 +45,32 @@ const workbenchAttributes = [
 ];
 
 const ignoredAttributesInFeeds = [
+  'id',
+  'draft_ids',
+  'draft_change',
+  'parent_types',
+  'base_type',
+  'internal_id',
+  'standard_id',
+  'x_opencti_description',
   'x_opencti_stix_ids',
+  'x_opencti_files',
+  'x_opencti_score',
+  'x_opencti_graph_data',
+  'x_opencti_workflow_id',
+  'x_opencti_reliability',
+  'x_opencti_aliases',
+  'x_opencti_log_sources',
+  'x_opencti_threat_hunting',
+  'x_opencti_location_types',
+  'start_time',
+  'stop_time',
+  'x_mitre_id',
+  'entity_type',
   'spec_version',
   'extensions',
   'importFiles',
+  'content_mapping',
   'opinions_metrics',
 ];
 
