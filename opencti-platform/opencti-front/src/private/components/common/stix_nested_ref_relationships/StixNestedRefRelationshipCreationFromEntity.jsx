@@ -686,11 +686,8 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   const renderForm = (resolveEntityRef) => {
     let fromEntity = resolveEntityRef.entity;
     let toEntities = targetEntities;
-    const isArrayValid = Array.isArray(toEntities) && toEntities.length > 0;
-
-    const isSameEntityType = isArrayValid
-      ?? toEntities.every((item) => item?.entity_type === toEntities[0]?.entity_type);
-    const isMultipleTo = toEntities?.length > 1;
+    const isSameEntityType = toEntities.every((item) => item.entity_type === toEntities[0].entity_type);
+    const isMultipleTo = toEntities.length > 1;
 
     let relationshipTypes = [];
     const isReversedRelation = resolveEntityRef.from.length === 0 && resolveEntityRef.to.length !== 0;
