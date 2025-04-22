@@ -1,13 +1,15 @@
+import React, { useState, SyntheticEvent, ReactNode } from 'react';
 import Button from '@mui/material/Button';
 import { FilterListOffOutlined, FilterListOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
-import React, { useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import TextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
+import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types';
+import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { useFormatter } from '../../../../components/i18n';
 import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 import SavedFilters from '../../../../components/saved_filters/SavedFilters';
@@ -23,12 +25,42 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+type ListFiltersProps = {
+  size?: number;
+  fontSize?: number;
+  handleOpenFilters: (event: SyntheticEvent) => void;
+  handleCloseFilters: (event: SyntheticEvent) => void;
+  isOpen: boolean;
+  anchorEl: Element | null;
+  availableFilterKeys: string[];
+  filterElement: ReactNode;
+  variant?: string;
+  type?: string;
+  helpers?: handleFilterHelpers;
+  required?: boolean;
+  entityTypes: string[];
+  isDatatable?: boolean;
+};
+
+type ParametersType = {
+  icon: ReactNode;
+  tooltip: string;
+  placeholder: string;
+  color: 'primary' | 'success' | 'warning'
+};
+
+type OptionType = {
+  value: string;
+  label: string;
+  groupLabel?: string;
+  groupOrder?: number;
+  numberOfOccurences?: number;
+};
+
 const ListFilters = ({
-  size,
-  fontSize,
   handleOpenFilters,
   handleCloseFilters,
-  open,
+  isOpen,
   anchorEl,
   availableFilterKeys,
   filterElement,
@@ -38,39 +70,55 @@ const ListFilters = ({
   required = false,
   entityTypes,
   isDatatable = false,
-}) => {
+}: ListFiltersProps) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  const [currentSavedFilter, setCurrentSavedFilter] = useState();
+  const [currentSavedFilter, setCurrentSavedFilter] = useState<SavedFiltersSelectionData>();
 
   const isSavedFiltersFeatureEnabled = isFeatureEnable('SAVED_FILTERS');
 
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
-  const [inputValue, setInputValue] = React.useState('');
+  const [inputValue, setInputValue] = useState('');
+
+  const getParameters = (relationshipType?: string): ParametersType => {
+    switch (relationshipType) {
+      case 'from': return {
+        icon: <RayStartArrow fontSize='medium' />,
+        tooltip: t_i18n('Dynamic source filters'),
+        placeholder: t_i18n('Dynamic source filters'),
+        color: 'warning',
+      };
+      case 'to': return {
+        icon: <RayEndArrow fontSize='medium' />,
+        tooltip: t_i18n('Dynamic target filters'),
+        placeholder: t_i18n('Dynamic target filters'),
+        color: 'success',
+      };
+      default: return {
+        icon: <FilterListOutlined fontSize='medium' />,
+        tooltip: t_i18n('Filters'),
+        placeholder: t_i18n('Add filter'),
+        color: 'primary',
+      };
+    }
+  };
+
   const classes = useStyles();
-  let icon = <FilterListOutlined fontSize={fontSize || 'medium'} />;
-  let tooltip = t_i18n('Filters');
-  let placeholder = t_i18n('Add filter');
-  let color = 'primary';
-  if (type === 'from') {
-    icon = <RayStartArrow fontSize={fontSize || 'medium'} />;
-    tooltip = t_i18n('Dynamic source filters');
-    placeholder = t_i18n('Dynamic source filters');
-    color = 'warning';
-  } else if (type === 'to') {
-    icon = <RayEndArrow fontSize={fontSize || 'medium'} />;
-    tooltip = t_i18n('Dynamic target filters');
-    placeholder = t_i18n('Dynamic target filters');
-    color = 'success';
-  }
+
+  const { icon, tooltip, placeholder, color } = getParameters(type);
+
   const handleClearFilters = () => {
-    helpers.handleClearAllFilters();
+    setCurrentSavedFilter(undefined);
+    helpers?.handleClearAllFilters();
   };
-  const handleChange = (value) => {
-    helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(value, filterKeysMap.get(value)));
+
+  const handleChange = (value: string) => {
+    helpers?.handleAddFilterWithEmptyValue(getDefaultFilterObject(value, filterKeysMap.get(value)));
   };
+
   const isNotUniqEntityTypes = (entityTypes.length === 1 && ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Container'].includes(entityTypes[0]))
     || (entityTypes.length > 1);
+
   const options = isNotUniqEntityTypes
     ? availableFilterKeys
       .map((key) => {
@@ -98,6 +146,7 @@ const ListFilters = ({
         };
       })
       .sort((a, b) => a.label.localeCompare(b.label));
+
   return (
     <>
       {variant === 'text' ? (
@@ -115,12 +164,12 @@ const ListFilters = ({
       ) : (
         <>
           <MUIAutocomplete
-            options={options}
+            options={options as OptionType[]}
             groupBy={isNotUniqEntityTypes ? (option) => option.groupLabel : undefined}
             sx={{ width: 200 }}
             value={null}
             onChange={(event, selectOptionValue) => {
-              handleChange(selectOptionValue.value);
+              if (selectOptionValue?.value) handleChange(selectOptionValue.value);
             }}
             inputValue={inputValue}
             onInputChange={(event, newValue, reason) => {
@@ -140,22 +189,32 @@ const ListFilters = ({
             )}
             renderOption={(props, option) => <li {...props}>{option.label}</li>}
           />
-          {isSavedFiltersFeatureEnabled && isDatatable && <SavedFilters setCurrentSavedFilter={setCurrentSavedFilter} />}
+          {isSavedFiltersFeatureEnabled && isDatatable && (
+            <SavedFilters
+              currentSavedFilter={currentSavedFilter}
+              setCurrentSavedFilter={setCurrentSavedFilter}
+            />
+          )}
           <Tooltip title={t_i18n('Clear filters')}>
             <IconButton
               color={color}
               onClick={handleClearFilters}
-              size={size || 'small'}
+              size='small'
             >
-              <FilterListOffOutlined fontSize={size || 'small'} />
+              <FilterListOffOutlined fontSize='small' />
             </IconButton>
           </Tooltip>
-          {isSavedFiltersFeatureEnabled && isDatatable && <SavedFilterButton currentSavedFilter={currentSavedFilter} />}
+          {isSavedFiltersFeatureEnabled && isDatatable && (
+            <SavedFilterButton
+              currentSavedFilter={currentSavedFilter}
+              setCurrentSavedFilter={setCurrentSavedFilter}
+            />
+          )}
         </>
       )}
       <Popover
         classes={{ paper: classes.container }}
-        open={open}
+        open={isOpen}
         anchorEl={anchorEl}
         onClose={handleCloseFilters}
         anchorOrigin={{

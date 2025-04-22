@@ -24,26 +24,29 @@ const savedFiltersQuery = graphql`
 
 type SavedFiltersComponentProps = {
   queryRef: PreloadedQuery<SavedFiltersQuery>;
-  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData) => void;
+  currentSavedFilter?: SavedFiltersSelectionData;
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 
-const SavedFiltersComponent = ({ queryRef, setCurrentSavedFilter }: SavedFiltersComponentProps) => {
+const SavedFiltersComponent = ({ queryRef, currentSavedFilter, setCurrentSavedFilter }: SavedFiltersComponentProps) => {
   const { savedFilters } = usePreloadedQuery(savedFiltersQuery, queryRef);
 
   return (
     <SavedFilterSelection
       isDisabled={!savedFilters?.edges?.length}
       data={savedFilters?.edges?.map(({ node }) => node) ?? []}
+      currentSavedFilter={currentSavedFilter}
       setCurrentSavedFilter={setCurrentSavedFilter}
     />
   );
 };
 
 type SavedFiltersProps = {
-  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData) => void;
+  currentSavedFilter?: SavedFiltersSelectionData;
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 
-const SavedFilters = ({ setCurrentSavedFilter }: SavedFiltersProps) => {
+const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFiltersProps) => {
   const {
     useDataTablePaginationLocalStorage: {
       localStorageKey,
@@ -61,7 +64,13 @@ const SavedFilters = ({ setCurrentSavedFilter }: SavedFiltersProps) => {
   return (
     <>
       {queryRef
-        ? <SavedFiltersComponent queryRef={queryRef} setCurrentSavedFilter={setCurrentSavedFilter} />
+        ? (
+          <SavedFiltersComponent
+            queryRef={queryRef}
+            currentSavedFilter={currentSavedFilter}
+            setCurrentSavedFilter={setCurrentSavedFilter}
+          />
+        )
         : <SavedFiltersAutocomplete isDisabled />
       }
     </>

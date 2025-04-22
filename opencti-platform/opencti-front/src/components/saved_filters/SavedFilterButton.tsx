@@ -8,6 +8,7 @@ import { useDataTableContext } from 'src/components/dataGrid/components/DataTabl
 import { graphql } from 'react-relay';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
+import Badge from '@mui/material/Badge';
 
 const savedFilterButtonEditMutation = graphql`
   mutation SavedFilterButtonEditMutation($id: ID!, $filters: String!) {
@@ -21,10 +22,11 @@ const savedFilterButtonEditMutation = graphql`
 `;
 
 type SavedFilterButtonProps = {
-  currentSavedFilter: SavedFiltersSelectionData
+  currentSavedFilter?: SavedFiltersSelectionData
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 
-const SavedFilterButton = ({ currentSavedFilter }: SavedFilterButtonProps) => {
+const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilterButtonProps) => {
   const { t_i18n } = useFormatter();
 
   const [isSavedDialogOpen, setIsSavedDialogOpen] = useState<boolean>(false);
@@ -36,6 +38,9 @@ const SavedFilterButton = ({ currentSavedFilter }: SavedFilterButtonProps) => {
     },
   } = useDataTableContext();
 
+  const isEmptyFilters = !filters?.filters.length && !filters?.filterGroups.length;
+  const hasSameFilters = currentSavedFilter?.filters === JSON.stringify(filters);
+
   const [commit] = useApiMutation(
     savedFilterButtonEditMutation,
     undefined,
@@ -43,28 +48,38 @@ const SavedFilterButton = ({ currentSavedFilter }: SavedFilterButtonProps) => {
   );
 
   const handleEditSavedFilter = () => {
+    if (!currentSavedFilter) return;
     commit({
       variables: {
         id: currentSavedFilter.id,
         filters: JSON.stringify(filters),
       },
-      updater: (store, item) => {
-        console.log('item : ', item);
-        console.log('currentSavedFilter : ', currentSavedFilter);
-      } });
+      onCompleted: () => {
+        setCurrentSavedFilter({
+          ...currentSavedFilter,
+          filters: JSON.stringify(filters),
+        } as SavedFiltersSelectionData);
+      },
+    });
   };
 
   const handleOpenDialog = () => setIsSavedDialogOpen(true);
   const handleCloseDialog = () => setIsSavedDialogOpen(false);
 
   const handleSaveButtonClick = () => {
-    if (true) {
-      console.log('HERE SAVED EDIT');
+    if (!hasSameFilters && currentSavedFilter) {
       handleEditSavedFilter();
     } else {
       handleOpenDialog();
     }
   };
+
+  const renderBadge = () => (
+    <Badge color="warning" overlap="circular" variant="dot">
+      <SaveOutlined />
+    </Badge>
+  );
+  const isDisabled = isEmptyFilters || hasSameFilters;
 
   const isRestrictedStorageKey = localStorageKey.includes('_stixCoreRelationshipCreationFromEntity');
   if (isRestrictedStorageKey) return null;
@@ -77,10 +92,13 @@ const SavedFilterButton = ({ currentSavedFilter }: SavedFilterButtonProps) => {
             color="primary"
             onClick={handleSaveButtonClick}
             size="small"
-            disabled={!filters?.filters.length && !filters?.filterGroups.length}
+            disabled={isDisabled}
             aria-label={t_i18n('Save')}
           >
-            <SaveOutlined />
+            {!hasSameFilters && currentSavedFilter
+              ? renderBadge()
+              : <SaveOutlined />
+            }
           </IconButton>
         </span>
       </Tooltip>
@@ -88,6 +106,7 @@ const SavedFilterButton = ({ currentSavedFilter }: SavedFilterButtonProps) => {
       {isSavedDialogOpen && (
         <SavedFilterCreateDialog
           isOpen={isSavedDialogOpen}
+          setCurrentSavedFilter={setCurrentSavedFilter}
           onClose={handleCloseDialog}
         />
       )}
