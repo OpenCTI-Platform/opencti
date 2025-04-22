@@ -609,7 +609,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </Security>
                 <div className="clearfix" />
                 <FieldOrEmpty source={orderedSessions}>
-                  <List style={{ marginTop: -2 }}>
+                  <List style={{ marginTop: -2, width: '100%', maxHeight: 400, overflowY: 'auto' }}>
                     {orderedSessions
                       && orderedSessions.map((session: Session) => (
                         <ListItem
