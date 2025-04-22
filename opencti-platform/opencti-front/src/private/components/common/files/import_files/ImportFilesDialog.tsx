@@ -377,7 +377,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
             color="secondary"
             onClick={() => setDraftContext()}
             component={Link}
-            to={`/dashboard/drafts/${draftId}/files`}
+            to={`/data/import/draft/${draftId}/files`}
           >
             {t_i18n('Navigate to draft')}
           </Button>

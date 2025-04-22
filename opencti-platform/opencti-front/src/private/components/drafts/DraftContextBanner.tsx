@@ -94,7 +94,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
         input: { key: 'draft_context', value: '' },
       },
       onCompleted: () => {
-        navigate('/');
+        navigate('/data/import/draft');
       },
     });
   };

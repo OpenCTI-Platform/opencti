@@ -175,7 +175,7 @@ const FileWorksComponent = ({
   };
 
   const navigateToDraft = (draftId: string) => {
-    navigate(`/dashboard/drafts/${draftId}`);
+    navigate(`/data/import/draft/${draftId}`);
   };
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
