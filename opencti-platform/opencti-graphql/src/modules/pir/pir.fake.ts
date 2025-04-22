@@ -1,19 +1,56 @@
+import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
+
 interface PIRCriterion {
-  standard_id: string
-  // weight: number
+  filters: FilterGroup
+  weight: number
 }
 
-interface PIR {
+export interface PIR {
   id: string
   name: string
+  // Criteria are filters with a weight,
+  // they are used to compute matching score.
   criteria: PIRCriterion[]
+  // Filters do not count when computing score, their role
+  // is to exclude some data (low confidence for example).
+  filters: FilterGroup
 }
 
 export const FAKE_PIR: PIR = {
   id: '2b271fe3-8fdb-4df4-9b1f-bc55202dfa23',
   name: 'PIR about Energy sector in France',
+  filters: {
+    mode: FilterMode.And,
+    filterGroups: [],
+    filters: [{
+      key: ['confidence'],
+      values: ['80'],
+      operator: FilterOperator.Gt,
+      mode: FilterMode.Or
+    }]
+  },
   criteria: [
-    { standard_id: 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d' },
-    { standard_id: 'identity--166544e2-ba1f-5a6c-89cf-a63d0c01e91c' },
+    {
+      weight: 2,
+      filters: {
+        mode: FilterMode.And,
+        filterGroups: [],
+        filters: [
+          { key: ['entity_type'], values: ['targets'] },
+          { key: ['toId'], values: ['7ca7cad1-2618-489a-a74c-9a8e321fd963'] },
+        ]
+      }
+    },
+    {
+      weight: 1,
+      filters: {
+        mode: FilterMode.And,
+        filterGroups: [],
+        filters: [
+          { key: ['entity_type'], values: ['targets'] },
+          { key: ['toId'], values: ['eed96959-31bd-43c9-a8f4-fffde144af52'] },
+        ]
+      }
+    }
   ]
 };

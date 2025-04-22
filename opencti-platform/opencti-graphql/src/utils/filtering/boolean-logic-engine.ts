@@ -1,5 +1,5 @@
 import moment from 'moment';
-import type { Filter, FilterGroup } from '../../generated/graphql';
+import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import { isFilterGroupNotEmpty } from './filtering-utils';
 
 type FilterLogic = Pick<Filter, 'mode' | 'operator'>;
@@ -31,7 +31,11 @@ export const toValidArray = <T = unknown>(v: T) => {
  * @param stixCandidates the values inside the DATA that we compare to the filter values; they are properly types
  *                       We always assume an array of value(s) ; use toValidArray if the data is a single, nullable value.
  */
-export const testGenericFilter = <T extends string | number | boolean>({ mode, operator }: FilterLogic, adaptedFilterValues: T[], stixCandidates: T[]) => {
+export const testGenericFilter = <T extends string | number | boolean>(
+  { mode = FilterMode.Or, operator = FilterOperator.Eq }: FilterLogic,
+  adaptedFilterValues: T[],
+  stixCandidates: T[]
+) => {
   // "(not) nil" or "(not) equal to nothing" is resolved the same way
   if (operator === 'nil' || (operator === 'eq' && adaptedFilterValues.length === 0)) {
     return stixCandidates.length === 0;
