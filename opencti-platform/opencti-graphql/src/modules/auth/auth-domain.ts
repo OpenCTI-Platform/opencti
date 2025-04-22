@@ -11,6 +11,8 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { ADMIN_USER } from '../../../tests/utils/testQuery';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
 import { redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../database/redis';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { SYSTEM_USER } from '../../utils/access';
 
 export const getUser = async (email: string): Promise<User> => {
   const user: any = await getUserByEmail(email);
@@ -38,7 +40,8 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
   const resetOtp = generateOtp();
   try {
-    const { user_email, name } = await getUser(input.email);
+    const user = await getUser(input.email);
+    const { user_email, name } = user;
     const email = user_email.toLowerCase();
     await redisSetForgotPasswordOtp(email, resetOtp);
     const body = `Hi ${
@@ -55,6 +58,14 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
     };
     await sendMail(sendMailArgs);
+    await publishUserAction({
+      user: SYSTEM_USER,
+      event_type: 'authentication',
+      event_scope: 'forgot',
+      event_access: 'administration',
+      context_data: undefined,
+      message: `send an OTP to ${user_email}`,
+    });
   } catch (e) {
     // Prevent wrong email address, but return true too if it fails
     // logApp.error('Error occurred while sending password reset email:', { cause: e });
@@ -62,15 +73,39 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   return true;
 };
 
-export const verifyOtp = async (context: AuthContext, input: VerifyOtpInput) => {
+export const verifyOtp = async (input: VerifyOtpInput) => {
   const storedOtp = await redisGetForgotPasswordOtp(input.email);
   const { otp_activated } = await getUser(input.email);
   if (!storedOtp) {
+    await publishUserAction({
+      user: SYSTEM_USER,
+      event_type: 'authentication',
+      event_scope: 'forgot',
+      event_access: 'administration',
+      context_data: undefined,
+      message: `OTP checked is expired or not found for ${input.email}`,
+    });
     throw UnsupportedError('OTP expired or not found. Please request a new one.');
   }
   if (storedOtp !== input.otp) {
+    await publishUserAction({
+      user: SYSTEM_USER,
+      event_type: 'authentication',
+      event_scope: 'forgot',
+      event_access: 'administration',
+      context_data: undefined,
+      message: `OTP checked is invalid for ${input.email}`,
+    });
     throw UnsupportedError('Invalid OTP. Please check the code and try again.');
   }
+  await publishUserAction({
+    user: SYSTEM_USER,
+    event_type: 'authentication',
+    event_scope: 'forgot',
+    event_access: 'administration',
+    context_data: undefined,
+    message: `OTP checked is valid for ${input.email}`,
+  });
   return { otp_activated: otp_activated || false };
 };
 

@@ -156,6 +156,9 @@ const initActivityManager = () => {
         if (action.event_scope === 'logout') {
           await activityLogger(action, 'logout');
         }
+        if (action.event_scope === 'forgot') {
+          await activityLogger(action, action.message);
+        }
       }
       if (action.event_type === 'read') {
         if (action.event_scope === 'unauthorized') {

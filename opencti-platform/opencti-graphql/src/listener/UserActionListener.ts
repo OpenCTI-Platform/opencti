@@ -147,10 +147,17 @@ export interface UserLogoutAction extends BasicUserAction {
   event_scope: 'logout'
   context_data: undefined
 }
+
+export interface UserForgotPasswordAction extends BasicUserAction {
+  event_type: 'authentication';
+  event_scope: 'forgot';
+  context_data: undefined;
+  message: string;
+}
 // endregion
 
 export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction |
-UserLogoutAction | UserExportAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction;
+UserLogoutAction | UserExportAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction;
 
 export interface ActionListener {
   id: string
