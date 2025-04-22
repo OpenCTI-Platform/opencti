@@ -10,7 +10,7 @@ import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { ADMIN_USER } from '../../../tests/utils/testQuery';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
-import { redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../database/redis';
+import { OTP_TTL, redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { SYSTEM_USER } from '../../utils/access';
 import { killUserSessions } from '../../database/session';
@@ -44,6 +44,9 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     const user = await getUser(input.email);
     const { user_email, name } = user;
     const email = user_email.toLowerCase();
+    const storedOtp = await redisGetForgotPasswordOtp(input.email);
+    const isTooRecentStoredOtp = storedOtp && storedOtp.ttl > (OTP_TTL - 30);
+    if (isTooRecentStoredOtp) return true;
     await redisSetForgotPasswordOtp(email, resetOtp);
     const body = `Hi ${name},</br>`
         + 'A request has been made to reset your OpenCTI password.</br></br>'
@@ -75,7 +78,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
 export const verifyOtp = async (input: VerifyOtpInput) => {
   const storedOtp = await redisGetForgotPasswordOtp(input.email);
   const { otp_activated } = await getUser(input.email);
-  if (!storedOtp) {
+  if (!storedOtp.otp) {
     await publishUserAction({
       user: SYSTEM_USER,
       event_type: 'authentication',
@@ -86,7 +89,7 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
     });
     throw UnsupportedError('OTP expired or not found. Please request a new one.');
   }
-  if (storedOtp !== input.otp) {
+  if (storedOtp.otp !== input.otp) {
     await publishUserAction({
       user: SYSTEM_USER,
       event_type: 'authentication',
