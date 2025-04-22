@@ -47,6 +47,7 @@ const Graph = ({
     zoomToFit,
     applyForces,
     setIsExpandOpen,
+    initForces,
   } = useGraphInteractions();
 
   const {
@@ -93,11 +94,16 @@ const Graph = ({
     // A short timeout to be sure graph is ready.
     setTimeout(() => {
       if (!isLoadingData) {
-        if (zoom) setZoom(zoom);
-        else zoomToFit();
+        initForces();
         if (withForces) applyForces();
+
+        // Another short timeout to wait forces to be applied
+        setTimeout(() => {
+          if (zoom) setZoom(zoom);
+          else zoomToFit();
+        }, 1000);
       }
-    }, 200);
+    }, 100);
   }, [mode3D, isLoadingData]);
 
   const shouldDisplayLinks = graphData?.links.length ?? 0 < 200;
@@ -193,6 +199,7 @@ const Graph = ({
               graphData={graphData}
               dagMode={modeTree ?? undefined}
               dagLevelDistance={50}
+              nodeRelSize={4}
               cooldownTicks={(!withForces || isLoadingData) ? 0 : 100}
               enablePanInteraction={!selectFree && !selectFreeRectangle}
               linkDirectionalArrowLength={3}
