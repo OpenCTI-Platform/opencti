@@ -13,6 +13,7 @@ import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplat
 import { redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { SYSTEM_USER } from '../../utils/access';
+import { killUserSessions } from '../../database/session';
 
 export const getUser = async (email: string): Promise<User> => {
   const user: any = await getUserByEmail(email);
@@ -128,6 +129,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
     await userEditField(context, authUser, authUser.id, [
       { key: 'password', value: [input.newPassword] }
     ]);
+    await killUserSessions(authUser.id);
     return true;
   } catch (error) {
     throw UnsupportedError('Password change failed, please try again.');
