@@ -106,7 +106,6 @@ Transition.displayName = 'TransitionSlide';
 const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nested }) => {
   const { t_i18n, nsdt } = useFormatter();
   const { me } = useAuth();
-  const { t_i18n } = useFormatter();
   const deletion = useDeletion({});
   const { handleOpenDelete, handleCloseDelete } = deletion;
 
