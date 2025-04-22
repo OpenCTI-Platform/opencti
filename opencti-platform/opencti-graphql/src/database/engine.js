@@ -64,12 +64,14 @@ import {
   UnsupportedError
 } from '../config/errors';
 import {
+  isStixMetaRelationship,
   isStixRefRelationship,
   RELATION_BORN_IN,
   RELATION_CREATED_BY,
   RELATION_ETHNICITY,
   RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
@@ -4727,16 +4729,21 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
     // 00. Relations must be transformed before indexing.
     const transformedElements = await prepareIndexing(context, user, elements);
     // 01. Bulk the indexing of row elements
-    const body = transformedElements.flatMap((elementDoc) => {
-      const doc = elementDoc;
-      return [
-        { index: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-        R.pipe(R.dissoc('_index'))(doc),
-      ];
-    });
-    if (body.length > 0) {
-      meterManager.directBulk(body.length, { type: indexingType });
-      await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
+    // split since there can be a lot of relationships for the same element
+    const transformedElementsSplit = R.splitEvery(MAX_BULK_OPERATIONS, transformedElements);
+    for (let i = 0; i < transformedElementsSplit.length; i += 1) {
+      const elementsBulk = transformedElementsSplit[i];
+      const body = elementsBulk.flatMap((elementDoc) => {
+        const doc = elementDoc;
+        return [
+          { index: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          R.pipe(R.dissoc('_index'))(doc),
+        ];
+      });
+      if (body.length > 0) {
+        meterManager.directBulk(body.length, { type: indexingType });
+        await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
+      }
     }
     // 02. If relation, generate impacts for from and to sides
     const cache = {};
@@ -4785,14 +4792,20 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       const sources = targetsElements.map((t) => {
         const field = buildRefRelationKey(t.relation, t.field);
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-        script += `ctx._source['${field}'].addAll(params['${field}'])`;
+        if (t.relation !== RELATION_OBJECT && isStixMetaRelationship(t.relation)) {
+          // don't try to add unidirectional meta ref rel if already present (issue#7535)
+          script += `for(refId in params['${field}']) { 
+          if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }} `;
+        } else {
+          script += `ctx._source['${field}'].addAll(params['${field}']);`;
+        }
         const fromSide = R.find((e) => e.side === 'from', t.elements);
         if (fromSide && isStixRefRelationship(t.relation)) {
           if (isUpdatedAtObject(fromSide.type)) {
-            script += '; ctx._source[\'updated_at\'] = params.updated_at';
+            script += 'ctx._source[\'updated_at\'] = params.updated_at;';
           }
           if (isModifiedObject(fromSide.type)) {
-            script += '; ctx._source[\'modified\'] = params.updated_at';
+            script += 'ctx._source[\'modified\'] = params.updated_at;';
           }
         }
         // if (isStixRelationship(t.relation)) {
@@ -4811,7 +4824,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         return script;
       });
       // Concat sources scripts by adding a ';' between each script to close each final script line
-      const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
+      const source = sources.length > 1 ? R.join(' ', sources) : `${R.head(sources)}`;
       // Construct params
       for (let index = 0; index < targetsElements.length; index += 1) {
         const targetElement = targetsElements[index];
@@ -4831,14 +4844,21 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       }
       return { ...entity, id: entityId, data: { script: { source, params } } };
     });
-    const bodyUpdate = elementsToUpdate.flatMap((doc) => [
-      { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-      R.dissoc('_index', doc.data),
-    ]);
-    if (bodyUpdate.length > 0) {
-      meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
-      const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
-      await Promise.all([bulkPromise]);
+    // bulk update elements (denormalized relations)
+    if (elementsToUpdate.length > 0) {
+      const groupsOfElementsToUpdate = R.splitEvery(MAX_BULK_OPERATIONS, elementsToUpdate);
+      for (let i = 0; i < groupsOfElementsToUpdate.length; i += 1) {
+        const elementsBulk = groupsOfElementsToUpdate[i];
+        const bodyUpdate = elementsBulk.flatMap((doc) => [
+          { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          R.dissoc('_index', doc.data),
+        ]);
+        if (bodyUpdate.length > 0) {
+          meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
+          const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+          await Promise.all([bulkPromise]);
+        }
+      }
     }
     return transformedElements.length;
   };
