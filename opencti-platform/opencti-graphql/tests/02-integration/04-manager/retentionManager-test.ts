@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { Readable } from 'stream';
 import { ADMIN_USER, queryAsAdmin, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
@@ -25,7 +25,7 @@ describe('Retention Manager tests ', () => {
   const progressFileName = 'progressFile';
   const progressFileId = `${globalPath}/${progressFileName}`;
 
-  const pendingPath = 'import/pending';
+  const pendingPath = 'import/workbench';
   const workbench1Name = 'workbench1';
   const workbench1Id = `${pendingPath}/${workbench1Name}`;
   const workbench2Name = 'workbench2';

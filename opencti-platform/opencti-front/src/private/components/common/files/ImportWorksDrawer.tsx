@@ -402,7 +402,7 @@ const ImportWorksDrawer = ({
   const launchImportTitle = t_i18n('Launch an import');
 
   // Prevent launch import and change query on workbenches
-  const isWorkbench = file.id.includes('import/pending');
+  const isWorkbench = file.id.includes('import/workbench');
 
   return (
     <>

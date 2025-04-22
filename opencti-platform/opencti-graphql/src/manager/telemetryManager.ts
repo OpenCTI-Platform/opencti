@@ -157,7 +157,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region Workbenches information
     const pendingFileFilter = {
       mode: FilterMode.And,
-      filters: [{ key: ['internal_id'], values: ['import/pending'], operator: 'starts_with' }],
+      filters: [{ key: ['internal_id'], values: ['import/workbench'], operator: 'starts_with' }],
       filterGroups: []
     };
     const workbenchesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { filters: pendingFileFilter, types: [ENTITY_TYPE_INTERNAL_FILE] });

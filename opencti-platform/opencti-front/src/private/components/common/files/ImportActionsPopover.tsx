@@ -40,10 +40,11 @@ const ImportActionsPopover = ({
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [openDelete, setOpenDelete] = useState(false);
   const [openWorks, setOpenWorks] = useState(false);
+  const isWorkbench = paginationKey === 'Pagination_global_pendingFiles';
   const [commitDeletion] = useApiMutation<ImportActionsPopoverDeleteMutation>(importActionsPopoverDeleteMutation, undefined, {
     successMessage: t_i18n('', {
       id: '... successfully deleted',
-      values: { entity_type: t_i18n('Workbench') },
+      values: { entity_type: isWorkbench ? t_i18n('Workbench') : t_i18n('File') },
     }),
   });
 
@@ -123,7 +124,7 @@ const ImportActionsPopover = ({
       <Dialog open={openDelete} onClose={handleDeleteClose} slots={{ transition: Transition }}>
         <DialogContent>
           <DialogContentText>
-            {`${t_i18n('Do you want to delete this ')} ${paginationKey === 'Pagination_global_pendingFiles' ? t_i18n('workbench') : t_i18n('file')}?`}
+            {`${t_i18n('Do you want to delete this ')} ${isWorkbench ? t_i18n('workbench') : t_i18n('file')}?`}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

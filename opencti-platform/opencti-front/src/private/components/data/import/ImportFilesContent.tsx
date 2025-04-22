@@ -21,7 +21,6 @@ import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDo
 import useHelper from '../../../../utils/hooks/useHelper';
 import { getFileUri } from '../../../../utils/utils';
 import ImportButton from '../../../../components/ImportButton';
-import stopEvent from '../../../../utils/domEvent';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
@@ -166,12 +165,6 @@ const ImportFilesContent = () => {
 
   const deletion = useDeletion({});
   const { handleOpenDelete, handleCloseDelete } = deletion;
-
-  const handleRemove = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: string) => {
-    stopEvent(e);
-    setFileId(id);
-    handleOpenDelete();
-  };
 
   const [deleteFile] = useApiMutation(WorkbenchFileLineDeleteMutation);
   const handleRemoveFile = () => {

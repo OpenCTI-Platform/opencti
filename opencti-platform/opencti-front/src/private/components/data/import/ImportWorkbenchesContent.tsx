@@ -157,7 +157,7 @@ const ImportWorkbenchesContent = () => {
       },
       {
         key: 'file_id',
-        values: ['import/pending'],
+        values: ['import/workbench'],
         operator: 'starts_with',
       },
     ],
@@ -229,7 +229,7 @@ const ImportWorkbenchesContent = () => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
             if (!isProgress && !(metaData?.errors && metaData?.errors.length > 0)) {
-              window.location.pathname = `/dashboard/data/import/pending/${toB64(id)}`;
+              window.location.pathname = `/dashboard/data/import/workbench/${toB64(id)}`;
             }
           }}
           createButton={isFABReplaced && (<WorkbenchCreation paginationOptions={queryPaginationOptions}/>)}

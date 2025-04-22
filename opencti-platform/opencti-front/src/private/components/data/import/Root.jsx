@@ -18,7 +18,7 @@ const Root = () => {
         element={isNewImportScreensEnabled ? <Navigate to="/dashboard/data/import/file" replace /> : <Import />}
       />
       <Route
-        path="/pending/:fileId"
+        path="/workbench/:fileId"
         element={<WorkbenchFile />}
       />
       {isNewImportScreensEnabled && (

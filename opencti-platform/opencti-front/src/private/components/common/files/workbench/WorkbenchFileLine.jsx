@@ -14,14 +14,14 @@ import Slide from '@mui/material/Slide';
 import Chip from '@mui/material/Chip';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
-import { importActionsPopoverDeleteMutation } from '../ImportActionsPopover';
-import { workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
+import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
 import { useFormatter } from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import { toB64 } from '../../../../../utils/String';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ItemMarkings from '../../../../../components/ItemMarkings';
+import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 
 const styles = (theme) => ({
@@ -130,7 +130,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
   };
 
   const handleRemoveFile = () => {
-    executeRemove(importActionsPopoverDeleteMutation, { fileName: file.id });
+    executeRemove(WorkbenchFileLineDeleteMutation, { fileName: file.id });
     handleCloseDelete();
   };
 
@@ -185,7 +185,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
           classes={{ root: nested ? classes.itemNested : classes.item }}
           component={isOutdated ? null : Link}
           disabled={isProgress}
-          to={`/dashboard/data/import/pending/${toB64(file.id)}`}
+          to={`/dashboard/data/import/workbench/${toB64(file.id)}`}
         >
           <ListItemIcon>
             {isProgress && (
@@ -237,29 +237,11 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
       </ListItem>
 
       <FileWork file={file} />
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayDelete}
-        slots={{ transition: Transition }}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this workbench?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={() => handleRemoveFile(file.id)}
-            color="secondary"
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={handleRemoveFile}
+        message={t_i18n('Do you want to delete this workbench?')}
+      />
     </>
   );
 };
