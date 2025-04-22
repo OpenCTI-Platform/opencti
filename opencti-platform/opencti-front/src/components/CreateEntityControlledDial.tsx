@@ -23,7 +23,7 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const valueString = t_i18n(`entity_${entityType}`);
+  const valueString = entityType ? t_i18n(`entity_${entityType}`) : t_i18n('Entity');
   const buttonValue = t_i18n('', {
     id: 'Create ...',
     values: { entity_type: valueString },
