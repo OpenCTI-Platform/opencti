@@ -442,9 +442,8 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     });
   };
 
-  const onSubmit = async (values, { setSubmitting, resetForm }, resolveEntityRef) => {
+  const onSubmit = async (values, { setSubmitting, resetForm }, isReversedRelation) => {
     setSubmitting(true);
-    const isReversedRelation = resolveEntityRef.from.length === 0 && resolveEntityRef.to.length !== 0;
 
     for (const targetEntity of targetEntities) {
       const fromEntityId = isReversedRelation
@@ -687,8 +686,10 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   const renderForm = (resolveEntityRef) => {
     let fromEntity = resolveEntityRef.entity;
     let toEntities = targetEntities;
+    const isArrayValid = Array.isArray(toEntities) && toEntities.length > 0;
 
-    const isSameEntityType = toEntities.every((item) => item?.entity_type === toEntities?.entity_type);
+    const isSameEntityType = isArrayValid
+      ?? toEntities.every((item) => item?.entity_type === toEntities[0]?.entity_type);
     const isMultipleTo = toEntities?.length > 1;
 
     let relationshipTypes = [];
@@ -728,7 +729,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={stixNestedRefRelationshipValidation}
-        onSubmit={(values, formikHelpers) => onSubmit(values, formikHelpers, resolveEntityRef)}
+        onSubmit={(values, formikHelpers) => onSubmit(values, formikHelpers, isReversedRelation)}
         onReset={handleClose}
       >
         {({ submitForm, handleReset, isSubmitting }) => (
