@@ -6,8 +6,6 @@ import { ImportFilesContentLines_data$data } from '@components/data/import/__gen
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
 import ImportActionsPopover from '@components/common/files/ImportActionsPopover';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
@@ -21,8 +19,6 @@ import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDo
 import useHelper from '../../../../utils/hooks/useHelper';
 import { getFileUri } from '../../../../utils/utils';
 import ImportButton from '../../../../components/ImportButton';
-import useDeletion from '../../../../utils/hooks/useDeletion';
-import DeleteDialog from '../../../../components/DeleteDialog';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
   mutation ImportFilesContentFileLineDeleteMutation($fileName: String) {
@@ -163,9 +159,6 @@ const ImportFilesContent = () => {
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ImportFilesContentQuery>;
 
-  const deletion = useDeletion({});
-  const { handleOpenDelete, handleCloseDelete } = deletion;
-
   const [deleteFile] = useApiMutation(WorkbenchFileLineDeleteMutation);
   const handleRemoveFile = () => {
     deleteFile({
@@ -235,8 +228,6 @@ const ImportFilesContent = () => {
     },
   };
 
-  // const buttonUploadFile = <
-
   return (
     <div style={{ height: '100%', paddingRight: isNewImportScreensEnabled ? 0 : 200 }} className="break">
       {isNewImportScreensEnabled ? (
@@ -249,11 +240,6 @@ const ImportFilesContent = () => {
       ) : (
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]}/>
       )}
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={handleRemoveFile}
-        message={t_i18n('Do you want to delete this file?')}
-      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -296,7 +282,6 @@ const ImportFilesContent = () => {
             position: 'fixed',
             bottom: 30,
             right: 30,
-            // zIndex: 2000,
           }}
         >
           <Add />

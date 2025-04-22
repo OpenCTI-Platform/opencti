@@ -1,5 +1,5 @@
 import React, { UIEvent, useState } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, IconButton, Menu, MenuItem } from '@mui/material';
+import { IconButton, Menu, MenuItem } from '@mui/material';
 import { MoreVert } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
@@ -12,12 +12,13 @@ import { ProgressUpload } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import ImportWorksDrawer from '@components/common/files/ImportWorksDrawer';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import Transition from '../../../../components/Transition';
 import { APP_BASE_PATH, MESSAGING$ } from '../../../../relay/environment';
 import stopEvent from '../../../../utils/domEvent';
 import { RelayError } from '../../../../relay/relayTypes';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
+import useDeletion from '../../../../utils/hooks/useDeletion';
+import DeleteDialog from '../../../../components/DeleteDialog';
 
 export const importActionsPopoverDeleteMutation = graphql`
   mutation ImportActionsPopoverDeleteMutation($fileName: String) {
@@ -38,7 +39,6 @@ const ImportActionsPopover = ({
 }: ImportActionsPopoverProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
-  const [openDelete, setOpenDelete] = useState(false);
   const [openWorks, setOpenWorks] = useState(false);
   const isWorkbench = paginationKey === 'Pagination_global_pendingFiles';
   const [commitDeletion] = useApiMutation<ImportActionsPopoverDeleteMutation>(importActionsPopoverDeleteMutation, undefined, {
@@ -58,15 +58,8 @@ const ImportActionsPopover = ({
     setAnchorEl(null);
   };
 
-  const handleDeleteOpen = (event: UIEvent) => {
-    setOpenDelete(true);
-    handleClose(event);
-  };
-
-  const handleDeleteClose = (event: UIEvent) => {
-    stopEvent(event);
-    setOpenDelete(false);
-  };
+  const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
+  const { handleOpenDelete, handleCloseDelete } = deletion;
 
   const submitDelete = (event: UIEvent) => {
     stopEvent(event);
@@ -75,12 +68,12 @@ const ImportActionsPopover = ({
       variables: { fileName: file.id },
       onCompleted: () => {
         handleClose(event);
-        handleDeleteClose(event);
+        handleCloseDelete(event);
       },
       onError: (error) => {
         MESSAGING$.notifyRelayError(error as unknown as RelayError);
         handleClose(event);
-        handleDeleteClose(event);
+        handleCloseDelete(event);
       },
       updater: (store) => {
         deleteNode(store, paginationKey, paginationOptions, file.id);
@@ -117,21 +110,15 @@ const ImportActionsPopover = ({
         >
           {t_i18n('Download')}
         </MenuItem>
-        <MenuItem onClick={handleDeleteOpen} disabled={file.uploadStatus === 'progress'}>
+        <MenuItem onClick={handleOpenDelete} disabled={file.uploadStatus === 'progress'}>
           {t_i18n('Delete')}
         </MenuItem>
       </Menu>
-      <Dialog open={openDelete} onClose={handleDeleteClose} slots={{ transition: Transition }}>
-        <DialogContent>
-          <DialogContentText>
-            {`${t_i18n('Do you want to delete this ')} ${isWorkbench ? t_i18n('workbench') : t_i18n('file')}?`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteClose}>{t_i18n('Cancel')}</Button>
-          <Button onClick={submitDelete} color="secondary">{t_i18n('Delete')}</Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={`${t_i18n('Do you want to delete this ')} ${isWorkbench ? t_i18n('workbench') : t_i18n('file')}?`}
+      />
       {openWorks && (<ImportWorksDrawer open={openWorks} onClose={() => setOpenWorks(false)} file={file}/>)}
     </div>
   );
