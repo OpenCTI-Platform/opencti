@@ -1,6 +1,6 @@
 import ejs from 'ejs';
 import { authenticator } from 'otplib';
-import { getUserByEmail, userEditField } from '../../domain/user';
+import { findById, getUserByEmail, userEditField } from '../../domain/user';
 import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
 import { sendMail } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
@@ -124,12 +124,12 @@ export const verify2fa = async (input: Verify2faInput) => {
 export const changePassword = async (context: AuthContext, input: ChangePasswordInput) => {
   try {
     const user = await getUser(input.email);
-    await userEditField(context, user, user.id, [
+    const authUser = await findById(context, ADMIN_USER, user.id);
+    await userEditField(context, authUser, authUser.id, [
       { key: 'password', value: [input.newPassword] }
     ]);
     return true;
   } catch (error) {
-    console.error('Error occurred:', { cause: error });
     throw UnsupportedError('Password change failed, please try again.');
   }
 };
