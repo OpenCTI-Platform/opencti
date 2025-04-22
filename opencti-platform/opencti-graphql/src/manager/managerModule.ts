@@ -9,6 +9,7 @@ import { TYPE_LOCK_ERROR } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { utcDate } from '../utils/format';
 import { wait } from '../database/utils';
+import type { DataEvent, SseEvent } from '../types/event';
 
 export interface HandlerInput {
   shutdown?: () => Promise<void>
@@ -25,11 +26,11 @@ export interface ManagerCronScheduler {
 }
 
 export interface ManagerStreamScheduler {
-  handler: () => void;
+  handler: (streamEvents: Array<SseEvent<DataEvent>>, lastEventId: string) => void;
   interval: number;
   lockKey: string;
   streamOpts?: { withInternal: boolean, streamName: string };
-  streamProcessorStartFrom: () => string;
+  streamProcessorStartFrom: () => string | undefined;
 }
 
 export interface ManagerDefinition {
@@ -101,7 +102,7 @@ const initManager = (manager: ManagerDefinition) => {
         lock = await lockResources([manager.streamSchedulerHandler.lockKey], { retryCount: 0 });
         running = true;
         logApp.info(`[OPENCTI-MODULE] Running ${manager.label} stream handler`);
-        streamProcessor = createStreamProcessor(SYSTEM_USER, 'File index manager', manager.streamSchedulerHandler.handler, manager.streamSchedulerHandler.streamOpts);
+        streamProcessor = createStreamProcessor(SYSTEM_USER, manager.label, manager.streamSchedulerHandler.handler, manager.streamSchedulerHandler.streamOpts);
         const startFrom = manager.streamSchedulerHandler.streamProcessorStartFrom();
         await streamProcessor.start(startFrom);
         while (!shutdown && streamProcessor.running()) {
