@@ -700,17 +700,11 @@ const StixNestedRefRelationshipCreationFromEntity = ({
       relationshipTypes = resolveEntityRef.from;
     }
 
-    if (!isSameEntityType) {
-      if (isReversedRelation) {
-        fromEntity = targetEntities;
-        toEntities = resolveEntityRef.entity;
-        relationshipTypes = resolveEntityRef.to;
-      } else {
-        relationshipTypes = resolveEntityRef.from;
-      }
-    }
-
+    // This condition is to avoid to use relation that would did not work with some kind of entity type
+    // nested objects with different entity type will soon be implemented
+    if (!isSameEntityType) relationshipTypes = [];
     const defaultRelationshipType = relationshipTypes[0];
+
     const defaultTime = now();
     const initialValues = {
       relationship_type: defaultRelationshipType,
