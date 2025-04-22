@@ -1603,7 +1603,7 @@ const innerUpdateAttribute = (instance, rawInput) => {
   }
   return input;
 };
-const prepareAttributesForUpdate = async (context, user, instance, elements, upsert) => {
+const prepareAttributesForUpdate = async (context, user, instance, elements) => {
   const instanceType = instance.entity_type;
   const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
   return elements.map((input) => {
@@ -1630,7 +1630,7 @@ const prepareAttributesForUpdate = async (context, user, instance, elements, ups
       return { key: input.key, value: uniqAliases };
     }
     // For upsert or update, workflow cant be reset or setup on un-existing workflow
-    if (input.key === X_WORKFLOW_ID && upsert) {
+    if (input.key === X_WORKFLOW_ID) {
       const workflowId = R.head(input.value);
       const instanceTypeStatuses = platformStatuses.filter((status) => status.type === instance.entity_type);
       // If workflow is not found for current entity type, remove the input
@@ -1709,7 +1709,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const instanceType = instance.entity_type;
   // Prepare attributes
-  const preparedElements = await prepareAttributesForUpdate(context, user, instance, elements, upsert);
+  const preparedElements = await prepareAttributesForUpdate(context, user, instance, elements);
   // region Check date range
   const inputKeys = elements.map((i) => i.key);
   if (inputKeys.includes(START_TIME) || inputKeys.includes(STOP_TIME)) {
