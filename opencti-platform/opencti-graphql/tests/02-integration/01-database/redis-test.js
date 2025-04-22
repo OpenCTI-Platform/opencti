@@ -44,11 +44,11 @@ describe('Redis basic and utils', () => {
 
     await redisSetForgotPasswordOtp(email, firstOtp);
     const storedFirst = await redisGetForgotPasswordOtp(email);
-    expect(storedFirst).toBe(firstOtp);
+    expect(storedFirst.otp).toBe(firstOtp);
 
     await redisSetForgotPasswordOtp(email, secondOtp);
     const storedSecond = await redisGetForgotPasswordOtp(email);
-    expect(storedSecond).toBe(secondOtp);
+    expect(storedSecond.otp).toBe(secondOtp);
   });
 
   it('should expire forgot_password_otp after TTL', async () => {
@@ -58,13 +58,13 @@ describe('Redis basic and utils', () => {
 
     await redisSetForgotPasswordOtp(email, otp, testTTL);
     const stored = await redisGetForgotPasswordOtp(email);
-    expect(stored).toBe(otp);
+    expect(stored.otp).toBe(otp);
 
     await new Promise((resolve) => {
       setTimeout(() => resolve(), (testTTL + 1) * 1000);
     });
     const expired = await redisGetForgotPasswordOtp(email);
-    expect(expired).toBeNull();
+    expect(expired.otp).toBeNull();
   });
 });
 
