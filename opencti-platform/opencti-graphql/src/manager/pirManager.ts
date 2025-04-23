@@ -4,9 +4,10 @@ import { FAKE_PIR, type PIR } from '../modules/pir/pir.fake';
 import type { DataEvent, SseEvent } from '../types/event';
 import { type FilterGroup, FilterMode } from '../generated/graphql';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
-import { INPUT_IN_PIR, STIX_TYPE_RELATION } from '../schema/general';
+import { STIX_TYPE_RELATION } from '../schema/general';
 import { stixObjectOrRelationshipAddRefRelation } from '../domain/stixObjectOrStixRelationship';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -51,7 +52,6 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
     .filter((e) => e.data.type === STIX_TYPE_RELATION);
 
   if (eventsContent.length > 0) {
-    console.log('[POC PIR] Investigate events', { eventsContent });
     await Promise.all(allPIR.map(async (pir) => {
       const pirFilters = buildAllPIRFilters(pir);
       await Promise.all(eventsContent.map(async ({ data }) => {
@@ -63,8 +63,8 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
           const sourceType = data.extensions?.[STIX_EXT_OCTI]?.source_type;
           if (sourceId && sourceType) {
             const addRefInput = {
-              relationship_type: INPUT_IN_PIR,
-              toIds: [pir.id],
+              relationship_type: RELATION_IN_PIR,
+              toId: pir.id,
             };
             const ref = await stixObjectOrRelationshipAddRefRelation(context, SYSTEM_USER, sourceId, addRefInput, sourceType);
             console.log('[POC PIR] Meta Ref relation created', { ref });
