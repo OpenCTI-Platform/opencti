@@ -391,8 +391,8 @@ const getStackTrace = () => {
 export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts) => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
+  const { retryCount = defaultLockOpts.retryCount, automaticExtension = defaultLockOpts.automaticExtension, draftId = defaultLockOpts.draftId } = opts;
   const initialCallStack = getStackTrace();
-  const draftId = opts.draftId ? opts.draftId : '';
   const resourcesId = R.uniq(resources).map((id) => `${id}${draftId}`);
   const locks = R.uniq(resourcesId).map((id) => `{locks}:${id}${draftId}`);
   const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
@@ -401,8 +401,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   const maxTtl = conf.get('app:concurrency:max_ttl');
   const controller = new AbortController();
   const { signal } = controller;
-  const autoExtension = opts.automaticExtension ? opts.automaticExtension : true;
-  const redlock = new Redlock([getClientLock()], { retryCount: opts.retryCount, retryDelay, retryJitter });
+  const redlock = new Redlock([getClientLock()], { retryCount, retryDelay, retryJitter });
   // Get the lock
   let lock = await redlock.acquire(locks, maxTtl); // Force unlock after maxTtl
   const queue = () => {
@@ -416,7 +415,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   };
   const extend = async () => {
     try {
-      if (opts.retryCount !== 0) {
+      if (retryCount !== 0) {
         logApp.info('Extending resources for long processing task', { locks, stack: initialCallStack });
       }
       lock = await lock.extend(maxTtl);
@@ -441,7 +440,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
     throw LockTimeoutError({ participantIds: deletedParticipantsIds });
   }
   // If everything seems good, start auto extension if needed
-  if (autoExtension) {
+  if (automaticExtension) {
     queue();
   }
   // Return the lock and capable actions
