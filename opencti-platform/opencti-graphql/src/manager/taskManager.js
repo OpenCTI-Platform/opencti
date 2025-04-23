@@ -55,8 +55,8 @@ import { getDraftContext } from '../utils/draftContext';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { updateExpectationsNumber } from '../domain/work';
-import { convertStoreToStix, convertTypeToStixType } from '../database/stix-converter';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { convertStoreToStix, convertTypeToStixType } from '../database/stix-2-1-converter';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
 import { generateStandardId } from '../schema/identifier';
@@ -65,10 +65,6 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObjectContainer, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { getParentTypes } from '../schema/schemaUtils';
-import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
-import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { elRemoveElementFromDraft } from '../database/draft-engine';
-import { stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from '../domain/stixObjectOrStixRelationship';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
