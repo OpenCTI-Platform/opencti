@@ -61,12 +61,16 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
           // add meta rel between the entity and the PIR
           const sourceId = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
           const sourceType = data.extensions?.[STIX_EXT_OCTI]?.source_type;
-          const addRefInput = {
-            relationship_type: 'in-pir',
-            toIds: [pir.id],
-          };
-          const ref = await stixObjectOrRelationshipAddRefRelation(context, SYSTEM_USER, sourceId, addRefInput, sourceType);
-          console.log('[POC PIR] Meta Ref relation created', { ref });
+          if (sourceId && sourceType) {
+            const addRefInput = {
+              relationship_type: 'in-pir',
+              toIds: [pir.id],
+            };
+            const ref = await stixObjectOrRelationshipAddRefRelation(context, SYSTEM_USER, sourceId, addRefInput, sourceType);
+            console.log('[POC PIR] Meta Ref relation created', { ref });
+          } else {
+            console.log('[POC PIR] Cannot create meta Ref', { sourceType, sourceId });
+          }
         }
       }));
     }));
