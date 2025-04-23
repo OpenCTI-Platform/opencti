@@ -48,6 +48,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
   const handleResetInput = () => {
     setSelectedSavedFilter(undefined);
     setCurrentSavedFilter(undefined);
+    helpers.handleRemoveSavedFilters();
     setInputValue('');
   };
 
@@ -67,6 +68,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     setSelectedSavedFilter(selectionOption);
     setCurrentSavedFilter(selectionOption.value);
     setInputValue(selectionOption.label);
+    helpers.handleChangeSavedFilters(selectionOption.value);
     helpers.handleSetFilters(JSON.parse(selectionOption.value.filters));
   };
 
