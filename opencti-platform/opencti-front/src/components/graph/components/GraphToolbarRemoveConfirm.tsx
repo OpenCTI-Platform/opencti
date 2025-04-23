@@ -187,6 +187,7 @@ const GraphToolbarRemoveConfirm = ({
     removeLinks(linksToRemove);
     setTotalToDelete(0);
     setCurrentDeleted(0);
+    setAndDelete(false);
   };
 
   const remove = (referencesValues?: ReferenceFormData) => {
