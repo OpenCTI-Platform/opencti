@@ -17,7 +17,7 @@ export interface PIR {
 }
 
 export const FAKE_PIR: PIR = {
-  id: '2b271fe3-8fdb-4df4-9b1f-bc55202dfa23',
+  id: '028ecfc0-d4d0-4f1c-a6b2-91c446eeb7c2', // existing id to be able to add meta rel involving the PIR
   name: 'PIR about Energy sector in France',
   filters: {
     mode: FilterMode.And,
@@ -48,7 +48,7 @@ export const FAKE_PIR: PIR = {
         filterGroups: [],
         filters: [
           { key: ['entity_type'], values: ['targets'] },
-          { key: ['toId'], values: ['eed96959-31bd-43c9-a8f4-fffde144af52'] },
+          { key: ['toId'], values: ['6bcb82c5-e440-4589-976e-5e28a99db3b3'] },
         ]
       }
     }
