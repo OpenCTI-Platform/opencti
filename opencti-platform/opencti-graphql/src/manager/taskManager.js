@@ -31,7 +31,7 @@ import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelatio
 import { getRule } from '../domain/rules';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { generateIndicatorFromObservable } from '../modules/indicator/indicator-domain';
+import { generateIndicatorFromObservable } from '../domain/stixCyberObservable';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
   ACTION_TYPE_COMPLETE_DELETE,
