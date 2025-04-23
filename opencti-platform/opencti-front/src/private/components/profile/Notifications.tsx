@@ -1,8 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Badge, Tooltip } from '@mui/material';
 import Chip from '@mui/material/Chip';
-import { deepPurple, green, indigo, red } from '@mui/material/colors';
-import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
+import { indigo } from '@mui/material/colors';
 import IconButton from '@mui/material/IconButton';
 import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
@@ -14,6 +13,7 @@ import DialogActions from '@mui/material/DialogActions';
 import { NotificationsLine_node$data } from '@components/profile/__generated__/NotificationsLine_node.graphql';
 import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from '@components/profile/__generated__/NotificationsLinesPaginationQuery.graphql';
 import { NotificationsLines_data$data } from '@components/profile/__generated__/NotificationsLines_data.graphql';
+import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -31,6 +31,7 @@ import Transition from '../../../components/Transition';
 import { deleteNode } from '../../../utils/store';
 import { isNotEmptyField } from '../../../utils/utils';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import { colors, getFirstOperation, iconSelector } from './notifications/notificationUtils';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -136,8 +137,19 @@ const Notifications: FunctionComponent = () => {
     notificationLineNotificationDeleteMutation,
   );
   const [notificationToDelete, setNotificationToDelete] = useState<NotificationsLine_node$data>();
+  const [openNotifDrawer, setOpenNotifDrawer] = useState<boolean>(false);
+  const [notificationDigestToOpen, setNotificationDigestToOpen] = useState<NotificationsLine_node$data>();
 
   setTitle(t_i18n('Notifications'));
+
+  const handleLineClick = (data: NotificationsLine_node$data) => {
+    const events = data.notification_content.map((n) => n.events).flat();
+    const isDigest = events.length > 1;
+    if (isDigest) {
+      setNotificationDigestToOpen(data);
+      setOpenNotifDrawer(true);
+    }
+  };
 
   const initialValues = {
     searchTerm: '',
@@ -208,36 +220,7 @@ const Notifications: FunctionComponent = () => {
       },
     });
   };
-  const colors: Record<string, string> = {
-    none: green[500],
-    create: green[500],
-    update: deepPurple[500],
-    delete: red[500],
-    multiple: indigo[500],
-  };
-  const getFirstOperation = ({ notification_content, notification_type }: Pick<NotificationsLine_node$data, 'notification_content' | 'notification_type'>) => {
-    const events = notification_content.map((n) => n.events).flat();
-    const firstEvent = events.at(0);
-    const isDigest = notification_type === 'digest';
-    return isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
-  };
-  const iconSelector = (notification: NotificationsLine_node$data) => {
-    const operation = getFirstOperation(notification);
-    switch (operation) {
-      case 'create':
-        return <BellPlusOutline style={{ color: colors[operation] }} />;
-      case 'update':
-        return <BellCogOutline style={{ color: colors[operation] }} />;
-      case 'delete':
-        return <BellRemoveOutline style={{ color: colors[operation] }} />;
-      case 'multiple':
-        return (
-          <FileTableBoxMultipleOutline style={{ color: colors[operation] }} />
-        );
-      default:
-        return <BellOutline style={{ color: colors[operation] }} />;
-    }
-  };
+
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     operation: {
@@ -280,21 +263,23 @@ const Notifications: FunctionComponent = () => {
       label: 'Message',
       percentWidth: 48,
       isSortable: false,
-      render: ({ notification_content }: NotificationsLine_node$data) => {
-        const events = notification_content.map((n) => n.events).flat();
+      render: (data: NotificationsLine_node$data) => {
+        const events = data.notification_content.map((n) => n.events).flat();
         const firstEvent = events.at(0);
+        const multipleEvents = events.length > 1;
 
-        return (<div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
-          {events.length > 1 ? (
-            <i>{t_i18n('Digest with multiple notifiers')}</i>
-          ) : (
-            <Tooltip title={firstEvent?.message ?? '-'}>
-              <span>
-                <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin commonmark removeLinks/>
-              </span>
-            </Tooltip>
-          )}
-        </div>);
+        return (
+          <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
+            {multipleEvents ? (
+              <i>{t_i18n('Digest with multiple notifiers')}</i>
+            ) : (
+              <Tooltip title={firstEvent?.message ?? '-'}>
+                <span>
+                  <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin commonmark removeLinks/>
+                </span>
+              </Tooltip>
+            )}
+          </div>);
       },
     },
     created: {
@@ -423,11 +408,15 @@ const Notifications: FunctionComponent = () => {
         preloadedPaginationProps={preloadedPaginationProps}
         resolvePath={(data: NotificationsLines_data$data) => data.myNotifications?.edges?.map((n) => n?.node)}
         dataColumns={dataColumns}
-        icon={ (data) => (
-          <Badge color="warning" variant="dot" invisible={data.is_read}>
-            {iconSelector(data)}
-          </Badge>
-        )}
+        onLineClick={handleLineClick}
+        icon={(data) => {
+          const operation = getFirstOperation(data);
+          return (
+            <Badge color="warning" variant="dot" invisible={data.is_read}>
+              {iconSelector(operation)}
+            </Badge>
+          );
+        }}
         taskScope={'USER'}
         lineFragment={notificationsLineFragment}
         toolbarFilters={contextFilters}
@@ -470,7 +459,13 @@ const Notifications: FunctionComponent = () => {
               {t_i18n('Delete')}
             </Button>
           </DialogActions>
-        </Dialog>)}
+        </Dialog>
+      )}
+      <DigestNotificationDrawer
+        notification={notificationDigestToOpen}
+        open={openNotifDrawer}
+        onClose={() => { setOpenNotifDrawer(false); }}
+      />
     </div>
   );
 };
