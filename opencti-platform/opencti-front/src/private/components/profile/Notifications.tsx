@@ -14,6 +14,8 @@ import DialogActions from '@mui/material/DialogActions';
 import { NotificationsLine_node$data } from '@components/profile/__generated__/NotificationsLine_node.graphql';
 import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from '@components/profile/__generated__/NotificationsLinesPaginationQuery.graphql';
 import { NotificationsLines_data$data } from '@components/profile/__generated__/NotificationsLines_data.graphql';
+import Drawer from '@components/common/drawer/Drawer';
+import DigestNotification from '@components/profile/notifications/DigestNotification';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -136,6 +138,8 @@ const Notifications: FunctionComponent = () => {
     notificationLineNotificationDeleteMutation,
   );
   const [notificationToDelete, setNotificationToDelete] = useState<NotificationsLine_node$data>();
+  const [openNotifDrawer, setOpenNotifDrawer] = useState<boolean>(false);
+  const [notificationDigestToOpen, setNotificationDigestToOpen] = useState<NotificationsLine_node$data>();
 
   setTitle(t_i18n('Notifications'));
 
@@ -280,21 +284,33 @@ const Notifications: FunctionComponent = () => {
       label: 'Message',
       percentWidth: 48,
       isSortable: false,
-      render: ({ notification_content }: NotificationsLine_node$data) => {
-        const events = notification_content.map((n) => n.events).flat();
+      render: (data: NotificationsLine_node$data) => {
+        const events = data.notification_content.map((n) => n.events).flat();
         const firstEvent = events.at(0);
+        const multipleEvents = events.length > 1;
 
-        return (<div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
-          {events.length > 1 ? (
-            <i>{t_i18n('Digest with multiple notifiers')}</i>
-          ) : (
-            <Tooltip title={firstEvent?.message ?? '-'}>
-              <span>
-                <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin commonmark removeLinks/>
-              </span>
-            </Tooltip>
-          )}
-        </div>);
+        return (
+          <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
+            {multipleEvents ? (
+              <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setNotificationDigestToOpen(data);
+                  setOpenNotifDrawer(true);
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                <i>{t_i18n('Digest with multiple notifiers')}</i>
+              </div>
+            ) : (
+              <Tooltip title={firstEvent?.message ?? '-'}>
+                <span>
+                  <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin commonmark removeLinks/>
+                </span>
+              </Tooltip>
+            )}
+          </div>);
       },
     },
     created: {
@@ -470,7 +486,15 @@ const Notifications: FunctionComponent = () => {
               {t_i18n('Delete')}
             </Button>
           </DialogActions>
-        </Dialog>)}
+        </Dialog>
+      )}
+      <Drawer
+        title={t_i18n('Digests Details')}
+        open={openNotifDrawer}
+        onClose={() => { setOpenNotifDrawer(false); }}
+      >
+        <DigestNotification notification={notificationDigestToOpen} />
+      </Drawer>
     </div>
   );
 };
