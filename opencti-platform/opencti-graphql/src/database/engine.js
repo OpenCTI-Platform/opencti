@@ -4326,7 +4326,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         if (isStixRefRelationship(t.relation)) {
           // don't try to add if already present (issue#7535)
           script += `for(refId in params['${field}']) { 
-          if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }}`;
+          if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }} `;
         } else {
           script += `ctx._source['${field}'].addAll(params['${field}']);`;
         }
@@ -4341,7 +4341,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         }
         return script;
       });
-      const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
+      const source = sources.length > 1 ? R.join(' ', sources) : `${R.head(sources)}`;
       for (let index = 0; index < targetsElements.length; index += 1) {
         const targetElement = targetsElements[index];
         params[buildRefRelationKey(targetElement.relation, targetElement.field)] = targetElement.elements.map((e) => e.id);
