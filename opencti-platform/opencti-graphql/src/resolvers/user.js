@@ -54,7 +54,7 @@ import {
   userOrganizationsPaginated,
   userOrganizationsPaginatedWithoutInferences,
   userRenewToken,
-  userWithOrigin,
+  userWithOrigin
 } from '../domain/user';
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
