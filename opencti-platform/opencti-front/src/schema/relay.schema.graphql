@@ -8232,8 +8232,7 @@ type Query {
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
   savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
-  fintelDesign(id: ID!): FintelDesign
-  fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
+  pirs(first: Int, after: ID, orderBy: PIROrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PIRConnection
 }
 
 type Subscription {
@@ -8727,7 +8726,7 @@ type Mutation {
   uploadImport(file: Upload!, fileMarkings: [String]): File
   uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, file_markings: [String!], refreshEntity: Boolean): File
-  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean): File
+  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode): File
   resetFileIndexing: Boolean
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer
   synchronizerEdit(id: ID!): SynchronizerEditMutations
@@ -9085,12 +9084,9 @@ type Mutation {
   disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
   savedFilterAdd(input: SavedFilterAddInput!): SavedFilter
   savedFilterDelete(id: ID!): ID
-  savedFilterFieldPatch(id: ID!, input: [EditInput!]): SavedFilter
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
-  fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
-  fintelDesignDelete(id: ID!): ID
-  fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
+  pirAdd(input: PIRAddInput!): PIR
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12797,38 +12793,32 @@ input RequestAccessConfigureInput {
   approval_admin: [ID]
 }
 
-type FintelDesign implements BasicObject & InternalObject {
+type PIR implements InternalObject & BasicObject {
   id: ID!
-  standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  standard_id: String!
+  parent_types: [String!]!
   name: String!
-  description: String
-  url: String
-  gradiantFromColor: String
-  gradiantToColor: String
-  textColor: String
+  pirCriteria: String!
+  pirFilters: String!
 }
 
-input FintelDesignAddInput {
-  name: String!
-  description: String
-  url: String
-  gradiantFromColor: String
-  gradiantToColor: String
-  textColor: String
-}
-
-type FintelDesignEdge {
-  cursor: String!
-  node: FintelDesign
-}
-
-type FintelDesignConnection {
-  pageInfo: PageInfo!
-  edges: [FintelDesignEdge!]!
-}
-
-enum FintelDesignOrdering {
+enum PIROrdering {
   name
+}
+
+type PIRConnection {
+  pageInfo: PageInfo!
+  edges: [PIREdge!]!
+}
+
+type PIREdge {
+  cursor: String!
+  node: PIR!
+}
+
+input PIRAddInput {
+  name: String!
+  pirCriteria: String!
+  pirFilters: String!
 }
