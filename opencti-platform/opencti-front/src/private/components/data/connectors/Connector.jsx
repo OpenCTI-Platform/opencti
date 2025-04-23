@@ -30,7 +30,7 @@ import DangerZoneBlock from '../../common/danger_zone/DangerZoneBlock';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
-import { getConnectorAvailableFilterKeys, getConnectorFilterEntityTypes, getConnectorOnlyContextualStatus, getConnectorTriggerStatus } from '../../../../utils/Connector';
+import { useGetConnectorAvailableFilterKeys, useGetConnectorFilterEntityTypes, getConnectorOnlyContextualStatus, getConnectorTriggerStatus } from '../../../../utils/Connector';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -119,8 +119,8 @@ const ConnectorComponent = ({ connector, relay }) => {
   // connector trigger filters
   const connectorFilters = deserializeFilterGroupForFrontend(connector.connector_trigger_filters);
   const connectorFiltersEnabled = connector.connector_type === 'INTERNAL_ENRICHMENT';
-  const connectorFiltersScope = getConnectorFilterEntityTypes(connector);
-  const connectorAvailableFilterKeys = getConnectorAvailableFilterKeys(connector);
+  const connectorFiltersScope = useGetConnectorFilterEntityTypes(connector);
+  const connectorAvailableFilterKeys = useGetConnectorAvailableFilterKeys(connector);
   const [filters, helpers] = useFiltersState(connectorFilters);
 
   const [displayResetState, setDisplayResetState] = useState(false);
@@ -247,6 +247,7 @@ const ConnectorComponent = ({ connector, relay }) => {
       filterGroups: [],
     },
   };
+  const filtersSearchContext = { entityTypes: connectorFiltersScope, connectorsScope: true };
 
   const theme = useTheme();
   const userHasSettingsCapability = useGranted([SETTINGS_SETACCESSES]);
@@ -413,7 +414,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                     <Filters
                       availableFilterKeys={connectorAvailableFilterKeys}
                       helpers={helpers}
-                      searchContext={{ entityTypes: connectorFiltersScope }}
+                      searchContext={filtersSearchContext}
                     />
                   </Box>
                   {filters && (
@@ -422,7 +423,7 @@ const ConnectorComponent = ({ connector, relay }) => {
                         filters={filters}
                         helpers={helpers}
                         styleNumber={2}
-                        searchContext={{ entityTypes: connectorFiltersScope }}
+                        searchContext={filtersSearchContext}
                         entityTypes={connectorFiltersScope}
                       />
                     </Box>
