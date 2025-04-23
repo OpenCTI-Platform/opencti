@@ -127,6 +127,8 @@ const GraphToolbarRemoveConfirm = ({
     setTotalToDelete(allSelection.length + associatedLinks.length);
 
     // Remove selected nodes and links
+    // /!\ We are voluntary using await in loop to call API
+    // sequentially to avoid lock issues when deleting.
     for (const el of allSelection) {
       const { id } = el;
       const isNode = isGraphNode(el);
@@ -165,6 +167,8 @@ const GraphToolbarRemoveConfirm = ({
     }
 
     // Remove links associated to removed nodes
+    // /!\ We are voluntary using await in loop to call API
+    // sequentially to avoid lock issues when deleting.
     for (const { id } of associatedLinks) {
       // eslint-disable-next-line no-await-in-loop
       await promiseOnDeleteRelation(
