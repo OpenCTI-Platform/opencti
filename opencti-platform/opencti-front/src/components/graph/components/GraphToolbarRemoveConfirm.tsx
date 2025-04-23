@@ -15,6 +15,8 @@ import type { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
 import { knowledgeGraphQueryCheckObjectQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import { KnowledgeGraphQueryCheckObjectQuery$data } from '@components/common/containers/__generated__/KnowledgeGraphQueryCheckObjectQuery.graphql';
+import { LinearProgress } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import Transition from '../../Transition';
 import { useFormatter } from '../../i18n';
 import { containerTypes } from '../../../utils/hooks/useAttributes';
@@ -23,6 +25,8 @@ import { fetchQuery } from '../../../relay/environment';
 import useKnowledgeGraphDeleteRelation from '../utils/useKnowledgeGraphDeleteRelation';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import useKnowledgeGraphDeleteObject from '../utils/useKnowledgeGraphDeleteObject';
+import type { Theme } from '../../Theme';
+import { isGraphNode } from '../graph.types';
 
 interface ReferenceFormData {
   message: string,
@@ -46,9 +50,13 @@ const GraphToolbarRemoveConfirm = ({
   onDeleteRelation,
   onRemove,
 }: GraphToolbarDeleteConfirmProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [andDelete, setAndDelete] = useState(false);
   const [referencesOpen, setReferencesOpen] = useState(false);
+
+  const [totalToDelete, setTotalToDelete] = useState(0);
+  const [currentDeleted, setCurrentDeleted] = useState(0);
 
   const [commitDeleteRelKnowledgeGraph] = useKnowledgeGraphDeleteRelation();
   const [commitDeleteObjectKnowledgeGraph] = useKnowledgeGraphDeleteObject();
@@ -61,78 +69,128 @@ const GraphToolbarRemoveConfirm = ({
     },
   } = useGraphContext();
 
+  const close = () => {
+    setTotalToDelete(0);
+    setCurrentDeleted(0);
+    setAndDelete(false);
+    onClose();
+  };
+
   const {
     clearSelection,
-    removeLink,
-    removeNode,
     removeLinks,
     removeNodes,
   } = useGraphInteractions();
 
-  const removeKnowledge = (referencesValues?: ReferenceFormData) => {
+  const promiseDeleteRel = async (id: string) => {
+    return new Promise((resolve) => {
+      commitDeleteRelKnowledgeGraph({
+        variables: { id },
+        onCompleted: () => resolve(id),
+      });
+    });
+  };
+
+  const promiseDeleteObject = async (id: string) => {
+    return new Promise((resolve) => {
+      commitDeleteObjectKnowledgeGraph({
+        variables: { id },
+        onCompleted: () => resolve(id),
+      });
+    });
+  };
+
+  const promiseOnDeleteRelation = async (
+    relId: string,
+    message?: string,
+    references?: string[],
+  ) => {
+    return new Promise((resolve) => {
+      onDeleteRelation?.(
+        relId,
+        () => resolve(relId),
+        message,
+        references,
+      );
+    });
+  };
+
+  const removeKnowledge = async (referencesValues?: ReferenceFormData) => {
+    const nodesToRemove: string[] = [];
+    const linksToRemove: string[] = [];
+
     const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
     // Containers checked when cascade delete.
     const checkedContainerTypes = containerTypes.filter((type) => {
       return !ignoredStixCoreObjectsTypes.includes(type);
     });
 
-    // Remove links associated to removed nodes
+    const allSelection = [...selectedNodes, ...selectedLinks];
     const selectedNodeIds = selectedNodes.map((n) => n.id);
-    (graphData?.links ?? []).filter(({ source_id, target_id }) => {
+    const associatedLinks = (graphData?.links ?? []).filter(({ source_id, target_id }) => {
       return selectedNodeIds.includes(source_id) || selectedNodeIds.includes(target_id);
-    }).forEach(({ id }) => {
-      onDeleteRelation?.(
+    });
+
+    setTotalToDelete(allSelection.length + associatedLinks.length);
+
+    // Remove selected nodes and links
+    // /!\ We are voluntary using await in loop to call API
+    // sequentially to avoid lock issues when deleting.
+    for (const el of allSelection) {
+      const { id } = el;
+      const isNode = isGraphNode(el);
+      // eslint-disable-next-line no-await-in-loop
+      const data = (await fetchQuery(
+        knowledgeGraphQueryCheckObjectQuery,
+        { id, entityTypes: checkedContainerTypes },
+      ).toPromise()) as KnowledgeGraphQueryCheckObjectQuery$data;
+      if (
+        andDelete
+        && !data.stixObjectOrStixRelationship?.is_inferred
+        && data.stixObjectOrStixRelationship?.containers?.edges?.length === 1
+      ) {
+        if (isNode) {
+          // eslint-disable-next-line no-await-in-loop
+          await promiseDeleteObject(id);
+          nodesToRemove.push(id);
+          setCurrentDeleted((old) => old + 1);
+        } else {
+          // eslint-disable-next-line no-await-in-loop
+          await promiseDeleteRel(id);
+          linksToRemove.push(id);
+          setCurrentDeleted((old) => old + 1);
+        }
+      } else {
+        // eslint-disable-next-line no-await-in-loop
+        await promiseOnDeleteRelation(
+          id,
+          referencesValues?.message,
+          referencesValues?.references.map((ref) => ref.value),
+        );
+        if (isNode) nodesToRemove.push(id);
+        else linksToRemove.push(id);
+        setCurrentDeleted((old) => old + 1);
+      }
+    }
+
+    // Remove links associated to removed nodes
+    // /!\ We are voluntary using await in loop to call API
+    // sequentially to avoid lock issues when deleting.
+    for (const { id } of associatedLinks) {
+      // eslint-disable-next-line no-await-in-loop
+      await promiseOnDeleteRelation(
         id,
-        () => removeLink(id),
         referencesValues?.message,
         referencesValues?.references.map((ref) => ref.value),
       );
-    });
+      linksToRemove.push(id);
+      setCurrentDeleted((old) => old + 1);
+    }
 
-    // Remove selected nodes and links
-    [...selectedNodes, ...selectedLinks].forEach(({ id }) => {
-      const isNode = selectedNodeIds.includes(id);
-      fetchQuery(knowledgeGraphQueryCheckObjectQuery, {
-        id,
-        entityTypes: checkedContainerTypes,
-      }).toPromise().then((data) => {
-        const result = data as KnowledgeGraphQueryCheckObjectQuery$data;
-        if (
-          andDelete
-          && !result.stixObjectOrStixRelationship?.is_inferred
-          && result.stixObjectOrStixRelationship?.containers?.edges?.length === 1
-        ) {
-          if (isNode) {
-            commitDeleteObjectKnowledgeGraph({
-              variables: { id },
-              onCompleted: () => {
-                removeNode(id);
-              },
-            });
-          } else {
-            commitDeleteRelKnowledgeGraph({
-              variables: { id },
-              onCompleted: () => {
-                removeLink(id);
-              },
-            });
-          }
-        } else {
-          onDeleteRelation?.(
-            id,
-            () => {
-              if (isNode) removeNode(id);
-              else removeLink(id);
-            },
-            referencesValues?.message,
-            referencesValues?.references.map((ref) => ref.value),
-          );
-        }
-      });
-    });
-
+    removeNodes(nodesToRemove);
+    removeLinks(linksToRemove);
     clearSelection();
-    onClose();
+    close();
   };
 
   const remove = (referencesValues?: ReferenceFormData) => {
@@ -152,7 +210,7 @@ const GraphToolbarRemoveConfirm = ({
         },
       );
       clearSelection();
-      onClose();
+      close();
     }
   };
 
@@ -174,9 +232,9 @@ const GraphToolbarRemoveConfirm = ({
       <Dialog
         open={open}
         keepMounted
-        PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
-        onClose={onClose}
+        slotProps={{ paper: { elevation: 1 } }}
+        slots={{ transition: Transition }}
+        onClose={close}
       >
         <DialogContent>
           <Typography variant="body1">
@@ -200,12 +258,32 @@ const GraphToolbarRemoveConfirm = ({
               />
             </FormGroup>
           </Alert>
+
+          {totalToDelete > 0 && (
+            <div
+              style={{
+                marginTop: theme.spacing(1),
+                display: 'flex',
+                gap: theme.spacing(1),
+                alignItems: 'center',
+              }}
+            >
+              <LinearProgress
+                style={{ flex: 1 }}
+                variant='determinate'
+                value={(currentDeleted / totalToDelete) * 100}
+              />
+              <Typography style={{ flexShrink: 0 }}>
+                {currentDeleted} / {totalToDelete}
+              </Typography>
+            </div>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>
+          <Button onClick={close} disabled={totalToDelete > 0}>
             {t_i18n('Cancel')}
           </Button>
-          <Button color="secondary" onClick={confirm}>
+          <Button color="secondary" onClick={confirm} disabled={totalToDelete > 0}>
             {t_i18n('Remove')}
           </Button>
         </DialogActions>
