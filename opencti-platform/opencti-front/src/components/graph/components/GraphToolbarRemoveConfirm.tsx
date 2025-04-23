@@ -15,6 +15,8 @@ import type { FormikConfig } from 'formik/dist/types';
 import { Option } from '@components/common/form/ReferenceField';
 import { knowledgeGraphQueryCheckObjectQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import { KnowledgeGraphQueryCheckObjectQuery$data } from '@components/common/containers/__generated__/KnowledgeGraphQueryCheckObjectQuery.graphql';
+import { LinearProgress } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import Transition from '../../Transition';
 import { useFormatter } from '../../i18n';
 import { containerTypes } from '../../../utils/hooks/useAttributes';
@@ -23,6 +25,7 @@ import { fetchQuery } from '../../../relay/environment';
 import useKnowledgeGraphDeleteRelation from '../utils/useKnowledgeGraphDeleteRelation';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import useKnowledgeGraphDeleteObject from '../utils/useKnowledgeGraphDeleteObject';
+import type { Theme } from '../../Theme';
 
 interface ReferenceFormData {
   message: string,
@@ -46,9 +49,13 @@ const GraphToolbarRemoveConfirm = ({
   onDeleteRelation,
   onRemove,
 }: GraphToolbarDeleteConfirmProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [andDelete, setAndDelete] = useState(false);
   const [referencesOpen, setReferencesOpen] = useState(false);
+
+  const [totalToDelete, setTotalToDelete] = useState(0);
+  const [currentDeleted, setCurrentDeleted] = useState(0);
 
   const [commitDeleteRelKnowledgeGraph] = useKnowledgeGraphDeleteRelation();
   const [commitDeleteObjectKnowledgeGraph] = useKnowledgeGraphDeleteObject();
@@ -69,70 +76,108 @@ const GraphToolbarRemoveConfirm = ({
     removeNodes,
   } = useGraphInteractions();
 
-  const removeKnowledge = (referencesValues?: ReferenceFormData) => {
+  const promiseDeleteRel = async (id: string) => {
+    return new Promise((resolve) => {
+      commitDeleteRelKnowledgeGraph({
+        variables: { id },
+        onCompleted: () => resolve(id),
+      });
+    });
+  };
+
+  const promiseDeleteObject = async (id: string) => {
+    return new Promise((resolve) => {
+      commitDeleteObjectKnowledgeGraph({
+        variables: { id },
+        onCompleted: () => resolve(id),
+      });
+    });
+  };
+
+  const promiseOnDeleteRelation = async (
+    relId: string,
+    message?: string,
+    references?: string[],
+  ) => {
+    return new Promise((resolve) => {
+      onDeleteRelation?.(
+        relId,
+        () => resolve(relId),
+        message,
+        references,
+      );
+    });
+  };
+
+  const removeKnowledge = async (referencesValues?: ReferenceFormData) => {
     const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
     // Containers checked when cascade delete.
     const checkedContainerTypes = containerTypes.filter((type) => {
       return !ignoredStixCoreObjectsTypes.includes(type);
     });
 
-    // Remove links associated to removed nodes
+    const allSelection = [...selectedNodes, ...selectedLinks];
     const selectedNodeIds = selectedNodes.map((n) => n.id);
-    (graphData?.links ?? []).filter(({ source_id, target_id }) => {
+    const associatedLinks = (graphData?.links ?? []).filter(({ source_id, target_id }) => {
       return selectedNodeIds.includes(source_id) || selectedNodeIds.includes(target_id);
-    }).forEach(({ id }) => {
-      onDeleteRelation?.(
+    });
+
+    setTotalToDelete(allSelection.length + associatedLinks.length);
+
+    // Remove selected nodes and links
+    for (const { id } of allSelection) {
+      const isNode = selectedNodeIds.includes(id);
+      // eslint-disable-next-line no-await-in-loop
+      const data = (await fetchQuery(
+        knowledgeGraphQueryCheckObjectQuery,
+        { id, entityTypes: checkedContainerTypes },
+      ).toPromise()) as KnowledgeGraphQueryCheckObjectQuery$data;
+      if (
+        andDelete
+        && !data.stixObjectOrStixRelationship?.is_inferred
+        && data.stixObjectOrStixRelationship?.containers?.edges?.length === 1
+      ) {
+        if (isNode) {
+          // eslint-disable-next-line no-await-in-loop
+          await promiseDeleteObject(id);
+          removeNode(id);
+          setCurrentDeleted((old) => old + 1);
+        } else {
+          // eslint-disable-next-line no-await-in-loop
+          await promiseDeleteRel(id);
+          removeLink(id);
+          setCurrentDeleted((old) => old + 1);
+        }
+      } else {
+        // eslint-disable-next-line no-await-in-loop
+        await promiseOnDeleteRelation(
+          id,
+          referencesValues?.message,
+          referencesValues?.references.map((ref) => ref.value),
+        );
+        if (isNode) removeNode(id);
+        else removeLink(id);
+        setCurrentDeleted((old) => old + 1);
+      }
+    }
+
+    // Remove links associated to removed nodes
+    for (const { id } of associatedLinks) {
+      // eslint-disable-next-line no-await-in-loop
+      await promiseOnDeleteRelation(
         id,
-        () => removeLink(id),
         referencesValues?.message,
         referencesValues?.references.map((ref) => ref.value),
       );
-    });
-
-    // Remove selected nodes and links
-    [...selectedNodes, ...selectedLinks].forEach(({ id }) => {
-      const isNode = selectedNodeIds.includes(id);
-      fetchQuery(knowledgeGraphQueryCheckObjectQuery, {
-        id,
-        entityTypes: checkedContainerTypes,
-      }).toPromise().then((data) => {
-        const result = data as KnowledgeGraphQueryCheckObjectQuery$data;
-        if (
-          andDelete
-          && !result.stixObjectOrStixRelationship?.is_inferred
-          && result.stixObjectOrStixRelationship?.containers?.edges?.length === 1
-        ) {
-          if (isNode) {
-            commitDeleteObjectKnowledgeGraph({
-              variables: { id },
-              onCompleted: () => {
-                removeNode(id);
-              },
-            });
-          } else {
-            commitDeleteRelKnowledgeGraph({
-              variables: { id },
-              onCompleted: () => {
-                removeLink(id);
-              },
-            });
-          }
-        } else {
-          onDeleteRelation?.(
-            id,
-            () => {
-              if (isNode) removeNode(id);
-              else removeLink(id);
-            },
-            referencesValues?.message,
-            referencesValues?.references.map((ref) => ref.value),
-          );
-        }
-      });
-    });
+      removeLink(id);
+      setCurrentDeleted((old) => old + 1);
+    }
 
     clearSelection();
     onClose();
+
+    setTotalToDelete(0);
+    setCurrentDeleted(0);
   };
 
   const remove = (referencesValues?: ReferenceFormData) => {
@@ -174,8 +219,8 @@ const GraphToolbarRemoveConfirm = ({
       <Dialog
         open={open}
         keepMounted
-        PaperProps={{ elevation: 1 }}
-        TransitionComponent={Transition}
+        slotProps={{ paper: { elevation: 1 } }}
+        slots={{ transition: Transition }}
         onClose={onClose}
       >
         <DialogContent>
@@ -200,12 +245,32 @@ const GraphToolbarRemoveConfirm = ({
               />
             </FormGroup>
           </Alert>
+
+          {totalToDelete > 0 && (
+            <div
+              style={{
+                marginTop: theme.spacing(1),
+                display: 'flex',
+                gap: theme.spacing(1),
+                alignItems: 'center',
+              }}
+            >
+              <LinearProgress
+                style={{ flex: 1 }}
+                variant='determinate'
+                value={(currentDeleted / totalToDelete) * 100}
+              />
+              <Typography style={{ flexShrink: 0 }}>
+                {currentDeleted} / {totalToDelete}
+              </Typography>
+            </div>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>
+          <Button onClick={onClose} disabled={totalToDelete > 0}>
             {t_i18n('Cancel')}
           </Button>
-          <Button color="secondary" onClick={confirm}>
+          <Button color="secondary" onClick={confirm} disabled={totalToDelete > 0}>
             {t_i18n('Remove')}
           </Button>
         </DialogActions>
