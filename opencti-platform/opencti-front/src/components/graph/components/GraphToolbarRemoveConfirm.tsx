@@ -69,6 +69,13 @@ const GraphToolbarRemoveConfirm = ({
     },
   } = useGraphContext();
 
+  const close = () => {
+    setTotalToDelete(0);
+    setCurrentDeleted(0);
+    setAndDelete(false);
+    onClose();
+  };
+
   const {
     clearSelection,
     removeLinks,
@@ -180,14 +187,10 @@ const GraphToolbarRemoveConfirm = ({
       setCurrentDeleted((old) => old + 1);
     }
 
-    clearSelection();
-    onClose();
-
     removeNodes(nodesToRemove);
     removeLinks(linksToRemove);
-    setTotalToDelete(0);
-    setCurrentDeleted(0);
-    setAndDelete(false);
+    clearSelection();
+    close();
   };
 
   const remove = (referencesValues?: ReferenceFormData) => {
@@ -207,7 +210,7 @@ const GraphToolbarRemoveConfirm = ({
         },
       );
       clearSelection();
-      onClose();
+      close();
     }
   };
 
@@ -231,7 +234,7 @@ const GraphToolbarRemoveConfirm = ({
         keepMounted
         slotProps={{ paper: { elevation: 1 } }}
         slots={{ transition: Transition }}
-        onClose={onClose}
+        onClose={close}
       >
         <DialogContent>
           <Typography variant="body1">
@@ -277,7 +280,7 @@ const GraphToolbarRemoveConfirm = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} disabled={totalToDelete > 0}>
+          <Button onClick={close} disabled={totalToDelete > 0}>
             {t_i18n('Cancel')}
           </Button>
           <Button color="secondary" onClick={confirm} disabled={totalToDelete > 0}>
