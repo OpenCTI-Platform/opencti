@@ -3083,8 +3083,8 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   // authorized_members renaming
   if (input.authorized_members?.length > 0) {
     input.restricted_members = input.authorized_members;
-    delete input.authorized_members;
   }
+  delete input.authorized_members; // always remove authorized_members input, even if empty
   // endregion
   // validate authorized members access (when creating a new entity with authorized members)
   if (input.restricted_members?.length > 0) {
