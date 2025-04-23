@@ -12,11 +12,12 @@ type SavedFiltersAutocompleteProps = {
   isDisabled?: boolean;
   value?: AutocompleteOptionType;
   inputValue?: string;
-  onSelect?: (selectionOption: AutocompleteOptionType) => void;
+  onChange?: (selectionOption: AutocompleteOptionType) => void;
+  onInputChange?: (_: SyntheticEvent, value: string) => void;
   onDelete?: (value: SavedFiltersSelectionData) => void;
   options?: AutocompleteOptionType[];
 };
-const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onSelect, onDelete, options }: SavedFiltersAutocompleteProps) => {
+const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onInputChange, onDelete, options }: SavedFiltersAutocompleteProps) => {
   const { t_i18n } = useFormatter();
 
   const handleDelete = (option: SavedFiltersSelectionData) => (event: SyntheticEvent) => {
@@ -46,15 +47,17 @@ const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onSelect, onD
 
   return (
     <Autocomplete
+      autoHighlight
+      disablePortal
+      disableClearable
       value={value}
       disabled={isDisabled}
       inputValue={inputValue}
       options={options ?? []}
       sx={{ width: 200 }}
       noOptionsText={t_i18n('No available options')}
-      disablePortal
-      disableClearable
-      onChange={(_, selectedOption: AutocompleteOptionType) => onSelect?.(selectedOption)}
+      onChange={(_, selectedOption: AutocompleteOptionType) => onChange?.(selectedOption)}
+      onInputChange={onInputChange}
       renderOption={renderOption}
       renderInput={(params) => (
         <TextField

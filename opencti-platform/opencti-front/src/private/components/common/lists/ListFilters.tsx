@@ -165,7 +165,7 @@ const ListFilters = ({
         <>
           <MUIAutocomplete
             options={options as OptionType[]}
-            groupBy={isNotUniqEntityTypes ? (option) => option.groupLabel : undefined}
+            groupBy={isNotUniqEntityTypes ? ((option) => option?.groupLabel ?? '') : undefined}
             sx={{ width: 200 }}
             value={null}
             onChange={(event, selectOptionValue) => {

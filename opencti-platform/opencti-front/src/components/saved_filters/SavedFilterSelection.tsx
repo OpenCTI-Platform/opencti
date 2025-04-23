@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, SyntheticEvent } from 'react';
 import SavedFilterDeleteDialog from 'src/components/saved_filters/SavedFilterDeleteDialog';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
@@ -63,12 +63,14 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     }
   }, [filters]);
 
-  const handleSelect = (selectionOption: AutocompleteOptionType) => {
+  const handleChange = (selectionOption: AutocompleteOptionType) => {
     setSelectedSavedFilter(selectionOption);
     setCurrentSavedFilter(selectionOption.value);
     setInputValue(selectionOption.label);
     helpers.handleSetFilters(JSON.parse(selectionOption.value.filters));
   };
+
+  const onInputChange = (_: SyntheticEvent, value: string) => setInputValue(value);
 
   const resetSavedFilterToDelete = () => setSavedFilterToDelete(undefined);
 
@@ -80,7 +82,8 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
         isDisabled={isDisabled}
         options={options}
         onDelete={handleDelete}
-        onSelect={handleSelect}
+        onChange={handleChange}
+        onInputChange={onInputChange}
         value={selectedSavedFilter}
         inputValue={inputValue}
       />
