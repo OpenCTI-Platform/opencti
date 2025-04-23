@@ -6,7 +6,7 @@ const pirResolvers: Resolvers = {
     pirs: (_, args, context) => findAll(context, context.user, args),
   },
   Mutation: {
-    pirAdd: (_, args, context) => pirAdd(context, context.user)
+    pirAdd: (_, { input }, context) => pirAdd(context, context.user, input)
   }
 };
 

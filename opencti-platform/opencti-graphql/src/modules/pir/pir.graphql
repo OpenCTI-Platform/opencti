@@ -5,8 +5,8 @@ type PIR implements InternalObject & BasicObject {
     parent_types: [String!]!
     # PIR
     name: String!
-    criteria: String!
-    filters: String!
+    pirCriteria: String!
+    pirFilters: String!
 }
 
 # Ordering
@@ -38,8 +38,8 @@ type Query {
 
 input PIRAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
-    criteria: String!
-    filters: String!
+    pirCriteria: String!
+    pirFilters: String!
 }
 
 # Mutations
