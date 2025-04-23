@@ -1426,7 +1426,7 @@ export const userRenewToken = async (context, user, userId) => {
   }
   const patch = { api_token: uuid() };
   await patchAttribute(context, user, userId, ENTITY_TYPE_USER, patch);
-  const result = storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  const result = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
 
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
   await publishUserAction({
@@ -1438,7 +1438,7 @@ export const userRenewToken = async (context, user, userId) => {
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER }
   });
 
-  return result;
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, result, user);
 };
 
 /**
