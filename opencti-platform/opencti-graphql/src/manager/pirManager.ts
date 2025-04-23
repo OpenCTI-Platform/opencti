@@ -4,7 +4,7 @@ import { FAKE_PIR, type PIR } from '../modules/pir/pir.fake';
 import type { DataEvent, SseEvent } from '../types/event';
 import { type FilterGroup, FilterMode } from '../generated/graphql';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
-import { STIX_TYPE_RELATION } from '../schema/general';
+import { INPUT_IN_PIR, STIX_TYPE_RELATION } from '../schema/general';
 import { stixObjectOrRelationshipAddRefRelation } from '../domain/stixObjectOrStixRelationship';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 
@@ -63,7 +63,7 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
           const sourceType = data.extensions?.[STIX_EXT_OCTI]?.source_type;
           if (sourceId && sourceType) {
             const addRefInput = {
-              relationship_type: 'in-pir',
+              relationship_type: INPUT_IN_PIR,
               toIds: [pir.id],
             };
             const ref = await stixObjectOrRelationshipAddRefRelation(context, SYSTEM_USER, sourceId, addRefInput, sourceType);
