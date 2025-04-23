@@ -18,8 +18,8 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPIR, StixPIR> = {
   },
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'criteria', label: 'PIR Criteria', type: 'string', format: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'filters', label: 'PIR Filters', type: 'string', format: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'pirCriteria', label: 'PIR Criteria', type: 'string', format: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'pirFilters', label: 'PIR Filters', type: 'string', format: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixPIR) => stix.name,

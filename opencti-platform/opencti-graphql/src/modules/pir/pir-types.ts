@@ -5,14 +5,14 @@ export const ENTITY_TYPE_PIR = 'PIR';
 
 export interface BasicStoreEntityPIR extends BasicStoreEntity {
   name: string
-  criteria: string
-  filters: string
+  pirCriteria: string
+  pirFilters: string
 }
 
 export interface StoreEntityPIR extends StoreEntity {
   name: string
-  criteria: string
-  filters: string
+  pirCriteria: string
+  pirFilters: string
 }
 
 export interface StixPIR extends StixInternal {
