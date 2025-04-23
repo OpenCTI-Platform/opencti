@@ -54,7 +54,7 @@ import {
   userOrganizationsPaginated,
   userOrganizationsPaginatedWithoutInferences,
   userRenewToken,
-  userWithOrigin
+  userWithOrigin, authenticateUserFromRequest
 } from '../domain/user';
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -70,7 +70,7 @@ const creatorLoader = batchLoader(batchCreator);
 
 const userResolvers = {
   Query: {
-    me: (_, __, context) => context.user,
+    me: (_, __, context) => findById(context, context.user, context.user.id),
     user: (_, { id }, context) => findById(context, context.user, id),
     otpGeneration: (_, __, context) => otpUserGeneration(context.user),
     users: (_, args, context) => findAll(context, context.user, args),
