@@ -26,6 +26,7 @@ import useKnowledgeGraphDeleteRelation from '../utils/useKnowledgeGraphDeleteRel
 import useGraphInteractions from '../utils/useGraphInteractions';
 import useKnowledgeGraphDeleteObject from '../utils/useKnowledgeGraphDeleteObject';
 import type { Theme } from '../../Theme';
+import { isGraphNode } from '../graph.types';
 
 interface ReferenceFormData {
   message: string,
@@ -70,8 +71,6 @@ const GraphToolbarRemoveConfirm = ({
 
   const {
     clearSelection,
-    removeLink,
-    removeNode,
     removeLinks,
     removeNodes,
   } = useGraphInteractions();
@@ -110,6 +109,9 @@ const GraphToolbarRemoveConfirm = ({
   };
 
   const removeKnowledge = async (referencesValues?: ReferenceFormData) => {
+    const nodesToRemove: string[] = [];
+    const linksToRemove: string[] = [];
+
     const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
     // Containers checked when cascade delete.
     const checkedContainerTypes = containerTypes.filter((type) => {
@@ -125,8 +127,9 @@ const GraphToolbarRemoveConfirm = ({
     setTotalToDelete(allSelection.length + associatedLinks.length);
 
     // Remove selected nodes and links
-    for (const { id } of allSelection) {
-      const isNode = selectedNodeIds.includes(id);
+    for (const el of allSelection) {
+      const { id } = el;
+      const isNode = isGraphNode(el);
       // eslint-disable-next-line no-await-in-loop
       const data = (await fetchQuery(
         knowledgeGraphQueryCheckObjectQuery,
@@ -140,12 +143,12 @@ const GraphToolbarRemoveConfirm = ({
         if (isNode) {
           // eslint-disable-next-line no-await-in-loop
           await promiseDeleteObject(id);
-          removeNode(id);
+          nodesToRemove.push(id);
           setCurrentDeleted((old) => old + 1);
         } else {
           // eslint-disable-next-line no-await-in-loop
           await promiseDeleteRel(id);
-          removeLink(id);
+          linksToRemove.push(id);
           setCurrentDeleted((old) => old + 1);
         }
       } else {
@@ -155,8 +158,8 @@ const GraphToolbarRemoveConfirm = ({
           referencesValues?.message,
           referencesValues?.references.map((ref) => ref.value),
         );
-        if (isNode) removeNode(id);
-        else removeLink(id);
+        if (isNode) nodesToRemove.push(id);
+        else linksToRemove.push(id);
         setCurrentDeleted((old) => old + 1);
       }
     }
@@ -169,13 +172,15 @@ const GraphToolbarRemoveConfirm = ({
         referencesValues?.message,
         referencesValues?.references.map((ref) => ref.value),
       );
-      removeLink(id);
+      linksToRemove.push(id);
       setCurrentDeleted((old) => old + 1);
     }
 
     clearSelection();
     onClose();
 
+    removeNodes(nodesToRemove);
+    removeLinks(linksToRemove);
     setTotalToDelete(0);
     setCurrentDeleted(0);
   };
