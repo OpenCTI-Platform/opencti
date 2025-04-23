@@ -18,7 +18,7 @@ import { deleteNode } from '../../../../utils/store';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { getFileUri } from '../../../../utils/utils';
-import ImportButton from '../../../../components/ImportButton';
+import UploadImport from '../../../../components/UploadImport';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
   mutation ImportFilesContentFileLineDeleteMutation($fileName: String) {
@@ -260,7 +260,7 @@ const ImportFilesContent = () => {
               window.location.pathname = getFileUri(id);
             }
           }}
-          createButton={isFABReplaced && <ImportButton onClick={() => setOpenImportFilesDialog(true)}/>}
+          createButton={isFABReplaced && (<UploadImport variant="contained"/>)}
           actions={(file: ImportFilesContentFileLine_file$data) => (
             <ImportActionsPopover
               file={file}
