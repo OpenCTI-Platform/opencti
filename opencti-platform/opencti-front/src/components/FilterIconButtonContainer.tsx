@@ -238,13 +238,19 @@ FilterIconButtonContainerProps
     classOperator = classes.operator3;
     margin = '0 0 0 0';
   }
+  const isSavedFilterContext = true;
+
   let boxStyle = {
     margin: `${margin}`,
     display: 'flex',
     flexWrap: 'wrap',
     gap: 1,
     overflow: 'auto',
+    padding: '4px',
+    backgroundColor: isSavedFilterContext ? 'rgba(37, 150, 190, 0.3)' : 'transparent',
+    borderRadius: '4px',
   };
+
   if (!isReadWriteFilter) {
     if (styleNumber !== 2) {
       boxStyle = {
@@ -253,6 +259,9 @@ FilterIconButtonContainerProps
         flexWrap: 'no-wrap',
         gap: 0,
         overflow: 'hidden',
+        padding: '0px',
+        backgroundColor: 'transparent',
+        borderRadius: '0px',
       };
     }
   }
