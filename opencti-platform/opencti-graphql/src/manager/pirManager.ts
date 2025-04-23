@@ -26,12 +26,12 @@ const buildAllPIRFilters = (pir: PIR): FilterGroup => {
   const criteriaFilters: FilterGroup = {
     mode: FilterMode.Or,
     filters: [],
-    filterGroups: pir.criteria.map((c) => c.filters)
+    filterGroups: pir.pirCriteria.map((c) => c.filters)
   };
   return {
     mode: FilterMode.And,
     filters: [],
-    filterGroups: [pir.filters, criteriaFilters]
+    filterGroups: [pir.pirFilters, criteriaFilters]
   };
 };
 
