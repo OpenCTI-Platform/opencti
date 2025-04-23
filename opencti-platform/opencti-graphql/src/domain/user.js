@@ -1425,8 +1425,7 @@ export const userRenewToken = async (context, user, userId) => {
     throw FunctionalError(`Cannot renew token, ${userId} user cannot be found.`);
   }
   const patch = { api_token: uuid() };
-  await patchAttribute(context, user, userId, ENTITY_TYPE_USER, patch);
-  const result = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
+  const { element } = await patchAttribute(context, user, userId, ENTITY_TYPE_USER, patch);
 
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : userData.user_email;
   await publishUserAction({
@@ -1438,7 +1437,7 @@ export const userRenewToken = async (context, user, userId) => {
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER }
   });
 
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, result, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
 /**
