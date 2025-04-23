@@ -1,0 +1,48 @@
+type PIR implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    parent_types: [String!]!
+    # PIR
+    name: String!
+    criteria: String!
+    filters: String!
+}
+
+# Ordering
+enum PIROrdering {
+    name
+}
+
+# Relay connections
+type PIRConnection {
+    pageInfo: PageInfo!
+    edges: [PIREdge!]!
+}
+type PIREdge {
+    cursor: String!
+    node: PIR!
+}
+
+# Queries
+type Query {
+    pirs(
+        first: Int
+        after: ID
+        orderBy: PIROrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): PIRConnection @auth(for: [KNOWLEDGE])
+}
+
+input PIRAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    criteria: String!
+    filters: String!
+}
+
+# Mutations
+type Mutation {
+    pirAdd(input: PIRAddInput!): PIR @auth(for: [KNOWLEDGE])
+}
