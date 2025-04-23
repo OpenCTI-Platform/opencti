@@ -10,16 +10,16 @@ export interface PIR {
   name: string
   // Criteria are filters with a weight,
   // they are used to compute matching score.
-  criteria: PIRCriterion[]
+  pirCriteria: PIRCriterion[]
   // Filters do not count when computing score, their role
   // is to exclude some data (low confidence for example).
-  filters: FilterGroup
+  pirFilters: FilterGroup
 }
 
 export const FAKE_PIR: PIR = {
   id: '028ecfc0-d4d0-4f1c-a6b2-91c446eeb7c2', // existing id to be able to add meta rel involving the PIR
   name: 'PIR about Energy sector in France',
-  filters: {
+  pirFilters: {
     mode: FilterMode.And,
     filterGroups: [],
     filters: [{
@@ -29,7 +29,7 @@ export const FAKE_PIR: PIR = {
       mode: FilterMode.Or
     }]
   },
-  criteria: [
+  pirCriteria: [
     {
       weight: 2,
       filters: {
