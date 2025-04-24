@@ -43,6 +43,8 @@ import { findById } from '../domain/user';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
+const PUBLISHER_ENABLE_BUFFERING = conf.get('publisher_manager:enable_buffering');
+const PUBLISHER_BUFFERING_MINUTES = conf.get('publisher_manager:buffering_minutes');
 const STREAM_SCHEDULE_TIME = 10000;
 
 export const internalProcessNotification = async (
@@ -216,6 +218,79 @@ const processDigestNotificationEvent = async (context: AuthContext, notification
   await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage);
 };
 
+const liveNotificationBufferPerEntity: Map<string, { timestamp: number, events: SseEvent<KnowledgeNotificationEvent>[] }> = new Map();
+
+const processLiveBufferNotificationEvents = async (
+  context: AuthContext,
+  notificationMap: Map<string, BasicStoreEntityTrigger>,
+  events: KnowledgeNotificationEvent[]
+) => {
+  const notifDataPerUser: Map<string, { user: NotificationUser, data: NotificationData }[]> = new Map();
+
+  for (let i = 0; i < events.length; i += 1) {
+    const event = events[i];
+    const { targets, data: instance, origin: { user_id } } = event;
+    const streamUser = (await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER)).get(user_id as string) as AuthUser;
+    for (let index = 0; index < targets.length; index += 1) {
+      const { user, type, message } = targets[index];
+      let notificationMessage = message;
+      if (streamUser && (event as KnowledgeNotificationEvent).streamMessage) {
+        const { streamMessage } = event as KnowledgeNotificationEvent;
+        const streamBuiltMessage = `\`${streamUser.name}\` ${streamMessage}`;
+        if (streamBuiltMessage !== notificationMessage) {
+          notificationMessage = `${message} - ${streamBuiltMessage}`;
+        }
+      }
+
+      const currentData = { notification_id: event.notification_id, instance, type, message: notificationMessage };
+      const currentNotifDataForUser = notifDataPerUser.get(user.user_id);
+      if (currentNotifDataForUser) {
+        currentNotifDataForUser.push({ user, data: currentData });
+      } else {
+        notifDataPerUser.set(user.user_id, [{ user, data: currentData }]);
+      }
+    }
+  }
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const notifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
+  const notifierMap = new Map(notifiers.map((n) => [n.internal_id, n]));
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const [_, value] of notifDataPerUser) {
+    const allUserNotifiers = [...new Set(value.map((d) => d.user.notifiers).flat())];
+
+    for (let notifierIndex = 0; notifierIndex < allUserNotifiers.length; notifierIndex += 1) {
+      const notifier = allUserNotifiers[notifierIndex];
+
+      const impactedData = value.filter((d) => d.user.notifiers.includes(notifier));
+      if (impactedData.length > 0) {
+        const currentUser = impactedData[0].user;
+        const dataToSend = impactedData.map((d) => d.data);
+        const bufferTriggersName = dataToSend.map((d) => notificationMap.get(d.notification_id)).filter((t) => t).join(';');
+        const bufferNotification = { name: bufferTriggersName, trigger_type: 'buffer' } as BasicStoreEntityTrigger;
+        // There is no await in purpose, the goal is to send notification and continue without waiting result.
+        internalProcessNotification(context, settings, notificationMap, currentUser, notifierMap.get(notifier) ?? {} as BasicStoreEntityNotifier, dataToSend, bufferNotification).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
+      }
+    }
+  }
+};
+
+const handleEntityNotificationBuffer = async () => {
+  const dateNow = Date.now();
+  const context = executionContext('publisher_manager');
+  // eslint-disable-next-line no-restricted-syntax
+  for (const [key, value] of liveNotificationBufferPerEntity) {
+    const isBufferingTimeElapsed = (dateNow - value.timestamp) > PUBLISHER_BUFFERING_MINUTES * 60000;
+    if (isBufferingTimeElapsed) {
+      const bufferEvents = value.events.map((e) => e.data);
+      liveNotificationBufferPerEntity.delete(key);
+      const notifications = await getNotifications(context);
+      const notificationMap = new Map(notifications.map((n) => [n.trigger.internal_id, n.trigger]));
+      await processLiveBufferNotificationEvents(context, notificationMap, bufferEvents);
+    }
+  }
+};
+
 const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEvent>>) => {
   try {
     if (streamEvents.length === 0) {
@@ -229,7 +304,17 @@ const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEv
       const { data: { notification_id, type } } = streamEvent;
       if (type === 'live' || type === 'action') {
         const liveEvent = streamEvent as SseEvent<KnowledgeNotificationEvent>;
-        await processLiveNotificationEvent(context, notificationMap, liveEvent.data);
+        if (PUBLISHER_ENABLE_BUFFERING) {
+          const liveEventEntityId = liveEvent.data.data.id;
+          const currentEntityBuffer = liveNotificationBufferPerEntity.get(liveEventEntityId);
+          if (currentEntityBuffer) {
+            currentEntityBuffer.events.push(liveEvent);
+          } else {
+            liveNotificationBufferPerEntity.set(liveEventEntityId, { timestamp: Date.now(), events: [liveEvent] });
+          }
+        } else {
+          await processLiveNotificationEvent(context, notificationMap, liveEvent.data);
+        }
       }
       if (type === 'digest') {
         const digestEvent = streamEvent as SseEvent<DigestEvent>;
@@ -269,6 +354,9 @@ const initPublisherManager = () => {
       await streamProcessor.start('live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
+        if (PUBLISHER_ENABLE_BUFFERING) {
+          await handleEntityNotificationBuffer();
+        }
         await wait(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of publisher manager processing');
