@@ -38,6 +38,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   login: {
     textAlign: 'center',
+    padding: theme.spacing(3),
     margin: '0 auto',
     maxWidth: 500,
   },

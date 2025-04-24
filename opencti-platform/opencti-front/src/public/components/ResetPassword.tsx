@@ -193,7 +193,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   };
 
   return (
-    <div style={{ padding: 15 }}>
+    <>
       {step === STEP_ASK_RESET && (
         <Formik
           initialValues={{ email: '' }}
@@ -331,7 +331,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
           </a>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
