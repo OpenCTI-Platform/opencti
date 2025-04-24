@@ -29,7 +29,7 @@ export interface ManagerStreamScheduler {
   handler: (streamEvents: Array<SseEvent<DataEvent>>, lastEventId: string) => void;
   interval: number;
   lockKey: string;
-  streamOpts?: { withInternal: boolean, streamName: string };
+  streamOpts?: { withInternal?: boolean, streamName?: string };
   streamProcessorStartFrom: () => string | undefined;
 }
 
