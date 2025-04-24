@@ -6,22 +6,12 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useCookies } from 'react-cookie';
-import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { useFormatter } from '../../components/i18n';
 import useApiMutation from '../../utils/hooks/useApiMutation';
-import { LoginRootPublicQuery$data } from '../__generated__/LoginRootPublicQuery.graphql';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  login: {
-    padding: 15,
-  },
-}));
 
 const loginMutation = graphql`
   mutation LoginFormMutation($input: UserLoginInput!) {
@@ -49,7 +39,6 @@ interface LoginFormProps {
 
 const FLASH_COOKIE = 'opencti_flash';
 const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
@@ -83,7 +72,7 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword })
   };
 
   return (
-    <div className={classes.login}>
+    <>
       <Formik
         initialValues={initialValues}
         initialTouched={{ email: !R.isEmpty(flashError) }}
@@ -119,10 +108,10 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword })
           </Form>
         )}
       </Formik>
-      <div style={{ marginTop: theme.spacing(1), cursor: 'pointer' }}>
+      <div style={{ marginTop: theme.spacing(2), cursor: 'pointer' }}>
         <a onClick={onClickForgotPassword}>{t_i18n('I forgot my password')}</a>
       </div>
-    </div>
+    </>
   );
 };
 
