@@ -255,7 +255,7 @@ FilterIconButtonContainerProps
     flexWrap: 'wrap',
     gap: 1,
     overflow: 'auto',
-    padding: '4px',
+    padding: isSavedFilterContext ? '4px' : '4px 0px',
     backgroundColor: isSavedFilterContext ? 'rgba(37, 150, 190, 0.3)' : 'transparent',
     borderRadius: '4px',
   };
