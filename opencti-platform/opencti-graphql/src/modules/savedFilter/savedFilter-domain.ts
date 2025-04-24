@@ -1,12 +1,10 @@
 import { publishUserAction } from '../../listener/UserActionListener';
-import { notify } from '../../database/redis';
 import { FunctionalError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
-import { BUS_TOPICS } from '../../config/conf';
 import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER, type StoreEntitySavedFilter } from './savedFilter-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import type { QuerySavedFiltersArgs, SavedFilterAddInput } from '../../generated/graphql';
+import type { MutationSavedFilterFieldPatchArgs, QuerySavedFiltersArgs, SavedFilterAddInput } from '../../generated/graphql';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
 
@@ -29,14 +27,13 @@ export const deleteSavedFilter = (context: AuthContext, user: AuthUser, savedFil
   return deleteInternalObject(contextOutOfDraft, user, savedFilterId, ENTITY_TYPE_SAVED_FILTER);
 };
 
-export const fieldPatchSavedFilter = async (context: AuthContext, user: AuthUser, args) => {
+export const fieldPatchSavedFilter = async (context: AuthContext, user: AuthUser, args: MutationSavedFilterFieldPatchArgs) => {
   const { id, filters } = args;
   const savedFilter = await findById(context, user, id);
   if (!savedFilter) throw FunctionalError('Saved filter cannot be found', { id });
 
   const fullInput = [{ key: 'filters', value: [filters] }];
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SAVED_FILTER, fullInput);
-  console.log('element : ', element);
 
   await publishUserAction({
     user,
@@ -44,9 +41,8 @@ export const fieldPatchSavedFilter = async (context: AuthContext, user: AuthUser
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`filters\` for saved filters \`${element.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_SAVED_FILTER, filters }
+    context_data: { id, entity_type: ENTITY_TYPE_SAVED_FILTER, input: filters }
   });
 
-  await notify(BUS_TOPICS[ENTITY_TYPE_SAVED_FILTER].EDIT_TOPIC, element, user);
   return element;
 };
