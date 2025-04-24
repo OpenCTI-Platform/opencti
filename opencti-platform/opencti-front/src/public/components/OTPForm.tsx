@@ -78,6 +78,7 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, on
         <Alert
           severity="error"
           variant="outlined"
+          style={{ alignSelf: 'stretch' }}
         >
           {error}
         </Alert>
@@ -85,10 +86,9 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, on
         <Alert
           severity="info"
           variant="outlined"
+          style={{ alignSelf: 'stretch' }}
         >
-          {t_i18n(
-            'You need to validate your two-factor authentication. Please type the code generated in your application',
-          )}
+          {t_i18n('You need to validate your two-factor authentication. Please type the code generated in your application')}
         </Alert>
       )}
       <OtpInputField
