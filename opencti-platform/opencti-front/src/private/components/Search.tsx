@@ -165,8 +165,6 @@ const Search = () => {
   useEffect(() => {
     if (paramsFilters) {
       storageHelpers.handleSetFilters(deserializeFilterGroupForFrontend(paramsFilters) ?? emptyFilterGroup);
-    } else {
-      storageHelpers.handleClearAllFilters();
     }
   }, [paramsFilters]);
 
