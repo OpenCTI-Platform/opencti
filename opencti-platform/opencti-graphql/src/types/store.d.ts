@@ -44,6 +44,7 @@ import {
   INPUT_DOMAIN_TO,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
+  INPUT_IN_PIR,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -198,6 +199,7 @@ interface StoreCommon {
   [INPUT_PARTICIPANT]?: Array<BasicStoreObject>;
   [INPUT_EXTERNAL_REFS]?: Array<StoreExternalReferences>;
   [INPUT_GRANTED_REFS]?: Array<BasicStoreObject>;
+  [INPUT_IN_PIR]?: Array<BasicStoreObject>;
 }
 
 interface StoreProxyRelation extends BasicStoreCommon {
