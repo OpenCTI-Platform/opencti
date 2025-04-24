@@ -94,14 +94,14 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword })
               label={t_i18n('Password')}
               type="password"
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              style={{ marginTop: theme.spacing(2) }}
             />
             <Button
               type="submit"
               variant="contained"
               color="primary"
               disabled={isSubmitting || !isValid}
-              style={{ marginTop: 30 }}
+              style={{ marginTop: theme.spacing(3) }}
             >
               {t_i18n('Sign in')}
             </Button>

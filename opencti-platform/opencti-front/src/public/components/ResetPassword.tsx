@@ -14,6 +14,8 @@ import OTPForm from './OTPForm';
 import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } from './__generated__/ResetPasswordVerifyOtpMutation.graphql';
 import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAskSendOtpMutation.graphql';
 import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
+import { useTheme } from '@mui/styles';
+import { Theme } from '@mui/material/styles/createTheme';
 
 interface ResetProps {
   onCancel: () => void;
@@ -76,6 +78,7 @@ const STEP_RESET_PASSWORD = 'reset';
 const FLASH_COOKIE = 'opencti_flash';
 
 const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [step, setStep] = useState(STEP_ASK_RESET);
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
@@ -215,7 +218,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
                 variant="contained"
                 color="primary"
                 disabled={isSubmitting || !isValid}
-                style={{ marginTop: 30 }}
+                style={{ marginTop: theme.spacing(3) }}
               >
                 {t_i18n('Send reset code')}
               </Button>
@@ -234,7 +237,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
           {({ isSubmitting, isValid }) => (
             <Form>
               {otpError && (
-                <Alert severity="error" variant="outlined" style={{ marginBottom: 15 }}>
+                <Alert severity="error" variant="outlined" style={{ marginBottom: theme.spacing(2) }}>
                   {t_i18n('The reset code you entered is invalid or has expired. You can request a new code, but please wait 30 seconds after your last request before trying again.')}
                 </Alert>
               )}
@@ -242,7 +245,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
                 <Alert
                   severity="info"
                   variant="outlined"
-                  style={{ marginBottom: 15 }}
+                  style={{ marginBottom: theme.spacing(2) }}
                 >
                   {t_i18n('If the email address you entered is associated with an account, you’ll receive a confirmation email with a reset code shortly.')}
                 </Alert>
@@ -258,7 +261,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
                 variant="contained"
                 color="primary"
                 disabled={isSubmitting || !isValid}
-                style={{ marginTop: 30 }}
+                style={{ marginTop: theme.spacing(3) }}
               >
                 {t_i18n('Continue')}
               </Button>
@@ -279,7 +282,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
         >
           {({ isSubmitting, isValid }) => (
             <Form>
-              <Alert severity="success" variant="outlined" style={{ marginBottom: 15 }}>
+              <Alert severity="success" variant="outlined" style={{ marginBottom: theme.spacing(2) }}>
                 {t_i18n('You can now set a new password for your account.')}
               </Alert>
               <Field
@@ -295,14 +298,14 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
                 label={t_i18n('Password validation')}
                 type="password"
                 fullWidth={true}
-                style={{ marginTop: 20 }}
+                style={{ marginTop: theme.spacing(2) }}
               />
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
                 disabled={isSubmitting || !isValid}
-                style={{ marginTop: 30 }}
+                style={{ marginTop: theme.spacing(3) }}
               >
                 {t_i18n('Change your password')}
               </Button>
@@ -311,7 +314,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
         </Formik>
       )}
       <div style={{
-        marginTop: 10,
+        marginTop: theme.spacing(2),
         display: 'flex',
         justifyContent: otpError ? 'space-between' : 'center',
       }}
