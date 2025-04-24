@@ -561,8 +561,8 @@ const LeftBar = () => {
             <StyledTooltip title={!navOpen && t_i18n('Draft overview')} placement="right">
               <MenuItem
                 component={Link}
-                to={`/data/import/draft/${draftContext.id}/`}
-                selected={location.pathname.includes(`/data/import/draft/${draftContext.id}/`)}
+                to={`/dashboard/data/import/draft/${draftContext.id}/`}
+                selected={location.pathname.includes(`/dashboard/data/import/draft/${draftContext.id}/`)}
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
@@ -929,8 +929,8 @@ const LeftBar = () => {
                 <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
                   <MenuItem
                     component={Link}
-                    to="/data/import/draft"
-                    selected={location.pathname.includes('/data/import/draft')}
+                    to="/dashboard/data/import/draft"
+                    selected={location.pathname.includes('/dashboard/data/import/draft')}
                     dense={true}
                     classes={{ root: classes.menuItem }}
                   >

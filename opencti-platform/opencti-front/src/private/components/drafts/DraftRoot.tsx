@@ -125,7 +125,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
       {isDraftReadOnly && (
       <>
         <Breadcrumbs elements={[
-          { label: t_i18n('Drafts'), link: '/data/import/draft' },
+          { label: t_i18n('Drafts'), link: '/dashboard/data/import/draft' },
           { label: name, current: true },
         ]}
         />
@@ -159,44 +159,44 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
       >
         <Tabs
           id="tabs-container"
-          value={getCurrentTab(location.pathname, draftId, '/data/import/draft/entities')}
+          value={getCurrentTab(location.pathname, draftId, '/dashboard/data/import/draft/entities')}
         >
           <Tab
             component={Link}
-            to={`/data/import/draft/${draftId}/entities`}
-            value={`/data/import/draft/${draftId}/entities`}
+            to={`/dashboard/data/import/draft/${draftId}/entities`}
+            value={`/dashboard/data/import/draft/${draftId}/entities`}
             label={
               <span>{t_i18n('Entities')} ({objectsCount.entitiesCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/data/import/draft/${draftId}/observables`}
-            value={`/data/import/draft/${draftId}/observables`}
+            to={`/dashboard/data/import/draft/${draftId}/observables`}
+            value={`/dashboard/data/import/draft/${draftId}/observables`}
             label={
               <span>{t_i18n('Observables')} ({objectsCount.observablesCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/data/import/draft/${draftId}/relationships`}
-            value={`/data/import/draft/${draftId}/relationships`}
+            to={`/dashboard/data/import/draft/${draftId}/relationships`}
+            value={`/dashboard/data/import/draft/${draftId}/relationships`}
             label={
               <span>{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/data/import/draft/${draftId}/sightings`}
-            value={`/data/import/draft/${draftId}/sightings`}
+            to={`/dashboard/data/import/draft/${draftId}/sightings`}
+            value={`/dashboard/data/import/draft/${draftId}/sightings`}
             label={
               <span>{t_i18n('Sightings')} ({objectsCount.sightingsCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/data/import/draft/${draftId}/containers`}
-            value={`/data/import/draft/${draftId}/containers`}
+            to={`/dashboard/data/import/draft/${draftId}/containers`}
+            value={`/dashboard/data/import/draft/${draftId}/containers`}
             label={
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
@@ -204,8 +204,8 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
           {!isDraftReadOnly && (
           <Tab
             component={Link}
-            to={`/data/import/draft/${draftId}/files`}
-            value={`/data/import/draft/${draftId}/files`}
+            to={`/dashboard/data/import/draft/${draftId}/files`}
+            value={`/dashboard/data/import/draft/${draftId}/files`}
             label={t_i18n('Files')}
           />)}
         </Tabs>
@@ -213,7 +213,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/data/import/draft/${draftId}/entities`} replace={true}/>}
+          element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true}/>}
         />
         <Route
           path="/entities"

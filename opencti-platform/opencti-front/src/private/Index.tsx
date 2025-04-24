@@ -34,6 +34,7 @@ const RootEntities = lazy(() => import('./components/entities/Root'));
 const RootLocation = lazy(() => import('./components/locations/Root'));
 const RootData = lazy(() => import('./components/data/Root'));
 const RootTrash = lazy(() => import('./components/trash/Root'));
+const RootDrafts = lazy(() => import('./components/drafts/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
@@ -98,7 +99,8 @@ const Index = ({ settings }: IndexProps) => {
           <Suspense fallback={<Loader />}>
             <Routes>
               <Route path="/" element={draftContext?.id
-                ? <Navigate to={`/data/import/draft/${draftContext.id}/`} replace={true}/> : boundaryWrapper(Dashboard)}
+                ? <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true}/>
+                : boundaryWrapper(Dashboard)}
               />
               {/* Search need to be rework */}
               <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
@@ -113,6 +115,7 @@ const Index = ({ settings }: IndexProps) => {
               {/* Need to refactor below */}
               <Route path="/entities/*" element={boundaryWrapper(RootEntities)}/>
               <Route path="/locations/*" element={boundaryWrapper(RootLocation)}/>
+              <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)}/>
               <Route path="/data/*" element={boundaryWrapper(RootData)}/>
               {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)}/>)}
               <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)}/>
