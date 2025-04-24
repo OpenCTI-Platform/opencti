@@ -302,7 +302,9 @@
   "publisher_manager": {
     "enabled": true,
     "lock_key": "publisher_manager_lock",
-    "interval": 10000
+    "interval": 10000,
+    "enable_buffering": false,
+    "buffering_minutes": 3
   },
   "sync_manager": {
     "enabled": true,
