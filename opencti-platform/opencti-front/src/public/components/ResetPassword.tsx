@@ -235,7 +235,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
             <Form>
               {otpError && (
                 <Alert severity="error" variant="outlined" style={{ marginBottom: 15 }}>
-                  {t_i18n('The reset code you entered is invalid or has expired. Please request a new code to proceed.')}
+                  {t_i18n('The reset code you entered is invalid or has expired. You can request a new code, but please wait 30 seconds after your last request before trying again.')}
                 </Alert>
               )}
               {!otpError && (

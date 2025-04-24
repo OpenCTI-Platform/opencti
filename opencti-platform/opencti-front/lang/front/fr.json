@@ -3075,7 +3075,7 @@
   "The password has been updated": "Le mot de passe a été modifié",
   "The public dashboard is disabled": "Le tableau de bord public est désactivé",
   "The relations attached to selected entities will be copied to the merged entity.": "Les relations attachées aux entités sélectionnées seront copiées sur l'entité fusionnée.",
-  "The reset code you entered is invalid or has expired. Please request a new code to proceed.": "Le code de réinitialisation que vous avez saisi n'est pas valide ou a expiré. Veuillez demander un nouveau code pour continuer.",
+  "The reset code you entered is invalid or has expired. You can request a new code, but please wait 30 seconds after your last request before trying again.": "Le code de réinitialisation que vous avez saisi n'est pas valide ou a expiré. Vous pouvez demander un nouveau code, mais attendez 30 secondes après votre dernière demande avant de réessayer.",
   "The retention policy will be applied on global files (files contained in": "La politique de conservation sera appliquée aux fichiers globaux (fichiers contenus dans",
   "The retention policy will be applied on global workbenches (workbenches contained in": "La politique de conservation sera appliquée sur les postes de travail globaux (postes de travail contenus dans",
   "The rule has been disabled, clean-up launched...": "La règle a été déséactivée, purge lancée...",

@@ -3075,7 +3075,7 @@
   "The password has been updated": "The password has been updated",
   "The public dashboard is disabled": "The public dashboard is disabled",
   "The relations attached to selected entities will be copied to the merged entity.": "The relations attached to selected entities will be copied to the merged entity.",
-  "The reset code you entered is invalid or has expired. Please request a new code to proceed.": "The reset code you entered is invalid or has expired. Please request a new code to proceed.",
+  "The reset code you entered is invalid or has expired. You can request a new code, but please wait 30 seconds after your last request before trying again.": "The reset code you entered is invalid or has expired. You can request a new code, but please wait 30 seconds after your last request before trying again.",
   "The retention policy will be applied on global files (files contained in": "The retention policy will be applied on global files (files contained in",
   "The retention policy will be applied on global workbenches (workbenches contained in": "The retention policy will be applied on global workbenches (workbenches contained in",
   "The rule has been disabled, clean-up launched...": "The rule has been disabled, clean-up launched...",

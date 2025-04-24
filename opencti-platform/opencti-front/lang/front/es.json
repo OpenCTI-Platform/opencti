@@ -3075,7 +3075,7 @@
   "The password has been updated": "La contraseña se ha modificado",
   "The public dashboard is disabled": "El panel público está desactivado",
   "The relations attached to selected entities will be copied to the merged entity.": "Las relaciones adjuntadas a las entidades seleccionadas serán copiadas a la entidad fusionada.",
-  "The reset code you entered is invalid or has expired. Please request a new code to proceed.": "El código de restablecimiento que has introducido no es válido o ha caducado. Solicita un nuevo código para continuar.",
+  "The reset code you entered is invalid or has expired. You can request a new code, but please wait 30 seconds after your last request before trying again.": "El código de restablecimiento que has introducido no es válido o ha caducado. Puedes solicitar un nuevo código, pero espera 30 segundos desde tu última solicitud antes de volver a intentarlo.",
   "The retention policy will be applied on global files (files contained in": "La política de retención se aplicará a los ficheros globales (ficheros contenidos en",
   "The retention policy will be applied on global workbenches (workbenches contained in": "La política de retención se aplicará a los bancos de trabajo globales (bancos de trabajo contenidos en",
   "The rule has been disabled, clean-up launched...": "La regla ha sido desactivada, limpieza lanzada...",

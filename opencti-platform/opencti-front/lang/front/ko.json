@@ -3075,7 +3075,7 @@
   "The password has been updated": "비밀번호가 업데이트되었습니다",
   "The public dashboard is disabled": "공용 대시보드가 비활성화되었습니다",
   "The relations attached to selected entities will be copied to the merged entity.": "선택된 엔터티에 연결된 관계가 병합된 엔터티로 복사됩니다.",
-  "The reset code you entered is invalid or has expired. Please request a new code to proceed.": "입력한 재설정 코드가 유효하지 않거나 만료되었습니다. 계속하려면 새 코드를 요청하세요.",
+  "The reset code you entered is invalid or has expired. You can request a new code, but please wait 30 seconds after your last request before trying again.": "입력한 재설정 코드가 유효하지 않거나 만료되었습니다. 새 코드를 요청할 수 있지만 마지막 요청 후 30초 정도 기다렸다가 다시 시도하세요.",
   "The retention policy will be applied on global files (files contained in": "보존 정책은 글로벌 파일(",
   "The retention policy will be applied on global workbenches (workbenches contained in": "에 포함된 파일)에 적용됩니다",
   "The rule has been disabled, clean-up launched...": "규칙이 비활성화되었습니다, 정리 시작...",
