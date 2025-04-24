@@ -37,6 +37,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
   const {
     useDataTablePaginationLocalStorage: {
       localStorageKey,
+      helpers,
       viewStorage: { filters },
     },
   } = useDataTableContext();
@@ -71,6 +72,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
       onCompleted: (response) => {
         const { savedFilterAdd } = response as SavedFilterCreateDialogMutation$data;
         setCurrentSavedFilter(savedFilterAdd as SavedFiltersSelectionData);
+        helpers.handleChangeSavedFilters(savedFilterAdd);
         onClose();
       },
       onError: () => {

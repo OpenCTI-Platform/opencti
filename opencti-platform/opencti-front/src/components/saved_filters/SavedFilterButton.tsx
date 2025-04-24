@@ -33,7 +33,7 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
 
   const {
     useDataTablePaginationLocalStorage: {
-      viewStorage: { filters },
+      viewStorage: { filters, savedFilters },
       localStorageKey,
     },
   } = useDataTableContext();
@@ -86,7 +86,7 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
 
   return (
     <>
-      <Tooltip title={t_i18n('Save filter')}>
+      <Tooltip title={savedFilters ? t_i18n('Update filter') : t_i18n('Save filter')}>
         <span>
           <IconButton
             color="primary"

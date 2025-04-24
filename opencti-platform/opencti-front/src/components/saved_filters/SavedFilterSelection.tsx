@@ -3,6 +3,7 @@ import SavedFilterDeleteDialog from 'src/components/saved_filters/SavedFilterDel
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
+import { type AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
 
 export type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']>[0]['node'];
 
@@ -22,10 +23,10 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
   const {
     useDataTablePaginationLocalStorage: {
       helpers,
-      viewStorage: { filters },
+      viewStorage: { filters, savedFilters },
     },
   } = useDataTableContext();
-
+  console.log('storage savedFilters : ', savedFilters);
   const [selectedSavedFilter, setSelectedSavedFilter] = useState<AutocompleteOptionType>();
   const [inputValue, setInputValue] = useState<string>('');
   const [savedFilterToDelete, setSavedFilterToDelete] = useState<string>();
@@ -34,6 +35,15 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     label: item.name,
     value: item,
   }));
+
+  useEffect(() => {
+    if (savedFilters) {
+      const currentSavedFilters = options.find((item) => item.value.id === savedFilters.id);
+      if (!currentSavedFilters) return;
+      setSelectedSavedFilter(currentSavedFilters);
+      setInputValue(currentSavedFilters.label);
+    }
+  }, []);
 
   useEffect(() => {
     if (currentSavedFilter && !selectedSavedFilter) {
@@ -45,22 +55,22 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     }
   }, [currentSavedFilter]);
 
-  const handleResetInput = () => {
+  const handleReset = () => {
     setSelectedSavedFilter(undefined);
     setCurrentSavedFilter(undefined);
-    helpers.handleRemoveSavedFilters();
     setInputValue('');
+    helpers.handleRemoveSavedFilters();
   };
 
   useEffect(() => {
     if (isDisabled && !!selectedSavedFilter) {
-      handleResetInput();
+      handleReset();
     }
   }, [isDisabled]);
 
   useEffect(() => {
     if (!filters?.filters.length && !filters?.filterGroups.length) {
-      handleResetInput();
+      handleReset();
     }
   }, [filters]);
 
@@ -71,7 +81,9 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     helpers.handleChangeSavedFilters(selectionOption.value);
   };
 
-  const onInputChange = (_: SyntheticEvent, value: string) => setInputValue(value);
+  const onInputChange = (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => {
+    if (reason === 'input') setInputValue(value);
+  };
 
   const resetSavedFilterToDelete = () => setSavedFilterToDelete(undefined);
 
@@ -89,7 +101,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
         inputValue={inputValue}
       />
       {!!savedFilterToDelete && (
-        <SavedFilterDeleteDialog savedFilterToDelete={savedFilterToDelete} onClose={resetSavedFilterToDelete} onReset={handleResetInput} />
+        <SavedFilterDeleteDialog savedFilterToDelete={savedFilterToDelete} onClose={resetSavedFilterToDelete} onReset={handleReset} />
       )}
     </>
   );

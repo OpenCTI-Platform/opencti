@@ -7,13 +7,14 @@ import { AutocompleteOptionType, SavedFiltersSelectionData } from 'src/component
 import { Autocomplete } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useFormatter } from 'src/components/i18n';
+import { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
 
 type SavedFiltersAutocompleteProps = {
   isDisabled?: boolean;
   value?: AutocompleteOptionType;
   inputValue?: string;
   onChange?: (selectionOption: AutocompleteOptionType) => void;
-  onInputChange?: (_: SyntheticEvent, value: string) => void;
+  onInputChange?: (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => void;
   onDelete?: (value: SavedFiltersSelectionData) => void;
   options?: AutocompleteOptionType[];
 };
