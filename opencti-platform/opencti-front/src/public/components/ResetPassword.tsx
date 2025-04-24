@@ -236,17 +236,12 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
         >
           {({ isSubmitting, isValid }) => (
             <Form>
-              {otpError && (
-                <Alert severity="error" variant="outlined" style={{ marginBottom: theme.spacing(2) }}>
+              {otpError ? (
+                <Alert severity="error" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
                   {t_i18n('The reset code you entered is invalid or has expired. You can request a new code, but please wait 30 seconds after your last request before trying again.')}
                 </Alert>
-              )}
-              {!otpError && (
-                <Alert
-                  severity="info"
-                  variant="outlined"
-                  style={{ marginBottom: theme.spacing(2) }}
-                >
+              ) : (
+                <Alert severity="info" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
                   {t_i18n('If the email address you entered is associated with an account, you’ll receive a confirmation email with a reset code shortly.')}
                 </Alert>
               )}
@@ -282,7 +277,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
         >
           {({ isSubmitting, isValid }) => (
             <Form>
-              <Alert severity="success" variant="outlined" style={{ marginBottom: theme.spacing(2) }}>
+              <Alert severity="success" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
                 {t_i18n('You can now set a new password for your account.')}
               </Alert>
               <Field
