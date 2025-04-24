@@ -94,7 +94,6 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, on
       ) : (
         <Alert
           severity="info"
-          icon={false}
           variant="outlined"
           style={{ margin: '0 0 15px 0', justifyContent: 'center' }}
         >

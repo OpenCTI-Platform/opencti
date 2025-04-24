@@ -241,7 +241,6 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
               {!otpError && (
                 <Alert
                   severity="info"
-                  icon={false}
                   variant="outlined"
                   style={{ marginBottom: 15 }}
                 >
