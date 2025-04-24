@@ -103,7 +103,8 @@ export const buildUpdateFieldPatch = (rawUpdatePatch) => {
     for (let i = 0; i < updatePatchKeys.length; i += 1) {
       const currentKey = updatePatchKeys[i];
       const currentValues = parsedUpdatePatch[currentKey];
-      if (currentValues) {
+      // Ignore standard id in patch: standard id update will be handled by the platform if needed when applying the patch
+      if (currentKey !== 'standard_id' && currentValues) {
         if (currentValues.replaced_value && currentValues.replaced_value.length > 0) {
           const replaceInput = { key: currentKey, value: currentValues.replaced_value, operation: EditOperation.Replace };
           resultFieldPatch.push(replaceInput);
