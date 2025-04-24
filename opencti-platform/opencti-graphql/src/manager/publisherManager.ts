@@ -218,19 +218,21 @@ const processDigestNotificationEvent = async (context: AuthContext, notification
   await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage);
 };
 
-const liveNotificationBufferPerEntity: Map<string, { timestamp: number, events: SseEvent<KnowledgeNotificationEvent>[] }> = new Map();
+const liveNotificationBufferPerEntity: Record<string, { timestamp: number, events: SseEvent<KnowledgeNotificationEvent>[] }> = {};
 
-const processLiveBufferNotificationEvents = async (
+const processBufferedEvents = async (
   context: AuthContext,
-  notificationMap: Map<string, BasicStoreEntityTrigger>,
+  triggerMap: Map<string, BasicStoreEntityTrigger>,
   events: KnowledgeNotificationEvent[]
 ) => {
-  const notifDataPerUser: Map<string, { user: NotificationUser, data: NotificationData }[]> = new Map();
-
+  const usersFromCache = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const notifDataPerUser: Record<string, { user: NotificationUser, data: NotificationData }[]> = {};
+  // We process all events to transform them into notification data per user
   for (let i = 0; i < events.length; i += 1) {
     const event = events[i];
     const { targets, data: instance, origin: { user_id } } = event;
-    const streamUser = (await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER)).get(user_id as string) as AuthUser;
+    const streamUser = usersFromCache.get(user_id as string) as AuthUser;
+    // For each event, transform it into NotificationData for all targets
     for (let index = 0; index < targets.length; index += 1) {
       const { user, type, message } = targets[index];
       let notificationMessage = message;
@@ -243,33 +245,48 @@ const processLiveBufferNotificationEvents = async (
       }
 
       const currentData = { notification_id: event.notification_id, instance, type, message: notificationMessage };
-      const currentNotifDataForUser = notifDataPerUser.get(user.user_id);
+      const currentNotifDataForUser = notifDataPerUser[user.user_id];
       if (currentNotifDataForUser) {
         currentNotifDataForUser.push({ user, data: currentData });
       } else {
-        notifDataPerUser.set(user.user_id, [{ user, data: currentData }]);
+        notifDataPerUser[user.user_id] = [{ user, data: currentData }];
       }
     }
   }
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const notifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
-  const notifierMap = new Map(notifiers.map((n) => [n.internal_id, n]));
+  const allNotifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
+  const allNotifiersMap = new Map(allNotifiers.map((n) => [n.internal_id, n]));
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const [_, value] of notifDataPerUser) {
-    const allUserNotifiers = [...new Set(value.map((d) => d.user.notifiers).flat())];
+  const notifUsers = Object.keys(notifDataPerUser);
+  // Handle notification data for each user
+  for (let i = 0; i < notifUsers.length; i += 1) {
+    const currentUserId = notifUsers[i];
+    const userNotificationData = notifDataPerUser[currentUserId];
+    const userNotifiers = [...new Set(userNotificationData.map((d) => d.user.notifiers).flat())];
 
-    for (let notifierIndex = 0; notifierIndex < allUserNotifiers.length; notifierIndex += 1) {
-      const notifier = allUserNotifiers[notifierIndex];
+    // For each notifier of the user, filter the relevant notification data, and send it
+    for (let notifierIndex = 0; notifierIndex < userNotifiers.length; notifierIndex += 1) {
+      const notifier = userNotifiers[notifierIndex];
 
-      const impactedData = value.filter((d) => d.user.notifiers.includes(notifier));
+      // Only include the notificationData that has the current notifier included in its trigger config
+      const impactedData = userNotificationData.filter((d) => d.user.notifiers.includes(notifier));
       if (impactedData.length > 0) {
         const currentUser = impactedData[0].user;
         const dataToSend = impactedData.map((d) => d.data);
-        const bufferTriggersName = [...new Set(dataToSend.map((d) => notificationMap.get(d.notification_id)?.name).filter((t) => t))].join(';');
-        const bufferNotification = { name: bufferTriggersName, trigger_type: 'buffer' } as BasicStoreEntityTrigger;
-        // There is no await in purpose, the goal is to send notification and continue without waiting result.
-        internalProcessNotification(context, settings, notificationMap, currentUser, notifierMap.get(notifier) ?? {} as BasicStoreEntityNotifier, dataToSend, bufferNotification).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
+        const triggersInDataToSend = [...new Set(dataToSend.map((d) => triggerMap.get(d.notification_id)?.name).filter((t) => t))];
+        // If multiple triggers generated notification data, we need to create a "buffer" trigger containing the names of all triggers
+        if (triggersInDataToSend.length > 1) {
+          const bufferTriggersName = triggersInDataToSend.join(';');
+          const bufferTrigger = { name: bufferTriggersName, trigger_type: 'buffer' } as BasicStoreEntityTrigger;
+          // There is no await in purpose, the goal is to send notification and continue without waiting result.
+          internalProcessNotification(context, settings, triggerMap, currentUser, allNotifiersMap.get(notifier) ?? {} as BasicStoreEntityNotifier, dataToSend, bufferTrigger).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
+        } else if (triggersInDataToSend.length === 1) { // If only one trigger generated the data, we can keep this trigger info
+          const currentTrigger = triggersInDataToSend[0];
+          if (currentTrigger) {
+            // There is no await in purpose, the goal is to send notification and continue without waiting result.
+            internalProcessNotification(context, settings, triggerMap, currentUser, allNotifiersMap.get(notifier) ?? {} as BasicStoreEntityNotifier, dataToSend, currentTrigger).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
+          }
+        }
       }
     }
   }
@@ -278,15 +295,23 @@ const processLiveBufferNotificationEvents = async (
 const handleEntityNotificationBuffer = async () => {
   const dateNow = Date.now();
   const context = executionContext('publisher_manager');
-  // eslint-disable-next-line no-restricted-syntax
-  for (const [key, value] of liveNotificationBufferPerEntity) {
-    const isBufferingTimeElapsed = (dateNow - value.timestamp) > PUBLISHER_BUFFERING_MINUTES * 60000;
-    if (isBufferingTimeElapsed) {
-      const bufferEvents = value.events.map((e) => e.data);
-      liveNotificationBufferPerEntity.delete(key);
-      const notifications = await getNotifications(context);
-      const notificationMap = new Map(notifications.map((n) => [n.trigger.internal_id, n.trigger]));
-      await processLiveBufferNotificationEvents(context, notificationMap, bufferEvents);
+  const bufferKeys = Object.keys(liveNotificationBufferPerEntity);
+  // Iterate on all buffers to check if they need to be sent
+  for (let i = 0; i < bufferKeys.length; i += 1) {
+    const key = bufferKeys[i];
+    const value = liveNotificationBufferPerEntity[key];
+    if (value) {
+      const isBufferingTimeElapsed = (dateNow - value.timestamp) > PUBLISHER_BUFFERING_MINUTES * 60000;
+      // If buffer is older than configured buffering time length, it needs to be sent
+      if (isBufferingTimeElapsed) {
+        const bufferEvents = value.events.map((e) => e.data);
+        // We remove current buffer from buffers map before processing buffer events, otherwise some new events coming in might be lost
+        // This way, if new events are coming in from the stream, they will initiate a new buffer that will be handled later
+        delete liveNotificationBufferPerEntity[key];
+        const allExistingTriggers = await getNotifications(context);
+        const allExistingTriggersMap = new Map(allExistingTriggers.map((n) => [n.trigger.internal_id, n.trigger]));
+        await processBufferedEvents(context, allExistingTriggersMap, bufferEvents);
+      }
     }
   }
 };
@@ -304,15 +329,17 @@ const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEv
       const { data: { notification_id, type } } = streamEvent;
       if (type === 'live' || type === 'action') {
         const liveEvent = streamEvent as SseEvent<KnowledgeNotificationEvent>;
+        // If buffering is enabled, we store the event in local buffer instead of handling it directly
         if (PUBLISHER_ENABLE_BUFFERING) {
           const liveEventEntityId = liveEvent.data.data.id;
-          const currentEntityBuffer = liveNotificationBufferPerEntity.get(liveEventEntityId);
+          const currentEntityBuffer = liveNotificationBufferPerEntity[liveEventEntityId];
+          // If there are buffered events already, simply add current event to array of buffered events
           if (currentEntityBuffer) {
             currentEntityBuffer.events.push(liveEvent);
-          } else {
-            liveNotificationBufferPerEntity.set(liveEventEntityId, { timestamp: Date.now(), events: [liveEvent] });
+          } else { // If there are currently no buffered events for this entity, initialize them using current time as timestamp
+            liveNotificationBufferPerEntity[liveEventEntityId] = { timestamp: Date.now(), events: [liveEvent] };
           }
-        } else {
+        } else { // If no buffering is enabled, we handle the notification directly
           await processLiveNotificationEvent(context, notificationMap, liveEvent.data);
         }
       }
