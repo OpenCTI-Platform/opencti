@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { NotificationsLine_node$data } from '@components/profile/__generated__/NotificationsLine_node.graphql';
 import Chip from '@mui/material/Chip';
-import { deepPurple, green, indigo, red } from '@mui/material/colors';
-import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
+import { deepPurple, green, red } from '@mui/material/colors';
+import { iconSelector } from '@components/profile/notifications/NotificationUtils';
 import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
@@ -20,31 +20,6 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
   const events = notification?.notification_content.map((n) => n.events.map((p) => {
     return { ...p, title: n.title };
   })).flat();
-
-  const colors: Record<string, string> = {
-    none: green[500],
-    create: green[500],
-    update: deepPurple[500],
-    delete: red[500],
-    multiple: indigo[500],
-  };
-
-  const iconSelector = ({ operation } : { operation: string }) => {
-    switch (operation) {
-      case 'create':
-        return <BellPlusOutline style={{ color: colors[operation] }} />;
-      case 'update':
-        return <BellCogOutline style={{ color: colors[operation] }} />;
-      case 'delete':
-        return <BellRemoveOutline style={{ color: colors[operation] }} />;
-      case 'multiple':
-        return (
-          <FileTableBoxMultipleOutline style={{ color: colors[operation] }} />
-        );
-      default:
-        return <BellOutline style={{ color: colors[operation] }} />;
-    }
-  };
 
   const dataColumns: DataTableProps['dataColumns'] = {
     operation: {
