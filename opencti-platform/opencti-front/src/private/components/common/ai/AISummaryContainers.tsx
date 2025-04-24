@@ -19,7 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup, handleFilterHelpers } from '../../../../utils/filters/filtersHelpers-types';
 import { getDefaultAiLanguage } from '../../../../utils/ai/Common';
 import { fetchQuery } from '../../../../relay/environment';
-import { copyToClipboard } from '../../../../utils/utils';
+import { copyToClipboard, cleanHtmlTags } from '../../../../utils/utils';
 import { daysAgo, monthsAgo } from '../../../../utils/Time';
 
 const subscription = graphql`
@@ -182,14 +182,7 @@ const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading 
   // Subscription
   const handleResponse = (response: AISummaryContainersSubscription$data | null | undefined) => {
     const newContent = response ? (response as AISummaryContainersSubscription$data).aiBus?.content : null;
-    const finalContent = (newContent ?? '')
-      .replace('```html', '')
-      .replace('```', '')
-      .replace('<html>', '')
-      .replace('</html>', '')
-      .replace('<body>', '')
-      .replace('</body>', '')
-      .trim();
+    const finalContent = cleanHtmlTags(newContent);
     return setContent(finalContent ?? '');
   };
   const subConfig = useMemo<GraphQLSubscriptionConfig<AISummaryContainersSubscription>>(

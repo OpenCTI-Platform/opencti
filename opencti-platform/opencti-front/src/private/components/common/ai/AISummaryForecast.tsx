@@ -13,7 +13,7 @@ import { AISummaryForecastSubscription, AISummaryForecastSubscription$data } fro
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
 import { getDefaultAiLanguage } from '../../../../utils/ai/Common';
-import { copyToClipboard } from '../../../../utils/utils';
+import { copyToClipboard, cleanHtmlTags } from '../../../../utils/utils';
 
 const subscription = graphql`
     subscription AISummaryForecastSubscription($id: ID!) {
@@ -92,14 +92,7 @@ const AISummaryForecast = ({ id, loading, setLoading }: AISummaryForecastProps) 
   // Subscription
   const handleResponse = (response: AISummaryForecastSubscription$data | null | undefined) => {
     const newContent = response ? (response as AISummaryForecastSubscription$data).aiBus?.content : null;
-    const finalContent = (newContent ?? '')
-      .replace('```html', '')
-      .replace('```', '')
-      .replace('<html>', '')
-      .replace('</html>', '')
-      .replace('<body>', '')
-      .replace('</body>', '')
-      .trim();
+    const finalContent = cleanHtmlTags(newContent);
     return setContent(finalContent ?? '');
   };
   const subConfig = useMemo<GraphQLSubscriptionConfig<AISummaryForecastSubscription>>(
