@@ -42,6 +42,7 @@ import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-f
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { elPaginate } from '../database/engine';
 import { stixLoadById } from '../database/middleware';
+import { convertRelationRefsFilterKeys } from '../utils/filtering/filtering-utils';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
@@ -451,12 +452,13 @@ const initPlaybookManager = () => {
           if (shouldTriggerNow(cronConfiguration, baseDate) && cronConfiguration.filters) {
             logApp.info(`[OPENCTI-MODULE] Running playbook ${instance.name} for cron ${cronConfiguration.period} (${cronConfiguration.triggerTime})`);
             const jsonFilters = JSON.parse(cronConfiguration.filters);
+            const convertedFilters = convertRelationRefsFilterKeys(jsonFilters);
             let conversionOpts = {};
             if (cronConfiguration.onlyLast) {
               const fromDate = baseDate.clone().subtract(1, cronConfiguration.period).toDate();
               conversionOpts = { ...conversionOpts, after: fromDate };
             }
-            const queryOptions = await convertFiltersToQueryOptions(jsonFilters, conversionOpts);
+            const queryOptions = await convertFiltersToQueryOptions(convertedFilters, conversionOpts);
             const opts = { ...queryOptions, first: PLAYBOOK_CRON_MAX_SIZE };
             const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, opts);
             const elements = result.edges;

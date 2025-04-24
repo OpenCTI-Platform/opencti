@@ -349,17 +349,21 @@ export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersChecking
  * - check that the key is available with respect to the schema, throws an Error if not
  * - convert relation refs key if any
  */
-export const checkAndConvertFilters = (inputFilterGroup: FilterGroup | null | undefined, userId: string, opts: { noFiltersChecking?: boolean } = {}) => {
+export const checkAndConvertFilters = (
+  inputFilterGroup: FilterGroup | null | undefined,
+  userId: string,
+  opts: { noFiltersChecking?: boolean, noFiltersConvert?: boolean } = {}
+) => {
   if (!inputFilterGroup) {
     return undefined;
   }
   // 01. check filters validity
-  const { noFiltersChecking = false } = opts;
+  const { noFiltersChecking = false, noFiltersConvert = false } = opts;
   checkFiltersValidity(inputFilterGroup, noFiltersChecking);
   // 02. replace dynamic @me value
   const filterGroup = replaceMeValuesInFilters(inputFilterGroup, userId);
   // 03. convert relation refs
-  if (!noFiltersChecking && isFilterGroupNotEmpty(inputFilterGroup)) {
+  if (!noFiltersChecking && !noFiltersConvert && isFilterGroupNotEmpty(inputFilterGroup)) {
     return convertRelationRefsFilterKeys(filterGroup);
   }
 

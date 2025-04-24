@@ -125,7 +125,7 @@ const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = (input: PlaybookAdd
   if (config.filters) {
     const filterGroup = JSON.parse(config.filters) as FilterGroup;
     if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
-      stringifiedFilters = JSON.stringify(checkAndConvertFilters(filterGroup, userId));
+      stringifiedFilters = JSON.stringify(checkAndConvertFilters(filterGroup, userId, { noFiltersConvert: true }));
     } else { // our stix matching is currently limited, we need to validate the input filters
       validateFilterGroupForStixMatch(filterGroup);
       stringifiedFilters = config.filters;
