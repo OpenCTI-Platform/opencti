@@ -377,7 +377,11 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getRedirectionLink = (stixSighting: any) => {
-    return isReadOnly ? `/dashboard/id/${stixSighting.standard_id}` : computeLink(stixSighting);
+    if (isReadOnly) {
+      const isUpdatedEntity = stixSighting.draftVersion?.draft_operation === 'update' || stixSighting.draftVersion?.draft_operation === 'update_linked';
+      return isUpdatedEntity ? `/dashboard/id/${stixSighting.id}` : `/dashboard/id/${stixSighting.standard_id}`;
+    }
+    return computeLink(stixSighting);
   };
 
   return (
