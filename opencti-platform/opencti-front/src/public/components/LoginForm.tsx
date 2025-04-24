@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
 import Button from '@mui/material/Button';
@@ -11,6 +11,9 @@ import { FormikConfig } from 'formik/dist/types';
 import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { useFormatter } from '../../components/i18n';
 import useApiMutation from '../../utils/hooks/useApiMutation';
+import { LoginRootPublicQuery$data } from '../__generated__/LoginRootPublicQuery.graphql';
+import { useTheme } from '@mui/styles';
+import { Theme } from '@mui/material/styles/createTheme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,9 +43,14 @@ interface RelayResponseError extends Error {
   res?: RelayResponsePayload;
 }
 
+interface LoginFormProps {
+  onClickForgotPassword: () => void;
+}
+
 const FLASH_COOKIE = 'opencti_flash';
-const LoginForm = () => {
+const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword }) => {
   const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const flashError = cookies[FLASH_COOKIE] || '';
@@ -111,6 +119,9 @@ const LoginForm = () => {
           </Form>
         )}
       </Formik>
+      <div style={{ marginTop: theme.spacing(1), cursor: 'pointer' }}>
+        <a onClick={onClickForgotPassword}>{t_i18n('I forgot my password')}</a>
+      </div>
     </div>
   );
 };
