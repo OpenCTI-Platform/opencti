@@ -84,6 +84,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
 
   const onInputChange = (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => {
     if (reason === 'input') setInputValue(value);
+    helpers.handleChangeSavedFilters(selectionOption.value);
   };
 
   const resetSavedFilterToDelete = () => setSavedFilterToDelete(undefined);

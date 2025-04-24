@@ -19,6 +19,7 @@ import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterRepresentative } from './filters/FiltersModel';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 import { PageContainerContext } from './PageContainer';
+import { useDataTableContext } from './dataGrid/components/DataTableContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -161,6 +162,13 @@ FilterIconButtonContainerProps
     filterValuesContentQuery,
     filtersRepresentativesQueryRef,
   );
+
+  const {
+    useDataTablePaginationLocalStorage: {
+      viewStorage: { savedFilters },
+    },
+  } = useDataTableContext();
+
   const displayedFilters = filters.filters;
   const globalMode = filters.mode;
   const itemRefToPopover = useRef(null);
@@ -238,7 +246,8 @@ FilterIconButtonContainerProps
     classOperator = classes.operator3;
     margin = '0 0 0 0';
   }
-  const isSavedFilterContext = true;
+
+  const isSavedFilterContext = savedFilters;
 
   let boxStyle = {
     margin: `${margin}`,
