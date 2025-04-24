@@ -4,7 +4,7 @@ import { FAKE_PIR, type PIR } from '../modules/pir/pir.fake';
 import type { DataEvent, SseEvent } from '../types/event';
 import { type FilterGroup, FilterMode } from '../generated/graphql';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
-import { STIX_TYPE_RELATION } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, STIX_TYPE_RELATION } from '../schema/general';
 import { stixObjectOrRelationshipAddRefRelation } from '../domain/stixObjectOrStixRelationship';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
@@ -57,7 +57,13 @@ const flagSource = async (context: AuthContext, source: any, pirId: string) => {
     relationship_type: RELATION_IN_PIR,
     toId: pirId,
   };
-  const ref = await stixObjectOrRelationshipAddRefRelation(context, SYSTEM_USER, sourceId, addRefInput, sourceType);
+  const ref = await stixObjectOrRelationshipAddRefRelation(
+    context,
+    SYSTEM_USER,
+    sourceId,
+    addRefInput,
+    ABSTRACT_STIX_CORE_OBJECT
+  );
   console.log('[POC PIR] Meta Ref relation created', { ref });
 };
 
@@ -76,29 +82,25 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
     .map((e) => e.data)
     .filter((e) => e.data.type === STIX_TYPE_RELATION);
 
-  if (streamEvents.length > 0) {
-    console.log('[POC PIR] stix events', { streamEvents });
-  }
-
   if (eventsContent.length > 0) {
     // Loop through all PIR one by one.
-    // await Promise.all(allPIR.map(async (pir) => {
-    //   // Build final filters which is a combination of PIR filters and criteria.
-    //   const pirFilters = buildAllPIRFilters(pir);
-    //   // Check every event received to see if it matches the PIR.
-    //   await Promise.all(eventsContent.map(async (event) => {
-    //     const { data } = event;
-    //     const eventMatchesPIR = await isStixMatchFilterGroup(context, SYSTEM_USER, data, pirFilters);
-    //     if (eventMatchesPIR) {
-    //       // If the event matches PIR, do the right thing depending on the type of event.
-    //       console.log('[POC PIR] Matching event', { event });
-    //       await flagSource(context, data, pir.id);
-    //     }
-    //   }));
-    // }));
+    await Promise.all(allPIR.map(async (pir) => {
+      // Build final filters which is a combination of PIR filters and criteria.
+      const pirFilters = buildAllPIRFilters(pir);
+      // Check every event received to see if it matches the PIR.
+      await Promise.all(eventsContent.map(async (event) => {
+        const { data } = event;
+        const eventMatchesPIR = await isStixMatchFilterGroup(context, SYSTEM_USER, data, pirFilters);
+        if (eventMatchesPIR) {
+          // If the event matches PIR, do the right thing depending on the type of event.
+          console.log('[POC PIR] Matching event', { event });
+          await flagSource(context, data, pir.id);
+        }
+      }));
+    }));
   } else {
     // TODO PIR: remove this else when no need for debugging anymore.
-    console.log('[POC PIR] Nothing to do, get some rest');
+    // console.log('[POC PIR] Nothing to do, get some rest');
   }
 };
 

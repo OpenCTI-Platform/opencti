@@ -111,6 +111,7 @@ import {
   INPUT_CREATED_BY,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
+  INPUT_IN_PIR,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -235,6 +236,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     workflow_id: instance.x_opencti_workflow_id,
     labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
+    pir_refs_ids: (instance[INPUT_IN_PIR] ?? []).map((m) => m.internal_id),
   };
   return cleanObject(octiExtensions);
 };
