@@ -171,8 +171,6 @@ const RootThreatActorIndividualComponent = ({
                     entityId={threatActorIndividual.id}
                     targetStixDomainObjectTypes={['Stix-Domain-Object']}
                     targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
-                    defaultStartTime={'2024-01-01T00:00:00Z'}
-                    defaultStopTime={'2024-01-02T00:00:00Z'}
                     paginationOptions={{}}
                   />
                 </Security>
