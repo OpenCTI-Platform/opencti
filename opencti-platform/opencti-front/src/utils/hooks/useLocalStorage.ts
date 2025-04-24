@@ -278,6 +278,8 @@ export const usePaginationLocalStorage = <U>(
     handleChangeSavedFilters: (savedFilters: SavedFiltersSelectionData) => {
       const newValue = {
         ...viewStorage,
+        filters: JSON.parse(savedFilters.filters),
+        latestAddFilterId: undefined,
         savedFilters,
       };
       setValue(newValue);
@@ -288,6 +290,7 @@ export const usePaginationLocalStorage = <U>(
         ...viewStorage,
         savedFilters: undefined,
       };
+      setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
     },
     handleSearch: (value: string) => {

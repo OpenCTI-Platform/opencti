@@ -82,7 +82,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
   return (
     <Dialog
       open={isOpen}
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ paper: { elevation: 1 } }}
       onClose={onClose}
       fullWidth
       maxWidth="xs"

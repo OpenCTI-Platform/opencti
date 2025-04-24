@@ -44,7 +44,7 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
   const [commit] = useApiMutation(
     savedFilterButtonEditMutation,
     undefined,
-    { successMessage: 'edit ok' },
+    { successMessage: 'Saved filter successfully updated' },
   );
 
   const handleEditSavedFilter = () => {

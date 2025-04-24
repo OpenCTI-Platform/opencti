@@ -2731,6 +2731,7 @@
   "Save template": "保存模板",
   "Saved filter successfully created": "保存的过滤器已成功创建",
   "Saved filter successfully removed": "已保存过滤器成功删除",
+  "Saved filter successfully updated": "保存的过滤器更新成功",
   "Scale": "间隔",
   "Scale configuration": "比例配置",
   "Scenario generation in progress...": "场景生成中...",
