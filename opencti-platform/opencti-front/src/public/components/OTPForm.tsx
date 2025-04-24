@@ -1,26 +1,12 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Button from '@mui/material/Button';
-import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../components/i18n';
 import type { Theme } from '../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 import useApiMutation from '../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  otp: {
-    textAlign: 'center',
-    width: '100%',
-    padding: 20,
-  },
-  input: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
-}));
+import { useTheme } from '@mui/styles';
 
 interface OTPFormProps {
   variant?: 'login' | 'resetPassword',
@@ -47,7 +33,7 @@ const ResetPassword2faMutation = graphql`
 `;
 
 const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, onCompleted }) => {
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -82,12 +68,16 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, on
     });
   }
   return (
-    <div className={classes.otp}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: theme.spacing(3),
+    }}>
       {error ? (
         <Alert
           severity="error"
           variant="outlined"
-          style={{ margin: '0 0 15px 0' }}
         >
           {error}
         </Alert>
@@ -95,27 +85,23 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, on
         <Alert
           severity="info"
           variant="outlined"
-          style={{ margin: '0 0 15px 0', justifyContent: 'center' }}
         >
           {t_i18n(
             'You need to validate your two-factor authentication. Please type the code generated in your application',
           )}
         </Alert>
       )}
-      <div className={classes.input}>
-        <OtpInputField
-          value={code}
-          onChange={handleChange}
-          isDisabled={inputDisable}
-        />
-      </div>
+      <OtpInputField
+        value={code}
+        onChange={handleChange}
+        isDisabled={inputDisable}
+      />
       {variant === 'login' && (
         <Button
           type="submit"
           variant="contained"
           color="primary"
           onClick={handleLogout}
-          style={{ marginTop: 30 }}
         >
           {t_i18n('Cancel')}
         </Button>
