@@ -82,6 +82,7 @@ import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
 import { askJobImport } from './connector';
 import { authorizedMembers } from '../schema/attribute-definition';
+import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -942,14 +943,7 @@ export const aiActivity = async (context, user, args) => {
   }
 
   // refine result
-  const finalResult = result
-    .replace('```html', '')
-    .replace('```', '')
-    .replace('<html>', '')
-    .replace('</html>', '')
-    .replace('<body>', '')
-    .replace('</body>', '')
-    .trim();
+  const finalResult = cleanHtmlTags(result);
 
   const activity = {
     result: finalResult,
@@ -981,14 +975,7 @@ export const aiForecast = async (context, user, args) => {
   }
 
   // refine result
-  const finalResult = result
-    .replace('```html', '')
-    .replace('```', '')
-    .replace('<html>', '')
-    .replace('</html>', '')
-    .replace('<body>', '')
-    .replace('</body>', '')
-    .trim();
+  const finalResult = cleanHtmlTags(result);
 
   const activity = {
     result: finalResult,
@@ -1036,14 +1023,7 @@ export const aiHistory = async (context, user, args) => {
   const result = await queryAi(identifier, systemPrompt, userPrompt, user);
 
   // refine result
-  const finalResult = result
-    .replace('```html', '')
-    .replace('```', '')
-    .replace('<html>', '')
-    .replace('</html>', '')
-    .replace('<body>', '')
-    .replace('</body>', '')
-    .trim();
+  const finalResult = cleanHtmlTags(result);
 
   const history = { result: finalResult, updated_at: now() };
   aiResponseCache[identifier] = history;

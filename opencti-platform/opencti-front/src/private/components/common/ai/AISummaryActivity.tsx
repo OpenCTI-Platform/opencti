@@ -14,7 +14,7 @@ import { AISummaryActivitySubscription, AISummaryActivitySubscription$data } fro
 import { useFormatter } from '../../../../components/i18n';
 import { getDefaultAiLanguage } from '../../../../utils/ai/Common';
 import { fetchQuery } from '../../../../relay/environment';
-import { copyToClipboard } from '../../../../utils/utils';
+import { copyToClipboard, cleanHtmlTags } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription AISummaryActivitySubscription($id: ID!) {
@@ -153,15 +153,8 @@ const AISummaryActivity = ({ id, loading, setLoading }: AISummaryActivityProps) 
   // Subscription
   const handleResponse = (response: AISummaryActivitySubscription$data | null | undefined) => {
     const newContent = response ? (response as AISummaryActivitySubscription$data).aiBus?.content : null;
-    const finalContent = (newContent ?? '')
-      .replace('```html', '')
-      .replace('```', '')
-      .replace('<html>', '')
-      .replace('</html>', '')
-      .replace('<body>', '')
-      .replace('</body>', '')
-      .trim();
-    return setContent(finalContent ?? '');
+    const finalContent = cleanHtmlTags(newContent);
+    return setContent(finalContent);
   };
   const subConfig = useMemo<GraphQLSubscriptionConfig<AISummaryActivitySubscription>>(
     () => ({
