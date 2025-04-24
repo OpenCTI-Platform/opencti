@@ -28,6 +28,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
 import ThreatActorIndividualDeletion from './ThreatActorIndividualDeletion';
+import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -161,6 +162,18 @@ const RootThreatActorIndividualComponent = ({
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ThreatActorIndividualEdition
                     threatActorIndividualId={threatActorIndividual.id}
+                  />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    entityId={threatActorIndividual.id}
+                    targetStixDomainObjectTypes={['Stix-Domain-Object']}
+                    targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
+                    defaultStartTime={'2024-01-01T00:00:00Z'}
+                    defaultStopTime={'2024-01-02T00:00:00Z'}
+                    paginationOptions={{}}
                   />
                 </Security>
               )}
