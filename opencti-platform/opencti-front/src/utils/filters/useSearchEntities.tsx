@@ -612,7 +612,6 @@ const useSearchEntities = ({
         case 'creator_id':
         case 'contextCreator':
           if (searchContext.connectorsScope && canDisplayAllUsers) {
-            console.log('fetch creators');
             // fetch all the users
             fetchQuery(usersLinesSearchQuery, {
               first: 10,
