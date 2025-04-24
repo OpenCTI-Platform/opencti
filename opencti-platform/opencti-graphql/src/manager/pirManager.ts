@@ -20,25 +20,6 @@ const PIR_MANAGER_LOCK_KEY = 'pir_manager_lock'; // TODO PIR: use config instead
 const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
 
 /**
- * Build a filter group containing all criteria and filters of a PIR.
- *
- * @param pir The PIR to build filters.
- * @returns A filter group describing the PIR.
- */
-const buildAllPIRFilters = (pir: PIR): FilterGroup => {
-  const criteriaFilters: FilterGroup = {
-    mode: FilterMode.Or,
-    filters: [],
-    filterGroups: pir.pirCriteria.map((c) => c.filters)
-  };
-  return {
-    mode: FilterMode.And,
-    filters: [],
-    filterGroups: [pir.pirFilters, criteriaFilters]
-  };
-};
-
-/**
  * Flag the source of the relationship by creating a meta relationship 'in-pir'
  * between the source and the PIR.
  *
@@ -85,16 +66,37 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   if (eventsContent.length > 0) {
     // Loop through all PIR one by one.
     await Promise.all(allPIR.map(async (pir) => {
-      // Build final filters which is a combination of PIR filters and criteria.
-      const pirFilters = buildAllPIRFilters(pir);
       // Check every event received to see if it matches the PIR.
       await Promise.all(eventsContent.map(async (event) => {
         const { data } = event;
-        const eventMatchesPIR = await isStixMatchFilterGroup(context, SYSTEM_USER, data, pirFilters);
-        if (eventMatchesPIR) {
-          // If the event matches PIR, do the right thing depending on the type of event.
-          console.log('[POC PIR] Matching event', { event });
-          await flagSource(context, data, pir.id);
+        // check filters
+        const eventMatchesPirFilters = await isStixMatchFilterGroup(context, SYSTEM_USER, data, pir.pirFilters);
+        if (eventMatchesPirFilters) {
+          // check criteria
+          const matchingCriteria: typeof pir.pirCriteria = [];
+          // eslint-disable-next-line no-restricted-syntax
+          for (const pirCriterion of pir.pirCriteria) {
+            const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, pirCriterion.filters);
+            if (isMatch) {
+              matchingCriteria.push(pirCriterion);
+            }
+          }
+          if (matchingCriteria.length > 0) {
+            console.log('[POC PIR] Matching event', { event, matchingCriteria });
+            // If the event matches PIR, do the right thing depending on the type of event.
+            switch (event.type) {
+              case 'create':
+                // - if source not flagged
+                // create rel
+                await flagSource(context, data, pir.id);
+                // - if source already flagged
+                // update the score and the matching Criteria
+              case 'delete':
+                // eventually remove the entity flag or update matching criteria
+              default:
+                // nothing to do
+            }
+          }
         }
       }));
     }));
