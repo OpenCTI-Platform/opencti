@@ -303,18 +303,12 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
       )}
       {isAuthForm && !isConsentMessage && !resetPassword && (
         <Paper variant="outlined" classes={{ root: classes.login }}>
-          <LoginForm />
-          <div style={{ marginBottom: 10, cursor: 'pointer' }}>
-            <a onClick={() => setResetPassword(true)}>{t_i18n('I forgot my password')}</a>
-          </div>
+          <LoginForm onClickForgotPassword={() => setResetPassword(true)} />
         </Paper>
       )}
       {isAuthForm && isConsentMessage && checked && !resetPassword && (
         <Paper variant="outlined" classes={{ root: classes.login }}>
-          <LoginForm />
-          <div style={{ cursor: 'pointer' }}>
-            <a onClick={() => setResetPassword(true)}>{t_i18n('I forgot my password')}</a>
-          </div>
+          <LoginForm onClickForgotPassword={() => setResetPassword(true)} />
         </Paper>
       )}
       {resetPassword && (
