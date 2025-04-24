@@ -68,7 +68,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     setSelectedSavedFilter(selectionOption);
     setCurrentSavedFilter(selectionOption.value);
     setInputValue(selectionOption.label);
-    helpers.handleChangeSavedFilters(selectionOption.value, helpers.handleSetFilters);
+    helpers.handleChangeSavedFilters(selectionOption.value);
   };
 
   const onInputChange = (_: SyntheticEvent, value: string) => setInputValue(value);
