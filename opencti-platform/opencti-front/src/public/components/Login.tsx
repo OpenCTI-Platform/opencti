@@ -37,7 +37,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     paddingBottom: 50,
   },
   login: {
-    textAlign: 'center',
     padding: theme.spacing(3),
     margin: '0 auto',
     maxWidth: 500,
@@ -93,7 +92,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     margin: '0 auto 20px auto',
     padding: theme.spacing(3),
-    textAlign: 'center',
     maxWidth: 500,
   },
   byFiligran: {
@@ -243,31 +241,6 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
 
   const loginScreen = () => (
     <div style={{ marginBottom: 10 }} data-testid="login-page">
-      <img
-        src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight)}
-        alt="logo"
-        className={classes.logo}
-        style={{ marginBottom: isWhitemarkEnable ? 0 : 20 }}
-      />
-      {isWhitemarkEnable && (!loginLogo || loginLogo.length === 0) && (
-        <div className={classes.byFiligran} style={{ marginBottom: 20 }}>
-          <img
-            src={fileUri(theme.palette.mode === 'dark' ? byFiligranDark : byFiligranLight)}
-            className={classes.byFiligranLogo}
-          />
-        </div>
-      )}
-      {isWhitemarkEnable && loginLogo && loginLogo.length > 0 && (
-        <div className={classes.byFiligran} style={{ margin: '5px 0 20px 0' }}>
-          <img
-            src={fileUri(theme.palette.mode === 'dark' ? logoFiligranDark : logoFiligranLight)}
-            className={classes.filigranLogo}
-          />
-          <Typography variant="h4" className={classes.byFiligranText}>
-            by Filigran
-          </Typography>
-        </div>
-      )}
       {expired && expired === true && (
         <Paper
           classes={{ root: classes.paper }}
@@ -284,12 +257,12 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
         </Paper>
       )}
       {isLoginMessage && (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} variant="outlined" style={{ padding: `${theme.spacing(2)} inherit` }}>
           <Markdown>{loginMessage}</Markdown>
         </Paper>
       )}
       {isConsentMessage && (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paper }} variant="outlined" style={{ padding: `${theme.spacing(2)} inherit` }}>
           <Markdown>{consentMessage}</Markdown>
           <Box display="flex" justifyContent="center" alignItems="center">
             <Markdown>{consentConfirmText}</Markdown>
@@ -331,16 +304,9 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const authScreen = () => {
     if (type === '2FA_VALIDATION') {
       return (
-        <>
-          <img
-            src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight))}
-            alt="logo"
-            className={classes.logo}
-          />
-          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ marginTop: 20 }}>
-            <OTPForm />
-          </Paper>
-        </>
+        <Paper classes={{ root: classes.paper }} variant="outlined" style={{ marginTop: 20 }}>
+          <OTPForm />
+        </Paper>
       );
     }
     if (type === '2FA_ACTIVATION') {
@@ -349,10 +315,42 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     return loginScreen();
   };
 
+  const logo = () => {
+    return (
+      <>
+        <img
+          src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight)}
+          alt="logo"
+          className={classes.logo}
+          style={{ marginBottom: isWhitemarkEnable ? 0 : 20 }}
+        />
+        {isWhitemarkEnable && (!loginLogo || loginLogo.length === 0) && (
+          <div className={classes.byFiligran} style={{ marginBottom: 20 }}>
+            <img
+              src={fileUri(theme.palette.mode === 'dark' ? byFiligranDark : byFiligranLight)}
+              className={classes.byFiligranLogo}
+            />
+          </div>
+        )}
+        {isWhitemarkEnable && loginLogo && loginLogo.length > 0 && (
+          <div className={classes.byFiligran} style={{ margin: '5px 0 20px 0' }}>
+            <img
+              src={fileUri(theme.palette.mode === 'dark' ? logoFiligranDark : logoFiligranLight)}
+              className={classes.filigranLogo}
+            />
+            <Typography variant="h4" className={classes.byFiligranText}>
+              by Filigran
+            </Typography>
+          </div>
+        )}</>
+    );
+  };
+
   return (
     <div>
       <SystemBanners settings={settings} />
       <div className={classes.container} style={{ paddingTop }}>
+        {logo()}
         {authScreen()}
       </div>
     </div>
