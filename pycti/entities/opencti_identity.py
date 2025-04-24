@@ -51,6 +51,7 @@ class Identity:
                 }
                 ... on Organization {
                     x_opencti_organization_type
+                    x_opencti_score
                 }
                 ... on Individual {
                     x_opencti_firstname
@@ -110,6 +111,7 @@ class Identity:
             }
             ... on Organization {
                 x_opencti_organization_type
+                x_opencti_score
             }
         """
         self.properties_with_files = """
@@ -152,6 +154,7 @@ class Identity:
                 }
                 ... on Organization {
                     x_opencti_organization_type
+                    x_opencti_score
                 }
                 ... on Individual {
                     x_opencti_firstname
@@ -224,6 +227,7 @@ class Identity:
             }
             ... on Organization {
                 x_opencti_organization_type
+                x_opencti_score
             }
             importFiles {
                 edges {
@@ -412,6 +416,7 @@ class Identity:
         x_opencti_aliases = kwargs.get("x_opencti_aliases", None)
         x_opencti_organization_type = kwargs.get("x_opencti_organization_type", None)
         x_opencti_reliability = kwargs.get("x_opencti_reliability", None)
+        x_opencti_score = kwargs.get("x_opencti_score", None)
         x_opencti_firstname = kwargs.get("x_opencti_firstname", None)
         x_opencti_lastname = kwargs.get("x_opencti_lastname", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
@@ -456,6 +461,7 @@ class Identity:
                     x_opencti_organization_type
                 )
                 input_variables["x_opencti_reliability"] = x_opencti_reliability
+                input_variables["x_opencti_score"] = x_opencti_score
                 result_data_field = "organizationAdd"
             elif type == IdentityTypes.INDIVIDUAL.value:
                 query = """
@@ -552,6 +558,10 @@ class Identity:
                 stix_object["x_opencti_reliability"] = (
                     self.opencti.get_attribute_in_extension("reliability", stix_object)
                 )
+            if "x_opencti_score" not in stix_object:
+                stix_object["x_opencti_score"] = (
+                    self.opencti.get_attribute_in_extension("score", stix_object)
+                )
             if "x_opencti_organization_type" not in stix_object:
                 stix_object["x_opencti_organization_type"] = (
                     self.opencti.get_attribute_in_extension(
@@ -628,6 +638,11 @@ class Identity:
                 x_opencti_reliability=(
                     stix_object["x_opencti_reliability"]
                     if "x_opencti_reliability" in stix_object
+                    else None
+                ),
+                x_opencti_score=(
+                    stix_object["x_opencti_score"]
+                    if "x_opencti_score" in stix_object
                     else None
                 ),
                 x_opencti_firstname=(
