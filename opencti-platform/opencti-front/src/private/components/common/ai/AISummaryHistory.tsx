@@ -93,7 +93,7 @@ const AISummaryHistory = ({ id, loading, setLoading }: AISummaryHistoryProps) =>
   const handleResponse = (response: AISummaryHistorySubscription$data | null | undefined) => {
     const newContent = response ? (response as AISummaryHistorySubscription$data).aiBus?.content : null;
     const finalContent = cleanHtmlTags(newContent);
-    return setContent(finalContent ?? '');
+    return setContent(finalContent);
   };
   const subConfig = useMemo<GraphQLSubscriptionConfig<AISummaryHistorySubscription>>(
     () => ({

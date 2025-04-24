@@ -154,7 +154,7 @@ const AISummaryActivity = ({ id, loading, setLoading }: AISummaryActivityProps) 
   const handleResponse = (response: AISummaryActivitySubscription$data | null | undefined) => {
     const newContent = response ? (response as AISummaryActivitySubscription$data).aiBus?.content : null;
     const finalContent = cleanHtmlTags(newContent);
-    return setContent(finalContent ?? '');
+    return setContent(finalContent);
   };
   const subConfig = useMemo<GraphQLSubscriptionConfig<AISummaryActivitySubscription>>(
     () => ({

@@ -183,7 +183,7 @@ const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading 
   const handleResponse = (response: AISummaryContainersSubscription$data | null | undefined) => {
     const newContent = response ? (response as AISummaryContainersSubscription$data).aiBus?.content : null;
     const finalContent = cleanHtmlTags(newContent);
-    return setContent(finalContent ?? '');
+    return setContent(finalContent);
   };
   const subConfig = useMemo<GraphQLSubscriptionConfig<AISummaryContainersSubscription>>(
     () => ({

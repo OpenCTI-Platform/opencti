@@ -103,9 +103,8 @@ export const throttle = (callback: (...a: unknown[]) => unknown, wait: number) =
   };
 };
 
-export const cleanHtmlTags = (str: string) => {
-  if (str) {
-    return (str ?? '')
+export const cleanHtmlTags = (str?: string | null) => {
+  return (str ?? '')
     .replace('```html', '')
     .replace('```', '')
     .replace(/<html[^>]*>/g, '') // Removes `<html>` with any attributes
@@ -113,7 +112,4 @@ export const cleanHtmlTags = (str: string) => {
     .replace(/<body[^>]*>/g, '') // Removes `<body>` with any attributes
     .replace('</body>', '')
     .trim();
-  }
-  return str;
 };
-

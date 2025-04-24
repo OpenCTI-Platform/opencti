@@ -93,7 +93,7 @@ const AISummaryForecast = ({ id, loading, setLoading }: AISummaryForecastProps) 
   const handleResponse = (response: AISummaryForecastSubscription$data | null | undefined) => {
     const newContent = response ? (response as AISummaryForecastSubscription$data).aiBus?.content : null;
     const finalContent = cleanHtmlTags(newContent);
-    return setContent(finalContent ?? '');
+    return setContent(finalContent);
   };
   const subConfig = useMemo<GraphQLSubscriptionConfig<AISummaryForecastSubscription>>(
     () => ({
