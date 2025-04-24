@@ -340,7 +340,7 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
 
 `;
 
-const stixCoreRelationshipCreationFromEntityQuery = graphql`
+export const stixCoreRelationshipCreationFromEntityQuery = graphql`
   query StixCoreRelationshipCreationFromEntityQuery($id: String!) {
     stixCoreObject(id: $id) {
       id
@@ -447,7 +447,7 @@ export const stixCoreRelationshipCreationFromEntityFromMutation = graphql`
   }
 `;
 
-const stixCoreRelationshipCreationFromEntityToMutation = graphql`
+export const stixCoreRelationshipCreationFromEntityToMutation = graphql`
   mutation StixCoreRelationshipCreationFromEntityToMutation(
     $input: StixCoreRelationshipAddInput!
   ) {
@@ -476,7 +476,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   currentView?: string;
 }
 
-interface StixCoreRelationshipCreationFromEntityForm {
+export interface StixCoreRelationshipCreationFromEntityForm {
   confidence: string;
   start_time: string;
   stop_time: string;
