@@ -8,6 +8,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PopoverProps } from '@mui/material/Popover';
 import Drawer from '@components/common/drawer/Drawer';
+import { StatusTemplatesLinesPaginationQuery$variables } from '@components/settings/status_templates/__generated__/StatusTemplatesLinesPaginationQuery.graphql';
+import { StatusTemplateLine_node$data } from '@components/settings/status_templates/__generated__/StatusTemplateLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -40,12 +42,12 @@ const statusTemplateEditionQuery = graphql`
 `;
 
 interface StatusTemplatePopoverProps {
-  statusTemplateId: string;
-  paginationOptions: { search: string; orderMode: string; orderBy: string };
+  data: StatusTemplateLine_node$data
+  paginationOptions?: StatusTemplatesLinesPaginationQuery$variables;
 }
 
 const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
-  statusTemplateId,
+  data,
   paginationOptions,
 }) => {
   const classes = useStyles();
@@ -72,13 +74,13 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
     commitMutation({
       mutation: statusTemplatePopoverDeletionMutation,
       variables: {
-        id: statusTemplateId,
+        id: data.id,
       },
       updater: (store: RecordSourceSelectorProxy) => deleteNode(
         store,
         'Pagination_statusTemplates',
         paginationOptions,
-        statusTemplateId,
+        data.id,
       ),
       onCompleted: () => {
         setDeleting(false);
@@ -107,7 +109,7 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
       >
         <QueryRenderer
           query={statusTemplateEditionQuery}
-          variables={{ id: statusTemplateId }}
+          variables={{ id: data.id }}
           render={({
             props,
           }: {
