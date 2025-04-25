@@ -277,7 +277,11 @@ const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isRea
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getRedirectionLink = (stixRelationship: any) => {
-    return isReadOnly ? `/dashboard/id/${stixRelationship.standard_id}` : computeLink(stixRelationship);
+    if (isReadOnly) {
+      const isUpdatedEntity = stixRelationship.draftVersion?.draft_operation === 'update' || stixRelationship.draftVersion?.draft_operation === 'update_linked';
+      return isUpdatedEntity ? `/dashboard/id/${stixRelationship.id}` : `/dashboard/id/${stixRelationship.standard_id}`;
+    }
+    return computeLink(stixRelationship);
   };
 
   return (

@@ -265,7 +265,11 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   }
 
   const getRedirectionLink = (stixObject: DraftEntities_node$data) => {
-    return isReadOnly ? `/dashboard/id/${stixObject.standard_id}` : computeLink(stixObject);
+    if (isReadOnly) {
+      const isUpdatedEntity = stixObject.draftVersion?.draft_operation === 'update' || stixObject.draftVersion?.draft_operation === 'update_linked';
+      return isUpdatedEntity ? `/dashboard/id/${stixObject.id}` : `/dashboard/id/${stixObject.standard_id}`;
+    }
+    return computeLink(stixObject);
   };
 
   return (
