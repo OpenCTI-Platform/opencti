@@ -18955,6 +18955,17 @@ export type PhoneNumberAddInput = {
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type PirExplanation = {
+  __typename?: 'PirExplanation';
+  criterion_id: Scalars['ID']['output'];
+  relationship_id: Scalars['ID']['output'];
+};
+
+export type PirExplanationInput = {
+  criterion_id: Scalars['ID']['input'];
+  relationship_id: Scalars['ID']['input'];
+};
+
 export enum Platform {
   Linux = 'Linux',
   MacOs = 'MacOS',
@@ -26188,6 +26199,7 @@ export type StixRefRelationship = BasicRelationship & StixRelationship & {
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
+  pir_explanations?: Maybe<Array<PirExplanation>>;
   relationship_type: Scalars['String']['output'];
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -26244,6 +26256,7 @@ export type StixRefRelationshipAddInput = {
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  pir_explanations?: InputMaybe<Array<PirExplanationInput>>;
   relationship_type: Scalars['String']['input'];
   start_time?: InputMaybe<Scalars['DateTime']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
@@ -32030,6 +32043,8 @@ export type ResolversTypes = ResolversObject<{
   PersonaAddInput: PersonaAddInput;
   PhoneNumber: ResolverTypeWrapper<Omit<PhoneNumber, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   PhoneNumberAddInput: PhoneNumberAddInput;
+  PirExplanation: ResolverTypeWrapper<PirExplanation>;
+  PirExplanationInput: PirExplanationInput;
   Platform: Platform;
   PlatformCriticalAlert: ResolverTypeWrapper<Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversTypes['PlatformCriticalAlertDetails']> }>;
   PlatformCriticalAlertDetails: ResolverTypeWrapper<Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversTypes['Group']> }>;
@@ -32853,6 +32868,8 @@ export type ResolversParentTypes = ResolversObject<{
   PersonaAddInput: PersonaAddInput;
   PhoneNumber: Omit<PhoneNumber, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   PhoneNumberAddInput: PhoneNumberAddInput;
+  PirExplanation: PirExplanation;
+  PirExplanationInput: PirExplanationInput;
   PlatformCriticalAlert: Omit<PlatformCriticalAlert, 'details'> & { details?: Maybe<ResolversParentTypes['PlatformCriticalAlertDetails']> };
   PlatformCriticalAlertDetails: Omit<PlatformCriticalAlertDetails, 'groups'> & { groups: Array<ResolversParentTypes['Group']> };
   PlatformEE: PlatformEe;
@@ -39090,6 +39107,12 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PirExplanationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirExplanation'] = ResolversParentTypes['PirExplanation']> = ResolversObject<{
+  criterion_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  relationship_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PlatformCriticalAlertResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformCriticalAlert'] = ResolversParentTypes['PlatformCriticalAlert']> = ResolversObject<{
   details?: Resolver<Maybe<ResolversTypes['PlatformCriticalAlertDetails']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -41009,6 +41032,7 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixRefRelationshipOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  pir_explanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType>;
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixRefRelationshipReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -43104,6 +43128,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PaymentCard?: PaymentCardResolvers<ContextType>;
   Persona?: PersonaResolvers<ContextType>;
   PhoneNumber?: PhoneNumberResolvers<ContextType>;
+  PirExplanation?: PirExplanationResolvers<ContextType>;
   PlatformCriticalAlert?: PlatformCriticalAlertResolvers<ContextType>;
   PlatformCriticalAlertDetails?: PlatformCriticalAlertDetailsResolvers<ContextType>;
   PlatformEE?: PlatformEeResolvers<ContextType>;
