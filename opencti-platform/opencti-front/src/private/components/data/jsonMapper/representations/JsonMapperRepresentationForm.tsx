@@ -95,8 +95,13 @@ JsonMapperRepresentationFormProps
     const newValue: JsonMapperRepresentationFormData = {
       ...value,
       attributes: {},
-      target_type: option?.value ?? undefined,
+      target: {
+        path: value?.target?.path,
+        entity_type: option?.value ?? undefined,
+      },
     };
+    console.log(name, newValue);
+
     await setFieldValue(name, newValue);
   };
 
@@ -157,7 +162,7 @@ JsonMapperRepresentationFormProps
               noOptionsText={t_i18n('No available options')}
               options={availableTypes}
               groupBy={(option) => t_i18n(option.type) ?? t_i18n('Unknown')}
-              value={availableTypes.find((e) => e.id === value.target_type) || null}
+              value={availableTypes.find((e) => e.id === value.target?.entity_type) || null}
               onInputChange={(event) => searchType(event)}
               onChange={(_, val) => handleChangeEntityType(val)}
               renderInput={(params) => (
@@ -199,7 +204,7 @@ JsonMapperRepresentationFormProps
         </AccordionDetails>
       </Accordion>
       <DeleteDialog
-        title={t_i18n('Do you want to delete this representation?')}
+        message={t_i18n('Do you want to delete this representation?')}
         deletion={deletion}
         submitDelete={deleteRepresentation}
       />

@@ -47,7 +47,7 @@ JsonMapperRepresentationAttributeFormProps
   const { t_i18n } = useFormatter();
 
   const { name, value } = field;
-  // const { setFieldValue } = form;
+  const { setFieldValue } = form;
 
   // const options = alphabet(26);
 
@@ -76,22 +76,32 @@ JsonMapperRepresentationAttributeFormProps
     }
   }, [errors]);
 
-  // const onColumnChange = async (column: string | null) => {
-  //   if (!value) {
-  //     // this attribute was not set yet, initialize
-  //     const newAttribute: JsonMapperRepresentationAttributeFormData = {
-  //       key: schemaAttribute.name,
-  //       column_name: column ?? undefined,
-  //     };
-  //     await setFieldValue(name, newAttribute);
-  //   } else {
-  //     const updateAttribute: JsonMapperRepresentationAttributeFormData = {
-  //       ...value,
-  //       column_name: column ?? undefined,
-  //     };
-  //     await setFieldValue(name, updateAttribute);
-  //   }
-  // };
+  const onPathChange = async (path: string | null) => {
+    if (!value) {
+      // this attribute was not set yet, initialize
+      const newAttribute: JsonMapperRepresentationAttributeFormData = {
+        key: schemaAttribute.name,
+        mode: 'simple',
+        attr_path: {
+          path: path ?? '',
+          independent: false,
+          configuration: null,
+        },
+      };
+      await setFieldValue(name, newAttribute);
+    } else {
+      const updateAttribute: JsonMapperRepresentationAttributeFormData = {
+        ...value,
+        mode: 'simple',
+        attr_path: {
+          path: path ?? '',
+          independent: false,
+          configuration: null,
+        },
+      };
+      await setFieldValue(name, updateAttribute);
+    }
+  };
 
   return (
     <div className={classes.container}>
@@ -115,11 +125,19 @@ JsonMapperRepresentationAttributeFormProps
           <MenuItem value="complex">{t_i18n('Complex')}</MenuItem>
         </Field>
       </div>* */}
+      <Field
+        style={{ display: 'none' }}
+        component={TextField}
+        name="mode"
+        value="simple"
+      />
       <div>
         <Field
           component={TextField}
           variant="standard"
           name={name}
+          value={value?.attr_path?.path ?? ''}
+          onChange={(_: any, val: string) => onPathChange(val)}
           label={t_i18n('JSON Path')}
           fullWidth={true}
         />
