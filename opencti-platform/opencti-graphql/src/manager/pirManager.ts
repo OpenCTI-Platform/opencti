@@ -10,6 +10,9 @@ import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
 import { findById } from '../domain/stixCoreObject';
+import { FilterMode } from '../generated/graphql';
+import { RELATION_FROM_FILTER, RELATION_TO_FILTER } from '../utils/filtering/filtering-constants';
+import { findAll, stixRefRelationshipEditField } from '../domain/stixRefRelationship';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -54,6 +57,45 @@ const flagSource = async (
   console.log('[POC PIR] Meta Ref relation created', { ref });
 };
 
+const updateMatchingCriteriaInRel = async (
+  context: AuthContext,
+  relationshipId: string,
+  sourceId: string,
+  pirId: string,
+  matchingCriteria: PIR['pirCriteria'],
+) => {
+  // recup pir meta rel
+  const pirRelArgs = {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: 'relationship_type', values: [RELATION_IN_PIR] },
+        { key: RELATION_FROM_FILTER, values: [sourceId] },
+        { key: RELATION_TO_FILTER, values: [pirId] },
+      ],
+      filterGroups: [],
+    },
+  };
+  const pirMetaRels = await findAll(context, SYSTEM_USER, pirRelArgs);
+  if (pirMetaRels.length !== 1) {
+    throw FunctionalError('[POC PIR] Find more than one relation between an entity and a PIR', { sourceId, pirId, pirMetaRels });
+  }
+  const [pirMetaRel] = pirMetaRels;
+  console.log('pirMetaRel', pirMetaRel);
+  const newPirExplanations = matchingCriteria.map((c) => ({
+    relationship_id: relationshipId,
+    criterion_id: c.id,
+  }));
+  const editInput = {
+    key: 'pirExplanations',
+    value: [
+      ...pirMetaRel.pirExplanations,
+      newPirExplanations,
+    ],
+  };
+  await stixRefRelationshipEditField(context, SYSTEM_USER, pirMetaRel.id, editInput);
+};
+
 const onRelationCreated = async (
   context: AuthContext,
   relationship: any,
@@ -62,8 +104,8 @@ const onRelationCreated = async (
 ) => {
   const sourceId: string = relationship.extensions?.[STIX_EXT_OCTI]?.source_ref;
   if (!sourceId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no source id found`);
-  const relId: string = relationship.extensions?.[STIX_EXT_OCTI]?.id;
-  if (!relId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
+  const relationshipId: string = relationship.extensions?.[STIX_EXT_OCTI]?.id;
+  if (!relationshipId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
 
   const source = await findById(context, SYSTEM_USER, sourceId);
   const sourceFlagged = (source[RELATION_IN_PIR] ?? []).length > 0;
@@ -71,14 +113,11 @@ const onRelationCreated = async (
 
   if (sourceFlagged) {
     console.log('[POC PIR] Source already flagged');
+    await updateMatchingCriteriaInRel(context, relationshipId, sourceId, pir.id, matchingCriteria);
   } else {
     console.log('[POC PIR] Source NOT flagged');
-    await flagSource(context, relId, sourceId, pir.id, matchingCriteria);
+    await flagSource(context, relationshipId, sourceId, pir.id, matchingCriteria);
   }
-  // - if source not flagged
-  // create rel
-  // - if source already flagged
-  // update the score and the matching Criteria
 };
 
 const onRelationDeleted = async (context: AuthContext, data: any, pir: PIR) => {
