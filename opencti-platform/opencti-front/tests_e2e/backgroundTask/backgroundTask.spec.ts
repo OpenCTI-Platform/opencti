@@ -98,6 +98,7 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
   await filter.removeLastFilter();
 
   await filter.addFilter('Label', 'background-task-search-add-label', true);
+  await sleep(3000);
   if (!await dataTable.getNumberElements(2).isVisible({ timeout: 500 })) {
     // Try to reload page in case it's a flake.
     await entitiesPage.goto();
