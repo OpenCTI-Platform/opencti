@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { CircularProgress, Fab } from '@mui/material';
 import { ChevronRightOutlined } from '@mui/icons-material';
@@ -28,6 +28,8 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
 import BulkRelationDialogContainer from '../bulk/dialog/BulkRelationDialogContainer';
+import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
+import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes } from '../../../../utils/stixTypeUtils';
 
 interface StixCoreRelationshipCreationSelectEntityStageProps {
   handleNextStep: () => void;
@@ -37,9 +39,6 @@ interface StixCoreRelationshipCreationSelectEntityStageProps {
   StixCoreRelationshipCreationFromEntityQuery,
   Record<string, unknown>
   >;
-  targetStixDomainObjectTypes: string[];
-  targetStixCyberObservableTypes: string[];
-  allowedRelationshipTypes?: string[];
   targetEntities: TargetEntity[];
   setTargetEntities: React.Dispatch<React.SetStateAction<TargetEntity[]>>;
   searchPaginationOptions: PaginationOptions;
@@ -55,9 +54,6 @@ StixCoreRelationshipCreationSelectEntityStageProps
   storageKey,
   entityId,
   queryRef: queryRefProps,
-  targetStixDomainObjectTypes,
-  targetStixCyberObservableTypes,
-  allowedRelationshipTypes,
   targetEntities,
   setTargetEntities,
   searchPaginationOptions,
@@ -71,6 +67,16 @@ StixCoreRelationshipCreationSelectEntityStageProps
     stixCoreRelationshipCreationFromEntityQuery,
     queryRefProps,
   );
+
+  // Fetch from context
+  const { state: {
+    relationshipTypes: allowedRelationshipTypes,
+    stixCoreObjectTypes = [],
+  } } = useContext(CreateRelationshipContext);
+
+  // Compute SDOs and SCOs
+  const targetStixDomainObjectTypes = computeTargetStixDomainObjectTypes(stixCoreObjectTypes);
+  const targetStixCyberObservableTypes = computeTargetStixCyberObservableTypes(stixCoreObjectTypes);
 
   // Handle element selection
   const { selectedElements } = useEntityToggle(storageKey);
