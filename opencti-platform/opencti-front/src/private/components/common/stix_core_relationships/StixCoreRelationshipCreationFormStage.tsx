@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useContext } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { CircularProgress } from '@mui/material';
 import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
@@ -18,12 +18,11 @@ import { formatDate } from '../../../../utils/Time';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
+import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
 
 interface StixCoreRelationshipCreationFormStageProps {
   targetEntities: TargetEntity[];
   queryRef: PreloadedQuery<StixCoreRelationshipCreationFromEntityQuery, Record<string, unknown>>;
-  isRelationReversed?: boolean;
-  allowedRelationshipTypes?: string[];
   handleReverseRelation?: () => void;
   handleResetSelection: () => void;
   handleClose: () => void;
@@ -31,16 +30,11 @@ interface StixCoreRelationshipCreationFormStageProps {
   defaultStopTime: string;
   helpers: UseLocalStorageHelpers;
   entityId: string;
-  paginationOptions: Record<string, unknown>;
-  connectionKey?: string;
-  onCreate?: () => void;
 }
 
 const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelationshipCreationFormStageProps> = ({
   targetEntities,
   queryRef,
-  isRelationReversed = false,
-  allowedRelationshipTypes,
   handleReverseRelation,
   handleResetSelection,
   handleClose,
@@ -48,14 +42,19 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
   defaultStopTime,
   helpers,
   entityId,
-  paginationOptions,
-  connectionKey,
-  onCreate,
 }) => {
   const { stixCoreObject } = usePreloadedQuery(
     stixCoreRelationshipCreationFromEntityQuery,
     queryRef,
   );
+
+  const { state: {
+    relationshipTypes: allowedRelationshipTypes,
+    reversed: isRelationReversed,
+    paginationOptions,
+    connectionKey,
+    onCreate,
+  } } = useContext(CreateRelationshipContext);
 
   if (!stixCoreObject) {
     return (
@@ -100,7 +99,7 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
             let conn;
             // When using connectionKey we use less props of PaginationOptions (ex: count),
             // we need to filter them to prevent getConnection to fail
-            const { count: _, ...options } = paginationOptions;
+            const { count: _, ...options } = paginationOptions as Record<string, unknown>;
 
             if (userProxy) {
               conn = ConnectionHandler.getConnection(

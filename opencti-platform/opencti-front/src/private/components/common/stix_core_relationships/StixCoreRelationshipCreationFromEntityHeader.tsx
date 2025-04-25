@@ -1,5 +1,5 @@
 import { Button } from '@mui/material';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../drawer/Drawer';
 import { stixCoreRelationshipCreationFromEntityQuery, TargetEntity } from './StixCoreRelationshipCreationFromEntity';
@@ -12,45 +12,60 @@ import { StixCoreRelationshipCreationFromEntityQuery } from './__generated__/Sti
 import StixCoreRelationshipCreationHeaderButtons from './StixCoreRelationshipCreationHeaderButtons';
 import StixCoreRelationshipCreationSelectEntityStage from './StixCoreRelationshipCreationSelectEntityStage';
 import StixCoreRelationshipCreationFormStage from './StixCoreRelationshipCreationFormStage';
+import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
+import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes } from '../../../../utils/stixTypeUtils';
+
+/**
+ * This file contains the code for the "Create Relationship" button in the top
+ * right of entity pages and the associated drawer that opens.
+ * This workflow is based off the StixCoreRelationshipCreationFromEntity.tsx
+ * file, but attempting to move away from the floating action button and grant
+ * the user more flexibility in where they can create relationships from.
+ */
 
 interface StixCoreRelationshipCreationFromEntityHeaderProps {
   entityId: string;
-  targetStixDomainObjectTypes?: string[];
-  targetStixCyberObservableTypes?: string[];
-  allowedRelationshipTypes?: string[];
   targetEntities?: TargetEntity[];
-  isRelationReversed?: boolean;
   handleReverseRelation?: () => void;
   defaultStartTime?: string;
   defaultStopTime?: string;
-  paginationOptions: Record<string, unknown>;
-  connectionKey?: string;
-  onCreate?: () => void;
 }
 
 const StixCoreRelationshipCreationFromEntityHeader: FunctionComponent<
 StixCoreRelationshipCreationFromEntityHeaderProps
 > = ({
   entityId,
-  targetStixDomainObjectTypes = [],
-  targetStixCyberObservableTypes = [],
-  allowedRelationshipTypes,
   targetEntities: initialTargetEntities = [],
-  isRelationReversed,
   handleReverseRelation = undefined,
   defaultStartTime = (new Date()).toISOString(),
   defaultStopTime = (new Date()).toISOString(),
-  paginationOptions,
-  connectionKey,
-  onCreate,
 }) => {
   const { t_i18n } = useFormatter();
-  const [open, setOpen] = useState<boolean>(false);
-  const [step, setStep] = useState<number>(0);
+
+  // Fetch from context
+  const { state: {
+    stixCoreObjectTypes = [],
+  } } = useContext(CreateRelationshipContext);
+  // console.log({
+  //   allowedRelationshipTypes,
+  //   isRelationReversed,
+  //   stixCoreObjectTypes,
+  //   connectionKey,
+  //   paginationOptions,
+  //   onCreate,
+  // });
+
+  // Compute SDOs and SCOs
+  const targetStixDomainObjectTypes = computeTargetStixDomainObjectTypes(stixCoreObjectTypes);
+  const targetStixCyberObservableTypes = computeTargetStixCyberObservableTypes(stixCoreObjectTypes);
+
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>(
     initialTargetEntities,
   );
 
+  // Drawer and form control
+  const [open, setOpen] = useState<boolean>(false);
+  const [step, setStep] = useState<number>(0);
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
@@ -76,8 +91,7 @@ StixCoreRelationshipCreationFromEntityHeaderProps
     if (storageSortBy && (storageSortBy !== sortBy)) setSortBy(storageSortBy);
     if (storageOrderAsc !== undefined && (storageOrderAsc !== orderAsc)) setOrderAsc(storageOrderAsc);
   }, [storageOrderAsc, storageSortBy]);
-  const virtualEntityTypes = ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
-  const contextFilters = useBuildEntityTypeBasedFilterContext(virtualEntityTypes, filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(stixCoreObjectTypes, filters);
   const searchPaginationOptions: PaginationOptions = {
     search: searchTerm,
     filters: contextFilters,
@@ -96,6 +110,7 @@ StixCoreRelationshipCreationFromEntityHeaderProps
 
   return (
     <>
+      {/* The controlled dial to open the drawer */}
       <Button
         onClick={handleOpen}
         variant='outlined'
@@ -103,11 +118,13 @@ StixCoreRelationshipCreationFromEntityHeaderProps
       >
         {t_i18n('Create Relationship')}
       </Button>
+
       <Drawer
         title={t_i18n('Create a relationship')}
         open={open}
         onClose={handleClose}
         header={(
+          // Create entity and/or observable buttons; only appear in first step
           <StixCoreRelationshipCreationHeaderButtons
             show={step < 1}
             showSDOs={targetStixDomainObjectTypes.length > 0}
@@ -128,22 +145,17 @@ StixCoreRelationshipCreationFromEntityHeaderProps
               storageKey={storageKey}
               entityId={entityId}
               queryRef={queryRef}
-              targetStixDomainObjectTypes={targetStixDomainObjectTypes}
-              targetStixCyberObservableTypes={targetStixCyberObservableTypes}
-              allowedRelationshipTypes={allowedRelationshipTypes}
               targetEntities={targetEntities}
               setTargetEntities={setTargetEntities}
               searchPaginationOptions={searchPaginationOptions}
               helpers={helpers}
               contextFilters={contextFilters}
-              virtualEntityTypes={virtualEntityTypes}
+              virtualEntityTypes={stixCoreObjectTypes}
             />
           ) : (
             <StixCoreRelationshipCreationFormStage
               targetEntities={targetEntities}
               queryRef={queryRef}
-              isRelationReversed={isRelationReversed}
-              allowedRelationshipTypes={allowedRelationshipTypes}
               handleReverseRelation={handleReverseRelation}
               handleResetSelection={handleResetSelection}
               handleClose={handleClose}
@@ -151,9 +163,6 @@ StixCoreRelationshipCreationFromEntityHeaderProps
               defaultStopTime={defaultStopTime}
               helpers={helpers}
               entityId={entityId}
-              paginationOptions={paginationOptions}
-              connectionKey={connectionKey}
-              onCreate={onCreate}
             />
           )
         }
