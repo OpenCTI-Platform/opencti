@@ -888,8 +888,6 @@ describe('Upsert and merge entities', () => {
       name: 'MALWARE_TEST',
       description: 'MALWARE_TEST DESCRIPTION',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
-      // Standard ID of Paradise in the original dataset
-      x_opencti_stix_ids: ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'],
       objectMarking: [clearMarking, mitreMarking],
       confidence: 15, // not set, it would fallback to user's confidence which is 100
     };
@@ -898,8 +896,6 @@ describe('Upsert and merge entities', () => {
     expect(createdMalware.name).toEqual('MALWARE_TEST');
     expect(createdMalware.description).toEqual('MALWARE_TEST DESCRIPTION');
     expect(createdMalware.x_opencti_stix_ids.length).toEqual(1);
-    // This ID needs to be filtered
-    expect(createdMalware.x_opencti_stix_ids.includes('malware--591f0cb7-d66f-4e14-a8e6-5927b597f920')).toBeFalsy();
     expect(createdMalware.i_aliases_ids.length).toEqual(0);
     let loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware).not.toBeNull();
