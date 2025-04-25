@@ -27,6 +27,8 @@ import { KillChainPhasesSearchQuery$data } from '@components/settings/__generate
 import { triggersQueriesSearchQuery } from '@components/profile/triggers/TriggersQueries';
 import { TriggersQueriesSearchQuery$data } from '@components/profile/triggers/__generated__/TriggersQueriesSearchQuery.graphql';
 import { OptionValue } from '@components/common/lists/FilterAutocomplete';
+import { usersLinesSearchQuery } from '@components/settings/users/UsersLines';
+import { UsersLinesSearchQuery$data } from '@components/settings/users/__generated__/UsersLinesSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import { useFormatter } from '../../components/i18n';
@@ -35,9 +37,10 @@ import { fetchQuery } from '../../relay/environment';
 import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useSearchEntitiesSchemaSCOSearchQuery.graphql';
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
-import { contextFilters, entityTypesFilters, ME_FILTER_VALUE } from './filtersUtils';
+import { contextFilters, entityTypesFilters, FilterSearchContext, ME_FILTER_VALUE } from './filtersUtils';
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
+import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -250,7 +253,7 @@ const useSearchEntities = ({
 }: {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
-  searchContext: { entityTypes: string[]; elementId?: string[] };
+  searchContext: FilterSearchContext;
   searchScope: Record<string, string[]>;
   setInputValues: (
     value: { key: string; values: string[]; operator?: string }[],
@@ -261,6 +264,7 @@ const useSearchEntities = ({
   const { schema, me } = useAuth();
   const { stixCoreObjectTypes } = useAttributes();
   const theme = useTheme() as Theme;
+  const canDisplayAllUsers = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const filterKeysMap = new Map();
   (searchContext.entityTypes).forEach((entityType) => {
     const currentMap = schema.filterKeysSchema.get(entityType);
@@ -607,6 +611,19 @@ const useSearchEntities = ({
         // region user usage (with caching)
         case 'creator_id':
         case 'contextCreator':
+          if (searchContext.connectorsScope && canDisplayAllUsers) {
+            // fetch all the users
+            fetchQuery(usersLinesSearchQuery, {
+              first: 10,
+              orderBy: 'name',
+              orderMode: 'asc',
+            })
+              .toPromise()
+              .then((response) => {
+                const data = response as UsersLinesSearchQuery$data;
+                buildCachedOptionsFromGenericFetchResponse(filterKey, 'User', data?.users);
+              });
+          }
           if (!cacheEntities[filterKey]) {
             // fetch only the identities listed as creator of at least 1 thing + myself
             fetchQuery(identitySearchCreatorsSearchQuery, {

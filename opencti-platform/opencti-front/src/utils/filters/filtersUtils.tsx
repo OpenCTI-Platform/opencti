@@ -18,6 +18,7 @@ export type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEnt
 export interface FilterSearchContext {
   entityTypes: string[]
   elementId?: string[]
+  connectorsScope?: boolean
 }
 
 export type FiltersRestrictions = {
