@@ -370,8 +370,10 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     # Add expectations to the work
                     if work_id is not None:
                         # add expectation with worker user and not impersonated user
+                        current_applicant_id = self.api.get_request_headers()["opencti-applicant-id"]
                         self.api.set_applicant_id_header('')
                         self.api.work.add_expectations(work_id, expectations)
+                        self.api.set_applicant_id_header(current_applicant_id)
                     # For each split bundle, send it to the same queue
                     for bundle in bundles:
                         text_bundle = json.dumps(bundle)
