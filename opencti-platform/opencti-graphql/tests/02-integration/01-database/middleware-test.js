@@ -959,7 +959,7 @@ describe('Upsert and merge entities', () => {
       stix_id: 'malware--284e60cb-6b78-5ca5-a81c-b84b6bc12c02',
       // Standard ID of Paradise malware in the original dataset
       x_opencti_stix_ids: ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'],
-      confidence: 95, // 95 > 90, so it's upserted
+      confidence: 90, // 90 = 90, so it's upserted
     };
     upsertedMalware = await addMalware(testContext, ADMIN_USER, upMalware);
     expect(upsertedMalware.id).toEqual(createdMalware.id);
