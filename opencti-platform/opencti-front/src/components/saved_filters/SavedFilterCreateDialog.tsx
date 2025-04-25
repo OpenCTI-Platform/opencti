@@ -71,7 +71,8 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
       },
       onCompleted: (response) => {
         const { savedFilterAdd } = response as SavedFilterCreateDialogMutation$data;
-        setCurrentSavedFilter(savedFilterAdd as SavedFiltersSelectionData);
+        if (!savedFilterAdd) return;
+        setCurrentSavedFilter(savedFilterAdd);
         helpers.handleChangeSavedFilters(savedFilterAdd);
         onClose();
       },
