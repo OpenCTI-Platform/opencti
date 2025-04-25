@@ -18957,13 +18957,13 @@ export type PhoneNumberAddInput = {
 
 export type PirExplanation = {
   __typename?: 'PirExplanation';
-  criterion_id: Scalars['ID']['output'];
   relationship_id: Scalars['ID']['output'];
+  weight: Scalars['Int']['output'];
 };
 
 export type PirExplanationInput = {
-  criterion_id: Scalars['ID']['input'];
   relationship_id: Scalars['ID']['input'];
+  weight: Scalars['Int']['input'];
 };
 
 export enum Platform {
@@ -26199,7 +26199,7 @@ export type StixRefRelationship = BasicRelationship & StixRelationship & {
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
-  pir_explanations?: Maybe<Array<PirExplanation>>;
+  pir_dependencies?: Maybe<Array<PirExplanation>>;
   relationship_type: Scalars['String']['output'];
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -26256,7 +26256,7 @@ export type StixRefRelationshipAddInput = {
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  pir_explanations?: InputMaybe<Array<PirExplanationInput>>;
+  pir_dependencies?: InputMaybe<Array<PirExplanationInput>>;
   relationship_type: Scalars['String']['input'];
   start_time?: InputMaybe<Scalars['DateTime']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
@@ -39108,8 +39108,8 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type PirExplanationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirExplanation'] = ResolversParentTypes['PirExplanation']> = ResolversObject<{
-  criterion_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   relationship_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  weight?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -41032,7 +41032,7 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixRefRelationshipOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  pir_explanations?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType>;
+  pir_dependencies?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType>;
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixRefRelationshipReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
