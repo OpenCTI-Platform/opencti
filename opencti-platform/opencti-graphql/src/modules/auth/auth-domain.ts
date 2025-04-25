@@ -45,7 +45,8 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     const { user_email, name } = user;
     const email = user_email.toLowerCase();
     const storedOtp = await redisGetForgotPasswordOtp(input.email);
-    const isTooRecentStoredOtp = storedOtp && storedOtp.ttl > (OTP_TTL - 30);
+    // Prevent code generation if generated less than 30 seconds ago
+    const isTooRecentStoredOtp = storedOtp.ttl > (OTP_TTL - 30);
     if (isTooRecentStoredOtp) return true;
     await redisSetForgotPasswordOtp(email, resetOtp);
     const body = `Hi ${name},</br>`
