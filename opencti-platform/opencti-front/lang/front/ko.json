@@ -3049,7 +3049,7 @@
   "The alias has been removed": "별명이 제거되었습니다",
   "The attribute is not called in the content": "콘텐츠에서 속성이 호출되지 않았습니다",
   "The background task has been executed. You can monitor it on": "백그라운드 작업이 실행되었습니다. 모니터링할 수 있습니다",
-  "The code is not correct": "코드가 올바르지 않습니다",
+  "The code is not correct.": "코드가 올바르지 않습니다.",
   "The color must be written in hexadecimal. Example: #ff9800": "색상은 16진수로 작성되어야 합니다. 예: #ff9800",
   "The connector has been cleared": "커넥터가 정리되었습니다",
   "The connector state has been reset": "커넥터 상태가 재설정되었습니다",

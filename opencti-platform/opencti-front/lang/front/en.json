@@ -3049,7 +3049,7 @@
   "The alias has been removed": "The alias has been removed",
   "The attribute is not called in the content": "The attribute is not called in the content",
   "The background task has been executed. You can monitor it on": "The background task has been executed. You can monitor it on",
-  "The code is not correct": "The code is not correct",
+  "The code is not correct.": "The code is not correct.",
   "The color must be written in hexadecimal. Example: #ff9800": "The color must be written in hexadecimal. Example: #ff9800",
   "The connector has been cleared": "The connector has been cleared",
   "The connector state has been reset": "The connector state has been reset",

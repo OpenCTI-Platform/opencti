@@ -3049,7 +3049,7 @@
   "The alias has been removed": "别名已删除",
   "The attribute is not called in the content": "内容中未调用属性",
   "The background task has been executed. You can monitor it on": "后台任务已执行。您可以在",
-  "The code is not correct": "代码不正确",
+  "The code is not correct.": "代码不正确。",
   "The color must be written in hexadecimal. Example: #ff9800": "颜色必须以十六进制书写。示例：#ff9800",
   "The connector has been cleared": "连接器已清理",
   "The connector state has been reset": "连接器状态已重置",

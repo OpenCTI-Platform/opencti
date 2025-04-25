@@ -3049,7 +3049,7 @@
   "The alias has been removed": "エイリアスは削除されました",
   "The attribute is not called in the content": "属性がコンテンツ内で呼び出されていない",
   "The background task has been executed. You can monitor it on": "バックグラウンドタスクが実行されました。タスクは",
-  "The code is not correct": "コードが正しくありません",
+  "The code is not correct.": "コードが正しくない。",
   "The color must be written in hexadecimal. Example: #ff9800": "色は 16 進数で記述する必要があります。例: #ff9800",
   "The connector has been cleared": "コネクタを削除しました",
   "The connector state has been reset": "コネクタの状態を初期化しました",

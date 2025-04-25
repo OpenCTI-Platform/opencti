@@ -94,6 +94,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
     padding: theme.spacing(3),
     maxWidth: 500,
   },
+  paperMessage: {
+    margin: '0 auto 20px auto',
+    maxWidth: 500,
+    padding: `10px ${theme.spacing(3)}`, // Markdown child component has 14px margin Top and Bottom => theme.spacing(3) = 24 - 14 = 10
+    textAlign: 'justify',
+  },
   byFiligran: {
     display: 'flex',
     justifyContent: 'center',
@@ -257,12 +263,12 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
         </Paper>
       )}
       {isLoginMessage && (
-        <Paper classes={{ root: classes.paper }} variant="outlined" style={{ padding: `${theme.spacing(2)} inherit` }}>
+        <Paper classes={{ root: classes.paperMessage }} variant="outlined">
           <Markdown>{loginMessage}</Markdown>
         </Paper>
       )}
       {isConsentMessage && (
-        <Paper classes={{ root: classes.paper }} variant="outlined" style={{ padding: `${theme.spacing(2)} inherit` }}>
+        <Paper classes={{ root: classes.paperMessage }} variant="outlined">
           <Markdown>{consentMessage}</Markdown>
           <Box display="flex" justifyContent="center" alignItems="center">
             <Markdown>{consentConfirmText}</Markdown>

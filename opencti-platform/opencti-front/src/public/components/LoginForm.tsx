@@ -8,10 +8,10 @@ import * as Yup from 'yup';
 import { useCookies } from 'react-cookie';
 import { FormikConfig } from 'formik/dist/types';
 import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
-import { useFormatter } from '../../components/i18n';
-import useApiMutation from '../../utils/hooks/useApiMutation';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
+import { useFormatter } from '../../components/i18n';
+import useApiMutation from '../../utils/hooks/useApiMutation';
 
 const loginMutation = graphql`
   mutation LoginFormMutation($input: UserLoginInput!) {

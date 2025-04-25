@@ -3049,7 +3049,7 @@
   "The alias has been removed": "El alias ha sido eliminado",
   "The attribute is not called in the content": "El atributo no se llama en el contenido",
   "The background task has been executed. You can monitor it on": "La tarea en segundo plano se ha ejecutado. Puede monitorizarla en",
-  "The code is not correct": "El código es incorrecto",
+  "The code is not correct.": "El código no es correcto.",
   "The color must be written in hexadecimal. Example: #ff9800": "El color debe estar escrito en hexadecimal. Ejemplo: #ff9800",
   "The connector has been cleared": "El conector ha sido eliminado",
   "The connector state has been reset": "El estado de este conector ha sido reiniciado",
