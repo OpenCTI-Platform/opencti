@@ -66,10 +66,11 @@ const onRelationCreated = async (
   if (!relId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
 
   const source = await findById(context, SYSTEM_USER, sourceId);
+  const sourceFlagged = (source[RELATION_IN_PIR] ?? []).length > 0;
   console.log('[POC PIR] Event create matching', { source, relationship, matchingCriteria });
 
-  if (source[`rel_${RELATION_IN_PIR}`]?.internal_id) {
-    console.log('[POC PIR] already flagged');
+  if (sourceFlagged) {
+    console.log('[POC PIR] Source already flagged');
   } else {
     console.log('[POC PIR] Source NOT flagged');
     await flagSource(context, relId, sourceId, pir.id, matchingCriteria);
