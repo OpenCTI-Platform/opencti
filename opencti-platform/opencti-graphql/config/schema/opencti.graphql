@@ -12620,7 +12620,7 @@ type StixRefRelationshipEdge {
 }
 type PirExplanation {
   relationship_id: ID!
-  criterion_id: ID!
+  weight: Int!
 }
 type StixRefRelationship implements BasicRelationship & StixRelationship {
   # BasicRelationship
@@ -12659,7 +12659,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
-  pir_explanations: [PirExplanation!]
+  pir_dependencies: [PirExplanation!]
   # Technical
   creators: [Creator!]
   editContext: [EditUserContext!]
@@ -12673,7 +12673,7 @@ type DefinitionRefRelationship {
 
 input PirExplanationInput {
   relationship_id: ID!
-  criterion_id: ID!
+  weight: Int!
 }
 
 # Mutations
@@ -12694,7 +12694,7 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
-  pir_explanations: [PirExplanationInput!]
+  pir_dependencies: [PirExplanationInput!]
 }
 input StixRefRelationshipsAddInput {
   relationship_type: String!
