@@ -10,7 +10,6 @@ import {
   StixCoreObjectOpinionsRadarDistributionQuery$variables,
 } from './__generated__/StixCoreObjectOpinionsRadarDistributionQuery.graphql';
 import { StixCoreObjectOpinionsListQuery, StixCoreObjectOpinionsListQuery$variables } from './__generated__/StixCoreObjectOpinionsListQuery.graphql';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { StixCoreObjectOpinionsOpenVocabQuery } from './__generated__/StixCoreObjectOpinionsOpenVocabQuery.graphql';
