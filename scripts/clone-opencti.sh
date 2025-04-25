@@ -63,15 +63,21 @@ clone_for_pr_build() {
 
 clone_for_push_build() {
     echo "[CLONE-DEPS] Build from a commit, checking if a dedicated branch is required."
-    BRANCH_PREFIX=$(echo $PR_BRANCH_NAME | cut -d "/" -f 1 | grep -c "opencti")
-    if [[ "${BRANCH_PREFIX}" -eq "1" ]]
+    if  [[ ${PR_BRANCH_NAME} == "release/current" ]]
     then
-        echo "[CLONE-DEPS] Dedicated OpenCTI branch found, using it"
-        OPENCTI_BRANCH=$(echo $PR_BRANCH_NAME | cut -d "/" -f2-)
-        git clone -b $OPENCTI_BRANCH https://github.com/OpenCTI-Platform/opencti.git
+      echo "[CLONE-DEPS] Release OpenCTI branch found, using it"
+      git clone -b $PR_BRANCH_NAME https://github.com/OpenCTI-Platform/opencti.git
     else
-        echo "[CLONE-DEPS] No dedicated OpenCTI branch found, using master"
-        git clone https://github.com/OpenCTI-Platform/opencti.git
+      BRANCH_PREFIX=$(echo $PR_BRANCH_NAME | cut -d "/" -f 1 | grep -c "opencti")
+      if [[ "${BRANCH_PREFIX}" -eq "1" ]]
+      then
+          echo "[CLONE-DEPS] Dedicated OpenCTI branch found, using it"
+          OPENCTI_BRANCH=$(echo $PR_BRANCH_NAME | cut -d "/" -f2-)
+          git clone -b $OPENCTI_BRANCH https://github.com/OpenCTI-Platform/opencti.git
+      else
+          echo "[CLONE-DEPS] No dedicated OpenCTI branch found, using master"
+          git clone https://github.com/OpenCTI-Platform/opencti.git
+      fi
     fi
 }
 
