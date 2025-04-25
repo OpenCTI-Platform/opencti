@@ -3194,14 +3194,21 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
           }
         }
         // In this mode we can safely consider this entity like the existing one.
-        // We can upsert element except the aliases that are part of other entities
         const concurrentEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
+        // We can upsert element except the aliases that are part of other entities
         const key = resolveAliasesField(type).name;
         const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
         const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
         const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
-        const resolvedAliases = { ...resolvedInput, [key]: filteredAliases };
-        return upsertElement(context, user, existingByStandard, type, resolvedAliases, { ...opts, locks: participantIds });
+        // We need also to filter eventual STIX IDs present in other entities
+        const concurrentStixIds = R.flatten(R.map((c) => [c.x_opencti_stix_ids, c.standard_id], concurrentEntities));
+        const normedStixIds = R.uniq(concurrentStixIds);
+        const filteredStixIds = R.filter(
+          (i) => isNotEmptyField(i) && !normedStixIds.includes(i) && i !== existingByStandard.standard_id,
+          [...resolvedInput.x_opencti_stix_ids || [], resolvedInput.stix_id]
+        );
+        const finalEntity = { ...resolvedInput, [key]: filteredAliases, x_opencti_stix_ids: filteredStixIds };
+        return upsertElement(context, user, existingByStandard, type, finalEntity, { ...opts, locks: participantIds });
       }
       if (resolvedInput.update === true) {
         // The new one is new reference, merge all found entities
