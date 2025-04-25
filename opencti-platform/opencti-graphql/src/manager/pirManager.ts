@@ -10,9 +10,8 @@ import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
 import { findById } from '../domain/stixCoreObject';
-import { FilterMode } from '../generated/graphql';
-import { RELATION_FROM_FILTER, RELATION_TO_FILTER } from '../utils/filtering/filtering-constants';
-import { findAll, stixRefRelationshipEditField } from '../domain/stixRefRelationship';
+import { stixRefRelationshipEditField } from '../domain/stixRefRelationship';
+import { listRelationsPaginated } from '../database/middleware-loader';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -21,6 +20,28 @@ const PIR_MANAGER_CONTEXT = 'pir_manager';
 const PIR_MANAGER_INTERVAL = 10000; // TODO PIR: use config instead
 const PIR_MANAGER_LOCK_KEY = 'pir_manager_lock'; // TODO PIR: use config instead
 const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
+
+const updatePirDependencies = async (
+  context: AuthContext,
+  sourceId: string,
+  pirId: string,
+  pir_dependencies: any,
+) => {
+  const pirRelArgs = {
+    fromId: sourceId,
+    toId: pirId,
+  };
+  const pirMetaRels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, pirRelArgs);
+  if (pirMetaRels.edges.length !== 1) {
+    throw FunctionalError('[POC PIR] Find more than one relation between an entity and a PIR', { sourceId, pirId, pirMetaRels });
+  }
+  const pirMetaRel = pirMetaRels.edges[0].node;
+  const editInput = [
+    { key: 'pir_dependencies', value: [pir_dependencies] },
+  ];
+  const updatedRef = await stixRefRelationshipEditField(context, SYSTEM_USER, pirMetaRel.id, editInput);
+  console.log('[POC PIR] Meta Ref relation created', { updatedRef });
+};
 
 /**
  * Flag the source of the relationship by creating a meta relationship 'in-pir'
@@ -39,22 +60,23 @@ const flagSource = async (
   pirId: string,
   matchingCriteria: PIR['pirCriteria']
 ) => {
+  const pir_dependencies = matchingCriteria.map((c) => ({
+    relationship_id: relationshipId,
+    weight: c.weight,
+  }));
   const addRefInput = {
     relationship_type: RELATION_IN_PIR,
     toId: pirId,
-    pirExplanations: matchingCriteria.map((c) => ({
-      relationship_id: relationshipId,
-      criterion_id: c.id,
-    })),
+    pir_dependencies,
   };
-  const ref = await stixObjectOrRelationshipAddRefRelation(
+  await stixObjectOrRelationshipAddRefRelation(
     context,
     SYSTEM_USER,
     sourceId,
     addRefInput,
     ABSTRACT_STIX_CORE_OBJECT
   );
-  console.log('[POC PIR] Meta Ref relation created', { ref });
+  await updatePirDependencies(context, sourceId, pirId, pir_dependencies);
 };
 
 const updateMatchingCriteriaInRel = async (
@@ -64,36 +86,11 @@ const updateMatchingCriteriaInRel = async (
   pirId: string,
   matchingCriteria: PIR['pirCriteria'],
 ) => {
-  // recup pir meta rel
-  const pirRelArgs = {
-    filters: {
-      mode: FilterMode.And,
-      filters: [
-        { key: 'relationship_type', values: [RELATION_IN_PIR] },
-        { key: RELATION_FROM_FILTER, values: [sourceId] },
-        { key: RELATION_TO_FILTER, values: [pirId] },
-      ],
-      filterGroups: [],
-    },
-  };
-  const pirMetaRels = await findAll(context, SYSTEM_USER, pirRelArgs);
-  if (pirMetaRels.length !== 1) {
-    throw FunctionalError('[POC PIR] Find more than one relation between an entity and a PIR', { sourceId, pirId, pirMetaRels });
-  }
-  const [pirMetaRel] = pirMetaRels;
-  console.log('pirMetaRel', pirMetaRel);
-  const newPirExplanations = matchingCriteria.map((c) => ({
+  const pir_dependencies = matchingCriteria.map((c) => ({
     relationship_id: relationshipId,
-    criterion_id: c.id,
+    weight: c.weight,
   }));
-  const editInput = {
-    key: 'pirExplanations',
-    value: [
-      ...pirMetaRel.pirExplanations,
-      newPirExplanations,
-    ],
-  };
-  await stixRefRelationshipEditField(context, SYSTEM_USER, pirMetaRel.id, editInput);
+  await updatePirDependencies(context, sourceId, pirId, pir_dependencies);
 };
 
 const onRelationCreated = async (
