@@ -81,7 +81,7 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
       isLocalStorageEnabled={false}
       globalCount={events ? events.length : 0}
       variant={DataTableVariant.inline}
-      icon={(data) => (iconSelector(data))}
+      icon={({ operation }) => (iconSelector(operation))}
       useComputeLink={({ instance_id }: { instance_id: string | undefined }) => {
         return `/dashboard/id/${instance_id}`;
       }}
