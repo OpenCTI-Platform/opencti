@@ -23,7 +23,7 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
 
   const dataColumns: DataTableProps['dataColumns'] = {
     operation: {
-      id: 'Operation',
+      id: 'operation',
       label: 'Operation',
       percentWidth: 20,
       isSortable: false,
@@ -58,14 +58,14 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
       },
     },
     title: {
-      id: 'Title',
-      label: 'Title',
+      id: 'title',
+      label: 'Entity name',
       percentWidth: 20,
       isSortable: false,
       render: ({ title }) => defaultRender(title),
     },
     message: {
-      id: 'Message',
+      id: 'message',
       label: 'Message',
       percentWidth: 60,
       isSortable: false,
