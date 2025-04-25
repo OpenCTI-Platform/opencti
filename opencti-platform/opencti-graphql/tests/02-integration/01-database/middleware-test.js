@@ -888,6 +888,8 @@ describe('Upsert and merge entities', () => {
       name: 'MALWARE_TEST',
       description: 'MALWARE_TEST DESCRIPTION',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
+      // Standard ID of poison Ivy malaware in the original dataset
+      x_opencti_stix_ids: ['malware--591f0cb7-d66f-4e14-a8e6-5927b597f920'],
       objectMarking: [clearMarking, mitreMarking],
       confidence: 15, // not set, it would fallback to user's confidence which is 100
     };
@@ -896,6 +898,8 @@ describe('Upsert and merge entities', () => {
     expect(createdMalware.name).toEqual('MALWARE_TEST');
     expect(createdMalware.description).toEqual('MALWARE_TEST DESCRIPTION');
     expect(createdMalware.x_opencti_stix_ids.length).toEqual(1);
+    // This ID needs to be filtered
+    expect(createdMalware.x_opencti_stix_ids.includes('malware--591f0cb7-d66f-4e14-a8e6-5927b597f920')).toBeFalsy();
     expect(createdMalware.i_aliases_ids.length).toEqual(0);
     let loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware).not.toBeNull();
@@ -917,6 +921,8 @@ describe('Upsert and merge entities', () => {
       name: 'MALWARE_TEST OTHER NAME',
       aliases: ['MALWARE_TEST'],
       stix_id: 'malware--600f3c54-c8b2-534a-a718-52a6693ba9de',
+      // Standard ID of poison Ivy malaware in the original dataset
+      x_opencti_stix_ids: ['malware--591f0cb7-d66f-4e14-a8e6-5927b597f920'],
       confidence: 10,
     };
     upsertedMalware = await addMalware(testContext, ADMIN_USER, upMalware);
@@ -924,6 +930,8 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.standard_id).toEqual(createdMalware.standard_id);
     expect(upsertedMalware.x_opencti_stix_ids.length).toEqual(2);
     expect(upsertedMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
+    // This ID needs to be filtered
+    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--591f0cb7-d66f-4e14-a8e6-5927b597f920')).toBeFalsy();
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
     loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware['object-marking'].length).toEqual(2);
