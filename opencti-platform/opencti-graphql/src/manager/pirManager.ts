@@ -9,6 +9,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
+import { findById } from '../domain/stixCoreObject';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -26,9 +27,9 @@ const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
  * @param source STIX of the source
  * @param pirId ID of the PIR.
  */
-const flagSource = async (context: AuthContext, source: any, pirId: string) => {
-  const sourceId = source.extensions?.[STIX_EXT_OCTI]?.source_ref;
-  const sourceType = source.extensions?.[STIX_EXT_OCTI]?.source_type;
+const flagSource = async (context: AuthContext, relationship: any, pirId: string, matchingCriteria: PIR['pirCriteria']) => {
+  const sourceId = relationship.extensions?.[STIX_EXT_OCTI]?.source_ref;
+  const sourceType = relationship.extensions?.[STIX_EXT_OCTI]?.source_type;
   if (!sourceId || !sourceType) {
     throw FunctionalError(`Cannot flag the source with PIR ${pirId}, no sourceId or sourceType`);
   }
@@ -36,6 +37,10 @@ const flagSource = async (context: AuthContext, source: any, pirId: string) => {
   const addRefInput = {
     relationship_type: RELATION_IN_PIR,
     toId: pirId,
+    pirExplanations: matchingCriteria.map((c) => ({
+      relationship_id: relationship.extensions?.[STIX_EXT_OCTI]?.id,
+      criterion_id: c.id,
+    })),
   };
   const ref = await stixObjectOrRelationshipAddRefRelation(
     context,
@@ -47,13 +52,20 @@ const flagSource = async (context: AuthContext, source: any, pirId: string) => {
   console.log('[POC PIR] Meta Ref relation created', { ref });
 };
 
-const onRelationCreated = async (context: AuthContext, data: any, pir: PIR) => {
+const onRelationCreated = async (context: AuthContext, relationship: any, pir: PIR, matchingCriteria: PIR['pirCriteria']) => {
+  const sourceId = relationship.extensions?.[STIX_EXT_OCTI]?.source_ref;
+  const source = await findById(context, SYSTEM_USER, sourceId);
+  if (source[`rel_${RELATION_IN_PIR}`]?.internal_id) {
+    console.log('[POC PIR] Source already flagged', { source, data: relationship, matchingCriteria });
+  } else {
+    console.log('[POC PIR] Source NOT flagged', { source, data: relationship, matchingCriteria });
+    await flagSource(context, relationship, pir.id, matchingCriteria);
+  }
   // - if source not flagged
   // create rel
   // - if source already flagged
   // update the score and the matching Criteria
-  console.log('[POC PIR] Event create matching', { data });
-  await flagSource(context, data, pir.id);
+  console.log('[POC PIR] Event create matching', { source, data: relationship, matchingCriteria });
 };
 
 const onRelationDeleted = async (context: AuthContext, data: any, pir: PIR) => {
@@ -99,7 +111,7 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
             // If the event matches PIR, do the right thing depending on the type of event.
             switch (event.type) {
               case 'create':
-                await onRelationCreated(context, data, pir);
+                await onRelationCreated(context, data, pir, matchingCriteria);
                 break;
               case 'delete':
                 await onRelationDeleted(context, data, pir);
