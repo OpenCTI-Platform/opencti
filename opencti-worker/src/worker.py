@@ -369,6 +369,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     )
                     # Add expectations to the work
                     if work_id is not None:
+                        self.api.set_applicant_id_header('') # add expectation with worker user and not impersonated user
                         self.api.work.add_expectations(work_id, expectations)
                     # For each split bundle, send it to the same queue
                     for bundle in bundles:
