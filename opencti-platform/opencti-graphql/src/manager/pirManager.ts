@@ -2,7 +2,6 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { FAKE_PIR, type PIR } from '../modules/pir/pir.fake';
 import type { DataEvent, SseEvent } from '../types/event';
-import { type FilterGroup, FilterMode } from '../generated/graphql';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { ABSTRACT_STIX_CORE_OBJECT, STIX_TYPE_RELATION } from '../schema/general';
 import { stixObjectOrRelationshipAddRefRelation } from '../domain/stixObjectOrStixRelationship';
@@ -48,6 +47,20 @@ const flagSource = async (context: AuthContext, source: any, pirId: string) => {
   console.log('[POC PIR] Meta Ref relation created', { ref });
 };
 
+const onRelationCreated = async (context: AuthContext, data: any, pir: PIR) => {
+  // - if source not flagged
+  // create rel
+  // - if source already flagged
+  // update the score and the matching Criteria
+  console.log('[POC PIR] Event create matching', { data });
+  await flagSource(context, data, pir.id);
+};
+
+const onRelationDeleted = async (context: AuthContext, data: any, pir: PIR) => {
+  console.log('[POC PIR] Event delete matching', { data });
+  // eventually remove the entity flag or update matching criteria
+};
+
 /**
  * Handler called every {PIR_MANAGER_INTERVAL} with new events received.
  * @param streamEvents The new events received since last call to the handler.
@@ -86,15 +99,12 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
             // If the event matches PIR, do the right thing depending on the type of event.
             switch (event.type) {
               case 'create':
-                // - if source not flagged
-                // create rel
-                await flagSource(context, data, pir.id);
-                // - if source already flagged
-                // update the score and the matching Criteria
+                await onRelationCreated(context, data, pir);
+                break;
               case 'delete':
-                // eventually remove the entity flag or update matching criteria
-              default:
-                // nothing to do
+                await onRelationDeleted(context, data, pir);
+                break;
+              default: // nothing to do
             }
           }
         }
