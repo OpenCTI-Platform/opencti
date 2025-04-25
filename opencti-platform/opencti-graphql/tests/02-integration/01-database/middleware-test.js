@@ -917,8 +917,6 @@ describe('Upsert and merge entities', () => {
       name: 'MALWARE_TEST OTHER NAME',
       aliases: ['MALWARE_TEST'],
       stix_id: 'malware--600f3c54-c8b2-534a-a718-52a6693ba9de',
-      // Standard ID of Paradise malware in the original dataset
-      x_opencti_stix_ids: ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'],
       confidence: 10,
     };
     upsertedMalware = await addMalware(testContext, ADMIN_USER, upMalware);
@@ -926,8 +924,6 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.standard_id).toEqual(createdMalware.standard_id);
     expect(upsertedMalware.x_opencti_stix_ids.length).toEqual(2);
     expect(upsertedMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
-    // This ID needs to be filtered
-    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--591f0cb7-d66f-4e14-a8e6-5927b597f920')).toBeFalsy();
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
     loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware['object-marking'].length).toEqual(2);
@@ -936,8 +932,6 @@ describe('Upsert and merge entities', () => {
       name: 'NEW NAME',
       description: 'MALWARE_TEST NEW',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
-      // Standard ID of Paradise malware in the original dataset
-      x_opencti_stix_ids: ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'],
       aliases: ['NEW MALWARE ALIAS'],
       confidence: 90, // 90 > 15, so it's upserted
     };
@@ -948,8 +942,6 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.x_opencti_stix_ids.length).toEqual(2);
     expect(upsertedMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
     expect(upsertedMalware.x_opencti_stix_ids.includes('malware--907bb632-e3c2-52fa-b484-cf166a7d377e')).toBeTruthy();
-    // This ID needs to be filtered
-    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--591f0cb7-d66f-4e14-a8e6-5927b597f920')).toBeFalsy();
     expect(upsertedMalware.aliases.sort()).toEqual(['NEW MALWARE ALIAS', 'MALWARE_TEST'].sort());
     loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware.name).toEqual('NEW NAME');
@@ -959,6 +951,24 @@ describe('Upsert and merge entities', () => {
     expect(loadMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
     expect(loadMalware.x_opencti_stix_ids.includes('malware--907bb632-e3c2-52fa-b484-cf166a7d377e')).toBeTruthy();
     expect(loadMalware.aliases.sort()).toEqual(['NEW MALWARE ALIAS', 'MALWARE_TEST'].sort());
+
+    // Upsert definition per standard ID
+    upMalware = {
+      name: 'NEW NAME',
+      // This is the standard ID for "NEW NAME"
+      stix_id: 'malware--284e60cb-6b78-5ca5-a81c-b84b6bc12c02',
+      // Standard ID of Paradise malware in the original dataset
+      x_opencti_stix_ids: ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'],
+      confidence: 95, // 95 > 90, so it's upserted
+    };
+    upsertedMalware = await addMalware(testContext, ADMIN_USER, upMalware);
+    expect(upsertedMalware.id).toEqual(createdMalware.id);
+    expect(upsertedMalware.x_opencti_stix_ids.length).toEqual(2);
+    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
+    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--907bb632-e3c2-52fa-b484-cf166a7d377e')).toBeTruthy();
+    // This ID needs to be filtered
+    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c')).toBeFalsy();
+
     // Delete the markings
     const clear = await internalLoadById(testContext, ADMIN_USER, clearMarking);
     await deleteRelationsByFromAndTo(
