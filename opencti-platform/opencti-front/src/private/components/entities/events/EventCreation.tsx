@@ -60,7 +60,7 @@ interface EventAddInput {
   event_types: string[];
   start_time: Date | null;
   stop_time: Date | null;
-  createdBy: FieldOption | null;
+  createdBy: FieldOption | undefined;
   objectMarking: FieldOption[];
   objectLabel: FieldOption[];
   externalReferences: { value: string }[];
@@ -71,8 +71,8 @@ interface EventFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   inputValue?: string;
   bulkModalOpen?: boolean;
   onBulkModalClose: () => void;
@@ -178,7 +178,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     start_time: null,
     confidence: null,
     stop_time: null,
-    createdBy: defaultCreatedBy ?? null,
+    createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],

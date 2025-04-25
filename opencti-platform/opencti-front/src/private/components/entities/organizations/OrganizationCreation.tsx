@@ -58,8 +58,8 @@ interface OrganizationAddInput {
   confidence: number | null
   x_opencti_reliability: string | undefined
   x_opencti_organization_type: string | undefined
-  x_opencti_score: string | null
-  createdBy: FieldOption | null
+  x_opencti_score: string | undefined
+  createdBy: FieldOption | undefined
   objectMarking: FieldOption[]
   objectLabel: FieldOption[]
   externalReferences: { value: string }[]
@@ -70,8 +70,8 @@ interface OrganizationFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   inputValue?: string;
   bulkModalOpen?: boolean;
   onBulkModalClose: () => void;
@@ -147,7 +147,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
         description: values.description,
         x_opencti_reliability: values.x_opencti_reliability,
         x_opencti_organization_type: values.x_opencti_organization_type,
-        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : null,
+        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : undefined,
         createdBy: values.createdBy?.value,
         confidence: parseInt(String(values.confidence), 10),
         objectMarking: values.objectMarking.map((v) => v.value),
@@ -179,13 +179,13 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       description: '',
       x_opencti_reliability: undefined,
       x_opencti_organization_type: undefined,
-      createdBy: defaultCreatedBy ?? null,
+      createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
       confidence: null,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
       file: null,
-      x_opencti_score: null,
+      x_opencti_score: undefined,
     },
   );
 
@@ -278,6 +278,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             component={TextField}
             variant="standard"
             name="x_opencti_score"
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
             label={t_i18n('Score')}
             fullWidth={true}
             type="number"

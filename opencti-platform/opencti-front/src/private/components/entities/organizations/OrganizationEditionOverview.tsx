@@ -294,6 +294,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
             component={TextField}
             variant="standard"
             name="x_opencti_score"
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
             label={t_i18n('Score')}
             type="number"
             fullWidth={true}

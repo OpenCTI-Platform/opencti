@@ -75,7 +75,7 @@ interface SectorAddInput {
   name: string;
   description: string;
   confidence: number | null;
-  createdBy: FieldOption | null;
+  createdBy: FieldOption | undefined;
   objectMarking: FieldOption[];
   objectLabel: FieldOption[];
   externalReferences: { value: string }[];
@@ -86,8 +86,8 @@ interface SectorFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   inputValue?: string;
   bulkModalOpen?: boolean;
   onBulkModalClose: () => void;
@@ -185,7 +185,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
       name: inputValue ?? '',
       description: '',
       confidence: null,
-      createdBy: defaultCreatedBy ?? null,
+      createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],

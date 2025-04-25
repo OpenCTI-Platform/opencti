@@ -56,7 +56,7 @@ interface SystemAddInput {
   description: string;
   confidence: number | null;
   x_opencti_reliability: string | undefined;
-  createdBy: FieldOption | null;
+  createdBy: FieldOption | undefined;
   objectMarking: FieldOption[];
   objectLabel: FieldOption[];
   externalReferences: { value: string }[];
@@ -170,7 +170,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
       description: '',
       confidence: null,
       x_opencti_reliability: undefined,
-      createdBy: defaultCreatedBy ?? null,
+      createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
