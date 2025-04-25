@@ -114,7 +114,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
                 return id_
 
     def nack_message(
-            self, channel: BlockingChannel, delivery_tag: int, requeue=True
+        self, channel: BlockingChannel, delivery_tag: int, requeue=True
     ) -> None:
         if channel.is_open:
             self.worker_logger.info("Message rejected", {"tag": delivery_tag})
@@ -135,11 +135,11 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
 
     # Data handling
     def api_data_handler(  # pylint: disable=too-many-statements, too-many-locals
-            self,
-            connection: Any,
-            channel: BlockingChannel,
-            delivery_tag: str,
-            data: str,
+        self,
+        connection: Any,
+        channel: BlockingChannel,
+        delivery_tag: str,
+        data: str,
     ) -> Optional[bool]:
         try:
             callback_uri = self.connector["config"].get("listen_callback_uri")
@@ -289,7 +289,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 return id_
 
     def nack_message(
-            self, channel: BlockingChannel, delivery_tag: int, requeue=True
+        self, channel: BlockingChannel, delivery_tag: int, requeue=True
     ) -> None:
         if channel.is_open:
             self.worker_logger.info("Message rejected", {"tag": delivery_tag})
@@ -310,11 +310,11 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
 
     # Data handling
     def data_handler(  # pylint: disable=too-many-statements, too-many-locals
-            self,
-            connection: Any,
-            channel: BlockingChannel,
-            delivery_tag: str,
-            data: Dict[str, Any],
+        self,
+        connection: Any,
+        channel: BlockingChannel,
+        delivery_tag: str,
+        data: Dict[str, Any],
     ) -> Optional[bool]:
         imported_items = []
         start_processing = datetime.datetime.now()
@@ -429,17 +429,17 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         )
                     # All standard operations
                     case (
-                    "delete"  # Standard delete
-                    | "restore"  # Restore an operation from trash
-                    | "delete_force"  # Delete with no trash
-                    | "share"  # Share an element
-                    | "unshare"  # Unshare an element
-                    | "rule_apply"  # Applying a rule (start engine)
-                    | "rule_clear"  # Clearing a rule (stop engine)
-                    | "rules_rescan"  # Rescan a rule (massive operation in UI)
-                    | "enrichment"  # Ask for enrichment (massive operation in UI)
-                    | "clear_access_restriction"  # Clear access members (massive operation in UI)
-                    | "revert_draft"  # Cancel draft modification (massive operation in UI)
+                        "delete"  # Standard delete
+                        | "restore"  # Restore an operation from trash
+                        | "delete_force"  # Delete with no trash
+                        | "share"  # Share an element
+                        | "unshare"  # Unshare an element
+                        | "rule_apply"  # Applying a rule (start engine)
+                        | "rule_clear"  # Clearing a rule (stop engine)
+                        | "rules_rescan"  # Rescan a rule (massive operation in UI)
+                        | "enrichment"  # Ask for enrichment (massive operation in UI)
+                        | "clear_access_restriction"  # Clear access members (massive operation in UI)
+                        | "revert_draft"  # Cancel draft modification (massive operation in UI)
                     ):
                         data_object = event_content["data"]
                         data_object["opencti_operation"] = event_type
