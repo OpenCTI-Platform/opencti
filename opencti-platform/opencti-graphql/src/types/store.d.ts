@@ -31,6 +31,7 @@ import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
+  RELATION_IN_PIR,
   RELATION_OBJECT,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
@@ -186,6 +187,7 @@ interface BasicStoreCommon extends BasicStoreBase {
   [RELATION_OBJECT_ASSIGNEE]?: Array<string>;
   [RELATION_OBJECT_PARTICIPANT]?: Array<string>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
+  [RELATION_IN_PIR]?: Array<string>;
 }
 
 interface StoreCommon {
