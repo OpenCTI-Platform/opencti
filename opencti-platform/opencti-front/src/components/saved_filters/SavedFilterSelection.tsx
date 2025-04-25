@@ -26,7 +26,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
       viewStorage: { filters, savedFilters },
     },
   } = useDataTableContext();
-  console.log('storage savedFilters : ', savedFilters);
+
   const [selectedSavedFilter, setSelectedSavedFilter] = useState<AutocompleteOptionType>();
   const [inputValue, setInputValue] = useState<string>('');
   const [savedFilterToDelete, setSavedFilterToDelete] = useState<string>();
