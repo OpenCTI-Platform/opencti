@@ -66,14 +66,14 @@ JsonMapperRepresentationAttributesFormProps
     schemaAttributes,
   );
 
-  if (representation.target_type === null) {
+  if (representation.target?.entity_type === null) {
     // if the entity type gets unset, we display nothing
     // when user will select a new entity type, attributes will be fetched
     return null;
   }
 
   const entitySchemaAttributes = data?.csvMapperSchemaAttributes?.find(
-    (schema) => schema.name === representation.target_type,
+    (schema) => schema.name === representation.target?.entity_type,
   )?.attributes ?? [];
 
   const mutableSchemaAttributes: SchemaAttribute[] = entitySchemaAttributes.map((schema) => {
@@ -99,7 +99,8 @@ JsonMapperRepresentationAttributesFormProps
       <Field
         component={TextField}
         label={t_i18n('JSON Entity path')}
-        name={`${representationName}.column_based.value`}
+        required={true}
+        name={`${representationName}.target.path`}
         variant='standard'
         style={{ width: '100%' }}
         handleErrors={handleErrors}

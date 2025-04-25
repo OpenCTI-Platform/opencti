@@ -171,8 +171,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                 <IconButton
                   color="secondary"
                   aria-label="Add"
-                  onClick={() => onAddEntityRepresentation(setFieldValue, values)
-                  }
+                  onClick={() => onAddEntityRepresentation(setFieldValue, values)}
                   size="large"
                 >
                   <Add fontSize="small"/>
@@ -209,8 +208,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                 <IconButton
                   color="secondary"
                   aria-label="Add"
-                  onClick={() => onAddRelationshipRepresentation(setFieldValue, values)
-                  }
+                  onClick={() => onAddRelationshipRepresentation(setFieldValue, values)}
                   size="large"
                 >
                   <Add fontSize="small"/>
@@ -254,7 +252,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   variant="contained"
                   color="secondary"
                   onClick={submitForm}
-                  disabled={isSubmitting}
+                  disabled={false}
                   classes={{ root: classes.button }}
                 >
                   {getButtonText()}
