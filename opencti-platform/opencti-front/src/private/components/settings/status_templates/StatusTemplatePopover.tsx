@@ -9,7 +9,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PopoverProps } from '@mui/material/Popover';
 import Drawer from '@components/common/drawer/Drawer';
 import { StatusTemplatesLinesPaginationQuery$variables } from '@components/settings/status_templates/__generated__/StatusTemplatesLinesPaginationQuery.graphql';
-import { StatusTemplateLine_node$data } from '@components/settings/status_templates/__generated__/StatusTemplateLine_node.graphql';
+import { StatusTemplatesLine_node$data } from '@components/settings/status_templates/__generated__/StatusTemplatesLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -42,7 +42,7 @@ const statusTemplateEditionQuery = graphql`
 `;
 
 interface StatusTemplatePopoverProps {
-  data: StatusTemplateLine_node$data
+  data: StatusTemplatesLine_node$data
   paginationOptions?: StatusTemplatesLinesPaginationQuery$variables;
 }
 

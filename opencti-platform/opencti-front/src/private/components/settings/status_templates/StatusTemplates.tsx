@@ -1,8 +1,8 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { StatusTemplateLine_node$data } from '@components/settings/status_templates/__generated__/StatusTemplateLine_node.graphql';
 import StatusTemplatePopover from '@components/settings/status_templates/StatusTemplatePopover';
 import { FactCheckOutlined } from '@mui/icons-material';
+import { StatusTemplatesLine_node$data } from '@components/settings/status_templates/__generated__/StatusTemplatesLine_node.graphql';
 import StatusTemplateCreation from './StatusTemplateCreation';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -147,7 +147,7 @@ const StatusTemplates = () => {
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data) => data.statusTemplates?.edges?.map(({ node }: { node: StatusTemplateLine_node$data }) => node)}
+          resolvePath={(data) => data.statusTemplates?.edges?.map(({ node }: { node: StatusTemplatesLine_node$data }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
