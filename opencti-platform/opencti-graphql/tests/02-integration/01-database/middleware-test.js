@@ -932,6 +932,8 @@ describe('Upsert and merge entities', () => {
       name: 'NEW NAME',
       description: 'MALWARE_TEST NEW',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
+      // Standard ID of poison Ivy malaware in the original dataset
+      x_opencti_stix_ids: ['malware--591f0cb7-d66f-4e14-a8e6-5927b597f920'],
       aliases: ['NEW MALWARE ALIAS'],
       confidence: 90, // 90 > 15, so it's upserted
     };
@@ -942,6 +944,8 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.x_opencti_stix_ids.length).toEqual(2);
     expect(upsertedMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
     expect(upsertedMalware.x_opencti_stix_ids.includes('malware--907bb632-e3c2-52fa-b484-cf166a7d377e')).toBeTruthy();
+    // This ID needs to be filtered
+    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--591f0cb7-d66f-4e14-a8e6-5927b597f920')).toBeFalsy();
     expect(upsertedMalware.aliases.sort()).toEqual(['NEW MALWARE ALIAS', 'MALWARE_TEST'].sort());
     loadMalware = await storeLoadById(testContext, ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware.name).toEqual('NEW NAME');
