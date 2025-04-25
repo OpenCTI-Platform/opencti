@@ -888,8 +888,8 @@ describe('Upsert and merge entities', () => {
       name: 'MALWARE_TEST',
       description: 'MALWARE_TEST DESCRIPTION',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
-      // Standard ID of poison Ivy malaware in the original dataset
-      x_opencti_stix_ids: ['malware--591f0cb7-d66f-4e14-a8e6-5927b597f920'],
+      // Standard ID of Paradise in the original dataset
+      x_opencti_stix_ids: ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'],
       objectMarking: [clearMarking, mitreMarking],
       confidence: 15, // not set, it would fallback to user's confidence which is 100
     };
@@ -921,8 +921,8 @@ describe('Upsert and merge entities', () => {
       name: 'MALWARE_TEST OTHER NAME',
       aliases: ['MALWARE_TEST'],
       stix_id: 'malware--600f3c54-c8b2-534a-a718-52a6693ba9de',
-      // Standard ID of poison Ivy malaware in the original dataset
-      x_opencti_stix_ids: ['malware--591f0cb7-d66f-4e14-a8e6-5927b597f920'],
+      // Standard ID of Paradise malware in the original dataset
+      x_opencti_stix_ids: ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'],
       confidence: 10,
     };
     upsertedMalware = await addMalware(testContext, ADMIN_USER, upMalware);
@@ -940,8 +940,8 @@ describe('Upsert and merge entities', () => {
       name: 'NEW NAME',
       description: 'MALWARE_TEST NEW',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
-      // Standard ID of poison Ivy malaware in the original dataset
-      x_opencti_stix_ids: ['malware--591f0cb7-d66f-4e14-a8e6-5927b597f920'],
+      // Standard ID of Paradise malware in the original dataset
+      x_opencti_stix_ids: ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'],
       aliases: ['NEW MALWARE ALIAS'],
       confidence: 90, // 90 > 15, so it's upserted
     };
