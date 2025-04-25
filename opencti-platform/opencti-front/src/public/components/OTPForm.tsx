@@ -2,11 +2,11 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../components/i18n';
 import type { Theme } from '../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 import useApiMutation from '../../utils/hooks/useApiMutation';
-import { useTheme } from '@mui/styles';
 
 interface OTPFormProps {
   variant?: 'login' | 'resetPassword',
@@ -56,7 +56,7 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, on
       onError: () => {
         setInputDisable(false);
         setCode('');
-        setError(t_i18n('The code is not correct'));
+        setError(t_i18n('The code is not correct.'));
       },
       onCompleted: () => {
         if (onCompleted) {
@@ -73,7 +73,8 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, on
       flexDirection: 'column',
       alignItems: 'center',
       gap: theme.spacing(3),
-    }}>
+    }}
+    >
       {error ? (
         <Alert severity="error" variant="outlined" style={{ alignSelf: 'stretch', textAlign: 'justify' }}>
           {error}

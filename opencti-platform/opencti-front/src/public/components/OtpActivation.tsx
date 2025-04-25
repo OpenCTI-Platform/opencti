@@ -58,7 +58,7 @@ const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
       onError: () => {
         setInputDisable(false);
         setCode('');
-        return setError(t_i18n('The code is not correct'));
+        return setError(t_i18n('The code is not correct.'));
       },
       onCompleted: () => {
         window.location.reload();
