@@ -670,7 +670,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </Grid>
         <Triggers recipientId={user.id} filterKey="authorized_members.id" />
         <Grid item xs={6} style={{ marginTop: 10 }}>
-          <Typography variant="h4" gutterBottom={true} style={{ paddingBottom: '22px' }}>
+          <Typography variant="h4" gutterBottom={true} style={{ paddingBottom: '21px' }}>
             {t_i18n('Operations')}
           </Typography>
           <Paper
