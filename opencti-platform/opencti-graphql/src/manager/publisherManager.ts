@@ -273,10 +273,10 @@ const processBufferedEvents = async (
       if (impactedData.length > 0) {
         const currentUser = impactedData[0].user;
         const dataToSend = impactedData.map((d) => d.data);
-        const triggersInDataToSend = [...new Set(dataToSend.map((d) => triggerMap.get(d.notification_id)?.name).filter((t) => t))];
+        const triggersInDataToSend = [...new Set(dataToSend.map((d) => triggerMap.get(d.notification_id)).filter((t) => t))];
         // If multiple triggers generated notification data, we need to create a "buffer" trigger containing the names of all triggers
         if (triggersInDataToSend.length > 1) {
-          const bufferTriggersName = triggersInDataToSend.join(';');
+          const bufferTriggersName = triggersInDataToSend.map((t) => t?.name).join(';');
           const bufferTrigger = { name: bufferTriggersName, trigger_type: 'buffer' } as BasicStoreEntityTrigger;
           // There is no await in purpose, the goal is to send notification and continue without waiting result.
           internalProcessNotification(context, settings, triggerMap, currentUser, allNotifiersMap.get(notifier) ?? {} as BasicStoreEntityNotifier, dataToSend, bufferTrigger).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
