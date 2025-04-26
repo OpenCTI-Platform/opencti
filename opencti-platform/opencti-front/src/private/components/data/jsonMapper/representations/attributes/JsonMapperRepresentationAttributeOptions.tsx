@@ -22,7 +22,8 @@ const JsonMapperRepresentationAttributeOptions: FunctionComponent<JsonMapperRepr
 
   // Retrieve the entity type of the current representation for open vocab fields.
   const representationName = attributeName.split('.')[0];
-  const entityType: string = getFieldProps(representationName).value.target_type;
+  const { value } = getFieldProps(representationName);
+  const entityType: string = value.target?.entity_type;
 
   return (
     <>

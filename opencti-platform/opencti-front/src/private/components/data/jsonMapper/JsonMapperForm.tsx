@@ -10,12 +10,13 @@ import JsonMapperRepresentationForm, { RepresentationFormEntityOption } from '@c
 import { JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
 import classNames from 'classnames';
 import { JsonMapperProvider } from '@components/data/jsonMapper/JsonMapperContext';
+import { formDataToJsonMapper } from '@components/data/jsonMapper/JsonMapperUtils';
+import JsonMapperTestDialog from '@components/data/jsonMapper/JsonMapperTestDialog';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from './representations/RepresentationUtils';
-// import JsonMapperTestDialog from './JsonMapperTestDialog';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -58,7 +59,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
   const classes = useStyles();
 
   // accordion state
-  // const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   // extracting available entities and relationships types from schema
   const { schema } = useAuth();
@@ -142,9 +143,14 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
 
   // -- ERRORS --
   // on edit mode, jsonMapper.errors might be set; on create mode backend validation is not done yet so error is null
+  const [hasError, setHasError] = useState<boolean>(
+    !!jsonMapper.errors?.length
+      || (jsonMapper.entity_representations.length === 0 && jsonMapper.relationship_representations.length === 0),
+  );
   let errors: Map<string, string> = new Map();
   const handleRepresentationErrors = (key: string, value: boolean) => {
     errors = { ...errors, [key]: value };
+    setHasError(Object.values(errors).filter((v) => v).length > 0);
   };
   return (
     <JsonMapperProvider>
@@ -239,7 +245,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
               />
 
               <div className={classes.buttons}>
-                {/** <Button
+                <Button
                   variant="contained"
                   color="primary"
                   onClick={() => setOpen(true)}
@@ -247,22 +253,22 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   disabled={hasError}
                 >
                   {t_i18n('Test')}
-                </Button>* */}
+                </Button>
                 <Button
                   variant="contained"
                   color="secondary"
                   onClick={submitForm}
-                  disabled={false}
+                  disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
                   {getButtonText()}
                 </Button>
               </div>
-              { /** <JsonMapperTestDialog
+              <JsonMapperTestDialog
                 open={open}
                 onClose={() => setOpen(false)}
                 configuration={JSON.stringify(formDataToJsonMapper(values))}
-              />* */}
+              />
             </Form>
           );
         }}

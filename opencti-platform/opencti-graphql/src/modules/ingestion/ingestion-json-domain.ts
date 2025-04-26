@@ -26,12 +26,12 @@ import { type EditInput, IngestionAuthType, type IngestionJsonAddInput, type Jso
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import type { StixObject } from '../../types/stix-common';
 import { getHttpClient, type GetHttpClient, OpenCTIHeaders } from '../../utils/http-client';
 import { isEmptyField, isNotEmptyField, wait } from '../../database/utils';
 import { findById as findJsonMapperById } from '../internal/jsonMapper/jsonMapper-domain';
 import { SYSTEM_USER } from '../../utils/access';
 import jsonMappingExecution from '../../parser/json-mapper';
+import type { StixObject } from '../../types/stix-2-1-common';
 
 interface JsonQueryFetchOpts {
   maxResults?: number;
