@@ -137,7 +137,7 @@ JsonMapperRepresentationAttributeFormProps
           variant="standard"
           name={name}
           value={value?.attr_path?.path ?? ''}
-          onChange={(_: any, val: string) => onPathChange(val)}
+          onChange={(_: unknown, val: string) => onPathChange(val)}
           label={t_i18n('JSON Path')}
           fullWidth={true}
         />

@@ -45,7 +45,7 @@ export const getInfoForRef = (
     const firstRepresentationId = ref.based_on.representations?.[0];
     if (firstRepresentationId) {
       fromType = representations.find((r) => r.id === firstRepresentationId)
-        ?.target_type;
+        ?.target?.entity_type;
       return [fromType, firstRepresentationId];
     }
   }

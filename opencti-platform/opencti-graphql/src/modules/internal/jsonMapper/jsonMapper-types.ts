@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
+import type { AttributeRef } from '../../../generated/graphql';
 
 export const ENTITY_TYPE_JSON_MAPPER = 'JsonMapper';
 
@@ -43,6 +44,13 @@ export interface JsonMapperRepresentationAttribute {
   key: string
   mode: 'simple' | 'complex' | 'base'
   default_values?: string[]
+}
+
+export interface JsonMapperRepresentationAttributeResolved {
+  key: string
+  mode: 'simple' | 'complex' | 'base'
+  default_values?: { id:string, name:string }[]
+  ref?: AttributeRef
 }
 
 export interface SimpleRepresentationAttribute extends JsonMapperRepresentationAttribute {
@@ -78,9 +86,23 @@ export interface JsonMapperRepresentation {
   attributes: RepresentationAttribute[]
 }
 
+export interface JsonMapperRepresentationResolved {
+  id: string
+  type: JsonMapperRepresentationType
+  target: JsonMapperRepresentationTarget
+  attributes: JsonMapperRepresentationAttributeResolved[]
+  from?: string
+  to?: string
+}
+
 export type JsonMapperParsed = Omit<BasicStoreEntityJsonMapper, 'representations' | 'variables'> & {
   variables: { name: string, path: ComplexAttributePath }[]
   representations: JsonMapperRepresentation[]
+  user_chosen_markings?: string[]
+};
+
+export type JsonMapperResolved = Omit<BasicStoreEntityJsonMapper, 'representations'> & {
+  representations: JsonMapperRepresentationResolved[]
   user_chosen_markings?: string[]
 };
 

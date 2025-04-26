@@ -14071,6 +14071,7 @@ export type Mutation = {
   jsonMapperDelete?: Maybe<Scalars['ID']['output']>;
   jsonMapperFieldPatch?: Maybe<JsonMapper>;
   jsonMapperImport: Scalars['String']['output'];
+  jsonMapperTest?: Maybe<JsonMapperTestResult>;
   killChainPhaseAdd?: Maybe<KillChainPhase>;
   killChainPhaseEdit?: Maybe<KillChainPhaseEditMutations>;
   labelAdd?: Maybe<Label>;
@@ -15258,6 +15259,12 @@ export type MutationJsonMapperFieldPatchArgs = {
 
 
 export type MutationJsonMapperImportArgs = {
+  file: Scalars['Upload']['input'];
+};
+
+
+export type MutationJsonMapperTestArgs = {
+  configuration: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
 };
 
@@ -38588,6 +38595,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   jsonMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationJsonMapperDeleteArgs, 'id'>>;
   jsonMapperFieldPatch?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<MutationJsonMapperFieldPatchArgs, 'id' | 'input'>>;
   jsonMapperImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationJsonMapperImportArgs, 'file'>>;
+  jsonMapperTest?: Resolver<Maybe<ResolversTypes['JsonMapperTestResult']>, ParentType, ContextType, RequireFields<MutationJsonMapperTestArgs, 'configuration' | 'file'>>;
   killChainPhaseAdd?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseAddArgs, 'input'>>;
   killChainPhaseEdit?: Resolver<Maybe<ResolversTypes['KillChainPhaseEditMutations']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseEditArgs, 'id'>>;
   labelAdd?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<MutationLabelAddArgs, 'input'>>;

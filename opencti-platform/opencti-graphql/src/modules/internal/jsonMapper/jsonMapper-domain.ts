@@ -17,7 +17,7 @@ import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { type EditInput, FilterMode, type JsonMapperAddInput, type QueryJsonMappersArgs } from '../../../generated/graphql';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperParsed, type JsonMapperRepresentation, type StoreEntityJsonMapper } from './jsonMapper-types';
+import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperRepresentation, type StoreEntityJsonMapper } from './jsonMapper-types';
 import { extractContentFrom } from '../../../utils/fileToContent';
 import { createEntity } from '../../../database/middleware';
 import { publishUserAction } from '../../../listener/UserActionListener';
@@ -27,6 +27,10 @@ import pjson from '../../../../package.json';
 import { type BasicStoreEntityIngestionJson, ENTITY_TYPE_INGESTION_JSON } from '../../ingestion/ingestion-types';
 import { FunctionalError } from '../../../config/errors';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
+import { parseJsonMapper, parseJsonMapperWithDefaultValues } from './jsonMapper-utils';
+import type { FileUploadData } from '../../../database/file-storage-helper';
+import { streamConverter } from '../../../database/file-storage';
+import jsonMappingExecution from '../../../parser/json-mapper';
 
 export const findById = async (context: AuthContext, user: AuthUser, jsonMapperId: string) => {
   return storeLoadById<BasicStoreEntityJsonMapper>(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER);
@@ -34,6 +38,30 @@ export const findById = async (context: AuthContext, user: AuthUser, jsonMapperI
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryJsonMappersArgs) => {
   return listEntitiesPaginated<BasicStoreEntityJsonMapper>(context, user, [ENTITY_TYPE_JSON_MAPPER], opts);
+};
+
+export const jsonMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, fileUpload: Promise<FileUploadData>) => {
+  let parsedConfiguration;
+  try {
+    parsedConfiguration = JSON.parse(configuration);
+  } catch (error) {
+    throw FunctionalError('Could not parse CSV mapper configuration', { error });
+  }
+  const jsonMapperParsed = parseJsonMapper(parsedConfiguration);
+  const { createReadStream } = await fileUpload;
+  const data: string = await streamConverter(createReadStream());
+  const stixBundle = await jsonMappingExecution({}, data, jsonMapperParsed);
+  const allObjects = stixBundle.objects;
+  return {
+    objects: JSON.stringify(allObjects, null, 2),
+    nbRelationships: allObjects.filter((object) => object.type === 'relationship').length,
+    nbEntities: allObjects.filter((object) => object.type !== 'relationship').length,
+  };
+};
+
+export const getParsedRepresentations = async (context: AuthContext, user: AuthUser, jsonMapper: BasicStoreEntityJsonMapper) => {
+  const parsedMapper = await parseJsonMapperWithDefaultValues(context, user, jsonMapper);
+  return parsedMapper.representations;
 };
 
 export const jsonMapperImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
@@ -92,24 +120,6 @@ export const deleteJsonMapper = async (context: AuthContext, user: AuthUser, jso
   }
 
   return deleteInternalObject(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER);
-};
-
-export const parseJsonMapper = (mapper: any): JsonMapperParsed => {
-  let representations: JsonMapperRepresentation[] = [];
-  if (typeof mapper?.representations === 'string') {
-    try {
-      representations = JSON.parse(mapper.representations);
-    } catch (error) {
-      throw FunctionalError('Could not parse JSON mapper: representations is not a valid JSON', { name: mapper?.name, error });
-    }
-  } else {
-    representations = mapper?.representations ?? [];
-  }
-
-  return {
-    ...mapper,
-    representations,
-  };
 };
 
 export const createJsonMapper = async (context: AuthContext, user: AuthUser, jsonMapperInput: JsonMapperAddInput) => {

@@ -15,6 +15,8 @@ import {
 } from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValues';
+import { handleErrorInForm } from '../../../../relay/environment';
+import { insertNode } from '../../../../utils/store';
 
 const jsonMapperCreation = graphql`
   mutation JsonMapperCreationContainerMutation($input: JsonMapperAddInput!) {
@@ -60,8 +62,6 @@ const JsonMapperCreation: FunctionComponent<JsonMapperCreationFormProps> = ({
       name: formattedValues.name,
       representations: JSON.stringify(formattedValues.representations),
     };
-    console.log('formattedValues.representations', formattedValues.representations);
-    /*
     commit({
       variables: {
         input,
@@ -83,7 +83,7 @@ const JsonMapperCreation: FunctionComponent<JsonMapperCreationFormProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-    }); */
+    });
   };
 
   let initialValues: JsonMapperFormData = {

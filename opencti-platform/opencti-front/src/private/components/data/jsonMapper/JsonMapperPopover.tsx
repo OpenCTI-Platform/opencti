@@ -3,11 +3,14 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql } from 'react-relay';
+import { graphql, useQueryLoader } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
 import fileDownload from 'js-file-download';
 import { jsonMappers_MappersQuery$variables } from '@components/data/jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
 import { JsonMapperPopoverExportQuery$data } from '@components/data/jsonMapper/__generated__/JsonMapperPopoverExportQuery.graphql';
+import JsonMapperEditionContainer, { jsonMapperEditionContainerQuery } from '@components/data/jsonMapper/JsonMapperEditionContainer';
+import { JsonMapperEditionContainerQuery } from '@components/data/jsonMapper/__generated__/JsonMapperEditionContainerQuery.graphql';
+import JsonMapperCreationContainer from '@components/data/jsonMapper/JsonMapperCreationContainer';
 import { useFormatter } from '../../../../components/i18n';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -46,8 +49,26 @@ const JsonMapperPopover: FunctionComponent<JsonMapperPopoverProps> = ({
   const handleOpen = (event: React.MouseEvent) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
+  // -- Edition --
+  const [queryRef, loadQuery] = useQueryLoader<JsonMapperEditionContainerQuery>(jsonMapperEditionContainerQuery);
+  const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
+
+  const handleOpenUpdate = () => {
+    setDisplayUpdate(true);
+    loadQuery({ id: jsonMapperId }, { fetchPolicy: 'network-only' });
+    handleClose();
+  };
   // -- Deletion --
   const [commit] = useApiMutation(jsonMapperPopoverDelete);
+
+  // -- Duplication --
+  const [displayDuplicate, setDisplayDuplicate] = useState(false);
+
+  const handleOpenDuplicate = () => {
+    setDisplayDuplicate(true);
+    loadQuery({ id: jsonMapperId });
+    handleClose();
+  };
 
   const deletion = useDeletion({ handleClose });
   const submitDelete = () => {
@@ -97,11 +118,29 @@ const JsonMapperPopover: FunctionComponent<JsonMapperPopoverProps> = ({
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
         <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
       </Menu>
+      {queryRef && (
+      <React.Suspense fallback={<div />}>
+        <JsonMapperEditionContainer
+          queryRef={queryRef}
+          onClose={() => setDisplayUpdate(false)}
+          open={displayUpdate}
+        />
+        <JsonMapperCreationContainer
+          editionQueryRef={queryRef}
+          isDuplicated={true}
+          paginationOptions={paginationOptions}
+          onClose={() => setDisplayDuplicate(false)}
+          open={displayDuplicate}
+        />
+      </React.Suspense>
+      )}
       <DeleteDialog
-        title={t_i18n('Do you want to delete this JSON mapper?')}
+        message={t_i18n('Do you want to delete this JSON mapper?')}
         deletion={deletion}
         submitDelete={submitDelete}
       />

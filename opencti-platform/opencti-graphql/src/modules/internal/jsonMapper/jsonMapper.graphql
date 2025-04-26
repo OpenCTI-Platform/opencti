@@ -116,6 +116,7 @@ type Query {
 
 type Mutation {
     jsonMapperAdd(input: JsonMapperAddInput!): JsonMapper @auth(for: [JSONMAPPERS])
+    jsonMapperTest(configuration: String!, file: Upload!): JsonMapperTestResult @auth(for: [JSONMAPPERS])
     jsonMapperDelete(id: ID!): ID @auth(for: [JSONMAPPERS])
     jsonMapperImport(file: Upload!): String! @auth(for: [JSONMAPPERS])
     jsonMapperFieldPatch(id: ID!, input: [EditInput!]!): JsonMapper @auth(for: [JSONMAPPERS])

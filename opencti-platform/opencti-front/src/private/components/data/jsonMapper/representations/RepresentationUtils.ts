@@ -17,7 +17,10 @@ export const representationInitialization = (
     id: uuid(),
     type,
     attributes: {},
-    target_type: '',
+    target: {
+      entity_type: '',
+      path: '',
+    },
   };
 };
 
@@ -29,11 +32,11 @@ export const representationLabel = (
   t: (message: string) => string,
 ) => {
   const number = `#${idx + 1}`; // 0-based internally, 1-based for display
-  if (isEmptyField(representation.target_type)) {
+  if (isEmptyField(representation.target?.entity_type)) {
     return `${number} ${t(`New ${representation.type} representation`)}`;
   }
   const prefix = representation.type === 'entity' ? 'entity_' : 'relationship_';
-  const label = `${t(`${prefix}${representation.target_type}`)}`;
+  const label = `${t(`${prefix}${representation.target?.entity_type}`)}`;
   return `${number} ${label[0].toUpperCase()}${label.slice(1)}`;
 };
 
@@ -58,8 +61,10 @@ export const jsonMapperRepresentationToFormData = (
   return {
     id: representation.id,
     type: representation.type,
-    target_type: representation.target.entity_type,
-    target_path: representation.target.path,
+    target: {
+      entity_type: representation.target.entity_type,
+      path: representation.target.path,
+    },
     attributes: representation.attributes.reduce((acc, attribute) => {
       const schemaAttribute = entitySchemaAttributes.find((attr) => attr.name === attribute.key);
       return {
@@ -88,8 +93,8 @@ export const formDataToJsonMapperRepresentation = (
     id: data.id,
     type: data.type as JsonMapperRepresentationType,
     target: {
-      entity_type: data.target_type ?? '',
-      path: data.target_path ?? '',
+      entity_type: data.target?.entity_type ?? '',
+      path: data.target?.path ?? '',
     },
     attributes: (Object.entries(data.attributes)).flatMap(([name, attribute]) => {
       const mapperAttribute = formDataToJsonMapperAttribute(attribute, name);

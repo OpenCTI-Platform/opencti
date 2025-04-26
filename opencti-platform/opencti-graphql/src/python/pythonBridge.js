@@ -16,7 +16,7 @@ const SUPPORTED_CHECKED_PATTERN_TYPES = ['stix', 'yara', 'sigma', 'snort', 'suri
 // Importing python runtime scripts
 const py = nodecallspython.interpreter;
 // In a venv is available import the site-packages
-if (DEV_MODE && isNotEmptyField(PYTHON_VENV)) {
+if (isNotEmptyField(PYTHON_VENV)) {
   py.addImportPath(PYTHON_VENV);
 }
 const pyCheckIndicator = py.importSync('./src/python/runtime/check_indicator.py');
