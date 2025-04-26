@@ -53,9 +53,10 @@ export const jsonMapperTest = async (context: AuthContext, user: AuthUser, confi
   const stixBundle = await jsonMappingExecution({}, data, jsonMapperParsed);
   const allObjects = stixBundle.objects;
   return {
-    objects: JSON.stringify(allObjects, null, 2),
+    objects: JSON.stringify(allObjects.slice(0, 50), null, 2), // Max 50 records to display
     nbRelationships: allObjects.filter((object) => object.type === 'relationship').length,
     nbEntities: allObjects.filter((object) => object.type !== 'relationship').length,
+    state: '-',
   };
 };
 
