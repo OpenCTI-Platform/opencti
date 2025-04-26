@@ -100,8 +100,6 @@ JsonMapperRepresentationFormProps
         entity_type: option?.value ?? undefined,
       },
     };
-    console.log(name, newValue);
-
     await setFieldValue(name, newValue);
   };
 

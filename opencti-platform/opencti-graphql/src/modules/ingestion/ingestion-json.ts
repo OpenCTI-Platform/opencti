@@ -63,7 +63,7 @@ const INGESTION_JSON_DEFINITION: ModuleDefinition<StoreEntityIngestionJson, Stix
   representative: (stix: StixIngestionJson) => {
     return stix.name;
   },
-  converter: convertIngestionJsonToStix
+  converter_2_1: convertIngestionJsonToStix
 };
 
 registerDefinition(INGESTION_JSON_DEFINITION);

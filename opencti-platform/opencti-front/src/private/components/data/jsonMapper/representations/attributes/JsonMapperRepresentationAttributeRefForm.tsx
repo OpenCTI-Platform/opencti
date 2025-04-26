@@ -94,19 +94,19 @@ JsonMapperRepresentationAttributeRefFormProps
   let options: JsonMapperRepresentationFormData[] = [];
 
   // We don't need to resolve those different types, as they can link any entity between them.
-  if (representation.target_type === 'related-to' || representation.target_type === 'revoked-by' || representation.target_type === 'stix-sighting-relationship') {
+  if (representation.target?.entity_type === 'related-to' || representation.target?.entity_type === 'revoked-by' || representation.target?.entity_type === 'stix-sighting-relationship') {
     options = filterOptions(entity_representations);
-  } else if (representation.target_type) {
+  } else if (representation.target?.entity_type) {
     const relationshipTypes = resolveTypesForRelationship(
       schemaRelationsTypesMapping,
-      representation.target_type,
+      representation.target.entity_type,
       schemaAttribute.name,
       fromType,
       toType,
     );
     const relationshipRefTypes = resolveTypesForRelationshipRef(
       schemaRelationsRefTypesMapping,
-      representation.target_type,
+      representation.target.entity_type,
       schemaAttribute.name,
     );
     const everyRepresentationTypes = [
@@ -119,7 +119,7 @@ JsonMapperRepresentationAttributeRefFormProps
     }
     options = filterOptions(
       entity_representations
-        .filter((r) => r.target_type && everyRepresentationTypes.includes(r.target_type)),
+        .filter((r) => r.target?.entity_type && everyRepresentationTypes.includes(r.target?.entity_type)),
     );
   }
 

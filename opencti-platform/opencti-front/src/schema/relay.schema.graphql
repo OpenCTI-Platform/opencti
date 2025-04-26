@@ -9053,6 +9053,7 @@ type Mutation {
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
   jsonMapperAdd(input: JsonMapperAddInput!): JsonMapper
+  jsonMapperTest(configuration: String!, file: Upload!): JsonMapperTestResult
   jsonMapperDelete(id: ID!): ID
   jsonMapperImport(file: Upload!): String!
   jsonMapperFieldPatch(id: ID!, input: [EditInput!]!): JsonMapper
