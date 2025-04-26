@@ -364,13 +364,11 @@ const jsonMappingExecution = async (meta: Record<string, any>, data: string | ob
       // console.log('error converting ', e);
     }
     return null;
-  }).filter((elem) => isNotEmptyField(elem));
+  })
+    .filter((elem) => isNotEmptyField(elem));
   const bundleBuilder = new BundleBuilder();
   bundleBuilder.addObjects(stixObjects);
-  const bundle = bundleBuilder.build();
-  // console.log(`Event built in ${new Date().getTime() - start} ms with ${bundle.objects.length} objects`);
-  // fs.writeFileSync('./src/temp.json', JSON.stringify(bundle), {});
-  return bundle;
+  return bundleBuilder.build();
 };
 
 export default jsonMappingExecution;

@@ -126,7 +126,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   const jsonMapperParsed: JsonMapperParsed = {
     ...jsonMapper,
     representations: JSON.parse(jsonMapper.representations),
-    variables: JSON.parse(jsonMapper.variables)
+    variables: jsonMapper.variables ? JSON.parse(jsonMapper.variables) : []
   };
   const bundle = await jsonMappingExecution({}, requestData, jsonMapperParsed);
   let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
@@ -273,10 +273,11 @@ export const testJsonIngestionMapping = async (context: AuthContext, _user: Auth
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
-  const { bundle } = await executeJsonQuery(context, input as BasicStoreEntityIngestionJson, { maxResults: 50 });
+  const { bundle, nextExecutionState } = await executeJsonQuery(context, input as BasicStoreEntityIngestionJson, { maxResults: 50 });
   return {
     objects: JSON.stringify(bundle.objects, null, 2),
     nbRelationships: bundle.objects.filter((object: StixObject) => object.type === 'relationship').length,
     nbEntities: bundle.objects.filter((object: StixObject) => object.type !== 'relationship').length,
+    state: JSON.stringify(nextExecutionState)
   };
 };

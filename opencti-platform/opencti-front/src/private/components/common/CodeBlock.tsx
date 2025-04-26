@@ -7,15 +7,16 @@ import type { Theme } from '../../../components/Theme';
 interface CodeBlockProps {
   code: string;
   language: string;
+  customHeight?: string;
 }
 
-const CodeBlock: FunctionComponent<CodeBlockProps> = ({ language, code }) => {
+const CodeBlock: FunctionComponent<CodeBlockProps> = ({ language, code, customHeight }) => {
   const theme = useTheme<Theme>();
   return (
     <SyntaxHighlighter
       language={language}
       style={theme.palette.mode === 'dark' ? a11yDark : coy}
-      customStyle={{ height: '400px', minWidth: '550px' }}
+      customStyle={{ height: customHeight ?? '400px', minWidth: '550px' }}
       showLineNumbers
     >
       {code}

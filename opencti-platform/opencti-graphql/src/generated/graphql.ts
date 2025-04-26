@@ -11877,6 +11877,7 @@ export type JsonMapperTestResult = {
   nbEntities: Scalars['Int']['output'];
   nbRelationships: Scalars['Int']['output'];
   objects: Scalars['String']['output'];
+  state: Scalars['String']['output'];
 };
 
 export type JsonMapperVariable = {
@@ -37634,6 +37635,7 @@ export type JsonMapperTestResultResolvers<ContextType = any, ParentType extends 
   nbEntities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   nbRelationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objects?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  state?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

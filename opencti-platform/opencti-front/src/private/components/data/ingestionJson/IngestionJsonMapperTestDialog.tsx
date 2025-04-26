@@ -21,6 +21,7 @@ const ingestionJsonMapperTestMutation = graphql`
       nbEntities
       nbRelationships
       objects
+      state
     }
   }
 `;
@@ -137,6 +138,14 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
           }
         </Box>
         <Box sx={{ marginTop: '8px' }}>
+          <h3>State</h3>
+          <CodeBlock customHeight={'50px'}
+            code={result?.ingestionJsonTester?.state || t_i18n('You will find here the computed state.')}
+            language={'json'}
+          />
+        </Box>
+        <Box sx={{ marginTop: '8px' }}>
+          <h3>Objects</h3>
           <CodeBlock
             code={result?.ingestionJsonTester?.objects || t_i18n('You will find here the result in JSON format.')}
             language={'json'}
