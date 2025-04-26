@@ -12528,6 +12528,7 @@ type JsonMapperTestResult {
   objects: String!
   nbRelationships: Int!
   nbEntities: Int!
+  state: String!
 }
 
 type JsonMapperAddInputFromImport {
