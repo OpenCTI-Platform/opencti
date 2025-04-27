@@ -10,6 +10,7 @@ import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useGranted, { CSVMAPPERS, JSONMAPPERS, KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import useHelper from '../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -26,6 +27,7 @@ const useStyles = makeStyles((theme) => ({
 
 const ProcessingMenu = () => {
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const {
@@ -36,6 +38,7 @@ const ProcessingMenu = () => {
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isCsvMapperUpdater = useGranted([CSVMAPPERS]);
   const isJsonMapperUpdater = useGranted([JSONMAPPERS]);
+  const isJsonMapperEnable = isFeatureEnable('JSON_MAPPER');
   return (
     <Drawer
       variant="permanent"
@@ -82,7 +85,7 @@ const ProcessingMenu = () => {
             <ListItemText primary={t_i18n('CSV Mappers')} />
           </MenuItem>
         )}
-        {isJsonMapperUpdater && (
+        {isJsonMapperUpdater && isJsonMapperEnable && (
           <MenuItem
             component={Link}
             to={'/dashboard/data/processing/json_mapper'}
