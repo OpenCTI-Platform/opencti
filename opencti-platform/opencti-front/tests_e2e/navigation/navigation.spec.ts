@@ -16,9 +16,11 @@ import ObservableDetailsPage from '../model/observableDetails.pageModel';
 import NotesPage from '../model/note.pageModel';
 import NoteDetailsPage from '../model/noteDetails.pageModel';
 import StixCoreObjectDataAndHistoryTab from '../model/StixCoreObjectDataAndHistoryTab.pageModel';
+import ExternalReferencePage from '../model/externalReference.pageModel';
+import ExternalReferenceDetailsPage from '../model/externalReferenceDetails.pageModel';
 
 /**
- * Goal: validate that everything is opening wihtout errors in Analyses > Malware analyses.
+ * Goal: validate that everything is opening without errors in Analyses > Note.
  * @param page
  */
 const navigateNotes = async (page: Page) => {
@@ -42,6 +44,23 @@ const navigateNotes = async (page: Page) => {
   await noteDetailsPage.tabs.goToHistoryTab();
   const historyTab = new StixCoreObjectHistoryTab(page);
   await expect(historyTab.getPage()).toBeVisible();
+};
+
+/**
+ * Goal: validate that everything is opening without errors in Analyses > External References.
+ * @param page
+ */
+const navigateExternalReferences = async (page: Page) => {
+  const externalReferencesFromInitData = 'Navigation test external reference entity';
+
+  const externalReferencePage = new ExternalReferencePage(page);
+  await externalReferencePage.navigateFromMenu();
+  await expect(externalReferencePage.getPage()).toBeVisible();
+  await expect(page.getByText(externalReferencesFromInitData)).toBeVisible();
+  await externalReferencePage.getItemFromList(externalReferencesFromInitData).click();
+
+  const externalReferenceDetailsPage = new ExternalReferenceDetailsPage(page);
+  await expect(externalReferenceDetailsPage.getPage()).toBeVisible();
 };
 
 /**
@@ -361,5 +380,6 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // await navigateGroupings(page);
   // await navigateMalwareAnalyses(page);
   await navigateNotes(page);
+  await navigateExternalReferences(page);
   // await navigateObservables(page);
 });
