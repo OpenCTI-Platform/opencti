@@ -30,7 +30,7 @@ export const up = async (next) => {
   for (let index = 0; index < multipleAuthorsHits?.length; index += 1) {
     const currentEntityWithMultipleAuthors = multipleAuthorsHits[index];
     const currentAuthorsIds = currentEntityWithMultipleAuthors._source['rel_created-by.internal_id'];
-    const authorIdToKeep = currentAuthorsIds[0];
+    const authorIdToKeep = currentAuthorsIds[currentAuthorsIds.length - 1];
     // 1. Update the denormalized refs of the current entity
     const updateCreatedByWithUniqueIdSource = 'ctx._source.rel_created-by.internal_id = [params.authorIdToKeep];';
     const updateCreatedByWithUniqueIdQuery = {
