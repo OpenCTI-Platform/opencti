@@ -301,7 +301,7 @@ const AIInsights = ({
           >
             <Close fontSize="small" color="primary"/>
           </IconButton>
-          <Typography variant="h2" style={{ textWrap: 'nowrap', margin: 0 }}>
+          <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>
             {t_i18n('AI Insights')}
           </Typography>
           <Button
