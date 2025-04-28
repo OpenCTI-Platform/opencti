@@ -14,6 +14,7 @@ import { useJsonMappersData } from '../../jsonMappers.data';
 import { useFormatter } from '../../../../../../components/i18n';
 import TextField from '../../../../../../components/TextField';
 import type { Theme } from '../../../../../../components/Theme';
+import { isEmptyField } from '../../../../../../utils/utils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -133,7 +134,9 @@ JsonMapperRepresentationAttributesFormProps
             name={`${representationName}.target.path`}
             variant='standard'
             style={{ width: '100%' }}
-            handleErrors={handleErrors}
+            onChange={(_event: React.SyntheticEvent, newValue: string) => {
+              handleErrors('target.path', isEmptyField(newValue) ? 'This field is required' : null);
+            }}
           />
         </div>
         <div/>
@@ -148,7 +151,6 @@ JsonMapperRepresentationAttributesFormProps
               name={`${representationName}.identifier`}
               variant='standard'
               style={{ width: '100%' }}
-              handleErrors={handleErrors}
             />
           </div>
         </>}
