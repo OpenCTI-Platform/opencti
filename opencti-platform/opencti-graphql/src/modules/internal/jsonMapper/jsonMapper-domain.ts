@@ -100,7 +100,7 @@ export const jsonMapperExport = async (context: AuthContext, user: AuthUser, jso
     type: 'jsonMapper',
     configuration: {
       name,
-      variables: JSON.parse(variables),
+      variables: variables ? JSON.parse(variables) : [],
       representations: parsedRepresentations,
     }
   });
