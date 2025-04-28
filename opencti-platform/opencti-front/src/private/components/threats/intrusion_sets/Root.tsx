@@ -28,6 +28,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import IntrusionSetDeletion from './IntrusionSetDeletion';
+import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -104,7 +106,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
   const paddingRight = getPaddingRight(location.pathname, intrusionSetId, '/dashboard/threats/intrusion_sets');
   const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {intrusionSet ? (
         <>
           <Routes>
@@ -148,6 +150,13 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    entityId={intrusionSet.id}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -274,7 +283,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
