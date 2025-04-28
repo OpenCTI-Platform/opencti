@@ -133,7 +133,6 @@ const connectorsStatusFragment = graphql`
       name
       active
       auto
-      is_managed
       connector_trigger_filters
       connector_type
       connector_scope
