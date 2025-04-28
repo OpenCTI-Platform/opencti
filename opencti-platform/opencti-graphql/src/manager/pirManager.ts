@@ -21,24 +21,30 @@ const PIR_MANAGER_INTERVAL = 10000; // TODO PIR: use config instead
 const PIR_MANAGER_LOCK_KEY = 'pir_manager_lock'; // TODO PIR: use config instead
 const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
 
+/**
+ * Find a meta relationship "in-pir" between an entity and a PIR and update
+ * its dependencies (matching criteria).
+ *
+ * @param context To be able to make the calls.
+ * @param sourceId ID of the source entity matching the PIR.
+ * @param pirId ID of the PIR matched by the entity.
+ * @param pirDependencies The new dependencies.
+ */
 const updatePirDependencies = async (
   context: AuthContext,
   sourceId: string,
   pirId: string,
-  pir_dependencies: any,
+  pirDependencies: any,
 ) => {
-  const pirRelArgs = {
-    fromId: sourceId,
-    toId: pirId,
-  };
+  const pirRelArgs = { fromId: sourceId, toId: pirId, };
   const pirMetaRels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, pirRelArgs);
   if (pirMetaRels.edges.length !== 1) {
-    throw FunctionalError('[POC PIR] Find more than one relation between an entity and a PIR', { sourceId, pirId, pirMetaRels });
+    // If < 1 then the meta relationship does not exist.
+    // If > 1, well this case should not be possible at all.
+    throw FunctionalError('Find more than one relation between an entity and a PIR', { sourceId, pirId, pirMetaRels });
   }
   const pirMetaRel = pirMetaRels.edges[0].node;
-  const editInput = [
-    { key: 'pir_dependencies', value: [pir_dependencies] },
-  ];
+  const editInput = [{ key: 'pir_dependencies', value: [pirDependencies] }];
   const updatedRef = await stixRefRelationshipEditField(context, SYSTEM_USER, pirMetaRel.id, editInput);
   console.log('[POC PIR] Meta Ref relation created', { updatedRef });
 };
@@ -60,15 +66,16 @@ const flagSource = async (
   pirId: string,
   matchingCriteria: PIR['pirCriteria']
 ) => {
-  const pir_dependencies = matchingCriteria.map((c) => ({
+  const pirDependencies = matchingCriteria.map((c) => ({
     relationship_id: relationshipId,
     weight: c.weight,
   }));
   const addRefInput = {
     relationship_type: RELATION_IN_PIR,
     toId: pirId,
-    pir_dependencies,
+    pir_dependencies: pirDependencies,
   };
+  // First create the meta relationship.
   await stixObjectOrRelationshipAddRefRelation(
     context,
     SYSTEM_USER,
@@ -76,23 +83,21 @@ const flagSource = async (
     addRefInput,
     ABSTRACT_STIX_CORE_OBJECT
   );
-  await updatePirDependencies(context, sourceId, pirId, pir_dependencies);
+  // And then add the dependencies in the meta relationship.
+  // TODO PIR: improve this if possible to avoid making to calls.
+  await updatePirDependencies(context, sourceId, pirId, pirDependencies);
 };
 
-const updateMatchingCriteriaInRel = async (
-  context: AuthContext,
-  relationshipId: string,
-  sourceId: string,
-  pirId: string,
-  matchingCriteria: PIR['pirCriteria'],
-) => {
-  const pir_dependencies = matchingCriteria.map((c) => ({
-    relationship_id: relationshipId,
-    weight: c.weight,
-  }));
-  await updatePirDependencies(context, sourceId, pirId, pir_dependencies);
-};
-
+/**
+ * Called when an event of create new relationship matches a PIR criteria.
+ * If the source of the relationship is already flagged update its dependencies,
+ * otherwise create a new meta relationship between the source and the PIR.
+ *
+ * @param context To be able to call engine.
+ * @param relationship The caught relationship matching the PIR.
+ * @param pir The PIR matched by the relationship.
+ * @param matchingCriteria The criteria that match.
+ */
 const onRelationCreated = async (
   context: AuthContext,
   relationship: any,
@@ -110,20 +115,32 @@ const onRelationCreated = async (
 
   if (sourceFlagged) {
     console.log('[POC PIR] Source already flagged');
-    await updateMatchingCriteriaInRel(context, relationshipId, sourceId, pir.id, matchingCriteria);
+    const pirDependencies = matchingCriteria.map((c) => ({
+      relationship_id: relationshipId,
+      weight: c.weight,
+    }));
+    await updatePirDependencies(context, sourceId, pir.id, pirDependencies);
   } else {
     console.log('[POC PIR] Source NOT flagged');
     await flagSource(context, relationshipId, sourceId, pir.id, matchingCriteria);
   }
 };
 
-const onRelationDeleted = async (context: AuthContext, data: any, pir: PIR) => {
-  console.log('[POC PIR] Event delete matching', { data });
+/**
+ * Called when an event of delete a relationship matches a PIR criteria.
+ *
+ * @param context To be able to call engine.
+ * @param relationship The caught relationship matching the PIR.
+ * @param pir The PIR matched by the relationship.
+ */
+const onRelationDeleted = async (context: AuthContext, relationship: any, pir: PIR) => {
+  console.log('[POC PIR] Event delete matching', { relationship, pir });
   // eventually remove the entity flag or update matching criteria
 };
 
 /**
  * Handler called every {PIR_MANAGER_INTERVAL} with new events received.
+ *
  * @param streamEvents The new events received since last call to the handler.
  */
 const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
