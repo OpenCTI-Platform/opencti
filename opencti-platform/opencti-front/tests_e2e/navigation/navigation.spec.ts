@@ -1,11 +1,11 @@
 import { Page } from '@playwright/test';
+import StixCoreObjectDataTab from 'tests_e2e/model/StixCoreObjectDataTab.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ReportPage from '../model/report.pageModel';
 import ReportDetailsPage from '../model/reportDetails.pageModel';
 import StixDomainObjectContentTabPage from '../model/StixDomainObjectContentTab.pageModel';
 import ContainerObservablesPage from '../model/containerObservables.pageModel';
-import StixCoreObjectDataTab from '../model/StixCoreObjectDataTab.pageModel';
 import GroupingsPage from '../model/grouping.pageModel';
 import GroupingDetailsPage from '../model/groupingDetails.pageModel';
 import MalwareAnalysesPage from '../model/MalwareAnalyses.pageModel';
@@ -15,6 +15,7 @@ import ObservablesPage from '../model/observable.pageModel';
 import ObservableDetailsPage from '../model/observableDetails.pageModel';
 import NotesPage from '../model/note.pageModel';
 import NoteDetailsPage from '../model/noteDetails.pageModel';
+import StixCoreObjectDataAndHistoryTab from '../model/StixCoreObjectDataAndHistoryTab.pageModel';
 
 /**
  * Goal: validate that everything is opening wihtout errors in Analyses > Malware analyses.
@@ -146,7 +147,7 @@ const navigateGroupings = async (page: Page) => {
 
   // -- Data
   await groupingsDetailsPage.tabs.goToDataTab();
-  const dataTab = new StixCoreObjectDataTab(page);
+  const dataTab = new StixCoreObjectDataAndHistoryTab(page);
   await expect(dataTab.getPage()).toBeVisible();
 };
 
@@ -205,7 +206,7 @@ const navigateReports = async (page: Page) => {
 
   // -- Data
   await reportDetailsPage.tabs.goToDataTab();
-  const dataTab = new StixCoreObjectDataTab(page);
+  const dataTab = new StixCoreObjectDataAndHistoryTab(page);
   await expect(dataTab.getPage()).toBeVisible();
 };
 
@@ -355,10 +356,10 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   // For faster debugging, each navigated can be commented.
   // so they should be all independent and start from the left menu.
 
-  //await navigateAllMenu(page);
-  //await navigateReports(page);
-  //await navigateGroupings(page);
-  //await navigateMalwareAnalyses(page);
+  // await navigateAllMenu(page);
+  // await navigateReports(page);
+  // await navigateGroupings(page);
+  // await navigateMalwareAnalyses(page);
   await navigateNotes(page);
-  //await navigateObservables(page);
+  // await navigateObservables(page);
 });
