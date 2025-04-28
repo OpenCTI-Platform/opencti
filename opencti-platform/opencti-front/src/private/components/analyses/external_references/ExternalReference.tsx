@@ -41,7 +41,7 @@ ExternalReferenceComponentProps
   const classes = useStyles();
   const overviewLayoutCustomization = useOverviewLayoutCustomization('External-Reference');
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="external-reference-details-page">
       <ExternalReferenceHeader
         externalReference={externalReference}
         EditComponent={(
