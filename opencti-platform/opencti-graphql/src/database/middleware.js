@@ -3230,7 +3230,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         // Upsert others
         const target = R.head(filteredEntities);
         const resolvedStixIds = { ...target, x_opencti_stix_ids: [...target.x_opencti_stix_ids, resolvedInput.stix_id] };
-        return upsertElement(context, user, target, type, resolvedStixIds, { ...opts, locks: participantIds});
+        return upsertElement(context, user, target, type, resolvedStixIds, { ...opts, locks: participantIds });
       }
       // Return the matching STIX IDs in others
       return { element: R.head(filteredEntities.filter((n) => getInstanceIds(n).includes(resolvedInput.stix_id))), event: null, isCreation: false };
