@@ -3,7 +3,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent } from '../types/event';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { ABSTRACT_STIX_CORE_OBJECT, STIX_TYPE_RELATION } from '../schema/general';
-import { stixObjectOrRelationshipAddRefRelation } from '../domain/stixObjectOrStixRelationship';
+import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from '../domain/stixObjectOrStixRelationship';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
@@ -43,8 +43,7 @@ const updatePirDependencies = async (
   pirDependencies: PirDependency[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
-  const pirRelArgs = { fromId: sourceId, toId: pirId, };
-  const pirMetaRels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, pirRelArgs);
+  const pirMetaRels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
   if (pirMetaRels.edges.length !== 1) {
     // If < 1 then the meta relationship does not exist.
     // If > 1, well this case should not be possible at all.
@@ -140,7 +139,28 @@ const onRelationCreated = async (
  */
 const onRelationDeleted = async (context: AuthContext, relationship: any, pir: ParsedPIR) => {
   console.log('[POC PIR] Event delete matching', { relationship, pir });
-  // eventually remove the entity flag or update matching criteria
+  // fetch rel between object and pir
+  const sourceId: string = relationship.extensions?.[STIX_EXT_OCTI]?.source_ref;
+  if (!sourceId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no source id found`);
+  const relationshipId: string = relationship.extensions?.[STIX_EXT_OCTI]?.id;
+  if (!relationshipId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
+  const rels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id }); // TODO PIR don't use pagination
+  console.log('rels', rels);
+  // eslint-disable-next-line no-restricted-syntax
+  for (const rel of rels.edges) {
+    const relDependencies = (rel as any).node.pir_dependencies as PirDependency[];
+    const newRelDependencies = relDependencies.filter((dep) => dep.relationship_id !== relationshipId);
+    console.log('newRelDependencies', newRelDependencies);
+    if (newRelDependencies.length === 0) {
+      // delete the rel between source and PIR
+      await stixObjectOrRelationshipDeleteRefRelation(context, SYSTEM_USER, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_CORE_OBJECT);
+      console.log('[POC PIR] PIR rel deleted');
+    } else if (newRelDependencies.length < relDependencies.length) {
+      // update dependencies
+      await updatePirDependencies(context, sourceId, pir.id, newRelDependencies);
+      console.log('[POC PIR] PIR rel updated', { newRelDependencies });
+    } // nothing to do
+  }
 };
 
 /**
