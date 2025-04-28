@@ -1,7 +1,8 @@
 import { logApp } from '../config/conf';
-import { elDeleteByQueryForMigration, elRawSearch, elUpdateByQueryForMigration } from '../database/engine';
+import { elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery } from '../database/engine';
 import { READ_DATA_INDICES, READ_INDEX_STIX_META_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { executionContext, SYSTEM_USER } from '../utils/access';
+import { DatabaseError } from '../config/errors';
 
 const message = '[MIGRATION] remove multiple authors from entities that have multiple rel_created-by.internal_id';
 
@@ -32,7 +33,7 @@ export const up = async (next) => {
     const currentAuthorsIds = currentEntityWithMultipleAuthors._source['rel_created-by.internal_id'];
     const authorIdToKeep = currentAuthorsIds[currentAuthorsIds.length - 1];
     // 1. Update the denormalized refs of the current entity
-    const updateCreatedByWithUniqueIdSource = 'ctx._source.rel_created-by.internal_id = [params.authorIdToKeep];';
+    const updateCreatedByWithUniqueIdSource = 'if (ctx._source[\'rel_created-by.internal_id\'] != null) ctx._source[\'rel_created-by.internal_id\'] = ctx._source[\'rel_created-by.internal_id\'].stream().filter(id -> id == params.authorIdToKeep).collect(Collectors.toList())';
     const updateCreatedByWithUniqueIdQuery = {
       script: {
         source: updateCreatedByWithUniqueIdSource,
@@ -44,7 +45,14 @@ export const up = async (next) => {
         }
       }
     };
-    await elUpdateByQueryForMigration('[MIGRATION] Updating entity to keep unique created by', [READ_RELATIONSHIPS_INDICES], updateCreatedByWithUniqueIdQuery);
+    await elRawUpdateByQuery({
+      index: [READ_RELATIONSHIPS_INDICES],
+      refresh: true,
+      wait_for_completion: true,
+      body: updateCreatedByWithUniqueIdQuery
+    }).catch((err) => {
+      throw DatabaseError('Error updating elastic', { cause: err });
+    });
 
     // 2. Delete all created-by ref relations that are not the unique author kept for entity
 
@@ -91,7 +99,13 @@ export const up = async (next) => {
       }
     };
 
-    await elDeleteByQueryForMigration('[MIGRATION] Deleting multiple created-by', [READ_INDEX_STIX_META_RELATIONSHIPS], allCreateByRefsExceptAuthorToKeepQuery);
+    await elRawDeleteByQuery({
+      index: READ_INDEX_STIX_META_RELATIONSHIPS,
+      refresh: true,
+      body: allCreateByRefsExceptAuthorToKeepQuery,
+    }).catch((err) => {
+      throw DatabaseError('Error cleaning the created by refs', { cause: err });
+    });
 
     logApp.info(`[MIGRATION] Entity ${currentEntityWithMultipleAuthors._id} authors cleaned -- ${index + 1}/${multipleAuthorsHits.length}`);
   }
