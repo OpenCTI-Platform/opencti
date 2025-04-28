@@ -45,10 +45,18 @@ const workbenchAttributes = [
 ];
 
 const ignoredAttributesInFeeds = [
+  'draft_ids',
+  'draft_change',
+  'parent_types',
+  'base_type',
+  'internal_id',
   'x_opencti_stix_ids',
+  'x_opencti_files',
+  'x_opencti_graph_data',
   'spec_version',
   'extensions',
   'importFiles',
+  'content_mapping',
   'opinions_metrics',
 ];
 
