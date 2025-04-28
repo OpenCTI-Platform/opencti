@@ -1,3 +1,9 @@
+type PIRCriterion {
+    id: ID!
+    filters: String!
+    weight: Int!
+}
+
 type PIR implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
@@ -5,7 +11,7 @@ type PIR implements InternalObject & BasicObject {
     parent_types: [String!]!
     # PIR
     name: String!
-    pirCriteria: String!
+    pirCriteria: [PIRCriterion!]!
     pirFilters: String!
 }
 
@@ -36,9 +42,14 @@ type Query {
     ): PIRConnection @auth(for: [KNOWLEDGE])
 }
 
+input PIRCriterionInput {
+    weight: Int!
+    filters: String!
+}
+
 input PIRAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
-    pirCriteria: String!
+    pirCriteria: [PIRCriterionInput!]!
     pirFilters: String!
 }
 

@@ -18745,14 +18745,14 @@ export type Pir = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
-  pirCriteria: Scalars['String']['output'];
+  pirCriteria: Array<PirCriterion>;
   pirFilters: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
 };
 
 export type PirAddInput = {
   name: Scalars['String']['input'];
-  pirCriteria: Scalars['String']['input'];
+  pirCriteria: Array<PirCriterionInput>;
   pirFilters: Scalars['String']['input'];
 };
 
@@ -18760,6 +18760,18 @@ export type PirConnection = {
   __typename?: 'PIRConnection';
   edges: Array<PirEdge>;
   pageInfo: PageInfo;
+};
+
+export type PirCriterion = {
+  __typename?: 'PIRCriterion';
+  filters: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  weight: Scalars['Int']['output'];
+};
+
+export type PirCriterionInput = {
+  filters: Scalars['String']['input'];
+  weight: Scalars['Int']['input'];
 };
 
 export type PirEdge = {
@@ -32847,6 +32859,8 @@ export type ResolversTypes = ResolversObject<{
   PIR: ResolverTypeWrapper<Pir>;
   PIRAddInput: PirAddInput;
   PIRConnection: ResolverTypeWrapper<PirConnection>;
+  PIRCriterion: ResolverTypeWrapper<PirCriterion>;
+  PIRCriterionInput: PirCriterionInput;
   PIREdge: ResolverTypeWrapper<PirEdge>;
   PIROrdering: PirOrdering;
   PackageStatus: PackageStatus;
@@ -33710,6 +33724,8 @@ export type ResolversParentTypes = ResolversObject<{
   PIR: Pir;
   PIRAddInput: PirAddInput;
   PIRConnection: PirConnection;
+  PIRCriterion: PirCriterion;
+  PIRCriterionInput: PirCriterionInput;
   PIREdge: PirEdge;
   PageInfo: PageInfo;
   Participant: Participant;
@@ -39994,7 +40010,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  pirCriteria?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pirCriteria?: Resolver<Array<ResolversTypes['PIRCriterion']>, ParentType, ContextType>;
   pirFilters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -40003,6 +40019,13 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
 export type PirConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PIRConnection'] = ResolversParentTypes['PIRConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['PIREdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PirCriterionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PIRCriterion'] = ResolversParentTypes['PIRCriterion']> = ResolversObject<{
+  filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  weight?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -44305,6 +44328,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   OverviewWidgetCustomization?: OverviewWidgetCustomizationResolvers<ContextType>;
   PIR?: PirResolvers<ContextType>;
   PIRConnection?: PirConnectionResolvers<ContextType>;
+  PIRCriterion?: PirCriterionResolvers<ContextType>;
   PIREdge?: PirEdgeResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   Participant?: ParticipantResolvers<ContextType>;

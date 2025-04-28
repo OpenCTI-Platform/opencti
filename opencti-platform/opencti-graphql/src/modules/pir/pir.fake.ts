@@ -1,7 +1,7 @@
 import { FilterMode, FilterOperator } from '../../generated/graphql';
-import type { ParsedPIR, PIRCriterion } from './pir-types';
+import type { ParsedPIR, ParsedPIRCriterion } from './pir-types';
 
-const LANDRY_CRITERIA: PIRCriterion[] = [
+const LANDRY_CRITERIA: ParsedPIRCriterion[] = [
   // Targets France
   {
     id: '1795b286-bbbb-4516-a330-a1c525efb947',
@@ -43,7 +43,7 @@ const LANDRY_CRITERIA: PIRCriterion[] = [
   }
 ];
 
-const CATHIA_CRITERIA: PIRCriterion[] = [
+const CATHIA_CRITERIA: ParsedPIRCriterion[] = [
   // Targets France
   {
     id: '1795b286-bbbb-4516-a330-a1c525efb947',
