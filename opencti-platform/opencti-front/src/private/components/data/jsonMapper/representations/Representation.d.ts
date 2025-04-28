@@ -13,6 +13,7 @@ export type JsonMapperRepresentationEdit = Omit<JsonMapperRepresentation, 'attri
 export interface JsonMapperRepresentationFormData {
   id: string
   type: string // entity / relationship
+  identifier?: string | null
   target?: {
     entity_type?: string
     path?: string

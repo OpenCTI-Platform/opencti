@@ -16,12 +16,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { BaseSyntheticEvent, Suspense, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import JsonMapperLines from '@components/data/jsonMapper/JsonMapperLines';
-import { CancelOutlined, CheckCircleOutlined, CloudUploadOutlined, WidgetsOutlined } from '@mui/icons-material';
+import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
 import ProcessingMenu from '@components/data/ProcessingMenu';
 import JsonMappersProvider, { mappersQuery } from '@components/data/jsonMapper/jsonMappers.data';
-import { SpeedDialIcon } from '@mui/material';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import SpeedDial from '@mui/material/SpeedDial';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { JsonMapperLine_jsonMapper$data } from '@components/data/jsonMapper/__generated__/JsonMapperLine_jsonMapper.graphql';
 import { graphql } from 'react-relay';
@@ -29,6 +26,7 @@ import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseE
 import JsonMapperCreationContainer from '@components/data/jsonMapper/JsonMapperCreationContainer';
 import { schemaAttributesQuery } from '@components/data/csvMapper/csvMappers.data';
 import { jsonMappers_SchemaAttributesQuery } from '@components/data/jsonMapper/__generated__/jsonMappers_SchemaAttributesQuery.graphql';
+import Button from '@mui/material/Button';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -46,16 +44,9 @@ const LOCAL_STORAGE_KEY_JSON_MAPPERS = 'jsonMappers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   container: {
     paddingRight: '200px',
-  },
-  speedDialButton: {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
   },
 }));
 
@@ -81,9 +72,6 @@ const JsonMappers = () => {
     },
   );
   const [open, setOpen] = useState(false);
-  const onClick = () => {
-    setOpen(true);
-  };
   const handleClose = () => {
     setOpen(false);
   };
@@ -172,6 +160,28 @@ const JsonMappers = () => {
                   keyword={viewStorage.searchTerm}
                   paginationOptions={paginationOptions}
                   numberOfElements={viewStorage.numberOfElements}
+                  createButton={(
+                    <>
+                      <>
+                        <Button
+                          variant='outlined'
+                          disableElevation
+                          sx={{ marginLeft: 1 }}
+                          onClick={() => inputFileRef?.current?.click()}
+                        >
+                          {t_i18n('Import a JSON mapper')}
+                        </Button>
+                        <Button
+                          variant='contained'
+                          disableElevation
+                          sx={{ marginLeft: 1 }}
+                          onClick={() => setOpen(true)}
+                        >
+                          {t_i18n('Create a JSON mapper')}
+                        </Button>
+                      </>
+                    </>
+                  )}
                 >
                   <React.Suspense
                     fallback={<Loader variant={LoaderVariant.inElement}/>}
@@ -188,32 +198,6 @@ const JsonMappers = () => {
                   accept={'application/JSON'}
                   onChange={handleFileImport}
                 />
-                <SpeedDial
-                  style={{
-                    position: 'fixed',
-                    bottom: 30,
-                    right: 230,
-                    zIndex: 1100,
-                  }}
-                  ariaLabel="Create"
-                  icon={<SpeedDialIcon/>}
-                  FabProps={{ color: 'primary' }}
-                >
-                  <SpeedDialAction
-                    title={t_i18n('Create a JSON mapper')}
-                    icon={<WidgetsOutlined/>}
-                    tooltipTitle={t_i18n('Create a JSON mapper')}
-                    onClick={onClick}
-                    FabProps={{ classes: { root: classes.speedDialButton } }}
-                  />
-                  <SpeedDialAction
-                    title={t_i18n('Import a JSON mapper')}
-                    icon={<CloudUploadOutlined/>}
-                    tooltipTitle={t_i18n('Import a JSON mapper')}
-                    onClick={() => inputFileRef?.current?.click()}
-                    FabProps={{ classes: { root: classes.speedDialButton } }}
-                  />
-                </SpeedDial>
                 <JsonMapperCreationContainer
                   paginationOptions={paginationOptions}
                   open={open}

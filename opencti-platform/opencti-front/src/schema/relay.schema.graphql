@@ -12253,7 +12253,7 @@ type AttributeColumn {
 }
 
 type AttributeBasedOn {
-  identifier: [String!]
+  identifier: String
   representations: [String]
 }
 
@@ -12473,7 +12473,7 @@ type JsonMapperRepresentation {
   id: ID!
   type: JsonMapperRepresentationType!
   target: JsonMapperRepresentationTarget!
-  identifier: [String!]
+  identifier: String
   attributes: [JsonMapperRepresentationAttribute!]!
   from: String
   to: String
