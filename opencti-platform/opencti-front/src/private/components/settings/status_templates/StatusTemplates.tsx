@@ -85,7 +85,7 @@ const StatusTemplates = () => {
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
-    orderAsc: false,
+    orderAsc: true,
     filters: emptyFilterGroup,
   };
 
@@ -114,20 +114,14 @@ const StatusTemplates = () => {
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       id: 'name',
-      label: 'Name',
-      isSortable: true,
       percentWidth: 50,
     },
     color: {
       id: 'color',
-      label: 'Color',
-      isSortable: false,
       percentWidth: 30,
     },
     usages: {
       id: 'usages',
-      label: 'Usages',
-      isSortable: false,
       percentWidth: 20,
     },
   };
