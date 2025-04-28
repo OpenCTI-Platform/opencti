@@ -1,21 +1,5 @@
-import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
-
-interface PIRCriterion {
-  id: string
-  filters: FilterGroup
-  weight: number
-}
-
-export interface PIR {
-  id: string
-  name: string
-  // Criteria are filters with a weight,
-  // they are used to compute matching score.
-  pirCriteria: PIRCriterion[]
-  // Filters do not count when computing score, their role
-  // is to exclude some data (low confidence for example).
-  pirFilters: FilterGroup
-}
+import { FilterMode, FilterOperator } from '../../generated/graphql';
+import type { ParsedPIR, PIRCriterion } from './pir-types';
 
 const LANDRY_CRITERIA: PIRCriterion[] = [
   // Targets France
@@ -89,7 +73,7 @@ const CATHIA_CRITERIA: PIRCriterion[] = [
 ];
 
 // TODO PIR !!! id should be in a trigger filter to update the Resolved filters cache
-export const FAKE_PIR: PIR = {
+export const FAKE_PIR: ParsedPIR = {
   id: '04aae53f-9991-48cf-8f94-5b20256a7546', // existing id to be able to add meta rel involving the PIR
   name: 'PIR about Energy sector in France',
   pirFilters: {

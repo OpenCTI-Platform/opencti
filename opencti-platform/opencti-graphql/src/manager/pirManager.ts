@@ -1,6 +1,5 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { FAKE_PIR, type PIR } from '../modules/pir/pir.fake';
 import type { DataEvent, SseEvent } from '../types/event';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { ABSTRACT_STIX_CORE_OBJECT, STIX_TYPE_RELATION } from '../schema/general';
@@ -11,7 +10,8 @@ import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
 import { findById } from '../domain/stixCoreObject';
 import { stixRefRelationshipEditField } from '../domain/stixRefRelationship';
-import { listRelationsPaginated } from '../database/middleware-loader';
+import { listAllEntities, listRelationsPaginated } from '../database/middleware-loader';
+import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR } from '../modules/pir/pir-types';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -64,7 +64,7 @@ const flagSource = async (
   relationshipId: string,
   sourceId: string,
   pirId: string,
-  matchingCriteria: PIR['pirCriteria']
+  matchingCriteria: ParsedPIR['pirCriteria']
 ) => {
   const pirDependencies = matchingCriteria.map((c) => ({
     relationship_id: relationshipId,
@@ -101,8 +101,8 @@ const flagSource = async (
 const onRelationCreated = async (
   context: AuthContext,
   relationship: any,
-  pir: PIR,
-  matchingCriteria: PIR['pirCriteria']
+  pir: ParsedPIR,
+  matchingCriteria: ParsedPIR['pirCriteria']
 ) => {
   const sourceId: string = relationship.extensions?.[STIX_EXT_OCTI]?.source_ref;
   if (!sourceId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no source id found`);
@@ -133,7 +133,7 @@ const onRelationCreated = async (
  * @param relationship The caught relationship matching the PIR.
  * @param pir The PIR matched by the relationship.
  */
-const onRelationDeleted = async (context: AuthContext, relationship: any, pir: PIR) => {
+const onRelationDeleted = async (context: AuthContext, relationship: any, pir: ParsedPIR) => {
   console.log('[POC PIR] Event delete matching', { relationship, pir });
   // eventually remove the entity flag or update matching criteria
 };
@@ -145,7 +145,7 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: P
  */
 const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   const context = executionContext(PIR_MANAGER_CONTEXT);
-  const allPIR = [FAKE_PIR]; // TODO PIR: fetch real ones from elastic.
+  const allPIR = await listAllEntities<BasicStoreEntityPIR>(context, SYSTEM_USER, [ENTITY_TYPE_PIR]);
 
   // TODO PIR: add PIR filters id in Resolved Filters cache
 
@@ -157,16 +157,22 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   if (eventsContent.length > 0) {
     // Loop through all PIR one by one.
     await Promise.all(allPIR.map(async (pir) => {
+      const parsedPir: ParsedPIR = {
+        ...pir,
+        pirFilters: JSON.parse(pir.pirFilters),
+        pirCriteria: JSON.parse(pir.pirCriteria)
+      };
+
       // Check every event received to see if it matches the PIR.
       await Promise.all(eventsContent.map(async (event) => {
         const { data } = event;
         // Check PIR filters (filters that do not count as criteria).
-        const eventMatchesPirFilters = await isStixMatchFilterGroup(context, SYSTEM_USER, data, pir.pirFilters);
+        const eventMatchesPirFilters = await isStixMatchFilterGroup(context, SYSTEM_USER, data, parsedPir.pirFilters);
         if (eventMatchesPirFilters) {
           // Check PIR criteria one by one (because we need to know which one matches or not).
-          const matchingCriteria: typeof pir.pirCriteria = [];
+          const matchingCriteria: typeof parsedPir.pirCriteria = [];
           // eslint-disable-next-line no-restricted-syntax
-          for (const pirCriterion of pir.pirCriteria) {
+          for (const pirCriterion of parsedPir.pirCriteria) {
             const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, pirCriterion.filters);
             if (isMatch) {
               matchingCriteria.push(pirCriterion);
@@ -176,10 +182,10 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
           if (matchingCriteria.length > 0) {
             switch (event.type) {
               case 'create':
-                await onRelationCreated(context, data, pir, matchingCriteria);
+                await onRelationCreated(context, data, parsedPir, matchingCriteria);
                 break;
               case 'delete':
-                await onRelationDeleted(context, data, pir);
+                await onRelationDeleted(context, data, parsedPir);
                 break;
               default: // Nothing to do.
             }
