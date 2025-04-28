@@ -280,7 +280,7 @@ const FileWorksComponent = ({
 
   return (
     <div>
-      {works && (
+      {works && works.length > 0 ? (
         <DataTableWithoutFragment
           dataColumns={dataColumns}
           data={works}
@@ -316,6 +316,15 @@ const FileWorksComponent = ({
           )}
           disableNavigation
         />
+      ) : (
+        <div style={{
+          paddingBlock: 8,
+          fontSize: 15,
+        }}
+        >
+          {t_i18n('No import works for this file')}
+        </div>
+
       )}
       {!!displayDelete && (<Dialog
         open={!!displayDelete}
