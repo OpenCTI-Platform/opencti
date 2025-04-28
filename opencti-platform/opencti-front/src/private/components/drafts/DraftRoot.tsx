@@ -16,8 +16,11 @@ import { graphql, useFragment, usePreloadedQuery, useQueryLoader } from 'react-r
 import { interval } from 'rxjs';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
 import Paper from '@mui/material/Paper';
+import ImportFilesContent from '@components/data/import/ImportFilesContent';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
+import useHelper from '../../../utils/hooks/useHelper';
+
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import { getCurrentTab } from '../../../utils/utils';
@@ -76,6 +79,8 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
+  const { isFeatureEnable } = useHelper();
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
 
   const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
   if (!draftWorkspace) {
@@ -237,7 +242,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
         />
         <Route
           path="/files"
-          element={<Import inDraftOverview/>}
+          element={isNewImportScreensEnabled ? (<ImportFilesContent inDraftOverview/>) : (<Import inDraftOverview/>)}
         />
       </Routes>
     </>

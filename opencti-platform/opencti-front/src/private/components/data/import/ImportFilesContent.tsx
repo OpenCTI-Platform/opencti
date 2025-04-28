@@ -6,25 +6,19 @@ import { ImportFilesContentLines_data$data } from '@components/data/import/__gen
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
 import ImportActionsPopover from '@components/common/files/ImportActionsPopover';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
+import Fab from '@mui/material/Fab';
+import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { deleteNode } from '../../../../utils/store';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { getFileUri } from '../../../../utils/utils';
 import UploadImport from '../../../../components/UploadImport';
-
-export const WorkbenchFileLineDeleteMutation = graphql`
-  mutation ImportFilesContentFileLineDeleteMutation($fileName: String) {
-    deleteImport(fileName: $fileName)
-  }
-`;
 
 export const workbenchLineFragment = graphql`
   fragment ImportFilesContentFileLine_file on File {
@@ -120,14 +114,17 @@ export const importFilesContentQuery = graphql`
 
 const LOCAL_STORAGE_KEY = 'importFiles';
 
-const ImportFilesContent = () => {
+interface ImportFilesContentProps {
+  inDraftOverview?: boolean;
+}
+
+const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Upload Files | Import | Data'));
   const { isFeatureEnable } = useHelper();
   const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
-  const [fileId, setFileId] = useState<string>('');
   const [openImportFilesDialog, setOpenImportFilesDialog] = useState<boolean>(false);
 
   const initialValues = {
@@ -158,32 +155,6 @@ const ImportFilesContent = () => {
     nodePath: ['importFiles', 'pageInfo', 'globalCount'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ImportFilesContentQuery>;
-
-  const [deleteFile] = useApiMutation(WorkbenchFileLineDeleteMutation);
-  const handleRemoveFile = () => {
-    deleteFile({
-      variables: { fileName: fileId },
-      optimisticUpdater: (store) => {
-        const fileStore = store.get(fileId);
-        fileStore?.setValue(0, 'lastModifiedSinceMin');
-        fileStore?.setValue('progress', 'uploadStatus');
-      },
-      updater: (store) => {
-        const fileStore = store.get(fileId);
-        fileStore?.setValue(0, 'lastModifiedSinceMin');
-        fileStore?.setValue('progress', 'uploadStatus');
-        deleteNode(store, 'Pagination_global_importFiles', queryPaginationOptions, fileId);
-      },
-      onCompleted: () => {
-        setFileId('');
-        handleCloseDelete();
-      },
-      onError: () => {
-        setFileId('');
-        handleCloseDelete();
-      },
-    });
-  };
 
   const toolbarFilters = {
     mode: 'and',
@@ -230,7 +201,7 @@ const ImportFilesContent = () => {
 
   return (
     <div style={{ height: '100%', paddingRight: isNewImportScreensEnabled ? 0 : 200 }} className="break">
-      {isNewImportScreensEnabled ? (
+      {!inDraftOverview && (isNewImportScreensEnabled ? (
         <>
           <Breadcrumbs
             elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
@@ -239,7 +210,7 @@ const ImportFilesContent = () => {
         </>
       ) : (
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]}/>
-      )}
+      ))}
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
