@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
@@ -371,6 +371,19 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
         // If already in draft do show redirect
         if (inDraftContext) return (<></>);
 
+        if (optionsContext.values.associatedEntity?.value) {
+          return (
+            <Button
+              color="secondary"
+              onClick={() => setDraftContext()}
+              component={Link}
+              to={`${resolveLink(optionsContext.values.associatedEntity.type)}/${optionsContext.values.associatedEntity.value}/files`}
+            >
+              {t_i18n('Navigate to entity')}
+            </Button>
+          );
+        }
+
         return (
           // Switch to draft mode and navigate to files draft
           <Button
@@ -478,8 +491,17 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
 };
 
 const ImportFilesDialog = ({ open, entityId, handleClose }: ImportFilesDialogProps) => {
+  const [dialogKey, setDialogKey] = useState(0);
+
+  useEffect(() => {
+    // Resets all dialog state on close by forcing a complete component remount via key change
+    if (!open) {
+      setDialogKey((prev) => prev + 1);
+    }
+  }, [open]);
+
   return (
-    <ImportFilesProvider initialValue={{ entityId }}>
+    <ImportFilesProvider key={`import-files-${dialogKey}`} initialValue={{ entityId }}>
       <ImportFiles open={open} handleClose={handleClose}></ImportFiles>
     </ImportFilesProvider>
   );
