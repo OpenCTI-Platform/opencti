@@ -17,7 +17,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import StatusField from '../../common/form/StatusField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
@@ -79,6 +79,8 @@ const organizationMutationRelationDelete = graphql`
   }
 `;
 
+const ORGANIZATION_TYPE = 'Organization';
+
 type OrganizationGenericData = OrganizationEditionOverview_organization$data & GenericData;
 
 interface OrganizationEditionOverviewComponentProps {
@@ -103,8 +105,9 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(ORGANIZATION_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     contact_information: Yup.string().nullable(),
@@ -116,8 +119,10 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
       .nullable()
       .min(0, t_i18n('The value must be greater than or equal to 0'))
       .max(100, t_i18n('The value must be less than or equal to 100')),
-  };
-  const organizationValidator = useSchemaEditionValidation('Organization', basicShape);
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const organizationValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: organizationMutationFieldPatch,
@@ -194,6 +199,8 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={organizationValidator}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -211,6 +218,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -222,6 +230,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -259,6 +268,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
             label={t_i18n('Organization type')}
             type="organization_type_ov"
             name="x_opencti_organization_type"
+            required={(mandatoryAttributes.includes('x_opencti_organization_type'))}
             onChange={setFieldValue}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -271,6 +281,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
             label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
+            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
             onChange={setFieldValue}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -283,6 +294,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
             component={TextField}
             variant="standard"
             name="x_opencti_score"
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
             label={t_i18n('Score')}
             type="number"
             fullWidth={true}
@@ -311,6 +323,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
           )}
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
@@ -320,6 +333,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />

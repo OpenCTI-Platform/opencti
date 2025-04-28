@@ -14,7 +14,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { OrganizationCreationMutation, OrganizationCreationMutation$variables } from './__generated__/OrganizationCreationMutation.graphql';
 import { OrganizationsLinesPaginationQuery$variables } from './__generated__/OrganizationsLinesPaginationQuery.graphql';
@@ -58,8 +58,8 @@ interface OrganizationAddInput {
   confidence: number | null
   x_opencti_reliability: string | undefined
   x_opencti_organization_type: string | undefined
-  x_opencti_score: string | null
-  createdBy: FieldOption | null
+  x_opencti_score: string | undefined
+  createdBy: FieldOption | undefined
   objectMarking: FieldOption[]
   objectLabel: FieldOption[]
   externalReferences: { value: string }[]
@@ -70,8 +70,8 @@ interface OrganizationFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   inputValue?: string;
   bulkModalOpen?: boolean;
   onBulkModalClose: () => void;
@@ -90,10 +90,9 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string()
-      .min(2)
-      .required(t_i18n('This field is required')),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(ORGANIZATION_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().min(2),
     description: Yup.string()
       .nullable(),
     confidence: Yup.number().nullable(),
@@ -105,8 +104,10 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       .nullable()
       .min(0, t_i18n('The value must be greater than or equal to 0'))
       .max(100, t_i18n('The value must be less than or equal to 100')),
-  };
-  const organizationValidator = useSchemaCreationValidation(ORGANIZATION_TYPE, basicShape);
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const organizationValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<OrganizationCreationMutation>(
     organizationMutation,
@@ -146,7 +147,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
         description: values.description,
         x_opencti_reliability: values.x_opencti_reliability,
         x_opencti_organization_type: values.x_opencti_organization_type,
-        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : null,
+        x_opencti_score: values.x_opencti_score ? parseInt(values.x_opencti_score, 10) : undefined,
         createdBy: values.createdBy?.value,
         confidence: parseInt(String(values.confidence), 10),
         objectMarking: values.objectMarking.map((v) => v.value),
@@ -178,19 +179,21 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       description: '',
       x_opencti_reliability: undefined,
       x_opencti_organization_type: undefined,
-      createdBy: defaultCreatedBy ?? null,
+      createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
       confidence: null,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
       file: null,
-      x_opencti_score: null,
+      x_opencti_score: undefined,
     },
   );
 
   return <Formik<OrganizationAddInput>
     initialValues={initialValues}
     validationSchema={organizationValidator}
+    validateOnChange={false}
+    validateOnBlur={false}
     onSubmit={onSubmit}
     onReset={onReset}
          >
@@ -234,6 +237,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             variant="standard"
             name="name"
             label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
             fullWidth={true}
             detectDuplicate={['Organization']}
           />
@@ -241,6 +245,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -255,6 +260,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             label={t_i18n('Organization type')}
             type="organization_type_ov"
             name="x_opencti_organization_type"
+            required={(mandatoryAttributes.includes('x_opencti_organization_type'))}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
@@ -263,6 +269,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
+            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             onChange={setFieldValue}
@@ -271,6 +278,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
             component={TextField}
             variant="standard"
             name="x_opencti_score"
+            required={(mandatoryAttributes.includes('x_opencti_score'))}
             label={t_i18n('Score')}
             fullWidth={true}
             type="number"
@@ -278,22 +286,26 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           />
           <CreatedByField
             name="createdBy"
+            required={(mandatoryAttributes.includes('createdBy'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
+            required={(mandatoryAttributes.includes('externalReferences'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}

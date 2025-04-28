@@ -15,7 +15,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { SectorCreationMutation, SectorCreationMutation$variables } from './__generated__/SectorCreationMutation.graphql';
 import { SectorsLinesPaginationQuery$variables } from './__generated__/SectorsLinesPaginationQuery.graphql';
@@ -75,7 +75,7 @@ interface SectorAddInput {
   name: string;
   description: string;
   confidence: number | null;
-  createdBy: FieldOption | null;
+  createdBy: FieldOption | undefined;
   objectMarking: FieldOption[];
   objectLabel: FieldOption[];
   externalReferences: { value: string }[];
@@ -86,8 +86,8 @@ interface SectorFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
   inputValue?: string;
   bulkModalOpen?: boolean;
   onBulkModalClose: () => void;
@@ -106,15 +106,15 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const basicShape = {
-    name: Yup.string()
-      .min(2)
-      .required(t_i18n('This field is required')),
-    description: Yup.string()
-      .nullable(),
+  const { mandatoryAttributes } = useIsMandatoryAttribute(SECTOR_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().min(2),
+    description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
-  };
-  const sectorValidator = useSchemaCreationValidation(SECTOR_TYPE, basicShape);
+    createdBy: Yup.object().nullable(),
+    objectMarking: Yup.array().nullable(),
+  }, mandatoryAttributes);
+  const sectorValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const [commit] = useApiMutation<SectorCreationMutation>(
     sectorMutation,
@@ -185,7 +185,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
       name: inputValue ?? '',
       description: '',
       confidence: null,
-      createdBy: defaultCreatedBy ?? null,
+      createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
@@ -197,6 +197,8 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     <Formik<SectorAddInput>
       initialValues={initialValues}
       validationSchema={sectorValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -240,6 +242,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
+              required={(mandatoryAttributes.includes('name'))}
               fullWidth={true}
               detectDuplicate={['Sector']}
             />
@@ -247,6 +250,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
+              required={(mandatoryAttributes.includes('description'))}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -258,22 +262,26 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
             />
             <CreatedByField
               name="createdBy"
+              required={(mandatoryAttributes.includes('createdBy'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
+              required={(mandatoryAttributes.includes('objectLabel'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
+              required={(mandatoryAttributes.includes('externalReferences'))}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
