@@ -12,6 +12,7 @@ import { findById } from '../domain/stixCoreObject';
 import { stixRefRelationshipEditField } from '../domain/stixRefRelationship';
 import { listAllEntities, listRelationsPaginated } from '../database/middleware-loader';
 import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR } from '../modules/pir/pir-types';
+import { EditOperation } from '../generated/graphql';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -20,6 +21,11 @@ const PIR_MANAGER_CONTEXT = 'pir_manager';
 const PIR_MANAGER_INTERVAL = 10000; // TODO PIR: use config instead
 const PIR_MANAGER_LOCK_KEY = 'pir_manager_lock'; // TODO PIR: use config instead
 const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
+
+interface PirDependency {
+  relationship_id: string,
+  weight: number,
+}
 
 /**
  * Find a meta relationship "in-pir" between an entity and a PIR and update
@@ -34,7 +40,8 @@ const updatePirDependencies = async (
   context: AuthContext,
   sourceId: string,
   pirId: string,
-  pirDependencies: any,
+  pirDependencies: PirDependency[],
+  operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
   const pirRelArgs = { fromId: sourceId, toId: pirId, };
   const pirMetaRels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, pirRelArgs);
@@ -44,7 +51,7 @@ const updatePirDependencies = async (
     throw FunctionalError('Find more than one relation between an entity and a PIR', { sourceId, pirId, pirMetaRels });
   }
   const pirMetaRel = pirMetaRels.edges[0].node;
-  const editInput = [{ key: 'pir_dependencies', value: [pirDependencies] }];
+  const editInput = [{ key: 'pir_dependencies', value: pirDependencies, operation }];
   const updatedRef = await stixRefRelationshipEditField(context, SYSTEM_USER, pirMetaRel.id, editInput);
   console.log('REF', updatedRef);
 };
@@ -61,15 +68,10 @@ const updatePirDependencies = async (
  */
 const flagSource = async (
   context: AuthContext,
-  relationshipId: string,
   sourceId: string,
   pirId: string,
-  matchingCriteria: ParsedPIR['pirCriteria']
+  pirDependencies: PirDependency[],
 ) => {
-  const pirDependencies = matchingCriteria.map((c) => ({
-    relationship_id: relationshipId,
-    weight: c.weight,
-  }));
   const addRefInput = {
     relationship_type: RELATION_IN_PIR,
     toId: pirId,
@@ -113,17 +115,18 @@ const onRelationCreated = async (
   const sourceFlagged = (source[RELATION_IN_PIR] ?? []).length > 0;
   console.log('[POC PIR] Event create matching', { source, relationship, matchingCriteria });
 
+  const pirDependencies = matchingCriteria.map((c) => ({
+    relationship_id: relationshipId,
+    weight: c.weight,
+  }));
+
   if (sourceFlagged) {
     console.log('[POC PIR] Source already flagged');
-    const pirDependencies = matchingCriteria.map((c) => ({
-      relationship_id: relationshipId,
-      weight: c.weight,
-    }));
-    await updatePirDependencies(context, sourceId, pir.id, pirDependencies);
+    await updatePirDependencies(context, sourceId, pir.id, pirDependencies, EditOperation.Add);
     console.log('[POC PIR] Meta Ref relation updated');
   } else {
     console.log('[POC PIR] Source NOT flagged');
-    await flagSource(context, relationshipId, sourceId, pir.id, matchingCriteria);
+    await flagSource(context, sourceId, pir.id, pirDependencies);
     console.log('[POC PIR] Meta Ref relation created');
   }
 };
