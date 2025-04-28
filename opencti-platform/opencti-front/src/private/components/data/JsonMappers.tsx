@@ -77,7 +77,6 @@ const JsonMappers = () => {
   };
 
   const [commitImportMutation] = useApiMutation(importMutation);
-  // const [importedFileData, setImportedFileData] = useState<JsonMappersImportQuery$data['jsonMapperAddInputFromImport'] | null>(null);
 
   const inputFileRef = useRef<HTMLInputElement>(null);
 
@@ -109,14 +108,6 @@ const JsonMappers = () => {
       },
     },
   };
-  // const onClick = () => {
-  //   setOpen(true);
-  // };
-
-  // const handleClose = () => {
-  //   setOpen(false);
-  //   // setImportedFileData(null);
-  // };
 
   const handleFileImport = (event: BaseSyntheticEvent) => {
     const importedFile = event.target.files[0];
