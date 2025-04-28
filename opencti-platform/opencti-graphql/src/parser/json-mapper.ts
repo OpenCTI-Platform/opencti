@@ -126,10 +126,11 @@ const extractSimplePathFromJson = async (
 const extractIdentifierFromJson = async (
   base: JSON,
   record: JSON,
-  identifier: string[],
+  identifier: string,
   attrDef?: AttributeDefinition
 ) => {
-  return identifier.map((id) => extractSimplePathFromJson(base, record, { path: id }, attrDef)).join('-');
+  const identifiers = identifier.split(',');
+  return identifiers.map((id) => extractSimplePathFromJson(base, record, { path: id }, attrDef)).join('-');
 };
 
 /* eslint-disable no-param-reassign */

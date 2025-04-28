@@ -182,9 +182,10 @@ JsonMapperRepresentationFormProps
                 </li>
               )}
             />
-            <div style={{ marginTop: 20 }}>
+            <div>
               <JsonMapperRepresentationAttributesForm
                 handleErrors={handleErrors}
+                representationType={prefixLabel === 'relationship_' ? 'relationship' : 'entity'}
                 representation={value}
                 representationName={name}
               />

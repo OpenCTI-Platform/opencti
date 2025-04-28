@@ -19,6 +19,7 @@ export const jsonMapperEditionContainerFragment = graphql`
         path
         entity_type
       }
+      identifier
       attributes {
         key
         mode
@@ -83,7 +84,7 @@ const JsonMapperEditionContainer: FunctionComponent<JsonMapperEditionProps> = ({
   }
 
   return (
-    <Drawer title={t_i18n('CSV Mapper edition')} open={open} onClose={onClose}>
+    <Drawer title={t_i18n('JSON Mapper edition')} open={open} onClose={onClose}>
       <JsonMapperEdition jsonMapper={jsonMapper} onClose={onClose}/>
     </Drawer>
   );

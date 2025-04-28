@@ -115,6 +115,16 @@ const IngestionJson = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         keyword={searchTerm}
+        createButton={
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <IngestionJsonCreationContainer
+              open={false}
+              handleClose={() => { }}
+              paginationOptions={paginationOptions}
+              isDuplicated={false}
+            />
+          </Security>
+        }
       >
         {queryRef && (
           <React.Suspense
@@ -155,18 +165,10 @@ const IngestionJson = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('JSON feeds'), current: true }]} />
       <IngestionMenu/>
       {!isEnterpriseEdition ? (
-        <EnterpriseEdition feature="Dissemination lists" />
+        <EnterpriseEdition feature="JSON Feed" />
       ) : (
         <>
           {renderLines()}
-          <Security needs={[INGESTION_SETINGESTIONS]}>
-            <IngestionJsonCreationContainer
-              open={false}
-              handleClose={() => {}}
-              paginationOptions={paginationOptions}
-              isDuplicated={false}
-            />
-          </Security>
         </>)}
     </div>
   );

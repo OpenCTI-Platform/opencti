@@ -9,7 +9,7 @@ type AttributeColumn {
   configuration: AttributeColumnConfiguration
 }
 type AttributeBasedOn {
-  identifier: [String!]
+  identifier: String
   representations: [String]
 }
 type AttributeRef {

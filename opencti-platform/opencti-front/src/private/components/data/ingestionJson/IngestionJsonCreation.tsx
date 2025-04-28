@@ -22,7 +22,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { HeaderFieldAdd } from '@components/common/form/HeaderField';
 import { QueryAttributeFieldAdd } from '@components/common/form/QueryAttributeField';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatorField from '../../common/form/CreatorField';
@@ -39,6 +39,7 @@ import { convertMapper, convertUser } from '../../../../utils/edition';
 import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
 import PasswordTextField from '../../../../components/PasswordTextField';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -561,6 +562,14 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     </Formik>
   );
 };
+
+const CreateIngestionJsonControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial
+    entityType='IngestionJson'
+    {...props}
+  />
+);
+
 export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCreationContainerProps> = ({
   queryRef,
   handleClose,
@@ -578,7 +587,7 @@ export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCrea
       title={isDuplicated ? t_i18n('Duplicate a JSON feed') : t_i18n('Create a JSON feed')}
       open={open}
       onClose={handleClose}
-      variant={isDuplicated ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={!isDuplicated ? CreateIngestionJsonControlledDial : undefined}
     >
       {({ onClose }) => (
         <IngestionJsonCreation

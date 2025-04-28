@@ -72,7 +72,7 @@ export const jsonMapperAttributeToFormData = (
     mode: attribute.mode,
     attr_path: attribute.attr_path,
     based_on: {
-      identifier: attribute.based_on?.identifier as string[],
+      identifier: attribute.based_on?.identifier,
       representations: attribute.based_on?.representations as string[],
     },
     default_values: schemaAttribute ? computeDefaultValues(

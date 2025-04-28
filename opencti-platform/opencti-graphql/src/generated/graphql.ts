@@ -995,7 +995,7 @@ export type Attribute = {
 
 export type AttributeBasedOn = {
   __typename?: 'AttributeBasedOn';
-  identifier?: Maybe<Array<Scalars['String']['output']>>;
+  identifier?: Maybe<Scalars['String']['output']>;
   representations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
 };
 
@@ -11845,7 +11845,7 @@ export type JsonMapperRepresentation = {
   attributes: Array<JsonMapperRepresentationAttribute>;
   from?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
-  identifier?: Maybe<Array<Scalars['String']['output']>>;
+  identifier?: Maybe<Scalars['String']['output']>;
   target: JsonMapperRepresentationTarget;
   to?: Maybe<Scalars['String']['output']>;
   type: JsonMapperRepresentationType;
@@ -33919,7 +33919,7 @@ export type AttributeResolvers<ContextType = any, ParentType extends ResolversPa
 }>;
 
 export type AttributeBasedOnResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeBasedOn'] = ResolversParentTypes['AttributeBasedOn']> = ResolversObject<{
-  identifier?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  identifier?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   representations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -37608,7 +37608,7 @@ export type JsonMapperRepresentationResolvers<ContextType = any, ParentType exte
   attributes?: Resolver<Array<ResolversTypes['JsonMapperRepresentationAttribute']>, ParentType, ContextType>;
   from?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  identifier?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  identifier?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   target?: Resolver<ResolversTypes['JsonMapperRepresentationTarget'], ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['JsonMapperRepresentationType'], ParentType, ContextType>;

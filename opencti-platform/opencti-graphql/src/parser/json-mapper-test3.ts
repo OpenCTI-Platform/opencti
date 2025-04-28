@@ -51,7 +51,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
         entity_type: ENTITY_TYPE_VULNERABILITY,
         path: '$.vulnerabilities[?(@.cveID)]'
       },
-      identifier: ['$.cveID'],
+      identifier: '$.cveID',
       attributes: [
         {
           key: 'name',
@@ -114,7 +114,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
         entity_type: ENTITY_SOFTWARE,
         path: '$.vulnerabilities[?(@.product)]'
       },
-      identifier: ['$.product', '$.vendorProject'],
+      identifier: '$.product,$.vendorProject',
       attributes: [
         {
           key: 'name',
@@ -144,7 +144,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
           key: 'from',
           mode: 'base',
           based_on: {
-            identifier: ['$.product', '$.vendorProject'],
+            identifier: '$.product,$.vendorProject',
             representations: [
               'softwareRepresentation'
             ]
@@ -173,7 +173,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
           key: 'from',
           mode: 'base',
           based_on: {
-            identifier: ['$.product', '$.vendorProject'],
+            identifier: '$.product,$.vendorProject',
             representations: [
               'softwareRepresentation'
             ]
@@ -183,7 +183,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
           key: 'to',
           mode: 'base',
           based_on: {
-            identifier: ['$.cveID'],
+            identifier: '$.cveID',
             representations: [
               'vulnerabilityRepresentation'
             ]

@@ -6,18 +6,22 @@ import { representationLabel } from '@components/data/jsonMapper/representations
 import * as R from 'ramda';
 import { getBasedOnRepresentations, getInfoForRef } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
-import { FieldProps } from 'formik';
+import { Field, FieldProps } from 'formik';
 import { JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
 import JsonMapperRepresentationDialogOption from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationDialogOption';
 import JsonMapperRepresentationAttributeOptions from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributeOptions';
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
 import { SchemaAttribute } from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
+import { TextField } from 'formik-mui';
+import { useTheme } from '@mui/styles';
+import { SelectChangeEvent } from '@mui/material/Select';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects } from '../../../../../../utils/stixTypeUtils';
+import type { Theme } from '../../../../../../components/Theme';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -56,8 +60,10 @@ JsonMapperRepresentationAttributeRefFormProps
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   const { name, value } = field;
+  const isRelationFromOrTo = name.endsWith('from') || name.endsWith('to');
   const { setFieldValue, values } = form;
   const { entity_representations } = values;
 
@@ -94,7 +100,10 @@ JsonMapperRepresentationAttributeRefFormProps
   let options: JsonMapperRepresentationFormData[] = [];
 
   // We don't need to resolve those different types, as they can link any entity between them.
-  if (representation.target?.entity_type === 'related-to' || representation.target?.entity_type === 'revoked-by' || representation.target?.entity_type === 'stix-sighting-relationship') {
+  const isGenericRelationship = representation.target?.entity_type === 'related-to'
+      || representation.target?.entity_type === 'revoked-by'
+      || representation.target?.entity_type === 'stix-sighting-relationship';
+  if (isRelationFromOrTo && isGenericRelationship) {
     options = filterOptions(entity_representations);
   } else if (representation.target?.entity_type) {
     const relationshipTypes = resolveTypesForRelationship(
@@ -148,7 +157,20 @@ JsonMapperRepresentationAttributeRefFormProps
     }
   }, [errors]);
 
-  const onValueChange = async (
+  const onIdentifierValueChange = async (val: SelectChangeEvent) => {
+    const updateAttribute: JsonMapperRepresentationAttributeFormData = {
+      ...(value ?? {}),
+      key: schemaAttribute.name,
+      mode: 'base',
+      based_on: {
+        identifier: val.target.value,
+        representations: value?.based_on?.representations ?? [],
+      },
+    };
+    await setFieldValue(name, updateAttribute);
+  };
+
+  const onSelectValueChange = async (
     val: JsonMapperRepresentationFormData[] | JsonMapperRepresentationFormData | null,
   ) => {
     let ids: string[] | undefined;
@@ -158,31 +180,20 @@ JsonMapperRepresentationAttributeRefFormProps
       // internally, it's always an array
       ids = val ? [(val as JsonMapperRepresentationFormData).id] : undefined;
     }
-
-    if (!value) {
-      // this attribute was not set yet, initialize
-      const newAttribute: JsonMapperRepresentationAttributeFormData = {
-        key: schemaAttribute.name,
-        mode: 'base',
-        based_on: {
-          representations: ids,
-        },
-      };
-      await setFieldValue(name, newAttribute);
-    } else {
-      const updateAttribute: JsonMapperRepresentationAttributeFormData = {
-        ...value,
-        mode: 'base',
-        based_on: {
-          representations: ids,
-        },
-      };
-      await setFieldValue(name, updateAttribute);
-    }
+    const updateAttribute: JsonMapperRepresentationAttributeFormData = {
+      ...(value ?? {}),
+      key: schemaAttribute.name,
+      mode: 'base',
+      based_on: {
+        identifier: value?.based_on?.identifier ?? '',
+        representations: ids,
+      },
+    };
+    await setFieldValue(name, updateAttribute);
   };
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} style={{ border: `1px solid ${theme.palette.divider}`, padding: 10 }}>
       <div>
         {label}
         {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
@@ -198,7 +209,7 @@ JsonMapperRepresentationAttributeRefFormProps
             getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
             options={options}
             value={getBasedOnRepresentations(value, options) || null}
-            onChange={(_, val) => onValueChange(val)}
+            onChange={(_, val) => onSelectValueChange(val)}
             renderInput={(params) => (
               <MuiTextField
                 {...params}
@@ -221,7 +232,7 @@ JsonMapperRepresentationAttributeRefFormProps
             getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
             options={options}
             value={R.head(getBasedOnRepresentations(value, options)) || null}
-            onChange={(_, val) => onValueChange(val)}
+            onChange={(_, val) => onSelectValueChange(val)}
             renderInput={(params) => (
               <MuiTextField
                 {...params}
@@ -246,6 +257,19 @@ JsonMapperRepresentationAttributeRefFormProps
             />
           </JsonMapperRepresentationDialogOption>
         )}
+      </div>
+      <div>Identifier</div>
+      <div>
+        <Field
+          component={TextField}
+          label={t_i18n('JSON Path')}
+          name={`${name}.identifier`}
+          variant='standard'
+          style={{ width: '100%' }}
+          value={value?.based_on?.identifier ?? ''}
+          onChange={(val: SelectChangeEvent) => onIdentifierValueChange(val)}
+          handleErrors={handleErrors}
+        />
       </div>
     </div>
   );

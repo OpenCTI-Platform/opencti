@@ -61,6 +61,7 @@ export const jsonMapperRepresentationToFormData = (
   return {
     id: representation.id,
     type: representation.type,
+    identifier: representation.identifier,
     target: {
       entity_type: representation.target.entity_type,
       path: representation.target.path,
@@ -96,6 +97,7 @@ export const formDataToJsonMapperRepresentation = (
       entity_type: data.target?.entity_type ?? '',
       path: data.target?.path ?? '',
     },
+    identifier: data.identifier,
     attributes: (Object.entries(data.attributes)).flatMap(([name, attribute]) => {
       const mapperAttribute = formDataToJsonMapperAttribute(attribute, name);
       return (
