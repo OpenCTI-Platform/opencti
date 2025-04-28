@@ -28,6 +28,8 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CampaignEdition from './CampaignEdition';
 import CampaignDeletion from './CampaignDeletion';
+import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -99,7 +101,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
   const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaignId}`;
   const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {campaign ? (
         <>
           <Routes>
@@ -142,6 +144,13 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CampaignEdition campaignId={campaign.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    entityId={campaign.id}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -268,7 +277,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
