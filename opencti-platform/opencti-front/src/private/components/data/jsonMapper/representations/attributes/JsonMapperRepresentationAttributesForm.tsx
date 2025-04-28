@@ -8,9 +8,31 @@ import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/re
 import {
   JsonMapperRepresentationAttributesForm_allSchemaAttributes$key,
 } from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
 import { useJsonMappersData } from '../../jsonMappers.data';
 import { useFormatter } from '../../../../../../components/i18n';
 import TextField from '../../../../../../components/TextField';
+import type { Theme } from '../../../../../../components/Theme';
+
+// Deprecated - https://mui.com/system/styles/basics/
+// Do not use it for new code.
+const useStyles = makeStyles(() => ({
+  container: {
+    width: '100%',
+    display: 'inline-grid',
+    gridTemplateColumns: '2fr 3fr 50px',
+    alignItems: 'center',
+    padding: 10,
+    marginTop: 20,
+    marginBottom: 10,
+    gap: '10px',
+  },
+  redStar: {
+    color: 'rgb(244, 67, 54)',
+    marginLeft: '5px',
+  },
+}));
 
 export const JsonMapperRepresentationAttributesFormFragment = graphql`
   fragment JsonMapperRepresentationAttributesForm_allSchemaAttributes on Query {
@@ -53,13 +75,16 @@ export interface SchemaAttribute {
 interface JsonMapperRepresentationAttributesFormProps {
   handleErrors: (key: string, value: string | null) => void;
   representation: JsonMapperRepresentationFormData
+  representationType: string
   representationName: string
 }
 
 const JsonMapperRepresentationAttributesForm: FunctionComponent<
 JsonMapperRepresentationAttributesFormProps
-> = ({ handleErrors, representation, representationName }) => {
+> = ({ handleErrors, representation, representationType, representationName }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const classes = useStyles();
   const { schemaAttributes } = useJsonMappersData();
   const data = useFragment<JsonMapperRepresentationAttributesForm_allSchemaAttributes$key>(
     JsonMapperRepresentationAttributesFormFragment,
@@ -96,15 +121,38 @@ JsonMapperRepresentationAttributesFormProps
 
   return (
     <>
-      <Field
-        component={TextField}
-        label={t_i18n('JSON Entity path')}
-        required={true}
-        name={`${representationName}.target.path`}
-        variant='standard'
-        style={{ width: '100%' }}
-        handleErrors={handleErrors}
-      />
+      {mutableSchemaAttributes.length > 0 && <div className={classes.container} style={{ border: `1px solid ${theme.palette.divider}` }}>
+        <div>
+          Entity path mapping <span className={classes.redStar}>*</span>
+        </div>
+        <div>
+          <Field
+            component={TextField}
+            label={t_i18n('JSON Path')}
+            required={true}
+            name={`${representationName}.target.path`}
+            variant='standard'
+            style={{ width: '100%' }}
+            handleErrors={handleErrors}
+          />
+        </div>
+        <div/>
+        { representationType === 'entity' && <>
+          <div>
+            Identifier
+          </div>
+          <div>
+            <Field
+              component={TextField}
+              label={t_i18n('JSON Path')}
+              name={`${representationName}.identifier`}
+              variant='standard'
+              style={{ width: '100%' }}
+              handleErrors={handleErrors}
+            />
+          </div>
+        </>}
+      </div>}
       {[...mutableSchemaAttributes]
         .sort((a1, a2) => Number(a2.mandatory) - Number(a1.mandatory))
         .map((schemaAttribute) => {

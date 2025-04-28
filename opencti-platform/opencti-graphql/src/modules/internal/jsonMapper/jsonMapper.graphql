@@ -39,7 +39,7 @@ type JsonMapperRepresentation {
     id: ID!
     type: JsonMapperRepresentationType!
     target: JsonMapperRepresentationTarget!
-    identifier: [String!]
+    identifier: String
     attributes: [JsonMapperRepresentationAttribute!]!
     from: String
     to: String

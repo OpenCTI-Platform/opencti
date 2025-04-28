@@ -36,7 +36,7 @@ export interface SimpleAttributePath {
   configuration?: AttributeColumnConfiguration
 }
 interface AttributeBasedOn {
-  identifier?: string[]
+  identifier?: string
   representations?: string[]
 }
 
@@ -82,7 +82,7 @@ export interface JsonMapperRepresentation {
   id: string
   type: JsonMapperRepresentationType
   target: JsonMapperRepresentationTarget
-  identifier?: string[]
+  identifier?: string
   attributes: RepresentationAttribute[]
 }
 

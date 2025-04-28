@@ -141,7 +141,6 @@ JsonMapperRepresentationAttributeFormProps
           label={t_i18n('JSON Path')}
           fullWidth={true}
         />
-
         {/** <MUIAutocomplete
           selectOnFocus
           openOnFocus
