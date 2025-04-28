@@ -6,7 +6,7 @@ import { elUpdateByQueryForMigration } from '../database/engine';
 import { isEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { PLAYBOOK_INTERNAL_DATA_CRON } from '../modules/playbook/playbook-components';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-import { ABSTRACT_STIX_CORE_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
+import { REL_INDEX_PREFIX } from '../schema/general';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 // In playbooks components of type PLAYBOOK_INTERNAL_DATA_CRON
@@ -18,29 +18,32 @@ export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration', SYSTEM_USER);
 
+  // -- step 0: define the utils functions --
   // detect filter keys providing from a rel conversion
   const isKeyFromRelConversion = (key) => {
     return key.startsWith(REL_INDEX_PREFIX) && key.endsWith('.*');
   };
 
+  // map [input_name, database_name] for rel relationship to convert the keys
+  const inputNameToDatabaseNameMap = new Map(
+    schemaRelationsRefDefinition.getAllInputNames()
+      .map((name) => [schemaRelationsRefDefinition.getDatabaseName(name), name]),
+  );
+
+  // revert a filter key conversion done by checkAndConvertFilters
   const revertRelFilterKeyConversion = (key) => {
-    console.log('key', key);
     if (isKeyFromRelConversion(key)) {
       const relDatabaseName = key.replace(REL_INDEX_PREFIX, '').replace('.*', '');
-      console.log('---database name---', relDatabaseName);
-      const relInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(ABSTRACT_STIX_CORE_OBJECT, relDatabaseName);
+      const relInputName = inputNameToDatabaseNameMap.get(relDatabaseName);
       if (relInputName) {
-        console.log('RETURN REL :', relInputName);
         return relInputName;
       }
-      console.log('NO CONVERSION');
       return key;
     }
-    console.log('NO CONVERSION');
     return key; // no conversion for key that are not rel
   };
 
-  // fonction to revert the conversion of rel filter keys
+  // revert the conversion of a filters object
   const convertFilters = (inputFilters) => {
     // no filters
     if (!inputFilters || isEmptyField(inputFilters)) {
@@ -74,14 +77,14 @@ export const up = async (next) => {
     };
   };
 
-  // fetch the playbooks
+  // -- step 1: fetch the playbooks --
   const playbooks = await listAllEntities(
     context,
     SYSTEM_USER,
     [ENTITY_TYPE_PLAYBOOK],
   );
 
-  // fill playbooksDefinitionConvertor with the playbook with the converted filters
+  // -- step 2: fill playbooksDefinitionConvertor with the playbooks with correct filters --
   let playbooksDefinitionConvertor = {};
   playbooks
     .forEach((playbook) => {
@@ -120,7 +123,7 @@ export const up = async (next) => {
       };
     });
 
-  // update the playbooks filters in elastic
+  // -- step 3: update the playbooks filters in elastic --
   const playbooksUpdateQuery = {
     script: {
       params: { convertor: playbooksDefinitionConvertor },
@@ -144,7 +147,6 @@ export const up = async (next) => {
     READ_DATA_INDICES,
     playbooksUpdateQuery
   );
-  throw Error('test');
   logApp.info(`${message} > done`);
   next();
 };
