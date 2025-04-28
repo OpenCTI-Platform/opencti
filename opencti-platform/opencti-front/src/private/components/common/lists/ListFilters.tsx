@@ -70,7 +70,7 @@ const ListFilters = ({
   required = false,
   entityTypes,
   isDatatable = false,
-}: ListFiltersProps) => {
+}:ListFiltersProps) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const [currentSavedFilter, setCurrentSavedFilter] = useState<SavedFiltersSelectionData>();
@@ -209,8 +209,7 @@ const ListFilters = ({
               currentSavedFilter={currentSavedFilter}
               setCurrentSavedFilter={setCurrentSavedFilter}
             />
-          )}
-        </>
+          )}        </>
       )}
       <Popover
         classes={{ paper: classes.container }}
