@@ -2627,7 +2627,7 @@ const isOutdatedUpdate = (context, element, attributeKey) => {
 const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
   // -- Independent update
   let resolvedElement = element;
-  if (opts.elementNotResolved) {
+  if (!opts.elementAlreadyResolved) {
     resolvedElement = await storeLoadByIdWithRefs(context, user, element?.internal_id, { type });
     if (!resolvedElement) {
       throw FunctionalError('Cant find element to resolve', { id: element?.internal_id });
@@ -2958,7 +2958,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, locks: participantIds });
       }
       // If not upsert the element
-      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds });
+      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
     }
     // Check cyclic reference consistency for embedded relationships before creation
     if (isStixRefRelationship(relationshipType)) {
@@ -3170,7 +3170,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         return await upsertEntityRule(context, user, R.head(filteredEntities), input, { ...opts, locks: participantIds });
       }
       if (filteredEntities.length === 1) {
-        const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true };
+        const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true, elementAlreadyResolved: true };
         const element = await storeLoadByIdWithRefs(context, user, R.head(filteredEntities).internal_id, { type });
         return upsertElement(context, user, element, type, resolvedInput, upsertEntityOpts);
       }
@@ -3215,7 +3215,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
           [...resolvedInput.x_opencti_stix_ids || [], resolvedInput.stix_id]
         );
         const finalEntity = { ...resolvedInput, [key]: filteredAliases, x_opencti_stix_ids: filteredStixIds };
-        return upsertElement(context, user, existingByStandard, type, finalEntity, { ...opts, locks: participantIds, elementNotResolved: true });
+        return upsertElement(context, user, existingByStandard, type, finalEntity, { ...opts, locks: participantIds });
       }
       if (resolvedInput.update === true) {
         // The new one is new reference, merge all found entities
@@ -3224,13 +3224,13 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
         hashMergeValidation([target, ...sources]);
         await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
-        return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds, elementNotResolved: true });
+        return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
       }
       if (resolvedInput.stix_id && !existingEntities.map((n) => getInstanceIds(n)).flat().includes(resolvedInput.stix_id)) {
         // Upsert others
         const target = R.head(filteredEntities);
         const resolvedStixIds = { ...target, x_opencti_stix_ids: [...target.x_opencti_stix_ids, resolvedInput.stix_id] };
-        return upsertElement(context, user, target, type, resolvedStixIds, { ...opts, locks: participantIds, elementNotResolved: true });
+        return upsertElement(context, user, target, type, resolvedStixIds, { ...opts, locks: participantIds});
       }
       // Return the matching STIX IDs in others
       return { element: R.head(filteredEntities.filter((n) => getInstanceIds(n).includes(resolvedInput.stix_id))), event: null, isCreation: false };
