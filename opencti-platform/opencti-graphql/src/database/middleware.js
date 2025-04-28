@@ -2626,14 +2626,21 @@ const isOutdatedUpdate = (context, element, attributeKey) => {
 
 const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
   // -- Independent update
+  let resolvedElement = element;
+  if (opts.elementNotResolved) {
+    resolvedElement = await storeLoadByIdWithRefs(context, user, element?.internal_id, { type });
+    if (!resolvedElement) {
+      throw FunctionalError('Cant find element to resolve', { id: element?.internal_id });
+    }
+  }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const updatePatch = { ...basePatch };
-  const { confidenceLevelToApply, isConfidenceMatch, isConfidenceUpper } = controlUpsertInputWithUserConfidence(user, updatePatch, element);
+  const { confidenceLevelToApply, isConfidenceMatch, isConfidenceUpper } = controlUpsertInputWithUserConfidence(user, updatePatch, resolvedElement);
   // Handle attributes updates
   if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
     const possibleNewStandardId = generateStandardId(type, basePatch);
-    const isStandardWillChange = element.standard_id !== possibleNewStandardId;
-    const rejectedIds = isStandardWillChange && isConfidenceMatch ? [element.standard_id, possibleNewStandardId] : [element.standard_id];
+    const isStandardWillChange = resolvedElement.standard_id !== possibleNewStandardId;
+    const rejectedIds = isStandardWillChange && isConfidenceMatch ? [resolvedElement.standard_id, possibleNewStandardId] : [resolvedElement.standard_id];
     const ids = [...(basePatch.x_opencti_stix_ids || [])];
     if (isNotEmptyField(basePatch.stix_id) && !rejectedIds.includes(basePatch.stix_id) && !ids.includes(basePatch.stix_id)) {
       ids.push(basePatch.stix_id);
@@ -2648,61 +2655,61 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   }
   // Upsert observed data count and times extensions
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-    const { date: cFo, updated: isCFoUpdated } = computeExtendedDateValues(updatePatch.first_observed, element.first_observed, ALIGN_OLDEST);
-    const { date: cLo, updated: isCLoUpdated } = computeExtendedDateValues(updatePatch.last_observed, element.last_observed, ALIGN_NEWEST);
+    const { date: cFo, updated: isCFoUpdated } = computeExtendedDateValues(updatePatch.first_observed, resolvedElement.first_observed, ALIGN_OLDEST);
+    const { date: cLo, updated: isCLoUpdated } = computeExtendedDateValues(updatePatch.last_observed, resolvedElement.last_observed, ALIGN_NEWEST);
     updatePatch.first_observed = cFo;
     updatePatch.last_observed = cLo;
     // Only update number_observed if part of the relation dates change
     if (isCFoUpdated || isCLoUpdated) {
-      updatePatch.number_observed = element.number_observed + updatePatch.number_observed;
+      updatePatch.number_observed = resolvedElement.number_observed + updatePatch.number_observed;
     }
   }
   if (type === ENTITY_TYPE_INDICATOR) {
     // Do not compute decay again when base score does not change
     // if the element was revoked, we need to update the score to reactivate the indicator
-    if (!element.revoked && updatePatch.decay_applied_rule
-      && (updatePatch.decay_base_score === element.decay_base_score && updatePatch.decay_base_score === element.x_opencti_score)) {
-      logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { element, basePatch });
+    if (!resolvedElement.revoked && updatePatch.decay_applied_rule
+      && (updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score)) {
+      logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { resolvedElement, basePatch });
       // don't reset score, valid_from & valid_until
-      updatePatch.x_opencti_score = element.x_opencti_score; // don't change the score
-      updatePatch.valid_from = element.valid_from;
-      updatePatch.valid_until = element.valid_until;
+      updatePatch.x_opencti_score = resolvedElement.x_opencti_score; // don't change the score
+      updatePatch.valid_from = resolvedElement.valid_from;
+      updatePatch.valid_until = resolvedElement.valid_until;
       // don't reset decay attributes
       // updatePatch.decay_base_score = element.decay_base_score; // no need since it's the same score
-      updatePatch.revoked = element.revoked;
-      updatePatch.decay_base_score_date = element.decay_base_score_date;
-      updatePatch.decay_applied_rule = element.decay_applied_rule;
+      updatePatch.revoked = resolvedElement.revoked;
+      updatePatch.decay_base_score_date = resolvedElement.decay_base_score_date;
+      updatePatch.decay_applied_rule = resolvedElement.decay_applied_rule;
       updatePatch.decay_history = []; // History is multiple, forcing to empty array will prevent any modification
-      updatePatch.decay_next_reaction_date = element.decay_next_reaction_date;
+      updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
     } else {
       // As base_score as change, decay will be reset by upsert
-      logApp.debug('UPSERT INDICATOR -- Decay is reset', { element, basePatch });
+      logApp.debug('UPSERT INDICATOR -- Decay is reset', { resolvedElement, basePatch });
     }
   }
   // Upsert relations with times extensions
   if (isStixCoreRelationship(type)) {
-    const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, element.start_time, ALIGN_OLDEST);
-    const { date: cStopTime } = computeExtendedDateValues(updatePatch.stop_time, element.stop_time, ALIGN_NEWEST);
+    const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, resolvedElement.start_time, ALIGN_OLDEST);
+    const { date: cStopTime } = computeExtendedDateValues(updatePatch.stop_time, resolvedElement.stop_time, ALIGN_NEWEST);
     updatePatch.start_time = cStartTime;
     updatePatch.stop_time = cStopTime;
   }
   if (isStixSightingRelationship(type)) {
-    const { date: cFs, updated: isCFsUpdated } = computeExtendedDateValues(updatePatch.first_seen, element.first_seen, ALIGN_OLDEST);
-    const { date: cLs, updated: isCLsUpdated } = computeExtendedDateValues(updatePatch.last_seen, element.last_seen, ALIGN_NEWEST);
+    const { date: cFs, updated: isCFsUpdated } = computeExtendedDateValues(updatePatch.first_seen, resolvedElement.first_seen, ALIGN_OLDEST);
+    const { date: cLs, updated: isCLsUpdated } = computeExtendedDateValues(updatePatch.last_seen, resolvedElement.last_seen, ALIGN_NEWEST);
     updatePatch.first_seen = cFs;
     updatePatch.last_seen = cLs;
     if (isCFsUpdated || isCLsUpdated) {
-      updatePatch.attribute_count = element.attribute_count + updatePatch.attribute_count;
+      updatePatch.attribute_count = resolvedElement.attribute_count + updatePatch.attribute_count;
     }
   }
   const inputs = []; // All inputs impacted by modifications (+inner)
   // If file directly attached
   if (!isEmptyField(updatePatch.file)) {
-    const path = `import/${element.entity_type}/${element.internal_id}`;
-    const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: element });
+    const path = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
+    const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: resolvedElement });
     const convertedFile = storeFileConverter(user, file);
     // The impact in the database is the completion of the files
-    const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
+    const fileImpact = { key: 'x_opencti_files', value: [...(resolvedElement.x_opencti_files ?? []), convertedFile] };
     inputs.push(fileImpact);
   }
   // region confidence control / upsert
@@ -2717,11 +2724,11 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     const isInputAvailable = attributeKey in updatePatch;
     if (isInputAvailable) { // The attribute is explicitly available in the patch
       const inputData = updatePatch[attributeKey];
-      const isOutDatedModification = isOutdatedUpdate(context, element, attributeKey);
+      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
       const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creators.name; // Ids and creators consolidation is always granted
       const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
       const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
-      const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
+      const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
       // Field can be upsert if:
       // 1. Confidence is correct
       // 2. Attribute is declared upsert=true in the schema
@@ -2730,7 +2737,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
       if (!isOutDatedModification) {
         if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
-          inputs.push(...buildAttributeUpdate(isFullSync, attribute, element[attributeKey], inputData));
+          inputs.push(...buildAttributeUpdate(isFullSync, attribute, resolvedElement[attributeKey], inputData));
         }
       } else {
         logApp.info('Discarding outdated attribute update mutation', { key: attributeKey });
@@ -2738,19 +2745,19 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     }
   }
   // -- Upsert refs
-  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(element.entity_type).map((ref) => ref.name);
+  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(resolvedElement.entity_type).map((ref) => ref.name);
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
-    const relDef = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputField);
+    const relDef = schemaRelationsRefDefinition.getRelationRef(resolvedElement.entity_type, inputField);
     const isInputAvailable = inputField in updatePatch;
     if (isInputAvailable) {
       const patchInputData = updatePatch[inputField];
       const isInputWithData = isNotEmptyField(patchInputData);
       const isUpsertSynchro = context.synchronizedUpsert;
-      const isOutDatedModification = isOutdatedUpdate(context, element, inputField);
+      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, inputField);
       if (!isOutDatedModification) {
         if (relDef.multiple) {
-          const currentData = element[relDef.databaseName] ?? [];
+          const currentData = resolvedElement[relDef.databaseName] ?? [];
           const isCurrentWithData = isNotEmptyField(currentData);
           const targetData = (patchInputData ?? []).map((n) => n.internal_id);
           // Specific case for organization restriction, has EE must be activated.
@@ -2774,7 +2781,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           }
         } else { // not multiple
           // If expected data is different from current data...
-          const currentData = element[relDef.databaseName];
+          const currentData = resolvedElement[relDef.databaseName];
           const isCurrentEmptyData = isEmptyField(currentData);
           const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData);
           // ... and data can be updated:
@@ -2797,10 +2804,10 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
-    return await updateAttributeMetaResolved(context, user, element, inputs, updateOpts);
+    return await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
   }
   // -- No modification applied
-  return { element, event: null, isCreation: false };
+  return { element: resolvedElement, event: null, isCreation: false };
 };
 
 export const getExistingRelations = async (context, user, input, opts = {}) => {
@@ -3208,7 +3215,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
           [...resolvedInput.x_opencti_stix_ids || [], resolvedInput.stix_id]
         );
         const finalEntity = { ...resolvedInput, [key]: filteredAliases, x_opencti_stix_ids: filteredStixIds };
-        return upsertElement(context, user, existingByStandard, type, finalEntity, { ...opts, locks: participantIds });
+        return upsertElement(context, user, existingByStandard, type, finalEntity, { ...opts, locks: participantIds, elementNotResolved: true });
       }
       if (resolvedInput.update === true) {
         // The new one is new reference, merge all found entities
@@ -3217,13 +3224,13 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
         hashMergeValidation([target, ...sources]);
         await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
-        return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
+        return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds, elementNotResolved: true });
       }
       if (resolvedInput.stix_id && !existingEntities.map((n) => getInstanceIds(n)).flat().includes(resolvedInput.stix_id)) {
         // Upsert others
         const target = R.head(filteredEntities);
         const resolvedStixIds = { ...target, x_opencti_stix_ids: [...target.x_opencti_stix_ids, resolvedInput.stix_id] };
-        return upsertElement(context, user, target, type, resolvedStixIds, { ...opts, locks: participantIds });
+        return upsertElement(context, user, target, type, resolvedStixIds, { ...opts, locks: participantIds, elementNotResolved: true });
       }
       // Return the matching STIX IDs in others
       return { element: R.head(filteredEntities.filter((n) => getInstanceIds(n).includes(resolvedInput.stix_id))), event: null, isCreation: false };
