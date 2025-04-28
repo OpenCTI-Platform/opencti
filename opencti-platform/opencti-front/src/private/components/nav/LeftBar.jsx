@@ -889,7 +889,7 @@ const LeftBar = () => {
             <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <MenuItem
                 ref={anchors.data}
-                selected={!navOpen && location.pathname.includes('/dashboard/data')}
+                selected={!navOpen && location.pathname.includes('/dashboard/data') && !draftContext}
                 dense={true}
                 classes={{ root: classes.menuItem }}
                 onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('data') : handleGoToPage(e, '/dashboard/data'))}
