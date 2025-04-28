@@ -27,6 +27,8 @@ import { RootIntrusionSetSubscription } from './__generated__/RootIntrusionSetSu
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import IntrusionSetEdition from './IntrusionSetEdition';
+import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -102,7 +104,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
   const paddingRight = getPaddingRight(location.pathname, intrusionSetId, '/dashboard/threats/intrusion_sets');
   const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {intrusionSet ? (
         <>
           <Routes>
@@ -146,6 +148,13 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    entityId={intrusionSet.id}
+                  />
                 </Security>
               )}
               enableEnricher={true}
@@ -265,7 +274,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
