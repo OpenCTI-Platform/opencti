@@ -46,7 +46,7 @@ const updatePirDependencies = async (
   const pirMetaRel = pirMetaRels.edges[0].node;
   const editInput = [{ key: 'pir_dependencies', value: [pirDependencies] }];
   const updatedRef = await stixRefRelationshipEditField(context, SYSTEM_USER, pirMetaRel.id, editInput);
-  console.log('[POC PIR] Meta Ref relation created', { updatedRef });
+  console.log('REF', updatedRef);
 };
 
 /**
@@ -84,7 +84,7 @@ const flagSource = async (
     ABSTRACT_STIX_CORE_OBJECT
   );
   // And then add the dependencies in the meta relationship.
-  // TODO PIR: improve this if possible to avoid making to calls.
+  // TODO PIR: improve this if possible to avoid making 2 calls.
   await updatePirDependencies(context, sourceId, pirId, pirDependencies);
 };
 
@@ -120,9 +120,11 @@ const onRelationCreated = async (
       weight: c.weight,
     }));
     await updatePirDependencies(context, sourceId, pir.id, pirDependencies);
+    console.log('[POC PIR] Meta Ref relation updated');
   } else {
     console.log('[POC PIR] Source NOT flagged');
     await flagSource(context, relationshipId, sourceId, pir.id, matchingCriteria);
+    console.log('[POC PIR] Meta Ref relation created');
   }
 };
 
@@ -160,7 +162,10 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
       const parsedPir: ParsedPIR = {
         ...pir,
         pirFilters: JSON.parse(pir.pirFilters),
-        pirCriteria: JSON.parse(pir.pirCriteria)
+        pirCriteria: pir.pirCriteria.map((c) => ({
+          ...c,
+          filters: JSON.parse(c.filters),
+        })),
       };
 
       // Check every event received to see if it matches the PIR.

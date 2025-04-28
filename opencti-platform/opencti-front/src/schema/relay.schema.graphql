@@ -12805,13 +12805,19 @@ input RequestAccessConfigureInput {
   approval_admin: [ID]
 }
 
+type PIRCriterion {
+  id: ID!
+  filters: String!
+  weight: Int!
+}
+
 type PIR implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
   name: String!
-  pirCriteria: String!
+  pirCriteria: [PIRCriterion!]!
   pirFilters: String!
 }
 
@@ -12829,8 +12835,13 @@ type PIREdge {
   node: PIR!
 }
 
+input PIRCriterionInput {
+  weight: Int!
+  filters: String!
+}
+
 input PIRAddInput {
   name: String!
-  pirCriteria: String!
+  pirCriteria: [PIRCriterionInput!]!
   pirFilters: String!
 }
