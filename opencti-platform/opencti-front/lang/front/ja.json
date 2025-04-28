@@ -3686,6 +3686,7 @@
   "You can enable/disable default values for marking in the customization of each entity type.": "各エンティティ・タイプのカスタマイズで、マーキングのデフォルト値の有効/無効を設定できます。",
   "You can now set a new password for your account.": "アカウントの新しいパスワードを設定できます。",
   "You cannot have more than 500 e-mail addresses": "500を超える電子メールアドレスを持つことはできません。",
+  "You currently do not have any connector manager registered into your platform.": "現在、お客様のプラットフォームにはコネクタ・マネージャが登録されていません。",
   "You do not have any access to the knowledge of this OpenCTI instance.": "このOpenCTIインスタンスのナレッジデータにアクセスする権限がありません。",
   "You have more than 50 values": "50以上の値があります",
   "You have no subscription for the moment.": "現在、サブスクリプションはありません。",

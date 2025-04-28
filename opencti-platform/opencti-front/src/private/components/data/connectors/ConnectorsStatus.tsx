@@ -6,7 +6,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
-import { Add, DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, InfoOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
+import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -15,20 +15,14 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link, useNavigate } from 'react-router-dom';
 import { ConnectorsStatusQuery } from '@components/data/connectors/__generated__/ConnectorsStatusQuery.graphql';
-import { ConnectorsStatus_data$data, ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
+import { ConnectorsStatus_data$key } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import makeStyles from '@mui/styles/makeStyles';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Grid2 as Grid, ListItemButton } from '@mui/material';
-import EEChip from '@components/common/entreprise_edition/EEChip';
+import { ListItemButton } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
-import ManagedConnectorCreation from '@components/data/connectors/ManagedConnectorCreation';
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import CardContent from '@mui/material/CardContent';
-import CardActionArea from '@mui/material/CardActionArea';
-import Alert from '@mui/material/Alert';
+import ManagedConnectors from '@components/data/connectors/ManagedConnectors';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -43,9 +37,6 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import SortConnectorsHeader from './SortConnectorsHeader';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
-import useHelper from '../../../../utils/hooks/useHelper';
-import { emptyFilled } from '../../../../utils/String';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -203,9 +194,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
 
   const classes = useStyles(); // TODO remove as deprecated
   const theme = useTheme<Theme>();
-  const isEnterpriseEdition = useEnterpriseEdition();
-
   const navigate = useNavigate();
+  const { isSensitive } = useSensitiveModifications('connector_reset');
 
   const [sortBy, setSortBy] = useState<string>('name');
   const [orderAsc, setOrderAsc] = useState<boolean>(true);
@@ -320,11 +310,6 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
     return valueA > valueB ? -1 : 1;
   });
 
-  const [manager, setManager] = useState<ConnectorsStatus_data$data['connectorManagers'][0]>();
-
-  const { isSensitive } = useSensitiveModifications('connector_reset');
-  const { isFeatureEnable } = useHelper();
-  const isComposerEnable = isFeatureEnable('COMPOSER');
   return (
     <>
       <Dialog
@@ -363,72 +348,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
           </Button>
         </DialogActions>
       </Dialog>
-      {isComposerEnable && (
-        <div>
-          <Typography
-            variant="h4"
-            style={{ float: 'left', marginBottom: 15 }}
-          >
-            <>
-              {t_i18n('Registered manager')}
-              <EEChip feature="Registered manager" />
-            </>
-          </Typography>
-          <div className="clearfix" />
-          {!isEnterpriseEdition ? (
-            <Alert
-              variant="outlined"
-              color="secondary"
-              icon={<InfoOutlined />}
-            >
-              {t_i18n('This feature is only available in OpenCTI Enterprise Edition.')}
-            </Alert>
-          ) : (
-            <Grid spacing={3} container>
-              {connectorManagers.map((m, id) => (
-                <Grid size={3} key={`${m.name}-${id}`}>
-                  <Card variant="outlined">
-                    <CardActionArea onClick={() => setManager(m)}>
-                      <CardHeader
-                        title={m.name}
-                        avatar={<HubOutlined />}
-                        subheader={computeConnectorStatus(m).render}
-                        action={
-                          <IconButton
-                            size="small"
-                            color="primary"
-                          >
-                            <Add />
-                          </IconButton>
-                        }
-                      />
-                      <CardContent>
-                        <Grid container spacing={1}>
-                          <Grid size={6}>
-                            <Typography variant="h4" style={{ margin: 0 }}>{t_i18n('Modification date')}</Typography>
-                          </Grid>
-                          <Grid size={6}>
-                            {nsdt(m.last_sync_execution)}
-                          </Grid>
-                          <Grid size={6}>
-                            <Typography variant="h4" style={{ margin: 0 }}>{t_i18n('Contracts')}</Typography>
-                          </Grid>
-                          <Grid size={6}>
-                            <Typography variant="body2">
-                              {emptyFilled(m.connector_manager_contracts.length)}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </CardContent>
-                    </CardActionArea>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </div>
-      )}
-      {(manager && isComposerEnable) && <ManagedConnectorCreation manager={manager} onClose={() => setManager(undefined)} />}
+      <ManagedConnectors connectorManagers={connectorManagers} />
       <div>
         <Typography
           variant="h4"

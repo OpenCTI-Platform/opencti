@@ -3686,6 +3686,7 @@
   "You can enable/disable default values for marking in the customization of each entity type.": "您可以在定制每个实体类型时启用/禁用标记的默认值。",
   "You can now set a new password for your account.": "现在您可以为账户设置新密码了。",
   "You cannot have more than 500 e-mail addresses": "电子邮件地址不能超过 500 个",
+  "You currently do not have any connector manager registered into your platform.": "您目前没有在平台上注册任何连接器管理器。",
   "You do not have any access to the knowledge of this OpenCTI instance.": "您无权访问此OpenCTI实例的知识数据。",
   "You have more than 50 values": "您有超过 50 个值",
   "You have no subscription for the moment.": "您暂时没有订阅。",

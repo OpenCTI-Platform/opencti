@@ -3686,6 +3686,7 @@
   "You can enable/disable default values for marking in the customization of each entity type.": "You can enable/disable default values for marking in the customization of each entity type.",
   "You can now set a new password for your account.": "You can now set a new password for your account.",
   "You cannot have more than 500 e-mail addresses": "You cannot have more than 500 e-mail addresses",
+  "You currently do not have any connector manager registered into your platform.": "You currently do not have any connector manager registered into your platform.",
   "You do not have any access to the knowledge of this OpenCTI instance.": "You do not have any access to the knowledge of this OpenCTI instance.",
   "You have more than 50 values": "You have more than 50 values",
   "You have no subscription for the moment.": "You have no subscription for the moment.",
