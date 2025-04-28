@@ -291,8 +291,12 @@ const LeftBar = () => {
     }
     localStorage.setItem('selectedMenu', JSON.stringify(updatedMenu));
   };
-  const handleGoToPage = (link) => {
-    navigate(link);
+  const handleGoToPage = (event, link) => {
+    if (event.ctrlKey) {
+      window.open(link, '_blank');
+    } else {
+      navigate(link);
+    }
   };
   const hiddenEntities = useHiddenEntities();
   const hideAnalyses = useIsHiddenEntities(
@@ -500,7 +504,10 @@ const LeftBar = () => {
                   selected={!navOpen && location.pathname.includes('/dashboard/workspaces/dashboards')}
                   dense={true}
                   classes={{ root: classes.menuItem }}
-                  onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('dashboards') : handleGoToPage('/dashboard/workspaces/dashboards'))}
+                  onClick={(e) => (isMobile || navOpen
+                    ? handleSelectedMenuToggle('dashboards')
+                    : handleGoToPage(e, '/dashboard/workspaces/dashboards'))
+                }
                   onMouseEnter={() => !navOpen && handleSelectedMenuOpen('dashboards')}
                   onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
                 >
@@ -585,7 +592,7 @@ const LeftBar = () => {
                   if (isMobile || navOpen) {
                     handleSelectedMenuToggle('analyses');
                   } else {
-                    handleGoToPage('/dashboard/analyses');
+                    handleGoToPage(e, '/dashboard/analyses');
                   }
                 }}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('analyses')}
@@ -619,7 +626,7 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/cases')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('cases') : handleGoToPage('/dashboard/cases'))}
+                onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('cases') : handleGoToPage(e, '/dashboard/cases'))}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('cases')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
@@ -651,7 +658,7 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/events')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('events') : handleGoToPage('/dashboard/events'))}
+                onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('events') : handleGoToPage(e, '/dashboard/events'))}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('events')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
@@ -681,7 +688,7 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/observations')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('observations') : handleGoToPage('/dashboard/observations'))}
+                onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('observations') : handleGoToPage(e, '/dashboard/observations'))}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('observations')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
@@ -715,7 +722,7 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/threats')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('threats') : handleGoToPage('/dashboard/threats'))}
+                onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('threats') : handleGoToPage(e, '/dashboard/threats'))}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('threats')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
@@ -751,7 +758,7 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/arsenal')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('arsenal') : handleGoToPage('/dashboard/arsenal'))}
+                onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('arsenal') : handleGoToPage(e, '/dashboard/arsenal'))}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('arsenal')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
@@ -782,7 +789,7 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/techniques')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('techniques') : handleGoToPage('/dashboard/techniques'))}
+                onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('techniques') : handleGoToPage(e, '/dashboard/techniques'))}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('techniques')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
@@ -814,7 +821,7 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/entities')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('entities') : handleGoToPage('/dashboard/entities'))}
+                onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('entities') : handleGoToPage(e, '/dashboard/entities'))}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('entities')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
@@ -846,7 +853,7 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/locations')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('locations') : handleGoToPage('/dashboard/locations'))}
+                onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('locations') : handleGoToPage(e, '/dashboard/locations'))}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('locations')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
@@ -883,7 +890,7 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/data')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('data') : handleGoToPage('/dashboard/data'))}
+                onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('data') : handleGoToPage(e, '/dashboard/data'))}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('data')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
@@ -983,7 +990,7 @@ const LeftBar = () => {
                 selected={!navOpen && location.pathname.includes('/dashboard/settings')}
                 dense={true}
                 classes={{ root: classes.menuItem }}
-                onClick={() => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage('/dashboard/settings'))}
+                onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('settings') : handleGoToPage(e, '/dashboard/settings'))}
                 onMouseEnter={() => !navOpen && handleSelectedMenuOpen('settings')}
                 onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
               >
