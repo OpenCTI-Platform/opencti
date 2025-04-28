@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
@@ -16,6 +16,7 @@ import {
 } from '../dataTableHooks';
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
+import callbackResizeObserver from '../../../utils/resizeObservers';
 
 type DataTableComponentProps = Pick<DataTableProps,
 | 'dataColumns'
@@ -152,6 +153,7 @@ const DataTableComponent = ({
   }, [page, currentPageSize]);
 
   const tableWidthState = useState(0);
+  const [tableWidth, setTableWidth] = tableWidthState;
   const tableRef = useRef<HTMLDivElement | null>(null);
 
   const startColumnWidth = useMemo(() => {
@@ -163,6 +165,25 @@ const DataTableComponent = ({
     }
     return SELECT_COLUMN_SIZE;
   }, [startsWithIcon, startsWithAction]);
+
+  // Keep table width up to date.
+  useLayoutEffect(() => {
+    let observer: ResizeObserver;
+    if (tableRef.current) {
+      const resize = (el: Element) => {
+        let offset = 10;
+        if (startsWithAction) offset += SELECT_COLUMN_SIZE;
+        if (startsWithIcon) offset += ICON_COLUMN_SIZE;
+        if (endsWithAction) offset += SELECT_COLUMN_SIZE;
+        if ((el.clientWidth - offset) !== tableWidth) {
+          setTableWidth(el.clientWidth - offset);
+        }
+      };
+      resize(tableRef.current);
+      observer = callbackResizeObserver(tableRef.current, resize);
+    }
+    return () => { observer?.disconnect(); };
+  }, [tableRef.current, tableWidth, endsWithAction, startsWithAction, startsWithIcon]);
 
   return (
     <DataTableProvider
@@ -228,7 +249,6 @@ const DataTableComponent = ({
             pageStart={pageStart}
             pageSize={currentPageSize}
             hideHeaders={hideHeaders}
-            tableRef={tableRef}
           />
         </React.Suspense>
       </div>
