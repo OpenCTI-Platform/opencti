@@ -39,7 +39,6 @@ export const up = async (next) => {
     });
 
     // 2. Delete all created-by ref relations that are not the unique author kept for entity
-
     const allCreateByRefsExceptAuthorToKeepQuery = {
       query: {
         bool: {
