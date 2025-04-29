@@ -1,5 +1,6 @@
 import { uniq } from 'ramda';
 import { stixFilters, useBuildFilterKeysMapFromEntityType } from './filters/filtersUtils';
+import useSchema from './hooks/useSchema';
 
 export interface Connector {
   name: string;
@@ -43,15 +44,19 @@ export const getConnectorOnlyContextualStatus = (connector: Connector): Connecto
   return { status: connector.auto, label: 'No' };
 };
 
-export const getConnectorFilterEntityTypes = (connector: Connector): string[] => {
-  return connector.connector_scope.length > 0 ? [...connector.connector_scope] : ['Stix-Core-Object', 'Stix-Filtering'];
+export const useGetConnectorFilterEntityTypes = (connector: Connector): string[] => {
+  const { allEntityTypes } = useSchema();
+  // keep the scopes that are entity types (remove scope like 'text/csv')
+  const entityTypesScopes = connector.connector_scope.filter((scope) => allEntityTypes.includes(scope));
+  // return the entity types scopes
+  return entityTypesScopes.length > 0 ? [...entityTypesScopes] : ['Stix-Core-Object', 'Stix-Filtering'];
 };
 
-export const getConnectorAvailableFilterKeys = (connector: Connector): string[] => {
+export const useGetConnectorAvailableFilterKeys = (connector: Connector): string[] => {
   if (connector.connector_type !== 'INTERNAL_ENRICHMENT') {
     return []; // only for enrichment
   }
-  const entityTypes = getConnectorFilterEntityTypes(connector);
+  const entityTypes = useGetConnectorFilterEntityTypes(connector);
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   let availableFilterKeys = uniq(Array.from(filterKeysMap.keys() ?? []));
   // filter to keep only stixFilters

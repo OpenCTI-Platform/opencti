@@ -226,7 +226,7 @@
     "openrm_token": "",
     "openmtd_url": "",
     "openmtd_token": "",
-    "xtmhub_url": "https://xtmhub.filigran.io"
+    "xtmhub_url": "https://hub.filigran.io"
   },
   "data_sharing": {
     "max_csv_feed_result": 5000

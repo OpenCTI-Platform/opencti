@@ -188,6 +188,15 @@ const StixCoreObjectFileExportForm = ({
         }, [values.format]);
 
         useEffect(() => {
+          if (values.format) {
+            const validConnectors = connectors.filter((c) => c.connectorScope?.includes(values.format));
+            if (validConnectors.length === 1 && !values.connector) {
+              setFieldValue('connector', validConnectors[0]);
+            }
+          }
+        }, [values.format, connectors, values.connector, setFieldValue]);
+
+        useEffect(() => {
           const connector = values.connector?.value;
           if (connector !== BUILT_IN_HTML_TO_PDF.value) setFieldValue('fileToExport', null);
           if (connector !== BUILT_IN_FROM_TEMPLATE.value) setFieldValue('template', null);

@@ -719,7 +719,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     user,
     event_type: 'mutation',
     event_scope: 'update',
-    event_access: personalUpdate ? 'extended' : 'administration',
+    event_access: 'administration',
     message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${actionEmail}\``}`,
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input }
   });
