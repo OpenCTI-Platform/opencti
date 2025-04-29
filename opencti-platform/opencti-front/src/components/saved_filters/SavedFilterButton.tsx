@@ -33,13 +33,14 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
 
   const {
     useDataTablePaginationLocalStorage: {
+      helpers,
       viewStorage: { filters, savedFilters },
       localStorageKey,
     },
   } = useDataTableContext();
 
   const isEmptyFilters = !filters?.filters.length && !filters?.filterGroups.length;
-  const hasSameFilters = currentSavedFilter?.filters === JSON.stringify(filters);
+  const hasSameFilters = savedFilters?.filters === JSON.stringify(filters);
 
   const [commit] = useApiMutation(
     savedFilterButtonEditMutation,
@@ -55,10 +56,12 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
         filters: JSON.stringify(filters),
       },
       onCompleted: () => {
-        setCurrentSavedFilter({
+        const newValue = {
           ...currentSavedFilter,
           filters: JSON.stringify(filters),
-        } as SavedFiltersSelectionData);
+        };
+        setCurrentSavedFilter(newValue);
+        helpers.handleChangeSavedFilters(newValue);
       },
     });
   };
@@ -86,7 +89,7 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
 
   return (
     <>
-      <Tooltip title={savedFilters ? t_i18n('Update filter') : t_i18n('Save filter')}>
+      <Tooltip title={!isDisabled && savedFilters ? t_i18n('Update filter') : t_i18n('Save filter')}>
         <span>
           <IconButton
             color="primary"
