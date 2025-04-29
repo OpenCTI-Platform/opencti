@@ -2095,6 +2095,7 @@
   "No history about this entity.": "尚无关于此实体的历史。",
   "No history about this relationship.": "没有关于此关系的历史",
   "No import connectors on this platform": "此平台没有导入连接器",
+  "No import works for this file": "该文件无法导入",
   "No label": "无标签",
   "No Malware analysis on this observable.": "没有对这个可观察到的恶意软件进行分析。",
   "No malware analysis on this observable.": "未对该观测值进行恶意软件分析。",

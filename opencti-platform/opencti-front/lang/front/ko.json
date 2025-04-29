@@ -2095,6 +2095,7 @@
   "No history about this entity.": "이 엔터티에 대한 기록 없음.",
   "No history about this relationship.": "이 관계에 대한 기록 없음.",
   "No import connectors on this platform": "이 플랫폼에서 가져오기 커넥터가 없습니다",
+  "No import works for this file": "이 파일에는 가져오기가 작동하지 않습니다",
   "No label": "라벨 없음",
   "No Malware analysis on this observable.": "이 관찰 가능 항목에 대한 악성 소프트웨어 분석 없음.",
   "No malware analysis on this observable.": "이 관찰 가능 항목에 대한 악성 소프트웨어 분석 없음.",
