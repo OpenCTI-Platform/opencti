@@ -706,8 +706,6 @@ const useSearchEntities = ({
         case 'elementWithTargetTypes':
         case 'entity_type':
         case 'entity_types':
-        case 'fromTypes':
-        case 'toTypes':
         case 'type':
         case 'main_entity_type':
           if ( // case not abstract types
@@ -852,6 +850,48 @@ const useSearchEntities = ({
             const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
             unionSetEntities(filterKey, entitiesTypes);
           }
+          break;
+        case 'fromTypes':
+        case 'toTypes':
+          // for source type and target type, we need:
+          // the observables
+          // the stix domain objects
+          // the stix core relationships
+          unionSetEntities(
+            filterKey,
+            [
+              ...(schema.scos ?? []).map((n) => ({
+                label: t_i18n(`entity_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              {
+                label: t_i18n('entity_Stix-Cyber-Observable'),
+                value: 'Stix-Cyber-Observable',
+                type: 'Stix-Cyber-Observable',
+              },
+              ...(schema.sdos ?? []).map((n) => ({
+                label: t_i18n(`entity_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              {
+                label: t_i18n('entity_Stix-Domain-Object'),
+                value: 'Stix-Domain-Object',
+                type: 'Stix-Domain-Object',
+              },
+              ...(schema.scrs ?? []).map((n) => ({
+                label: t_i18n(`relationship_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              {
+                label: t_i18n('entity_Stix-Core-Relationship'),
+                value: 'Stix-Core-Relationship',
+                type: 'Stix-Core-Relationship',
+              },
+            ].sort((a, b) => a.label.localeCompare(b.label)),
+          );
           break;
         case 'relationship_type': {
           let relationshipsTypes: { label: string, value: string, type: string }[] = [];
