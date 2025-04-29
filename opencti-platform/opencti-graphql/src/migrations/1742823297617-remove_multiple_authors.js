@@ -1,13 +1,13 @@
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery } from '../database/engine';
-import { READ_DATA_INDICES, READ_INDEX_STIX_META_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
+import { READ_DATA_INDICES, READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { DatabaseError } from '../config/errors';
 
 const message = '[MIGRATION] remove multiple authors from entities that have multiple rel_created-by.internal_id';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   const context = executionContext('migration');
   const query = {
     index: READ_DATA_INDICES,
@@ -26,18 +26,19 @@ export const up = async (next) => {
 
   const multipleAuthorsData = await elRawSearch(context, SYSTEM_USER, '', query);
   const multipleAuthorsHits = multipleAuthorsData.hits?.hits;
-
+  logMigration.info(`[MIGRATION] Found ${multipleAuthorsHits?.length} entities with multiple authors`);
   // For each entity with multiple authors, keep only one author, and also delete corresponding ref relations
   for (let index = 0; index < multipleAuthorsHits?.length; index += 1) {
     const currentEntityWithMultipleAuthors = multipleAuthorsHits[index];
     const currentAuthorsIds = currentEntityWithMultipleAuthors._source['rel_created-by.internal_id'];
     const authorIdToKeep = currentAuthorsIds[currentAuthorsIds.length - 1];
     // 1. Update the denormalized refs of the current entity
-    const updateCreatedByWithUniqueIdSource = 'if (ctx._source[\'rel_created-by.internal_id\'] != null) ctx._source[\'rel_created-by.internal_id\'] = ctx._source[\'rel_created-by.internal_id\'].stream().filter(id -> id == params.authorIdToKeep).collect(Collectors.toList())';
+    const updateCreatedByWithUniqueIdSource = "ctx._source['rel_created-by.internal_id'] = [params.authorIdToKeep]";
     const updateCreatedByWithUniqueIdQuery = {
       script: {
         source: updateCreatedByWithUniqueIdSource,
-        params: { authorIdToKeep }
+        params: { authorIdToKeep },
+        lang: 'painless'
       },
       query: {
         match: {
@@ -46,7 +47,7 @@ export const up = async (next) => {
       }
     };
     await elRawUpdateByQuery({
-      index: [READ_RELATIONSHIPS_INDICES],
+      index: READ_DATA_INDICES,
       refresh: true,
       wait_for_completion: true,
       body: updateCreatedByWithUniqueIdQuery
@@ -102,14 +103,17 @@ export const up = async (next) => {
     await elRawDeleteByQuery({
       index: READ_INDEX_STIX_META_RELATIONSHIPS,
       refresh: true,
+      wait_for_completion: true,
       body: allCreateByRefsExceptAuthorToKeepQuery,
     }).catch((err) => {
       throw DatabaseError('Error cleaning the created by refs', { cause: err });
     });
 
-    logApp.info(`[MIGRATION] Entity ${currentEntityWithMultipleAuthors._id} authors cleaned -- ${index + 1}/${multipleAuthorsHits.length}`);
+    if ((index + 1) % 10 === 0) {
+      logMigration.info(`[MIGRATION] Entity ${currentEntityWithMultipleAuthors._id} authors cleaned -- ${index + 1}/${multipleAuthorsHits.length}`);
+    }
   }
 
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
