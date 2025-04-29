@@ -15,23 +15,20 @@ const AddLocationsThreatActorIndividualComponent = ({
   threatActorIndividual,
   threatActorIndividualLocations,
   queryRef,
+  onSearch,
+  paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const handleSearch = (term) => setSearch(term);
 
   const data = usePreloadedQuery(
     addLocationsThreatActorIndividualLinesQuery,
     queryRef,
   );
 
-  const paginationOptions = {
-    search,
-  };
   const updater = (store) => insertNode(
     store,
     'Pagination_threatActorIndividual_locations',
@@ -62,7 +59,7 @@ const AddLocationsThreatActorIndividualComponent = ({
           >
             <SearchInput
               variant="inDrawer"
-              onSubmit={handleSearch}
+              onSubmit={onSearch}
             />
           </div>
           }
@@ -84,7 +81,7 @@ const AddLocationsThreatActorIndividualComponent = ({
       <LocationCreation
         display={open}
         contextual={true}
-        inputValue={search}
+        inputValue={paginationOptions.search}
         paginationOptions={paginationOptions}
         updater={updater}
       />
@@ -93,12 +90,20 @@ const AddLocationsThreatActorIndividualComponent = ({
 };
 
 const AddLocationsThreatActorIndividual = (props) => {
-  const queryRef = useQueryLoading(addLocationsThreatActorIndividualLinesQuery, {
-    count: 50,
-  });
+  const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '', types: ['Location'] });
+
+  const queryRef = useQueryLoading(
+    addLocationsThreatActorIndividualLinesQuery,
+    paginationOptions,
+  );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <AddLocationsThreatActorIndividualComponent {...props} queryRef={queryRef} />
+      <AddLocationsThreatActorIndividualComponent
+        {...props}
+        queryRef={queryRef}
+        onSearch={(search) => setPaginationOptions({ count: 50, search, types: ['Location'] })}
+        paginationOptions={paginationOptions}
+      />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />
