@@ -19,7 +19,8 @@ type DeleteDialogProps = {
   warning?: {
     title?: string,
     message: string,
-  }
+  },
+  isOpen?: boolean;
 };
 
 const DeleteDialog: React.FC<DeleteDialogProps> = ({
@@ -28,11 +29,12 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
   onClose,
   message,
   warning,
+  isOpen,
 }) => {
   const { t_i18n } = useFormatter();
   return (
     <Dialog
-      open={deletion.displayDelete}
+      open={isOpen ?? deletion.displayDelete}
       slotProps={{ paper: { elevation: 1 } }}
       keepMounted={true}
       slots={{ transition: Transition }}
