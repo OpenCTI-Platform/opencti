@@ -54,11 +54,13 @@ export const internalProcessNotification = async (
   user: NotificationUser,
   notifier: BasicStoreEntityNotifier | NotifierTestInput,
   data: NotificationData[],
-  notification: BasicStoreEntityTrigger,
+  triggers: BasicStoreEntityTrigger[],
   // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
   try {
-    const { name: notification_name, id: trigger_id, trigger_type } = notification;
+    const notification_name = triggers.map((t) => t?.name).join(';');
+    const trigger_type = triggers.length > 1 ? 'buffer' : triggers[0].trigger_type;
+    const trigger_id = triggers.map((t) => t?.id).filter((t) => t);
     const { notifier_connector_id, notifier_configuration: configuration } = notifier;
     const generatedContent: Record<string, Array<NotificationContentEvent>> = {};
     for (let index = 0; index < data.length; index += 1) {
@@ -80,7 +82,7 @@ export const internalProcessNotification = async (
     // region data generation
     const background_color = (settings.platform_theme_dark_background ?? '#0a1929').substring(1);
     const platformOpts = { doc_uri: DOC_URI, platform_uri: getBaseUrl(), background_color };
-    const templateData = { content, notification_content: content, notification, settings, user, data, ...platformOpts };
+    const templateData = { content, notification_content: content, notification: triggers[0], settings, user, data, ...platformOpts };
     // endregion
     if (notifier_connector_id === NOTIFIER_CONNECTOR_UI) {
       const createNotification = {
@@ -173,7 +175,7 @@ const processNotificationEvent = async (
     const notifier = userNotifiers[notifierIndex];
 
     // There is no await in purpose, the goal is to send notification and continue without waiting result.
-    internalProcessNotification(context, settings, notificationMap, user, notifierMap.get(notifier) ?? {} as BasicStoreEntityNotifier, data, notification).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
+    internalProcessNotification(context, settings, notificationMap, user, notifierMap.get(notifier) ?? {} as BasicStoreEntityNotifier, data, [notification]).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
   }
 };
 
@@ -276,16 +278,16 @@ const processBufferedEvents = async (
         const triggersInDataToSend = [...new Set(dataToSend.map((d) => triggerMap.get(d.notification_id)).filter((t) => t))];
         // If multiple triggers generated notification data, we need to create a "buffer" trigger containing the names of all triggers
         if (triggersInDataToSend.length > 1) {
-          const bufferTriggersName = triggersInDataToSend.map((t) => t?.name).join(';');
-          const bufferTrigger = { name: bufferTriggersName, trigger_type: 'buffer' } as BasicStoreEntityTrigger;
           // There is no await in purpose, the goal is to send notification and continue without waiting result.
-          internalProcessNotification(context, settings, triggerMap, currentUser, allNotifiersMap.get(notifier) ?? {} as BasicStoreEntityNotifier, dataToSend, bufferTrigger).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
-        } else if (triggersInDataToSend.length === 1) { // If only one trigger generated the data, we can keep this trigger info
-          const currentTrigger = triggersInDataToSend[0];
-          if (currentTrigger) {
-            // There is no await in purpose, the goal is to send notification and continue without waiting result.
-            internalProcessNotification(context, settings, triggerMap, currentUser, allNotifiersMap.get(notifier) ?? {} as BasicStoreEntityNotifier, dataToSend, currentTrigger).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
-          }
+          internalProcessNotification(
+            context,
+            settings,
+            triggerMap,
+            currentUser,
+            allNotifiersMap.get(notifier) ?? {} as BasicStoreEntityNotifier,
+            dataToSend,
+            triggersInDataToSend as BasicStoreEntityTrigger[]
+          ).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
         }
       }
     }
@@ -395,6 +397,9 @@ const initPublisherManager = () => {
       }
     } finally {
       if (streamProcessor) await streamProcessor.shutdown();
+      if (PUBLISHER_ENABLE_BUFFERING) {
+        await handleEntityNotificationBuffer();
+      }
       if (lock) await lock.unlock();
     }
   };
