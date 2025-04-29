@@ -106,6 +106,22 @@ export const defaultRender: NonNullable<DataTableColumn['render']> = (data, disp
 };
 
 const defaultColumns: DataTableProps['dataColumns'] = {
+  aliases: {
+    id: 'aliases',
+    label: 'Aliases',
+    percentWidth: 10,
+    render: ({ aliases }) => {
+      const theme = useTheme<Theme>();
+
+      return aliases ? (
+        <Tooltip title={aliases.join(', ')}>
+          <div style={{ maxWidth: '100%', display: 'flex', gap: theme.spacing(0.5) }}>
+            {aliases.map((value: string) => (<Chip key={value} label={value} size="small" />))}
+          </div>
+        </Tooltip>
+      ) : defaultRender('-');
+    },
+  },
   allowed_markings: {
     id: 'allowed_markings',
     percentWidth: 16,
@@ -305,6 +321,17 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ description }) => defaultRender(description),
   },
+  draftVersion: {
+    id: 'draftVersion',
+    label: 'Operation',
+    percentWidth: 10,
+    isSortable: false,
+    render: ({ draftVersion }) => (
+      <ItemOperations
+        draftOperation={draftVersion?.draft_operation}
+      />
+    ),
+  },
   entity_type: {
     id: 'entity_type',
     label: 'Type',
@@ -366,6 +393,54 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ external_id }) => defaultRender(external_id),
   },
+  file_name: {
+    id: 'file_name',
+    label: 'File name',
+    percentWidth: 12,
+    isSortable: false,
+    render: (data) => {
+      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+        ? data.importFiles.edges[0]?.node
+        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      return (
+        <Tooltip title={file?.name}>
+          <Truncate>{file?.name}</Truncate>
+        </Tooltip>
+      );
+    },
+  },
+  file_mime_type: {
+    id: 'file_mime_type',
+    label: 'Mime/Type',
+    percentWidth: 8,
+    isSortable: false,
+    render: (data) => {
+      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+        ? data.importFiles.edges[0]?.node
+        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      return (
+        <Tooltip title={file?.metaData?.mimetype}>
+          <Truncate>{file?.metaData.mimetype}</Truncate>
+        </Tooltip>
+      );
+    },
+  },
+  file_size: {
+    id: 'file_size',
+    label: 'File size',
+    percentWidth: 8,
+    isSortable: false,
+    render: (data, { b }) => {
+      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
+        ? data.importFiles.edges[0]?.node
+        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
+      return (
+        <Tooltip title={file?.metaData?.mimetype}>
+          <>{b(file?.size)}</>
+        </Tooltip>
+      );
+    },
+  },
   first_observed: {
     id: 'first_observed',
     label: 'First obs.',
@@ -389,6 +464,74 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
       const displayDraftChip = !!from?.draftVersion;
       return defaultRender(value, displayDraftChip);
+    },
+  },
+  from_created_at: {
+    id: 'from_created_at',
+    label: 'Platform creation date',
+    percentWidth: 15,
+    isSortable: true,
+    render: ({ from }, helpers) => {
+      const { created_at } = from;
+      return defaultRender(helpers.fd(created_at));
+    },
+  },
+  from_creator: {
+    id: 'from_creator',
+    label: 'Source Creators',
+    percentWidth: 12,
+    render: ({ from }) => {
+      const { creators } = from;
+      const value = isNotEmptyField(creators) ? creators.map((c: { name: string }) => c.name).join(', ') : '-';
+      return defaultRender(value);
+    },
+  },
+  from_entity_type: {
+    id: 'from_entity_type',
+    label: 'Source type',
+    percentWidth: 10,
+    render: ({ from }) => (<ItemEntityType showIcon entityType={from?.entity_type} inList />),
+  },
+  from_objectLabel: {
+    id: 'from_objectLabel',
+    label: 'Source Labels',
+    percentWidth: 15,
+    isSortable: false,
+    render: ({ from }, { storageHelpers: { handleAddFilter } }) => {
+      const { objectLabel } = from;
+      return (
+        <StixCoreObjectLabels
+          variant="inList"
+          labels={objectLabel}
+          onClick={handleAddFilter}
+        />
+      );
+    },
+  },
+  from_objectMarking: {
+    id: 'from_objectMarking',
+    label: 'Marking',
+    percentWidth: 8,
+    isSortable: true,
+    render: ({ from }, { storageHelpers: { handleAddFilter } }) => {
+      const { objectMarking } = from;
+      return (
+        <ItemMarkings
+          variant="inList"
+          markingDefinitions={objectMarking ?? []}
+          limit={1}
+          onClick={(m) => handleAddFilter('objectMarking', m.id, 'eq')}
+        />
+      );
+    },
+  },
+  from_relationship_type: {
+    id: 'from_relationship_type',
+    label: 'Source name',
+    percentWidth: 10,
+    render: ({ from }, helpers) => {
+      const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
+      return defaultRender(value);
     },
   },
   incident_type: {
@@ -676,6 +819,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       />
     ),
   },
+  objectParticipant: {
+    id: 'objectParticipant',
+    label: 'Participant',
+    percentWidth: 10,
+    render: ({ objectParticipant }) => {
+      const value = isNotEmptyField(objectParticipant) ? objectParticipant.map((c: { name: string }) => c.name).join(', ') : '-';
+      return defaultRender(value);
+    },
+  },
   observable_value: {
     id: 'observable_value',
     label: 'Value',
@@ -725,6 +877,12 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       >
         <>{operatingSystem?.name ?? '-'}</>
       </Tooltip>),
+  },
+  opinions_metrics_mean: {
+    id: 'opinions_metrics_mean',
+    label: 'Opinions mean',
+    percentWidth: 10,
+    render: ({ opinions_metrics }) => <span style={{ fontWeight: 700, fontSize: 15 }}>{opinions_metrics?.mean ?? '-'}</span>,
   },
   order: {
     id: 'order',
@@ -986,6 +1144,21 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value, displayDraftChip);
     },
   },
+  to_entity_type: {
+    id: 'to_entity_type',
+    label: 'Target type',
+    percentWidth: 10,
+    render: ({ to }) => (<ItemEntityType showIcon entityType={to?.entity_type} inList />),
+  },
+  to_relationship_type: {
+    id: 'to_relationship_type',
+    label: 'Target name',
+    percentWidth: 10,
+    render: ({ to }, helpers) => {
+      const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
+      return defaultRender(value);
+    },
+  },
   updated_at: {
     id: 'updated_at',
     label: 'Modification date',
@@ -1006,6 +1179,20 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 50,
     isSortable: false,
     render: ({ user_email }) => defaultRender(user_email),
+  },
+  valid_until: {
+    id: 'valid_until',
+    label: 'Valid until',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ valid_until }, { nsdt }) => <Tooltip title={nsdt(valid_until)}>{nsdt(valid_until)}</Tooltip>,
+  },
+  valid_from: {
+    id: 'valid_from',
+    label: 'Valid from',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ valid_from }, { nsdt }) => <Tooltip title={nsdt(valid_from)}>{nsdt(valid_from)}</Tooltip>,
   },
   value: {
     id: 'value',
@@ -1164,115 +1351,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       />
     ),
   },
-  file_name: {
-    id: 'file_name',
-    label: 'File name',
-    percentWidth: 12,
-    isSortable: false,
-    render: (data) => {
-      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
-        ? data.importFiles.edges[0]?.node
-        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-      return (
-        <Tooltip title={file?.name}>
-          <Truncate>{file?.name}</Truncate>
-        </Tooltip>
-      );
-    },
-  },
-  file_mime_type: {
-    id: 'file_mime_type',
-    label: 'Mime/Type',
-    percentWidth: 8,
-    isSortable: false,
-    render: (data) => {
-      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
-        ? data.importFiles.edges[0]?.node
-        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-      return (
-        <Tooltip title={file?.metaData?.mimetype}>
-          <Truncate>{file?.metaData.mimetype}</Truncate>
-        </Tooltip>
-      );
-    },
-  },
-  file_size: {
-    id: 'file_size',
-    label: 'File size',
-    percentWidth: 8,
-    isSortable: false,
-    render: (data, { b }) => {
-      const file = (data.importFiles?.edges && data.importFiles.edges.length > 0)
-        ? data.importFiles.edges[0]?.node
-        : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
-      return (
-        <Tooltip title={file?.metaData?.mimetype}>
-          <>{b(file?.size)}</>
-        </Tooltip>
-      );
-    },
-  },
-  valid_until: {
-    id: 'valid_until',
-    label: 'Valid until',
-    percentWidth: 10,
-    isSortable: true,
-    render: ({ valid_until }, { nsdt }) => <Tooltip title={nsdt(valid_until)}>{nsdt(valid_until)}</Tooltip>,
-  },
-  valid_from: {
-    id: 'valid_from',
-    label: 'Valid from',
-    percentWidth: 10,
-    isSortable: true,
-    render: ({ valid_from }, { nsdt }) => <Tooltip title={nsdt(valid_from)}>{nsdt(valid_from)}</Tooltip>,
-  },
-  draftVersion: {
-    id: 'draftVersion',
-    label: 'Operation',
-    percentWidth: 10,
-    isSortable: false,
-    render: ({ draftVersion }) => (
-      <ItemOperations
-        draftOperation={draftVersion?.draft_operation}
-      />
-    ),
-  },
-  opinions_metrics_mean: {
-    id: 'opinions_metrics_mean',
-    label: 'Opinions mean',
-    percentWidth: 10,
-    render: ({ opinions_metrics }) => <span style={{ fontWeight: 700, fontSize: 15 }}>{opinions_metrics?.mean ?? '-'}</span>,
-  },
-  from_entity_type: {
-    id: 'from_entity_type',
-    label: 'Source type',
-    percentWidth: 10,
-    render: ({ from }) => (<ItemEntityType showIcon entityType={from?.entity_type} inList />),
-  },
-  from_relationship_type: {
-    id: 'from_relationship_type',
-    label: 'Source name',
-    percentWidth: 10,
-    render: ({ from }, helpers) => {
-      const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
-      return defaultRender(value);
-    },
-  },
-  to_entity_type: {
-    id: 'to_entity_type',
-    label: 'Target type',
-    percentWidth: 10,
-    render: ({ to }) => (<ItemEntityType showIcon entityType={to?.entity_type} inList />),
-  },
-  to_relationship_type: {
-    id: 'to_relationship_type',
-    label: 'Target name',
-    percentWidth: 10,
-    render: ({ to }, helpers) => {
-      const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
-      return defaultRender(value);
-    },
-  },
   x_opencti_aliases: {
     id: 'x_opencti_aliases',
     label: 'Aliases',
@@ -1310,31 +1388,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           </div>
         </Tooltip>
       );
-    },
-  },
-  aliases: {
-    id: 'aliases',
-    label: 'Aliases',
-    percentWidth: 10,
-    render: ({ aliases }) => {
-      const theme = useTheme<Theme>();
-
-      return aliases ? (
-        <Tooltip title={aliases.join(', ')}>
-          <div style={{ maxWidth: '100%', display: 'flex', gap: theme.spacing(0.5) }}>
-            {aliases.map((value: string) => (<Chip key={value} label={value} size="small" />))}
-          </div>
-        </Tooltip>
-      ) : defaultRender('-');
-    },
-  },
-  objectParticipant: {
-    id: 'objectParticipant',
-    label: 'Participant',
-    percentWidth: 10,
-    render: ({ objectParticipant }) => {
-      const value = isNotEmptyField(objectParticipant) ? objectParticipant.map((c: { name: string }) => c.name).join(', ') : '-';
-      return defaultRender(value);
     },
   },
   x_opencti_score: {

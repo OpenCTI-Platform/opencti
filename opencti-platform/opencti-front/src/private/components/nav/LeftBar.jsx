@@ -46,6 +46,7 @@ import {
   WebAssetOutlined,
   WifiTetheringOutlined,
   WorkspacesOutlined,
+  TrackChanges,
 } from '@mui/icons-material';
 import {
   AccountMultipleOutline,
@@ -576,6 +577,29 @@ const LeftBar = () => {
               </MenuItem>
             </StyledTooltip>
           )}
+          <Security needs={[KNOWLEDGE]}>
+            {!draftContext && (
+              <StyledTooltip title={!navOpen && t_i18n('PIR')} placement="right">
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/pirs"
+                  selected={location.pathname.includes('/dashboard/pirs')}
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                >
+                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                    <TrackChanges />
+                  </ListItemIcon>
+                  {navOpen && (
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('PIR')}
+                    />
+                  )}
+                </MenuItem>
+              </StyledTooltip>
+            )}
+          </Security>
         </MenuList>
         <Divider />
         <Security needs={[KNOWLEDGE]}>
