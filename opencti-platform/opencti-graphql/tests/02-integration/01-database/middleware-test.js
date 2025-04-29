@@ -1219,7 +1219,7 @@ describe('Upsert and merge entities', () => {
     const organization2 = await createOrganization({ name: 'MALWARE_CREATED_BY_ORGANIZATION_02' });
     const malwareA = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_CREATED_BY_ORGANIZATION_01', createdBy: organization1.id, confidence: 40 });
     const malwareB = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_TO_MATCH_WITH_ALIAS' });
-    const malwareAUpsert = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_CREATED_BY_ORGANIZATION_02', createdBy: organization2.id, confidence: 60, aliases: ['MALWARE_TO_MATCH_WITH_ALIAS'] });
+    const malwareAUpsert = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_CREATED_BY_ORGANIZATION_01', createdBy: organization2.id, confidence: 60, aliases: ['MALWARE_TO_MATCH_WITH_ALIAS'] });
     const malwareAfterUpsert = await storeLoadByIdWithRefs(testContext, ADMIN_USER, malwareAUpsert.id);
     expect(malwareAfterUpsert.createdBy).not.toBeUndefined();
     expect(malwareAfterUpsert.createdBy.id).toEqual(organization2.id);
