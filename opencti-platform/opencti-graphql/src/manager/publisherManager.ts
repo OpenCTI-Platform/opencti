@@ -276,8 +276,8 @@ const processBufferedEvents = async (
         const currentUser = impactedData[0].user;
         const dataToSend = impactedData.map((d) => d.data);
         const triggersInDataToSend = [...new Set(dataToSend.map((d) => triggerMap.get(d.notification_id)).filter((t) => t))];
-        // If multiple triggers generated notification data, we need to create a "buffer" trigger containing the names of all triggers
-        if (triggersInDataToSend.length > 1) {
+        // If triggers can't be found, no need to send the data
+        if (triggersInDataToSend.length >= 1) {
           // There is no await in purpose, the goal is to send notification and continue without waiting result.
           internalProcessNotification(
             context,
