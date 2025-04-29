@@ -1,5 +1,6 @@
 import { graphql, useFragment } from 'react-relay';
 import React from 'react';
+import { PirKnowledge_SourceFlaggedFragment$data } from '@components/pir/__generated__/PirKnowledge_SourceFlaggedFragment.graphql';
 import { PirKnowledgeSourcesFlaggedListQuery, PirKnowledgeSourcesFlaggedListQuery$variables } from './__generated__/PirKnowledgeSourcesFlaggedListQuery.graphql';
 import { PirKnowledge_SourcesFlaggedFragment$data } from './__generated__/PirKnowledge_SourcesFlaggedFragment.graphql';
 import { PirKnowledgeFragment$key } from './__generated__/PirKnowledgeFragment.graphql';
@@ -8,8 +9,8 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../components/dataGrid/DataTable';
-import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import { computeLink } from '../../../utils/Entity';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledge_SourceFlaggedFragment on StixRefRelationship {
@@ -182,6 +183,10 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
           lineFragment={sourceFlaggedFragment}
           entityTypes={['in-pir']}
           searchContextFinal={{ entityTypes: ['in-pir'] }}
+          useComputeLink={(e: PirKnowledge_SourceFlaggedFragment$data) => {
+            if (!e.from) return '';
+            return computeLink(e.from);
+          }}
         />
       )}
     </>
