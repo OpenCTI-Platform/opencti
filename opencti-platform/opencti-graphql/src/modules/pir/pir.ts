@@ -3,6 +3,7 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_PIR, type StixPIR, type StoreEntityPIR } from './pir-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertEntityPIRToStix from './pir-converter';
+import { createdAt, creators, updatedAt } from '../../schema/attribute-definition';
 
 const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPIR, StixPIR> = {
   type: {
@@ -17,6 +18,9 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPIR, StixPIR> = {
     },
   },
   attributes: [
+    createdAt,
+    updatedAt,
+    creators,
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'pirCriteria', label: 'PIR Criteria', type: 'object', format: 'flat', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'pirFilters', label: 'PIR Filters', type: 'string', format: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },

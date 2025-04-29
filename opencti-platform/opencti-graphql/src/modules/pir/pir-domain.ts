@@ -1,12 +1,16 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, listEntitiesPaginated } from '../../database/middleware-loader';
+import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR } from './pir-types';
 import type { PirAddInput } from '../../generated/graphql';
 import { createEntity } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
+
+export const findById = (context: AuthContext, user: AuthUser, id: string) => {
+  return storeLoadById<BasicStoreEntityPIR>(context, user, id, ENTITY_TYPE_PIR);
+};
 
 export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPIR>) => {
   return listEntitiesPaginated<BasicStoreEntityPIR>(context, user, [ENTITY_TYPE_PIR], opts);

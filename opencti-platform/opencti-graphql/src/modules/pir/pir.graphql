@@ -13,11 +13,17 @@ type PIR implements InternalObject & BasicObject {
     name: String!
     pirCriteria: [PIRCriterion!]!
     pirFilters: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+    creators: [Creator!]
 }
 
 # Ordering
 enum PIROrdering {
     name
+    created_at
+    updated_at
+    creator
 }
 
 # Relay connections
@@ -32,6 +38,7 @@ type PIREdge {
 
 # Queries
 type Query {
+    pir(id: ID!): PIR @auth(for: [KNOWLEDGE])
     pirs(
         first: Int
         after: ID

@@ -35,6 +35,7 @@ interface PirDependency {
  * @param sourceId ID of the source entity matching the PIR.
  * @param pirId ID of the PIR matched by the entity.
  * @param pirDependencies The new dependencies.
+ * @param operation The edit operation (add, replace, ...).
  */
 const updatePirDependencies = async (
   context: AuthContext,
@@ -60,10 +61,9 @@ const updatePirDependencies = async (
  * between the source and the PIR.
  *
  * @param context To be able to create the relationship.
- * @param relationshipId ID of the relationship.
  * @param sourceId ID of the source of the rel.
  * @param pirId ID of the PIR.
- * @param matchingCriteria Criteria matched by the relationship.
+ * @param pirDependencies Criteria matched by the relationship.
  */
 const flagSource = async (
   context: AuthContext,

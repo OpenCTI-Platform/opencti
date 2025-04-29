@@ -130,6 +130,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
       }
     }
     if (stix.type === STIX_TYPE_RELATION) {
+      console.log('[POC PIR] History rel', { event, stix });
       const rel: StixRelation = stix as StixRelation;
       contextData.from_id = rel.extensions[STIX_EXT_OCTI].source_ref;
       contextData.to_id = rel.extensions[STIX_EXT_OCTI].target_ref;
