@@ -255,7 +255,7 @@ FilterIconButtonContainerProps
     flexWrap: 'wrap',
     gap: 1,
     overflow: 'auto',
-    padding: isSavedFilterContext ? '4px' : '0px',
+    padding: isSavedFilterContext ? '4px' : ' 4px 0px',
     backgroundColor: isSavedFilterContext ? 'rgba(37, 150, 190, 0.3)' : 'transparent',
     borderRadius: isSavedFilterContext ? '4px' : '0px',
   };
@@ -268,7 +268,7 @@ FilterIconButtonContainerProps
         flexWrap: 'no-wrap',
         gap: 0,
         overflow: 'hidden',
-        padding: '0px',
+        padding: '4px 0px',
         backgroundColor: 'none',
         borderRadius: '0px',
       };
