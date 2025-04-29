@@ -53,6 +53,7 @@ const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onI
       disableClearable
       value={value}
       disabled={isDisabled}
+      clearText
       inputValue={inputValue}
       options={options ?? []}
       sx={{ width: 200 }}

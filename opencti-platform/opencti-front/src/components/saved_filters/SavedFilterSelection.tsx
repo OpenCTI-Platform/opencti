@@ -41,6 +41,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
       const currentSavedFilters = options.find((item) => item.value.id === savedFilters.id);
       if (!currentSavedFilters) return;
       setSelectedSavedFilter(currentSavedFilters);
+      setCurrentSavedFilter(currentSavedFilters.value);
       setInputValue(currentSavedFilters.label);
     }
   }, []);
