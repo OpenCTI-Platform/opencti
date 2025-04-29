@@ -1,5 +1,5 @@
 import { logMigration } from '../config/conf';
-import { elRawDeleteByQuery, elRawSearch, elRawUpdateByQuery } from '../database/engine';
+import { elRawDeleteByQuery, elRawSearch, elUpdate } from '../database/engine';
 import { READ_DATA_INDICES, READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { DatabaseError } from '../config/errors';
@@ -34,25 +34,8 @@ export const up = async (next) => {
     const authorIdToKeep = currentAuthorsIds[currentAuthorsIds.length - 1];
     // 1. Update the denormalized refs of the current entity
     const updateCreatedByWithUniqueIdSource = "ctx._source['rel_created-by.internal_id'] = [params.authorIdToKeep]";
-    const updateCreatedByWithUniqueIdQuery = {
-      script: {
-        source: updateCreatedByWithUniqueIdSource,
-        params: { authorIdToKeep },
-        lang: 'painless'
-      },
-      query: {
-        match: {
-          _id: currentEntityWithMultipleAuthors._id
-        }
-      }
-    };
-    await elRawUpdateByQuery({
-      index: READ_DATA_INDICES,
-      refresh: true,
-      wait_for_completion: true,
-      body: updateCreatedByWithUniqueIdQuery
-    }).catch((err) => {
-      throw DatabaseError('Error updating elastic', { cause: err });
+    await elUpdate(currentEntityWithMultipleAuthors._index, currentEntityWithMultipleAuthors._id, {
+      script: { source: updateCreatedByWithUniqueIdSource, lang: 'painless', params: { authorIdToKeep } },
     });
 
     // 2. Delete all created-by ref relations that are not the unique author kept for entity
