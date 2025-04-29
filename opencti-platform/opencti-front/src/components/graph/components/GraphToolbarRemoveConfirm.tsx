@@ -241,24 +241,26 @@ const GraphToolbarRemoveConfirm = ({
           <Typography variant="body1">
             {t_i18n('Do you want to remove these elements?')}
           </Typography>
-          {context !== 'investigation' && (<Alert
-            severity="warning"
-            variant="outlined"
-            style={{ marginTop: 20 }}
-          >
-            <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
-            <FormGroup>
-              <FormControlLabel
-                label={t_i18n('Delete the element if no other containers contain it')}
-                control={(
-                  <Checkbox
-                    checked={andDelete}
-                    onChange={() => setAndDelete((d) => !d)}
-                  />
+          {context !== 'investigation' && (
+            <Alert
+              severity="warning"
+              variant="outlined"
+              style={{ marginTop: 20 }}
+            >
+              <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
+              <FormGroup>
+                <FormControlLabel
+                  label={t_i18n('Delete the element if no other containers contain it')}
+                  control={(
+                    <Checkbox
+                      checked={andDelete}
+                      onChange={() => setAndDelete((d) => !d)}
+                    />
                 )}
-              />
-            </FormGroup>
-          </Alert>)}
+                />
+              </FormGroup>
+            </Alert>)
+          }
 
           {totalToDelete > 0 && (
             <div
