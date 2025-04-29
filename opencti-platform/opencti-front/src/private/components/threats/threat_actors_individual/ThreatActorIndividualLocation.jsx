@@ -54,9 +54,6 @@ class ThreatActorIndividualLocationsComponent extends Component {
           >
             <AddLocationsThreatActorIndividual
               threatActorIndividual={threatActorIndividual}
-              threatActorIndividualLocations={
-                threatActorIndividual.locations.edges
-              }
             />
           </Security>
         )}

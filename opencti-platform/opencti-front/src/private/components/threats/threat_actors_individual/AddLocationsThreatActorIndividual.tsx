@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
-import { usePreloadedQuery } from 'react-relay';
+import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
@@ -10,10 +10,28 @@ import LocationCreation from '../../common/location/LocationCreation';
 import { insertNode } from '../../../../utils/store';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import {
+  AddLocationsThreatActorIndividualLinesQuery,
+  AddLocationsThreatActorIndividualLinesQuery$data, AddLocationsThreatActorIndividualLinesQuery$variables
+} from '@components/threats/threat_actors_individual/__generated__/AddLocationsThreatActorIndividualLinesQuery.graphql';
+import {
+  ThreatActorIndividualDetails_ThreatActorIndividual$data
+} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
+import {
+  AddPersonasThreatActorIndividualLinesQuery,
+  AddPersonasThreatActorIndividualLinesQuery$variables
+} from '@components/threats/threat_actors_individual/__generated__/AddPersonasThreatActorIndividualLinesQuery.graphql';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 
-const AddLocationsThreatActorIndividualComponent = ({
+interface AddLocationsThreatActorIndividualComponentProps {
+  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
+  queryRef: PreloadedQuery<AddLocationsThreatActorIndividualLinesQuery>,
+  onSearch: (search: string) => void,
+  paginationOptions: AddLocationsThreatActorIndividualLinesQuery$variables,
+}
+
+const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocationsThreatActorIndividualComponentProps> = ({
   threatActorIndividual,
-  threatActorIndividualLocations,
   queryRef,
   onSearch,
   paginationOptions,
@@ -24,12 +42,13 @@ const AddLocationsThreatActorIndividualComponent = ({
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const threatActorIndividualLocations = threatActorIndividual.locations.edges;
   const data = usePreloadedQuery(
     addLocationsThreatActorIndividualLinesQuery,
     queryRef,
   );
 
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_threatActorIndividual_locations',
     paginationOptions,
@@ -89,17 +108,22 @@ const AddLocationsThreatActorIndividualComponent = ({
   );
 };
 
-const AddLocationsThreatActorIndividual = (props) => {
+interface AddLocationsThreatActorIndividualProps {
+  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
+}
+const AddLocationsThreatActorIndividual: FunctionComponent<AddLocationsThreatActorIndividualProps> = ({
+  threatActorIndividual,
+}) => {
   const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '', types: ['Location'] });
 
-  const queryRef = useQueryLoading(
+  const queryRef = useQueryLoading<AddLocationsThreatActorIndividualLinesQuery>(
     addLocationsThreatActorIndividualLinesQuery,
     paginationOptions,
   );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <AddLocationsThreatActorIndividualComponent
-        {...props}
+        threatActorIndividual={threatActorIndividual}
         queryRef={queryRef}
         onSearch={(search) => setPaginationOptions({ count: 50, search, types: ['Location'] })}
         paginationOptions={paginationOptions}
