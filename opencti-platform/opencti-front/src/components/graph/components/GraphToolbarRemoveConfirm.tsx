@@ -62,6 +62,7 @@ const GraphToolbarRemoveConfirm = ({
   const [commitDeleteObjectKnowledgeGraph] = useKnowledgeGraphDeleteObject();
 
   const {
+    context,
     graphData,
     graphState: {
       selectedLinks,
@@ -240,7 +241,7 @@ const GraphToolbarRemoveConfirm = ({
           <Typography variant="body1">
             {t_i18n('Do you want to remove these elements?')}
           </Typography>
-          <Alert
+          {context !== 'investigation' && (<Alert
             severity="warning"
             variant="outlined"
             style={{ marginTop: 20 }}
@@ -257,7 +258,7 @@ const GraphToolbarRemoveConfirm = ({
                 )}
               />
             </FormGroup>
-          </Alert>
+          </Alert>)}
 
           {totalToDelete > 0 && (
             <div
