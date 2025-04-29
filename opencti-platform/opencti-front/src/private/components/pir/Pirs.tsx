@@ -11,7 +11,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
-import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import FilterIconButton from '../../../components/FilterIconButton';
 
 const pirFragment = graphql`
   fragment Pirs_PirFragment on PIR {
@@ -123,15 +123,35 @@ const Pirs = () => {
   );
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    name: {},
+    name: {
+      percentWidth: 20,
+    },
     filters: {
       id: 'filters',
       label: 'Filters',
-      percentWidth: 55,
+      percentWidth: 20,
+      render: ({ pirFilters }: Pirs_PirFragment$data) => {
+        return <FilterIconButton
+          key={pirFilters}
+          filters={JSON.parse(pirFilters)}
+          entityTypes={['Stix-Core-Object']}
+          styleNumber={3}
+               ></FilterIconButton>;
+      },
+    },
+    criteria: {
+      id: 'criteria',
+      label: 'Criteria',
+      percentWidth: 35,
       render: ({ pirCriteria }: Pirs_PirFragment$data) => {
-        const value = pirCriteria;
-        console.log(value);
-        return defaultRender('pouet');
+        return pirCriteria.map((c) => (
+          <FilterIconButton
+            key={c.filters}
+            filters={JSON.parse(c.filters)}
+            entityTypes={['Stix-Core-Object']}
+            styleNumber={3}
+          ></FilterIconButton>
+        ));
       },
     },
     creator: {},
