@@ -34,6 +34,7 @@ import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { RelayError } from '../../../../../relay/relayTypes';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
+import useHelper from '../../../../../utils/hooks/useHelper';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -112,6 +113,9 @@ export type OptionsFormValues = {
 
 const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
+
+  const { isFeatureEnable } = useHelper();
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
 
   const draftContext = useDraftContext();
   const {
@@ -390,7 +394,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
             color="secondary"
             onClick={() => setDraftContext()}
             component={Link}
-            to={`/dashboard/data/import/draft/${draftId}/files`}
+            to={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/files` : `/dashboard/drafts/${draftId}/files`}
           >
             {t_i18n('Navigate to draft')}
           </Button>
