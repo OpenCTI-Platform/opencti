@@ -90,8 +90,7 @@ const ImportActionsPopover = ({
             setOpenWorks(true);
           }}
           aria-haspopup="true"
-          // FIXME when changing ImportWorkbenchesContent query
-          color={(file as ImportFilesContentFileLine_file$data).works?.length ? 'primary' : 'inherit'}
+          color={file.works?.length ? 'primary' : 'inherit'}
           size="large"
         >
           <ProgressUpload fontSize="small"/>

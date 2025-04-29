@@ -52,7 +52,10 @@ export const workbenchLineFragment = graphql`
         name
       }
     }
-    # FIXME: only works { id } is necessary in the view under FF NEW_IMPORT_SCREENS 
+    works {
+      id
+    }
+    # TODO remove when FF NEW_IMPORT_SCREENS will be removed
     ...FileWork_file
   }
 `;
