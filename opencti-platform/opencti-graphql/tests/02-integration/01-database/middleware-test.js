@@ -1214,6 +1214,21 @@ describe('Upsert and merge entities', () => {
     await deleteElementById(testContext, ADMIN_USER, individual1.id, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
     await deleteElementById(testContext, ADMIN_USER, organization2.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   });
+  it('should upsert on multi match entity not create multiple authors', async () => {
+    const organization1 = await createOrganization({ name: 'MALWARE_CREATED_BY_ORGANIZATION_01' });
+    const organization2 = await createOrganization({ name: 'MALWARE_CREATED_BY_ORGANIZATION_02' });
+    const malwareA = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_CREATED_BY_ORGANIZATION_01', createdBy: organization1.id, confidence: 40 });
+    const malwareB = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_TO_MATCH_WITH_ALIAS' });
+    const malwareAUpsert = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_CREATED_BY_ORGANIZATION_02', createdBy: organization2.id, confidence: 60, aliases: ['MALWARE_TO_MATCH_WITH_ALIAS'] });
+    const malwareAfterUpsert = await storeLoadByIdWithRefs(testContext, ADMIN_USER, malwareAUpsert.id);
+    expect(malwareAfterUpsert.createdBy).not.toBeUndefined();
+    expect(malwareAfterUpsert.createdBy.id).toEqual(organization2.id);
+    // Cleanup
+    await deleteElementById(testContext, ADMIN_USER, malwareA.id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteElementById(testContext, ADMIN_USER, malwareB.id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteElementById(testContext, ADMIN_USER, organization1.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    await deleteElementById(testContext, ADMIN_USER, organization2.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  });
   it('should observable merged by update', async () => {
     // Merged 3 Stix File into one
     const md5 = await createFile({
