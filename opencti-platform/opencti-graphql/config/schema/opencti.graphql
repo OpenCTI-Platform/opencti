@@ -12662,6 +12662,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   cases(first: Int): CaseConnection
   toStix: String
   pir_dependencies: [PirExplanation!]
+  pirScore: Int
   # Technical
   creators: [Creator!]
   editContext: [EditUserContext!]
