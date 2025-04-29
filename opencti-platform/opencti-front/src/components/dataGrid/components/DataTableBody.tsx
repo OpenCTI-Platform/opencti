@@ -15,16 +15,12 @@ const DataTableBody = ({
   pageStart,
   pageSize,
   hideHeaders = false,
-  tableRef,
 }: DataTableBodyProps) => {
   const {
     rootRef,
     variant,
     resolvePath,
-    tableWidthState: [tableWidth, setTableWidth],
-    startsWithAction,
-    startsWithIcon,
-    endsWithAction,
+    tableWidthState: [tableWidth],
     actions,
     columns,
     dataQueryArgs,
@@ -57,25 +53,6 @@ const DataTableBody = ({
       loadMore?.(pageSize);
     }
   }, [resolvedData]);
-
-  // Keep table width up to date.
-  useLayoutEffect(() => {
-    let observer: ResizeObserver;
-    if (tableRef.current) {
-      const resize = (el: Element) => {
-        let offset = 10;
-        if (startsWithAction) offset += SELECT_COLUMN_SIZE;
-        if (startsWithIcon) offset += ICON_COLUMN_SIZE;
-        if (endsWithAction) offset += SELECT_COLUMN_SIZE;
-        if ((el.clientWidth - offset) !== tableWidth) {
-          setTableWidth(el.clientWidth - offset);
-        }
-      };
-      resize(tableRef.current);
-      observer = callbackResizeObserver(tableRef.current, resize);
-    }
-    return () => { observer?.disconnect(); };
-  }, [tableRef.current, tableWidth, endsWithAction, startsWithAction, startsWithIcon]);
 
   const onToggleShiftEntity: DataTableLineProps['onToggleShiftEntity'] = (currentIndex, currentEntity, event) => {
     if (selectedElements && !R.isEmpty(selectedElements)) {
