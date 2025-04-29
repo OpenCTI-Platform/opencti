@@ -12,6 +12,8 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { findById as findStixObjectOrStixRelationshipById } from './stixObjectOrStixRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { computePirScore } from '../modules/pir/pir-utils';
 
 // Query
 
@@ -135,4 +137,10 @@ export const stixRefRelationshipsNumber = (context, user, args) => {
     count: elCount(context, user, indices, countArgs),
     total: elCount(context, user, indices, dissoc('endDate', countArgs)),
   };
+};
+
+export const stixRefRelationshipPirScore = async (context, user, ref) => {
+  const pir = await storeLoadById(context, user, ref.toId, ENTITY_TYPE_PIR);
+  if (!pir) return 0;
+  return computePirScore(pir, ref.pir_dependencies.length);
 };

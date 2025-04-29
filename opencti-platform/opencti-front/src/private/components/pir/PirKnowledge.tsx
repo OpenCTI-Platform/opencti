@@ -8,10 +8,13 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../components/dataGrid/DataTable';
+import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledge_SourceFlaggedFragment on StixRefRelationship {
     id
+    pirScore
     from {
       ...on StixCoreObject {
         id
@@ -91,8 +94,6 @@ const sourcesFlaggedListQuery = graphql`
   }
 `;
 
-const LOCAL_STORAGE_KEY = 'PIRSourcesFlaggedList';
-
 const knowledgeFragment = graphql`
   fragment PirKnowledgeFragment on PIR {
     id
@@ -105,6 +106,7 @@ interface PirKnowledgeProps {
 
 const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   const pir = useFragment(knowledgeFragment, data);
+  const LOCAL_STORAGE_KEY = `PIRSourcesFlaggedList-${pir.id}`;
 
   const initialValues = {
     searchTerm: '',
@@ -136,6 +138,13 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   );
 
   const dataColumns: DataTableProps['dataColumns'] = {
+    pirScore: {
+      id: 'pirScore',
+      label: 'Score',
+      percentWidth: 5,
+      isSortable: false,
+      render: ({ pirScore }) => defaultRender(`${pirScore}%`),
+    },
     from_entity_type: {},
     fromName: {
       id: 'from_name',
@@ -143,7 +152,7 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
     },
     from_creator: {
       id: 'from_creator',
-      percentWidth: 22,
+      percentWidth: 17,
     },
     from_objectLabel: {},
     from_objectMarking: {},

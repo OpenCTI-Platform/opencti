@@ -9,6 +9,7 @@ import {
   stixRefRelationshipDelete,
   stixRefRelationshipEditContext,
   stixRefRelationshipEditField,
+  stixRefRelationshipPirScore,
   stixRefRelationshipsNumber
 } from '../domain/stixRefRelationship';
 import { fetchEditContext } from '../database/redis';
@@ -47,6 +48,8 @@ const stixRefRelationshipResolvers = {
     // Utils
     editContext: (rel) => fetchEditContext(rel.id),
     datable: (rel) => isDatable(rel.fromType, rel.relationship_type),
+    // PIR
+    pirScore: (rel, _, context) => stixRefRelationshipPirScore(context, context.user, rel)
   },
   Mutation: {
     stixRefRelationshipEdit: (_, { id }, context) => ({

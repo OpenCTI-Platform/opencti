@@ -26223,6 +26223,7 @@ export type StixRefRelationship = BasicRelationship & StixRelationship & {
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
+  pirScore?: Maybe<Scalars['Int']['output']>;
   pir_dependencies?: Maybe<Array<PirExplanation>>;
   relationship_type: Scalars['String']['output'];
   reports?: Maybe<ReportConnection>;
@@ -41071,6 +41072,7 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixRefRelationshipOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  pirScore?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   pir_dependencies?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType>;
   relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixRefRelationshipReportsArgs>>;
