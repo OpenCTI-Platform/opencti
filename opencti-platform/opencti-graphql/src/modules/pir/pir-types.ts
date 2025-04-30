@@ -42,3 +42,8 @@ export interface ParsedPIR {
   // is to exclude some data (low confidence for example).
   pirFilters: FilterGroup
 }
+
+export interface PirDependency {
+  relationship_id: string,
+  weight: number,
+}
