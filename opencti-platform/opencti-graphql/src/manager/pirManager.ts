@@ -3,16 +3,16 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent } from '../types/event';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { ABSTRACT_STIX_CORE_OBJECT, STIX_TYPE_RELATION } from '../schema/general';
-import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from '../domain/stixObjectOrStixRelationship';
+import { stixObjectOrRelationshipDeleteRefRelation } from '../domain/stixObjectOrStixRelationship';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
 import { findById } from '../domain/stixCoreObject';
-import { stixRefRelationshipEditField } from '../domain/stixRefRelationship';
 import { listAllEntities, listRelationsPaginated } from '../database/middleware-loader';
-import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR } from '../modules/pir/pir-types';
+import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR, type PirDependency } from '../modules/pir/pir-types';
 import { EditOperation } from '../generated/graphql';
+import { flagSource, updatePirDependencies } from '../modules/pir/pir-utils';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -21,73 +21,6 @@ const PIR_MANAGER_CONTEXT = 'pir_manager';
 const PIR_MANAGER_INTERVAL = 10000; // TODO PIR: use config instead
 const PIR_MANAGER_LOCK_KEY = 'pir_manager_lock'; // TODO PIR: use config instead
 const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
-
-interface PirDependency {
-  relationship_id: string,
-  weight: number,
-}
-
-/**
- * Find a meta relationship "in-pir" between an entity and a PIR and update
- * its dependencies (matching criteria).
- *
- * @param context To be able to make the calls.
- * @param sourceId ID of the source entity matching the PIR.
- * @param pirId ID of the PIR matched by the entity.
- * @param pirDependencies The new dependencies.
- * @param operation The edit operation (add, replace, ...).
- */
-const updatePirDependencies = async (
-  context: AuthContext,
-  sourceId: string,
-  pirId: string,
-  pirDependencies: PirDependency[],
-  operation?: string, // 'add' to add a new dependency, 'replace' by default
-) => {
-  const pirMetaRels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
-  if (pirMetaRels.edges.length !== 1) {
-    // If < 1 then the meta relationship does not exist.
-    // If > 1, well this case should not be possible at all.
-    throw FunctionalError('Find more than one relation between an entity and a PIR', { sourceId, pirId, pirMetaRels });
-  }
-  const pirMetaRel = pirMetaRels.edges[0].node;
-  const editInput = [{ key: 'pir_dependencies', value: pirDependencies, operation }];
-  const updatedRef = await stixRefRelationshipEditField(context, SYSTEM_USER, pirMetaRel.id, editInput);
-  console.log('REF', updatedRef);
-};
-
-/**
- * Flag the source of the relationship by creating a meta relationship 'in-pir'
- * between the source and the PIR.
- *
- * @param context To be able to create the relationship.
- * @param sourceId ID of the source of the rel.
- * @param pirId ID of the PIR.
- * @param pirDependencies Criteria matched by the relationship.
- */
-const flagSource = async (
-  context: AuthContext,
-  sourceId: string,
-  pirId: string,
-  pirDependencies: PirDependency[],
-) => {
-  const addRefInput = {
-    relationship_type: RELATION_IN_PIR,
-    toId: pirId,
-    pir_dependencies: pirDependencies,
-  };
-  // First create the meta relationship.
-  await stixObjectOrRelationshipAddRefRelation(
-    context,
-    SYSTEM_USER,
-    sourceId,
-    addRefInput,
-    ABSTRACT_STIX_CORE_OBJECT
-  );
-  // And then add the dependencies in the meta relationship.
-  // TODO PIR: improve this if possible to avoid making 2 calls.
-  await updatePirDependencies(context, sourceId, pirId, pirDependencies);
-};
 
 /**
  * Called when an event of create new relationship matches a PIR criteria.
