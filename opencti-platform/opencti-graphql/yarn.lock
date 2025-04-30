@@ -11260,15 +11260,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nconf@npm:0.12.1":
-  version: 0.12.1
-  resolution: "nconf@npm:0.12.1"
+"nconf@npm:0.13.0":
+  version: 0.13.0
+  resolution: "nconf@npm:0.13.0"
   dependencies:
     async: "npm:^3.0.0"
     ini: "npm:^2.0.0"
     secure-keys: "npm:^1.0.0"
     yargs: "npm:^16.1.1"
-  checksum: 10/4170c83004ec4c7f2809c2125dcc01aaf0b9decdc28f63a42f66e5c87ecaa24c8509d80a1fbe7f28ff16244731640d53ca0488f038ad1bfeb9c707d139c11a4f
+  checksum: 10/8af33715f2f589b4bf2cf277c2626ca51c825e507439d7d92ccf7291145c12f2881128d10c46cf4282c056b96c8062c977479fb7bb11f73923cb5cb218b5d836
   languageName: node
   linkType: hard
 
@@ -11864,7 +11864,7 @@ __metadata:
     mime-types: "npm:3.0.1"
     moment: "npm:2.30.1"
     moment-range: "npm:4.0.2"
-    nconf: "npm:0.12.1"
+    nconf: "npm:0.13.0"
     node-calls-python: "npm:1.9.1"
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.3.1"
