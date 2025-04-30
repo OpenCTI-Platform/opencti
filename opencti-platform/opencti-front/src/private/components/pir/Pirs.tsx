@@ -155,7 +155,10 @@ const Pirs = () => {
       },
     },
     creator: {},
-    created_at: {},
+    created_at: {
+      id: 'created_at',
+      percentWidth: 13,
+    },
   };
 
   return (
