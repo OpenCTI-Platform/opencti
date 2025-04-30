@@ -19,7 +19,6 @@ import { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterRepresentative } from './filters/FiltersModel';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
 import { PageContainerContext } from './PageContainer';
-import { useDataTableContext } from './dataGrid/components/DataTableContext';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -128,6 +127,7 @@ interface FilterIconButtonContainerProps {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   fintelTemplatesContext?: boolean;
+  hasSavedFilters?: boolean;
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -152,6 +152,7 @@ FilterIconButtonContainerProps
   availableEntityTypes,
   availableRelationshipTypes,
   fintelTemplatesContext,
+  hasSavedFilters,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -162,12 +163,6 @@ FilterIconButtonContainerProps
     filterValuesContentQuery,
     filtersRepresentativesQueryRef,
   );
-
-  const {
-    useDataTablePaginationLocalStorage: {
-      viewStorage: { savedFilters },
-    },
-  } = useDataTableContext();
 
   const displayedFilters = filters.filters;
   const globalMode = filters.mode;
@@ -247,17 +242,15 @@ FilterIconButtonContainerProps
     margin = '0 0 0 0';
   }
 
-  const isSavedFilterContext = savedFilters;
-
   let boxStyle = {
     margin: `${margin}`,
     display: 'flex',
     flexWrap: 'wrap',
     gap: 1,
     overflow: 'auto',
-    padding: isSavedFilterContext ? '4px' : ' 4px 0px',
-    backgroundColor: isSavedFilterContext ? 'rgba(37, 150, 190, 0.3)' : 'transparent',
-    borderRadius: isSavedFilterContext ? '4px' : '0px',
+    padding: hasSavedFilters ? '4px' : ' 4px 0px',
+    backgroundColor: hasSavedFilters ? 'rgba(37, 150, 190, 0.3)' : 'transparent',
+    borderRadius: hasSavedFilters ? '4px' : '0px',
   };
 
   if (!isReadWriteFilter) {
