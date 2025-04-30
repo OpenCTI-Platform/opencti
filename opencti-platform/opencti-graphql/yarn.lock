@@ -11681,9 +11681,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:4.95.0":
-  version: 4.95.0
-  resolution: "openai@npm:4.95.0"
+"openai@npm:4.96.2":
+  version: 4.96.2
+  resolution: "openai@npm:4.96.2"
   dependencies:
     "@types/node": "npm:^18.11.18"
     "@types/node-fetch": "npm:^2.6.4"
@@ -11702,7 +11702,7 @@ __metadata:
       optional: true
   bin:
     openai: bin/cli
-  checksum: 10/36db438d7fe5cd616802e8dc9579e263a8b68859fdaf4eceb0639f4cf69c0ebaeae34dd4f9922c497763533c35bd188bc4e368e11dbdcdc10b486d7907c3203c
+  checksum: 10/a96af205ba58e7f619171399e08694389cb2970e8cd2de66c332a3b0fc8ac563fbfffb83759524407d39dff4d4b6a28fefb115f50205586849d9d18229613236
   languageName: node
   linkType: hard
 
@@ -11869,7 +11869,7 @@ __metadata:
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.3.1"
     nodemailer: "npm:6.10.1"
-    openai: "npm:4.95.0"
+    openai: "npm:4.96.2"
     openid-client: "npm:5.6.5"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:12.0.1"
