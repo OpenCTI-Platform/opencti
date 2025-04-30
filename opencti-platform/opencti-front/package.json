@@ -123,7 +123,7 @@
     "@types/relay-runtime": "17.0.4",
     "@types/relay-test-utils": "17.0.0",
     "@vitejs/plugin-react": "4.4.1",
-    "babel-plugin-relay": "17.0.0",
+    "babel-plugin-relay": "18.2.0",
     "chokidar": "4.0.3",
     "compression": "1.8.0",
     "cross-env": "7.0.3",
