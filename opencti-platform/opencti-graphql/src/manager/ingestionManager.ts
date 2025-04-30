@@ -29,7 +29,7 @@ import type {
   DataParam,
 } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
-import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
+import { ConnectorType, IngestionAuthType, IngestionCsvMapperType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
 import { findById as findCsvMapperById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
@@ -551,7 +551,8 @@ export const processCsvLines = async (
 
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const user = context.user ?? SYSTEM_USER;
-  const csvMapper = await findCsvMapperById(context, user, ingestion.csv_mapper_id);
+  const csvMapper = ingestion.csv_mapper_type === IngestionCsvMapperType.Inline
+    ? JSON.parse(ingestion.csv_mapper!) : await findCsvMapperById(context, user, ingestion.csv_mapper_id!);
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
   try {

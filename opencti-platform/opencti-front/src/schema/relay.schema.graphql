@@ -8189,6 +8189,7 @@ type Query {
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
+  csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
   ingestionJson(id: String!): IngestionJson
   ingestionJsons(first: Int, after: ID, orderBy: IngestionJsonOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionJsonConnection
   indicator(id: String!): Indicator
@@ -11759,6 +11760,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   description: String
   scheduling_period: String
   uri: String!
+  csv_mapper_type: IngestionCsvMapperType
   csvMapper: CsvMapper!
   authentication_type: IngestionAuthType!
   authentication_value: String
@@ -11780,6 +11782,11 @@ enum IngestionCsvOrdering {
   _score
 }
 
+enum IngestionCsvMapperType {
+  inline
+  id
+}
+
 type IngestionCsvConnection {
   pageInfo: PageInfo!
   edges: [IngestionCsvEdge!]!
@@ -11790,6 +11797,17 @@ type IngestionCsvEdge {
   node: IngestionCsv!
 }
 
+type CSVFeedAddInputFromImport {
+  name: String!
+  description: String!
+  uri: String!
+  authentication_type: String!
+  markings: [String!]!
+  authentication_value: String!
+  csvMapper: CsvMapperAddInputFromImport!
+  csv_mapper_type: IngestionCsvMapperType
+}
+
 input IngestionCsvAddInput {
   name: String!
   description: String
@@ -11798,7 +11816,9 @@ input IngestionCsvAddInput {
   authentication_value: String
   current_state_date: DateTime
   uri: String!
-  csv_mapper_id: String!
+  csv_mapper_id: String
+  csv_mapper: String
+  csv_mapper_type: IngestionCsvMapperType
   ingestion_running: Boolean
   user_id: String!
   markings: [String!]

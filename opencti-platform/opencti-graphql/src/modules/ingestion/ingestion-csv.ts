@@ -6,6 +6,7 @@ import { normalizeName } from '../../schema/identifier';
 import { convertIngestionCsvToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
+import { CSV_FEED_FEATURE_FLAG } from './ingestion-csv-domain';
 
 const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIngestionCsv> = {
   type: {
@@ -30,6 +31,8 @@ const INGESTION_CSV_DEFINITION: ModuleDefinition<StoreEntityIngestionCsv, StixIn
     { name: 'scheduling_period', label: 'Scheduling period', type: 'string', format: 'text', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'uri', label: 'Uri', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'user_id', label: 'User_id', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'csv_mapper_type', label: 'Csv_mapper_type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true, featureFlag: CSV_FEED_FEATURE_FLAG },
+    { name: 'csv_mapper', label: 'Csv_mapper', type: 'string', format: 'json', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false, featureFlag: CSV_FEED_FEATURE_FLAG },
     { name: 'csv_mapper_id', label: 'Csv_mapper_id', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_CSV_MAPPER], mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'ingestion_running', label: 'Ingestion_running', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'added_after_start', label: 'Added_after_start', type: 'date', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },

@@ -1,21 +1,28 @@
+import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
-import type { CsvMapperTestResult, EditInput, IngestionCsvAddInput } from '../../generated/graphql';
+import { type CsvMapperTestResult, type EditInput, type IngestionCsvAddInput, IngestionCsvMapperType } from '../../generated/graphql';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type BasicStoreEntityCsvMapper, type CsvMapperParsed, ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
 import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../parser/csv-bundler';
-import { findById as findCsvMapperById } from '../internal/csvMapper/csvMapper-domain';
+import { findById as findCsvMapperById, transformCsvMapperConfig } from '../internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../internal/csvMapper/csvMapper-utils';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../../utils/http-client';
 import { verifyIngestionAuthenticationContent } from './ingestion-common';
 import { IngestionAuthType } from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { StixObject } from '../../types/stix-2-1-common';
+import { extractContentFrom } from '../../utils/fileToContent';
+import { isCompatibleVersionWithMinimal } from '../../utils/version';
+import { FunctionalError } from '../../config/errors';
+
+const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
+export const CSV_FEED_FEATURE_FLAG = 'CSV_FEED';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -159,11 +166,9 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
-
-  const csvMapper = await findCsvMapperById(context, user, input.csv_mapper_id);
+  const csvMapper = input.csv_mapper_type === IngestionCsvMapperType.Inline ? JSON.parse(input.csv_mapper ?? '') : await findCsvMapperById(context, user, input.csv_mapper_id!);
   const parsedMapper = parseCsvMapper(csvMapper);
   const ingestion = {
-    csv_mapper_id: input.csv_mapper_id,
     uri: input.uri,
     authentication_type: input.authentication_type,
     authentication_value: input.authentication_value
@@ -184,4 +189,31 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
     nbRelationships: allObjects.filter((object: StixObject) => object.type === 'relationship').length,
     nbEntities: allObjects.filter((object: StixObject) => object.type !== 'relationship').length,
   };
+};
+
+export const csvFeedAddInputFromImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+  if (!isFeatureEnabled(CSV_FEED_FEATURE_FLAG)) {
+    throw new Error(`${CSV_FEED_FEATURE_FLAG} feature is disabled`);
+  }
+  const parsedData = await extractContentFrom(file);
+
+  // check platform version compatibility
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_CSV_FEED_COMPATIBLE_VERSION)) {
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_CSV_FEED_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
+  }
+
+  return {
+    ...parsedData.configuration,
+    csvMapper: transformCsvMapperConfig(parsedData.configuration.csv_mapper.configuration, context, user),
+  };
+};
+
+export const csvFeedGetCsvMapper = (context: AuthContext, ingestionCsv: BasicStoreEntityIngestionCsv) => {
+  return ingestionCsv.csv_mapper_type === 'inline' ? {
+    id: ingestionCsv.id,
+    ...JSON.parse(ingestionCsv.csv_mapper!)
+  } : findCsvMapperForIngestionById(context, context.user!, ingestionCsv.csv_mapper_id!);
 };

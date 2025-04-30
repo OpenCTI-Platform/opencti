@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { ADMIN_USER, queryAsAdmin, testContext, USER_DISINFORMATION_ANALYST, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { patchCsvIngestion } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { now } from '../../../src/utils/format';
 import { SYSTEM_USER } from '../../../src/utils/access';
@@ -9,17 +9,18 @@ import { SYSTEM_USER } from '../../../src/utils/access';
 describe('CSV ingestion resolver standard behavior', () => {
   let singleColumnCsvMapperId = '';
   let singleColumnCsvFeedIngesterId = '';
+  const singleColumnCsvMapper = {
+    input: {
+      has_header: false,
+      name: 'Single column CSV mapper',
+      separator: ',',
+      representations: '[{"id":"75c3c21c-0a92-497f-962d-4e6e1a488481","type":"entity","target":{"entity_type":"IPv4-Addr"},"attributes":[{"key":"value","column":{"column_name":"A"},"based_on":null}]}]',
+      skipLineChar: ''
+    }
+  };
 
   beforeAll(async () => {
-    const SINGLE_COLUMN_CSV_MAPPER = {
-      input: {
-        has_header: false,
-        name: 'Single column CSV mapper',
-        separator: ',',
-        representations: '[{"id":"75c3c21c-0a92-497f-962d-4e6e1a488481","type":"entity","target":{"entity_type":"IPv4-Addr"},"attributes":[{"key":"value","column":{"column_name":"A"},"based_on":null}]}]',
-        skipLineChar: ''
-      }
-    };
+    const SINGLE_COLUMN_CSV_MAPPER = singleColumnCsvMapper;
 
     const createSingleColumnCsvMapperQueryResult = await queryAsAdmin({
       query: gql`
@@ -45,7 +46,7 @@ describe('CSV ingestion resolver standard behavior', () => {
         user_id: ADMIN_USER.id
       }
     };
-    const createSingleColumnCsvFeedsIngesterQueryResult = await queryAsAdmin({
+    const createSingleColumnCsvFeedsWithInlineMapperIngesterQueryResult = await queryAsAdmin({
       query: gql`
       mutation createSingleColumnCsvFeedsIngester($input: IngestionCsvAddInput!) {
         ingestionCsvAdd(input: $input) {
@@ -57,8 +58,39 @@ describe('CSV ingestion resolver standard behavior', () => {
       `,
       variables: CSV_FEED_INGESTER_TO_CREATE
     });
-    singleColumnCsvFeedIngesterId = createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd?.id;
+    singleColumnCsvFeedIngesterId = createSingleColumnCsvFeedsWithInlineMapperIngesterQueryResult?.data?.ingestionCsvAdd?.id;
     expect(singleColumnCsvFeedIngesterId).toBeDefined();
+    expect(createSingleColumnCsvFeedsWithInlineMapperIngesterQueryResult?.data?.ingestionCsvAdd?.entity_type).toBe('IngestionCsv');
+    expect(createSingleColumnCsvFeedsWithInlineMapperIngesterQueryResult?.data?.ingestionCsvAdd?.ingestion_running).toBeFalsy();
+  });
+
+  it('should create a CSV feeds ingester with inline CSV Mapper', async () => {
+    const CSV_FEED_INGESTER_TO_CREATE = {
+      input: {
+        authentication_type: 'none',
+        name: 'Single column',
+        uri: 'https://lists.blocklist.de/lists/all.txt',
+        csv_mapper: JSON.stringify(singleColumnCsvMapper),
+        csv_mapper_type: 'inline',
+        user_id: ADMIN_USER.id
+      }
+    };
+    const createSingleColumnCsvFeedsIngesterQueryResult = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
+      query: gql`
+      mutation createSingleColumnCsvFeedsIngester($input: IngestionCsvAddInput!) {
+        ingestionCsvAdd(input: $input) {
+        id
+        entity_type
+        csv_mapper_type
+        ingestion_running
+          }
+      },
+      `,
+      variables: CSV_FEED_INGESTER_TO_CREATE
+    });
+    const csvFeedIngester = createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd;
+    expect(csvFeedIngester.id).toBeDefined();
+    expect(csvFeedIngester.csv_mapper_type).toBe('inline');
     expect(createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd?.entity_type).toBe('IngestionCsv');
     expect(createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd?.ingestion_running).toBeFalsy();
   });
@@ -188,7 +220,7 @@ describe('CSV ingestion resolver standard behavior', () => {
     });
     const { errors } = deleteResult;
     expect(errors).toBeDefined();
-    expect(errors?.[0].message).toBe('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv ingester(s)');
+    expect(errors?.[0].message).toBe('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv feed(s)');
   });
 
   it('should delete the CSV feeds ingester', async () => {

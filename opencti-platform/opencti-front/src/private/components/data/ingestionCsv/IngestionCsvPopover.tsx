@@ -222,8 +222,12 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
                 queryRef={queryRef}
                 handleClose={() => setDisplayDuplicate(false)}
                 open={displayDuplicate}
+                triggerButton={false}
                 paginationOptions={paginationOptions}
-                isDuplicated={true}
+                drawerSettings={{
+                  title: t_i18n('Duplicate a CSV Feed'),
+                  button: t_i18n('Duplicate'),
+                }}
               />
             </>
           </React.Suspense>

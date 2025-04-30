@@ -6,6 +6,7 @@ import IngestionCsvLines, { ingestionCsvLinesQuery } from '@components/data/inge
 import { IngestionCsvLinesPaginationQuery, IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { IngestionCsvLineDummy } from '@components/data/ingestionCsv/IngestionCsvLine';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
+import IngestionCsvImport from '@components/data/ingestionCsv/IngestionCsvImport';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -16,6 +17,7 @@ import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const LOCAL_STORAGE_KEY = 'ingestionCsvs';
 
@@ -32,6 +34,7 @@ const IngestionCsv = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+  const { isFeatureEnable } = useHelper();
   setTitle(t_i18n('CSV Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
@@ -96,12 +99,22 @@ const IngestionCsv = () => {
         keyword={searchTerm}
         createButton={
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <IngestionCsvCreationContainer
-              open={false}
-              handleClose={() => { }}
-              paginationOptions={paginationOptions}
-              isDuplicated={false}
-            />
+            <>
+              {isFeatureEnable('CSV_FEED')
+                && <IngestionCsvImport
+                  paginationOptions={paginationOptions}
+                   />}
+              <IngestionCsvCreationContainer
+                paginationOptions={paginationOptions}
+                drawerSettings={
+                {
+                  title: t_i18n('Create a CSV Feed'),
+                  button: t_i18n('Create'),
+                }
+                }
+              />
+
+            </>
           </Security>
         }
       >
