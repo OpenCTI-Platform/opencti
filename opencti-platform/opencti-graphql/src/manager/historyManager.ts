@@ -126,13 +126,15 @@ const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>, listen
       }
       return [];
     });
-    const pirIds = (listenedEntities
-      .filter((e) => matchingStandardIds.includes(e.standard_id)) ?? []).flatMap((e) => e['in-pir'] ?? []);
-    if (pirIds.length === 0) {
-      logApp.error('[PIR] A listened entity should be linked to a PIR', { data: event });
+    if (matchingStandardIds.length > 0) {
+      const pirIds = (listenedEntities
+        .filter((e) => matchingStandardIds.includes(e.standard_id)) ?? []).flatMap((e) => e['in-pir'] ?? []);
+      if (pirIds.length === 0) {
+        logApp.error('[PIR] A listened entity should be linked to a PIR', { data: event });
+      }
+      console.log('[POC PIR] Event for CONTAINS in PIR history', { event, pirIds, matchingStandardIds });
+      return pirIds;
     }
-    console.log('[POC PIR] Event for CONTAINS in PIR history', { event, pirIds, matchingStandardIds });
-    return pirIds;
   }
   // 2.3 detect in-pir rels
   // TODO PIR
