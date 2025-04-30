@@ -4,6 +4,7 @@ import { fieldToDateTimePicker } from 'formik-mui-lab';
 import { useField } from 'formik';
 import * as R from 'ramda';
 import { useIntl } from 'react-intl';
+import { isNil } from 'ramda';
 import { parse } from '../utils/Time';
 
 const dateTimeFormatsMap = {
@@ -26,7 +27,7 @@ const dateTimeFormatsMapWithSeconds = {
 
 const DateTimePickerField = (props) => {
   const {
-    form: { setFieldValue, setFieldTouched },
+    form: { setFieldValue, setFieldTouched, submitCount },
     field: { name, value },
     onChange,
     onFocus,
@@ -68,6 +69,9 @@ const DateTimePickerField = (props) => {
       onSubmit(name, value ? parse(value).toISOString() : null);
     }
   }, [setFieldTouched, onSubmit, name, field]);
+
+  const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
+
   if (withSeconds) {
     return (
       <DateTimePicker
@@ -77,6 +81,7 @@ const DateTimePickerField = (props) => {
         required={required}
         disableToolbar={false}
         autoOk={true}
+        error={showError}
         allowKeyboardControl={true}
         onAccept={internalOnAccept}
         onChange={internalOnChange}
@@ -104,6 +109,7 @@ const DateTimePickerField = (props) => {
       required={required}
       disableToolbar={false}
       autoOk={true}
+      error={showError}
       allowKeyboardControl={true}
       onAccept={internalOnAccept}
       onChange={internalOnChange}
