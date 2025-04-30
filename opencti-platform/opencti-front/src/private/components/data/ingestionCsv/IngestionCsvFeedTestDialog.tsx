@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import CodeBlock from '@components/common/CodeBlock';
 import Alert from '@mui/material/Alert';
-import { IngestionCsvMapperTestDialogMutation$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvMapperTestDialogMutation.graphql';
+import { IngestionCsvFeedTestDialogMutation$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvFeedTestDialogMutation.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import { handleError } from '../../../../relay/environment';
@@ -15,8 +15,8 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { getAuthenticationValue } from '../../../../utils/ingestionAuthentificationUtils';
 import { FieldOption } from '../../../../utils/field';
 
-const ingestionCsvMapperTestMutation = graphql`
-  mutation IngestionCsvMapperTestDialogMutation($input: IngestionCsvAddInput!) {
+const ingestionCsvFeedTestMutation = graphql`
+  mutation IngestionCsvFeedTestDialogMutation($input: IngestionCsvAddInput!) {
     ingestionCsvTester(input: $input) {
       nbEntities
       nbRelationships
@@ -25,7 +25,7 @@ const ingestionCsvMapperTestMutation = graphql`
   }
 `;
 
-interface IngestionCsvMapperTestDialogProps {
+interface ingestionCsvFeedTestDialogProps {
   open: boolean
   onClose: () => void
   values: {
@@ -42,15 +42,15 @@ interface IngestionCsvMapperTestDialogProps {
   setIsCreateDisabled?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDialogProps> = ({
+const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogProps> = ({
   open,
   onClose,
   values,
   setIsCreateDisabled,
 }) => {
   const { t_i18n } = useFormatter();
-  const [result, setResult] = useState<IngestionCsvMapperTestDialogMutation$data | undefined>(undefined);
-  const [commitTest] = useApiMutation(ingestionCsvMapperTestMutation, undefined, { errorMessage: 'Something went wrong. Please check the configuration.' });
+  const [result, setResult] = useState<IngestionCsvFeedTestDialogMutation$data | undefined>(undefined);
+  const [commitTest] = useApiMutation(ingestionCsvFeedTestMutation, undefined, { errorMessage: 'Something went wrong. Please check the configuration.' });
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleClose = () => {
@@ -77,7 +77,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
         },
       },
       onCompleted: (data) => {
-        const resultTest = (data as IngestionCsvMapperTestDialogMutation$data);
+        const resultTest = (data as IngestionCsvFeedTestDialogMutation$data);
         if (resultTest) {
           setResult(resultTest);
           if (setIsCreateDisabled) {
@@ -95,7 +95,7 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
 
   return (
     <Dialog open={open} onClose={handleClose} slotProps={{ paper: { elevation: 1 } }}>
-      <DialogTitle>{t_i18n('Testing csv mapper')}</DialogTitle>
+      <DialogTitle>{t_i18n('Testing csv feed')}</DialogTitle>
       <DialogContent>
         <Box>
           <div style={{ width: '100%', marginTop: 10 }}>
@@ -151,4 +151,4 @@ const IngestionCsvMapperTestDialog: FunctionComponent<IngestionCsvMapperTestDial
   );
 };
 
-export default IngestionCsvMapperTestDialog;
+export default IngestionCsvFeedTestDialog;

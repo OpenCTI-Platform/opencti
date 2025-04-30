@@ -223,7 +223,10 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
                 handleClose={() => setDisplayDuplicate(false)}
                 open={displayDuplicate}
                 paginationOptions={paginationOptions}
-                isDuplicated={true}
+                drawerSettings={{
+                  title: t_i18n('Duplicate a CSV feed'),
+                  button: t_i18n('Duplicate'),
+                }}
               />
             </>
           </React.Suspense>
@@ -231,7 +234,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
         <DeleteDialog
           deletion={deletion}
           submitDelete={submitDelete}
-          message={t_i18n('Do you want to delete this CSV ingester?')}
+          message={t_i18n('Do you want to delete this CSV feed?')}
         />
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}
@@ -245,7 +248,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           </DialogTitle>
           <DialogContent>
             <DialogContentText>
-              {t_i18n('Do you want to reset the state of this CSV ingester?')}
+              {t_i18n('Do you want to reset the state of this CSV feed?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -276,7 +279,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           </DialogTitle>
           <DialogContent>
             <DialogContentText>
-              {t_i18n('Do you want to start this CSV ingester?')}
+              {t_i18n('Do you want to start this CSV feed?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -307,7 +310,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           </DialogTitle>
           <DialogContent>
             <DialogContentText>
-              {t_i18n('Do you want to stop this CSV ingester?')}
+              {t_i18n('Do you want to stop this CSV feed?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>

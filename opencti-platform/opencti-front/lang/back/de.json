@@ -224,7 +224,7 @@
   "DST port": "DST-Anschluss",
   "Due date": "Fälligkeitsdatum",
   "Due date (UTC)": "Fälligkeitsdatum (UTC)",
-  "Duplicate a CSV ingester": "Duplizieren Sie einen CSV-Ingester",
+  "Duplicate a CSV feed": "Duplizieren eines CSV-Feeds",
   "Duplicate a CSV mapper": "Duplizieren eines CSV-Mappers",
   "Duplicate a feed": "Einspeisung duplizieren",
   "Element ID": "Element-ID",

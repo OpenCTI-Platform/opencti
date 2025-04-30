@@ -224,7 +224,7 @@
   "DST port": "DSTポート",
   "Due date": "個人的な動機",
   "Due date (UTC)": "期限 (UTC)",
-  "Duplicate a CSV ingester": "CSVインジェスターの複製",
+  "Duplicate a CSV feed": "CSVフィードを複製する",
   "Duplicate a CSV mapper": "CSVマッパーを複製する",
   "Duplicate a feed": "フィードの複製",
   "Element ID": "要素ID",

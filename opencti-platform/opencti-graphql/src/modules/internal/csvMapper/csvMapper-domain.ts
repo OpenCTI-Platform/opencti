@@ -11,6 +11,7 @@ import {
   type CsvMapperSchemaAttributes,
   parseCsvMapper,
   parseCsvMapperWithDefaultValues,
+  transformCsvMapperConfig,
   validateCsvMapper
 } from './csvMapper-utils';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
@@ -92,7 +93,7 @@ export const deleteCsvMapper = async (context: AuthContext, user: AuthUser, csvM
   const ingesters = await listAllEntities<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
   // prevent deletion if an ingester uses the mapper
   if (ingesters.length > 0) {
-    throw FunctionalError('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv ingester(s)', { id: csvMapperId });
+    throw FunctionalError('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv feed(s)', { id: csvMapperId });
   }
 
   return deleteInternalObject(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
@@ -140,19 +141,7 @@ export const csvMapperAddInputFromImport = async (context: AuthContext, user: Au
   }
 
   // convert default values ids in representations
-  const representations = parsedData.configuration.representations as CsvMapperRepresentation[];
-  await convertRepresentationsIds(context, user, representations, 'stix');
-  const csvMapper = {
-    ...parsedData.configuration,
-    representations: JSON.stringify(representations),
-  };
-  const parsedRepresentations = await getParsedRepresentations(context, user, csvMapper);
-
-  const csvMapperAddInput = {
-    ...parsedData.configuration,
-    representations: parsedRepresentations,
-  };
-  return csvMapperAddInput;
+  return transformCsvMapperConfig(parsedData.configuration, context, user);
 };
 
 // -- Schema

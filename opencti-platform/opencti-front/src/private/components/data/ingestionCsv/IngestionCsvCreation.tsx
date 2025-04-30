@@ -11,12 +11,15 @@ import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ing
 import { FormikConfig } from 'formik/dist/types';
 import { IngestionAuthType } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationMutation.graphql';
 import CsvMapperField, { csvMapperQuery } from '@components/common/form/CsvMapperField';
-import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
+import IngestionCsvFeedTestDialog from '@components/data/ingestionCsv/IngestionCsvFeedTestDialog';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { ingestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/IngestionCsvEditionContainer';
 import { ingestionCsvEditionFragment } from '@components/data/ingestionCsv/IngestionCsvEdition';
-import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
+import {
+  IngestionCsvEditionFragment_ingestionCsv$data,
+  IngestionCsvEditionFragment_ingestionCsv$key,
+} from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
@@ -50,6 +53,22 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+const initCSVCreateForm: IngestionCsvAddInput = {
+  name: '',
+  description: '',
+  uri: '',
+  csv_mapper_id: '',
+  authentication_type: 'none',
+  authentication_value: '',
+  user_id: '',
+  username: '',
+  password: '',
+  cert: '',
+  key: '',
+  ca: '',
+  markings: [],
+};
+
 const ingestionCsvCreationMutation = graphql`
   mutation IngestionCsvCreationMutation($input: IngestionCsvAddInput!) {
     ingestionCsvAdd(input: $input) {
@@ -58,12 +77,20 @@ const ingestionCsvCreationMutation = graphql`
   }
 `;
 
-interface IngestionCsvCreationContainerProps {
+interface IngestionCsvCreationProps {
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
+  handleClose: () => void
+  ingestionCsvData?: IngestionCsvEditionFragment_ingestionCsv$data | null
+  drawerSettings?: {
+    title: string;
+    button: string;
+  }
+}
+
+interface IngestionCsvCreationContainerProps extends IngestionCsvCreationProps {
   queryRef?: PreloadedQuery<IngestionCsvEditionContainerQuery>,
-  handleClose: () => void,
   open: boolean,
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined,
-  isDuplicated: boolean,
+
 }
 
 export interface IngestionCsvAddInput {
@@ -85,13 +112,6 @@ export interface IngestionCsvAddInput {
   markings: FieldOption[]
 }
 
-interface IngestionCsvCreationProps {
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
-  isDuplicated: boolean
-  handleClose: () => void
-  ingestionCsv?: IngestionCsvEditionFragment_ingestionCsv$key | null
-}
-
 const resolveHasUserChoiceCsvMapper = (option: FieldOption & {
   representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
 }) => {
@@ -111,12 +131,11 @@ const CreateIngestionCsvControlledDial = (props: DrawerControlledDialProps) => (
   />
 );
 
-const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ paginationOptions, isDuplicated, handleClose, ingestionCsv }) => {
+const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ paginationOptions, handleClose, ingestionCsvData, drawerSettings }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const { me } = useAuth();
-  const ingestionCsvData = useFragment(ingestionCsvEditionFragment, ingestionCsv);
 
   const [open, setOpen] = useState(false);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
@@ -168,7 +187,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     values,
     { setSubmitting, resetForm },
   ) => {
-    let authenticationValue = isDuplicated ? ingestionCsvData?.authentication_value : values.authentication_value;
+    let authenticationValue = ingestionCsvData?.authentication_value ?? values.authentication_value;
     if (values.authentication_type === 'basic') {
       authenticationValue = `${values.username}:${values.password}`;
     } else if (values.authentication_type === 'certificate') {
@@ -206,14 +225,10 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     });
   };
   const queryRef = useQueryLoading<CsvMapperFieldSearchQuery>(csvMapperQuery);
-  const initialValues: IngestionCsvAddInput = isDuplicated && ingestionCsvData ? {
+  const initialValues: IngestionCsvAddInput = ingestionCsvData ? {
+    ...ingestionCsvData,
     name: `${ingestionCsvData.name} - copy`,
-    description: ingestionCsvData.description,
-    uri: ingestionCsvData.uri,
     csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
-    authentication_type: ingestionCsvData.authentication_type,
-    authentication_value: ingestionCsvData.authentication_value,
-    ingestion_running: ingestionCsvData.ingestion_running,
     user_id: convertUser(ingestionCsvData, 'user'),
     username: ingestionCsvData.authentication_type === BASIC_AUTH ? extractUsername(ingestionCsvData.authentication_value) : undefined,
     password: ingestionCsvData.authentication_type === BASIC_AUTH ? extractPassword(ingestionCsvData.authentication_value) : undefined,
@@ -226,21 +241,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       label: marking.definition ?? '',
       value: marking.id,
     })) ?? [],
-  } : {
-    name: '',
-    description: '',
-    uri: '',
-    csv_mapper_id: '',
-    authentication_type: 'none',
-    authentication_value: '',
-    user_id: '',
-    username: '',
-    password: '',
-    cert: '',
-    key: '',
-    ca: '',
-    markings: [],
-  };
+  } : initCSVCreateForm;
 
   return (
     <Formik<IngestionCsvAddInput>
@@ -409,29 +410,19 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             >
               {t_i18n('Verify')}
             </Button>
-            {isDuplicated ? (
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting || isCreateDisabled}
-                classes={{ root: classes.button }}
-              >
-                {t_i18n('Duplicate')}
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting || isCreateDisabled}
-                classes={{ root: classes.button }}
-              >
-                {t_i18n('Create')}
-              </Button>
-            )}
+
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting || isCreateDisabled}
+              classes={{ root: classes.button }}
+            >
+              {drawerSettings?.button ?? t_i18n('Create')}
+            </Button>
+
           </div>
-          <IngestionCsvMapperTestDialog
+          <IngestionCsvFeedTestDialog
             open={open}
             onClose={() => setOpen(false)}
             values={values}
@@ -447,26 +438,28 @@ export const IngestionCsvCreationContainer: FunctionComponent<IngestionCsvCreati
   handleClose,
   open,
   paginationOptions,
-  isDuplicated,
+  drawerSettings,
+  ingestionCsvData,
 }) => {
   const { t_i18n } = useFormatter();
 
   const ingestionCsv = queryRef
     ? usePreloadedQuery(ingestionCsvEditionContainerQuery, queryRef).ingestionCsv
     : null;
+  const ingestionCsvDataRef = ingestionCsv ? useFragment<IngestionCsvEditionFragment_ingestionCsv$key>(ingestionCsvEditionFragment, ingestionCsv) : null;
   return (
     <Drawer
-      title={isDuplicated ? t_i18n('Duplicate a CSV ingester') : t_i18n('Create a CSV ingester')}
+      title={drawerSettings?.title ?? t_i18n('Create a CSV feed')}
       open={open}
       onClose={handleClose}
       controlledDial={CreateIngestionCsvControlledDial}
     >
       {({ onClose }) => (
         <IngestionCsvCreation
-          ingestionCsv={ingestionCsv}
+          ingestionCsvData={ingestionCsvData || ingestionCsvDataRef}
           handleClose={onClose}
           paginationOptions={paginationOptions}
-          isDuplicated={isDuplicated}
+          drawerSettings={drawerSettings}
         />
       )}
     </Drawer>

@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
-import type { BasicStoreEntityCsvMapper, CsvMapperParsed, CsvMapperRepresentation, CsvMapperResolved } from './csvMapper-types';
+import type { BasicStoreEntityCsvMapper, CsvMapperConfiguration, CsvMapperParsed, CsvMapperRepresentation, CsvMapperResolved } from './csvMapper-types';
 import { CsvMapperRepresentationType } from './csvMapper-types';
 import { isEmptyField, isNotEmptyField } from '../../../database/utils';
 import { isStixRelationshipExceptRef } from '../../../schema/stixRelationship';
@@ -14,6 +14,7 @@ import { extractRepresentative } from '../../../database/entity-representative';
 import type { MandatoryType, ObjectAttribute } from '../../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { idsValuesRemap } from '../../../database/stix-2-1-converter';
+import { getParsedRepresentations } from './csvMapper-domain';
 
 export interface CsvMapperSchemaAttribute {
   name: string
@@ -261,4 +262,19 @@ export const convertRepresentationsIds = async (context: AuthContext, user: Auth
       }
     });
   });
+};
+
+export const transformCsvMapperConfig = async (configuration: CsvMapperConfiguration, context: AuthContext, user: AuthUser) => {
+  const { representations } = configuration;
+  await convertRepresentationsIds(context, user, representations, 'stix');
+  const csvMapper = {
+    ...configuration,
+    representations: JSON.stringify(representations),
+  } as BasicStoreEntityCsvMapper;
+  const parsedRepresentations = await getParsedRepresentations(context, user, csvMapper);
+
+  return {
+    ...configuration,
+    representations: parsedRepresentations,
+  };
 };
