@@ -94,8 +94,8 @@ const DateTimePickerField = (props) => {
             ...textFieldProps,
             onFocus: internalOnFocus,
             onBlur: internalOnBlur,
-            error: !R.isNil(meta.error),
-            helperText: (!R.isNil(meta.error) && meta.error) || textFieldProps.helperText,
+            error: showError,
+            helperText: showError ? meta.error : (textFieldProps.helperText ?? ''),
           },
         }}
       />
@@ -120,8 +120,8 @@ const DateTimePickerField = (props) => {
           ...textFieldProps,
           onFocus: internalOnFocus,
           onBlur: internalOnBlur,
-          error: !R.isNil(meta.error),
-          helperText: (!R.isNil(meta.error) && meta.error) || (textFieldProps.helperText ?? ''),
+          error: showError,
+          helperText: showError ? meta.error : (textFieldProps.helperText ?? ''),
         },
       }}
     />
