@@ -2,6 +2,12 @@ import React, { FunctionComponent, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import {
+  AddLocationsThreatActorIndividualLinesQuery,
+  AddLocationsThreatActorIndividualLinesQuery$variables,
+} from '@components/threats/threat_actors_individual/__generated__/AddLocationsThreatActorIndividualLinesQuery.graphql';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { ThreatActorIndividualLocations_locations$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualLocations_locations.graphql';
 import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
@@ -10,21 +16,9 @@ import LocationCreation from '../../common/location/LocationCreation';
 import { insertNode } from '../../../../utils/store';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import {
-  AddLocationsThreatActorIndividualLinesQuery,
-  AddLocationsThreatActorIndividualLinesQuery$data, AddLocationsThreatActorIndividualLinesQuery$variables
-} from '@components/threats/threat_actors_individual/__generated__/AddLocationsThreatActorIndividualLinesQuery.graphql';
-import {
-  ThreatActorIndividualDetails_ThreatActorIndividual$data
-} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
-import {
-  AddPersonasThreatActorIndividualLinesQuery,
-  AddPersonasThreatActorIndividualLinesQuery$variables
-} from '@components/threats/threat_actors_individual/__generated__/AddPersonasThreatActorIndividualLinesQuery.graphql';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 
 interface AddLocationsThreatActorIndividualComponentProps {
-  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
+  threatActorIndividual: ThreatActorIndividualLocations_locations$data,
   queryRef: PreloadedQuery<AddLocationsThreatActorIndividualLinesQuery>,
   onSearch: (search: string) => void,
   paginationOptions: AddLocationsThreatActorIndividualLinesQuery$variables,
@@ -42,7 +36,7 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const threatActorIndividualLocations = threatActorIndividual.locations.edges;
+  const threatActorIndividualLocations = threatActorIndividual.locations?.edges;
   const data = usePreloadedQuery(
     addLocationsThreatActorIndividualLinesQuery,
     queryRef,
@@ -100,8 +94,7 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
       <LocationCreation
         display={open}
         contextual={true}
-        inputValue={paginationOptions.search}
-        paginationOptions={paginationOptions}
+        inputValue={paginationOptions.search ?? ''}
         updater={updater}
       />
     </>
@@ -109,7 +102,7 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
 };
 
 interface AddLocationsThreatActorIndividualProps {
-  threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data,
+  threatActorIndividual: ThreatActorIndividualLocations_locations$data,
 }
 const AddLocationsThreatActorIndividual: FunctionComponent<AddLocationsThreatActorIndividualProps> = ({
   threatActorIndividual,
