@@ -1,4 +1,4 @@
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { listAllEntities } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
@@ -15,7 +15,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 const message = '[MIGRATION] Fix playbook cron filter rel keys conversion';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   const context = executionContext('migration', SYSTEM_USER);
 
   // -- step 0: define the utils functions --
@@ -147,7 +147,7 @@ export const up = async (next) => {
     READ_DATA_INDICES,
     playbooksUpdateQuery
   );
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 
