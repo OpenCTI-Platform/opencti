@@ -3,6 +3,7 @@ import { batchCreator } from '../../domain/user';
 import type { Resolvers } from '../../generated/graphql';
 import {
   addIngestionCsv,
+  csvFeedAddInputFromImport,
   deleteIngestionCsv,
   findAllPaginated,
   findById,
@@ -18,10 +19,14 @@ const ingestionCsvResolvers: Resolvers = {
   Query: {
     ingestionCsv: (_, { id }, context) => findById(context, context.user, id),
     ingestionCsvs: (_, args, context) => findAllPaginated(context, context.user, args),
+    csvFeedAddInputFromImport: (_, { file }, context) => csvFeedAddInputFromImport(context, context.user, file),
   },
   IngestionCsv: {
     user: (ingestionCsv, _, context) => creatorLoader.load(ingestionCsv.user_id, context, context.user),
-    csvMapper: (ingestionCsv, _, context) => findCsvMapperForIngestionById(context, context.user, ingestionCsv.csv_mapper_id),
+    csvMapper: (ingestionCsv, _, context) => {
+      // TODO how should we handle csvMapper id ?
+      return ingestionCsv.csv_mapper_type === 'inline' ? { id: ingestionCsv.id, ...JSON.parse(ingestionCsv.csv_mapper) } : findCsvMapperForIngestionById(context, context.user, ingestionCsv.csv_mapper_id);
+    },
   },
   Mutation: {
     ingestionCsvTester: (_, { input }, context) => {

@@ -538,7 +538,7 @@ export const processCsvLines = async (
 
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const user = context.user ?? SYSTEM_USER;
-  const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
+  const csvMapper = ingestion.csv_mapper_type === 'inline' || JSON.parse(ingestion.csv_mapper) ? ingestion.csv_mapper : await findById(context, user, ingestion.csv_mapper_id);
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
   try {
