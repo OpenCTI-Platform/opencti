@@ -105,11 +105,7 @@ const Pir = () => {
         mode: 'or',
         filters: [
           {
-            key: ['context_data.from_id'],
-            values: [pirId],
-          },
-          {
-            key: ['context_data.to_id'],
+            key: ['context_data.pir_ids'],
             values: [pirId],
           },
         ],

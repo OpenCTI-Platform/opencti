@@ -43,10 +43,9 @@ interface PirOverviewProps {
 
 const PirOverview = ({ data }: PirOverviewProps) => {
   const { logs } = useFragment(pirHistoryFragment, data);
-  console.log(logs);
 
   return (
-    <div>pouet</div>
+    <div>{JSON.stringify(logs)}</div>
   );
 };
 
