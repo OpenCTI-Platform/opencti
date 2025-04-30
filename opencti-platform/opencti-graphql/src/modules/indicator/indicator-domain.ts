@@ -212,8 +212,11 @@ export const promoteIndicatorToObservables = async (context: AuthContext, user: 
   return createObservablesFromIndicator(context, user, input, indicator);
 };
 
-export const getObservableValuesFromPattern = (pattern: string) => {
+export const getObservableValuesFromPattern = (pattern: string, rawFormat = false) => {
   const observableValues = extractObservablesFromIndicatorPattern(pattern);
+  if (rawFormat) {
+    return observableValues;
+  }
   return observableValues.map((o) => (o.hashes ? { ...o, hashes: stixHashesToInput(o) } : o));
 };
 
