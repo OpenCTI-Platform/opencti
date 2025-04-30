@@ -349,7 +349,6 @@ ThreatActorIndividualFormProps
                   label={
                     <ErrorBadge
                       badgeContent={Object.keys(errors).length}
-                      errors={errors}
                     >
                       {t_i18n('Overview')}
                     </ErrorBadge>
