@@ -2,7 +2,6 @@ import React from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { fieldToDateTimePicker } from 'formik-mui-lab';
 import { useField } from 'formik';
-import * as R from 'ramda';
 import { useIntl } from 'react-intl';
 import { isNil } from 'ramda';
 import { parse } from '../utils/Time';
