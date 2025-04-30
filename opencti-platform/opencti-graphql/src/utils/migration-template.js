@@ -1,11 +1,11 @@
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 
 const message = '[MIGRATION] migration title';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   // do your migration
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 
