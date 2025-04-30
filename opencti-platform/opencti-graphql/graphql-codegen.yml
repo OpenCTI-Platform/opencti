@@ -55,6 +55,7 @@ generates:
         DraftWorkspace: ../modules/draftWorkspace/draftWorkspace-types#BasicStoreEntityDraftWorkspace
         ExclusionList: ../modules/exclusionList/exclusionList-types#BasicStoreEntityExclusionList
         FintelTemplate: ../modules/fintelTemplate/fintelTemplate-types#BasicStoreEntityFintelTemplate
+        FintelDesign: ../modules/fintelDesign/fintelDesign-types#BasicStoreEntityFintelDesign
         SavedFilter: ../modules/savedFilter/savedFilter-types#BasicStoreEntitySavedFilter
         FintelDesign: ../modules/fintelDesign/fintelDesign-types#BasicStoreEntityFintelDesign
   ./graphql.schema.json:
