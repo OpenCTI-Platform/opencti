@@ -104,7 +104,7 @@ input JsonMapperAddInput {
 
 # Queries
 type Query {
-    jsonMapper(id: ID!): JsonMapper @auth(for: [JSONMAPPERS])
+    jsonMapper(id: ID!): JsonMapper @auth(for: [CSVMAPPERS])
     jsonMappers(
         first: Int
         after: ID
@@ -112,13 +112,13 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): JsonMapperConnection @auth(for: [JSONMAPPERS, INGESTION_SETINGESTIONS])
+    ): JsonMapperConnection @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
 }
 
 type Mutation {
-    jsonMapperAdd(input: JsonMapperAddInput!): JsonMapper @auth(for: [JSONMAPPERS])
-    jsonMapperTest(configuration: String!, file: Upload!): JsonMapperTestResult @auth(for: [JSONMAPPERS])
-    jsonMapperDelete(id: ID!): ID @auth(for: [JSONMAPPERS])
-    jsonMapperImport(file: Upload!): String! @auth(for: [JSONMAPPERS])
-    jsonMapperFieldPatch(id: ID!, input: [EditInput!]!): JsonMapper @auth(for: [JSONMAPPERS])
+    jsonMapperAdd(input: JsonMapperAddInput!): JsonMapper @auth(for: [CSVMAPPERS])
+    jsonMapperTest(configuration: String!, file: Upload!): JsonMapperTestResult @auth(for: [CSVMAPPERS])
+    jsonMapperDelete(id: ID!): ID @auth(for: [CSVMAPPERS])
+    jsonMapperImport(file: Upload!): String! @auth(for: [CSVMAPPERS])
+    jsonMapperFieldPatch(id: ID!, input: [EditInput!]!): JsonMapper @auth(for: [CSVMAPPERS])
 }

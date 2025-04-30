@@ -7,7 +7,6 @@ import useGranted, {
   CSVMAPPERS,
   INGESTION,
   INGESTION_SETINGESTIONS,
-  JSONMAPPERS,
   KNOWLEDGE,
   KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNUPDATE,
@@ -195,7 +194,7 @@ const Root = () => {
           path="/processing/json_mapper"
           element={
             <Security
-              needs={[JSONMAPPERS]}
+              needs={[CSVMAPPERS]}
               placeholder={<Navigate to="/dashboard" />}
             >
               <JsonMappers/>
