@@ -111,10 +111,10 @@ input IngestionJsonAddInput {
 }
 
 type Mutation {
-    ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult @auth(for: [JSONMAPPERS, INGESTION_SETINGESTIONS])
-    ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson @auth(for: [JSONMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
     ingestionJsonResetState(id: ID!): IngestionJson @auth(for: [INGESTION_SETINGESTIONS])
-    ingestionJsonDelete(id: ID!): ID @auth(for: [JSONMAPPERS, INGESTION_SETINGESTIONS])
-    ingestionJsonFieldPatch(id: ID!, input: [EditInput!]!): IngestionJson @auth(for: [JSONMAPPERS, INGESTION_SETINGESTIONS])
-    ingestionJsonEdit(id: ID!, input: IngestionJsonAddInput!): IngestionJson @auth(for: [JSONMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionJsonDelete(id: ID!): ID @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionJsonFieldPatch(id: ID!, input: [EditInput!]!): IngestionJson @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+    ingestionJsonEdit(id: ID!, input: IngestionJsonAddInput!): IngestionJson @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
 }

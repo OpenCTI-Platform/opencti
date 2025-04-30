@@ -9,7 +9,7 @@ import EEMenu from '../common/entreprise_edition/EEMenu';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
-import useGranted, { CSVMAPPERS, JSONMAPPERS, KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import useGranted, { CSVMAPPERS, KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -36,8 +36,7 @@ const ProcessingMenu = () => {
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
-  const isCsvMapperUpdater = useGranted([CSVMAPPERS]);
-  const isJsonMapperUpdater = useGranted([JSONMAPPERS]);
+  const isMapperUpdater = useGranted([CSVMAPPERS]);
   const isJsonMapperEnable = isFeatureEnable('JSON_MAPPER');
   return (
     <Drawer
@@ -73,7 +72,7 @@ const ProcessingMenu = () => {
             <ListItemText primary={t_i18n('Tasks')} />
           </MenuItem>
         )}
-        {isCsvMapperUpdater && (
+        {isMapperUpdater && (
           <MenuItem
             component={Link}
             to={'/dashboard/data/processing/csv_mapper'}
@@ -85,7 +84,7 @@ const ProcessingMenu = () => {
             <ListItemText primary={t_i18n('CSV Mappers')} />
           </MenuItem>
         )}
-        {isJsonMapperUpdater && isJsonMapperEnable && (
+        {isMapperUpdater && isJsonMapperEnable && (
           <MenuItem
             component={Link}
             to={'/dashboard/data/processing/json_mapper'}
