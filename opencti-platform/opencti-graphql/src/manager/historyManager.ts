@@ -12,26 +12,20 @@ import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
-import {
-  internalFindByIds,
-  listEntities,
-  listEntitiesPaginated,
-  listRelationsPaginated
-} from '../database/middleware-loader';
+import { internalFindByIds, listEntities } from '../database/middleware-loader';
 import type { BasicRuleEntity, BasicStoreEntity } from '../types/store';
 import { BASE_TYPE_ENTITY, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { StixId } from '../types/stix-2-1-common';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { getEntitiesMapFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
 import type { AuthContext } from '../types/user';
 import { FilterMode, FilterOperator, OrderingMode } from '../generated/graphql';
 import { extractStixRepresentative } from '../database/stix-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { RELATION_CONTAINS, RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import StixCoreRelationship from '../resolvers/stixCoreRelationship';
+import { ENTITY_TYPE_PIR_ENTITIES } from '../schema/stixDomainObject';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
@@ -50,6 +44,7 @@ interface HistoryContext {
   labels_ids?: Array<string>;
   created_by_ref_id?: string;
   marking_definitions?: Array<string>;
+  pir_ids?: Array<string>;
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -92,47 +87,56 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
   return organizationByIdsMap;
 };
 
-const generatePirIdsFromHistoryEvent = async (context: AuthContext, event: SseEvent<StreamDataEvent>) => {
+const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>, listenedEntities: BasicStoreEntity[]) => {
   console.log('---event---', event);
-  // -- step 1: fetch the listened ids: ids having a rel with a PIR // TODO PIR store in cache: standard_id we listened and pir they are related to
-  const pirRels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR);
-  const listenedIdsByPirMap: Map<string, string[]> = new Map();
-  pirRels.edges.forEach((n) => {
-    const objectId = n.node.fromId;
-    const pirId = n.node.toId;
-    const otherPirsForObjectId = listenedIdsByPirMap.get(objectId);
-    if (otherPirsForObjectId) {
-      listenedIdsByPirMap.set(objectId, [...otherPirsForObjectId, pirId]);
-    } else {
-      listenedIdsByPirMap.set(objectId, [pirId]);
-    }
-  });
-  const listenedInternalIds = Array.from(listenedIdsByPirMap.keys()); // internal ids we listened to
-  const listenedEntities = await listEntitiesPaginated(context, SYSTEM_USER, ['Stix-Core-Object'], { ids: listenedInternalIds });
-  // add standard ids in listenedIdsByPirMap
-  listenedEntities.edges
-    .forEach((n) => listenedIdsByPirMap.set(n.node.standard_id, listenedIdsByPirMap.get(n.node.internal_id)));
-  console.log('listenedIdsByPirMap', listenedIdsByPirMap);
-  const listenedIds = Array.from(listenedIdsByPirMap.keys()); // internal and standard ids we listened to
+  // -- step 1: fetch the listened ids: ids having a rel with a PIR
+  const listenedIds = listenedEntities.map((n) => n.standard_id);
   // -- step 2: listened events: stix core relationships, 'contains', pir meta rels
   const eventData = event.data.data;
+  // 2.1 detect stix core relationships
   if (eventData.type === 'relationship') {
-    if ((eventData as StixRelation).relationship_type === RELATION_CONTAINS) {
+    if (isStixCoreRelationship((eventData as StixRelation).relationship_type)) {
       const sourceId = (eventData as StixRelation).source_ref;
       const targetId = (eventData as StixRelation).target_ref;
-      if (listenedIds.includes(sourceId) || listenedIds.includes(targetId)) {
-        console.log('[POC PIR] Event for CONTAINS in PIR history', { event });
+      if (listenedIds.includes(sourceId)) {
+        const pirIds = listenedEntities.find((e) => e.standard_id === sourceId)?.['in-pir'] ?? [];
+        if (pirIds.length === 0) {
+          logApp.error('[PIR] A listened entity should be linked to a PIR', { data: event });
+        }
+        console.log('[POC PIR] Event for RELATIONSHIP in PIR history', { event, pirIds, sourceId });
+        return pirIds;
+      } if (listenedIds.includes(targetId)) {
+        const pirIds = listenedEntities.find((e) => e.standard_id === targetId)?.['in-pir'] ?? [];
+        if (pirIds.length === 0) {
+          logApp.error('[PIR] A listened entity should be linked to a PIR', { data: event });
+        }
+        console.log('[POC PIR] Event for RELATIONSHIP in PIR history', { event, pirIds, targetId });
+        return pirIds;
       }
-    } else if (isStixCoreRelationship((eventData as StixRelation).relationship_type)) {
-      const sourceId = (eventData as StixRelation).source_ref;
-      const targetId = (eventData as StixRelation).target_ref;
-      if (listenedIds.includes(sourceId) || listenedIds.includes(targetId)) {
-        console.log('[POC PIR] Event for RELATIONSHIP in PIR history', { event });
-      }
-    } else if ((eventData as StixRelation).relationship_type === RELATION_IN_PIR) {
-      // TODO PIR
     }
   }
+  // 2.2 detect 'contains' rel
+  if (event.event === 'update' && (event.data as UpdateEvent).context.patch) {
+    const updateEvent: UpdateEvent = event.data as UpdateEvent;
+    const matchingStandardIds = updateEvent.context.patch.flatMap((p) => {
+      if (p.op === 'add'
+        && p.path.includes('/object_refs')
+        && listenedIds.includes(p.value)) {
+        return p.value;
+      }
+      return [];
+    });
+    const pirIds = (listenedEntities
+      .filter((e) => matchingStandardIds.includes(e.standard_id)) ?? []).flatMap((e) => e['in-pir'] ?? []);
+    if (pirIds.length === 0) {
+      logApp.error('[PIR] A listened entity should be linked to a PIR', { data: event });
+    }
+    console.log('[POC PIR] Event for CONTAINS in PIR history', { event, pirIds, matchingStandardIds });
+    return pirIds;
+  }
+  // 2.3 detect in-pir rels
+  // TODO PIR
+  return [];
 };
 
 export const buildHistoryElementsFromEvents = async (context:AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
@@ -140,6 +144,8 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
   const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   // resolve granted_refs
   const grantedRefsResolved = await resolveGrantedRefsIds(context, events);
+  // fetch pir listened entities
+  const listenedEntities = await getEntitiesListFromCache<BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_PIR_ENTITIES);
   // Build the history data
   const historyElements = events.map((event) => {
     const [time] = event.id.split('-');
@@ -202,7 +208,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
-    const pir_ids = generatePirIdsFromHistoryEvent(context, event); // array of PIR id
+    contextData.pir_ids = generatePirIdsFromHistoryEvent(event, listenedEntities);
     return {
       _index: INDEX_HISTORY,
       internal_id: event.id,
@@ -222,7 +228,6 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
       restricted_members: stix.extensions[STIX_EXT_OCTI].authorized_members,
       'rel_object-marking.internal_id': R.uniq(eventMarkingRefs),
       'rel_granted.internal_id': R.uniq(eventGrantedRefsIds),
-      // pir_ids: [], // pir for which the element is in history
     };
   });
   return historyElements;
