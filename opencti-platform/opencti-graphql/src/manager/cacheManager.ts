@@ -55,6 +55,7 @@ import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
+import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -100,6 +101,12 @@ const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
       .map((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)))
       .flat();
     filteringIds.push(...playbookFilterIds);
+  } else if (instance.entity_type === ENTITY_TYPE_PIR) {
+    const pirFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityPIR).pirFilters));
+    const pirCriteriaIds = (instance as BasicStoreEntityPIR).pirCriteria
+      .map((c) => extractFilterGroupValuesToResolveForCache(JSON.parse(c.filters)))
+      .flat();
+    filteringIds.push(...pirFilterIds, ...pirCriteriaIds);
   } else {
     throw FunctionalError('Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type', { entity_type: instance.entity_type });
   }
@@ -107,13 +114,14 @@ const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
 };
 const platformResolvedFilters = (context: AuthContext) => {
   const reloadFilters = async () => {
-    // Fetch streams, triggers, connectors (for enrichment connectors) and playbooks
+    // Fetch streams, triggers, connectors (for enrichment connectors), playbooks and PIRs
     const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
     const triggers = await listAllEntities<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
     const connectors = await listAllEntities<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false });
     const playbooks = await listAllEntities<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
+    const pirs = await listAllEntities<BasicStoreEntityPIR>(context, SYSTEM_USER, [ENTITY_TYPE_PIR], { connectionFormat: false });
     // Fetch the filters of those entities
-    const filteringIds = [...streams, ...triggers, ...connectors, ...playbooks].map((s) => extractResolvedFiltersFromInstance(s)).flat();
+    const filteringIds = [...streams, ...triggers, ...connectors, ...playbooks, ...pirs].map((s) => extractResolvedFiltersFromInstance(s)).flat();
     // Resolve the filters ids
     if (filteringIds.length > 0) {
       const resolvingIds = R.uniq(filteringIds);
