@@ -95,7 +95,7 @@ const AutocompleteField = (props) => {
             required={required}
             fullWidth={true}
             error={showError}
-            helperText={meta.error ?? textfieldprops?.helperText ?? ''}
+            helperText={showError ? meta.error : textfieldprops?.helperText }
           />
         )}
         onChange={internalOnChange}

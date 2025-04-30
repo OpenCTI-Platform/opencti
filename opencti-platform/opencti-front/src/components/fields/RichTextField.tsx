@@ -160,7 +160,7 @@ const RichTextField = ({
           </div>
         </Dialog>
       ) : CKEditorInstance}
-      {fieldErrors && (
+      {fieldErrors && showError && (
         <FormHelperText style={{ marginTop: theme.spacing(1) }} error>
           {fieldErrors}
         </FormHelperText>
