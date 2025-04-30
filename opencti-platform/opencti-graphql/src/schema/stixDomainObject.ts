@@ -58,6 +58,7 @@ export const ENTITY_TYPE_DATA_COMPONENT = 'Data-Component';
 export const ENTITY_TYPE_DATA_SOURCE = 'Data-Source';
 
 export const ENTITY_TYPE_RESOLVED_FILTERS = 'Resolved-Filters';
+export const ENTITY_TYPE_PIR_ENTITIES = 'Pir-Entities';
 
 export const STIX_DOMAIN_OBJECT_CONTAINER_CASES: Array<string> = [
   ENTITY_TYPE_CONTAINER_CASE_INCIDENT,

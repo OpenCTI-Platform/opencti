@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { logApp, TOPIC_PREFIX } from '../config/conf';
 import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, writeCacheForEntity } from '../database/cache';
 import type { AuthContext, AuthUser } from '../types/user';
-import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_PIR_ENTITIES, ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { FilterMode, OrderingMode } from '../generated/graphql';
 import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
@@ -53,6 +53,8 @@ import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
+import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
+import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -287,6 +289,25 @@ const platformDraftWorkspaces = (context: AuthContext) => {
   };
   return { values: null, fn: reloadDraftWorkspaces };
 };
+
+const platformPirEntities = (context: AuthContext) => {
+  const reloadPirEntities = async () => {
+    const filters = {
+      mode: FilterMode.And,
+      filters: [
+        {
+          key: INSTANCE_REGARDING_OF,
+          values: [{ key: 'relationship_type', values: ['in-pir'] }],
+        },
+      ],
+      filterGroups: [],
+    };
+    const pirEntities = listAllEntities(context, SYSTEM_USER, [ABSTRACT_STIX_CORE_OBJECT], { filters, connectionFormat: false });
+    return pirEntities;
+  };
+  return { values: null, fn: reloadPirEntities }; // TODO PIR reload function
+};
+
 type SubEvent = { instance: StoreEntity | StoreRelation };
 
 const initCacheManager = () => {
@@ -311,6 +332,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_NOTIFIER, platformNotifiers(context));
     writeCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD, platformPublicDashboards(context));
     writeCacheForEntity(ENTITY_TYPE_DRAFT_WORKSPACE, platformDraftWorkspaces(context));
+    writeCacheForEntity(ENTITY_TYPE_PIR_ENTITIES, platformPirEntities(context));
   };
   return {
     init: () => initCacheContent(), // Use for testing
