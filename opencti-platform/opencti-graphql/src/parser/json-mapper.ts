@@ -206,12 +206,12 @@ const handleBasedOnAttribute = async (
     let entities;
     if (attribute.based_on.identifier) {
       const computedValue = await extractIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
-      const compareValues = Array.isArray(computedValue) ? computedValue : [computedValue];
+      const computedIdentifier = computedValue ? computedValue.trim() : computedValue;
       entities = (attribute.based_on.representations ?? [])
         .map((id) => otherEntities.get(id)).flat()
-        .filter((e) => e !== undefined && compareValues.includes(e.__identifier as string)) as Record<string, InputType>[];
+        .filter((e) => e !== undefined && computedIdentifier === e.__identifier) as Record<string, InputType>[];
       if (entities.length === 0) {
-        logApp.info('EMPTY BASED_ON', { based_on: attribute.based_on, compareValues, definition });
+        logApp.info('EMPTY BASED_ON', { based_on: attribute.based_on, computedIdentifier, definition });
       }
     } else {
       entities = (attribute.based_on.representations ?? [])
@@ -345,8 +345,8 @@ const jsonMappingExecution = async (meta: Record<string, any>, data: string | ob
         } else {
           input.standard_id = generateStandardId(entity_type, input);
           if (representation.identifier) {
-            const identifier = await extractIdentifierFromJson(baseJson, baseDatum, representation.identifier, idType) as string;
-            input.__identifier = identifier ? String(identifier).trim() : identifier;
+            const identifier = await extractIdentifierFromJson(baseJson, baseDatum, representation.identifier, idType);
+            input.__identifier = identifier ? identifier.trim() : identifier;
           } else {
             input.__identifier = uuidv4();
           }

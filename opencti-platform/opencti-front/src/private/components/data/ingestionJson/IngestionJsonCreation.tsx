@@ -339,14 +339,14 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
           <QueryAttributeFieldAdd
             id="query_attributes"
             name="query_attributes"
-            values={values?.query_attributes}
+            values={values.query_attributes}
             containerStyle={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <HeaderFieldAdd
             id="headers"
             name="headers"
-            values={values?.headers}
+            values={values.headers}
             containerStyle={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />

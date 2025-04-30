@@ -334,7 +334,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
           <QueryAttributeFieldAdd
             id="query_attributes"
             name="query_attributes"
-            values={values?.query_attributes ?? []}
+            values={values.query_attributes ?? []}
             containerStyle={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
@@ -342,7 +342,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
           <HeaderFieldAdd
             id="headers"
             name="headers"
-            values={values?.headers ?? []}
+            values={values.headers ?? []}
             containerStyle={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
