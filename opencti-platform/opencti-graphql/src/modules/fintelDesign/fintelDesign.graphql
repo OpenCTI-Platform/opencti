@@ -1,0 +1,58 @@
+type FintelDesign implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # Fintel Design
+  name: String!
+  description: String
+  url: String
+  gradiantFromColor: String
+  gradiantToColor: String
+  textColor: String
+}
+
+# Input
+input FintelDesignAddInput {
+  name: String! @constraint(minLength: 1, format: "not-blank")
+  description: String
+  url: String
+  gradiantFromColor: String
+  gradiantToColor: String
+  textColor: String
+}
+
+# Relay connections
+type FintelDesignEdge {
+  cursor: String!
+  node: FintelDesign
+}
+
+type FintelDesignConnection {
+  pageInfo: PageInfo!
+  edges: [FintelDesignEdge!]!
+}
+
+enum FintelDesignOrdering {
+  name
+}
+
+type Query {
+  fintelDesign(id: ID!): FintelDesign @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
+  fintelDesigns(
+    first: Int
+    after: ID
+    orderBy: FintelDesignOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): FintelDesignConnection @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
+}
+
+# Mutations
+type Mutation {
+  fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  fintelDesignDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign @auth(for: [SETTINGS_SETCUSTOMIZATION])
+
+}
