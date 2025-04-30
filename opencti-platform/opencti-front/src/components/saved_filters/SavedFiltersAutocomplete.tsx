@@ -51,7 +51,7 @@ const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onI
       autoHighlight
       disablePortal
       disableClearable
-      value={value ?? null}
+      value={value}
       disabled={isDisabled}
       isOptionEqualToValue={(option, v) => option?.value.id === v.value.id}
       inputValue={inputValue}
