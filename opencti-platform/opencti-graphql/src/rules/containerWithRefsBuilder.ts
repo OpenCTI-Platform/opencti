@@ -43,6 +43,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   type ArrayRefs = Array<{ partOfFromId: string, partOfId: string, partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
   // eslint-disable-next-line max-len
   const createObjectRefsInferences = async (context: AuthContext, report: StixReport, addedTargets: ArrayRefs, deletedTargets: Array<BasicStoreRelation>): Promise<void> => {
+    logApp.info(`[addedTargets.length] ${addedTargets.length}`);
+    logApp.info(`[deletedTargets.length] ${deletedTargets.length}`);
     if (addedTargets.length === 0 && deletedTargets.length === 0) {
       return;
     }
@@ -87,6 +89,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       }
     }
     // endregion
+    logApp.info(`[createdTargets.length] ${createdTargets.length}`);
+    logApp.info(`[deletedTargetRefs.length] ${deletedTargetRefs.length}`);
     if (createdTargets.length > 0 || deletedTargetRefs.length > 0) {
       const updatedReport = structuredClone(report);
       const deletedTargetIds = deletedTargetRefs.map((d) => d.standard_id);
@@ -107,6 +111,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       }
       const message = await generateUpdateMessage(context, RULE_MANAGER_USER, report.extensions[STIX_EXT_OCTI].type, inputs);
       const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, message);
+      logApp.info('[publishStixToStream]', { updateEvent });
       await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
     }
   };
