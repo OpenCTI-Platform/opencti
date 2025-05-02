@@ -91,7 +91,7 @@ const Pir = () => {
         filters: [
           {
             key: ['event_scope'],
-            values: ['create', 'delete'],
+            values: ['create', 'delete', 'update'],
           },
           {
             key: ['event_scope'],
