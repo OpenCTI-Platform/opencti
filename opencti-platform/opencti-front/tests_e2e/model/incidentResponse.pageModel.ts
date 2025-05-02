@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import LeftBarPage from './menu/leftBar.pageModel';
 
 export default class IncidentResponsePage {
   constructor(private page: Page) {}
@@ -9,6 +10,12 @@ export default class IncidentResponsePage {
 
   openNewIncidentResponseForm() {
     return this.page.getByRole('button', { name: 'Create' }).click();
+  }
+
+  async navigateFromMenu() {
+    const leftBarPage = new LeftBarPage(this.page);
+    await leftBarPage.open();
+    await leftBarPage.clickOnMenu('Cases', 'Incident responses');
   }
 
   closeNewIncidentResponse() {
