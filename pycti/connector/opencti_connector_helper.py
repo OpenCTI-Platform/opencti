@@ -1002,7 +1002,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         self.connect_confidence_level = None  # Deprecated since OpenCTI version >= 6.0
         self.connect_scope = get_config_variable(
-            "CONNECTOR_SCOPE", ["connector", "scope"], config
+            "CONNECTOR_SCOPE", ["connector", "scope"], config, default="not-applicable"
         )
         self.connect_auto = get_config_variable(
             "CONNECTOR_AUTO", ["connector", "auto"], config, default=False
