@@ -171,7 +171,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
               id: organization.id,
               input: {
                 key: name,
-                value: finalValue ?? '',
+                value: finalValue ?? [null],
               },
             },
           });
@@ -300,7 +300,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
+            onSubmit={(name: string, value: string | null) => handleSubmitField(name, (value === '' ? null : value))}
             helperText={
               <SubscriptionFocus
                 context={context}
