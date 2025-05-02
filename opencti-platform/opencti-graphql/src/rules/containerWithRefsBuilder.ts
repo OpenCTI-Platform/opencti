@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
-import { createInferredRelation, deleteInferredRuleElement, stixLoadById, generateUpdateMessage } from '../database/middleware';
+import { createInferredRelation, deleteInferredRuleElement, generateUpdateMessage, stixLoadById } from '../database/middleware';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { createRuleContent } from './rules-utils';
 import { convertStixToInternalTypes, generateInternalType } from '../schema/schemaUtils';
@@ -180,7 +180,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
     if (entityType === containerType) {
-      const report = data as StixReport;
+      const report = await stixLoadById(context, RULE_MANAGER_USER, data.extensions[STIX_EXT_OCTI].id) as StixReport;
       const { object_refs: reportObjectRefs } = report;
       // Get all identities from the report refs
       const leftRefs = (reportObjectRefs ?? []).filter(typeRefFilter);
@@ -198,7 +198,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
     if (entityType === containerType) {
-      const report = data as StixReport;
+      const report = await stixLoadById(context, RULE_MANAGER_USER, data.extensions[STIX_EXT_OCTI].id) as StixReport;
       const previousPatch = event.context.reverse_patch;
       const previousData = jsonpatch.applyPatch<StixReport>(structuredClone(report), previousPatch).newDocument;
       const previousRefIds = [...(previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(previousData.object_refs ?? [])];
