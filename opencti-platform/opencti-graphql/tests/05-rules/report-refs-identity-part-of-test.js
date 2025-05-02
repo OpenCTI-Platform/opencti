@@ -1,11 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import { FIVE_MINUTES, TEN_SECONDS, testContext } from '../utils/testQuery';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
-import {
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-} from '../../src/database/middleware';
+import { createRelation, deleteElementById, deleteRelationsByFromAndTo } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { RELATION_PART_OF } from '../../src/schema/stixCoreRelationship';
 import { RELATION_OBJECT } from '../../src/schema/stixRefRelationship';
@@ -107,7 +103,7 @@ describe('Report refs identity rule', () => {
         objects: [identityC.internal_id],
         update: true
       });
-      await wait(TEN_SECONDS); // let some time to rule manager to create the elements
+      await wait(2 * TEN_SECONDS); // let some time to rule manager to create the elements
       const afterAddRelations = await getInferences(RELATION_OBJECT);
       expect(afterAddRelations.length).toBe(4);
       const identityDInReport = await inferenceLookup(afterAddRelations, report.standard_id, identityD.standard_id, RELATION_OBJECT);
@@ -136,7 +132,7 @@ describe('Report refs identity rule', () => {
         toId: identityE.internal_id,
         relationship_type: RELATION_PART_OF
       });
-      await wait(TEN_SECONDS); // let some time to rule manager to create the elements
+      await wait(2 * TEN_SECONDS); // let some time to rule manager to create the elements
       const afterCreateDERelations = await getInferences(RELATION_OBJECT);
       expect(afterCreateDERelations.length).toBe(8); // I(E) + REL(DE) + I(F) + REL (EF)
       const identityEInReport = await inferenceLookup(afterCreateDERelations, report.standard_id, identityE.standard_id, RELATION_OBJECT);
@@ -158,14 +154,14 @@ describe('Report refs identity rule', () => {
         RELATION_OBJECT,
         ABSTRACT_STIX_REF_RELATIONSHIP
       );
-      await wait(TEN_SECONDS); // let some time to rule-manager to delete the elements
+      await wait(2 * TEN_SECONDS); // let some time to rule-manager to delete the elements
       const afterDeleteARelations = await getInferences(RELATION_OBJECT);
       expect(afterDeleteARelations.length).toBe(6); // IdentityB + Rel A-> part-of ->B
       // endregion
 
       // region 5............................ Remove a part of relation
       await deleteElementById(testContext, SYSTEM_USER, identityDEParOf.internal_id, identityDEParOf.entity_type);
-      await wait(TEN_SECONDS); // let some time to rule-manager to delete the elements
+      await wait(2 * TEN_SECONDS); // let some time to rule-manager to delete the elements
       const afterDeleteDERelations = await getInferences(RELATION_OBJECT);
       expect(afterDeleteDERelations.length).toBe(2);
       // endregion
