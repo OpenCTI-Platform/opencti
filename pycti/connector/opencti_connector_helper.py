@@ -1038,7 +1038,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             default=False,
         )
         self.log_level = get_config_variable(
-            "CONNECTOR_LOG_LEVEL", ["connector", "log_level"], config, default="INFO"
+            "CONNECTOR_LOG_LEVEL", ["connector", "log_level"], config, default="ERROR"
         ).upper()
         self.connect_run_and_terminate = get_config_variable(
             "CONNECTOR_RUN_AND_TERMINATE",
