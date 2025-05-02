@@ -20,6 +20,7 @@ import { buildStixUpdateEvent, publishStixToStream } from '../database/redis';
 import { INPUT_DOMAIN_TO, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { asyncFilter } from '../utils/data-processing';
+import { logApp } from '../config/conf';
 
 const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: string, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
@@ -180,7 +181,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
     if (entityType === containerType) {
-      const report = await stixLoadById(context, RULE_MANAGER_USER, data.extensions[STIX_EXT_OCTI].id) as StixReport;
+      const report = await stixLoadById(context, RULE_MANAGER_USER, data.id) as StixReport;
       const { object_refs: reportObjectRefs } = report;
       // Get all identities from the report refs
       const leftRefs = (reportObjectRefs ?? []).filter(typeRefFilter);
@@ -198,7 +199,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
     if (entityType === containerType) {
-      const report = await stixLoadById(context, RULE_MANAGER_USER, data.extensions[STIX_EXT_OCTI].id) as StixReport;
+      const report = await stixLoadById(context, RULE_MANAGER_USER, data.id) as StixReport;
+      logApp.info(`[${ruleDefinition.name}] ${entityType} ${report.id} updated`);
       const previousPatch = event.context.reverse_patch;
       const previousData = jsonpatch.applyPatch<StixReport>(structuredClone(report), previousPatch).newDocument;
       const previousRefIds = [...(previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(previousData.object_refs ?? [])];
@@ -211,6 +213,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       // For added identities
       const leftAddedRefs = addedRefs.filter(typeRefFilter);
       const removedLeftRefs = removedRefs.filter(typeRefFilter);
+      logApp.info(`[leftAddedRefs.length] ${leftAddedRefs.length}`);
+      logApp.info(`[removedLeftRefs.length] ${removedLeftRefs.length}`);
       if (leftAddedRefs.length > 0 || removedLeftRefs.length > 0) {
         await handleReportCreation(context, report, leftAddedRefs, removedLeftRefs);
       }
