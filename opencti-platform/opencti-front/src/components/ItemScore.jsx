@@ -4,8 +4,10 @@ import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import Chip from '@mui/material/Chip';
+import Typography from '@mui/material/Typography';
 import inject18n from './i18n';
 import { isEmptyField } from '../utils/utils';
+import { fieldSpacingContainerStyle } from '../utils/field';
 
 const styles = () => ({
   chip: {
@@ -54,19 +56,17 @@ const inlineStyles = {
 };
 
 const ItemScore = (props) => {
-  const { score, classes, variant, t, theme } = props;
+  const { score, classes, variant } = props;
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   if (isEmptyField(score)) {
     return (
-      <Chip
-        classes={{ root: style }}
-        style={
-          theme.palette.mode === 'dark'
-            ? inlineStyles.white
-            : inlineStyles.whiteLight
-        }
-        label={t('Unknown')}
-      />
+      <Typography
+        variant="h3"
+        gutterBottom={true}
+        style={fieldSpacingContainerStyle}
+      >
+        {'-'}
+      </Typography>
     );
   }
   if (score <= 20) {
