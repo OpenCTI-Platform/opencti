@@ -88,7 +88,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
   const informationTypes = data.information_types ?? [];
 
   return (
-    <div style={{ height: '100%' }}>
+    <div style={{ height: '100%' }} data-testid="case-rfi-details-page">
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Details')}
       </Typography>
