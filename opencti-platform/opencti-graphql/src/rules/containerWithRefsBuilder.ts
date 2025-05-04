@@ -64,7 +64,11 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         const inferredRelation = await createInferredRelation(context, inputForRelation, ruleRelationContent, opts) as RelationCreation;
         if (inferredRelation.isCreation) {
           createdTargets.push(inferredRelation.element[INPUT_DOMAIN_TO]);
+        } else {
+          logApp.info(`[addedTargets.length] partOfStandardId already created ${index}`);
         }
+      } else {
+        logApp.info(`[addedTargets.length] partOfStandardId include: ${partOfStandardId}`);
       }
       // -----------------------------------------------------------------------------------------------------------
       if (!reportObjectRefIds.includes(partOfTargetStandardId)) {
@@ -73,7 +77,11 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         const inferredTarget = await createInferredRelation(context, inputForIdentity, ruleIdentityContent, opts) as RelationCreation;
         if (inferredTarget.isCreation) {
           createdTargets.push(inferredTarget.element[INPUT_DOMAIN_TO]);
+        } else {
+          logApp.info(`[addedTargets.length] partOfTargetStandardId already created ${index}`);
         }
+      } else {
+        logApp.info(`[addedTargets.length] partOfTargetStandardId include: ${partOfTargetStandardId}`);
       }
     }
     // endregion
