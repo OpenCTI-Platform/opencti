@@ -195,6 +195,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const entityType = generateInternalType(data);
     if (entityType === containerType) {
       const report = await stixLoadById(context, RULE_MANAGER_USER, data.id) as StixReport;
+      logApp.info('>>>> applyInsert', jsonpatch.compare(data, report));
+      logApp.info(`[${ruleDefinition.name}] ${entityType} ${report.id} created`);
       const { object_refs: reportObjectRefs } = report;
       // Get all identities from the report refs
       const leftRefs = (reportObjectRefs ?? []).filter(typeRefFilter);
@@ -213,6 +215,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const entityType = generateInternalType(data);
     if (entityType === containerType) {
       const report = await stixLoadById(context, RULE_MANAGER_USER, data.id) as StixReport;
+      logApp.info('>>>> applyUpdate', jsonpatch.compare(data, report));
       logApp.info(`[${ruleDefinition.name}] ${entityType} ${report.id} updated`);
       const previousPatch = event.context.reverse_patch;
       const previousData = jsonpatch.applyPatch<StixReport>(structuredClone(report), previousPatch).newDocument;
