@@ -9,8 +9,8 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { SYSTEM_USER } from '../../utils/access';
-import { flagSource } from './pir-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import { createPirTask } from '../../domain/backgroundTask';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPIR>(context, user, id, ENTITY_TYPE_PIR);
@@ -81,9 +81,8 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
       }
     }
   }
-  // -- create the meta refs between sources and the PIR --
-  await Promise.all(Array.from(dependencies.keys())
-    .map((sourceId) => flagSource(context, sourceId, pirId, dependencies.get(sourceId) as PirDependency[])));
+  // -- create the meta refs between sources and the PIR via a background task --
+  await createPirTask(context, SYSTEM_USER, { pir_dependencies_map: dependencies, pir_id: pirId });
   // -- notify the PIR creation --
   return notify(BUS_TOPICS[ENTITY_TYPE_PIR].ADDED_TOPIC, created, user);
 };
