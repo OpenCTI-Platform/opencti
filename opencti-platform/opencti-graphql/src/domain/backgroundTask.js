@@ -7,7 +7,7 @@ import { deleteElementById, patchAttribute } from '../database/middleware';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
-import { checkActionValidity, createDefaultTask, TASK_TYPE_QUERY, TASK_TYPE_RULE } from './backgroundTask-common';
+import { checkActionValidity, createDefaultTask, TASK_TYPE_PIR, TASK_TYPE_QUERY, TASK_TYPE_RULE } from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ForbiddenAccess } from '../config/errors';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -48,6 +48,7 @@ export const ACTION_TYPE_ENRICHMENT = 'ENRICHMENT';
 export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
 export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
 export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
+export const ACTION_TYPE_PIR_INITIAL_META_CREATE = 'PIR_INITIAL_META_CREATION';
 
 export const findById = async (context, user, taskId) => {
   return storeLoadById(context, user, taskId, ENTITY_TYPE_BACKGROUND_TASK);
@@ -112,6 +113,15 @@ const buildQueryFilters = async (context, user, filters, search, taskPosition, s
 export const executeTaskQuery = async (context, user, filters, search, scope, orderMode, start = null) => {
   const options = await buildQueryFilters(context, user, filters, search, start, scope, orderMode);
   return elPaginate(context, user, READ_DATA_INDICES, options);
+};
+
+export const createPirTask = async (context, user, input) => {
+  const { pir_dependencies_map, pir_id } = input;
+  const expectedNumber = Array.from(pir_dependencies_map.keys()).length;
+  const task = createDefaultTask(user, input, TASK_TYPE_PIR, expectedNumber);
+  const pirTask = { ...task, pir_dependencies_map: JSON.stringify(Array.from(pir_dependencies_map.entries())), pir_id };
+  await elIndex(INDEX_INTERNAL_OBJECTS, pirTask);
+  return pirTask;
 };
 
 export const createRuleTask = async (context, user, ruleDefinition, input) => {

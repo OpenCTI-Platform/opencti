@@ -25,6 +25,7 @@ import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-consta
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
 export const TASK_TYPE_LIST = 'LIST';
+export const TASK_TYPE_PIR = 'PIR';
 
 export const ACTION_TYPE_DELETE = 'DELETE';
 export const ACTION_TYPE_RESTORE = 'RESTORE';
