@@ -76,4 +76,5 @@ input PIRAddInput {
 # Mutations
 type Mutation {
     pirAdd(input: PIRAddInput!): PIR @auth(for: [KNOWLEDGE])
+    pirDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
 }
