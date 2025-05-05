@@ -27,9 +27,7 @@ const sourceFlaggedFragment = graphql`
         objectLabel {
           id
           color
-          representative {
-            main
-          }
+          value
         }
         creators {
           id
