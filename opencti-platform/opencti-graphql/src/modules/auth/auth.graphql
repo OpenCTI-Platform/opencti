@@ -24,7 +24,7 @@ type VerifyOtp {
 ## Mutations
 type Mutation {
   askSendOtp(input: AskSendOtpInput!): Boolean @public
-  verifyOtp(input: VerifyOtpInput!): VerifyOtp @public
+  verifyOtp(input: VerifyOtpInput!): VerifyOtp @public @rateLimit(limit: 3, duration: 30)
   verify2fa(input: Verify2faInput!): Boolean @public
   changePassword(input: ChangePasswordInput!): Boolean @public
 }
