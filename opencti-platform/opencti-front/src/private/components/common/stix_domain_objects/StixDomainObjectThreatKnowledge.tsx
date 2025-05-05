@@ -166,7 +166,7 @@ StixDomainObjectThreatKnowledgeProps
   // Necessary to reset 'Create Relationship' target types
   useEffect(() => {
     setState({
-      stixCoreObjectTypes: [],
+      stixCoreObjectTypes: ['Stix-Core-Object'],
     });
   }, []);
 

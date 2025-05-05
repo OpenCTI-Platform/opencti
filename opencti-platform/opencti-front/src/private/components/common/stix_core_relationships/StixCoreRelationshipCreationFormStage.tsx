@@ -80,59 +80,7 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
     toEntities = [sourceEntity];
   }
 
-  const commit = (finalValues: object) => {
-    return new Promise((resolve, reject) => {
-      commitMutation({
-        mutation: isRelationReversed
-          ? stixCoreRelationshipCreationFromEntityToMutation
-          : stixCoreRelationshipCreationFromEntityFromMutation,
-        variables: { input: finalValues },
-        updater: (store: RecordSourceSelectorProxy) => {
-          if (typeof onCreate !== 'function') {
-            const userProxy = store.get(store.getRoot().getDataID());
-            const payload = store.getRootField('stixCoreRelationshipAdd');
-
-            const createdNode = connectionKey && payload !== null
-              ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
-              : payload;
-            const connKey = connectionKey || 'Pagination_stixCoreRelationships';
-            let conn;
-            // When using connectionKey we use less props of PaginationOptions (ex: count),
-            // we need to filter them to prevent getConnection to fail
-            const { count: _, ...options } = paginationOptions as Record<string, unknown>;
-
-            if (userProxy) {
-              conn = ConnectionHandler.getConnection(
-                userProxy,
-                connKey,
-                options,
-              );
-            }
-
-            if (conn && payload !== null
-              && !isNodeInConnection(payload, conn)
-              && !isNodeInConnection(payload.getLinkedRecord(isRelationReversed ? 'from' : 'to'), conn)
-            ) {
-              const newEdge = payload.setLinkedRecord(createdNode, 'node');
-              ConnectionHandler.insertEdgeBefore(conn, newEdge);
-
-              helpers.handleSetNumberOfElements({ });
-            }
-          }
-        },
-        optimisticUpdater: undefined,
-        setSubmitting: undefined,
-        optimisticResponse: undefined,
-        onError: (error: Error) => {
-          reject(error);
-        },
-        onCompleted: (response: Response) => {
-          resolve(response);
-        },
-      });
-    });
-  };
-  const onSubmit: FormikConfig<StixCoreRelationshipCreationFromEntityForm>['onSubmit'] = async (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<StixCoreRelationshipCreationFromEntityForm>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     setSubmitting(true);
     for (const targetEntity of targetEntities) {
       const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
@@ -150,20 +98,63 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
         externalReferences: values.externalReferences.map((er) => er.value),
       };
       try {
-        // eslint-disable-next-line no-await-in-loop
-        await commit(finalValues);
+        commitMutation({
+          mutation: isRelationReversed
+            ? stixCoreRelationshipCreationFromEntityToMutation
+            : stixCoreRelationshipCreationFromEntityFromMutation,
+          variables: { input: finalValues },
+          updater: (store: RecordSourceSelectorProxy) => {
+            if (typeof onCreate !== 'function') {
+              const userProxy = store.get(store.getRoot().getDataID());
+              const payload = store.getRootField('stixCoreRelationshipAdd');
+
+              const createdNode = connectionKey && payload !== null
+                ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
+                : payload;
+              const connKey = connectionKey || 'Pagination_stixCoreRelationships';
+              let conn;
+              // When using connectionKey we use less props of PaginationOptions (ex: count),
+              // we need to filter them to prevent getConnection to fail
+              const { count: _, ...options } = paginationOptions as Record<string, unknown>;
+
+              if (userProxy) {
+                conn = ConnectionHandler.getConnection(
+                  userProxy,
+                  connKey,
+                  options,
+                );
+              }
+
+              if (conn && payload !== null
+                && !isNodeInConnection(payload, conn)
+                && !isNodeInConnection(payload.getLinkedRecord(isRelationReversed ? 'from' : 'to'), conn)) {
+                const newEdge = payload.setLinkedRecord(createdNode, 'node');
+                ConnectionHandler.insertEdgeBefore(conn, newEdge);
+
+                helpers.handleSetNumberOfElements({});
+              }
+            }
+          },
+          optimisticUpdater: undefined,
+          setSubmitting: undefined,
+          optimisticResponse: undefined,
+          onError: (error: Error) => {
+            handleErrorInForm(error);
+          },
+          onCompleted: () => {
+            setSubmitting(false);
+            resetForm();
+            handleClose();
+            if (typeof onCreate === 'function') {
+              onCreate();
+            }
+          },
+        });
       } catch (error) {
         setSubmitting(false);
-        return handleErrorInForm(error, setErrors);
+        handleErrorInForm(error, setErrors);
       }
     }
-    setSubmitting(false);
-    resetForm();
-    handleClose();
-    if (typeof onCreate === 'function') {
-      onCreate();
-    }
-    return true;
   };
 
   return (
