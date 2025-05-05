@@ -1,5 +1,6 @@
 import ejs from 'ejs';
 import { authenticator } from 'otplib';
+import bcrypt from 'bcryptjs';
 import { findById, getUserByEmail, userEditField } from '../../domain/user';
 import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
 import { sendMail } from '../../database/smtp';
@@ -14,6 +15,7 @@ import { OTP_TTL, redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '.
 import { publishUserAction } from '../../listener/UserActionListener';
 import { SYSTEM_USER } from '../../utils/access';
 import { killUserSessions } from '../../database/session';
+import { logApp } from '../../config/conf';
 
 export const getUser = async (email: string): Promise<User> => {
   const user: any = await getUserByEmail(email);
@@ -45,7 +47,8 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     // Prevent code generation if generated less than 30 seconds ago
     const isTooRecentStoredOtp = storedOtp.ttl > (OTP_TTL - 30);
     if (isTooRecentStoredOtp) return true;
-    await redisSetForgotPasswordOtp(email, resetOtp);
+    const hashedOtp = bcrypt.hashSync(resetOtp);
+    await redisSetForgotPasswordOtp(email, hashedOtp);
     const body = `Hi ${name},</br>`
         + 'A request has been made to reset your OpenCTI password.</br></br>'
         + 'Enter the following password recovery code:</br></br>'
@@ -68,7 +71,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     });
   } catch (e) {
     // Prevent wrong email address, but return true too if it fails
-    // logApp.error('Error occurred while sending password reset email:', { cause: e });
+    logApp.error('Error occurred while sending password reset email:', { cause: e });
   }
   return true;
 };
@@ -87,7 +90,8 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
     });
     throw UnsupportedError('OTP expired or not found. Please request a new one.');
   }
-  if (storedOtp.otp !== input.otp) {
+  const isMatch = bcrypt.compareSync(input.otp, storedOtp.otp);
+  if (!isMatch) {
     await publishUserAction({
       user: SYSTEM_USER,
       event_type: 'authentication',
