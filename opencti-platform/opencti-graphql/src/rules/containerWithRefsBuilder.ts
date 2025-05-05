@@ -220,9 +220,13 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       logApp.info('>>>> applyUpdate', jsonpatch.compare(data, report));
       logApp.info('data', data);
       logApp.info('report', report);
-      logApp.info(`[${ruleDefinition.name}] ${entityType} ${report.id} updated`);
       const previousPatch = event.context.reverse_patch;
+      logApp.info('previousPatch', previousPatch);
+      logApp.info(`[${ruleDefinition.name}] ${entityType} ${report.id} updated`);
       const previousData = jsonpatch.applyPatch<StixReport>(structuredClone(report), previousPatch).newDocument;
+      const previousDataOnData = jsonpatch.applyPatch<StixReport>(structuredClone(data as StixReport), previousPatch).newDocument;
+      logApp.info('previousData data', previousDataOnData);
+      logApp.info('previousData report', previousData);
       const previousRefIds = [...(previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(previousData.object_refs ?? [])];
       const newRefIds = [...(report.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(report.object_refs ?? [])];
       // AddedRefs are ids not includes in previous data
