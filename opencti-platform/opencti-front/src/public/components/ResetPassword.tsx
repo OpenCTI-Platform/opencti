@@ -84,6 +84,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const [email, setEmail] = useState('');
   const [otpError, setOtpError] = useState(false);
+  const [changePasswordError, setChangePasswordError] = useState(false);
   const [, setResendOtp] = useState(false);
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
@@ -186,6 +187,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
+        setChangePasswordError(true);
         setSubmitting(false);
       },
     });
@@ -277,9 +279,15 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
         >
           {({ isSubmitting, isValid }) => (
             <Form>
-              <Alert severity="success" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
-                {t_i18n('You can now set a new password for your account.')}
-              </Alert>
+              {changePasswordError ? (
+                <Alert severity="error" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
+                  {t_i18n('This new password does not comply with the platform policies.')}
+                </Alert>
+              ) : (
+                <Alert severity="success" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
+                  {t_i18n('You can now set a new password for your account.')}
+                </Alert>
+              )}
               <Field
                 component={TextField}
                 name="password"
