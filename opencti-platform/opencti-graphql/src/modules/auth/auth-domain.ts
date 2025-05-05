@@ -22,12 +22,9 @@ export const getUser = async (email: string): Promise<User> => {
 };
 
 export const generateOtp = () => {
-  let otp = '';
-  for (let i = 0; i < 8; i += 1) {
-    const random = Math.floor(Math.random() * 10);
-    otp += random;
-  }
-  return otp;
+  const array = new Uint8Array(8);
+  crypto.getRandomValues(array);
+  return Array.from(array, (n) => (n % 10).toString()).join('');
 };
 
 interface SendMailArgs {
