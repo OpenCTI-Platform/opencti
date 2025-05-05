@@ -187,7 +187,7 @@ const initActivityManager = () => {
         if (action.event_scope === 'create') {
           const { file_name, entity_name, entity_type, path } = action.context_data;
           let message = `adds \`${file_name}\` in \`files\` for \`${entity_name}\` (${entity_type})`;
-          if (path.includes('import/workbench')) {
+          if (path.includes('import/pending')) {
             message = `creates Analyst Workbench \`${file_name}\` for \`${entity_name}\` (${entity_type})`;
           }
           await activityLogger(action, message);
@@ -195,7 +195,7 @@ const initActivityManager = () => {
         if (action.event_scope === 'delete') { // General upload
           const { file_name, entity_name, entity_type, path } = action.context_data;
           let message = `removes \`${file_name}\` in \`files\` for \`${entity_name}\` (${entity_type})`;
-          if (path.includes('import/workbench')) {
+          if (path.includes('import/pending')) {
             message = `removes Analyst Workbench \`${file_name}\` for \`${entity_name}\` (${entity_type})`;
           }
           await activityLogger(action, message);

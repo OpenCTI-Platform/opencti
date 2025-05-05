@@ -131,7 +131,7 @@ const stixCoreObjectResolvers = {
     },
     pendingFiles: (stixCoreObject, { first }, context) => {
       const opts = { first, entity_type: stixCoreObject.entity_type, entity_id: stixCoreObject.id };
-      return paginatedForPathWithEnrichment(context, context.user, 'import/workbench', stixCoreObject.id, opts);
+      return paginatedForPathWithEnrichment(context, context.user, 'import/pending', stixCoreObject.id, opts);
     },
     exportFiles: (stixCoreObject, { first }, context) => {
       const opts = { first, entity_type: stixCoreObject.entity_type };

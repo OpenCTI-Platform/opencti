@@ -560,7 +560,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
   };
   await indexFileToDocument(context, file);
 
-  const isFilePathForImportEnrichment = filePath.startsWith('import/') && !filePath.startsWith('import/workbench');
+  const isFilePathForImportEnrichment = filePath.startsWith('import/') && !filePath.startsWith('import/pending');
   if (!noTriggerImport && isFilePathForImportEnrichment) {
     // Trigger import on file context entities : either specified importContextEntities or file entity or global import
     // Entities for job import can depend on context (ex: report containing the external reference)

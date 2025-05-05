@@ -175,6 +175,7 @@ const Drafts: React.FC = () => {
       isSortable: true,
     },
     draft_status: {
+      id: 'draft_status',
       label: 'Status',
       percentWidth: 10,
       isSortable: true,
@@ -198,6 +199,7 @@ const Drafts: React.FC = () => {
       ),
     },
     draft_validation_progress: {
+      id: 'draft_validation_progress',
       label: 'Validation progress',
       percentWidth: 10,
       isSortable: false,
@@ -226,6 +228,7 @@ const Drafts: React.FC = () => {
           toolbarFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={DraftLineFragment}
+          exportContext={{ entity_type: 'DraftWorkspace' }}
           redirectionModeEnabled
           createButton={!draftContext && isFABReplaced && (
             <DraftCreation paginationOptions={queryPaginationOptions}/>

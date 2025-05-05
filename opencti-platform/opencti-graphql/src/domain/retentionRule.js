@@ -27,7 +27,7 @@ export const checkRetentionRule = async (context, input) => {
   if (scope === 'file') {
     result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/global', undefined, { notModifiedSince: before.toISOString() });
   } else if (scope === 'workbench') {
-    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/workbench', undefined, { notModifiedSince: before.toISOString() });
+    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { notModifiedSince: before.toISOString() });
   } else {
     logApp.error('[Retention manager] Scope not existing for Retention Rule.', { scope });
   }

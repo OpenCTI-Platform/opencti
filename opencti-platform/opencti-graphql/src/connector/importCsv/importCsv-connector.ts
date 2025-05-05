@@ -59,7 +59,7 @@ const processCSVforWorkbench = async (context: AuthContext, fileId: string, opts
           filename: `${opts.workId}.json`,
           mimetype: 'application/json',
         };
-        await uploadToStorage(context, applicantUser, 'import/workbench', file, { entity });
+        await uploadToStorage(context, applicantUser, 'import/pending', file, { entity });
         await reportExpectation(context, applicantUser, workId);
       }
     });

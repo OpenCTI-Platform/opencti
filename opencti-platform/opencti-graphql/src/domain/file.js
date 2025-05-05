@@ -26,7 +26,7 @@ import { askJobImport } from './connector';
 
 export const buildOptionsFromFileManager = async (context) => {
   let importPaths = ['import/'];
-  const excludedPaths = ['import/workbench/']; // always exclude pending
+  const excludedPaths = ['import/pending/']; // always exclude pending
   const managerConfiguration = await getManagerConfigurationFromCache(context, SYSTEM_USER, 'FILE_INDEX_MANAGER');
   const configMimetypes = managerConfiguration.manager_setting?.accept_mime_types;
   if (isEmptyField(configMimetypes)) {
@@ -127,13 +127,13 @@ export const uploadPending = async (context, user, args) => {
     };
   }
 
-  const { upload: up } = await uploadToStorage(context, user, 'import/workbench', finalFile, {
+  const { upload: up } = await uploadToStorage(context, user, 'import/pending', finalFile, {
     meta,
     file_markings,
     errorOnExisting,
     entity
   });
-  const contextData = buildContextDataForFile(entity, 'import/workbench', up.name, up.metaData.file_markings);
+  const contextData = buildContextDataForFile(entity, 'import/pending', up.name, up.metaData.file_markings);
   await publishUserAction({
     user,
     event_type: 'file',

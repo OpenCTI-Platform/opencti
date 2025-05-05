@@ -387,7 +387,7 @@ const ImportWorksDrawer = ({
     let intervalId: NodeJS.Timeout;
 
     const loadData = () => {
-      loadQuery(paginationFilters, { fetchPolicy: 'network-only' });
+      loadQuery(paginationFilters, { fetchPolicy: 'store-and-network' });
     };
 
     if (open) {
@@ -411,7 +411,7 @@ const ImportWorksDrawer = ({
   const launchImportTitle = t_i18n('Launch an import');
 
   // Prevent launch import and change query on workbenches
-  const isWorkbench = file.id.includes('import/workbench');
+  const isWorkbench = file.id.includes('import/pending');
 
   return (
     <>

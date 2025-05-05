@@ -25,7 +25,7 @@ describe('Retention Manager tests ', () => {
   const progressFileName = 'progressFile';
   const progressFileId = `${globalPath}/${progressFileName}`;
 
-  const pendingPath = 'import/workbench';
+  const pendingPath = 'import/pending';
   const workbench1Name = 'workbench1';
   const workbench1Id = `${pendingPath}/${workbench1Name}`;
   const workbench2Name = 'workbench2';
