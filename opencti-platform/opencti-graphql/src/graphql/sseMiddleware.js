@@ -4,7 +4,7 @@ import { Promise } from 'bluebird';
 import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
-import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
+import { TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
@@ -25,15 +25,7 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import {
-  BYPASS,
-  computeUserMemberAccessIds,
-  executionContext,
-  isUserCanAccessStixElement,
-  isUserHasCapability,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
-  SYSTEM_USER
-} from '../utils/access';
+import { BYPASS, computeUserMemberAccessIds, isUserCanAccessStixElement, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../utils/access';
 import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
@@ -53,6 +45,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/generate-message';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -90,13 +83,13 @@ const createBroadcastClient = (channel) => {
 
 const authenticate = async (req, res, next) => {
   try {
-    const executeContext = executionContext('stream_authenticate');
-    const auth = await authenticateUserFromRequest(executeContext, req);
-    if (auth) {
-      req.userId = auth.id;
-      req.user = auth;
-      req.capabilities = auth.capabilities;
-      req.allowed_marking = auth.allowed_marking;
+    const context = await createAuthenticatedContext(req, res, 'stream');
+    if (context.user) {
+      req.context = context;
+      req.userId = context.user.id;
+      req.user = context.user;
+      req.capabilities = context.user.capabilities;
+      req.allowed_marking = context.user.allowed_marking;
       req.expirationTime = utcDate().add(1, 'days').toDate();
       next();
     } else {
@@ -173,9 +166,9 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
 };
 
 const authenticateForPublic = async (req, res, next) => {
-  const context = executionContext('stream_authenticate');
-  const auth = await authenticateUserFromRequest(context, req);
-  const user = auth ?? SYSTEM_USER;
+  const context = await createAuthenticatedContext(req, res, 'stream_authenticate');
+  const user = context.user ?? SYSTEM_USER;
+  req.context = context;
   req.userId = user.id;
   req.user = user;
   req.capabilities = user.capabilities;
@@ -186,7 +179,7 @@ const authenticateForPublic = async (req, res, next) => {
     user: req.user,
     id: req.params.id
   });
-  if (error || (!collection?.stream_public && !auth)) {
+  if (error || (!collection?.stream_public && !context.user)) {
     res.statusMessage = 'You are not authenticated, please check your credentials';
     sendErrorStatus(req, res, 401);
   } else {
@@ -309,23 +302,22 @@ const createSseMiddleware = () => {
   };
   const genericStreamHandler = async (req, res) => {
     try {
-      const sessionUser = req.user;
-      const context = executionContext('raw_stream');
+      const { user, context } = req;
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
       const startStreamId = convertParameterToStreamId(paramStartFrom);
       // Generic stream only available for bypass users
-      if (!isUserHasCapability(sessionUser, BYPASS)) {
+      if (!isUserHasCapability(user, BYPASS)) {
         res.statusMessage = 'Consume generic stream is only authorized for bypass user';
         sendErrorStatus(req, res, 401);
         return;
       }
       const { client } = createSseChannel(req, res, startStreamId);
       const opts = { autoReconnect: true };
-      const processor = createStreamProcessor(sessionUser, sessionUser.user_email, async (elements, lastEventId) => {
+      const processor = createStreamProcessor(user, user.user_email, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
-          const instanceAccessible = await isUserCanAccessStixElement(context, sessionUser, data.data);
+          const instanceAccessible = await isUserCanAccessStixElement(context, user, data.data);
           if (instanceAccessible) {
             client.sendEvent(eventId, event, data);
           }
@@ -534,8 +526,7 @@ const createSseMiddleware = () => {
     const { id } = req.params;
     try {
       const cache = new LRUCache({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
-      const context = executionContext('live_stream');
-      const { user } = req;
+      const { user, context } = req;
       // If stream is starting after, we need to use the main database to catchup
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
       const startIsoDate = convertParameterToDate(paramStartFrom);

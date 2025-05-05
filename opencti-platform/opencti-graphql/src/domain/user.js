@@ -1485,6 +1485,8 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
 };
 
 export const HEADERS_AUTHENTICATORS = [];
+// This method can only be used in createAuthenticatedContext
+// If you need to check auth and create context, use directly createAuthenticatedContext method
 export const authenticateUserFromRequest = async (context, req) => {
   const sessionUser = req.session?.user;
   // region If user already have a session
