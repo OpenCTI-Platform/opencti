@@ -20,7 +20,6 @@ import { buildStixUpdateEvent, publishStixToStream } from '../database/redis';
 import { INPUT_DOMAIN_TO, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { asyncFilter } from '../utils/data-processing';
-import { logApp } from '../config/conf';
 
 const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: string, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
@@ -42,14 +41,13 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   };
   type ArrayRefs = Array<{ partOfFromId: string, partOfId: string, partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
   // eslint-disable-next-line max-len
-  const createObjectRefsInferences = async (context: AuthContext, report: StixReport, addedTargets: ArrayRefs, deletedTargets: Array<BasicStoreRelation>): Promise<void> => {
-    logApp.info(`[addedTargets.length] ${addedTargets.length}`);
-    logApp.info(`[deletedTargets.length] ${deletedTargets.length}`);
+  const createObjectRefsInferences = async (context: AuthContext, data: StixReport, addedTargets: ArrayRefs, deletedTargets: Array<BasicStoreRelation>): Promise<void> => {
     if (addedTargets.length === 0 && deletedTargets.length === 0) {
       return;
     }
     const opts = { publishStreamEvent: false };
     const createdTargets: Array<BasicStoreObject> = [];
+    const report = await stixLoadById(context, RULE_MANAGER_USER, data.id) as StixReport;
     const { id: reportId, object_refs_inferred } = report.extensions[STIX_EXT_OCTI];
     const reportObjectRefIds = [...(report.object_refs ?? []), ...(object_refs_inferred ?? [])];
     // region handle creation
@@ -64,11 +62,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         const inferredRelation = await createInferredRelation(context, inputForRelation, ruleRelationContent, opts) as RelationCreation;
         if (inferredRelation.isCreation) {
           createdTargets.push(inferredRelation.element[INPUT_DOMAIN_TO]);
-        } else {
-          logApp.info(`[addedTargets.length] partOfStandardId already created ${index}`);
         }
-      } else {
-        logApp.info(`[addedTargets.length] partOfStandardId include: ${partOfStandardId}`);
       }
       // -----------------------------------------------------------------------------------------------------------
       if (!reportObjectRefIds.includes(partOfTargetStandardId)) {
@@ -77,11 +71,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
         const inferredTarget = await createInferredRelation(context, inputForIdentity, ruleIdentityContent, opts) as RelationCreation;
         if (inferredTarget.isCreation) {
           createdTargets.push(inferredTarget.element[INPUT_DOMAIN_TO]);
-        } else {
-          logApp.info(`[addedTargets.length] partOfTargetStandardId already created ${index}`);
         }
-      } else {
-        logApp.info(`[addedTargets.length] partOfTargetStandardId include: ${partOfTargetStandardId}`);
       }
     }
     // endregion
@@ -97,8 +87,6 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       }
     }
     // endregion
-    logApp.info(`[createdTargets.length] ${createdTargets.length}`);
-    logApp.info(`[deletedTargetRefs.length] ${deletedTargetRefs.length}`);
     if (createdTargets.length > 0 || deletedTargetRefs.length > 0) {
       const updatedReport = structuredClone(report);
       const deletedTargetIds = deletedTargetRefs.map((d) => d.standard_id);
@@ -119,7 +107,6 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       }
       const message = await generateUpdateMessage(context, RULE_MANAGER_USER, report.extensions[STIX_EXT_OCTI].type, inputs);
       const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, message);
-      logApp.info('[publishStixToStream]', { updateEvent });
       await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
     }
   };
@@ -194,11 +181,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
     if (entityType === containerType) {
-      const report = await stixLoadById(context, RULE_MANAGER_USER, data.id) as StixReport;
-      logApp.info('>>>> applyInsert', jsonpatch.compare(data, report));
-      logApp.info('data', data);
-      logApp.info('report', report);
-      logApp.info(`[${ruleDefinition.name}] ${entityType} ${report.id} created`);
+      const report = data as StixReport;
       const { object_refs: reportObjectRefs } = report;
       // Get all identities from the report refs
       const leftRefs = (reportObjectRefs ?? []).filter(typeRefFilter);
@@ -216,17 +199,9 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
     if (entityType === containerType) {
-      const report = await stixLoadById(context, RULE_MANAGER_USER, data.id) as StixReport;
-      logApp.info('>>>> applyUpdate', jsonpatch.compare(data, report));
-      logApp.info('data', data);
-      logApp.info('report', report);
+      const report = data as StixReport;
       const previousPatch = event.context.reverse_patch;
-      logApp.info('previousPatch', previousPatch);
-      logApp.info(`[${ruleDefinition.name}] ${entityType} ${report.id} updated`);
       const previousData = jsonpatch.applyPatch<StixReport>(structuredClone(report), previousPatch).newDocument;
-      const previousDataOnData = jsonpatch.applyPatch<StixReport>(structuredClone(data as StixReport), previousPatch).newDocument;
-      logApp.info('previousData data', previousDataOnData);
-      logApp.info('previousData report', previousData);
       const previousRefIds = [...(previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(previousData.object_refs ?? [])];
       const newRefIds = [...(report.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(report.object_refs ?? [])];
       // AddedRefs are ids not includes in previous data
@@ -237,8 +212,6 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       // For added identities
       const leftAddedRefs = addedRefs.filter(typeRefFilter);
       const removedLeftRefs = removedRefs.filter(typeRefFilter);
-      logApp.info(`[leftAddedRefs.length] ${leftAddedRefs.length}`);
-      logApp.info(`[removedLeftRefs.length] ${removedLeftRefs.length}`);
       if (leftAddedRefs.length > 0 || removedLeftRefs.length > 0) {
         await handleReportCreation(context, report, leftAddedRefs, removedLeftRefs);
       }
