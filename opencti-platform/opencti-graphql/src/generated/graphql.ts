@@ -35,7 +35,6 @@ import type { BasicStoreEntitySupportPackage } from '../modules/support/support-
 import type { BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import type { BasicStoreEntityExclusionList } from '../modules/exclusionList/exclusionList-types';
 import type { BasicStoreEntityFintelTemplate } from '../modules/fintelTemplate/fintelTemplate-types';
-import type { BasicStoreEntityFintelDesign } from '../modules/fintelDesign/fintelDesign-types';
 import type { BasicStoreEntitySavedFilter } from '../modules/savedFilter/savedFilter-types';
 import type { BasicStoreEntityFintelDesign } from '../modules/fintelDesign/fintelDesign-types';
 export type Maybe<T> = T | null | undefined;
