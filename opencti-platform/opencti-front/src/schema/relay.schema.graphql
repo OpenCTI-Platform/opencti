@@ -9115,6 +9115,7 @@ type Mutation {
   verifyMfa(input: VerifyMfaInput!): Boolean
   changePassword(input: ChangePasswordInput!): Boolean
   pirAdd(input: PIRAddInput!): PIR
+  pirDelete(id: ID!): ID
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
