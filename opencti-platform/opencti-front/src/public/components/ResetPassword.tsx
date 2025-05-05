@@ -93,7 +93,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
     AskSendOtpMutation,
     undefined,
     {
-      successMessage: t_i18n('If your e-mail address is correct, an e-mail will be sent to you.'),
+      successMessage: t_i18n('If your email address is found, an email will be sent to you.'),
     },
   );
   const [verifyOtpCommitMutation] = useApiMutation<ResetPasswordVerifyOtpMutation>(
@@ -240,11 +240,11 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
             <Form>
               {otpError ? (
                 <Alert severity="error" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
-                  {t_i18n('The reset code you entered is invalid or has expired. You can request a new code, but please wait 30 seconds after your last request before trying again.')}
+                  {t_i18n('The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.')}
                 </Alert>
               ) : (
                 <Alert severity="info" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
-                  {t_i18n('If the email address you entered is associated with an account, you’ll receive a confirmation email with a reset code shortly.')}
+                  {t_i18n('If the email address you entered is associated with an account, you will receive a confirmation email with a reset code shortly.')}
                 </Alert>
               )}
               <Field
