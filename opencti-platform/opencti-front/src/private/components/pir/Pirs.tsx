@@ -4,6 +4,7 @@ import { PirsListQuery, PirsListQuery$variables } from '@components/pir/__genera
 import { Pirs_PirsFragment$data } from '@components/pir/__generated__/Pirs_PirsFragment.graphql';
 import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
 import { useTheme } from '@mui/material/styles';
+import PirCreation from '@components/pir/PirCreation';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -13,7 +14,9 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import FilterIconButton from '../../../components/FilterIconButton';
-import { Theme } from '../../../components/Theme';
+import type { Theme } from '../../../components/Theme';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 const pirFragment = graphql`
   fragment Pirs_PirFragment on PIR {
@@ -190,6 +193,11 @@ const Pirs = () => {
           lineFragment={pirFragment}
           entityTypes={['PIR']}
           searchContextFinal={{ entityTypes: ['PIR'] }}
+          createButton={(
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <PirCreation />
+            </Security>
+          )}
         />
       )}
     </>
