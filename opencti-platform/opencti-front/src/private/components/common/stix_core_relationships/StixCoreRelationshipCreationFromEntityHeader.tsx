@@ -46,14 +46,6 @@ StixCoreRelationshipCreationFromEntityHeaderProps
   const { state: {
     stixCoreObjectTypes = [],
   } } = useContext(CreateRelationshipContext);
-  // console.log({
-  //   allowedRelationshipTypes,
-  //   isRelationReversed,
-  //   stixCoreObjectTypes,
-  //   connectionKey,
-  //   paginationOptions,
-  //   onCreate,
-  // });
 
   // Compute SDOs and SCOs
   const targetStixDomainObjectTypes = computeTargetStixDomainObjectTypes(stixCoreObjectTypes);
