@@ -1,8 +1,8 @@
 import { registerGraphqlSchema } from '../../graphql/schema';
 import fintelDesignResolvers from './fintelDesign-resolver';
-import designTypeDefs from './fintelDesign.graphql';
+import fintelDesignTypeDefs from './fintelDesign.graphql';
 
 registerGraphqlSchema({
-  schema: designTypeDefs,
+  schema: fintelDesignTypeDefs,
   resolver: fintelDesignResolvers,
 });
