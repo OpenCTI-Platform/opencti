@@ -15,9 +15,8 @@ import { AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
-import { isNotEmptyField } from '../../../../../utils/utils';
 import MarkdownDisplay from '../../../../../components/MarkdownDisplay';
-import { displayEntityTypeForTranslation } from '../../../../../utils/String';
+import { useGenerateAuditMessage } from '../../../../../utils/history';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -88,14 +87,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const theme = useTheme<Theme>();
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
-  const isHistoryUpdate = data.entity_type === 'History'
-    && (data.event_type === 'update' || data.event_scope === 'update')
-    && isNotEmptyField(data.context_data?.entity_name);
-  const message = `\`${data.user?.name}\` ${data.context_data?.message} ${
-    isHistoryUpdate
-      ? `for \`${data.context_data?.entity_name}\` (${t_i18n(displayEntityTypeForTranslation(data.context_data?.entity_type))})`
-      : ''
-  }`;
+  const message = useGenerateAuditMessage(data);
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
   return (
     <>
