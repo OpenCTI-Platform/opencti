@@ -12,6 +12,8 @@ import { SYSTEM_USER } from '../../utils/access';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { createPirTask } from '../../domain/backgroundTask';
 
+export const PIR_MAX_REL_NUMBER = 100;
+
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPIR>(context, user, id, ENTITY_TYPE_PIR);
 };
