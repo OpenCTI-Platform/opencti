@@ -157,7 +157,7 @@ StixCoreRelationshipCreationSelectEntityStageProps
         height: '100%',
       }}
     >
-      <div style={{ height: '100%' }} ref={setTableRootRef}>
+      <div data-testid="stixCoreRelationshipCreationFromEntity-component" style={{ height: '100%' }} ref={setTableRootRef}>
         <UserContext.Consumer>
           {({ platformModuleHelpers }) => (
             <DataTable
