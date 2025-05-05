@@ -12,6 +12,7 @@ import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHisto
 import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
+import { isNotEmptyField } from '../../../utils/utils';
 
 const pirHistoryFragment = graphql`
   fragment PirOverviewHistoryFragment on Query {
@@ -31,7 +32,10 @@ const pirHistoryFragment = graphql`
           user {
             name
           }
+          entity_type
           context_data {
+            entity_type
+            entity_name
             message
             commit
             external_references {
@@ -89,7 +93,7 @@ const HISTORY_ICON_CONFIG = {
 
 const PirOverview = ({ data }: PirOverviewProps) => {
   const theme = useTheme<Theme>();
-  const { nsdt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
 
   const { logs } = useFragment(pirHistoryFragment, data);
   const history = (logs?.edges ?? []).flatMap((e) => e?.node ?? []);
@@ -114,11 +118,19 @@ const PirOverview = ({ data }: PirOverviewProps) => {
       variant="outlined"
     >
       {history.map((historyItem) => {
-        const { id, user, context_data, timestamp } = historyItem;
+        const { id, user, context_data, timestamp, entity_type, event_scope } = historyItem;
         const { color, icon } = getIconConfig(historyItem);
+        const isHistoryUpdate = entity_type === 'History'
+          && event_scope === 'update'
+          && isNotEmptyField(context_data?.entity_name);
+        const historyMessage = `\`${user?.name}\` ${context_data?.message} ${
+          isHistoryUpdate
+            ? `for \`${context_data?.entity_name}\` (${t_i18n(`entity_${context_data?.entity_type}`)})`
+            : ''
+        }`;
         const content = (
           <MarkdownDisplay
-            content={`\`${user?.name}\` ${context_data?.message}`}
+            content={historyMessage}
             remarkGfmPlugin={true}
             commonmark={true}
           />
