@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
+import type { AddOperation } from 'fast-json-patch/module/core';
 import { createStreamProcessor, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
@@ -26,6 +27,7 @@ import { extractStixRepresentative } from '../database/stix-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_PIR_ENTITIES } from '../schema/stixDomainObject';
+import { inPir } from '../schema/stixRefRelationship';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
@@ -115,29 +117,40 @@ const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>, listen
       }
     }
   }
-  // 2.2 detect 'contains' rel
   if (event.event === 'update' && (event.data as UpdateEvent).context.patch) {
     const updateEvent: UpdateEvent = event.data as UpdateEvent;
-    const matchingStandardIds = updateEvent.context.patch.flatMap((p) => {
-      if (p.op === 'add'
-        && p.path.includes('/object_refs')
-        && listenedIds.includes(p.value)) {
+    // 2.2 detect 'contains' rel
+    const idsAboutContainsRef = updateEvent.context.patch.flatMap((p) => {
+      const isContainsAdd = p.op === 'add' && p.path.includes('/object_refs') && listenedIds.includes(p.value);
+      // const isContainsRemove = TODO PIR
+      if (isContainsAdd) {
         return p.value;
       }
       return [];
     });
-    if (matchingStandardIds.length > 0) {
+    if (idsAboutContainsRef.length > 0) {
       const pirIds = (listenedEntities
-        .filter((e) => matchingStandardIds.includes(e.standard_id)) ?? []).flatMap((e) => e['in-pir'] ?? []);
+        .filter((e) => idsAboutContainsRef.includes(e.standard_id)) ?? []).flatMap((e) => e['in-pir'] ?? []);
       if (pirIds.length === 0) {
         logApp.error('[PIR] A listened entity should be linked to a PIR', { data: event });
       }
-      console.log('[POC PIR] Event for CONTAINS in PIR history', { event, pirIds, matchingStandardIds });
+      console.log('[POC PIR] Event for CONTAINS in PIR history', { event, pirIds, matchingStandardIds: idsAboutContainsRef });
       return pirIds;
     }
+    // 2.3 detect in-pir rels
+    if (event.data.message.includes(inPir.label)) {
+      if (event.data.message.includes('adds')) {
+        const pirPatch = updateEvent.context.patch[0] as AddOperation<string[]>;
+        console.log('[POC PIR] Event for create `In PIR` meta rel', { event, pirPatch });
+        return pirPatch.value;
+      }
+      if (event.data.message.includes('removes')) {
+        const pirPatch = updateEvent.context.reverse_patch[0] as AddOperation<string[]>;
+        console.log('[POC PIR] Event for remove `In PIR` meta rel', { event, pirPatch });
+        return pirPatch.value;
+      }
+    }
   }
-  // 2.3 detect in-pir rels
-  // TODO PIR
   return [];
 };
 
