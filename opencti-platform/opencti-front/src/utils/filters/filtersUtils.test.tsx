@@ -6,10 +6,10 @@ import {
   findFiltersFromKeys,
   serializeFilterGroupForBackend,
   isRegardingOfFilterWarning,
-} from '../filters/filtersUtils';
-import { createMockUserContext, testRenderHook } from './test-render';
-import filterKeysSchema from './FilterUtilsConstants';
-import { FilterGroup } from '../filters/filtersHelpers-types';
+} from './filtersUtils';
+import { createMockUserContext, testRenderHook } from '../tests/test-render';
+import filterKeysSchema from '../tests/FilterUtilsConstants';
+import { FilterGroup } from './filtersHelpers-types';
 
 describe('Filters utils', () => {
   describe('useBuildFilterKeysMapFromEntityType', () => {

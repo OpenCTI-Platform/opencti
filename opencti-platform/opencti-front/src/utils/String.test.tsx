@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { displayEntityTypeForTranslation, translateDateInterval } from '../String';
+import { displayEntityTypeForTranslation, translateDateInterval } from './String';
 
 describe('String utils', () => {
   describe('translateDateInterval', () => {
