@@ -88,11 +88,11 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
   const isHistoryUpdate = data.entity_type === 'History'
-    && data.event_type === 'update'
+    && (data.event_type === 'update' || data.event_scope === 'update')
     && isNotEmptyField(data.context_data?.entity_name);
   const message = `\`${data.user?.name}\` ${data.context_data?.message} ${
     isHistoryUpdate
-      ? `for \`${data.context_data?.entity_name}\` (${data.context_data?.entity_type})`
+      ? `for \`${data.context_data?.entity_name}\` (${t_i18n(`entity_${data.context_data?.entity_type}`)})`
       : ''
   }`;
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
