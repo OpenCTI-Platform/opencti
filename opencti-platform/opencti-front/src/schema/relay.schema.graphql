@@ -9083,6 +9083,7 @@ type Mutation {
   disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
   savedFilterAdd(input: SavedFilterAddInput!): SavedFilter
   savedFilterDelete(id: ID!): ID
+  savedFilterFieldPatch(id: ID!, filters: String!): SavedFilter
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
 }

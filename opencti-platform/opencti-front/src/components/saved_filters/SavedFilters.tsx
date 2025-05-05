@@ -4,7 +4,7 @@ import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { SavedFiltersQuery, SavedFiltersQuery$variables } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
-import SavedFilterSelection from './SavedFilterSelection';
+import SavedFilterSelection, { type SavedFiltersSelectionData } from './SavedFilterSelection';
 import SavedFiltersAutocomplete from './SavedFiltersAutocomplete';
 
 const savedFiltersQuery = graphql`
@@ -24,20 +24,29 @@ const savedFiltersQuery = graphql`
 
 type SavedFiltersComponentProps = {
   queryRef: PreloadedQuery<SavedFiltersQuery>;
+  currentSavedFilter?: SavedFiltersSelectionData;
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 
-const SavedFiltersComponent = ({ queryRef }: SavedFiltersComponentProps) => {
+const SavedFiltersComponent = ({ queryRef, currentSavedFilter, setCurrentSavedFilter }: SavedFiltersComponentProps) => {
   const { savedFilters } = usePreloadedQuery(savedFiltersQuery, queryRef);
 
   return (
     <SavedFilterSelection
       isDisabled={!savedFilters?.edges?.length}
       data={savedFilters?.edges?.map(({ node }) => node) ?? []}
+      currentSavedFilter={currentSavedFilter}
+      setCurrentSavedFilter={setCurrentSavedFilter}
     />
   );
 };
 
-const SavedFilters = () => {
+type SavedFiltersProps = {
+  currentSavedFilter?: SavedFiltersSelectionData;
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
+};
+
+const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFiltersProps) => {
   const {
     useDataTablePaginationLocalStorage: {
       localStorageKey,
@@ -55,7 +64,13 @@ const SavedFilters = () => {
   return (
     <>
       {queryRef
-        ? <SavedFiltersComponent queryRef={queryRef} />
+        ? (
+          <SavedFiltersComponent
+            queryRef={queryRef}
+            currentSavedFilter={currentSavedFilter}
+            setCurrentSavedFilter={setCurrentSavedFilter}
+          />
+        )
         : <SavedFiltersAutocomplete isDisabled />
       }
     </>

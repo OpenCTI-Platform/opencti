@@ -1,14 +1,11 @@
 import React from 'react';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import { graphql } from 'react-relay';
 import { useFormatter } from 'src/components/i18n';
 import { deleteNode } from 'src/utils/store';
-import DialogContentText from '@mui/material/DialogContentText';
 import getSavedFilterScopeFilter from 'src/components/saved_filters/getSavedFilterScopeFilter';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
+import DeleteDialog from 'src/components/DeleteDialog';
+import useDeletion from 'src/utils/hooks/useDeletion';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 
 const savedFilterDeleteDialogMutation = graphql`
@@ -59,24 +56,16 @@ const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset }: Save
     });
   };
 
+  const deletion = useDeletion({});
+
   return (
-    <Dialog
-      open={true}
-      PaperProps={{ elevation: 1 }}
+    <DeleteDialog
+      deletion={deletion}
+      isOpen
+      message= {t_i18n('Do you want to delete this saved filter?')}
+      submitDelete={handleSubmitDeleteFilter}
       onClose={onClose}
-      fullWidth
-      maxWidth="xs"
-    >
-      <DialogContent>
-        <DialogContentText>
-          {t_i18n('Do you want to delete this saved filter?')}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{t_i18n('Cancel')}</Button>
-        <Button onClick={handleSubmitDeleteFilter} color="secondary">{t_i18n('Validate')}</Button>
-      </DialogActions>
-    </Dialog>
+    />
   );
 };
 

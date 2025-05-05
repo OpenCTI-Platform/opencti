@@ -9,6 +9,8 @@ import TextField from '@mui/material/TextField';
 import { graphql } from 'react-relay';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import { insertNode } from 'src/utils/store';
+import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
+import { SavedFilterCreateDialogMutation$data } from 'src/components/saved_filters/__generated__/SavedFilterCreateDialogMutation.graphql';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 
@@ -26,14 +28,16 @@ const savedFilterCreateDialogMutation = graphql`
 type SavedFilterDialogProps = {
   onClose: () => void;
   isOpen: boolean;
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 
-const SavedFilterCreateDialog = ({ isOpen, onClose }: SavedFilterDialogProps) => {
+const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: SavedFilterDialogProps) => {
   const { t_i18n } = useFormatter();
 
   const {
     useDataTablePaginationLocalStorage: {
       localStorageKey,
+      helpers,
       viewStorage: { filters },
     },
   } = useDataTableContext();
@@ -65,7 +69,11 @@ const SavedFilterCreateDialog = ({ isOpen, onClose }: SavedFilterDialogProps) =>
         const scopeFilter = getSavedFilterScopeFilter(localStorageKey);
         insertNode(store, 'SavedFilters_savedFilters', { filters: scopeFilter }, 'savedFilterAdd');
       },
-      onCompleted: () => {
+      onCompleted: (response) => {
+        const { savedFilterAdd } = response as SavedFilterCreateDialogMutation$data;
+        if (!savedFilterAdd) return;
+        setCurrentSavedFilter(savedFilterAdd);
+        helpers.handleChangeSavedFilters(savedFilterAdd);
         onClose();
       },
       onError: () => {
@@ -77,7 +85,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose }: SavedFilterDialogProps) =>
   return (
     <Dialog
       open={isOpen}
-      PaperProps={{ elevation: 1 }}
+      slotProps={{ paper: { elevation: 1 } }}
       onClose={onClose}
       fullWidth
       maxWidth="xs"

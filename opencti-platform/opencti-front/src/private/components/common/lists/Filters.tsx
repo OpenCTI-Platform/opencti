@@ -51,7 +51,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   required = false,
 }) => {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [filters, setFilters] = useState<FilterGroup | undefined>(
     emptyFilterGroup,
@@ -60,13 +60,14 @@ const Filters: FunctionComponent<FiltersProps> = ({
     [],
   );
   const [keyword, setKeyword] = useState('');
-  const entityTypes = searchContext?.entityTypes ?? ['Stix-Core-Object'];
+  const entityTypes: string[] = searchContext?.entityTypes ?? ['Stix-Core-Object'];
+
   const handleOpenFilters = (event: React.SyntheticEvent) => {
-    setOpen(true);
+    setIsOpen(true);
     setAnchorEl(event.currentTarget);
   };
   const handleCloseFilters = () => {
-    setOpen(false);
+    setIsOpen(false);
     setAnchorEl(null);
   };
   const { filterKeysSchema } = useAuth().schema;
@@ -114,7 +115,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
         disabled={disabled}
         size={size}
         fontSize={fontSize}
-        open={open}
+        open={isOpen}
         filters={filters}
         handleCloseFilters={handleCloseFilters}
         defaultHandleRemoveFilter={defaultHandleRemoveFilter}
@@ -132,11 +133,9 @@ const Filters: FunctionComponent<FiltersProps> = ({
     <>
       {helpers ? (
         <ListFilters
-          size={size}
-          fontSize={fontSize}
           handleOpenFilters={handleOpenFilters}
           handleCloseFilters={handleCloseFilters}
-          open={open}
+          isOpen={isOpen}
           anchorEl={anchorEl}
           availableFilterKeys={uniq(availableFilterKeys)}
           filterElement={filterElement}
@@ -153,7 +152,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
           fontSize={fontSize}
           handleOpenFilters={handleOpenFilters}
           handleCloseFilters={handleCloseFilters}
-          open={open}
+          open={isOpen}
           anchorEl={anchorEl}
           filterElement={filterElement}
           variant={variant}

@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addSavedFilter, deleteSavedFilter, findAll } from './savedFilter-domain';
+import { addSavedFilter, deleteSavedFilter, fieldPatchSavedFilter, findAll } from './savedFilter-domain';
 
 const savedFilterResolver: Resolvers = {
   Query: {
@@ -12,6 +12,9 @@ const savedFilterResolver: Resolvers = {
     savedFilterDelete: (_, { id }, context) => {
       return deleteSavedFilter(context, context.user, id);
     },
+    savedFilterFieldPatch: (_, args, context) => {
+      return fieldPatchSavedFilter(context, context.user, args);
+    }
   },
 };
 
