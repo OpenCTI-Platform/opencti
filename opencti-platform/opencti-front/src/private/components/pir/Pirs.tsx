@@ -3,6 +3,7 @@ import { graphql } from 'react-relay';
 import { PirsListQuery, PirsListQuery$variables } from '@components/pir/__generated__/PirsListQuery.graphql';
 import { Pirs_PirsFragment$data } from '@components/pir/__generated__/Pirs_PirsFragment.graphql';
 import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -12,6 +13,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import FilterIconButton from '../../../components/FilterIconButton';
+import { Theme } from '../../../components/Theme';
 
 const pirFragment = graphql`
   fragment Pirs_PirFragment on PIR {
@@ -91,6 +93,7 @@ const pirsListQuery = graphql`
 const LOCAL_STORAGE_KEY = 'PIRList';
 
 const Pirs = () => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('PIR'));
@@ -130,29 +133,33 @@ const Pirs = () => {
       id: 'filters',
       label: 'Filters',
       percentWidth: 20,
-      render: ({ pirFilters }: Pirs_PirFragment$data) => {
-        return <FilterIconButton
-          key={pirFilters}
-          filters={JSON.parse(pirFilters)}
-          entityTypes={['Stix-Core-Object']}
-          styleNumber={3}
-               ></FilterIconButton>;
-      },
+      render: ({ pirFilters }: Pirs_PirFragment$data) => (
+        <div style={{ marginLeft: theme.spacing(-0.5) }}>
+          <FilterIconButton
+            key={pirFilters}
+            filters={JSON.parse(pirFilters)}
+            entityTypes={['Stix-Core-Object']}
+            styleNumber={3}
+          />
+        </div>
+      ),
     },
     criteria: {
       id: 'criteria',
       label: 'Criteria',
       percentWidth: 35,
-      render: ({ pirCriteria }: Pirs_PirFragment$data) => {
-        return pirCriteria.map((c) => (
-          <FilterIconButton
-            key={c.filters}
-            filters={JSON.parse(c.filters)}
-            entityTypes={['Stix-Core-Object']}
-            styleNumber={3}
-          ></FilterIconButton>
-        ));
-      },
+      render: ({ pirCriteria }: Pirs_PirFragment$data) => (
+        <div style={{ marginLeft: theme.spacing(-0.5), display: 'flex' }}>
+          {pirCriteria.map((c) => (
+            <FilterIconButton
+              key={c.filters}
+              filters={JSON.parse(c.filters)}
+              entityTypes={['Stix-Core-Object']}
+              styleNumber={3}
+            />
+          ))}
+        </div>
+      ),
     },
     creator: {},
     created_at: {
