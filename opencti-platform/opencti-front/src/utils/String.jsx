@@ -242,6 +242,7 @@ export const translateDateInterval = (filterValues, t_i18n) => {
  * @returns {string} Translation in a translatable string
  */
 export const displayEntityTypeForTranslation = (value) => {
+  if (!value) return undefined;
   return value.toString()[0] === value.toString()[0].toUpperCase()
     ? `entity_${value.toString()}`
     : `relationship_${value.toString()}`;
