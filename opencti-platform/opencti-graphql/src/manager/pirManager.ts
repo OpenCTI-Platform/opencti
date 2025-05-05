@@ -78,7 +78,6 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: P
   const relationshipId: string = relationship.extensions?.[STIX_EXT_OCTI]?.id;
   if (!relationshipId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
   const rels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id }); // TODO PIR don't use pagination
-  console.log('rels', rels);
   // eslint-disable-next-line no-restricted-syntax
   for (const rel of rels.edges) {
     const relDependencies = (rel as any).node.pir_dependencies as PirDependency[];
@@ -104,8 +103,6 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: P
 const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   const context = executionContext(PIR_MANAGER_CONTEXT);
   const allPIR = await listAllEntities<BasicStoreEntityPIR>(context, SYSTEM_USER, [ENTITY_TYPE_PIR]);
-
-  // TODO PIR: add PIR filters id in Resolved Filters cache
 
   // Keep only events for relationships.
   const eventsContent = streamEvents
