@@ -10,7 +10,7 @@ import React, { useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { displayEntityTypeForTranslation } from "../../../../utils/String";
+import { displayEntityTypeForTranslation } from '../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
