@@ -49,6 +49,7 @@ const DecayRule = lazy(() => import('./decay/DecayRule'));
 const SupportPackage = lazy(() => import('./support/SupportPackages'));
 const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
 const DisseminationLists = lazy(() => import('./dissemination_lists/DisseminationLists'));
+const FintelDesigns = lazy(() => import('./fintel_design/FintelDesigns'));
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
@@ -347,6 +348,14 @@ const Root = () => {
             element={
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                 <ExclusionLists />
+              </Security>
+            }
+          />
+          <Route
+            path="customization/fintel_designs"
+            element={
+              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+                <FintelDesigns />
               </Security>
             }
           />
