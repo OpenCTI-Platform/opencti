@@ -335,6 +335,57 @@ const navigateRfi = async (page: Page) => {
   await expect(dataTab.getPage()).toBeVisible();
 };
 
+/**
+ * Goal: validate that everything is opening without errors in Cases > Request for takedown.
+ * @param page
+ */
+
+const navigateRft = async (page: Page) => {
+  const rftNameFromInitData = 'Request for takedown Name';
+  const caseRftPage = new CaseRfiPage(page);
+  await caseRftPage.navigateFromMenu();
+
+  await expect(caseRftPage.getPage()).toBeVisible();
+  await expect(caseRftPage.getItemFromList(rftNameFromInitData)).toBeVisible();
+  await caseRftPage.getItemFromList(rftNameFromInitData).click();
+  
+  const caseRftDetailsPage = new CaseRfiDetailsPage(page);
+  await expect(caseRftDetailsPage.getPage()).toBeVisible();
+
+  // -- Knowledge
+  await caseRftDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('case-rft-knowledge')).toBeVisible();
+  await page.getByLabel('TimeLine view').click();
+  await page.getByLabel('Correlation view').click();
+  await page.getByLabel('Tactics matrix view').click();
+  await page.getByLabel('Graph view').click();
+
+  // -- Content
+  await caseRftDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixDomainObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+  await contentTab.getContentMappingViewButton().click();
+  await expect(page.getByRole('button', { name: 'Clear mappings' })).toBeVisible();
+  await contentTab.getContentViewButton().click();
+  await expect(page.getByText('Description', { exact: true })).toBeVisible();
+  await expect(page.getByText('Mappable content')).toBeVisible();
+
+  // -- Entities
+  await caseRftDetailsPage.tabs.goToEntitiesTab();
+  await expect(page.getByText('Entity types')).toBeVisible();
+  await expect(page.getByText('Add entity')).toBeVisible();
+
+  // -- Artifact / Observables
+  await caseRftDetailsPage.tabs.goToObservablesTab();
+  const observablesTab = new ContainerObservablesPage(page);
+  await expect(observablesTab.getPage()).toBeVisible();
+
+  // -- Data
+  await caseRftDetailsPage.tabs.goToDataTab();
+  const dataTab = new StixCoreObjectDataAndHistoryTab(page);
+  await expect(dataTab.getPage()).toBeVisible();
+};
+
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
 
@@ -489,5 +540,6 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   await navigateExternalReferences(page);
   await navigateIncidentResponse(page);
   await navigateRfi(page);
+  await navigateRft(page);
   // await navigateObservables(page);
 });
