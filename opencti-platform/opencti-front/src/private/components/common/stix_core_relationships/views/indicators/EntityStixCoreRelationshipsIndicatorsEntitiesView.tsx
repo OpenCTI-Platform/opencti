@@ -242,7 +242,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
   }, []);
   useEffect(() => {
     setCreateRelationshipContext({
-      paginationOptions,
+      paginationOptions: queryPaginationOptions,
     });
   }, [localStorage]);
 
