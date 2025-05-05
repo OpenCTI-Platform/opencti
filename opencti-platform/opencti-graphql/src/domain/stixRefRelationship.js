@@ -142,5 +142,5 @@ export const stixRefRelationshipsNumber = (context, user, args) => {
 export const stixRefRelationshipPirScore = async (context, user, ref) => {
   const pir = await storeLoadById(context, user, ref.toId, ENTITY_TYPE_PIR);
   if (!pir) return 0;
-  return computePirScore(pir, ref.pir_dependencies.length);
+  return computePirScore(pir, ref.pir_dependencies);
 };
