@@ -34,7 +34,7 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
   const {
     useDataTablePaginationLocalStorage: {
       helpers,
-      viewStorage: { filters, savedFilters },
+      viewStorage: { filters },
       localStorageKey,
     },
   } = useDataTableContext();

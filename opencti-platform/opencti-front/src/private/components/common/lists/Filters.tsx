@@ -25,7 +25,6 @@ interface FiltersProps {
   handleSwitchFilter?: HandleAddFilter;
   handleSwitchGlobalMode?: () => void;
   handleSwitchLocalMode?: (filter: Filter) => void;
-  handleChangeSavedFilters?: () => void;
   searchContext?: FilterSearchContext;
   type?: string;
   helpers?: handleFilterHelpers;
