@@ -13894,6 +13894,7 @@ export type Mutation = {
   otpUserDeactivation?: Maybe<MeUser>;
   pingConnector?: Maybe<Connector>;
   pirAdd?: Maybe<Pir>;
+  pirDelete?: Maybe<Scalars['ID']['output']>;
   playbookAdd?: Maybe<Playbook>;
   playbookAddLink: Scalars['String']['output'];
   playbookAddNode: Scalars['String']['output'];
@@ -15336,6 +15337,11 @@ export type MutationPingConnectorArgs = {
 
 export type MutationPirAddArgs = {
   input: PirAddInput;
+};
+
+
+export type MutationPirDeleteArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -38125,6 +38131,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otpUserDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   pirAdd?: Resolver<Maybe<ResolversTypes['PIR']>, ParentType, ContextType, RequireFields<MutationPirAddArgs, 'input'>>;
+  pirDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirDeleteArgs, 'id'>>;
   playbookAdd?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddArgs, 'input'>>;
   playbookAddLink?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddLinkArgs, 'id' | 'input'>>;
   playbookAddNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddNodeArgs, 'id' | 'input'>>;

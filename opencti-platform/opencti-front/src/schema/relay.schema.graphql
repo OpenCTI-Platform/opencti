@@ -9091,6 +9091,7 @@ type Mutation {
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   pirAdd(input: PIRAddInput!): PIR
+  pirDelete(id: ID!): ID
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
