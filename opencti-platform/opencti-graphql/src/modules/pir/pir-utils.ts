@@ -8,10 +8,11 @@ import { FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { stixObjectOrRelationshipAddRefRelation } from '../../domain/stixObjectOrStixRelationship';
 
-export const computePirScore = (pir: BasicStoreEntityPIR, dependencies: number) => {
+export const computePirScore = (pir: BasicStoreEntityPIR, dependencies: PirDependency[]) => {
   const maxScore = pir.pirCriteria.reduce((acc, val) => acc + val.weight, 0);
+  const depScore = dependencies.reduce((acc, val) => acc + val.weight, 0);
   if (maxScore <= 0) return 0;
-  return Math.round((dependencies / maxScore) * 100);
+  return Math.round((depScore / maxScore) * 100);
 };
 
 /**
