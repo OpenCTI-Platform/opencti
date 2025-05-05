@@ -9,7 +9,7 @@ import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, RULE_PREFIX
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
 import { checkActionValidity, createDefaultTask, TASK_TYPE_PIR, TASK_TYPE_QUERY, TASK_TYPE_RULE } from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
-import { ForbiddenAccess } from '../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
@@ -22,6 +22,7 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { PIR_MAX_REL_NUMBER } from '../modules/pir/pir-domain';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ABSTRACT_STIX_CORE_OBJECT,
@@ -118,6 +119,9 @@ export const executeTaskQuery = async (context, user, filters, search, scope, or
 export const createPirTask = async (context, user, input) => {
   const { pir_dependencies_map, pir_id } = input;
   const expectedNumber = Array.from(pir_dependencies_map.keys()).length;
+  if (expectedNumber > PIR_MAX_REL_NUMBER) {
+    throw FunctionalError(`A PIR can't have more than ${PIR_MAX_REL_NUMBER} entities of interest.`);
+  }
   const task = createDefaultTask(user, input, TASK_TYPE_PIR, expectedNumber);
   const pirTask = { ...task, pir_dependencies_map: JSON.stringify(Array.from(pir_dependencies_map.entries())), pir_id };
   await elIndex(INDEX_INTERNAL_OBJECTS, pirTask);
