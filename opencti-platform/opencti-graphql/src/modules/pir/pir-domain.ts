@@ -12,8 +12,6 @@ import { SYSTEM_USER } from '../../utils/access';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { createPirTask } from '../../domain/backgroundTask';
 
-export const PIR_MAX_REL_NUMBER = 100;
-
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPIR>(context, user, id, ENTITY_TYPE_PIR);
 };
@@ -61,7 +59,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
         filterGroups: [JSON.parse(finalInput.pirFilters), periodFilters, JSON.parse(criterion.filters)],
       },
     };
-    const matchingRelationships = await listRelations(context, SYSTEM_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
+    const matchingRelationships = await listRelations(context, SYSTEM_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, args); // TODO PIR limit to x last rel
     // eslint-disable-next-line no-restricted-syntax
     for (const relationship of (matchingRelationships as unknown as StixCoreRelationshipConnection).edges.map((n) => n.node)) {
       const sourceId = relationship.fromId;
