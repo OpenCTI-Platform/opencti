@@ -23,6 +23,7 @@ import Drawer from '@components/common/drawer/Drawer';
 import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
 import Loader, { LoaderVariant } from 'src/components/Loader';
 import { Button } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
@@ -567,6 +568,14 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
 
+  // TODO: Remove once Create Relationship FAB is removed everywhere
+  const location = useLocation();
+  const categoriesToHide = ['threats'];
+  const showFAB = categoriesToHide.reduce(
+    (prev, curr) => prev || !location.pathname.includes(`/dashboard/${curr}`),
+    false,
+  );
+
   const containerRef = useRef(null);
 
   const { viewStorage, helpers } = usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
@@ -939,7 +948,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         >
           <Add fontSize="small" />
         </IconButton>
-      ) : !openExports ? (
+      // TODO: Remove showFAB once Create Relationship FAB is removed everywhere
+      ) : (showFAB && !openExports) ? (
         <Fab
           onClick={() => setOpen(true)}
           color="primary"
