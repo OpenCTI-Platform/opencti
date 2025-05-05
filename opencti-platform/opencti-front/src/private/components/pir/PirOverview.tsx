@@ -125,7 +125,9 @@ const PirOverview = ({ data }: PirOverviewProps) => {
           && isNotEmptyField(context_data?.entity_name);
         const historyMessage = `\`${user?.name}\` ${context_data?.message} ${
           isHistoryUpdate
-            ? `for \`${context_data?.entity_name}\` (${t_i18n(`entity_${context_data?.entity_type}`)})`
+            ? `for \`${context_data?.entity_name}\` (${context_data?.entity_type ? t_i18n(context_data.entity_type.toString()[0] === context_data.entity_type.toString()[0].toUpperCase()
+              ? `entity_${context_data.entity_type.toString()}`
+              : `relationship_${context_data.entity_type.toString()}`) : undefined})` // TODO PIR use displayEntityTypeForTranslation after rebase on master
             : ''
         }`;
         const content = (
