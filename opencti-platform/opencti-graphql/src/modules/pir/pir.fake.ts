@@ -72,7 +72,6 @@ const CATHIA_CRITERIA: ParsedPIRCriterion[] = [
   }
 ];
 
-// TODO PIR !!! id should be in a trigger filter to update the Resolved filters cache
 export const FAKE_PIR: ParsedPIR = {
   id: '04aae53f-9991-48cf-8f94-5b20256a7546', // existing id to be able to add meta rel involving the PIR
   name: 'PIR about Energy sector in France',
