@@ -234,3 +234,15 @@ export const translateDateInterval = (filterValues, t_i18n) => {
 
   return `${t_i18n('Last')} ${relativeNumber} ${t_i18n(relativeUnit)}`;
 };
+
+/**
+ * Convert an entity type value in a translatable string
+ *
+ * @param {string[]}
+ * @returns {string} Translation in a translatable string
+ */
+export const displayEntityTypeForTranslation = (value) => {
+  return value.toString()[0] === value.toString()[0].toUpperCase()
+    ? `entity_${value.toString()}`
+    : `relationship_${value.toString()}`;
+};

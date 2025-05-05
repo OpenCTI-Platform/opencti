@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import { displayEntityTypeForTranslation } from "../../../../utils/String";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -41,9 +42,7 @@ const SearchScopeElement = ({
       : true))
     .map((n) => {
       return {
-        label: t_i18n(n.toString()[0] === n.toString()[0].toUpperCase()
-          ? `entity_${n.toString()}`
-          : `relationship_${n.toString()}`),
+        label: t_i18n(displayEntityTypeForTranslation(n)),
         value: n,
         type: n,
       };

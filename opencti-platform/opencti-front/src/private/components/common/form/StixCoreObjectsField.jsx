@@ -17,6 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fetchQuery } from '../../../../relay/environment';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import { displayEntityTypeForTranslation } from '../../../../utils/String';
 
 export const stixCoreObjectsFieldSearchQuery = graphql`
   query StixCoreObjectsFieldSearchQuery($search: String, $types: [String]) {
@@ -254,11 +255,7 @@ const StixCoreObjectsField = (props) => {
   };
   const entitiesTypes = R.pipe(
     R.map((n) => ({
-      label: t_i18n(
-        n.toString()[0] === n.toString()[0].toUpperCase()
-          ? `entity_${n.toString()}`
-          : `relationship_${n.toString()}`,
-      ),
+      label: t_i18n(displayEntityTypeForTranslation(n)),
       value: n,
       type: n,
     })),

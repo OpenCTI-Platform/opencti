@@ -17,6 +17,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { isNotEmptyField } from '../../../../../utils/utils';
 import MarkdownDisplay from '../../../../../components/MarkdownDisplay';
+import { displayEntityTypeForTranslation } from '../../../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -92,7 +93,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
     && isNotEmptyField(data.context_data?.entity_name);
   const message = `\`${data.user?.name}\` ${data.context_data?.message} ${
     isHistoryUpdate
-      ? `for \`${data.context_data?.entity_name}\` (${t_i18n(`entity_${data.context_data?.entity_type}`)})`
+      ? `for \`${data.context_data?.entity_name}\` (${t_i18n(displayEntityTypeForTranslation(data.context_data?.entity_type))})`
       : ''
   }`;
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
