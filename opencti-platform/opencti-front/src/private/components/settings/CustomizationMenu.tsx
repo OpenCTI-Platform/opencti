@@ -31,6 +31,10 @@ const CustomizationMenu: FunctionComponent = () => {
       path: '/dashboard/settings/customization/exclusion_lists',
       label: 'Exclusion lists',
     },
+    {
+      path: '/dashboard/settings/customization/fintel_design',
+      label: 'Fintel Design',
+    },
   ];
 
   return <NavToolbarMenu entries={entries} />;
