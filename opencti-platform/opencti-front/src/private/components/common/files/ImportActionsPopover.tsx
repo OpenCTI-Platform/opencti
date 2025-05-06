@@ -116,7 +116,7 @@ const ImportActionsPopover = ({
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
-        message={`${t_i18n('Do you want to delete this ')} ${isWorkbench ? t_i18n('workbench') : t_i18n('file')}?`}
+        message={isWorkbench ? t_i18n('Do you want to delete this workbench?') : t_i18n('Do you want to delete this file?')}
       />
       {openWorks && (<ImportWorksDrawer open={openWorks} onClose={() => setOpenWorks(false)} file={file}/>)}
     </div>
