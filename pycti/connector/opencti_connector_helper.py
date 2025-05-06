@@ -968,29 +968,24 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             "CONNECTOR_LIVE_STREAM_ID",
             ["connector", "live_stream_id"],
             config,
-            False,
-            None,
         )
         self.connect_live_stream_listen_delete = get_config_variable(
             "CONNECTOR_LIVE_STREAM_LISTEN_DELETE",
             ["connector", "live_stream_listen_delete"],
             config,
-            False,
-            True,
+            default=True,
         )
         self.connect_live_stream_no_dependencies = get_config_variable(
             "CONNECTOR_LIVE_STREAM_NO_DEPENDENCIES",
             ["connector", "live_stream_no_dependencies"],
             config,
-            False,
-            False,
+            default=True,
         )
         self.connect_live_stream_with_inferences = get_config_variable(
             "CONNECTOR_LIVE_STREAM_WITH_INFERENCES",
             ["connector", "live_stream_with_inferences"],
             config,
-            False,
-            False,
+            default=False,
         )
         self.connect_live_stream_recover_iso_date = get_config_variable(
             "CONNECTOR_LIVE_STREAM_RECOVER_ISO_DATE",
@@ -1007,24 +1002,22 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         self.connect_confidence_level = None  # Deprecated since OpenCTI version >= 6.0
         self.connect_scope = get_config_variable(
-            "CONNECTOR_SCOPE", ["connector", "scope"], config
+            "CONNECTOR_SCOPE", ["connector", "scope"], config, default="not-applicable"
         )
         self.connect_auto = get_config_variable(
-            "CONNECTOR_AUTO", ["connector", "auto"], config, False, False
+            "CONNECTOR_AUTO", ["connector", "auto"], config, default=False
         )
         self.bundle_send_to_queue = get_config_variable(
             "CONNECTOR_SEND_TO_QUEUE",
             ["connector", "send_to_queue"],
             config,
-            False,
-            True,
+            default=True,
         )
         self.bundle_send_to_directory = get_config_variable(
             "CONNECTOR_SEND_TO_DIRECTORY",
             ["connector", "send_to_directory"],
             config,
-            False,
-            False,
+            default=False,
         )
         self.bundle_send_to_directory_path = get_config_variable(
             "CONNECTOR_SEND_TO_DIRECTORY_PATH",
@@ -1035,32 +1028,29 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             "CONNECTOR_SEND_TO_DIRECTORY_RETENTION",
             ["connector", "send_to_directory_retention"],
             config,
-            True,
-            7,
+            isNumber=True,
+            default=7,
         )
         self.connect_only_contextual = get_config_variable(
             "CONNECTOR_ONLY_CONTEXTUAL",
             ["connector", "only_contextual"],
             config,
-            False,
-            False,
+            default=False,
         )
         self.log_level = get_config_variable(
-            "CONNECTOR_LOG_LEVEL", ["connector", "log_level"], config, default="INFO"
+            "CONNECTOR_LOG_LEVEL", ["connector", "log_level"], config, default="ERROR"
         ).upper()
         self.connect_run_and_terminate = get_config_variable(
             "CONNECTOR_RUN_AND_TERMINATE",
             ["connector", "run_and_terminate"],
             config,
-            False,
-            False,
+            default=False,
         )
         self.connect_validate_before_import = get_config_variable(
             "CONNECTOR_VALIDATE_BEFORE_IMPORT",
             ["connector", "validate_before_import"],
             config,
-            False,
-            False,
+            default=False,
         )
         self.scheduler = sched.scheduler(time.time, time.sleep)
         # Start up the server to expose the metrics.
@@ -1068,11 +1058,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             "CONNECTOR_EXPOSE_METRICS",
             ["connector", "expose_metrics"],
             config,
-            False,
-            False,
+            default=False,
         )
         metrics_port = get_config_variable(
-            "CONNECTOR_METRICS_PORT", ["connector", "metrics_port"], config, True, 9095
+            "CONNECTOR_METRICS_PORT",
+            ["connector", "metrics_port"],
+            config,
+            isNumber=True,
+            default=9095,
         )
         # Initialize ConnectorInfo instance
         self.connector_info = ConnectorInfo()
