@@ -61,7 +61,7 @@ const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObj
   };
 };
 
-export const convertMalwareToStix2 = (instance: StoreEntity, type: string): SDO.StixMalware => {
+export const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.StixMalware => {
   assertType(ENTITY_TYPE_MALWARE, type);
   return {
     ...buildStixDomain(instance),
