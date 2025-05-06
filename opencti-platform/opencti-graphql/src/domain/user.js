@@ -1464,8 +1464,16 @@ const validateUser = (user, settings) => {
 };
 
 export const sessionAuthenticateUser = async (context, req, user, provider) => {
-  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const logged = platformUsers.get(user.internal_id);
+  let platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  let logged = platformUsers.get(user.internal_id);
+  if (!logged) {
+    logApp.warn('[CACHE] Missing user in cache', { user: user.internal_id });
+    // Ensure all nodes known about this user
+    await notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, user, user);
+    // Get the user in a refreshed cache
+    platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    logged = platformUsers.get(user.internal_id);
+  }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   validateUser(logged, settings);
   // Build and save the session
