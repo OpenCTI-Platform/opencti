@@ -172,12 +172,12 @@ const computeRuleTaskElements = async (context, user, task) => {
 };
 
 export const computePirTaskElements = async (context, user, task) => {
-  const { pir_dependencies_map, pir_id } = task;
+  const { pir_dependencies_map, pir_id, pir_criteria } = task;
   const processingElements = [];
   const pirDependenciesMap = new Map(JSON.parse(pir_dependencies_map));
   // Apply the actions for each element
   await Promise.all(Array.from(pirDependenciesMap.keys())
-    .map((sourceId) => flagSource(context, sourceId, pir_id, pirDependenciesMap.get(sourceId))));
+    .map((sourceId) => flagSource(context, sourceId, { id: pir_id, pirCriteria: pir_criteria }, pirDependenciesMap.get(sourceId))));
   const actions = [{ type: ACTION_TYPE_PIR_INITIAL_META_CREATE, context: { rule: task } }];
   return { actions, elements: processingElements };
 };
