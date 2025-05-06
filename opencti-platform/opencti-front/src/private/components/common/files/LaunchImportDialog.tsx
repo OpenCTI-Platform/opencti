@@ -28,7 +28,7 @@ interface LaunchImportDialogProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  draftContext?: boolean;
+  isDraftContext?: boolean;
   queryRef: PreloadedQuery<ImportWorksDrawerQuery>
 }
 
@@ -40,7 +40,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   open,
   onClose,
   onSuccess,
-  draftContext = false,
+  isDraftContext = false,
 }) => {
   const { t_i18n } = useFormatter();
   const { connectorsForImport: connectors } = usePreloadedQuery<ImportWorksDrawerQuery>(fileWorksQuery, queryRef);
@@ -124,7 +124,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
       enableReinitialize={true}
       initialValues={{
         connector_id: '',
-        validation_mode: draftContext ? 'draft' : 'workbench',
+        validation_mode: isDraftContext ? 'draft' : 'workbench',
         configuration: '',
         objectMarking: [],
       }}
@@ -168,7 +168,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   );
                 })}
               </Field>
-              {!draftContext && (
+              {!isDraftContext && (
                 <Field
                   component={SelectField}
                   variant="standard"

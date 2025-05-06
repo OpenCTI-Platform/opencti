@@ -129,14 +129,27 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
     <>
       {isDraftReadOnly && (
       <>
-        <Breadcrumbs elements={[
-          {
-            label: t_i18n('Drafts'),
-            link: isNewImportScreensEnabled ? '/dashboard/data/import/draft' : '/dashboard/drafts',
-          },
-          { label: name, current: true },
-        ]}
-        />
+        {isNewImportScreensEnabled ? (
+          <>
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Data') },
+                { label: t_i18n('Import'), link: '/dashboard/data/import' },
+                { label: t_i18n('Drafts'), link: '/dashboard/data/import/draft' },
+                { label: name, current: true },
+              ]}
+            />
+          </>
+        ) : (
+          <Breadcrumbs elements={[
+            {
+              label: t_i18n('Drafts'),
+              link: '/dashboard/drafts',
+            },
+            { label: name, current: true },
+          ]}
+          />
+        )}
         {validationWork && (
         <Paper
           key={validationWork.id}

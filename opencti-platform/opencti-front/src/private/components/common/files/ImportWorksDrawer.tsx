@@ -26,6 +26,7 @@ import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableW
 import { ImportWorksDrawerQuery, ImportWorksDrawerQuery$variables } from './__generated__/ImportWorksDrawerQuery.graphql';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import Transition from '../../../../components/Transition';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 export const importConnectorsFragment = graphql`
   fragment ImportWorksDrawer_connectorsImport on Connector
@@ -150,6 +151,7 @@ const FileWorksComponent = ({
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<ImportWorksDrawerQuery>(fileWorksQuery, queryRef);
+  const draftContext = useDraftContext();
   const firstNode = !isWorkbench ? data.importFiles?.edges[0]?.node : data.pendingFiles?.edges[0]?.node;
 
   if (!firstNode) {
@@ -289,8 +291,8 @@ const FileWorksComponent = ({
           globalCount={works.length}
           variant={DataTableVariant.inline}
           actions={(work: { id: string; draft_context?: string; status: string; }) => (
-            <div style={{ marginLeft: work?.draft_context ? -45 : 0 }}>
-              {work?.draft_context && (
+            <div style={{ marginLeft: work?.draft_context && !draftContext ? -45 : 0 }}>
+              {work?.draft_context && !draftContext && (
                 <Tooltip title={t_i18n('Navigate to draft')}>
                   <IconButton
                     color="primary"
@@ -366,7 +368,7 @@ const ImportWorksDrawer = ({
   const { t_i18n } = useFormatter();
   const [openLaunchImport, setOpenLaunchImport] = useState(false);
   const [queryRef, loadQuery, disposeQuery] = useQueryLoader<ImportWorksDrawerQuery>(fileWorksQuery);
-
+  const draftContext = useDraftContext();
   const paginationFilters = {
     filters: {
       mode: 'and',
@@ -457,6 +459,7 @@ const ImportWorksDrawer = ({
           open={openLaunchImport}
           onClose={() => setOpenLaunchImport(false)}
           onSuccess={handleRefetch}
+          isDraftContext={!!draftContext}
         />
       )}
     </>
