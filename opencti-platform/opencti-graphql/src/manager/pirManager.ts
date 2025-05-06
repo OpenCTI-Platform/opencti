@@ -47,9 +47,12 @@ const onRelationCreated = async (
   const sourceFlagged = (source[RELATION_IN_PIR] ?? []).length > 0;
   console.log('[POC PIR] Event create matching', { source, relationship, matchingCriteria });
 
-  const pirDependencies = matchingCriteria.map((c) => ({
+  const pirDependencies = matchingCriteria.map((criterion) => ({
     relationship_id: relationshipId,
-    weight: c.weight,
+    criterion: {
+      ...criterion,
+      filters: JSON.stringify(criterion.filters)
+    },
   }));
 
   if (sourceFlagged) {

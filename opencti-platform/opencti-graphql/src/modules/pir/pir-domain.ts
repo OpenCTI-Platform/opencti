@@ -65,7 +65,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
       const sourceId = relationship.fromId;
       const newDependency = {
         relationship_id: relationship.id,
-        weight: criterion.weight,
+        criterion,
       };
       const existingDependencies = dependencies.get(sourceId);
       if (existingDependencies) {
