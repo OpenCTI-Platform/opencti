@@ -8,6 +8,17 @@ const stixRefRelationshipsAttributes: AttributeDefinition[] = [
   { name: 'start_time', label: 'Start date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'stop_time', label: 'End date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   {
+    name: 'pir_score',
+    label: 'PIR score',
+    type: 'numeric',
+    precision: 'integer',
+    mandatoryType: 'no',
+    editDefault: false,
+    multiple: false,
+    upsert: true,
+    isFilterable: true
+  },
+  {
     name: 'pir_dependencies',
     label: 'PIR dependencies',
     type: 'object',

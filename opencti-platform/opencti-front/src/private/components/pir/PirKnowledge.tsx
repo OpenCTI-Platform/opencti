@@ -15,7 +15,7 @@ import { computeLink } from '../../../utils/Entity';
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledge_SourceFlaggedFragment on StixRefRelationship {
     id
-    pirScore
+    pir_score
     from {
       ...on StixCoreObject {
         id
@@ -142,7 +142,7 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
       label: 'Score',
       percentWidth: 5,
       isSortable: false,
-      render: ({ pirScore }) => defaultRender(`${pirScore}%`),
+      render: ({ pir_score }) => defaultRender(`${pir_score}%`),
     },
     from_entity_type: {},
     fromName: {
