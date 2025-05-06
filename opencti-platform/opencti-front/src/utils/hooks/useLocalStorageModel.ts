@@ -1,4 +1,5 @@
-import { FilterGroup } from '../filters/filtersHelpers-types';
+import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
+import { type FilterGroup } from '../filters/filtersHelpers-types';
 
 export interface MessageFromLocalStorage {
   id: string
@@ -36,4 +37,5 @@ export interface LocalStorage {
   dashboard?: string
   latestAddFilterId?: string
   pageSize?: string
+  savedFilters?: SavedFiltersSelectionData
 }

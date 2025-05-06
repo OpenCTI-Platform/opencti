@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import { Dispatch, SetStateAction, SyntheticEvent, useCallback, useState } from 'react';
 import { v4 as uuid } from 'uuid';
+import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { OrderMode, PaginationOptions } from '../../components/list_lines';
 import { emptyFilterGroup, findFilterFromKey, isFilterGroupNotEmpty, isUniqFilter, useFetchFilterKeysSchema } from '../filters/filtersUtils';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
@@ -45,6 +46,8 @@ export interface UseLocalStorageHelpers extends handleFilterHelpers {
   handleChangeView: (value: string) => void;
   handleClearAllFilters: () => void;
   handleSetFilters: (filters: FilterGroup) => void;
+  handleChangeSavedFilters: (savedFilters: SavedFiltersSelectionData) => void;
+  handleRemoveSavedFilters: () => void;
 }
 
 const localStorageToPaginationOptions = (
@@ -258,6 +261,7 @@ export const usePaginationLocalStorage = <U>(
   const callback = useCallback((v: LocalStorage) => {
     setValue(v);
   }, [viewStorage]);
+
   const dispatch = useBus(`${key}_paginationStorage`, callback);
 
   const paginationOptions = localStorageToPaginationOptions({
@@ -271,6 +275,24 @@ export const usePaginationLocalStorage = <U>(
   const [storedOrderAsc, setStoredOrderAsc] = useState(viewStorage.orderAsc);
 
   const helpers: UseLocalStorageHelpers = {
+    handleChangeSavedFilters: (savedFilters: SavedFiltersSelectionData) => {
+      const newValue = {
+        ...viewStorage,
+        filters: JSON.parse(savedFilters.filters),
+        latestAddFilterId: undefined,
+        savedFilters,
+      };
+      setValue(newValue);
+      dispatch(`${key}_paginationStorage`, newValue);
+    },
+    handleRemoveSavedFilters: () => {
+      const newValue = {
+        ...viewStorage,
+        savedFilters: undefined,
+      };
+      setValue(newValue);
+      dispatch(`${key}_paginationStorage`, newValue);
+    },
     handleSearch: (value: string) => {
       const newValue = (value === '') ? {
         ...viewStorage,

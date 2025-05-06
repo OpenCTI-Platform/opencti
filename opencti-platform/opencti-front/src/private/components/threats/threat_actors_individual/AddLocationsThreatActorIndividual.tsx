@@ -1,7 +1,13 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
-import { usePreloadedQuery } from 'react-relay';
+import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import {
+  AddLocationsThreatActorIndividualLinesQuery,
+  AddLocationsThreatActorIndividualLinesQuery$variables,
+} from '@components/threats/threat_actors_individual/__generated__/AddLocationsThreatActorIndividualLinesQuery.graphql';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { ThreatActorIndividualLocations_locations$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualLocations_locations.graphql';
 import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
@@ -11,28 +17,32 @@ import { insertNode } from '../../../../utils/store';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-const AddLocationsThreatActorIndividualComponent = ({
+interface AddLocationsThreatActorIndividualComponentProps {
+  threatActorIndividual: ThreatActorIndividualLocations_locations$data,
+  queryRef: PreloadedQuery<AddLocationsThreatActorIndividualLinesQuery>,
+  onSearch: (search: string) => void,
+  paginationOptions: AddLocationsThreatActorIndividualLinesQuery$variables,
+}
+
+const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocationsThreatActorIndividualComponentProps> = ({
   threatActorIndividual,
-  threatActorIndividualLocations,
   queryRef,
+  onSearch,
+  paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const handleSearch = (term) => setSearch(term);
 
+  const threatActorIndividualLocations = threatActorIndividual.locations?.edges;
   const data = usePreloadedQuery(
     addLocationsThreatActorIndividualLinesQuery,
     queryRef,
   );
 
-  const paginationOptions = {
-    search,
-  };
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_threatActorIndividual_locations',
     paginationOptions,
@@ -62,7 +72,7 @@ const AddLocationsThreatActorIndividualComponent = ({
           >
             <SearchInput
               variant="inDrawer"
-              onSubmit={handleSearch}
+              onSubmit={onSearch}
             />
           </div>
           }
@@ -84,21 +94,33 @@ const AddLocationsThreatActorIndividualComponent = ({
       <LocationCreation
         display={open}
         contextual={true}
-        inputValue={search}
-        paginationOptions={paginationOptions}
+        inputValue={paginationOptions.search ?? ''}
         updater={updater}
       />
     </>
   );
 };
 
-const AddLocationsThreatActorIndividual = (props) => {
-  const queryRef = useQueryLoading(addLocationsThreatActorIndividualLinesQuery, {
-    count: 50,
-  });
+interface AddLocationsThreatActorIndividualProps {
+  threatActorIndividual: ThreatActorIndividualLocations_locations$data,
+}
+const AddLocationsThreatActorIndividual: FunctionComponent<AddLocationsThreatActorIndividualProps> = ({
+  threatActorIndividual,
+}) => {
+  const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '', types: ['Location'] });
+
+  const queryRef = useQueryLoading<AddLocationsThreatActorIndividualLinesQuery>(
+    addLocationsThreatActorIndividualLinesQuery,
+    paginationOptions,
+  );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <AddLocationsThreatActorIndividualComponent {...props} queryRef={queryRef} />
+      <AddLocationsThreatActorIndividualComponent
+        threatActorIndividual={threatActorIndividual}
+        queryRef={queryRef}
+        onSearch={(search) => setPaginationOptions({ count: 50, search, types: ['Location'] })}
+        paginationOptions={paginationOptions}
+      />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, SyntheticEvent } from 'react';
 import SavedFilterDeleteDialog from 'src/components/saved_filters/SavedFilterDeleteDialog';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
+import { type AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
 
 export type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']>[0]['node'];
 
 type SavedFilterSelectionProps = {
   isDisabled: boolean;
   data: SavedFiltersSelectionData[];
+  currentSavedFilter?: SavedFiltersSelectionData;
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
 };
 
 export type AutocompleteOptionType = {
@@ -16,11 +19,11 @@ export type AutocompleteOptionType = {
   value: SavedFiltersSelectionData;
 };
 
-const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) => {
+const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrentSavedFilter }: SavedFilterSelectionProps) => {
   const {
     useDataTablePaginationLocalStorage: {
       helpers,
-      viewStorage: { filters },
+      viewStorage: { filters, savedFilters },
     },
   } = useDataTableContext();
 
@@ -33,27 +36,54 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
     value: item,
   }));
 
-  const handleResetInput = () => {
+  useEffect(() => {
+    if (savedFilters) {
+      const currentSavedFilters = options.find((item) => item.value.id === savedFilters.id);
+      if (!currentSavedFilters) return;
+      setSelectedSavedFilter(currentSavedFilters);
+      setCurrentSavedFilter(currentSavedFilters.value);
+      setInputValue(currentSavedFilters.label);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (currentSavedFilter && !selectedSavedFilter) {
+      setSelectedSavedFilter({
+        label: currentSavedFilter.name,
+        value: currentSavedFilter,
+      });
+      setInputValue(currentSavedFilter.name);
+    }
+  }, [currentSavedFilter]);
+
+  const handleReset = () => {
     setSelectedSavedFilter(undefined);
+    setCurrentSavedFilter(undefined);
     setInputValue('');
+    helpers.handleRemoveSavedFilters();
   };
 
   useEffect(() => {
     if (isDisabled && !!selectedSavedFilter) {
-      handleResetInput();
+      handleReset();
     }
   }, [isDisabled]);
 
   useEffect(() => {
     if (!filters?.filters.length && !filters?.filterGroups.length) {
-      handleResetInput();
+      handleReset();
     }
   }, [filters]);
 
-  const handleSelect = (selectionOption: AutocompleteOptionType) => {
+  const handleChange = (selectionOption: AutocompleteOptionType) => {
     setSelectedSavedFilter(selectionOption);
+    setCurrentSavedFilter(selectionOption.value);
     setInputValue(selectionOption.label);
-    helpers.handleSetFilters(JSON.parse(selectionOption.value.filters));
+    helpers.handleChangeSavedFilters(selectionOption.value);
+  };
+
+  const onInputChange = (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => {
+    if (reason === 'input') setInputValue(value);
   };
 
   const resetSavedFilterToDelete = () => setSavedFilterToDelete(undefined);
@@ -66,12 +96,13 @@ const SavedFilterSelection = ({ isDisabled, data }: SavedFilterSelectionProps) =
         isDisabled={isDisabled}
         options={options}
         onDelete={handleDelete}
-        onSelect={handleSelect}
+        onChange={handleChange}
+        onInputChange={onInputChange}
         value={selectedSavedFilter}
         inputValue={inputValue}
       />
       {!!savedFilterToDelete && (
-        <SavedFilterDeleteDialog savedFilterToDelete={savedFilterToDelete} onClose={resetSavedFilterToDelete} onReset={handleResetInput} />
+        <SavedFilterDeleteDialog savedFilterToDelete={savedFilterToDelete} onClose={resetSavedFilterToDelete} onReset={handleReset} />
       )}
     </>
   );

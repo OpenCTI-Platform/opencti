@@ -10,7 +10,6 @@ import {
   StixCoreObjectOpinionsRadarDistributionQuery$variables,
 } from './__generated__/StixCoreObjectOpinionsRadarDistributionQuery.graphql';
 import { StixCoreObjectOpinionsListQuery, StixCoreObjectOpinionsListQuery$variables } from './__generated__/StixCoreObjectOpinionsListQuery.graphql';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { StixCoreObjectOpinionsOpenVocabQuery } from './__generated__/StixCoreObjectOpinionsOpenVocabQuery.graphql';
@@ -131,11 +130,7 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
       <div style={{ height, cursor: 'pointer' }}>
         {distributionQueryRef && (
           <React.Suspense
-            fallback={
-              <div style={{ height }}>
-                <Loader variant={LoaderVariant.inElement} />
-              </div>
-            }
+            fallback={<span />}
           >
             <StixCoreObjectOpinionsRadar
               queryRef={distributionQueryRef}
@@ -159,7 +154,7 @@ const StixCoreObjectOpinions: FunctionComponent<Omit<StixCoreObjectOpinionsProps
   });
   return <div style={{ minHeight: '240px' }}>
     {queryRef && (
-      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+      <React.Suspense fallback={<span/>}>
         <StixCoreObjectOpinionsComponent {...props} queryVocabulariesRef={queryRef}/>
       </React.Suspense>)
     }

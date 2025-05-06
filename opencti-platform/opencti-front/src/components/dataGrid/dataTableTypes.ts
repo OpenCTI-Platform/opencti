@@ -158,7 +158,6 @@ export interface DataTableBodyProps {
   pageSize: number
   pageStart: number
   hideHeaders: DataTableProps['hideHeaders']
-  tableRef: MutableRefObject<HTMLDivElement | null>
 }
 
 export interface DataTableDisplayFiltersProps {

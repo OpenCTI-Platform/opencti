@@ -32,7 +32,7 @@ const useStyles = makeStyles<Theme>(() => ({
 const statusTemplateMutation = graphql`
   mutation StatusTemplateCreationMutation($input: StatusTemplateAddInput!) {
     statusTemplateAdd(input: $input) {
-      ...StatusTemplateLine_node
+      ...StatusTemplatesLine_node
     }
   }
 `;

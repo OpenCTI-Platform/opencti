@@ -210,6 +210,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       </Tooltip>
     ),
   },
+  usages: {
+    id: 'usages',
+    label: 'Usages',
+    percentWidth: 20,
+    isSortable: false,
+    render: ({ usages }) => {
+      const value = usages != null ? usages : '-';
+      return defaultRender(value);
+    },
+  },
   confidence: {
     id: 'confidence',
     label: 'Confidence',
