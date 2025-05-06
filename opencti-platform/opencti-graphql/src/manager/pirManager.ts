@@ -9,10 +9,11 @@ import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
 import { findById } from '../domain/stixCoreObject';
-import { listAllEntities, listRelationsPaginated } from '../database/middleware-loader';
+import { listRelationsPaginated } from '../database/middleware-loader';
 import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR, type PirDependency } from '../modules/pir/pir-types';
 import { EditOperation } from '../generated/graphql';
 import { flagSource, updatePirDependencies } from '../modules/pir/pir-utils';
+import { getEntitiesListFromCache } from '../database/cache';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -105,7 +106,7 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: P
  */
 const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   const context = executionContext(PIR_MANAGER_CONTEXT);
-  const allPIR = await listAllEntities<BasicStoreEntityPIR>(context, SYSTEM_USER, [ENTITY_TYPE_PIR]);
+  const allPIR = await getEntitiesListFromCache<BasicStoreEntityPIR>(context, SYSTEM_USER, ENTITY_TYPE_PIR);
 
   // Keep only events for relationships.
   const eventsContent = streamEvents

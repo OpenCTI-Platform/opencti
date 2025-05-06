@@ -297,6 +297,12 @@ const platformDraftWorkspaces = (context: AuthContext) => {
   };
   return { values: null, fn: reloadDraftWorkspaces };
 };
+const platformPirs = (context: AuthContext) => {
+  const reloadPirs = () => {
+    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_PIR], { connectionFormat: false });
+  };
+  return { values: null, fn: reloadPirs() };
+};
 
 const platformPirEntities = (context: AuthContext) => {
   const reloadPirEntities = async () => {
@@ -341,6 +347,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD, platformPublicDashboards(context));
     writeCacheForEntity(ENTITY_TYPE_DRAFT_WORKSPACE, platformDraftWorkspaces(context));
     writeCacheForEntity(ENTITY_TYPE_PIR_ENTITIES, platformPirEntities(context));
+    writeCacheForEntity(ENTITY_TYPE_PIR, platformPirs(context));
   };
   return {
     init: () => initCacheContent(), // Use for testing
