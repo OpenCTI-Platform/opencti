@@ -116,10 +116,15 @@ export const executeTaskQuery = async (context, user, filters, search, scope, or
 };
 
 export const createPirTask = async (context, user, input) => {
-  const { pir_dependencies_map, pir_id } = input;
+  const { pir_dependencies_map, pir_id, pir_criteria } = input;
   const expectedNumber = Array.from(pir_dependencies_map.keys()).length;
   const task = createDefaultTask(user, input, TASK_TYPE_PIR, expectedNumber);
-  const pirTask = { ...task, pir_dependencies_map: JSON.stringify(Array.from(pir_dependencies_map.entries())), pir_id };
+  const pirTask = {
+    ...task,
+    pir_dependencies_map: JSON.stringify(Array.from(pir_dependencies_map.entries())),
+    pir_id,
+    pir_criteria
+  };
   await elIndex(INDEX_INTERNAL_OBJECTS, pirTask);
   return pirTask;
 };

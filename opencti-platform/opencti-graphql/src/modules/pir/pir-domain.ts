@@ -32,7 +32,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
       id: uuidv4(),
     }))
   };
-  const created = await createEntity(
+  const created: BasicStoreEntityPIR = await createEntity(
     context,
     user,
     finalInput,
@@ -83,7 +83,11 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
     }
   }
   // -- create the meta refs between sources and the PIR via a background task --
-  await createPirTask(context, SYSTEM_USER, { pir_dependencies_map: dependencies, pir_id: pirId });
+  await createPirTask(context, SYSTEM_USER, {
+    pir_dependencies_map: dependencies,
+    pir_id: pirId,
+    pir_criteria: created.pirCriteria
+  });
   // -- notify the PIR creation --
   return notify(BUS_TOPICS[ENTITY_TYPE_PIR].ADDED_TOPIC, created, user);
 };

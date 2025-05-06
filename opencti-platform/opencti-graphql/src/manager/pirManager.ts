@@ -36,7 +36,7 @@ const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
 const onRelationCreated = async (
   context: AuthContext,
   relationship: any,
-  pir: ParsedPIR,
+  pir: BasicStoreEntityPIR,
   matchingCriteria: ParsedPIR['pirCriteria']
 ) => {
   const sourceId: string = relationship.extensions?.[STIX_EXT_OCTI]?.source_ref;
@@ -58,11 +58,11 @@ const onRelationCreated = async (
 
   if (sourceFlagged) {
     console.log('[POC PIR] Source already flagged');
-    await updatePirDependencies(context, sourceId, pir.id, pirDependencies, EditOperation.Add);
+    await updatePirDependencies(context, sourceId, pir, pirDependencies, EditOperation.Add);
     console.log('[POC PIR] Meta Ref relation updated');
   } else {
     console.log('[POC PIR] Source NOT flagged');
-    await flagSource(context, sourceId, pir.id, pirDependencies);
+    await flagSource(context, sourceId, pir, pirDependencies);
     console.log('[POC PIR] Meta Ref relation created');
   }
 };
@@ -74,7 +74,7 @@ const onRelationCreated = async (
  * @param relationship The caught relationship matching the PIR.
  * @param pir The PIR matched by the relationship.
  */
-const onRelationDeleted = async (context: AuthContext, relationship: any, pir: ParsedPIR) => {
+const onRelationDeleted = async (context: AuthContext, relationship: any, pir: BasicStoreEntityPIR) => {
   console.log('[POC PIR] Event delete matching', { relationship, pir });
   // fetch rel between object and pir
   const sourceId: string = relationship.extensions?.[STIX_EXT_OCTI]?.source_ref;
@@ -93,7 +93,7 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: P
       console.log('[POC PIR] PIR rel deleted');
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
-      await updatePirDependencies(context, sourceId, pir.id, newRelDependencies);
+      await updatePirDependencies(context, sourceId, pir, newRelDependencies);
       console.log('[POC PIR] PIR rel updated', { newRelDependencies });
     } // nothing to do
   }
@@ -144,10 +144,10 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
           if (matchingCriteria.length > 0) {
             switch (event.type) {
               case 'create':
-                await onRelationCreated(context, data, parsedPir, matchingCriteria);
+                await onRelationCreated(context, data, pir, matchingCriteria);
                 break;
               case 'delete':
-                await onRelationDeleted(context, data, parsedPir);
+                await onRelationDeleted(context, data, pir);
                 break;
               default: // Nothing to do.
             }

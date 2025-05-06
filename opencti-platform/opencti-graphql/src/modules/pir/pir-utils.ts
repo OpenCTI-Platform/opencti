@@ -21,25 +21,31 @@ export const computePirScore = (pir: BasicStoreEntityPIR, dependencies: PirDepen
  *
  * @param context To be able to make the calls.
  * @param sourceId ID of the source entity matching the PIR.
- * @param pirId ID of the PIR matched by the entity.
+ * @param pir The PIR matched by the entity.
  * @param pirDependencies The new dependencies.
  * @param operation The edit operation (add, replace, ...).
  */
 export const updatePirDependencies = async (
   context: AuthContext,
   sourceId: string,
-  pirId: string,
+  pir: BasicStoreEntityPIR,
   pirDependencies: PirDependency[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
-  const pirMetaRels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
+  const pirMetaRels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id, });
   if (pirMetaRels.edges.length !== 1) {
     // If < 1 then the meta relationship does not exist.
     // If > 1, well this case should not be possible at all.
-    throw FunctionalError('Find more than one relation between an entity and a PIR', { sourceId, pirId, pirMetaRels });
+    throw FunctionalError('Find more than one relation between an entity and a PIR', { sourceId, pir, pirMetaRels });
   }
   const pirMetaRel = pirMetaRels.edges[0].node;
-  const editInput = [{ key: 'pir_dependencies', value: pirDependencies, operation }];
+  // region compute score
+  const deps = operation === 'add' ? [...pirMetaRel.pir_dependencies, ...pirDependencies] : pirDependencies;
+  const score = computePirScore(pir, deps);
+  const editInput = [
+    { key: 'pir_dependencies', value: pirDependencies, operation },
+    { key: 'pir_score', value: [score] },
+  ];
   const updatedRef = await stixRefRelationshipEditField(context, SYSTEM_USER, pirMetaRel.id, editInput);
   console.log('REF', updatedRef);
 };
@@ -50,18 +56,18 @@ export const updatePirDependencies = async (
  *
  * @param context To be able to create the relationship.
  * @param sourceId ID of the source of the rel.
- * @param pirId ID of the PIR.
+ * @param pir The PIR.
  * @param pirDependencies Criteria matched by the relationship.
  */
 export const flagSource = async (
   context: AuthContext,
   sourceId: string,
-  pirId: string,
+  pir: BasicStoreEntityPIR,
   pirDependencies: PirDependency[],
 ) => {
   const addRefInput = {
     relationship_type: RELATION_IN_PIR,
-    toId: pirId,
+    toId: pir.id,
     pir_dependencies: pirDependencies,
   };
   // First create the meta relationship.
@@ -74,5 +80,5 @@ export const flagSource = async (
   );
   // And then add the dependencies in the meta relationship.
   // TODO PIR: improve this if possible to avoid making 2 calls.
-  await updatePirDependencies(context, sourceId, pirId, pirDependencies);
+  await updatePirDependencies(context, sourceId, pir, pirDependencies);
 };
