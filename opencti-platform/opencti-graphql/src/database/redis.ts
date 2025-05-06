@@ -130,10 +130,10 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
     client = new Redis({ ...singleOptions, db: conf.get('redis:database') ?? 0, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
 
-  client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
-  client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
+  client.on('close', () => logApp.debug(`[REDIS] Redis '${provider}' client closed`));
+  client.on('ready', () => logApp.debug(`[REDIS] Redis '${provider}' client ready`));
   client.on('error', (err) => logApp.error('Redis client connection fail', { cause: err, provider }));
-  client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
+  client.on('reconnecting', () => logApp.debug(`[REDIS] '${provider}' Redis client reconnecting`));
   return client;
 };
 

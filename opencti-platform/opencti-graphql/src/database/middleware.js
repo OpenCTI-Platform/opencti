@@ -3403,10 +3403,10 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         message: opts.commitMessage,
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
+      await elDeleteElements(context, user, [element]);
       const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
-      const deletePromise = elDeleteElements(context, user, [element]);
-      const [, , updateEvent] = await Promise.all([taskPromise, deletePromise, eventPromise]);
+      const [, updateEvent] = await Promise.all([taskPromise, eventPromise]);
       event = updateEvent;
       element.from = instance; // dynamically update the from to have an up to date relation
     } else {
