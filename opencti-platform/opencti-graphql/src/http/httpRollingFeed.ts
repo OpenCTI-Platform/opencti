@@ -2,16 +2,17 @@
 import * as R from 'ramda';
 import type Express from 'express';
 import nconf from 'nconf';
-import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
+import { TAXIIAPI } from '../domain/user';
 import { basePath } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
-import { executionContext, isUserHasCapability, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SYSTEM_USER } from '../utils/access';
 import { findById as findFeed } from '../domain/feed';
 import { listAllThings } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
 import { isNotEmptyField } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { isMultipleAttribute, isObjectAttribute } from '../schema/schema-attributes';
+import { createAuthenticatedContext } from './httpAuthenticatedContext';
 
 const SIZE_LIMIT = nconf.get('data_sharing:max_csv_feed_result') || 5000;
 
@@ -39,26 +40,28 @@ const initHttpRollingFeeds = (app: Express.Application) => {
     const { id } = req.params;
     res.set({ 'content-type': 'text/plain; charset=utf-8' });
     try {
-      const context = executionContext('rolling_feeds');
-      const authUser = await authenticateUserFromRequest(context, req);
+      const context = await createAuthenticatedContext(req, res, 'rolling_feeds');
       const feed = await findFeed(context, SYSTEM_USER, id);
       // The feed doesn't exist at all
       if (!feed) {
         throw ForbiddenAccess();
       }
       // If feed is not public, user must be authenticated
-      if (!feed.feed_public && !authUser) {
+      if (!feed.feed_public && !context.user) {
         throw ForbiddenAccess();
       }
       // If feed is not public, we need to ensure the user access
       if (!feed.feed_public) {
-        const userFeed = await findFeed(context, authUser, id);
-        if (!isUserHasCapability(authUser, TAXIIAPI) || !userFeed) {
+        if (!context.user) {
+          throw ForbiddenAccess();
+        }
+        const userFeed = await findFeed(context, context.user, id);
+        if (!isUserHasCapability(context.user, TAXIIAPI) || !userFeed) {
           throw ForbiddenAccess();
         }
       }
       // User is available or feed is public
-      const user = authUser ?? SYSTEM_USER;
+      const user = context.user ?? SYSTEM_USER;
       const filters = feed.filters ? JSON.parse(feed.filters) : undefined;
       const fromDate = minutesAgo(feed.rolling_time);
       const field = feed.feed_date_attribute ?? 'created_at';
