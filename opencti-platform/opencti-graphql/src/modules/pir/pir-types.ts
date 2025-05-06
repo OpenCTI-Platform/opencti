@@ -45,5 +45,5 @@ export interface ParsedPIR {
 
 export interface PirDependency {
   relationship_id: string,
-  weight: number,
+  criterion: PIRCriterion,
 }

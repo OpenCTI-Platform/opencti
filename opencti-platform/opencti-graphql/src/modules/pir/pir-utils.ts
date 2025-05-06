@@ -10,7 +10,7 @@ import { stixObjectOrRelationshipAddRefRelation } from '../../domain/stixObjectO
 
 export const computePirScore = (pir: BasicStoreEntityPIR, dependencies: PirDependency[]) => {
   const maxScore = pir.pirCriteria.reduce((acc, val) => acc + val.weight, 0);
-  const depScore = dependencies.reduce((acc, val) => acc + val.weight, 0);
+  const depScore = dependencies.reduce((acc, val) => acc + val.criterion.weight, 0);
   if (maxScore <= 0) return 0;
   return Math.round((depScore / maxScore) * 100);
 };

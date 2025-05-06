@@ -7821,11 +7821,6 @@ type StixRefRelationshipEdge {
   node: StixRefRelationship!
 }
 
-type PirExplanation {
-  relationship_id: ID!
-  weight: Int!
-}
-
 type StixRefRelationship implements BasicRelationship & StixRelationship {
   id: ID!
   standard_id: String!
@@ -7860,7 +7855,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
-  pir_dependencies: [PirExplanation!]
+  pir_dependencies: [PirDependency!]
   pirScore: Int
   creators: [Creator!]
   editContext: [EditUserContext!]
@@ -7870,11 +7865,6 @@ type DefinitionRefRelationship {
   entity: StixObjectOrStixRelationshipOrCreator!
   from: [String!]
   to: [String!]
-}
-
-input PirExplanationInput {
-  relationship_id: ID!
-  weight: Int!
 }
 
 input StixRefRelationshipAddInput {
@@ -7894,7 +7884,7 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
-  pir_dependencies: [PirExplanationInput!]
+  pir_dependencies: [PirDependencyInput!]
 }
 
 input StixRefRelationshipsAddInput {
@@ -12813,6 +12803,11 @@ type PIRCriterion {
   weight: Int!
 }
 
+type PirDependency {
+  relationship_id: ID!
+  criterion: PIRCriterion!
+}
+
 type PIR implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
@@ -12846,6 +12841,11 @@ type PIREdge {
 input PIRCriterionInput {
   weight: Int!
   filters: String!
+}
+
+input PirDependencyInput {
+  relationship_id: ID!
+  criterion: PIRCriterionInput!
 }
 
 input PIRAddInput {

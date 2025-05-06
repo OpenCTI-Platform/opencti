@@ -4,6 +4,12 @@ type PIRCriterion {
     weight: Int!
 }
 
+# Used in StixRefRelationship
+type PirDependency {
+    relationship_id: ID!
+    criterion: PIRCriterion!
+}
+
 type PIR implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
@@ -49,9 +55,16 @@ type Query {
     ): PIRConnection @auth(for: [KNOWLEDGE])
 }
 
+# Mutations inputs
 input PIRCriterionInput {
     weight: Int!
     filters: String!
+}
+
+# Used in StixRefRelationshipAddInput
+input PirDependencyInput {
+    relationship_id: ID!
+    criterion: PIRCriterionInput!
 }
 
 input PIRAddInput {
