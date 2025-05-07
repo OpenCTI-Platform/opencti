@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import { useParams } from 'react-router-dom';
+import { FintelDesignQuery } from '@components/settings/fintel_design/__generated__/FintelDesignQuery.graphql';
 import FintelDesignPopover from '@components/settings/fintel_design/FintelDesignPopover';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -45,6 +47,9 @@ const fintelDesignFieldPatchMutation = graphql`
     }
   }
 `;
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useFormatter } from '../../../../components/i18n';
 
 const fintelDesignComponentFragment = graphql`
   fragment FintelDesign_fintelDesign on FintelDesign {
