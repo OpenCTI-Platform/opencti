@@ -36,6 +36,7 @@ import {
   INPUT_VALUES,
   objects,
   RELATION_GRANTED_TO,
+  RELATION_IN_PIR,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
@@ -1209,11 +1210,13 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
         source_type: instance.from.entity_type,
         source_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
         source_ref_granted_refs: instance.from[RELATION_GRANTED_TO] ?? [],
+        source_pir_ids: instance.from[RELATION_IN_PIR] ?? [],
         target_value: extractEntityRepresentativeName(instance.to),
         target_ref: instance.to.internal_id,
         target_type: instance.to.entity_type,
         target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
         target_ref_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
+        target_pir_ids: instance.to[RELATION_IN_PIR] ?? [],
         kill_chain_phases: buildKillChainPhases(instance)
       })
     }
