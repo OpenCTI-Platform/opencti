@@ -19,7 +19,7 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import ItemIcon from '../../../../components/ItemIcon';
 import PageContainer from '../../../../components/PageContainer';
 
-export const fintelDesignsQuery = graphql`
+const fintelDesignsQuery = graphql`
   query FintelDesignsLinesPaginationQuery(
     $search: String
     $count: Int!
