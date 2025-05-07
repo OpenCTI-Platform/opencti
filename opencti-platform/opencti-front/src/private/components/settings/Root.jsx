@@ -50,6 +50,7 @@ const SupportPackage = lazy(() => import('./support/SupportPackages'));
 const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
 const DisseminationLists = lazy(() => import('./dissemination_lists/DisseminationLists'));
 const FintelDesigns = lazy(() => import('./fintel_design/FintelDesigns'));
+const FintelDesign = lazy(() => import('./fintel_design/FintelDesign'));
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
@@ -352,10 +353,18 @@ const Root = () => {
             }
           />
           <Route
-            path="customization/fintel_designs"
+            path="customization/fintel_design"
             element={
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                 <FintelDesigns />
+              </Security>
+            }
+          />
+          <Route
+            path="customization/fintel_design/:fintel_designId/*"
+            element={
+              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+                <FintelDesign />
               </Security>
             }
           />
