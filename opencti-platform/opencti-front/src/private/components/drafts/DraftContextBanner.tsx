@@ -118,7 +118,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             onCompleted: () => {
               setApproving(false);
               MESSAGING$.notifySuccess('Draft validation in progress');
-              navigate('/');
+              navigate(isNewImportScreensEnabled ? '/dashboard/data/import/draft' : '/');
             },
           });
         },
