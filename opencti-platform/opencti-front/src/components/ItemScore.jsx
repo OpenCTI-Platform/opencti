@@ -7,7 +7,6 @@ import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import inject18n from './i18n';
 import { isEmptyField } from '../utils/utils';
-import { fieldSpacingContainerStyle } from '../utils/field';
 
 const styles = () => ({
   chip: {
@@ -63,7 +62,7 @@ const ItemScore = (props) => {
       <Typography
         variant="h3"
         gutterBottom={true}
-        style={fieldSpacingContainerStyle}
+        style={{ marginTop: 8, width: '100%' }}
       >
         {'-'}
       </Typography>
