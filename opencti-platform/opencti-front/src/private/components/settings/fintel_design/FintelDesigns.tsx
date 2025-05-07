@@ -1,7 +1,6 @@
 import { graphql } from 'react-relay';
 import React from 'react';
 import CustomizationMenu from '@components/settings/CustomizationMenu';
-import { FintelDesignsLine_node$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLine_node.graphql';
 import {
   FintelDesignsLinesPaginationQuery,
   FintelDesignsLinesPaginationQuery$variables,
@@ -130,7 +129,7 @@ const FintelDesigns = () => {
       label: t_i18n('Name'),
       percentWidth: 40,
       isSortable: true,
-      percentWidth: 20,
+      percentWidth: 50,
     },
     description: {
       id: 'description',
