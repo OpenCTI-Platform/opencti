@@ -133,10 +133,10 @@ export const csvMapperAddInputFromImport = async (context: AuthContext, user: Au
 
   // check platform version compatibility
   if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_COMPATIBLE_VERSION)) {
-    throw FunctionalError(
-      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
-      { reason: parsedData.openCTI_version },
-    );
+    // throw FunctionalError(
+    //   `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
+    //   { reason: parsedData.openCTI_version },
+    // );
   }
 
   // convert default values ids in representations

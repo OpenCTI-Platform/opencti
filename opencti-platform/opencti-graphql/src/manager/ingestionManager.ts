@@ -3,8 +3,8 @@ import { parseStringPromise as xmlParse } from 'xml2js';
 import TurndownService from 'turndown';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
-import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
 import { AxiosError } from 'axios';
 import { lockResources } from '../lock/master-lock';
@@ -22,14 +22,16 @@ import { findAllRssIngestions, patchRssIngestion } from '../modules/ingestion/in
 import type { AuthContext } from '../types/user';
 import type {
   BasicStoreEntityIngestionCsv,
+  BasicStoreEntityIngestionJson,
   BasicStoreEntityIngestionRss,
   BasicStoreEntityIngestionTaxii,
-  BasicStoreEntityIngestionTaxiiCollection
+  BasicStoreEntityIngestionTaxiiCollection,
+  DataParam,
 } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestions, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { ConnectorType, IngestionAuthType, TaxiiVersion } from '../generated/graphql';
 import { fetchCsvFromUrl, findAllCsvIngestions, patchCsvIngestion } from '../modules/ingestion/ingestion-csv-domain';
-import { findById } from '../modules/internal/csvMapper/csvMapper-domain';
+import { findById as findCsvMapperById } from '../modules/internal/csvMapper/csvMapper-domain';
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
 import { createWork, reportExpectation, updateExpectationsNumber } from '../domain/work';
 import { parseCsvMapper } from '../modules/internal/csvMapper/csvMapper-utils';
@@ -42,6 +44,7 @@ import { connectorIdFromIngestId, queueDetails } from '../domain/connector';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
+import { executeJsonQuery, findAllJsonIngestions, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -99,7 +102,7 @@ const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string 
 };
 
 const createWorkForIngestion = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection) => {
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson) => {
   const connector = { internal_id: connectorIdFromIngestId(ingestion.id), connector_type: ConnectorType.ExternalImport };
   const workName = `run @ ${now()}`;
   const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
@@ -107,7 +110,7 @@ const createWorkForIngestion = async (context: AuthContext, ingestion: BasicStor
 };
 
 export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection, bundle: StixBundle) => {
+| BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson, bundle: StixBundle) => {
   // Push the bundle to absorption queue
   const connectorId = connectorIdFromIngestId(ingestion.id);
   const work: any = await createWorkForIngestion(context, ingestion);
@@ -538,7 +541,7 @@ export const processCsvLines = async (
 
 const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityIngestionCsv) => {
   const user = context.user ?? SYSTEM_USER;
-  const csvMapper = await findById(context, user, ingestion.csv_mapper_id);
+  const csvMapper = await findCsvMapperById(context, user, ingestion.csv_mapper_id);
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
   try {
@@ -589,6 +592,51 @@ const csvExecutor = async (context: AuthContext) => {
 };
 // endregion
 
+// region json ingestion
+const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, previousState: Record<string, any>, newState: Record<string, any>) => {
+  const state: Record<string, any> = {};
+  const queryParams = queryParamsAttributes ?? [];
+  for (let attrIndex = 0; attrIndex < queryParams.length; attrIndex += 1) {
+    const queryParamsAttribute = queryParams[attrIndex];
+    if (queryParamsAttribute.state_operation === 'sum') {
+      state[queryParamsAttribute.to] = parseInt(previousState[queryParamsAttribute.to] ?? 0, 10) + parseInt(newState[queryParamsAttribute.to] ?? 0, 10);
+    } else {
+      state[queryParamsAttribute.to] = newState[queryParamsAttribute.to];
+    }
+  }
+  return state;
+};
+
+export const jsonExecutor = async (context: AuthContext) => {
+  const filters = {
+    mode: 'and',
+    filters: [{ key: 'ingestion_running', values: [true] }],
+    filterGroups: [],
+  };
+  const opts = { filters, connectionFormat: false, noFiltersChecking: true };
+  const ingestions = await findAllJsonIngestions(context, SYSTEM_USER, opts);
+  for (let i = 0; i < ingestions.length; i += 1) {
+    const ingestion = ingestions[i];
+    const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
+    if (messages_number === 0) { // If no more ingestion to do
+      const { bundle, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
+      // endregion
+      logApp.info('pushBundleToConnectorQueue', bundle.objects.length);
+      // Push the bundle to absorption queue
+      await pushBundleToConnectorQueue(context, ingestion, bundle);
+      // Save new state for next execution
+      const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
+      const state = { ingestion_json_state: ingestionState, last_execution_date: now() };
+      await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
+    } else {
+      // Update the state
+      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
+    }
+  }
+};
+// endregion
+
 const ingestionHandler = async () => {
   logApp.debug('[OPENCTI-MODULE] INGESTION - Running ingestion handlers');
   let lock;
@@ -603,6 +651,7 @@ const ingestionHandler = async () => {
     ingestionPromises.push(rssExecutor(context, turndownService));
     ingestionPromises.push(taxiiExecutor(context));
     ingestionPromises.push(csvExecutor(context));
+    ingestionPromises.push(jsonExecutor(context));
     await Promise.all(ingestionPromises);
   } catch (e: any) {
     // We dont care about failing to get the lock.

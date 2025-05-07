@@ -133,7 +133,7 @@ export const CAPABILITIES = [
   },
   {
     name: 'CSVMAPPERS',
-    description: 'Manage CSV mappers',
+    description: 'Manage data mappers',
     attribute_order: 2700
   }
 ];

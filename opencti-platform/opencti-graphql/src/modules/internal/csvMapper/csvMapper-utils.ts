@@ -14,6 +14,7 @@ import { extractRepresentative } from '../../../database/entity-representative';
 import type { MandatoryType, ObjectAttribute } from '../../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { idsValuesRemap } from '../../../database/stix-2-1-converter';
+import type { BasedRepresentationAttribute, JsonMapperParsed, JsonMapperRepresentation } from '../jsonMapper/jsonMapper-types';
 
 export interface CsvMapperSchemaAttribute {
   name: string
@@ -38,7 +39,7 @@ const isCsvMapperRepresentation = (object: any): object is CsvMapperRepresentati
   return object.id && (object.type === CsvMapperRepresentationType.Entity || object.type === CsvMapperRepresentationType.Relationship);
 };
 
-const representationLabel = (idx: number, representation: CsvMapperRepresentation) => {
+const representationLabel = (idx: number, representation: CsvMapperRepresentation | JsonMapperRepresentation) => {
   const number = `#${idx + 1}`;
   if (isEmptyField(representation.target.entity_type)) {
     return `${number} New ${representation.type} representation`;
@@ -111,7 +112,7 @@ export const parseCsvMapperWithDefaultValues = async (context: AuthContext, user
   };
 };
 
-export const isValidRepresentationType = (representation: CsvMapperRepresentation) => {
+export const isValidRepresentationType = (representation: CsvMapperRepresentation | JsonMapperRepresentation) => {
   if (representation.type === CsvMapperRepresentationType.Relationship) {
     if (!isStixRelationshipExceptRef(representation.target.entity_type)) {
       throw FunctionalError('Unknown relationship', { type: representation.target.entity_type });
@@ -238,7 +239,7 @@ export const getHashesNames = (entityType: string) => {
 // csv mapper representatives converter for default values ids
 // Export => ids must be converted to standard id
 // Import => ids must be converted back to internal id
-export const convertRepresentationsIds = async (context: AuthContext, user: AuthUser, representations: CsvMapperRepresentation[], from: 'internal' | 'stix') => {
+export const convertRepresentationsIds = async (context: AuthContext, user: AuthUser, representations: CsvMapperRepresentation[] | JsonMapperRepresentation[], from: 'internal' | 'stix') => {
   // First iteration to resolve all ids to translate
   const resolvingIds: string[] = [];
   representations.forEach((representation) => {
@@ -261,4 +262,83 @@ export const convertRepresentationsIds = async (context: AuthContext, user: Auth
       }
     });
   });
+};
+
+export const validateJsonMapper = async (context: AuthContext, user: AuthUser, mapper: JsonMapperParsed) => {
+  if (!Array.isArray(mapper.representations) || mapper.representations.some((rep) => !isCsvMapperRepresentation(rep))) {
+    throw FunctionalError('CSV mapper representations is not an array of CsvMapperRepresentation objects', { mapper_name: mapper.name });
+  }
+
+  // consider empty csv mapper as invalid to avoid being used in the importer
+  if (mapper.representations.length === 0) {
+    throw FunctionalError('CSV Mapper has no representation', { mapper_name: mapper.name });
+  }
+
+  await Promise.all(Array.from(mapper.representations.entries()).map(async ([idx, representation]) => {
+    // Validate target type
+    isValidRepresentationType(representation);
+
+    // Validate required attributes
+    const entitySetting = await getEntitySettingFromCache(context, representation.target.entity_type);
+    const defaultValues = fillDefaultValues(user, {}, entitySetting);
+    const attributesDefs = [
+      ...schemaAttributesDefinition.getAttributes(representation.target.entity_type).values(),
+    ].map((def) => ({
+      name: def.name,
+      mandatory: def.mandatoryType === 'external',
+      multiple: def.multiple
+    }));
+    const refsDefs = [
+      ...schemaRelationsRefDefinition.getRelationsRef(representation.target.entity_type),
+    ].map((def) => ({
+      name: def.name,
+      mandatory: def.mandatoryType === 'external',
+      multiple: def.multiple
+    }));
+    [...attributesDefs, ...refsDefs].filter((schemaAttribute) => schemaAttribute.mandatory)
+      .forEach((schemaAttribute) => {
+        const attribute = representation.attributes.find((a) => schemaAttribute.name === a.key);
+        let isColumnEmpty = false;
+        if (attribute?.mode === 'simple') {
+          isColumnEmpty = isEmptyField(attribute?.attr_path);
+        }
+        if (attribute?.mode === 'complex') {
+          isColumnEmpty = isEmptyField(attribute?.complex_path);
+        }
+        const isDefaultValueEmpty = isEmptyField(defaultValues[schemaAttribute.name]);
+        const isAttributeDefaultValueEmpty = isEmptyField(attribute?.default_values);
+        if (isColumnEmpty && isDefaultValueEmpty && isAttributeDefaultValueEmpty) {
+          throw FunctionalError('Missing values for required attribute', {
+            representation: representationLabel(idx, representation),
+            attribute: schemaAttribute.name
+          });
+        }
+      });
+
+    // Validate representation attribute configuration
+    representation.attributes.forEach((attribute) => {
+      // Validate based on configuration
+      if (attribute.mode === 'base') {
+        const schemaAttribute = [...attributesDefs, ...refsDefs].find((attr) => attr.name === attribute.key);
+        // Multiple
+        if (!schemaAttribute?.multiple && (attribute.based_on?.representations?.length ?? 0) > 1) {
+          throw FunctionalError('Attribute can\'t be multiple', { representation: representationLabel(idx, representation), attribute: attribute.key });
+        }
+        // Auto reference
+        if (attribute.based_on?.representations?.includes(representation.id)) {
+          throw FunctionalError('Can\'t reference the representation itself', { representation: representationLabel(idx, representation), attribute: attribute.key });
+        }
+        // Possible cycle
+        const representationRefs = mapper.representations.filter((r) => attribute.mode === 'base' && attribute.based_on?.representations?.includes(r.id));
+        const attributeRepresentationRefs = representationRefs.map((rr) => rr.attributes
+          .filter((rra) => rra.mode === 'base' && isNotEmptyField(rra.based_on?.representations))
+          .map((rra) => (rra as BasedRepresentationAttribute).based_on?.representations as string[] ?? [])
+          .flat())
+          .flat();
+        if (attributeRepresentationRefs.includes(representation.id)) {
+          throw FunctionalError('Reference cycle found', { representation: representationLabel(idx, representation) });
+        }
+      }
+    });
+  }));
 };

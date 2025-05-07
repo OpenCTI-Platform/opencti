@@ -16,7 +16,7 @@ const SUPPORTED_CHECKED_PATTERN_TYPES = ['stix', 'yara', 'sigma', 'snort', 'suri
 // Importing python runtime scripts
 const py = nodecallspython.interpreter;
 // In a venv is available import the site-packages
-if (DEV_MODE && isNotEmptyField(PYTHON_VENV)) {
+if (isNotEmptyField(PYTHON_VENV)) {
   py.addImportPath(PYTHON_VENV);
 }
 const pyCheckIndicator = py.importSync('./src/python/runtime/check_indicator.py');
@@ -117,8 +117,15 @@ const checkChildPythonAvailability = async (context, user) => {
 // endregion
 
 // region native
+const execNativePythonSync = (script, ...args) => {
+  const result = py.callSync(script.py, script.fn, ...args);
+  if (result.status === 'success') {
+    return result.data;
+  }
+  throw UnknownError('[BRIDGE] execNativePython error', result);
+};
 const execNativePython = async (context, user, script, ...args) => {
-  const execNativePythonFn = async () => {
+  const execNativePythonFn = () => {
     const result = py.callSync(script.py, script.fn, ...args);
     if (result.status === 'success') {
       return result.data;
@@ -147,6 +154,10 @@ const checkNativePythonAvailability = async (context, user) => {
 // endregion
 
 // region functions
+export const createStixPatternSync = (observableType, observableValue) => {
+  const stixPattern = execNativePythonSync(CREATE_PATTERN_SCRIPT, observableType, observableValue);
+  return cleanupIndicatorPattern(STIX_PATTERN_TYPE, stixPattern);
+};
 export const createStixPattern = async (context, user, observableType, observableValue) => {
   const stixPattern = await (USE_NATIVE_EXEC ? createNativeStixPattern(context, user, observableType, observableValue)
     : createChildStixPattern(context, user, observableType, observableValue));

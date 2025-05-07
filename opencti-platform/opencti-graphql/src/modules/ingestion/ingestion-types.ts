@@ -1,6 +1,6 @@
 import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import type { StoreEntity, BasicStoreEntity } from '../../types/store';
+import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { CsvMapper } from '../../generated/graphql';
 import { IngestionAuthType } from '../../generated/graphql';
 import type { AuthorizedMember } from '../../utils/access';
@@ -124,6 +124,52 @@ export interface StixIngestionCsv extends StixObject {
 }
 // endregion
 
+// region json ingestion
+export const ENTITY_TYPE_INGESTION_JSON = 'IngestionJson';
+
+export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
+  name: string
+  description: string
+  uri: string
+  verb: 'get' | 'post'
+  body: string
+  json_mapper_id: string
+  confidence_to_score: boolean
+  authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate
+  authentication_value: string
+  user_id: string | undefined
+  ingestion_json_state: Record<string, object>
+  ingestion_running: boolean
+  last_execution_date: Date | undefined
+  headers?: { name: string, value: string }[]
+  // pagination
+  pagination_with_sub_page: boolean
+  pagination_with_sub_page_attribute_path: string
+  pagination_with_sub_page_query_verb?: 'get' | 'post'
+  query_attributes?: Array<DataParam>
+}
+
+export interface StoreEntityIngestionJson extends StoreEntity {
+  name: string
+  description: string
+  uri: string
+  json_mapper_id: string
+  ingestion_running: boolean
+  last_execution_date: Date | undefined
+}
+
+export interface StixIngestionJson extends StixObject {
+  name: string
+  description: string
+  uri: string
+  json_mapper_id: string
+  ingestion_running: boolean
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
+  }
+}
+// endregion
+
 // region Taxii ingestion
 export const ENTITY_TYPE_INGESTION_TAXII_COLLECTION = 'IngestionTaxiiCollection';
 
@@ -151,5 +197,18 @@ export interface StixIngestionTaxiiCollection extends StixObject {
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   }
+}
+// endregion
+
+// region Taxii ingestion
+
+export interface DataParam {
+  type: 'data' | 'header'
+  from: string // path for data or header name
+  to: string // target variable
+  default: string,
+  state_operation: 'replace' | 'sum'
+  data_operation: 'count' | 'data'
+  exposed: 'body' | 'query_param' | 'header'
 }
 // endregion

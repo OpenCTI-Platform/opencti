@@ -1,0 +1,295 @@
+{
+  "id": "20250117_224050_00082_4ve7s",
+  "infoUri": "http://localhost:8080/ui/query.html?20250117_224050_00082_4ve7s",
+  "partialCancelUri": "http://localhost:8080/v1/statement/executing/partialCancel/20250117_224050_00082_4ve7s/0/y66eb7aeeab9112b46f7e23f7efef7ffb773f737f/1",
+  "nextUri": "http://localhost:8080/v1/statement/executing/20250117_224050_00082_4ve7s/y66eb7aeeab9112b46f7e23f7efef7ffb773f737f/1",
+  "columns": [
+    {
+      "name": "c_customer_sk",
+      "type": "bigint",
+      "typeSignature": {
+        "rawType": "bigint",
+        "arguments": []
+      }
+    },
+    {
+      "name": "c_customer_id",
+      "type": "char(16)",
+      "typeSignature": {
+        "rawType": "char",
+        "arguments": [
+          {
+            "kind": "LONG",
+            "value": 16
+          }
+        ]
+      }
+    },
+    {
+      "name": "c_current_cdemo_sk",
+      "type": "bigint",
+      "typeSignature": {
+        "rawType": "bigint",
+        "arguments": []
+      }
+    },
+    {
+      "name": "c_current_hdemo_sk",
+      "type": "bigint",
+      "typeSignature": {
+        "rawType": "bigint",
+        "arguments": []
+      }
+    },
+    {
+      "name": "c_current_addr_sk",
+      "type": "bigint",
+      "typeSignature": {
+        "rawType": "bigint",
+        "arguments": []
+      }
+    },
+    {
+      "name": "c_first_shipto_date_sk",
+      "type": "bigint",
+      "typeSignature": {
+        "rawType": "bigint",
+        "arguments": []
+      }
+    },
+    {
+      "name": "c_first_sales_date_sk",
+      "type": "bigint",
+      "typeSignature": {
+        "rawType": "bigint",
+        "arguments": []
+      }
+    },
+    {
+      "name": "c_salutation",
+      "type": "char(10)",
+      "typeSignature": {
+        "rawType": "char",
+        "arguments": [
+          {
+            "kind": "LONG",
+            "value": 10
+          }
+        ]
+      }
+    },
+    {
+      "name": "c_first_name",
+      "type": "char(20)",
+      "typeSignature": {
+        "rawType": "char",
+        "arguments": [
+          {
+            "kind": "LONG",
+            "value": 20
+          }
+        ]
+      }
+    },
+    {
+      "name": "c_last_name",
+      "type": "char(30)",
+      "typeSignature": {
+        "rawType": "char",
+        "arguments": [
+          {
+            "kind": "LONG",
+            "value": 30
+          }
+        ]
+      }
+    },
+    {
+      "name": "c_preferred_cust_flag",
+      "type": "char(1)",
+      "typeSignature": {
+        "rawType": "char",
+        "arguments": [
+          {
+            "kind": "LONG",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "c_birth_day",
+      "type": "integer",
+      "typeSignature": {
+        "rawType": "integer",
+        "arguments": []
+      }
+    },
+    {
+      "name": "c_birth_month",
+      "type": "integer",
+      "typeSignature": {
+        "rawType": "integer",
+        "arguments": []
+      }
+    },
+    {
+      "name": "c_birth_year",
+      "type": "integer",
+      "typeSignature": {
+        "rawType": "integer",
+        "arguments": []
+      }
+    },
+    {
+      "name": "c_birth_country",
+      "type": "varchar(20)",
+      "typeSignature": {
+        "rawType": "varchar",
+        "arguments": [
+          {
+            "kind": "LONG",
+            "value": 20
+          }
+        ]
+      }
+    },
+    {
+      "name": "c_login",
+      "type": "char(13)",
+      "typeSignature": {
+        "rawType": "char",
+        "arguments": [
+          {
+            "kind": "LONG",
+            "value": 13
+          }
+        ]
+      }
+    },
+    {
+      "name": "c_email_address",
+      "type": "char(50)",
+      "typeSignature": {
+        "rawType": "char",
+        "arguments": [
+          {
+            "kind": "LONG",
+            "value": 50
+          }
+        ]
+      }
+    },
+    {
+      "name": "c_last_review_date_sk",
+      "type": "bigint",
+      "typeSignature": {
+        "rawType": "bigint",
+        "arguments": []
+      }
+    }
+  ],
+  "data": [
+    [
+      1,
+      "AAAAAAAABAAAAAAA",
+      980124,
+      7135,
+      32946,
+      2452238,
+      2452208,
+      "Mr.       ",
+      "Javier              ",
+      "Lewis                         ",
+      "Y",
+      9,
+      12,
+      1936,
+      "CHILE",
+      null,
+      "Javier.Lewis@VFAxlnZEvOx.org                      ",
+      2452508
+    ],
+    [
+      2,
+      "AAAAAAAACAAAAAAA",
+      819667,
+      1461,
+      31655,
+      2452318,
+      2452288,
+      "Dr.       ",
+      "Amy                 ",
+      "Moses                         ",
+      "Y",
+      9,
+      4,
+      1966,
+      "TOGO",
+      null,
+      "Amy.Moses@Ovk9KjHH.com                            ",
+      2452318
+    ],
+    [
+      3,
+      "AAAAAAAADAAAAAAA",
+      1473522,
+      6247,
+      48572,
+      2449130,
+      2449100,
+      "Miss      ",
+      "Latisha             ",
+      "Hamilton                      ",
+      "N",
+      18,
+      9,
+      1979,
+      "NIUE",
+      null,
+      "Latisha.Hamilton@V.com                            ",
+      2452313
+    ]
+  ],
+  "stats": {
+    "state": "RUNNING",
+    "queued": false,
+    "scheduled": true,
+    "progressPercentage": 100.0,
+    "runningPercentage": 0.0,
+    "nodes": 1,
+    "totalSplits": 4,
+    "queuedSplits": 0,
+    "runningSplits": 0,
+    "completedSplits": 4,
+    "cpuTimeMillis": 577,
+    "wallTimeMillis": 623,
+    "queuedTimeMillis": 0,
+    "elapsedTimeMillis": 14337,
+    "processedRows": 100000,
+    "processedBytes": 0,
+    "physicalInputBytes": 0,
+    "physicalWrittenBytes": 0,
+    "peakMemoryBytes": 21545888,
+    "spilledBytes": 0,
+    "rootStage": {
+      "stageId": "0",
+      "state": "RUNNING",
+      "done": false,
+      "nodes": 1,
+      "totalSplits": 4,
+      "queuedSplits": 0,
+      "runningSplits": 0,
+      "completedSplits": 4,
+      "cpuTimeMillis": 577,
+      "wallTimeMillis": 623,
+      "processedRows": 100000,
+      "processedBytes": 0,
+      "physicalInputBytes": 0,
+      "failedTasks": 0,
+      "coordinatorOnly": false,
+      "subStages": []
+    }
+  },
+  "warnings": []
+}
