@@ -10,6 +10,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import LocationMiniMap from '../../common/location/LocationMiniMap';
 import { City_city$key } from './__generated__/City_city.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import CityDetails from './CityDetails';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -57,6 +58,7 @@ const cityFragment = graphql`
       color
     }
     name
+    description
     latitude
     longitude
     x_opencti_aliases
@@ -82,7 +84,10 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid item xs={4}>
+          <CityDetails city={city} />
+        </Grid>
+        <Grid item xs={4}>
           <LocationMiniMap
             center={
               city.latitude && city.longitude
@@ -93,7 +98,7 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
             zoom={5}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <StixDomainObjectOverview
             stixDomainObject={city}
           />

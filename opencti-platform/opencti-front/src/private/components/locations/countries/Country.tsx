@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
+import CountryDetails from '@components/locations/countries/CountryDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -70,6 +71,7 @@ export const countryFragment = graphql`
       color
     }
     name
+    description
     latitude
     longitude
     x_opencti_aliases
@@ -102,7 +104,10 @@ const CountryComponent = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid item xs={4}>
+          <CountryDetails country={country} />
+        </Grid>
+        <Grid item xs={4}>
           <LocationMiniMap
             center={
               country.latitude && country.longitude
@@ -113,7 +118,7 @@ const CountryComponent = ({
             zoom={4}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <StixDomainObjectOverview
             stixDomainObject={country}
           />

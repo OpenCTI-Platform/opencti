@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
+import AdministrativeAreaDetails from '@components/locations/administrative_areas/AdministrativeAreaDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -57,6 +58,7 @@ const administrativeAreaFragment = graphql`
       color
     }
     name
+    description
     latitude
     longitude
     x_opencti_aliases
@@ -89,7 +91,10 @@ const AdministrativeArea = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid item xs={4}>
+          <AdministrativeAreaDetails administrativeArea={administrativeArea} />
+        </Grid>
+        <Grid item xs={4}>
           <LocationMiniMap
             center={
               administrativeArea.latitude && administrativeArea.longitude
@@ -100,7 +105,7 @@ const AdministrativeArea = ({
             zoom={5}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <StixDomainObjectOverview
             stixDomainObject={administrativeArea}
           />
