@@ -323,7 +323,7 @@ FilterIconButtonContainerProps
           ? undefined
           : tooltipContent
     }
-      arrow placement="top-start"
+      arrow
     >
       <Box sx={boxStyle}>
         {displayedFilters.map((currentFilter, index) => {
