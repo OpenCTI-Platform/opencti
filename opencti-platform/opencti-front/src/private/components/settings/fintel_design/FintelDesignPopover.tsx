@@ -6,6 +6,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
+import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -29,6 +30,7 @@ const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [isEditionFormOpen, setIsEditionFormOpen] = useState<boolean>(false);
@@ -55,6 +57,7 @@ const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
+        navigate('/dashboard/settings/customization/fintel_designs');
       },
     });
   };

@@ -1,6 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import { useParams } from 'react-router-dom';
+import { FintelDesignQuery } from '@components/settings/fintel_design/__generated__/FintelDesignQuery.graphql';
 import { FintelDesign_fintelDesign$key } from './__generated__/FintelDesign_fintelDesign.graphql';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useFormatter } from '../../../../components/i18n';
 
 const fintelDesignComponentFragment = graphql`
   fragment FintelDesign_fintelDesign on FintelDesign {
@@ -14,15 +19,16 @@ const fintelDesignComponentFragment = graphql`
 `;
 
 interface FintelDesignComponentProps {
-  fintelDesignFragment: FintelDesign_fintelDesign$key;
+  fintelDesignData: FintelDesign_fintelDesign$key;
 }
 
 const FintelDesign: FunctionComponent<FintelDesignComponentProps> = ({
-  fintelDesignFragment,
+  fintelDesignData,
 }) => {
+  const { t_i18n } = useFormatter();
   const fintelDesign = useFragment<FintelDesign_fintelDesign$key>(
     fintelDesignComponentFragment,
-    fintelDesignFragment,
+    fintelDesignData,
   );
 
   console.log('fintelDesign', fintelDesign);
