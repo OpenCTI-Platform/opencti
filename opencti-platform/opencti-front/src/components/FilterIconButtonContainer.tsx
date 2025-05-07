@@ -412,15 +412,14 @@ FilterIconButtonContainerProps
             />
           </Box>
         )}
-        {filters.filterGroups
-          && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
-            <DisplayFilterGroup
-              filtersRepresentativesMap={filtersRepresentativesMap}
-              filterObj={filters}
-              filterMode={filters.mode}
-              classFilter={classFilter}
-              classChipLabel={classes.chipLabel}
-            />
+        {filters.filterGroups && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
+          <DisplayFilterGroup
+            filtersRepresentativesMap={filtersRepresentativesMap}
+            filterObj={filters}
+            filterMode={filters.mode}
+            classFilter={classFilter}
+            classChipLabel={classes.chipLabel}
+          />
         )}
       </Box>
     </Tooltip>
