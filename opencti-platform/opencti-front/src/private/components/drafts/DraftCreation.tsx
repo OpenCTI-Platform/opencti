@@ -85,7 +85,6 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            detectDuplicate={['Draft']}
             fullWidth
           />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
