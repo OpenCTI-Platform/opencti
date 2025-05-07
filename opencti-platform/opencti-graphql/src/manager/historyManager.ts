@@ -98,12 +98,12 @@ const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
       const sourceId = (eventData as StixRelation).source_ref;
       const targetId = (eventData as StixRelation).target_ref;
       const extensions = (eventData as StixRelation).extensions[STIX_EXT_OCTI];
-      if ((extensions.source_pir_ids ?? []).length > 0) {
-        console.log('[POC PIR] Event for RELATIONSHIP in PIR history', { event, pirIds: extensions.source_pir_ids, sourceId });
-        return extensions.source_pir_ids;
-      } if ((extensions.target_pir_ids ?? []).length > 0) {
-        console.log('[POC PIR] Event for RELATIONSHIP in PIR history', { event, pirIds: extensions.target_pir_ids, targetId });
-        return extensions.target_pir_ids;
+      if ((extensions.source_ref_pir_refs ?? []).length > 0) {
+        console.log('[POC PIR] Event for RELATIONSHIP in PIR history', { event, pirIds: extensions.source_ref_pir_refs, sourceId });
+        return extensions.source_ref_pir_refs;
+      } if ((extensions.target_ref_pir_refs ?? []).length > 0) {
+        console.log('[POC PIR] Event for RELATIONSHIP in PIR history', { event, pirIds: extensions.target_ref_pir_refs, targetId });
+        return extensions.target_ref_pir_refs;
       }
     }
   }
