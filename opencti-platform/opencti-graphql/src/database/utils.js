@@ -11,7 +11,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import conf from '../config/conf';
 import { now } from '../utils/format';
-import { isStixRefRelationship, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_IN_PIR, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { getDraftContext } from '../utils/draftContext';
 import { INPUT_OBJECTS } from '../schema/general';
@@ -335,16 +335,20 @@ export const extractIdsFromStoreObject = (instance) => {
 
 export const extractObjectsRestrictionsFromInputs = (inputs, entityType) => {
   const markings = [];
+  const pir_ids = [];
   if (isStixDomainObjectContainer(entityType)) {
     inputs.forEach((input) => {
       if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
         const objectMarking = input.value.flatMap((value) => value[RELATION_OBJECT_MARKING] ?? []);
+        const pirIds = input.value.flatMap((value) => value[RELATION_IN_PIR] ?? []);
         markings.push(...objectMarking);
+        pir_ids.push(...pirIds);
       }
     });
   }
   return {
-    markings
+    markings,
+    pir_ids,
   };
 };
 
