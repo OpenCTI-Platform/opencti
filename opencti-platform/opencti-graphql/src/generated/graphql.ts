@@ -20740,7 +20740,7 @@ export type QueryFiltersRepresentativesArgs = {
 
 
 export type QueryFintelDesignArgs = {
-  id: Scalars['ID']['input'];
+  id: Scalars['String']['input'];
 };
 
 
