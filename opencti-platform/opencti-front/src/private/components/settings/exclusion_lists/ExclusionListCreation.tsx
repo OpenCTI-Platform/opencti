@@ -127,8 +127,8 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
   return (
     <Formik<ExclusionListCreationFormData>
       initialValues={initialValues}
-      validateOnBlur={false}
-      validateOnChange={false}
+      validateOnBlur={true}
+      validateOnChange={true}
       validationSchema={exclusionListCreationValidator(t_i18n, isUploadFileChecked)}
       onSubmit={onSubmit}
       onReset={onReset}

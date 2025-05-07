@@ -2,8 +2,8 @@ import React from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { fieldToDateTimePicker } from 'formik-mui-lab';
 import { useField } from 'formik';
-import * as R from 'ramda';
 import { useIntl } from 'react-intl';
+import { isNil } from 'ramda';
 import { parse } from '../utils/Time';
 
 const dateTimeFormatsMap = {
@@ -26,7 +26,7 @@ const dateTimeFormatsMapWithSeconds = {
 
 const DateTimePickerField = (props) => {
   const {
-    form: { setFieldValue, setFieldTouched },
+    form: { setFieldValue, setFieldTouched, submitCount },
     field: { name, value },
     onChange,
     onFocus,
@@ -68,6 +68,9 @@ const DateTimePickerField = (props) => {
       onSubmit(name, value ? parse(value).toISOString() : null);
     }
   }, [setFieldTouched, onSubmit, name, field]);
+
+  const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
+
   if (withSeconds) {
     return (
       <DateTimePicker
@@ -77,6 +80,7 @@ const DateTimePickerField = (props) => {
         required={required}
         disableToolbar={false}
         autoOk={true}
+        error={showError}
         allowKeyboardControl={true}
         onAccept={internalOnAccept}
         onChange={internalOnChange}
@@ -89,8 +93,8 @@ const DateTimePickerField = (props) => {
             ...textFieldProps,
             onFocus: internalOnFocus,
             onBlur: internalOnBlur,
-            error: !R.isNil(meta.error),
-            helperText: (!R.isNil(meta.error) && meta.error) || textFieldProps.helperText,
+            error: showError,
+            helperText: showError ? meta.error : (textFieldProps.helperText ?? ''),
           },
         }}
       />
@@ -104,6 +108,7 @@ const DateTimePickerField = (props) => {
       required={required}
       disableToolbar={false}
       autoOk={true}
+      error={showError}
       allowKeyboardControl={true}
       onAccept={internalOnAccept}
       onChange={internalOnChange}
@@ -114,8 +119,8 @@ const DateTimePickerField = (props) => {
           ...textFieldProps,
           onFocus: internalOnFocus,
           onBlur: internalOnBlur,
-          error: !R.isNil(meta.error),
-          helperText: (!R.isNil(meta.error) && meta.error) || (textFieldProps.helperText ?? ''),
+          error: showError,
+          helperText: showError ? meta.error : (textFieldProps.helperText ?? ''),
         },
       }}
     />

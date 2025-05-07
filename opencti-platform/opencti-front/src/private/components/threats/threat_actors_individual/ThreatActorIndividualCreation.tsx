@@ -326,8 +326,8 @@ ThreatActorIndividualFormProps
     <Formik<ThreatActorIndividualAddInput>
       initialValues={initialValues}
       validationSchema={threatActorIndividualValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -349,7 +349,6 @@ ThreatActorIndividualFormProps
                   label={
                     <ErrorBadge
                       badgeContent={Object.keys(errors).length}
-                      errors={errors}
                     >
                       {t_i18n('Overview')}
                     </ErrorBadge>

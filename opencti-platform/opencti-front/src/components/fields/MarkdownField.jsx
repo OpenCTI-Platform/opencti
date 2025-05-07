@@ -3,13 +3,14 @@ import ReactMde from 'react-mde';
 import { useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
+import { isNil } from 'ramda';
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import { useFormatter } from '../i18n';
 import MarkdownDisplay from '../MarkdownDisplay';
 
 const MarkdownField = (props) => {
   const {
-    form: { setFieldValue, setFieldTouched },
+    form: { setFieldValue, setFieldTouched, submitCount },
     field: { name },
     required = false,
     onFocus,
@@ -49,17 +50,20 @@ const MarkdownField = (props) => {
       onSelect(selection.trim());
     }
   };
+
+  const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
+
   return (
     <div
       style={{ ...style, position: 'relative' }}
-      className={meta.error ? 'error' : 'main'}
+      className={showError ? 'error' : 'main'}
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
       <InputLabel
         shrink={true}
         required={required}
-        error={!!meta.error}
+        error={showError}
       >
         {label}
       </InputLabel>
@@ -95,8 +99,8 @@ const MarkdownField = (props) => {
         maxEditorHeight={height || 100}
         minPreviewHeight={140}
       />
-      {meta.error && (
-        <FormHelperText error={true}>{meta.error}</FormHelperText>
+      {showError && (
+        <FormHelperText error={true}>{showError}</FormHelperText>
       )}
       {askAi && (
         <TextFieldAskAI
