@@ -14199,6 +14199,7 @@ export type MutationAskJobImportArgs = {
   configuration?: InputMaybe<Scalars['String']['input']>;
   connectorId?: InputMaybe<Scalars['String']['input']>;
   fileName: Scalars['ID']['input'];
+  forceValidation?: InputMaybe<Scalars['Boolean']['input']>;
   validationMode?: InputMaybe<ValidationMode>;
 };
 
