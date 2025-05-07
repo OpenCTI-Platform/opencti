@@ -14,6 +14,7 @@ export interface BasicStoreEntityPIR extends BasicStoreEntity {
   name: string
   pirCriteria: PIRCriterion[]
   pirFilters: string
+  lastEventId: string
 }
 
 export interface StoreEntityPIR extends StoreEntity {
@@ -41,6 +42,7 @@ export interface ParsedPIR {
   // Filters do not count when computing score, their role
   // is to exclude some data (low confidence for example).
   pirFilters: FilterGroup
+  lastEventId: string
 }
 
 export interface PirDependency {

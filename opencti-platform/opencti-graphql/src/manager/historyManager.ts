@@ -178,7 +178,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
       }
     }
     if (stix.type === STIX_TYPE_RELATION) {
-      console.log('[POC PIR] History rel', { event, stix });
+      // console.log('[POC PIR] History rel', { event, stix });
       const rel: StixRelation = stix as StixRelation;
       contextData.from_id = rel.extensions[STIX_EXT_OCTI].source_ref;
       contextData.to_id = rel.extensions[STIX_EXT_OCTI].target_ref;
@@ -199,7 +199,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
-    contextData.pir_ids = generatePirIdsFromHistoryEvent(event);
+    // contextData.pir_ids = generatePirIdsFromHistoryEvent(event);
     return {
       _index: INDEX_HISTORY,
       internal_id: event.id,

@@ -1,4 +1,4 @@
-import { type ManagerDefinition, registerManager } from './managerModule';
+import { type ManagerDefinition, type ManagerStreamScheduler, registerManager } from './managerModule';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent } from '../types/event';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
@@ -12,7 +12,7 @@ import { findById } from '../domain/stixCoreObject';
 import { listRelationsPaginated } from '../database/middleware-loader';
 import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR, type PirDependency } from '../modules/pir/pir-types';
 import { EditOperation } from '../generated/graphql';
-import { flagSource, updatePirDependencies } from '../modules/pir/pir-utils';
+import { flagSource, parsePir, updatePirDependencies } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
@@ -116,14 +116,7 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   if (eventsContent.length > 0) {
     // Loop through all PIR one by one.
     await Promise.all(allPIR.map(async (pir) => {
-      const parsedPir: ParsedPIR = {
-        ...pir,
-        pirFilters: JSON.parse(pir.pirFilters),
-        pirCriteria: pir.pirCriteria.map((c) => ({
-          ...c,
-          filters: JSON.parse(c.filters),
-        })),
-      };
+      const parsedPir = parsePir(pir);
 
       // Check every event received to see if it matches the PIR.
       await Promise.all(eventsContent.map(async (event) => {
@@ -162,26 +155,26 @@ const pirManagerHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
 };
 
 // Configuration of the manager.
-const PIR_MANAGER_DEFINITION: ManagerDefinition = {
-  id: PIR_MANAGER_ID,
-  label: PIR_MANAGER_LABEL,
-  executionContext: PIR_MANAGER_CONTEXT,
-  enabledByConfig: PIR_MANAGER_ENABLED,
-  enabled(): boolean {
-    return this.enabledByConfig;
-  },
-  enabledToStart(): boolean {
-    return this.enabledByConfig;
-  },
-  streamSchedulerHandler: {
-    handler: pirManagerHandler,
-    streamProcessorStartFrom: () => 'live',
-    interval: PIR_MANAGER_INTERVAL,
-    lockKey: PIR_MANAGER_LOCK_KEY,
-    streamOpts: {
-      withInternal: true
-    }
-  }
-};
+// const PIR_MANAGER_DEFINITION: ManagerDefinition = {
+//   id: PIR_MANAGER_ID,
+//   label: PIR_MANAGER_LABEL,
+//   executionContext: PIR_MANAGER_CONTEXT,
+//   enabledByConfig: PIR_MANAGER_ENABLED,
+//   enabled(): boolean {
+//     return this.enabledByConfig;
+//   },
+//   enabledToStart(): boolean {
+//     return this.enabledByConfig;
+//   },
+//   streamSchedulerHandler: {
+//     handler: pirManagerHandler,
+//     streamProcessorStartFrom: () => 'live',
+//     interval: PIR_MANAGER_INTERVAL,
+//     lockKey: PIR_MANAGER_LOCK_KEY,
+//     streamOpts: {
+//       withInternal: true
+//     }
+//   }
+// };
 // Automatically register manager on start.
-registerManager(PIR_MANAGER_DEFINITION);
+// registerManager(PIR_MANAGER_DEFINITION);

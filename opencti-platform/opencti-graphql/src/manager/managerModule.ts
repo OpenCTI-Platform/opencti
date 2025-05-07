@@ -6,10 +6,13 @@ import { lockResources } from '../lock/master-lock';
 import type { BasicStoreSettings } from '../types/settings';
 import { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { utcDate } from '../utils/format';
 import { wait } from '../database/utils';
 import type { DataEvent, SseEvent } from '../types/event';
+import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { listAllEntities } from '../database/middleware-loader';
+import { createPirManager } from './pirManagerInit';
 
 export interface HandlerInput {
   shutdown?: () => Promise<void>
@@ -181,9 +184,19 @@ const managersModule = {
 export const registerManager = (manager: ManagerDefinition) => {
   const managerModule = initManager(manager);
   managersModule.add(managerModule);
+  return managerModule;
+};
+
+const registerExistingPirManagers = async () => {
+  const context = executionContext('platform_initialization');
+  const pirs = await listAllEntities<BasicStoreEntityPIR>(context, SYSTEM_USER, [ENTITY_TYPE_PIR]);
+  pirs.forEach((pir) => {
+    registerManager(createPirManager(pir));
+  });
 };
 
 export const startAllManagers = async () => {
+  await registerExistingPirManagers();
   for (let i = 0; i < managersModule.managers.length; i += 1) {
     const managerModule = managersModule.managers[i];
     if (managerModule.manager.enabledToStart()) {

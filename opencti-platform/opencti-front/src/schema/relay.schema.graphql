@@ -12814,12 +12814,12 @@ type PIR implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
-  name: String!
-  pirCriteria: [PIRCriterion!]!
-  pirFilters: String!
   created_at: DateTime!
   updated_at: DateTime!
   creators: [Creator!]
+  name: String!
+  pirCriteria: [PIRCriterion!]!
+  pirFilters: String!
 }
 
 enum PIROrdering {
