@@ -7,12 +7,12 @@ import makeStyles from '@mui/styles/makeStyles';
 import { PopoverProps } from '@mui/material/Popover';
 import { graphql } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
+import { VocabulariesLinesPaginationQuery$variables } from '@components/settings/__generated__/VocabulariesLinesPaginationQuery.graphql';
 import VocabularyEdition from './VocabularyEdition';
 import { useFormatter } from '../../../../components/i18n';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
-import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
@@ -26,8 +26,7 @@ const useStyles = makeStyles(() => ({
 
 interface VocabularyPopoverProps {
   vocab: useVocabularyCategory_Vocabularynode$data;
-  paginationOptions: LocalStorage;
-  refetch: () => void;
+  paginationOptions: VocabulariesLinesPaginationQuery$variables;
 }
 
 const VocabularyPopoverDeletionMutation = graphql`
@@ -39,7 +38,6 @@ const VocabularyPopoverDeletionMutation = graphql`
 const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
   vocab,
   paginationOptions,
-  refetch,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -57,7 +55,6 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
   };
   const handleCloseUpdate = () => {
     setDisplayUpdate(false);
-    refetch();
   };
   let deleteLabel = t_i18n('Delete');
   const deletable = !vocab.builtIn

@@ -1,43 +1,85 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import { useParams } from 'react-router-dom';
-import ListLines from '../../../components/list_lines/ListLines';
+import { graphql } from 'react-relay';
+import { ShortTextOutlined } from '@mui/icons-material';
+import VocabularyPopover from '@components/settings/attributes/VocabularyPopover';
+import { VocabulariesLinesPaginationQuery, VocabulariesLinesPaginationQuery$variables } from '@components/settings/__generated__/VocabulariesLinesPaginationQuery.graphql';
+import { useTheme } from '@mui/material';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import VocabulariesLines, { vocabulariesLinesQuery } from './attributes/VocabulariesLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { VocabulariesLines_DataQuery$variables } from './attributes/__generated__/VocabulariesLines_DataQuery.graphql';
-import { VocabulariesLinesPaginationQuery } from './attributes/__generated__/VocabulariesLinesPaginationQuery.graphql';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 import { useFormatter } from '../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../components/Loader';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import VocabularyCreation from './attributes/VocabularyCreation';
-import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import ToolBar from '../data/ToolBar';
-import useVocabularyCategory from '../../../utils/hooks/useVocabularyCategory';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import useVocabularyCategory, { vocabFragment } from '../../../utils/hooks/useVocabularyCategory';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import DataTable from '../../../components/dataGrid/DataTable';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-  label: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    marginRight: 7,
-  },
-}));
+export const vocabulariesQuery = graphql`
+  query VocabulariesLinesPaginationQuery(
+    $search: String
+    $count: Int
+    $orderMode: OrderingMode
+    $orderBy: VocabularyOrdering
+    $filters: FilterGroup
+    $category: VocabularyCategory
+  ) {
+    ...VocabulariesLines_data
+    @arguments(
+      search: $search
+      count: $count
+      orderMode: $orderMode
+      orderBy: $orderBy
+      filters: $filters
+      category: $category
+    )
+  }
+`;
+
+export const vocabulariesFragment = graphql`
+  fragment VocabulariesLines_data on Query
+  @argumentDefinitions(
+    filters: { type: "FilterGroup" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 200 }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    orderBy: { type: "VocabularyOrdering", defaultValue: name }
+    after: { type: "ID" }
+    category: { type: "VocabularyCategory" }
+  )
+  @refetchable(queryName: "VocabulariesLines_DataQuery") {
+    vocabularies(
+      filters: $filters
+      search: $search
+      first: $count
+      orderMode: $orderMode
+      orderBy: $orderBy
+      after: $after
+      category: $category
+    ) @connection(key: "Pagination_vocabularies") {
+      edges {
+        node {
+          id
+          ...useVocabularyCategory_Vocabularynode
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const Vocabularies = () => {
-  const classes = useStyles();
   const { t_i18n, n } = useFormatter();
+  const theme = useTheme();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Vocabularies | Taxonomies | Settings'));
   const params = useParams() as { category: string };
@@ -45,143 +87,102 @@ const Vocabularies = () => {
   const category = typeToCategory(params.category);
   const LOCAL_STORAGE_KEY = `vocabulary-${category}`;
 
-  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<VocabulariesLines_DataQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      filters: emptyFilterGroup,
-      sortBy: 'name',
-      orderAsc: true,
-      searchTerm: '',
-      category,
-    },
-  );
-  const queryRef = useQueryLoading<VocabulariesLinesPaginationQuery>(
-    vocabulariesLinesQuery,
-    paginationOptions,
-  );
-  const {
-    onToggleEntity,
-    numberOfSelectedElements,
-    handleClearSelectedElements,
-    selectedElements,
-    deSelectedElements,
-    handleToggleSelectAll,
-    selectAll,
-  } = useEntityToggle<useVocabularyCategory_Vocabularynode$data>(
-    LOCAL_STORAGE_KEY,
-  );
-  const renderLines = () => {
-    const dataColumns = {
-      name: {
-        label: 'Name',
-        width: '20%',
-        isSortable: true,
-        render: (node: useVocabularyCategory_Vocabularynode$data) => node.name,
-      },
-      entity_types: {
-        label: 'Used in',
-        width: '20%',
-        isSortable: false,
-        render: (node: useVocabularyCategory_Vocabularynode$data) => (
-          <>
-            {node.category.entity_types.map((type) => (
-              <Chip
-                key={type}
-                classes={{ root: classes.label }}
-                variant="outlined"
-                label={t_i18n(`entity_${type}`)}
-                color="primary"
-              />
-            ))}
-          </>
-        ),
-      },
-      aliases: {
-        label: 'Aliases',
-        width: '15%',
-        isSortable: false,
-        render: (node: useVocabularyCategory_Vocabularynode$data) => (node.aliases ?? []).join(', '),
-      },
-      description: {
-        label: 'Description',
-        width: '25%',
-        isSortable: false,
-        render: (node: useVocabularyCategory_Vocabularynode$data) => node.description,
-      },
-      usages: {
-        label: 'Usages',
-        width: '10%',
-        isSortable: false,
-        render: (node: useVocabularyCategory_Vocabularynode$data) => n(node.usages),
-      },
-      order: {
-        label: 'Order',
-        width: '10%',
-        isSortable: true,
-        render: (node: useVocabularyCategory_Vocabularynode$data) => n(node.order),
-      },
-    };
-    const toolBarFilters = {
-      mode: 'and',
-      filters: [{ key: 'entity_type', values: ['Vocabulary'], operator: 'eq', mode: 'or' }],
-      filterGroups: [],
-    };
-    return (
-      <ListLines
-        sortBy={viewStorage.sortBy}
-        iconExtension={true}
-        orderAsc={viewStorage.orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleSelectAll={handleToggleSelectAll}
-        selectAll={selectAll}
-        displayImport={false}
-        secondaryAction={true}
-        keyword={paginationOptions.search}
-        filters={viewStorage.filters}
-      >
-        {queryRef && (
-          <>
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
-              <VocabulariesLines
-                queryRef={queryRef}
-                paginationOptions={paginationOptions}
-                dataColumns={dataColumns}
-                setNumberOfElements={helpers.handleSetNumberOfElements}
-                selectedElements={selectedElements}
-                deSelectedElements={deSelectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
-              />
-            </React.Suspense>
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              handleClearSelectedElements={handleClearSelectedElements}
-              selectAll={selectAll}
-              noAuthor={true}
-              noMarking={true}
-              noWarning={true}
-              deleteDisable={true}
-              filters={toolBarFilters}
-              taskScope='SETTINGS'
-              variant="medium"
-            />
-          </>
-        )}
-      </ListLines>
-    );
+  const initialValues = {
+    searchTerm: '',
+    sortBy: 'name',
+    orderAsc: true,
+    filters: emptyFilterGroup,
+    category,
   };
+
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers,
+  } = usePaginationLocalStorage<VocabulariesLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
+
+  const { filters } = viewStorage;
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Vocabulary', filters);
+
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as VocabulariesLinesPaginationQuery$variables;
+
+  const queryRef = useQueryLoading<VocabulariesLinesPaginationQuery>(
+    vocabulariesQuery,
+    queryPaginationOptions,
+  );
+
+  const dataColumns: DataTableProps['dataColumns'] = {
+    name: {
+      label: 'Name',
+      percentWidth: 20,
+      isSortable: true,
+      render: (node: useVocabularyCategory_Vocabularynode$data) => node.name,
+    },
+    entity_types: {
+      label: 'Used in',
+      percentWidth: 20,
+      isSortable: false,
+      render: (node: useVocabularyCategory_Vocabularynode$data) => (
+        <>
+          {node.category.entity_types.map((type) => (
+            <Chip
+              key={type}
+              style={{
+                fontSize: 12,
+                height: 20,
+                float: 'left',
+                marginRight: 7,
+              }}
+              variant="outlined"
+              label={t_i18n(`entity_${type}`)}
+              color="primary"
+            />
+          ))}
+        </>
+      ),
+    },
+    aliases: {
+      label: 'Aliases',
+      percentWidth: 15,
+      isSortable: false,
+      render: (node: useVocabularyCategory_Vocabularynode$data) => (node.aliases ?? []).join(', '),
+    },
+    description: {
+      label: 'Description',
+      percentWidth: 25,
+      isSortable: false,
+      render: (node: useVocabularyCategory_Vocabularynode$data) => node.description,
+    },
+    usages: {
+      label: 'Usages',
+      percentWidth: 10,
+      isSortable: false,
+      render: (node: useVocabularyCategory_Vocabularynode$data) => n(node.usages),
+    },
+    order: {
+      label: 'Order',
+      percentWidth: 10,
+      isSortable: true,
+      render: (node: useVocabularyCategory_Vocabularynode$data) => n(node.order),
+    },
+  };
+
+  const preloadedPaginationProps = {
+    linesQuery: vocabulariesQuery,
+    linesFragment: vocabulariesFragment,
+    queryRef,
+    nodePath: ['vocabularies', 'pageInfo', 'globalCount'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<VocabulariesLinesPaginationQuery>;
+
   return (
-    <div className={classes.container}>
+    <div style={{ marginRight: 200 }}>
       <LabelsVocabulariesMenu />
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
@@ -189,11 +190,25 @@ const Vocabularies = () => {
         { label: t_i18n('Vocabularies'), link: '/dashboard/settings/vocabularies/fields' },
         { label: category, current: true }]}
       />
-      {renderLines()}
-      <VocabularyCreation
-        category={category}
-        paginationOptions={paginationOptions}
-      />
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data) => data.vocabularies?.edges?.map(({ node }: { node: useVocabularyCategory_Vocabularynode$data }) => node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          lineFragment={vocabFragment}
+          disableNavigation
+          preloadedPaginationProps={preloadedPaginationProps}
+          actions={(vocab) => <VocabularyPopover vocab={vocab} paginationOptions={paginationOptions} />}
+          searchContextFinal={{ entityTypes: ['Vocabulary'] }}
+          icon={() => <ShortTextOutlined sx={{ color: theme.palette.primary.main }} />}
+          createButton={<VocabularyCreation
+            category={category}
+            paginationOptions={paginationOptions}
+                        />}
+        />
+      )}
     </div>
   );
 };
