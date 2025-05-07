@@ -1,11 +1,13 @@
 import { graphql } from 'react-relay';
 import React from 'react';
 import CustomizationMenu from '@components/settings/CustomizationMenu';
-import { FintelDesignsLine_node$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLine_node.graphql';
 import {
   FintelDesignsLinesPaginationQuery,
   FintelDesignsLinesPaginationQuery$variables,
 } from '@components/settings/fintel_design/__generated__/FintelDesignsLinesPaginationQuery.graphql';
+import FintelDesignCreation from '@components/settings/fintel_design/FintelDesignCreation';
+import FintelDesignPopover from '@components/settings/fintel_design/FintelDesignPopover';
+import { FintelDesignsLines_data$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLines_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -15,6 +17,7 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import ItemIcon from '../../../../components/ItemIcon';
+import PageContainer from '../../../../components/PageContainer';
 
 export const fintelDesignsQuery = graphql`
   query FintelDesignsLinesPaginationQuery(
@@ -73,6 +76,7 @@ const fintelDesignsLineFragment = graphql`
   fragment FintelDesignsLine_node on FintelDesign {
     id
     name
+    url
     description
     gradiantFromColor
     gradiantToColor
@@ -120,12 +124,18 @@ const FintelDesigns = () => {
       id: 'name',
       label: t_i18n('Name'),
       isSortable: true,
-      percentWidth: 20,
+      percentWidth: 50,
     },
     description: {
       id: 'description',
       label: t_i18n('Description'),
-      percentWidth: 20,
+      percentWidth: 40,
+      isSortable: false,
+    },
+    url: {
+      id: 'url',
+      label: t_i18n('Url'),
+      percentWidth: 10,
       isSortable: false,
     },
   };
@@ -141,21 +151,28 @@ const FintelDesigns = () => {
   return (
     <>
       <CustomizationMenu />
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Fintel Designs') }]} />
-      {queryRef && (
+      <PageContainer withRightMenu>
+        <Breadcrumbs elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Customization') },
+          { label: t_i18n('Fintel Designs'), current: true },
+        ]}
+        />
+        {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data) => data.fintelDesigns?.edges?.map(({ node }: { node: FintelDesignsLine_node$data }) => node)}
+          resolvePath={(data: FintelDesignsLines_data$data) => data.fintelDesigns?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
           lineFragment={fintelDesignsLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
-          actions={(row) => <div></div>}
-          createButton={<div></div>}
+          actions={(row) => <FintelDesignPopover data={row} paginationOptions={queryPaginationOptions} />}
+          createButton={<FintelDesignCreation paginationOptions={queryPaginationOptions} />}
           icon={() => <ItemIcon type="fintel-design" />}
         />
-      )}
+        )}
+      </PageContainer>
     </>
   );
 };
