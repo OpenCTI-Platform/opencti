@@ -81,7 +81,7 @@ export default class DashboardWidgetsPageModel {
     await this.selectWidget('List');
     await this.selectPerspective('Entities');
     await this.fillLabel('Malwares');
-    await this.filters.addFilter('Entity type', 'Malware', false);
+    await this.filters.addFilter('Entity type', 'Malware');
     await this.filters.addFilter('Label', 'e2e');
     await this.validateFilters();
     await this.titleField.fill('List of malwares');
@@ -93,7 +93,7 @@ export default class DashboardWidgetsPageModel {
     await this.selectWidget('Timeline');
     await this.selectPerspective('Entities');
     await this.fillLabel('Malware');
-    await this.filters.addFilter('Entity type', 'Malware', false);
+    await this.filters.addFilter('Entity type', 'Malware');
     await this.filters.addFilter('Label', 'e2e');
     await this.validateFilters();
     await this.titleField.fill('Timeline of malwares');
@@ -104,7 +104,7 @@ export default class DashboardWidgetsPageModel {
     await this.openWidgetModal();
     await this.selectWidget('Number');
     await this.selectPerspective('Entities');
-    await this.filters.addFilter('Entity type', 'Entity', false);
+    await this.filters.addFilter('Entity type', 'Entity');
     await this.filters.addFilter('Label', 'e2e');
     await this.validateFilters();
     await this.titleField.fill('Number of entities');
