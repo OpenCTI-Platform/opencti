@@ -14,6 +14,7 @@ import useGranted, {
   SETTINGS_SETDISSEMINATION,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
+import {boundaryWrapper} from "@components/Error";
 
 const Security = lazy(() => import('../../../utils/Security'));
 const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));
@@ -50,7 +51,7 @@ const SupportPackage = lazy(() => import('./support/SupportPackages'));
 const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
 const DisseminationLists = lazy(() => import('./dissemination_lists/DisseminationLists'));
 const FintelDesigns = lazy(() => import('./fintel_design/FintelDesigns'));
-const FintelDesign = lazy(() => import('./fintel_design/FintelDesign'));
+const FintelDesignRoot = lazy(() => import('./fintel_design/Root'));
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
