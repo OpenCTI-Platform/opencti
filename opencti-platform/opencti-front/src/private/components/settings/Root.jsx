@@ -353,7 +353,7 @@ const Root = () => {
             }
           />
           <Route
-            path="customization/fintel_designs"
+            path="customization/fintel_design"
             element={
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                 <FintelDesigns />

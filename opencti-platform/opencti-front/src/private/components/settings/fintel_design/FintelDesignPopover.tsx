@@ -1,4 +1,6 @@
 import { graphql } from 'react-relay';
+import { FintelDesignsLine_node$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLine_node.graphql';
+import { FintelDesignsLinesPaginationQuery$variables } from '@components/settings/fintel_design/__generated__/FintelDesignsLinesPaginationQuery.graphql';
 import React, { FunctionComponent, useState } from 'react';
 import MoreVert from '@mui/icons-material/MoreVert';
 import IconButton from '@mui/material/IconButton';
@@ -9,7 +11,9 @@ import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_desi
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import { deleteNode } from '../../../../utils/store';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import FintelDesignEdition from './FintelDesignEdition';
 
 const fintelDesignPopoverDeletionMutation = graphql`
   mutation FintelDesignPopoverDeletionMutation($id: ID!) {
@@ -23,11 +27,13 @@ interface FintelDesignPopoverProps {
 
 const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
   data,
+  paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [isEditionFormOpen, setIsEditionFormOpen] = useState<boolean>(false);
 
   const [commitDelete] = useApiMutation(fintelDesignPopoverDeletionMutation);
 
@@ -45,6 +51,9 @@ const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
       variables: {
         id: data.id,
       },
+      updater: (store) => {
+        deleteNode(store, 'Pagination_fintelDesigns', paginationOptions, data.id);
+      },
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
@@ -52,6 +61,13 @@ const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
       },
     });
   };
+
+  // edition
+  const handleDisplayEdit = () => {
+    setIsEditionFormOpen(true);
+    handleClose();
+  };
+  const handleCloseEditionForm = () => setIsEditionFormOpen(false);
 
   return (
     <>
@@ -63,6 +79,7 @@ const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
@@ -70,6 +87,13 @@ const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this fintel design?')}
       />
+      {isEditionFormOpen && (
+        <FintelDesignEdition
+          data={data}
+          isOpen={isEditionFormOpen}
+          onClose={handleCloseEditionForm}
+        />
+      )}
     </>
   );
 };
