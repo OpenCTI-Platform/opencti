@@ -6,7 +6,7 @@ import { subDays } from 'date-fns';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
-import { capitalizeFirstLetter, isValidDate } from '../String';
+import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { generateUniqueItemsArray, isEmptyField } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
@@ -367,11 +367,7 @@ export const filterValue = (filterKey: string, value?: string | null, filterType
   if (value && entityTypesFilters.includes(filterKey)) {
     return value === 'all'
       ? t_i18n('entity_All')
-      : t_i18n(
-        value.toString()[0] === value.toString()[0].toUpperCase()
-          ? `entity_${value.toString()}`
-          : `relationship_${value.toString()}`,
-      );
+      : t_i18n(displayEntityTypeForTranslation(value));
   }
   if (filterType === 'date') {
     if (filterOperator === 'within' && !isValidDate(value)) {

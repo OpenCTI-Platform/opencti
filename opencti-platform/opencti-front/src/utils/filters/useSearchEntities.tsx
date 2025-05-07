@@ -41,6 +41,7 @@ import { contextFilters, entityTypesFilters, FilterSearchContext, ME_FILTER_VALU
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
+import { displayEntityTypeForTranslation } from '../String';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -727,11 +728,7 @@ const useSearchEntities = ({
             }
             const entitiesTypes = completedAvailableEntityTypes
               .map((n) => ({
-                label: t_i18n(
-                  n.toString()[0] === n.toString()[0].toUpperCase()
-                    ? `entity_${n.toString()}`
-                    : `relationship_${n.toString()}`,
-                ),
+                label: t_i18n(displayEntityTypeForTranslation(n)),
                 value: n,
                 type: n,
               }))
