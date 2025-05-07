@@ -127,6 +127,7 @@ interface FilterIconButtonContainerProps {
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
   fintelTemplatesContext?: boolean;
+  hasSavedFilters?: boolean;
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -151,6 +152,7 @@ FilterIconButtonContainerProps
   availableEntityTypes,
   availableRelationshipTypes,
   fintelTemplatesContext,
+  hasSavedFilters,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -161,6 +163,7 @@ FilterIconButtonContainerProps
     filterValuesContentQuery,
     filtersRepresentativesQueryRef,
   );
+
   const displayedFilters = filters.filters;
   const globalMode = filters.mode;
   const itemRefToPopover = useRef(null);
@@ -238,13 +241,18 @@ FilterIconButtonContainerProps
     classOperator = classes.operator3;
     margin = '0 0 0 0';
   }
+
   let boxStyle = {
     margin: `${margin}`,
     display: 'flex',
     flexWrap: 'wrap',
     gap: 1,
     overflow: 'auto',
+    padding: hasSavedFilters ? '4px' : ' 4px 0px',
+    backgroundColor: hasSavedFilters ? 'rgba(37, 150, 190, 0.3)' : 'transparent',
+    borderRadius: hasSavedFilters ? '4px' : '0px',
   };
+
   if (!isReadWriteFilter) {
     if (styleNumber !== 2) {
       boxStyle = {
@@ -253,6 +261,9 @@ FilterIconButtonContainerProps
         flexWrap: 'no-wrap',
         gap: 0,
         overflow: 'hidden',
+        padding: '4px 0px',
+        backgroundColor: 'none',
+        borderRadius: '0px',
       };
     }
   }

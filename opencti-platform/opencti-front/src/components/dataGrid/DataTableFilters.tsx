@@ -42,7 +42,7 @@ export const DataTableDisplayFilters = ({
   const {
     useDataTablePaginationLocalStorage: {
       helpers,
-      viewStorage: { filters },
+      viewStorage: { filters, savedFilters },
     },
   } = useDataTableContext();
 
@@ -62,6 +62,7 @@ export const DataTableDisplayFilters = ({
         availableRelationFilterTypes={availableRelationFilterTypes}
         availableEntityTypes={availableEntityTypes}
         entityTypes={entityTypes}
+        hasSavedFilters={!!savedFilters}
         filtersRestrictions={{
           preventRemoveFor: additionalFilterKeys,
         }}

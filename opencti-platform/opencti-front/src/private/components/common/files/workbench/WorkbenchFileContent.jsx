@@ -943,6 +943,7 @@ const WorkbenchFileContentComponent = ({
               fileName: file.id,
               connectorId: values.connector_id,
               bypassValidation: false,
+              forceValidation: true, // force validation to create draft
               validationMode: 'draft',
             },
             onCompleted: () => {

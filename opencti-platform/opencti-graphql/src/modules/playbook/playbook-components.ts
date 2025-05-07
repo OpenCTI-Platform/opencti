@@ -750,7 +750,10 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
     // Apply operations if needed
     if (patchOperations.length > 0) {
       const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
-      return { output_port: 'out', bundle: patchedBundle };
+      const diff = jsonpatch.compare(bundle, patchedBundle);
+      if (isNotEmptyField(diff)) {
+        return { output_port: 'out', bundle: patchedBundle };
+      }
     }
     return { output_port: 'unmodified', bundle };
   }

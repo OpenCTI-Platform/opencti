@@ -1,11 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import { FIVE_MINUTES, TEN_SECONDS, testContext } from '../utils/testQuery';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
-import {
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-} from '../../src/database/middleware';
+import { createRelation, deleteElementById, deleteRelationsByFromAndTo } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { RELATION_PART_OF } from '../../src/schema/stixCoreRelationship';
 import { RELATION_OBJECT } from '../../src/schema/stixRefRelationship';

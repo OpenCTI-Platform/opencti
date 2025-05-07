@@ -5,7 +5,6 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import nconf from 'nconf';
 import express from 'express';
-import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { findById as findWorkById } from '../domain/work';
 import { basePath, getBaseUrl } from '../config/conf';
 import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR, UnsupportedError } from '../config/errors';
@@ -17,6 +16,8 @@ import { handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } fro
 import { now } from '../utils/format';
 import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
+import { TAXIIAPI } from '../domain/user';
+import { createAuthenticatedContext } from './httpAuthenticatedContext';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';
 
@@ -36,15 +37,17 @@ const errorConverter = (e) => {
   };
 };
 
-const extractUserFromRequest = async (context, req, res) => {
+const extractContextFromRequest = async (req, res) => {
   // noinspection UnnecessaryLocalVariableJS
-  const user = await authenticateUserFromRequest(context, req);
-  if (!user) {
+  const context = await createAuthenticatedContext(req, res, 'taxii');
+  if (!context.user) {
     res.setHeader('WWW-Authenticate', 'Basic, Bearer');
     throw AuthRequired();
   }
-  if (!isUserHasCapability(user, TAXIIAPI)) throw ForbiddenAccess();
-  return user;
+  if (!isUserHasCapability(context.user, TAXIIAPI)) {
+    throw ForbiddenAccess();
+  }
+  return context;
 };
 const rebuildParamsForObject = (id, req) => {
   // Rebuild options
@@ -57,20 +60,20 @@ const getUpdatedAt = (obj) => {
   return obj?.extensions?.[STIX_EXT_OCTI]?.updated_at;
 };
 
-const extractUserAndCollection = async (context, req, res, id) => {
-  const findCollection = await findById(context, SYSTEM_USER, id);
+const extractUserAndCollection = async (req, res, id) => {
+  const findCollection = await findById(executionContext('taxii'), SYSTEM_USER, id);
   if (!findCollection) {
     throw ForbiddenAccess();
   }
   if (findCollection.taxii_public) {
     return { user: SYSTEM_USER, collection: findCollection };
   }
-  const authUser = await extractUserFromRequest(context, req, res);
-  const userCollection = await findById(context, authUser, id);
+  const context = await extractContextFromRequest(req, res);
+  const userCollection = await findById(context, context.user, id);
   if (!userCollection) {
     throw TaxiiError('Collection not found', 404);
   }
-  return { user: authUser, collection: userCollection };
+  return { context, user: context.user, collection: userCollection };
 };
 
 const JsonTaxiiMiddleware = express.json({
@@ -84,8 +87,7 @@ const initTaxiiApi = (app) => {
   // Discovery api
   app.get(`${basePath}/taxii2`, async (req, res) => {
     try {
-      const context = executionContext('taxii');
-      await extractUserFromRequest(context, req, res);
+      await extractContextFromRequest(req, res);
       const discovery = {
         title: 'OpenCTI TAXII Server',
         description: 'This TAXII Server exposes OpenCTI data through taxii protocol',
@@ -101,8 +103,7 @@ const initTaxiiApi = (app) => {
   // Root api
   app.get(`${basePath}/taxii2/root`, async (req, res) => {
     try {
-      const context = executionContext('taxii');
-      await extractUserFromRequest(context, req, res);
+      await extractContextFromRequest(req, res);
       const rootContent = {
         title: 'OpenCTI TAXII Server',
         description: 'A global and natively segregate taxii root',
@@ -118,9 +119,8 @@ const initTaxiiApi = (app) => {
   // Collection api
   app.get(`${basePath}/taxii2/root/collections`, async (req, res) => {
     try {
-      const context = executionContext('taxii');
-      const user = await extractUserFromRequest(context, req, res);
-      const collections = await restAllCollections(context, user);
+      const context = await extractContextFromRequest(req, res);
+      const collections = await restAllCollections(context, context.user);
       sendJsonResponse(res, { collections });
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -130,8 +130,7 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/collections/:id`, async (req, res) => {
     const { id } = req.params;
     try {
-      const context = executionContext('taxii');
-      const { collection } = await extractUserAndCollection(context, req, res, id);
+      const { collection } = await extractUserAndCollection(req, res, id);
       if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION && collection.ingestion_running !== true) {
         throw TaxiiError('Collection not found', 404);
       }
@@ -144,8 +143,7 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/collections/:id/manifest`, async (req, res) => {
     const { id } = req.params;
     try {
-      const context = executionContext('taxii');
-      const { user, collection } = await extractUserAndCollection(context, req, res, id);
+      const { context, user, collection } = await extractUserAndCollection(req, res, id);
       if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION) {
         throw TaxiiError('The client does not have access to this manifest resource', 403);
       }
@@ -163,8 +161,7 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/collections/:id/objects`, async (req, res) => {
     const { id } = req.params;
     try {
-      const context = executionContext('taxii');
-      const { user, collection } = await extractUserAndCollection(context, req, res, id);
+      const { context, user, collection } = await extractUserAndCollection(req, res, id);
       if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION) {
         throw TaxiiError('The client does not have access to this objects resource', 403);
       }
@@ -182,8 +179,7 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/collections/:id/objects/:object_id`, async (req, res) => {
     const { id, object_id } = req.params;
     try {
-      const context = executionContext('taxii');
-      const { user, collection } = await extractUserAndCollection(context, req, res, id);
+      const { context, user, collection } = await extractUserAndCollection(req, res, id);
       if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION) {
         throw TaxiiError('The client does not have access to this objects resource', 403);
       }
@@ -202,8 +198,7 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/collections/:id/objects/:object_id/versions`, async (req, res) => {
     const { id, object_id } = req.params;
     try {
-      const context = executionContext('taxii');
-      const { user, collection } = await extractUserAndCollection(context, req, res, id);
+      const { context, user, collection } = await extractUserAndCollection(req, res, id);
       if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION) {
         throw TaxiiError('The client does not have access to this objects resource', 403);
       }
@@ -227,10 +222,9 @@ const initTaxiiApi = (app) => {
       if (objects.length === 0) {
         throw UnsupportedError('Objects required');
       }
-      const context = executionContext('taxii');
-      const user = await extractUserFromRequest(context, req, res);
+      const context = await extractContextFromRequest(req, res);
       // Find and validate the collection
-      const ingestion = await findTaxiiCollection(context, user, id);
+      const ingestion = await findTaxiiCollection(context, context.user, id);
       if (!ingestion) {
         throw TaxiiError('Collection not found', 404);
       }
@@ -260,9 +254,8 @@ const initTaxiiApi = (app) => {
   app.get(`${basePath}/taxii2/root/status/:status_id`, async (req, res) => {
     const { status_id } = req.params;
     try {
-      const context = executionContext('taxii');
-      const user = await extractUserFromRequest(context, req, res);
-      const work = await findWorkById(context, user, status_id);
+      const context = await extractContextFromRequest(req, res);
+      const work = await findWorkById(context, context.user, status_id);
       if (!work) throw UnsupportedError('Work not found');
       const stats = await computeWorkStatus(work);
       if (!stats) throw UnsupportedError('Work not found');
