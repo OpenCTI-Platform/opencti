@@ -114,7 +114,7 @@ import {
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
+import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
@@ -183,7 +183,6 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
-import { asyncMap } from '../utils/data-processing';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -210,7 +209,6 @@ const ES_MAX_DOCS = conf.get('elasticsearch:max_docs') || 75000000;
 
 const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
 export const BULK_TIMEOUT = '5m';
-export const ES_MAX_TRACK_TOTAL_HITS = 10000;
 const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 const ES_MAX_MAPPINGS = 3000;
 export const ES_RETRY_ON_CONFLICT = 5;
@@ -1655,18 +1653,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     };
     mustTerms.push(should);
     if (types && types.length > 0) {
-      // Cache management if requirements are respected
-      // Entity type must be uniq, and cache must handle this entity type
-      if (types.length === 1) {
-        if (types[0] === ENTITY_TYPE_MARKING_DEFINITION) {
-          const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-          const cacheHits = await asyncMap(workingIds, (id) => markings.get(id), (marking) => isNotEmptyField(marking));
-          if (toMap) {
-            return elConvertHitsToMap(cacheHits, { mapWithAllIds });
-          }
-          return cacheHits;
-        }
-      }
       // No cache management is possible, just put the type in the filtering
       const shouldType = {
         bool: {
@@ -1699,7 +1685,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         }
       },
     };
-    if (orderBy) {
+    if (isNotEmptyField(orderBy)) {
       body.sort = [{ [orderBy]: orderMode }];
     }
     let searchAfter;
@@ -3055,7 +3041,6 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const orderConfiguration = isEmptyField(orderBy) ? [] : orderBy;
   const orderCriterion = Array.isArray(orderConfiguration) ? orderConfiguration : [orderConfiguration];
   let scoreSearchOrder = orderMode;
-  const searchMust = [];
   if (search !== null && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search, options);
     const searchBool = {
@@ -3064,7 +3049,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
         minimum_should_match: 1,
       },
     };
-    searchMust.push(searchBool);
+    mustFilters.push(searchBool);
     // When using a search, force a score ordering if nothing specified
     if (orderCriterion.length === 0) {
       orderCriterion.unshift('_score');
@@ -3084,9 +3069,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
       }
     }
     // Add standard_id if not specify to ensure ordering uniqueness
-    if (!orderCriterion.includes('standard_id')) {
-      ordering.push({ 'standard_id.keyword': 'asc' });
-    }
+    ordering.push({ _doc: 'asc' });
     // Build runtime mappings
     const runtime = RUNTIME_ATTRIBUTES[orderBy];
     if (isNotEmptyField(runtime)) {
@@ -3097,9 +3080,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
         script: { source, params },
       };
     }
-  } else { // If not ordering criteria, order by _doc and standard_id
+  } else { // If not ordering criteria, order by _doc
     ordering.push({ _doc: 'asc' });
-    ordering.push({ 'standard_id.keyword': 'asc' });
   }
   // Handle draft
   const draftMust = buildDraftFilter(context, user, options);
@@ -3107,15 +3089,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const body = {
     query: {
       bool: {
-        // Score only on the search
-        must: searchMust,
-        // Other filters are not scored to improve performance
-        filter: [{
-          bool: {
-            must: [...accessMust, ...mustFilters, ...draftMust],
-            must_not: accessMustNot,
-          },
-        }]
+        must: [...accessMust, ...mustFilters, ...draftMust],
+        must_not: accessMustNot,
       },
     },
   };
@@ -3277,8 +3252,8 @@ const buildAggregationRelationFilters = async (context, user, aggregationFilters
   const aggBody = await elQueryBodyBuilder(context, user, { ...aggregationFilters, noSize: true, noSort: true });
   return {
     bool: {
-      must: extractNestedQueriesFromBool(aggBody.query.bool.filter[0].bool.must ?? []),
-      must_not: extractNestedQueriesFromBool(aggBody.query.bool.filter[0].bool.must_not ?? []),
+      must: extractNestedQueriesFromBool(aggBody.query.bool.must ?? []),
+      must_not: extractNestedQueriesFromBool(aggBody.query.bool.must_not ?? []),
     },
   };
 };
@@ -3475,7 +3450,7 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
   }
   const query = {
     index: getIndicesToQuery(context, user, indexName),
-    track_total_hits: ES_MAX_TRACK_TOTAL_HITS,
+    track_total_hits: true,
     _source: baseData ? baseFields : true,
     body,
   };

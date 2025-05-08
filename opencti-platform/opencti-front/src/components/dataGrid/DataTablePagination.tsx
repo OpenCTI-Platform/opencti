@@ -10,7 +10,6 @@ import { useFormatter } from '../i18n';
 import { NumberOfElements } from '../../utils/hooks/useLocalStorage';
 import NestedMenuButton from '../nested_menu/NestedMenuButton';
 import { useDataTableContext } from './components/DataTableContext';
-import { useDataTable } from './dataTableHooks';
 
 const DataTablePagination = ({
   page,
@@ -32,9 +31,7 @@ const DataTablePagination = ({
       },
       helpers,
     },
-    dataQueryArgs,
   } = useDataTableContext();
-  const { hasMore } = useDataTable(dataQueryArgs);
 
   const numberOfElements = unstoreNOE ?? storedNOE;
 
@@ -148,7 +145,7 @@ const DataTablePagination = ({
             <Typography variant="body2">
               <span>{`${lastItem ? firstItem : 0} - ${lastItem} `}</span>
               <span style={{ opacity: 0.6 }}>
-                {`/ ${numberOfElements.number}${numberOfElements.symbol}${(numberOfElements.original ?? 0) > 10000 ? '+' : ''}`}
+                {`/ ${numberOfElements.number}${numberOfElements.symbol}`}
               </span>
             </Typography>
           </Box>
@@ -156,7 +153,7 @@ const DataTablePagination = ({
         <Button
           onClick={() => fetchMore('forward')}
           size="small"
-          disabled={hasMore ? !hasMore() : (lastItem === numberOfElements.original)}
+          disabled={lastItem === numberOfElements.original}
           style={{ paddingLeft: 0, paddingRight: 0, minWidth: 24 }}
         >
           <ArrowRight />
