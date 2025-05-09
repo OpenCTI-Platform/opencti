@@ -4312,33 +4312,46 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       const sources = targetsElements.map((t) => {
         const field = buildRefRelationKey(t.relation, t.field);
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-        script += `ctx._source['${field}'].addAll(params['${field}'])`;
+        if (isStixRefRelationship(t.relation)) {
+          // don't try to add if already present (issue#7535)
+          script += `for(refId in params['${field}']) { 
+          if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }} `;
+        } else {
+          script += `ctx._source['${field}'].addAll(params['${field}']);`;
+        }
         const fromSide = R.find((e) => e.side === 'from', t.elements);
         if (fromSide && isStixRefRelationship(t.relation)) {
           if (isUpdatedAtObject(fromSide.type)) {
-            script += '; ctx._source[\'updated_at\'] = params.updated_at';
+            script += 'ctx._source[\'updated_at\'] = params.updated_at;';
           }
           if (isModifiedObject(fromSide.type)) {
-            script += '; ctx._source[\'modified\'] = params.updated_at';
+            script += 'ctx._source[\'modified\'] = params.updated_at;';
           }
         }
         return script;
       });
-      const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
+      const source = sources.length > 1 ? R.join(' ', sources) : `${R.head(sources)}`;
       for (let index = 0; index < targetsElements.length; index += 1) {
         const targetElement = targetsElements[index];
         params[buildRefRelationKey(targetElement.relation, targetElement.field)] = targetElement.elements.map((e) => e.id);
       }
       return { ...entity, id: entityId, data: { script: { source, params } } };
     });
-    const bodyUpdate = elementsToUpdate.flatMap((doc) => [
-      { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-      R.dissoc('_index', doc.data),
-    ]);
-    if (bodyUpdate.length > 0) {
-      meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
-      const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
-      await Promise.all([bulkPromise]);
+    // bulk update elements (denormalized relations)
+    if (elementsToUpdate.length > 0) {
+      const groupsOfElementsToUpdate = R.splitEvery(MAX_BULK_OPERATIONS, elementsToUpdate);
+      for (let i = 0; i < groupsOfElementsToUpdate.length; i += 1) {
+        const elementsBulk = groupsOfElementsToUpdate[i];
+        const bodyUpdate = elementsBulk.flatMap((doc) => [
+          { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          R.dissoc('_index', doc.data),
+        ]);
+        if (bodyUpdate.length > 0) {
+          meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
+          const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+          await Promise.all([bulkPromise]);
+        }
+      }
     }
     return transformedElements.length;
   };
