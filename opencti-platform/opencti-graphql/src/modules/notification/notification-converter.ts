@@ -1,6 +1,7 @@
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
+import { buildStixObject } from '../../database/stix-2-1-converter';
 import type { StixNotification, StixTrigger, StoreEntityNotification, StoreEntityTrigger } from './notification-types';
+import { cleanObject } from '../../database/stix-converter-utils';
 
 // Outcomes
 
