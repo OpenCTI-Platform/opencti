@@ -49,7 +49,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     if (isTooRecentStoredOtp) return true;
     const hashedOtp = bcrypt.hashSync(resetOtp);
     await redisSetForgotPasswordOtp(email, hashedOtp);
-    const body = `Hi ${name},</br>`
+    const body = `Hi ${name},</br></br>`
         + 'A request has been made to reset your OpenCTI password.</br></br>'
         + 'Enter the following password recovery code:</br></br>'
         + `<b>${resetOtp}</b>`;
@@ -134,10 +134,11 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
       { key: 'password', value: [input.newPassword] }
     ]);
     await killUserSessions(authUser.id);
-    const body = `Hi ${name},</br>`
-      + 'We wanted to let you know that the password associated with your account was recently changed.</br></br>'
-      + 'If you made this change, no further action is needed.</br></br>'
-      + 'If you did not make this change, please reset your password immediately and contact your admin to secure your account.</br></br>';
+    const body = `Hi ${name},</br></br>`
+      + 'We wanted to let you know that your account password was successfully changed.</br></br>'
+      + 'If you initiated this change, no further action is required. However, if you did not authorize this change, please reset your password immediately and contact the system administrator so that we may investigate and take appropriate measures to secure your account.</br></br>'
+      + 'Sincerely,</br></br>'
+      + 'Filigran</br></br>';
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: user_email,
