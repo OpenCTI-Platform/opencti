@@ -76,7 +76,7 @@ CsvMapperRepresentationAttributesFormProps
   )?.attributes ?? [];
 
   const mutableSchemaAttributes: SchemaAttribute[] = entitySchemaAttributes.map((schema) => {
-    if (schema.name === 'hashes') {
+    if (schema.name === 'hashes' || schema.name === 'authors') {
       return (schema.mappings ?? []).map((mapping) => ({
         ...mapping,
         defaultValues: null,
