@@ -282,19 +282,10 @@ type QueueMetrics {
   idle_since: DateTime
   message_stats: MessagesStats
 }
-type QueueTotals {
+type OverviewMetrics {
   messages: String
   messages_ready: String
   messages_unacknowledged: String
-}
-type ObjectTotals {
-  channels: String
-  consumers: String
-  queues: String
-}
-type OverviewMetrics {
-  object_totals: ObjectTotals
-  queue_totals: QueueTotals
   message_stats: MessagesStats
 }
 type RabbitMQMetrics {
