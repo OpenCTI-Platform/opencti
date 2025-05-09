@@ -53,7 +53,6 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
         + 'A request has been made to reset your OpenCTI password.</br></br>'
         + 'Enter the following password recovery code:</br></br>'
         + `<b>${resetOtp}</b>`;
-
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: user_email,
@@ -126,13 +125,26 @@ export const verify2fa = async (input: Verify2faInput) => {
 };
 
 export const changePassword = async (context: AuthContext, input: ChangePasswordInput) => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
   try {
     const user = await getUser(input.email);
+    const { user_email, name } = user;
     const authUser = await findById(context, ADMIN_USER, user.id);
     await userEditField(context, authUser, authUser.id, [
       { key: 'password', value: [input.newPassword] }
     ]);
     await killUserSessions(authUser.id);
+    const body = `Hi ${name},</br>`
+      + 'We wanted to let you know that the password associated with your account was recently changed.</br></br>'
+      + 'If you made this change, no further action is needed.</br></br>'
+      + 'If you did not make this change, please reset your password immediately and contact your admin to secure your account.</br></br>';
+    const sendMailArgs: SendMailArgs = {
+      from: settings.platform_email,
+      to: user_email,
+      subject: `The password of your OpenCTI account has been changed`,
+      html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
+    };
+    await sendMail(sendMailArgs);
     return true;
   } catch (error) {
     throw UnsupportedError('Password change failed, please try again.');
