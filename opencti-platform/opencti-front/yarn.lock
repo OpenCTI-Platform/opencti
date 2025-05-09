@@ -15686,7 +15686,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koa@npm:^2.16.0":
+"koa@npm:^2.16.1":
   version: 2.16.1
   resolution: "koa@npm:2.16.1"
   dependencies:
@@ -16942,9 +16942,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-coverage-reports@npm:^2.12.3":
-  version: 2.12.3
-  resolution: "monocart-coverage-reports@npm:2.12.3"
+"monocart-coverage-reports@npm:^2.12.4":
+  version: 2.12.4
+  resolution: "monocart-coverage-reports@npm:2.12.4"
   dependencies:
     acorn: "npm:^8.14.1"
     acorn-loose: "npm:^8.4.0"
@@ -16960,7 +16960,7 @@ __metadata:
     monocart-locator: "npm:^1.0.2"
   bin:
     mcr: lib/cli.js
-  checksum: 10/a462f6bda1b265396691982c4c1dc75b03ae4da90658d037326214c59af37972bc8b78ad4c433650a6543de3cbbd449a53d027f2d6f27c81ba68a1ae0c54924a
+  checksum: 10/795199a58bbc9d7d4a42207086d5faa849137eb81d1507d73884e60645763343de12710275d240efd6fcc5214930f16c8d1a31eee3d0bdafc90b3fb717d01147
   languageName: node
   linkType: hard
 
@@ -16971,21 +16971,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-reporter@npm:2.9.17":
-  version: 2.9.17
-  resolution: "monocart-reporter@npm:2.9.17"
+"monocart-reporter@npm:2.9.18":
+  version: 2.9.18
+  resolution: "monocart-reporter@npm:2.9.18"
   dependencies:
     console-grid: "npm:^2.2.3"
     eight-colors: "npm:^1.3.1"
-    koa: "npm:^2.16.0"
+    koa: "npm:^2.16.1"
     koa-static-resolver: "npm:^1.0.6"
     lz-utils: "npm:^2.1.0"
-    monocart-coverage-reports: "npm:^2.12.3"
+    monocart-coverage-reports: "npm:^2.12.4"
     monocart-locator: "npm:^1.0.2"
-    nodemailer: "npm:^6.10.0"
+    nodemailer: "npm:^6.10.1"
   bin:
     monocart: lib/cli.js
-  checksum: 10/5586eca830944f07251e45a4e8a7519b215e91b2a84eadfb8277d2d8c5bf22aabd38a91ac30fc3d9a3a7d662d6adc62502abe1f3f932ee2acf459f2079d31423
+  checksum: 10/760fa2a5fae748931dae7a19a6877516adb4712906532135a6e937670c090721355ccf74998c7acdbc26e3d544e0facf703cd03d09d1aba3f62d3361d61a2009
   languageName: node
   linkType: hard
 
@@ -17203,10 +17203,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:^6.10.0":
-  version: 6.10.0
-  resolution: "nodemailer@npm:6.10.0"
-  checksum: 10/2e28961c264501e2621860d912e1ab59788825c5aea5ce71041c5b5b52c7470b63e7ab290003d755f647f25048552c6eec256f468292f454d4d6a68c93dd0659
+"nodemailer@npm:^6.10.1":
+  version: 6.10.1
+  resolution: "nodemailer@npm:6.10.1"
+  checksum: 10/d9911701641e06143a2deb0bd5deb518310972316c6e6eabc594af24353b0d67867f26cb8d72b0cfa385abef945149ac51ae40a40d2199e1088aef5829e58a3d
   languageName: node
   linkType: hard
 
@@ -17579,7 +17579,7 @@ __metadata:
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.48"
-    monocart-reporter: "npm:2.9.17"
+    monocart-reporter: "npm:2.9.18"
     pdfmake: "npm:0.2.18"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
