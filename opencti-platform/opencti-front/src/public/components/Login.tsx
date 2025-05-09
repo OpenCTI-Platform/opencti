@@ -25,6 +25,7 @@ import { useFormatter } from '../../components/i18n';
 import { isNotEmptyField } from '../../utils/utils';
 import useDimensions from '../../utils/hooks/useDimensions';
 import SystemBanners from './SystemBanners';
+import ResetPassword from './ResetPassword';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -36,7 +37,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     paddingBottom: 50,
   },
   login: {
-    textAlign: 'center',
+    padding: theme.spacing(3),
     margin: '0 auto',
     maxWidth: 500,
   },
@@ -90,9 +91,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   paper: {
     margin: '0 auto 20px auto',
-    padding: 10,
-    textAlign: 'center',
+    padding: theme.spacing(3),
     maxWidth: 500,
+  },
+  paperMessage: {
+    margin: '0 auto 20px auto',
+    maxWidth: 500,
+    padding: `10px ${theme.spacing(3)}`, // Markdown child component has 14px margin Top and Bottom => theme.spacing(3) = 24 - 14 = 10
+    textAlign: 'justify',
   },
   byFiligran: {
     display: 'flex',
@@ -122,6 +128,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const { t_i18n } = useFormatter();
   const { dimension } = useDimensions();
   const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
+  const [resetPassword, setResetPassword] = useState(false);
 
   const renderExternalAuthButton = (provider?: string | null) => {
     switch (provider) {
@@ -240,31 +247,6 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
 
   const loginScreen = () => (
     <div style={{ marginBottom: 10 }} data-testid="login-page">
-      <img
-        src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight)}
-        alt="logo"
-        className={classes.logo}
-        style={{ marginBottom: isWhitemarkEnable ? 0 : 20 }}
-      />
-      {isWhitemarkEnable && (!loginLogo || loginLogo.length === 0) && (
-        <div className={classes.byFiligran} style={{ marginBottom: 20 }}>
-          <img
-            src={fileUri(theme.palette.mode === 'dark' ? byFiligranDark : byFiligranLight)}
-            className={classes.byFiligranLogo}
-          />
-        </div>
-      )}
-      {isWhitemarkEnable && loginLogo && loginLogo.length > 0 && (
-        <div className={classes.byFiligran} style={{ margin: '5px 0 20px 0' }}>
-          <img
-            src={fileUri(theme.palette.mode === 'dark' ? logoFiligranDark : logoFiligranLight)}
-            className={classes.filigranLogo}
-          />
-          <Typography variant="h4" className={classes.byFiligranText}>
-            by Filigran
-          </Typography>
-        </div>
-      )}
       {expired && expired === true && (
         <Paper
           classes={{ root: classes.paper }}
@@ -281,12 +263,12 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
         </Paper>
       )}
       {isLoginMessage && (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paperMessage }} variant="outlined">
           <Markdown>{loginMessage}</Markdown>
         </Paper>
       )}
       {isConsentMessage && (
-        <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Paper classes={{ root: classes.paperMessage }} variant="outlined">
           <Markdown>{consentMessage}</Markdown>
           <Box display="flex" justifyContent="center" alignItems="center">
             <Markdown>{consentConfirmText}</Markdown>
@@ -299,14 +281,19 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
           </Box>
         </Paper>
       )}
-      {isAuthForm && !isConsentMessage && (
+      {isAuthForm && !isConsentMessage && !resetPassword && (
         <Paper variant="outlined" classes={{ root: classes.login }}>
-          <LoginForm />
+          <LoginForm onClickForgotPassword={() => setResetPassword(true)} />
         </Paper>
       )}
-      {isAuthForm && isConsentMessage && checked && (
+      {isAuthForm && isConsentMessage && checked && !resetPassword && (
         <Paper variant="outlined" classes={{ root: classes.login }}>
-          <LoginForm />
+          <LoginForm onClickForgotPassword={() => setResetPassword(true)} />
+        </Paper>
+      )}
+      {resetPassword && (
+        <Paper variant="outlined" classes={{ root: classes.login }}>
+          <ResetPassword onCancel={() => setResetPassword(false)} />
         </Paper>
       )}
       {isAuthButtons && !isConsentMessage && renderExternalAuth(authSSOs)}
@@ -323,16 +310,9 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const authScreen = () => {
     if (type === '2FA_VALIDATION') {
       return (
-        <>
-          <img
-            src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight))}
-            alt="logo"
-            className={classes.logo}
-          />
-          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ marginTop: 20 }}>
-            <OTPForm />
-          </Paper>
-        </>
+        <Paper classes={{ root: classes.paper }} variant="outlined" style={{ marginTop: 20 }}>
+          <OTPForm />
+        </Paper>
       );
     }
     if (type === '2FA_ACTIVATION') {
@@ -341,10 +321,42 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     return loginScreen();
   };
 
+  const logo = () => {
+    return (
+      <>
+        <img
+          src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(theme.palette.mode === 'dark' ? logoDark : logoLight)}
+          alt="logo"
+          className={classes.logo}
+          style={{ marginBottom: isWhitemarkEnable ? 0 : 20 }}
+        />
+        {isWhitemarkEnable && (!loginLogo || loginLogo.length === 0) && (
+          <div className={classes.byFiligran} style={{ marginBottom: 20 }}>
+            <img
+              src={fileUri(theme.palette.mode === 'dark' ? byFiligranDark : byFiligranLight)}
+              className={classes.byFiligranLogo}
+            />
+          </div>
+        )}
+        {isWhitemarkEnable && loginLogo && loginLogo.length > 0 && (
+          <div className={classes.byFiligran} style={{ margin: '5px 0 20px 0' }}>
+            <img
+              src={fileUri(theme.palette.mode === 'dark' ? logoFiligranDark : logoFiligranLight)}
+              className={classes.filigranLogo}
+            />
+            <Typography variant="h4" className={classes.byFiligranText}>
+              by Filigran
+            </Typography>
+          </div>
+        )}</>
+    );
+  };
+
   return (
     <div>
       <SystemBanners settings={settings} />
       <div className={classes.container} style={{ paddingTop }}>
+        {logo()}
         {authScreen()}
       </div>
     </div>

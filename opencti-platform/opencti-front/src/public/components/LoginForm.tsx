@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
 import Button from '@mui/material/Button';
@@ -6,19 +6,12 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useCookies } from 'react-cookie';
-import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
+import { useTheme } from '@mui/styles';
+import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../components/i18n';
 import useApiMutation from '../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  login: {
-    padding: 15,
-  },
-}));
 
 const loginMutation = graphql`
   mutation LoginFormMutation($input: UserLoginInput!) {
@@ -40,9 +33,13 @@ interface RelayResponseError extends Error {
   res?: RelayResponsePayload;
 }
 
+interface LoginFormProps {
+  onClickForgotPassword: () => void;
+}
+
 const FLASH_COOKIE = 'opencti_flash';
-const LoginForm = () => {
-  const classes = useStyles();
+const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword }) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const flashError = cookies[FLASH_COOKIE] || '';
@@ -75,7 +72,7 @@ const LoginForm = () => {
   };
 
   return (
-    <div className={classes.login}>
+    <>
       <Formik
         initialValues={initialValues}
         initialTouched={{ email: !R.isEmpty(flashError) }}
@@ -97,21 +94,24 @@ const LoginForm = () => {
               label={t_i18n('Password')}
               type="password"
               fullWidth={true}
-              style={{ marginTop: 20 }}
+              style={{ marginTop: theme.spacing(2) }}
             />
             <Button
               type="submit"
               variant="contained"
               color="primary"
               disabled={isSubmitting || !isValid}
-              style={{ marginTop: 30 }}
+              style={{ marginTop: theme.spacing(3) }}
             >
               {t_i18n('Sign in')}
             </Button>
           </Form>
         )}
       </Formik>
-    </div>
+      <div style={{ marginTop: theme.spacing(2), cursor: 'pointer' }}>
+        <a onClick={onClickForgotPassword}>{t_i18n('I forgot my password')}</a>
+      </div>
+    </>
   );
 };
 
