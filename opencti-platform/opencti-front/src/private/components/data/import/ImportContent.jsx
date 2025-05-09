@@ -19,7 +19,6 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import Fab from '@mui/material/Fab';
 import makeStyles from '@mui/styles/makeStyles';
-import ImportMenu from '../ImportMenu';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SelectField from '../../../../components/fields/SelectField';
 import { TEN_SECONDS } from '../../../../utils/Time';
@@ -162,7 +161,6 @@ const ImportContentComponent = ({
   relay,
   importFiles,
   pendingFiles,
-  isNewImportScreensEnabled,
   inDraftOverview,
 }) => {
   const classes = useStyles();
@@ -309,13 +307,12 @@ const ImportContentComponent = ({
 
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
   return (
-    <div style={{ paddingRight: isNewImportScreensEnabled && !inDraftOverview ? 200 : 0 }}>
+    <div>
       {!inDraftOverview && (
-      <Breadcrumbs
-        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
-      />
+        <Breadcrumbs
+          elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+        />
       )}
-      {isNewImportScreensEnabled && !inDraftOverview && <ImportMenu/>}
       <Grid
         container={true}
         spacing={3}
@@ -341,12 +338,12 @@ const ImportContentComponent = ({
               {importFilesEdges.length ? (
                 <List>
                   {importFilesEdges.map((file) => file?.node && (
-                  <FileLine
-                    key={file.node.id}
-                    file={file.node}
-                    connectors={ importConnsPerFormat[file.node.metaData.mimetype] }
-                    handleOpenImport={handleOpenImport}
-                  />
+                    <FileLine
+                      key={file.node.id}
+                      file={file.node}
+                      connectors={importConnsPerFormat[file.node.metaData.mimetype]}
+                      handleOpenImport={handleOpenImport}
+                    />
                   ))}
                 </List>
               ) : (
@@ -420,7 +417,7 @@ const ImportContentComponent = ({
               </List>
             </Paper>
           </div>
-        </Grid>)}
+          </Grid>)}
       </Grid>
       <div>
         <Formik
@@ -600,23 +597,23 @@ const ImportContentComponent = ({
           )}
         </Formik>
         {!inDraftOverview && (
-        <WorkbenchFileCreator
-          handleCloseCreate={handleCloseCreate}
-          openCreate={displayCreate}
-          onCompleted={onCreateWorkbenchCompleted}
-        />
+          <WorkbenchFileCreator
+            handleCloseCreate={handleCloseCreate}
+            openCreate={displayCreate}
+            onCompleted={onCreateWorkbenchCompleted}
+          />
         )}
       </div>
       {!inDraftOverview && (
-      <Fab
-        onClick={handleOpenCreate}
-        color="primary"
-        aria-label="Add"
-        className={classes.createButton}
-        style={{ right: isNewImportScreensEnabled ? 230 : 30 }}
-      >
-        <Add />
-      </Fab>
+        <Fab
+          onClick={handleOpenCreate}
+          color="primary"
+          aria-label="Add"
+          className={classes.createButton}
+          style={{ right: 30 }}
+        >
+          <Add/>
+        </Fab>
       )}
     </div>
   );

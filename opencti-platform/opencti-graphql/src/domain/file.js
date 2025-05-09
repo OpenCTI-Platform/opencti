@@ -127,7 +127,12 @@ export const uploadPending = async (context, user, args) => {
     };
   }
 
-  const { upload: up } = await uploadToStorage(context, user, 'import/pending', finalFile, { meta, file_markings, errorOnExisting, entity });
+  const { upload: up } = await uploadToStorage(context, user, 'import/pending', finalFile, {
+    meta,
+    file_markings,
+    errorOnExisting,
+    entity
+  });
   const contextData = buildContextDataForFile(entity, 'import/pending', up.name, up.metaData.file_markings);
   await publishUserAction({
     user,

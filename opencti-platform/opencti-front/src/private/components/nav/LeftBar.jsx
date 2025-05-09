@@ -216,6 +216,8 @@ const LeftBar = () => {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
     settings: { platform_whitemark },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -559,8 +561,8 @@ const LeftBar = () => {
             <StyledTooltip title={!navOpen && t_i18n('Draft overview')} placement="right">
               <MenuItem
                 component={Link}
-                to={`/dashboard/drafts/${draftContext.id}/`}
-                selected={location.pathname.includes(`/dashboard/drafts/${draftContext.id}/`)}
+                to={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftContext.id}/` : `/dashboard/drafts/${draftContext.id}/`}
+                selected={location.pathname.includes(isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftContext.id}/` : `/dashboard/drafts/${draftContext.id}/`)}
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
@@ -887,7 +889,7 @@ const LeftBar = () => {
             <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <MenuItem
                 ref={anchors.data}
-                selected={!navOpen && location.pathname.includes('/dashboard/data')}
+                selected={!navOpen && location.pathname.includes('/dashboard/data') && !draftContext}
                 dense={true}
                 classes={{ root: classes.menuItem }}
                 onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('data') : handleGoToPage(e, '/dashboard/data'))}
@@ -911,14 +913,18 @@ const LeftBar = () => {
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: 'Entities' },
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: 'Relationships' },
                   { granted: isGrantedToIngestion && !draftContext, link: '/dashboard/data/ingestion', label: 'Ingestion' },
-                  { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: 'Import' },
+                  {
+                    granted: isGrantedToImport && !draftContext,
+                    link: `/dashboard/data/import${isNewImportScreensEnabled ? '/file' : ''}`,
+                    label: 'Import',
+                  },
                   { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: 'Processing' },
                   { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: 'Data sharing' },
                   ...(isEnterpriseEdition ? [{ granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: 'Restriction' }] : []),
                 ],
               )}
             </Security>
-            {!draftContext && (
+            {!draftContext && !isNewImportScreensEnabled && (
               <Security needs={[KNOWLEDGE]}>
                 <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
                   <MenuItem

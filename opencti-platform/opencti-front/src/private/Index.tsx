@@ -64,6 +64,10 @@ const Index = ({ settings }: IndexProps) => {
     minHeight: '100vh',
     paddingTop: `calc( 16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 24 for margin, 48 for top bar
   };
+
+  const { isFeatureEnable } = useHelper();
+  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
+
   // Change the theme body attribute when the mode changes in
   // the palette because some components like CKEditor uses this
   // body attribute to display correct styles.
@@ -98,7 +102,15 @@ const Index = ({ settings }: IndexProps) => {
         <Box component="main" sx={boxSx}>
           <Suspense fallback={<Loader />}>
             <Routes>
-              <Route path="/" element={draftContext?.id ? <Navigate to={`/dashboard/drafts/${draftContext.id}/`} replace={true} /> : boundaryWrapper(Dashboard)}/>
+              <Route path="/" element={draftContext?.id
+                ? (
+                  <Navigate to={isNewImportScreensEnabled
+                    ? `/dashboard/data/import/draft/${draftContext.id}/`
+                    : `/dashboard/drafts/${draftContext.id}/`} replace={true}
+                  />
+                )
+                : boundaryWrapper(Dashboard)}
+              />
               {/* Search need to be rework */}
               <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
               <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
@@ -112,9 +124,12 @@ const Index = ({ settings }: IndexProps) => {
               {/* Need to refactor below */}
               <Route path="/entities/*" element={boundaryWrapper(RootEntities)}/>
               <Route path="/locations/*" element={boundaryWrapper(RootLocation)}/>
+              <Route
+                path={isNewImportScreensEnabled ? '/data/import/draft/*' : '/drafts/*'}
+                element={boundaryWrapper(RootDrafts)}
+              />
               <Route path="/data/*" element={boundaryWrapper(RootData)}/>
               {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)}/>)}
-              <Route path="/drafts/*" element={boundaryWrapper(RootDrafts)}/>
               <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)}/>
               <Route path="/settings/*" element={boundaryWrapper(RootSettings)}/>
               <Route path="/audits/*" element={boundaryWrapper(RootAudit)}/>
