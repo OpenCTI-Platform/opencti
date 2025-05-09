@@ -224,7 +224,7 @@
   "DST port": "Port DST",
   "Due date": "Date d'échéance",
   "Due date (UTC)": "Date d'échéance (UTC)",
-  "Duplicate a CSV ingester": "Dupliquer un injecteur CSV",
+  "Duplicate a CSV feed": "Dupliquer un flux CSV",
   "Duplicate a CSV mapper": "Dupliquer un mappeur CSV",
   "Duplicate a feed": "Dupliquer un flux",
   "Element ID": "ID de l'élément",

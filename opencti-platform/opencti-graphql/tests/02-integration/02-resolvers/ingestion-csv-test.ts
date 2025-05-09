@@ -188,7 +188,7 @@ describe('CSV ingestion resolver standard behavior', () => {
     });
     const { errors } = deleteResult;
     expect(errors).toBeDefined();
-    expect(errors?.[0].message).toBe('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv ingester(s)');
+    expect(errors?.[0].message).toBe('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv feed(s)');
   });
 
   it('should delete the CSV feeds ingester', async () => {

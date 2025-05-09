@@ -3,6 +3,7 @@ import { batchCreator } from '../../domain/user';
 import type { Resolvers } from '../../generated/graphql';
 import {
   addIngestionCsv,
+  csvFeedAddInputFromImport,
   deleteIngestionCsv,
   findAllPaginated,
   findById,
@@ -18,6 +19,7 @@ const ingestionCsvResolvers: Resolvers = {
   Query: {
     ingestionCsv: (_, { id }, context) => findById(context, context.user, id),
     ingestionCsvs: (_, args, context) => findAllPaginated(context, context.user, args),
+    csvFeedAddInputFromImport: (_, { file }, context) => csvFeedAddInputFromImport(context, context.user, file),
   },
   IngestionCsv: {
     user: (ingestionCsv, _, context) => creatorLoader.load(ingestionCsv.user_id, context, context.user),

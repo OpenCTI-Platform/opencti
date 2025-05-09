@@ -12,7 +12,7 @@ import CommitMessage from '@components/common/form/CommitMessage';
 import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import CsvMapperField, { CsvMapperFieldOption, csvMapperQuery } from '@components/common/form/CsvMapperField';
 import Button from '@mui/material/Button';
-import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
+import IngestionCsvFeedTestDialog from '@components/data/ingestionCsv/IngestionCsvFeedTestDialog';
 import makeStyles from '@mui/styles/makeStyles';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
@@ -50,7 +50,7 @@ export const ingestionCsvEditionPatch = graphql`
     ingestionCsvFieldPatch(id: $id, input: $input) {
       ...IngestionCsvEditionFragment_ingestionCsv
     }
-  } 
+  }
 `;
 
 export const ingestionCsvEditionFragment = graphql`
@@ -471,7 +471,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               {t_i18n('Verify')}
             </Button>
           </div>
-          <IngestionCsvMapperTestDialog
+          <IngestionCsvFeedTestDialog
             open={open}
             onClose={() => setOpen(false)}
             values={values}

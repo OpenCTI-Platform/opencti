@@ -224,7 +224,7 @@
   "DST port": "DST 端口",
   "Due date": "到期日",
   "Due date (UTC)": "到期日（世界协调时）",
-  "Duplicate a CSV ingester": "复制 CSV 输入器",
+  "Duplicate a CSV feed": "复制 CSV 数据源",
   "Duplicate a CSV mapper": "复制 CSV 映射器",
   "Duplicate a feed": "复制一个饲料",
   "Element ID": "元素 ID",
