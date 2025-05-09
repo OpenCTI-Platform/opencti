@@ -102,7 +102,10 @@ export const scopesConn = (exportConnectors) => {
 class StixDomainObjectsExportCreationComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, selectedContentMaxMarkingsIds: [] };
+    this.state = {
+      open: false,
+      selectedContentMaxMarkingsIds: [],
+    };
   }
 
   handleSelectedContentMaxMarkingsChange(values) {
@@ -119,7 +122,6 @@ class StixDomainObjectsExportCreationComponent extends Component {
 
   onSubmit(selectedIds, values, { setSubmitting, resetForm }) {
     const { paginationOptions, exportContext } = this.props;
-
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
 
@@ -145,7 +147,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
   }
 
   render() {
-    const { classes, t, data } = this.props;
+    const { classes, t, data, idAndPatternTypes } = this.props;
     const connectorsExport = propOr([], 'connectorsForExport', data);
     const exportScopes = uniq(
       flatten(map((c) => c.connector_scope, connectorsExport)),
@@ -154,9 +156,17 @@ class StixDomainObjectsExportCreationComponent extends Component {
     const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
     const availableFormat = exportScopes;
+
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
+          const selectedIndicators = idAndPatternTypes.filter((indicator) => selectedIds?.includes(indicator.id));
+          const selectedPatternTypes = selectedIndicators.map((indicator) => indicator.pattern_type);
+          const uniquePatternTypes = [...new Set(selectedPatternTypes)];
+          const hasSinglePatternType = uniquePatternTypes.length === 1;
+          const hasMultipleSelectedIds = selectedIds.length > 1;
+          const showPatternExport = hasMultipleSelectedIds && hasSinglePatternType;
+
           return (
             <>
               <Tooltip
@@ -191,7 +201,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                 onSubmit={this.onSubmit.bind(this, selectedIds)}
                 onReset={this.handleClose.bind(this)}
               >
-                {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
+                {({ values, submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
                   <Form>
                     <Dialog
                       slotProps={{ paper: { elevation: 1 } }}
@@ -236,6 +246,9 @@ class StixDomainObjectsExportCreationComponent extends Component {
                           <MenuItem value="simple">
                             {t('Simple export (just the entity)')}
                           </MenuItem>
+                          {showPatternExport && values.format === 'text/plain' && <MenuItem value="pattern">
+                            {t('Pattern export (just the entity pattern field)')}
+                          </MenuItem>}
                           <MenuItem value="full">
                             {t(
                               'Full export (entity and first neighbours)',
@@ -245,7 +258,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                         <ObjectMarkingField
                           name="contentMaxMarkings"
                           label={t(CONTENT_MAX_MARKINGS_TITLE)}
-                          onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
+                          onChange={(_, valuesTemp) => this.handleSelectedContentMaxMarkingsChange(valuesTemp)}
                           style={fieldSpacingContainerStyle}
                           setFieldValue={setFieldValue}
                           limitToMaxSharing
@@ -307,6 +320,7 @@ StixDomainObjectsExportCreations.propTypes = {
   exportContext: PropTypes.object,
   paginationOptions: PropTypes.object,
   onExportAsk: PropTypes.func,
+  patternTypes: PropTypes.array.isRequired,
 };
 
 export default compose(
