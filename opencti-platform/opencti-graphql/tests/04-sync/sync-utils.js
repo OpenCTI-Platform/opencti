@@ -63,7 +63,7 @@ export const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
   `;
 
 export const VOCABULARY_NUMBERS = 343;
-export const INDICATOR_NUMBERS = 28;
+export const INDICATOR_NUMBERS = 33;
 export const MALWARE_NUMBERS = 27;
 export const LABEL_NUMBERS = 13;
 export const UPLOADED_FILE_SIZE = 42204;
