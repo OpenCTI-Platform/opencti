@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, InvertColorsOffOutlined, ViewColumnOutlined } from '@mui/icons-material';
@@ -41,6 +41,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
+import { CreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -103,6 +104,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   killChainDataQueryRef,
 }) => {
   const { t_i18n } = useFormatter();
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
   const [currentColorsReversed, setCurrentColorsReversed] = useState(false);
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
@@ -113,6 +115,12 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const refetch = React.useCallback(() => {
     loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
+
+  useEffect(() => {
+    setCreateRelationshipContext({
+      onCreate: refetch,
+    });
+  }, []);
 
   const handleToggleColorsReversed = () => {
     setCurrentColorsReversed(!currentColorsReversed);
