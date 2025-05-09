@@ -297,6 +297,7 @@ FilterIconButtonContainerProps
         const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
         const filterOperator = currentFilter.operator ?? 'eq';
         const keyLabel = buildKeyLabel(filterOperator, filterLabel, currentFilter.values);
+        const isNotLastFilter = index < displayedFilters.length - 1;
 
         return (
           <Box key={currentFilter.id ?? `tooltip-${index}`}>
@@ -310,6 +311,10 @@ FilterIconButtonContainerProps
               entityTypes={entityTypes}
               filtersRestrictions={filtersRestrictions}
             />
+
+            {isNotLastFilter && (
+            <div>{t_i18n(globalMode.toUpperCase())}   </div>
+            )}
           </Box>
         );
       })}
