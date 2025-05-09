@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
+import RegionDetails from '@components/locations/regions/RegionDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -65,6 +66,7 @@ const regionFragment = graphql`
       }
     }
     name
+    description
     latitude
     longitude
     x_opencti_aliases
@@ -93,7 +95,10 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid item xs={4}>
+          <RegionDetails region={region} />
+        </Grid>
+        <Grid item xs={4}>
           <LocationMiniMap
             center={
               region.latitude && region.longitude
@@ -104,7 +109,7 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
             zoom={3}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <StixDomainObjectOverview
             stixDomainObject={region}
           />
