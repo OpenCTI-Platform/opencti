@@ -24,7 +24,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import DialogTitle from '@mui/material/DialogTitle';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -35,14 +34,6 @@ import Transition from '../../../../components/Transition';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-}));
 
 const playbookPopoverDeletionMutation = graphql`
   mutation PlaybookPopoverDeletionMutation($id: ID!) {
@@ -63,7 +54,6 @@ const playbookEditionQuery = graphql`
 
 const PlaybookPopover = (props) => {
   const { playbookId, running, paginationOptions } = props;
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -160,7 +150,7 @@ const PlaybookPopover = (props) => {
     });
   };
   return (
-    <div className={classes.container}>
+    <>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -251,7 +241,7 @@ const PlaybookPopover = (props) => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </>
   );
 };
 
