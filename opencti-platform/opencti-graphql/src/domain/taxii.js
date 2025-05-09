@@ -12,13 +12,14 @@ import conf, { BUS_TOPICS } from '../config/conf';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../listener/UserActionListener';
-import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
+import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
 import { authorizedMembers } from '../schema/attribute-definition';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_OBJECT } from '../schema/general';
+import { TAXIIAPI } from './user';
 
 const MAX_TAXII_PAGINATION = conf.get('app:data_sharing:taxii:max_pagination_result') || 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
@@ -46,7 +47,7 @@ export const findById = async (context, user, collectionId) => {
   return storeLoadById(context, user, collectionId, [ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_INGESTION_TAXII_COLLECTION]);
 };
 export const findAll = (context, user, args) => {
-  if (user) {
+  if (user && isUserHasCapability(user, TAXIIAPI)) {
     const options = { ...args, includeAuthorities: true };
     return listEntities(context, user, [ENTITY_TYPE_TAXII_COLLECTION], options);
   }
