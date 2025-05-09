@@ -11,8 +11,8 @@ import { type SavedFiltersSelectionData } from 'src/components/saved_filters/Sav
 import Badge from '@mui/material/Badge';
 
 const savedFilterButtonEditMutation = graphql`
-  mutation SavedFilterButtonEditMutation($id: ID!, $filters: String!) {
-    savedFilterFieldPatch(id: $id, filters: $filters) {
+  mutation SavedFilterButtonEditMutation($id: ID!, $input: [EditInput!]!) {
+    savedFilterFieldPatch(id: $id, input: $input) {
       id
       name
       filters
@@ -50,10 +50,14 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
 
   const handleEditSavedFilter = () => {
     if (!currentSavedFilter) return;
+    const input = {
+      key: 'filters',
+      value: [JSON.stringify(filters)],
+    };
     commit({
       variables: {
         id: currentSavedFilter.id,
-        filters: JSON.stringify(filters),
+        input,
       },
       onCompleted: () => {
         const newValue = {

@@ -48,6 +48,17 @@ const DELETE_SAVED_FILTER_MUTATION = gql`
   }
 `;
 
+const EDIT_SAVED_FILTER_MUTATION = gql`
+  mutation savedFilterEdit($id: ID!, $input: [EditInput!]!) {
+    savedFilterFieldPatch(id: $id, input: $input) {
+      id
+      name
+      filters
+      scope
+    }
+  }
+`;
+
 describe('Saved Filter Resolver', () => {
   let createdFilterId: string = '';
   const newFilter = {
@@ -56,7 +67,7 @@ describe('Saved Filter Resolver', () => {
     filterGroups: [],
   };
 
-  describe('addSavedFilter', () => {
+  describe('savedFilterAdd', () => {
     describe('If I use the addSavedFilter mutation', () => {
       it('should create a filter', async () => {
         const input = {
@@ -104,7 +115,32 @@ describe('Saved Filter Resolver', () => {
     });
   });
 
-  describe('deleteSavedFilter', () => {
+  describe('savedFilterEdit', () => {
+    describe('If I edit the filter of a saved Filter', async () => {
+      const editedFilters = {
+        ...newFilter,
+        filters: [{ key: 'entity_type', operator: 'eq', mode: 'or', values: ['Task'] }]
+      };
+      const input = {
+        key: 'filters',
+        value: [JSON.stringify(editedFilters)],
+      };
+
+      it('should have a filter different than the initial value', async () => {
+        const result = await queryAsAdminWithSuccess({
+          query: EDIT_SAVED_FILTER_MUTATION,
+          variables: {
+            id: createdFilterId,
+            input,
+          },
+        });
+
+        expect(result?.data?.savedFilterFieldPatch?.filters).not.equal(JSON.stringify(newFilter));
+      });
+    });
+  });
+
+  describe('savedFilterDelete', () => {
     describe('If I take the last created filter', () => {
       it('should have found the filter', async () => {
         const savedFilter = await elLoadById(testContext, ADMIN_USER, createdFilterId);

@@ -28,12 +28,11 @@ export const deleteSavedFilter = (context: AuthContext, user: AuthUser, savedFil
 };
 
 export const fieldPatchSavedFilter = async (context: AuthContext, user: AuthUser, args: MutationSavedFilterFieldPatchArgs) => {
-  const { id, filters } = args;
+  const { id, input } = args;
   const savedFilter = await findById(context, user, id);
   if (!savedFilter) throw FunctionalError('Saved filter cannot be found', { id });
 
-  const fullInput = [{ key: 'filters', value: [filters] }];
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SAVED_FILTER, fullInput);
+  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_SAVED_FILTER, input);
 
   await publishUserAction({
     user,
@@ -41,7 +40,7 @@ export const fieldPatchSavedFilter = async (context: AuthContext, user: AuthUser
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`filters\` for saved filters \`${element.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_SAVED_FILTER, input: filters }
+    context_data: { id, entity_type: ENTITY_TYPE_SAVED_FILTER, input }
   });
 
   return element;
