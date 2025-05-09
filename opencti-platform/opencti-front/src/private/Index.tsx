@@ -38,6 +38,7 @@ const RootDrafts = lazy(() => import('./components/drafts/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
 const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
+const RootPir = lazy(() => import('./components/pir/Root'));
 
 interface IndexProps {
   settings: RootSettings$data
@@ -115,6 +116,7 @@ const Index = ({ settings }: IndexProps) => {
               <Route path="/data/*" element={boundaryWrapper(RootData)}/>
               {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)}/>)}
               <Route path="/drafts/*" element={boundaryWrapper(RootDrafts)}/>
+              <Route path="/pirs/*" element={boundaryWrapper(RootPir)}/>
               <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)}/>
               <Route path="/settings/*" element={boundaryWrapper(RootSettings)}/>
               <Route path="/audits/*" element={boundaryWrapper(RootAudit)}/>

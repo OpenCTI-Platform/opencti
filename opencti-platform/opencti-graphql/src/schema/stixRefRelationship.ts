@@ -10,6 +10,7 @@ import {
   INPUT_ETHNICITY,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
+  INPUT_IN_PIR,
   INPUT_INTERNAL_FILES,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
@@ -52,6 +53,7 @@ import {
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from './stixCyberObservable';
 import { ATTRIBUTE_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 
 export const ABSTRACT_STIX_NESTED_REF_RELATIONSHIP = 'stix-nested-ref-relationship'; // Only for front usage
 
@@ -660,6 +662,7 @@ export const RELATION_OBJECT_ASSIGNEE = 'object-assignee';
 export const RELATION_OBJECT_PARTICIPANT = 'object-participant';
 export const RELATION_BORN_IN = 'born-in'; // Extension (TIM)
 export const RELATION_ETHNICITY = 'of-ethnicity'; // Extension (TIM)
+export const RELATION_IN_PIR = 'in-pir';
 
 // EXTERNAL
 
@@ -901,6 +904,24 @@ export const killChainPhases: RefAttribute = {
   toTypes: [ENTITY_TYPE_KILL_CHAIN_PHASE],
 };
 
+export const inPir: RefAttribute = {
+  name: INPUT_IN_PIR,
+  type: 'ref',
+  databaseName: RELATION_IN_PIR,
+  stixName: 'in_pir_refs',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: false, // TODO PIR check upsert
+  isRefExistingForTypes(this, _, toType) {
+    return this.toTypes.includes(toType);
+  },
+  label: 'In PIR',
+  datable: false,
+  isFilterable: true,
+  toTypes: [ENTITY_TYPE_PIR],
+};
+
 export const META_RELATIONS: RefAttribute[] = [
   objectLabel,
   externalReferences,
@@ -913,6 +934,7 @@ export const META_RELATIONS: RefAttribute[] = [
   // OCTI
   objectOrganization,
   objectAssignee,
+  inPir,
 ];
 
 // Register

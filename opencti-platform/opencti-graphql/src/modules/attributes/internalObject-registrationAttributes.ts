@@ -28,6 +28,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
 import { RETENTION_SCOPE_VALUES, RETENTION_UNIT_VALUES } from '../../manager/retentionManager';
+import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 
 const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
@@ -134,6 +135,7 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'input', label: 'Input', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'external_references', label: 'External references', type: 'object', format: 'flat', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       { name: 'marking_definitions', label: 'Marking definitions', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+      { name: 'pir_ids', label: 'PIR IDS', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_PIR], editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
     ]
   },
   { ...creators, isFilterable: false },
@@ -508,6 +510,9 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'task_expected_number', label: 'Expected number', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'last_execution_date', label: 'Last execution date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'task_order_mode', label: 'Order mode for queries', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'pir_dependencies_map', label: 'PIR dependencies map', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'pir_id', label: 'PIR ID', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_PIR], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'pir_criteria', label: 'PIR criteria', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     errors,
   ],
   [ENTITY_TYPE_RETENTION_RULE]: [

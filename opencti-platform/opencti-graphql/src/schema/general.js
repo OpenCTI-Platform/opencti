@@ -36,6 +36,7 @@ export const INPUT_DOMAIN_TO = 'to'; // target_ref
 export const INPUT_BORN_IN = 'bornIn'; // Extension (TIM)
 export const INPUT_ETHNICITY = 'ethnicity'; // Extension (TIM)
 export const INPUT_AUTHORIZED_MEMBERS = 'restricted_members'; // Extension (TIM)
+export const INPUT_IN_PIR = 'inPir';
 
 // Specific prefix
 export const REL_INDEX_PREFIX = 'rel_';

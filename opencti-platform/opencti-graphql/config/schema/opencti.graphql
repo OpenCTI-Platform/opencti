@@ -12115,6 +12115,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | CsvMapper
   | Status
   | PublicDashboard
+  | PIR
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -12199,6 +12200,7 @@ union StixObjectOrStixRelationship =
   | Workspace
   | CsvMapper
   | PublicDashboard
+  | PIR
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -12655,6 +12657,8 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
+  pir_dependencies: [PirDependency!]
+  pir_score: Int
   # Technical
   creators: [Creator!]
   editContext: [EditUserContext!]
@@ -12684,6 +12688,7 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  pir_dependencies: [PirDependencyInput!]
 }
 input StixRefRelationshipsAddInput {
   relationship_type: String!

@@ -491,6 +491,8 @@ const StixCoreObjectHistoryLine = createFragmentContainer(
         context_data {
           message
           commit
+          to_id
+          from_id
           external_references {
             id
             source_name

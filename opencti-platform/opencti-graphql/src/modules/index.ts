@@ -67,6 +67,7 @@ import './draftWorkspace/draftWorkspace';
 import './fintelTemplate/fintelTemplate';
 import './disseminationList/disseminationList';
 import './savedFilter/savedFilter';
+import './pir/pir';
 
 // incomplete modules
 import './report/report';
@@ -130,4 +131,5 @@ import './fintelTemplate/fintelTemplate-graphql';
 import './disseminationList/disseminationList-graphql';
 import './savedFilter/savedFilter-graphql';
 import './requestAccess/requestAccess-graphql';
+import './pir/pir-graphql';
 // endregion

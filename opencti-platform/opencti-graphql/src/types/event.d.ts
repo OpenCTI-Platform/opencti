@@ -54,7 +54,7 @@ interface UpdateEvent extends StreamDataEvent {
   context: {
     patch: Array<Operation>;
     reverse_patch: Array<Operation>;
-    related_restrictions?: { markings: string[] };
+    related_restrictions?: { markings: string[], pir_ids?: string[] };
   };
 }
 

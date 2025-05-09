@@ -7,6 +7,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
@@ -47,6 +48,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_DRAFT_WORKSPACE,
   ENTITY_TYPE_EXCLUSION_LIST,
   ENTITY_TYPE_SAVED_FILTER,
+  ENTITY_TYPE_PIR
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
@@ -77,6 +79,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_EXCLUSION_LIST,
   ENTITY_TYPE_FINTEL_TEMPLATE,
   ENTITY_TYPE_SAVED_FILTER,
+  ENTITY_TYPE_PIR
 ];
 const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
 

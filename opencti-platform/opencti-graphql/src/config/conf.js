@@ -38,6 +38,7 @@ import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionLi
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { ENTITY_TYPE_DISSEMINATION_LIST } from '../modules/disseminationList/disseminationList-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -688,6 +689,11 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SUPPORT_PACKAGE_EDIT_TOPIC`,
   },
   [ENTITY_TYPE_FINTEL_TEMPLATE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}TEMPLATE_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}TEMPLATE_ADDED_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}TEMPLATE_DELETE_TOPIC`,
+  },
+  [ENTITY_TYPE_PIR]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}TEMPLATE_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}TEMPLATE_ADDED_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}TEMPLATE_DELETE_TOPIC`,
