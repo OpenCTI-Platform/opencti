@@ -52,6 +52,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TimePickerField from '../../../../components/TimePickerField';
 import { parse } from '../../../../utils/Time';
+import CaseTemplateField from "@components/common/form/CaseTemplateField";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -514,6 +515,7 @@ const PlaybookAddComponentsContent = ({
       ),
       R.filter(filterByKeyword),
     )(playbookComponents);
+
     return (
       <div className={classes.lines}>
         <List>
@@ -606,6 +608,11 @@ const PlaybookAddComponentsContent = ({
                         alert={false}
                       />
                     );
+                  }
+                  if (k === 'caseTemplates') {
+                    return (
+                      <CaseTemplateField label="Case templates" />
+                    )
                   }
                   if (k === 'filters') {
                     return (
