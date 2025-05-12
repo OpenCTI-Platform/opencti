@@ -106,7 +106,7 @@ const extractComplexPathFromJson = async (
   return attrDef ? format(val, attrDef, attribute) : val;
 };
 
-const extractSimplePathFromJson = async (
+const extractSimplePathFromJson = (
   base: JSON,
   record: JSON,
   attribute: SimpleAttributePath,
@@ -123,7 +123,7 @@ const extractSimplePathFromJson = async (
   return attrDef ? format(val, attrDef, attribute) : val;
 };
 
-const extractIdentifierFromJson = async (
+const extractIdentifierFromJson = (
   base: JSON,
   record: JSON,
   identifier: string,
@@ -151,7 +151,7 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.mode === 'simple' && attribute.attr_path) {
-    const computedValue = await extractSimplePathFromJson(base, record, attribute.attr_path, definition);
+    const computedValue = extractSimplePathFromJson(base, record, attribute.attr_path, definition);
     if (computedValue !== null && computedValue !== undefined) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
@@ -205,7 +205,7 @@ const handleBasedOnAttribute = async (
     // region fetch entities
     let entities;
     if (attribute.based_on.identifier) {
-      const computedValue = await extractIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
+      const computedValue = extractIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
       const computedIdentifier = computedValue ? computedValue.trim() : computedValue;
       entities = (attribute.based_on.representations ?? [])
         .map((id) => otherEntities.get(id)).flat()
@@ -345,7 +345,7 @@ const jsonMappingExecution = async (meta: Record<string, any>, data: string | ob
         } else {
           input.standard_id = generateStandardId(entity_type, input);
           if (representation.identifier) {
-            const identifier = await extractIdentifierFromJson(baseJson, baseDatum, representation.identifier, idType);
+            const identifier = extractIdentifierFromJson(baseJson, baseDatum, representation.identifier, idType);
             input.__identifier = identifier ? identifier.trim() : identifier;
           } else {
             input.__identifier = uuidv4();
