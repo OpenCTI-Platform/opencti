@@ -44,7 +44,7 @@ import { findById } from '../domain/user';
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
 const PUBLISHER_ENABLE_BUFFERING = conf.get('publisher_manager:enable_buffering');
-const PUBLISHER_BUFFERING_MINUTES = conf.get('publisher_manager:buffering_minutes');
+const PUBLISHER_BUFFERING_SECONDS = conf.get('publisher_manager:buffering_seconds');
 const STREAM_SCHEDULE_TIME = 10000;
 
 export const internalProcessNotification = async (
@@ -303,7 +303,7 @@ const handleEntityNotificationBuffer = async () => {
     const key = bufferKeys[i];
     const value = liveNotificationBufferPerEntity[key];
     if (value) {
-      const isBufferingTimeElapsed = (dateNow - value.timestamp) > PUBLISHER_BUFFERING_MINUTES * 60000;
+      const isBufferingTimeElapsed = (dateNow - value.timestamp) > PUBLISHER_BUFFERING_SECONDS * 1000;
       // If buffer is older than configured buffering time length, it needs to be sent
       if (isBufferingTimeElapsed) {
         const bufferEvents = value.events.map((e) => e.data);
