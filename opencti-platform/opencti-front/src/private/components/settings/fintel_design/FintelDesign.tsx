@@ -1,15 +1,31 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import FintelDesignPopover from '@components/settings/fintel_design/FintelDesignPopover';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import Paper from '@mui/material/Paper';
-import { FintelDesign_fintelDesign$key } from './__generated__/FintelDesign_fintelDesign.graphql';
+import { useParams } from 'react-router-dom';
+import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import PageContainer from '../../../../components/PageContainer';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { FintelDesignQuery } from './__generated__/FintelDesignQuery.graphql';
+import CustomizationMenu from "@components/settings/CustomizationMenu";
+import Breadcrumbs from "../../../../components/Breadcrumbs";
 
+const fintelDesignQuery = graphql`
+  query FintelDesignQuery($id: String!) {
+    fintelDesign(id: $id) {
+      id
+      name
+      ...FintelDesign_fintelDesign
+      ...FintelDesignsLine_node
+    }
+  }
+`;
 const fintelDesignComponentFragment = graphql`
   fragment FintelDesign_fintelDesign on FintelDesign {
     id
@@ -23,20 +39,21 @@ const fintelDesignComponentFragment = graphql`
 `;
 
 interface FintelDesignComponentProps {
-  fintelDesignData: FintelDesign_fintelDesign$key;
+  queryRef: PreloadedQuery<FintelDesignQuery>
 }
 
-const FintelDesign: FunctionComponent<FintelDesignComponentProps> = ({
-  fintelDesignData,
+const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
+  queryRef,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const queryResult = usePreloadedQuery(fintelDesignQuery, queryRef);
   const fintelDesign = useFragment<FintelDesign_fintelDesign$key>(
     fintelDesignComponentFragment,
-    fintelDesignData,
+    queryResult.fintelDesign,
   );
-
-  console.log('fintelDesign', fintelDesign);
+  console.log('fintalDesign', fintelDesign);
+  if (!fintelDesign) return null;
 
   return (
     <>
@@ -58,6 +75,16 @@ const FintelDesign: FunctionComponent<FintelDesignComponentProps> = ({
       </div>
       <div className="clearfix"/>
       <PageContainer withRightMenu>
+        <CustomizationMenu />
+        <Breadcrumbs
+          noMargin
+          elements={[
+            { label: t_i18n('Settings') },
+            { label: t_i18n('Customization') },
+            { label: t_i18n('Fintel Designs'), link: '/dashboard/settings/customization/fintel_designs' },
+            { label: `${fintelDesign.name}`, current: true },
+          ]}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -81,12 +108,12 @@ const FintelDesign: FunctionComponent<FintelDesignComponentProps> = ({
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
                   {t_i18n('Gradiant color')}
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
+                <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
                   {t_i18n('Cover page text color')}
                 </Typography>
               </Grid>
@@ -110,6 +137,22 @@ const FintelDesign: FunctionComponent<FintelDesignComponentProps> = ({
         </Grid>
       </PageContainer>
     </>
+  );
+};
+
+const FintelDesign = () => {
+  const { fintelDesignId } = useParams() as { fintelDesignId: string };
+  if (!fintelDesignId) return null;
+  const queryRef = useQueryLoading<FintelDesignQuery>(
+    fintelDesignQuery,
+    { id: fintelDesignId },
+  );
+  return queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      <FintelDesignComponent queryRef={queryRef} />
+    </React.Suspense>
+  ) : (
+    <Loader variant={LoaderVariant.container} />
   );
 };
 

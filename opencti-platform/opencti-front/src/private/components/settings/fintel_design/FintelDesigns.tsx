@@ -6,8 +6,8 @@ import {
   FintelDesignsLinesPaginationQuery$variables,
 } from '@components/settings/fintel_design/__generated__/FintelDesignsLinesPaginationQuery.graphql';
 import FintelDesignCreation from '@components/settings/fintel_design/FintelDesignCreation';
-import FintelDesignPopover from '@components/settings/fintel_design/FintelDesignPopover';
 import { FintelDesignsLines_data$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLines_data.graphql';
+import { FintelDesignsLine_node$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -124,7 +124,7 @@ const FintelDesigns = () => {
     name: {
       id: 'name',
       label: t_i18n('Name'),
-      percentWidth: 20,
+      percentWidth: 40,
       isSortable: true,
     },
     description: {
@@ -142,6 +142,10 @@ const FintelDesigns = () => {
     nodePath: ['fintelDesigns', 'pageInfo', 'globalCount'],
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<FintelDesignsLinesPaginationQuery>;
+
+  const getRedirectionLink = (fintelDesignId: FintelDesignsLine_node$data) => {
+    return `${fintelDesignId.id}`;
+  };
 
   return (
     <>
@@ -165,9 +169,9 @@ const FintelDesigns = () => {
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={contextFilters}
+          useComputeLink={getRedirectionLink}
           lineFragment={fintelDesignsLineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
-          actions={(row) => <FintelDesignPopover data={row} paginationOptions={queryPaginationOptions} />}
           createButton={<FintelDesignCreation paginationOptions={queryPaginationOptions} />}
           icon={() => <ItemIcon type="fintel-design" />}
         />
