@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../components/i18n';
 import type { Theme } from '../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 import useApiMutation from '../../utils/hooks/useApiMutation';
+import { APP_BASE_PATH } from '../../relay/environment';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -28,12 +28,6 @@ const otpMutation = graphql`
   }
 `;
 
-const logoutMutation = graphql`
-  mutation OTPFormLogoutMutation {
-    logout
-  }
-`;
-
 const OTPForm = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -41,14 +35,7 @@ const OTPForm = () => {
   const [error, setError] = useState('');
   const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data: string) => setCode(data);
-  const [commitLogoutMutation] = useApiMutation(logoutMutation);
   const [commitOtpMutation] = useApiMutation(otpMutation);
-  const handleLogout = () => {
-    commitLogoutMutation({
-      variables: {},
-      onCompleted: () => window.location.reload(),
-    });
-  };
   if (code.length === OTP_CODE_SIZE && !inputDisable) {
     setInputDisable(true);
     commitOtpMutation({
@@ -93,15 +80,12 @@ const OTPForm = () => {
           isDisabled={inputDisable}
         />
       </div>
-      <Button
-        type="submit"
-        variant="contained"
-        color="primary"
-        onClick={handleLogout}
-        style={{ marginTop: 30 }}
+      <a
+        href={`${APP_BASE_PATH}/logout`}
+        rel="noreferrer"
       >
-        {t_i18n('Cancel')}
-      </Button>
+        {t_i18n('Back to login')}
+      </a>
     </div>
   );
 };
