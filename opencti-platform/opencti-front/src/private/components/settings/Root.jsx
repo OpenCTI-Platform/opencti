@@ -14,7 +14,6 @@ import useGranted, {
   SETTINGS_SETDISSEMINATION,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
-import {boundaryWrapper} from "@components/Error";
 
 const Security = lazy(() => import('../../../utils/Security'));
 const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));
@@ -51,7 +50,7 @@ const SupportPackage = lazy(() => import('./support/SupportPackages'));
 const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
 const DisseminationLists = lazy(() => import('./dissemination_lists/DisseminationLists'));
 const FintelDesigns = lazy(() => import('./fintel_design/FintelDesigns'));
-const FintelDesignRoot = lazy(() => import('./fintel_design/Root'));
+const FintelDesign = lazy(() => import('./fintel_design/FintelDesign'));
 
 const Root = () => {
   const adminOrga = isOnlyOrganizationAdmin();
@@ -354,7 +353,7 @@ const Root = () => {
             }
           />
           <Route
-            path="customization/fintel_design"
+            path="customization/fintel_designs"
             element={
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                 <FintelDesigns />
@@ -362,8 +361,12 @@ const Root = () => {
             }
           />
           <Route
-            path="customization/fintel_design/:fintelDesignId/*"
-            element={boundaryWrapper(FintelDesignRoot)}
+            path="customization/fintel_designs/:fintelDesignId/*"
+            element={
+              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+                <FintelDesign />
+              </Security>
+            }
           />
           <Route
             path="/customization/notifiers"

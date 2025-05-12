@@ -1,5 +1,4 @@
 import { graphql } from 'react-relay';
-import { FintelDesignsLine_node$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLine_node.graphql';
 import { FintelDesignsLinesPaginationQuery$variables } from '@components/settings/fintel_design/__generated__/FintelDesignsLinesPaginationQuery.graphql';
 import React, { FunctionComponent, useState } from 'react';
 import MoreVert from '@mui/icons-material/MoreVert';
@@ -7,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { useNavigate } from 'react-router-dom';
+import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -21,7 +21,7 @@ export const fintelDesignPopoverDeletionMutation = graphql`
 `;
 
 interface FintelDesignPopoverProps {
-  data: FintelDesignsLine_node$data;
+  data: FintelDesign_fintelDesign$data;
   paginationOptions?: FintelDesignsLinesPaginationQuery$variables;
 }
 
