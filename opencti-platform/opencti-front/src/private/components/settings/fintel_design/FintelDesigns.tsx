@@ -18,6 +18,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import ItemIcon from '../../../../components/ItemIcon';
 import PageContainer from '../../../../components/PageContainer';
+import AlertInfo from '../../../../components/AlertInfo';
 
 const fintelDesignsQuery = graphql`
   query FintelDesignsLinesPaginationQuery(
@@ -123,19 +124,13 @@ const FintelDesigns = () => {
     name: {
       id: 'name',
       label: t_i18n('Name'),
+      percentWidth: 20,
       isSortable: true,
-      percentWidth: 50,
     },
     description: {
       id: 'description',
       label: t_i18n('Description'),
-      percentWidth: 40,
-      isSortable: false,
-    },
-    url: {
-      id: 'url',
-      label: t_i18n('Url'),
-      percentWidth: 10,
+      percentWidth: 60,
       isSortable: false,
     },
   };
@@ -151,12 +146,17 @@ const FintelDesigns = () => {
   return (
     <>
       <CustomizationMenu />
-      <PageContainer withRightMenu>
-        <Breadcrumbs elements={[
-          { label: t_i18n('Settings') },
-          { label: t_i18n('Customization') },
-          { label: t_i18n('Fintel Designs'), current: true },
-        ]}
+      <PageContainer withGap withRightMenu >
+        <Breadcrumbs
+          noMargin
+          elements={[
+            { label: t_i18n('Settings') },
+            { label: t_i18n('Customization') },
+            { label: t_i18n('Fintel Designs'), current: true },
+          ]}
+        />
+        <AlertInfo
+          content={t_i18n('If no design configuration is detected, the default settings will be applied')}
         />
         {queryRef && (
         <DataTable
