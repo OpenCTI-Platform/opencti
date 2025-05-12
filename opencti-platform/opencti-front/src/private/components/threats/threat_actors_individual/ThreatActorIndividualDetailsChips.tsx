@@ -33,9 +33,6 @@ const typeMappings: Record<SupportedTypes, MappingFields> = {
   },
 };
 
-interface SeenPersonaID<T> {
-  [Key:string]: T;
-}
 interface ThreatActorIndividualDetailsChipsProps {
   data: ThreatActorIndividualDetails_ThreatActorIndividual$data,
   relType: SupportedTypes,
@@ -50,13 +47,13 @@ ThreatActorIndividualDetailsChipsProps
   const { title, field, path, AddComponent } = typeMappings[relType];
 
   const getRelationshipsOfType = (rel_type: SupportedTypes) => {
-    const seen_persona_id_dict: SeenPersonaID<number> = {};
+    const seen_persona_id_set = new Set<string>();
     const relations = [];
     for (const { node } of data.stixCoreRelationships?.edges ?? []) {
       const { relationship_type } = node ?? {};
-      if (relationship_type === rel_type && node.to?.id !== undefined && !(node.to.id in seen_persona_id_dict)) {
+      if (relationship_type === rel_type && node.to?.id !== undefined && !(seen_persona_id_set.has(node.to.id))) {
         relations.push(node);
-        seen_persona_id_dict[node.to.id] = 1;
+        seen_persona_id_set.add(node.to.id);
       }
     }
     return relations;
