@@ -154,7 +154,6 @@ const PlaybookPopover = (props) => {
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
-        size="large"
         color="primary"
       >
         <MoreVert />
