@@ -12835,6 +12835,7 @@ type FintelDesignConnection {
 
 enum FintelDesignOrdering {
   name
+  created_at
 }
 
 input AskSendOtpInput {

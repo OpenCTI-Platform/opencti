@@ -8375,6 +8375,7 @@ export type FintelDesignEdge = {
 };
 
 export enum FintelDesignOrdering {
+  CreatedAt = 'created_at',
   Name = 'name'
 }
 
