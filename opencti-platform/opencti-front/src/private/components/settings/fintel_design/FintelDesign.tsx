@@ -52,7 +52,22 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import PageContainer from '../../../../components/PageContainer';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { FintelDesignQuery } from './__generated__/FintelDesignQuery.graphql';
+import CustomizationMenu from "@components/settings/CustomizationMenu";
+import Breadcrumbs from "../../../../components/Breadcrumbs";
 
+const fintelDesignQuery = graphql`
+  query FintelDesignQuery($id: String!) {
+    fintelDesign(id: $id) {
+      id
+      name
+      ...FintelDesign_fintelDesign
+      ...FintelDesignsLine_node
+    }
+  }
+`;
 const fintelDesignComponentFragment = graphql`
   fragment FintelDesign_fintelDesign on FintelDesign {
     id

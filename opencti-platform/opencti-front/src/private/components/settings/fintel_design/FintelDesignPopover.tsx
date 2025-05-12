@@ -1,5 +1,4 @@
 import { graphql } from 'react-relay';
-import { FintelDesignsLine_node$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLine_node.graphql';
 import { FintelDesignsLinesPaginationQuery$variables } from '@components/settings/fintel_design/__generated__/FintelDesignsLinesPaginationQuery.graphql';
 import React, { FunctionComponent, useState } from 'react';
 import MoreVert from '@mui/icons-material/MoreVert';
