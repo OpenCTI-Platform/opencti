@@ -154,6 +154,51 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
           <Field
             component={ColorPickerField}
             name="gradiantFromColor"
+            label={t_i18n('Gradiant From Color')}
+            placeholder={t_i18n('Default')}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={ColorPickerField}
+            name="gradiantToColor"
+            label={t_i18n('Gradiant To Color')}
+            placeholder={t_i18n('Default')}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={ColorPickerField}
+            name="textColor"
+            label={t_i18n('Text Color')}
+            placeholder={t_i18n('Default')}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="url"
+            label={t_i18n('Logo URL')}
+            placeholder={t_i18n('Default')}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={ColorPickerField}
+            name="gradiantFromColor"
             label={t_i18n('Background primary color')}
             placeholder={t_i18n('Default')}
             InputLabelProps={{
