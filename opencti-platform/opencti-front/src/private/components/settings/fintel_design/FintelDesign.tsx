@@ -50,6 +50,8 @@ const fintelDesignFieldPatchMutation = graphql`
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
+import type { Theme } from '../../../../components/Theme';
+import PageContainer from '../../../../components/PageContainer';
 
 const fintelDesignComponentFragment = graphql`
   fragment FintelDesign_fintelDesign on FintelDesign {

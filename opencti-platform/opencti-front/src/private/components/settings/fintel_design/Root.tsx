@@ -1,8 +1,8 @@
 import { Route, Routes, useParams } from 'react-router-dom';
-import { FintelDesignQuery } from '@components/settings/fintel_design/__generated__/FintelDesignQuery.graphql';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import FintelDesign from '@components/settings/fintel_design/FintelDesign';
+import { RootFintelDesignQuery } from '@components/settings/fintel_design/__generated__/RootFintelDesignQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
@@ -13,17 +13,18 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const fintelDesignQuery = graphql`
-  query FintelDesignQuery($id: String!) {
+  query RootFintelDesignQuery($id: String!) {
     fintelDesign(id: $id) {
       id
       name
       ...FintelDesign_fintelDesign
+      ...FintelDesignsLine_node
     }
   }
 `;
 
 interface RootFintelDesignComponentProps {
-  queryRef: PreloadedQuery<FintelDesignQuery>
+  queryRef: PreloadedQuery<RootFintelDesignQuery>
 }
 
 const RootFintelDesignComponent: FunctionComponent<RootFintelDesignComponentProps> = ({ queryRef }) => {
@@ -40,7 +41,7 @@ const RootFintelDesignComponent: FunctionComponent<RootFintelDesignComponentProp
             <Breadcrumbs elements={[
               { label: t_i18n('Settings') },
               { label: t_i18n('Customization') },
-              { label: t_i18n('Fintel Designs') },
+              { label: t_i18n('Fintel Designs'), link: '/dashboard/settings/customization/fintel_design' },
               { label: fintelDesign.name, current: true },
             ]}
             />
@@ -63,7 +64,7 @@ const RootFintelDesignComponent: FunctionComponent<RootFintelDesignComponentProp
 const RootFintelDesign = () => {
   const { fintelDesignId } = useParams() as { fintelDesignId: string };
   if (!fintelDesignId) return null;
-  const queryRef = useQueryLoading<FintelDesignQuery>(
+  const queryRef = useQueryLoading<RootFintelDesignQuery>(
     fintelDesignQuery,
     { id: fintelDesignId },
   );
