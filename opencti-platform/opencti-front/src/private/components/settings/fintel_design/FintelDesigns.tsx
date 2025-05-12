@@ -129,7 +129,6 @@ const FintelDesigns = () => {
       label: t_i18n('Name'),
       percentWidth: 40,
       isSortable: true,
-      percentWidth: 50,
     },
     description: {
       id: 'description',
@@ -162,6 +161,9 @@ const FintelDesigns = () => {
             { label: t_i18n('Customization') },
             { label: t_i18n('Fintel design'), current: true },
           ]}
+        />
+        <AlertInfo
+          content={t_i18n('If no design configuration is detected, the default settings will be applied')}
         />
         <AlertInfo
           content={t_i18n('If no design configuration is detected, the default settings will be applied')}
