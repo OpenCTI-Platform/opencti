@@ -5,6 +5,7 @@ import { execChildPython } from '../../../src/python/pythonBridge';
 import { checkPostSyncContent, checkPreSyncContent, INDICATOR_NUMBERS, LABEL_NUMBERS, MALWARE_NUMBERS, VOCABULARY_NUMBERS } from '../sync-utils';
 import { elAggregationCount } from '../../../src/database/engine';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
+import { writeTestDataToFile } from '../../utils/testOutput';
 
 const LIST_QUERY = gql`
   query vocabularies(
@@ -49,6 +50,7 @@ describe('Database sync raw', () => {
       const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
+      writeTestDataToFile(JSON.stringify(execution.messages), 'sync-test-all-event.json');
       // to uncomment for debug if counters are failing
       // expect(execution.messages.length, `Execution messages ${JSON.stringify(execution.messages)}`).toEqual(0);
 

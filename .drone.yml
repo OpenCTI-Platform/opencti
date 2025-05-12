@@ -142,6 +142,7 @@ steps:
       - jf rt bdi $JFROG_BUILD_NAME --max-days=30 --url=$JFROG_URL --access-token=$JFROG_TOKEN
     depends_on:
       - frontend-e2e-tests
+      - api-tests
 
   - name: frontend-verify-translation
     image: node:22.14.0
