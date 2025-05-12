@@ -32,7 +32,7 @@ const CustomizationMenu: FunctionComponent = () => {
       label: 'Exclusion lists',
     },
     {
-      path: '/dashboard/settings/customization/fintel_design',
+      path: '/dashboard/settings/customization/fintel_designs',
       label: 'Fintel Design',
     },
   ];
