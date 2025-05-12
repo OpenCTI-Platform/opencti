@@ -166,48 +166,50 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
           <ListItem
             key={indicatorEdge.node.id}
             divider={true}
-            secondaryAction={
-              <StixCyberObservableIndicatorPopover
-                observableId={stixCyberObservable.id}
-                indicatorId={indicatorEdge.node.id}
-              />
-            }
+            disablePadding
           >
             <ListItemButton
               aria-label={'stix cyber observable indicators item'}
               classes={{ root: { paddingLeft: 10, height: 50 } }}
               component={Link}
               to={`/dashboard/observations/indicators/${indicatorEdge.node.id}`}
+              sx={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
             >
-              <ListItemIcon classes={{ root: { color: theme.palette.primary.main } }}>
-                <ItemIcon type={indicatorEdge.node.entity_type} />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <div>
-                    <div
-                      style={{ ...inlineStyles.pattern_type, ...inlineStyles.bodyItem }}
-                    >
-                      <ItemPatternType
-                        label={indicatorEdge.node.pattern_type}
-                        variant="inList"
-                      />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <ListItemIcon classes={{ root: { color: theme.palette.primary.main } }}>
+                  <ItemIcon type={indicatorEdge.node.entity_type} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <div>
+                      <div style={{ ...inlineStyles.pattern_type, ...inlineStyles.bodyItem }}>
+                        <ItemPatternType
+                          label={indicatorEdge.node.pattern_type}
+                          variant="inList"
+                        />
+                      </div>
+                      <div style={{ ...inlineStyles.observable_value, ...inlineStyles.bodyItem }}>
+                        {indicatorEdge.node.name}
+                      </div>
+                      <div style={{ ...inlineStyles.created_at, ...inlineStyles.bodyItem }}>
+                        {fd(indicatorEdge.node.created_at)}
+                      </div>
                     </div>
-                    <div
-                      style={{ ...inlineStyles.observable_value, ...inlineStyles.bodyItem }}
-                    >
-                      {indicatorEdge.node.name}
-                    </div>
-                    <div
-                      style={{ ...inlineStyles.created_at, ...inlineStyles.bodyItem }}
-                    >
-                      {fd(indicatorEdge.node.created_at)}
-                    </div>
-                  </div>
-                    }
+                  }
+                />
+              </div>
+              <StixCyberObservableIndicatorPopover
+                observableId={stixCyberObservable.id}
+                indicatorId={indicatorEdge.node.id}
               />
             </ListItemButton>
           </ListItem>
+
         ))}
       </List>
       <Dialog
