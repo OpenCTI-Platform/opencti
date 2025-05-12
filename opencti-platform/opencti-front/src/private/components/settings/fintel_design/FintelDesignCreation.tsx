@@ -15,6 +15,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
+import ColorPickerField from '../../../../components/ColorPickerField';
 
 const fintelDesignCreationMutation = graphql`
   mutation FintelDesignCreationAddMutation($input: FintelDesignAddInput!) {
@@ -117,7 +118,7 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, errors }) => (
+      {({ submitForm, handleReset, isSubmitting }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -133,6 +134,51 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
             fullWidth={true}
             multiline={true}
             rows={2}
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="url"
+            label={t_i18n('Logo URL')}
+            placeholder={t_i18n('Default')}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={ColorPickerField}
+            name="gradiantFromColor"
+            label={t_i18n('Gradiant From Color')}
+            placeholder={t_i18n('Default')}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={ColorPickerField}
+            name="gradiantToColor"
+            label={t_i18n('Gradiant To Color')}
+            placeholder={t_i18n('Default')}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={ColorPickerField}
+            name="textColor"
+            label={t_i18n('Text Color')}
+            placeholder={t_i18n('Default')}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            fullWidth
             style={{ marginTop: 20 }}
           />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
