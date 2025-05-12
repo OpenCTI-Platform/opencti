@@ -416,13 +416,21 @@ interface ContainerWrapperConfiguration {
   container_type: string
   all: boolean
   newContainer: boolean
+  caseTemplates: string[] | { label: string, value: string }[]
 }
 const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapperConfiguration> = {
   type: 'object',
   properties: {
     container_type: { type: 'string', $ref: 'Container type', default: '', oneOf: [] },
     all: { type: 'boolean', $ref: 'Wrap all elements included in the bundle', default: false },
-    newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false }
+    newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false },
+    caseTemplates: {
+      type: 'array',
+      uniqueItems: true,
+      default: [],
+      $ref: 'Case templates',
+      items: { type: 'string', oneOf: [] }
+    }
   },
   required: ['container_type'],
 };
