@@ -140,7 +140,7 @@ const useFormEditor = (
   };
 
   // Simple
-  const changeCreated = (name: string, value: Option | string) => {
+  const changeCreated = (name: string, value: Option | '') => {
     if (!enableReferences) {
       validate(name, value !== '' ? value : null, () => {
         const finalValue = value !== '' ? (value as Option).value : null;
