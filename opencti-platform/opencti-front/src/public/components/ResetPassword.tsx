@@ -83,6 +83,8 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   const [step, setStep] = useState(STEP_ASK_RESET);
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const [email, setEmail] = useState('');
+  const [transactionId, setTransactionId] = useState('');
+  const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState(false);
   const [changePasswordError, setChangePasswordError] = useState(false);
   const [, setResendOtp] = useState(false);
@@ -108,7 +110,6 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
 
   const handleResendOtp = () => {
     if (!email) return;
-
     setOtpError(false);
     setResendOtp(true);
     askSentOtpCommitMutation({
@@ -128,7 +129,8 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
           email: values.email,
         },
       },
-      onCompleted: () => {
+      onCompleted: (response) => {
+        setTransactionId(response.askSendOtp ?? '');
         setEmail(values.email);
         setSubmitting(false);
         resetForm();
@@ -149,13 +151,14 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
     verifyOtpCommitMutation({
       variables: {
         input: {
+          transactionId,
           otp: values.otp,
-          email,
         },
       },
       onCompleted: (response: ResetPasswordVerifyOtpMutation$data) => {
         const mfaActivated = response.verifyOtp?.otp_activated;
         setOtpError(false);
+        setOtp(values.otp);
         setSubmitting(false);
         resetForm();
         setStep(mfaActivated ? STEP_2FA : STEP_RESET_PASSWORD);
@@ -176,8 +179,9 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
     changePasswordCommitMutation({
       variables: {
         input: {
+          transactionId,
+          otp,
           newPassword: values.password,
-          email,
         },
       },
       onCompleted: () => {
@@ -267,7 +271,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
         </Formik>
       )}
       {step === STEP_2FA && (
-        <OTPForm variant="resetPassword" email={email} onCompleted={onCompletedVerify2fa} />
+        <OTPForm variant="resetPassword" transactionId={transactionId} onCompleted={onCompletedVerify2fa} />
       )}
       {step === STEP_RESET_PASSWORD && (
         <Formik

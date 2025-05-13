@@ -10,7 +10,7 @@ import useApiMutation from '../../utils/hooks/useApiMutation';
 
 interface OTPFormProps {
   variant?: 'login' | 'resetPassword',
-  email?: string,
+  transactionId?: string,
   onCompleted?: () => void
 }
 
@@ -32,7 +32,7 @@ const ResetPassword2faMutation = graphql`
   }
 `;
 
-const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, onCompleted }) => {
+const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', transactionId, onCompleted }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [code, setCode] = useState('');
@@ -51,7 +51,7 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', email, on
     setInputDisable(true);
     commitOtpMutation({
       variables: {
-        input: variant === 'login' ? { code } : { code, email },
+        input: variant === 'login' ? { code } : { code, transactionId },
       },
       onError: () => {
         setInputDisable(false);

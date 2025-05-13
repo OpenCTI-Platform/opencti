@@ -9093,7 +9093,7 @@ type Mutation {
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
   askSendToken(email: String!): Boolean
-  askSendOtp(input: AskSendOtpInput!): Boolean
+  askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verify2fa(input: Verify2faInput!): Boolean
   changePassword(input: ChangePasswordInput!): Boolean
@@ -12844,17 +12844,18 @@ input AskSendOtpInput {
 }
 
 input VerifyOtpInput {
-  email: String!
   otp: String!
+  transactionId: String!
 }
 
 input Verify2faInput {
   code: String!
-  email: String!
+  transactionId: String!
 }
 
 input ChangePasswordInput {
-  email: String!
+  transactionId: String!
+  otp: String!
   newPassword: String!
 }
 
