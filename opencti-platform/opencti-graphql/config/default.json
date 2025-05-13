@@ -304,7 +304,7 @@
     "lock_key": "publisher_manager_lock",
     "interval": 10000,
     "enable_buffering": false,
-    "buffering_seconds": 60000
+    "buffering_seconds": 60
   },
   "sync_manager": {
     "enabled": true,
