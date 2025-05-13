@@ -20,8 +20,14 @@ import ExternalReferencePage from '../model/externalReference.pageModel';
 import ExternalReferenceDetailsPage from '../model/externalReferenceDetails.pageModel';
 import IncidentResponsePage from '../model/incidentResponse.pageModel';
 import IncidentResponseDetailsPage from '../model/incidentResponseDetails.pageModel';
-import CaseRfiPage from "../model/caseRfi.pageModel";
-import CaseRfiDetailsPage from "../model/caseRfiDetails.pageModel";
+import CaseRfiPage from '../model/caseRfi.pageModel';
+import CaseRfiDetailsPage from '../model/caseRfiDetails.pageModel';
+import TaskPage from '../model/tasks.pageModel';
+import TaskDetailsPage from '../model/tasksDetails.pageModel';
+import FeedbackPage from "../model/feedback.pageModel";
+import FeedbackDetailsPage from 'tests_e2e/model/feedbackDetails.pageModel';
+import EventsIncidentPage from "../model/EventsIncident.pageModel";
+import EventsIncidentDetailsPage from "../model/EventsIncidentDetails.pageModel";
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -348,7 +354,7 @@ const navigateRft = async (page: Page) => {
   await expect(caseRftPage.getPage()).toBeVisible();
   await expect(caseRftPage.getItemFromList(rftNameFromInitData)).toBeVisible();
   await caseRftPage.getItemFromList(rftNameFromInitData).click();
-  
+
   const caseRftDetailsPage = new CaseRfiDetailsPage(page);
   await expect(caseRftDetailsPage.getPage()).toBeVisible();
 
@@ -385,6 +391,69 @@ const navigateRft = async (page: Page) => {
   const dataTab = new StixCoreObjectDataAndHistoryTab(page);
   await expect(dataTab.getPage()).toBeVisible();
 };
+
+const navigateTasks = async (page: Page) => {
+  const taskNameFromInitData = 'Task Name';
+  const taskPage = new TaskPage(page);
+  await taskPage.navigateFromMenu();
+
+  await expect(taskPage.getPage()).toBeVisible();
+  await expect(taskPage.getItemFromList(taskNameFromInitData)).toBeVisible();
+  await taskPage.getItemFromList(taskNameFromInitData).click();
+
+  const taskDetailsPage = new TaskDetailsPage(page);
+  // -- Content
+  await taskDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixDomainObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Data
+  await taskDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await taskDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateFeedbacks = async (page: Page) => {
+  const feedbackNameFromInitData = 'Feedback Name';
+  const feedbackPage = new FeedbackPage(page);
+  await feedbackPage.navigateFromMenu();
+
+  await expect(feedbackPage.getPage()).toBeVisible();
+  await expect(feedbackPage.getItemFromList(feedbackNameFromInitData)).toBeVisible();
+  await feedbackPage.getItemFromList(feedbackNameFromInitData).click();
+
+  const feedbackDetailsPage = new FeedbackDetailsPage(page);
+  // -- Content
+  await feedbackDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixDomainObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Data
+  await feedbackDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await feedbackDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+const navigateEventsIncident = async (page: Page) => {
+  const eventsIncidentFromInitData = 'Incident Name';
+  const eventIncidentPage = new EventsIncidentPage(page);
+  await eventIncidentPage.navigateFromMenu();
+
+  await expect(eventIncidentPage.getPage()).toBeVisible();
+  await expect(eventIncidentPage.getItemFromList(eventsIncidentFromInitData)).toBeVisible();
+  await eventIncidentPage.getItemFromList(eventsIncidentFromInitData).click();
+
+  const eventsIncidentDetailsPage = new EventsIncidentDetailsPage(page);
+
+}
 
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
@@ -541,5 +610,7 @@ test('Check navigation on all pages', { tag: ['@navigation'] }, async ({ page })
   await navigateIncidentResponse(page);
   await navigateRfi(page);
   await navigateRft(page);
+  await navigateTasks(page);
+  await navigateFeedbacks(page);
   // await navigateObservables(page);
 });
