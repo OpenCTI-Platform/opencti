@@ -184,7 +184,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   } as UsePreloadedPaginationFragment<FeedbacksLinesPaginationQuery>;
 
   return (
-    <>
+    <span data-testid="feedback-page">
       <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Feedbacks'), current: true }]}/>
       {queryRef && (
         <DataTable
@@ -198,7 +198,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
           exportContext={{ entity_type: 'Feedback' }}
         />
       )}
-    </>
+    </span>
   );
 };
 
