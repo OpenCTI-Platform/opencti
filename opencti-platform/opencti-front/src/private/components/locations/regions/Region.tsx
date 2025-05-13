@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
+import LocationDetails from '@components/locations/LocationDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -77,6 +78,7 @@ const regionFragment = graphql`
       }
     }
     workflowEnabled
+    ...LocationDetails_location
   }
 `;
 
@@ -93,7 +95,10 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid item xs={4}>
+          <LocationDetails locationData={region} />
+        </Grid>
+        <Grid item xs={4}>
           <LocationMiniMap
             center={
               region.latitude && region.longitude
@@ -104,7 +109,7 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
             zoom={3}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={4}>
           <StixDomainObjectOverview
             stixDomainObject={region}
           />
