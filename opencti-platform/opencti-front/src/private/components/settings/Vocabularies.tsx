@@ -1,5 +1,4 @@
 import React from 'react';
-import Chip from '@mui/material/Chip';
 import { useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { ShortTextOutlined } from '@mui/icons-material';
@@ -78,7 +77,7 @@ export const vocabulariesFragment = graphql`
 `;
 
 const Vocabularies = () => {
-  const { t_i18n, n } = useFormatter();
+  const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Vocabularies | Taxonomies | Settings'));
@@ -119,57 +118,28 @@ const Vocabularies = () => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      label: 'Name',
+      id: 'name',
       percentWidth: 20,
-      isSortable: true,
-      render: (node: useVocabularyCategory_Vocabularynode$data) => node.name,
     },
     entity_types: {
-      label: 'Used in',
+      id: 'entity_types',
       percentWidth: 20,
-      isSortable: false,
-      render: (node: useVocabularyCategory_Vocabularynode$data) => (
-        <>
-          {node.category.entity_types.map((type) => (
-            <Chip
-              key={type}
-              style={{
-                fontSize: 12,
-                height: 20,
-                float: 'left',
-                marginRight: 7,
-              }}
-              variant="outlined"
-              label={t_i18n(`entity_${type}`)}
-              color="primary"
-            />
-          ))}
-        </>
-      ),
     },
     aliases: {
-      label: 'Aliases',
+      id: 'aliases',
       percentWidth: 15,
-      isSortable: false,
-      render: (node: useVocabularyCategory_Vocabularynode$data) => (node.aliases ?? []).join(', '),
     },
     description: {
-      label: 'Description',
+      id: 'description',
       percentWidth: 25,
-      isSortable: false,
-      render: (node: useVocabularyCategory_Vocabularynode$data) => node.description,
     },
     usages: {
-      label: 'Usages',
+      id: 'usages',
       percentWidth: 10,
-      isSortable: false,
-      render: (node: useVocabularyCategory_Vocabularynode$data) => n(node.usages),
     },
     order: {
-      label: 'Order',
+      id: 'order',
       percentWidth: 10,
-      isSortable: true,
-      render: (node: useVocabularyCategory_Vocabularynode$data) => n(node.order),
     },
   };
 
