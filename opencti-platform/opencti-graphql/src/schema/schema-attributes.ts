@@ -20,7 +20,7 @@ export const depsKeysRegister = {
 // -- Utilities to manipulate AttributeDefinitions --
 
 const isMandatoryAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
-
+const isDateAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.type === 'date';
 const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition) : schemaDef is ComplexAttributeWithMappings => { // handy typeguard
   return schemaDef.type === 'object' && schemaDef.format !== 'flat';
 };
@@ -300,6 +300,13 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
   const isMandatory = isMandatoryAttributeDefinition(schemaDef);
   if (isMandatory && R.isNil(input)) {
     throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this mandatory field cannot be nil`);
+  }
+  if (isDateAttributeDefinition(schemaDef) && !R.isNil(input)) {
+    const dateInput = new Date(input);
+    const isoDateInput = dateInput.toISOString();
+    if (isoDateInput !== input) {
+      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this date field is not in a valid format`);
+    }
   }
 
   if (isNonFlatObjectAttributeDefinition(schemaDef)) {
