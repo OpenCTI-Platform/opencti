@@ -15,7 +15,7 @@ export const enrichWithRemoteCredentials = async (prefix: string, baseConfigurat
       const object = conf.get(`${prefix}:credentials_provider:${provider}:object`);
       // https options
       let certs: Certificates | undefined;
-      const rejectUnauthorized = conf.get('elasticsearch:credentials_provider:https_cert:reject_unauthorized') || false;
+      const rejectUnauthorized = conf.get(`${prefix}:credentials_provider:https_cert:reject_unauthorized`) || false;
       if (conf.get(`${prefix}:credentials_provider:https_cert:crt`)) {
         certs = {
           cert: conf.get(`${prefix}:credentials_provider:https_cert:crt`),
