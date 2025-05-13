@@ -15,7 +15,7 @@ import { mergeDeepRightAll, now, utcDate } from '../utils/format';
 import { convertStoreToStix } from './stix-2-1-converter';
 import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BaseEvent, CreateEventOpts, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';
+import type { BaseEvent, CreateEventOpts, DataEvent, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';
 import type { StixCoreObject } from '../types/stix-2-1-common';
 import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
@@ -783,6 +783,47 @@ export const createStreamProcessor = <T extends BaseEvent> (
   };
 };
 // endregion
+
+// region fetch stream event range
+export const fetchStreamEventsRange = async (
+  streamName: string,
+  startEventId: string,
+  callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
+  opts: StreamOption = {},
+) => {
+  let effectiveStartEventId = startEventId ?? '$'; // TODO PIR remove live and add startEventId at pir creation
+  console.log('effective start event id', effectiveStartEventId);
+  try {
+    // Consume the data stream
+    const client = getClientBase();
+    const streamResult = await client.call(
+      'XREAD',
+      'COUNT',
+      MAX_RANGE_MESSAGES,
+      'BLOCK',
+      STREAM_BATCH_TIME,
+      'STREAMS',
+      streamName,
+      effectiveStartEventId,
+    ) as any[];
+    // Process the event results
+    if (streamResult && streamResult.length > 0) {
+      const [, results] = streamResult[0];
+      const lastElementId = await processStreamResult(results, callback, opts.withInternal);
+      if (lastElementId) {
+        effectiveStartEventId = lastElementId;
+      }
+    } else {
+      await processStreamResult([], callback, opts.withInternal);
+    }
+  } catch (err) {
+    logApp.error('Redis stream consume fail', { cause: err });
+    if (opts.autoReconnect) {
+      await waitInSec(2);
+    }
+  }
+  return { lastEventId: effectiveStartEventId };
+};
 
 // region opencti notification stream
 export const NOTIFICATION_STREAM_NAME = `${REDIS_PREFIX}stream.notification`;

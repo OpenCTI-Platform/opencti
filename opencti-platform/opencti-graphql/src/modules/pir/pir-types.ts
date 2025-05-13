@@ -14,12 +14,14 @@ export interface BasicStoreEntityPIR extends BasicStoreEntity {
   name: string
   pirCriteria: PIRCriterion[]
   pirFilters: string
+  lastEventId: string
 }
 
 export interface StoreEntityPIR extends StoreEntity {
   name: string
   pirCriteria: PIRCriterion[]
   pirFilters: string
+  lastEventId: string
 }
 
 export interface StixPIR extends StixInternal {
