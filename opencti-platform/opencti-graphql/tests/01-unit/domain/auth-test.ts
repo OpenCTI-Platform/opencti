@@ -1,25 +1,25 @@
-import { describe, it, expect } from 'vitest';
-import { askSendOtp, generateOtp, getUser } from '../../../src/modules/auth/auth-domain';
+import { describe, expect, it } from 'vitest';
+import { askSendOtp, generateOtp, getLocalProviderUser } from '../../../src/modules/auth/auth-domain';
 import { AuthenticationFailure } from '../../../src/config/errors';
 import { testContext } from '../../utils/testQuery';
 import { validate as uuidValidate } from 'uuid';
 import { OTP_TTL, redisGetForgotPasswordOtp } from '../../../src/database/redis';
 
-describe('getUser', () => {
+describe('getLocalProviderUser', () => {
   it('Should be able to return a user with an email', async () => {
-    const user = await getUser('anais@opencti.io');
+    const user = await getLocalProviderUser('anais@opencti.io');
     expect(user.user_email).toEqual('anais@opencti.io');
   });
   it('Should be able to return a user with a name', async () => {
-    const user = await getUser('anais@opencti.io');
+    const user = await getLocalProviderUser('anais@opencti.io');
     expect(user.name).toEqual('anais@opencti.io');
   });
   it('Should throw an error if no user founded', async () => {
-    expect(async () => await getUser('noResul@opencti.io')).rejects.toThrow(AuthenticationFailure());
+    expect(async () => await getLocalProviderUser('noResul@opencti.io')).rejects.toThrow('User not found');
   });
   it('Should throw an error if user is external', async () => {
     // admin is external
-    expect(async () => await getUser('admin@opencti.io')).rejects.toThrow('External user');
+    expect(async () => await getLocalProviderUser('admin@opencti.io')).rejects.toThrow('External user');
   });
 });
 
