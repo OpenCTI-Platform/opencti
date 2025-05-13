@@ -71,7 +71,6 @@ export const countryFragment = graphql`
       color
     }
     name
-    description
     latitude
     longitude
     x_opencti_aliases

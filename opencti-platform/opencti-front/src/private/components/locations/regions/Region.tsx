@@ -66,7 +66,6 @@ const regionFragment = graphql`
       }
     }
     name
-    description
     latitude
     longitude
     x_opencti_aliases

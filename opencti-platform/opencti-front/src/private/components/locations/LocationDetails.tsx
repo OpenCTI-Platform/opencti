@@ -12,18 +12,7 @@ import type { Theme } from '../../../components/Theme';
 const locationDetailsFragment = graphql`
   fragment LocationDetails_location on Location {
     id
-    ... on Country {
-      description
-    }
-    ... on City {
-      description
-    }
-    ... on AdministrativeArea {
-      description
-    }
-    ... on Region {
-      description
-    }
+    description
   }
 `;
 
@@ -35,8 +24,6 @@ const LocationDetails: FunctionComponent<LocationDetailsProps> = ({ locationData
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const location = useFragment(locationDetailsFragment, locationData);
-
-  console.log('source', location.description);
 
   return (
     <div style={{ height: '100%' }}>
