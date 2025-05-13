@@ -303,7 +303,7 @@
     "enabled": true,
     "lock_key": "publisher_manager_lock",
     "interval": 10000,
-    "enable_buffering": false,
+    "enable_buffering": true,
     "buffering_seconds": 60
   },
   "sync_manager": {
