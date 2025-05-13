@@ -32,6 +32,8 @@ import { findById as findJsonMapperById } from '../internal/jsonMapper/jsonMappe
 import { SYSTEM_USER } from '../../utils/access';
 import jsonMappingExecution from '../../parser/json-mapper';
 import type { StixObject } from '../../types/stix-2-1-common';
+import { getEntitiesMapFromCache } from '../../database/cache';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 interface JsonQueryFetchOpts {
   maxResults?: number;
@@ -128,7 +130,9 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
     representations: JSON.parse(jsonMapper.representations),
     variables: jsonMapper.variables ? JSON.parse(jsonMapper.variables) : []
   };
-  const bundle = await jsonMappingExecution({}, requestData, jsonMapperParsed);
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const ingestionUser = ingestion.user_id ? platformUsers.get(ingestion.user_id) : null;
+  const bundle = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, requestData, jsonMapperParsed);
   let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
   // region Try to paginate with next page style
   if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
@@ -144,7 +148,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       });
       const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
       nextExecutionState = { ...nextExecutionState, ...paginationVariables };
-      const paginationBundle = await jsonMappingExecution({}, paginationData, jsonMapperParsed);
+      const paginationBundle = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, paginationData, jsonMapperParsed);
       if (paginationBundle.objects.length > 0) {
         bundle.objects = bundle.objects.concat(paginationBundle.objects);
       }

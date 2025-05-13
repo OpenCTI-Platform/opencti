@@ -32,10 +32,10 @@ import { generateStandardId } from '../schema/identifier';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { UnsupportedError } from '../config/errors';
 import { type AttributeDefinition, entityType, id as idType, type ObjectAttribute, relationshipType } from '../schema/attribute-definition';
-import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { computeDefaultValue, formatValue, handleRefEntities, type InputType } from './csv-mapper';
+import { isNotEmptyField } from '../database/utils';
+import { computeDefaultValue, formatValue, handleDefaultMarkings, handleRefEntities, type InputType } from './csv-mapper';
 import { getHashesNames } from '../modules/internal/csvMapper/csvMapper-utils';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { SYSTEM_USER } from '../utils/access';
 import type { BasicStoreObject, StoreCommon } from '../types/store';
 import { INPUT_MARKINGS } from '../schema/general';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
@@ -45,6 +45,8 @@ import { handleInnerType } from '../domain/stixDomainObject';
 import { createStixPatternSync } from '../python/pythonBridge';
 import { from as fromDef, to as toDef } from '../schema/stixRefRelationship';
 import { logApp } from '../config/conf';
+import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import type { AuthContext, AuthUser } from '../types/user';
 
 const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
   if (Array.isArray(value)) {
@@ -194,7 +196,7 @@ const handleDirectAttribute = async (
   }
   if (attribute.mode === 'simple' && attribute.attr_path) {
     const computedValue = extractSimplePathFromJson(base, record, attribute.attr_path, definition);
-    if (computedValue !== null && computedValue !== undefined) {
+    if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
         input.hashes = { ...values, [attribute.key]: computedValue };
@@ -205,7 +207,7 @@ const handleDirectAttribute = async (
   }
   if (attribute.mode === 'complex' && attribute.complex_path) {
     const computedValue = await extractComplexPathFromJson(base, metaData, record, attribute.complex_path, definition);
-    if (computedValue !== null && computedValue !== undefined) {
+    if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
         input.hashes = { ...values, [attribute.key]: computedValue };
@@ -217,34 +219,41 @@ const handleDirectAttribute = async (
 };
 
 const handleBasedOnAttribute = async (
+  context: AuthContext,
+  user: AuthUser,
   base: JSON,
   attribute: BasedRepresentationAttribute,
   input: Record<string, InputType>,
   record: JSON,
   definition: AttributeDefinition,
   otherEntities: Map<string, Record<string, InputType>[]>,
-  refEntities: Record<string, BasicStoreObject>
+  refEntities: Record<string, BasicStoreObject>,
+  representation: JsonMapperRepresentation,
+  chosenMarkings: string[],
 ) => {
-  // Handle default value based_on attribute except markings which are handled later on.
-  if (definition && attribute.default_values && attribute.default_values.length > 0 && attribute.key !== INPUT_MARKINGS) {
-    if (definition.multiple) {
-      input[attribute.key] = attribute.default_values.flatMap((id) => {
-        const entity = refEntities[id];
-        if (!entity) return [];
-        return [entity];
-      });
-    } else {
-      const entity = refEntities[attribute.default_values[0]];
-      if (entity) {
-        input[attribute.key] = entity;
+  // region take care of default values
+  if (definition && attribute.default_values && attribute.default_values.length > 0) {
+    if (attribute.key !== INPUT_MARKINGS) {
+      if (definition.multiple) {
+        input[attribute.key] = attribute.default_values.flatMap((id) => {
+          const entity = refEntities[id];
+          if (!entity) return [];
+          return [entity];
+        });
+      } else {
+        const entity = refEntities[attribute.default_values[0]];
+        if (entity) {
+          input[attribute.key] = entity;
+        }
       }
+    } else {
+      const entitySetting = await getEntitySettingFromCache(context, representation.target.entity_type);
+      handleDefaultMarkings(entitySetting, representation, input, refEntities, chosenMarkings, user);
     }
   }
-  if (attribute.based_on) {
-    if (isEmptyField(attribute.based_on)) {
-      throw UnsupportedError('Unknown value(s)', { key: attribute.key });
-    }
-    // region fetch entities
+  // endregion
+  // region bind the value and override default if needed
+  if (attribute.based_on && attribute.based_on.representations) {
     let entities;
     if (attribute.based_on.identifier) {
       const mappedIdentifiers = extractTargetIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
@@ -259,7 +268,6 @@ const handleBasedOnAttribute = async (
         .map((id) => otherEntities.get(id)).flat()
         .filter((e) => e !== undefined) as Record<string, InputType>[];
     }
-    // endregion
     if (entities.length > 0) {
       const entity_type = input[entityType.name] as string;
       // Is relation from or to (stix-core || stix-sighting)
@@ -288,6 +296,7 @@ const handleBasedOnAttribute = async (
       }
     }
   }
+  // endregion
 };
 
 const addResult = (representation: JsonMapperRepresentation, results: Map<string, Record<string, InputType>[]>, input: any) => {
@@ -322,16 +331,16 @@ const computeOrderedRepresentations = (representations: JsonMapperRepresentation
   return [baseEntities, basedOnEntities, relationships];
 };
 
-const jsonMappingExecution = async (meta: Record<string, any>, data: string | object, mapper: JsonMapperParsed) => {
-  const context = executionContext('JsonMapper');
+const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: string | object, mapper: JsonMapperParsed) => {
   const refEntities = await handleRefEntities(context, SYSTEM_USER, mapper);
+  const chosenMarkings = mapper.user_chosen_markings ?? [];
   const results = new Map<string, Record<string, InputType>[]>();
   const baseJson = typeof data === 'string' ? JSON.parse(data) : data;
   const baseArray = Array.isArray(baseJson) ? baseJson : [baseJson];
   for (let index = 0; index < baseArray.length; index += 1) {
     const element = baseArray[index];
     // region variables
-    const dataVars: any = { ...meta };
+    const dataVars: any = {};
     for (let indexVar = 0; indexVar < (mapper.variables ?? []).length; indexVar += 1) {
       const variable = (mapper.variables ?? [])[indexVar];
       dataVars[variable.name] = await extractComplexPathFromJson(baseJson, {}, element, variable.path);
@@ -378,11 +387,11 @@ const jsonMappingExecution = async (meta: Record<string, any>, data: string | ob
               }
             } else if (attribute.mode === 'base') {
               if (refDef) {
-                await handleBasedOnAttribute(baseJson, attribute, input, baseDatum, refDef, results, refEntities);
+                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, refDef, results, refEntities, representation, chosenMarkings);
               } else if (attribute.key === 'from') {
-                await handleBasedOnAttribute(baseJson, attribute, input, baseDatum, fromDef, results, refEntities);
+                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, fromDef, results, refEntities, representation, chosenMarkings);
               } else if (attribute.key === 'to') {
-                await handleBasedOnAttribute(baseJson, attribute, input, baseDatum, toDef, results, refEntities);
+                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, toDef, results, refEntities, representation, chosenMarkings);
               } else {
                 throw UnsupportedError('Unknown schema for attribute:', { attribute });
               }
