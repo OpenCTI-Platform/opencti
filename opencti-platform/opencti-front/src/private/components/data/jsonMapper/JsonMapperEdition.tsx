@@ -83,7 +83,7 @@ const JsonMapperEdition: FunctionComponent<JsonMapperEditionProps> = ({
     }
   };
 
-  return <JsonMapperForm jsonMapper={initialValues} onSubmit={onSubmit} />;
+  return <JsonMapperForm attributes={data.csvMapperSchemaAttributes} jsonMapper={initialValues} onSubmit={onSubmit} />;
 };
 
 export default JsonMapperEdition;

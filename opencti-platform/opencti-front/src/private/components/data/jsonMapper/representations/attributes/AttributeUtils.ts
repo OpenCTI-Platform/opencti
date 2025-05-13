@@ -115,15 +115,22 @@ export const formDataToJsonMapperAttribute = (
   //   }
   //   : null;
 
-  return {
-    complex_path: undefined,
-    key: name ?? data.key,
+  const mapperAttribute = {
     mode: data.mode,
-    attr_path: data.attr_path,
+    key: name ?? data.key,
     default_values,
-    based_on: {
+  } as JsonMapperRepresentationAttributeEdit;
+  if (mapperAttribute.mode === 'simple') {
+    mapperAttribute.attr_path = data.attr_path;
+  }
+  // if (mapperAttribute.mode === 'complex') {
+  //   mapperAttribute.complex_path = undefined;
+  // }
+  if (mapperAttribute.mode === 'base' && data.based_on) {
+    mapperAttribute.based_on = {
       identifier: data.based_on?.identifier,
       representations: data.based_on?.representations,
-    },
-  };
+    };
+  }
+  return mapperAttribute;
 };

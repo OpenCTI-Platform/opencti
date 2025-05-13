@@ -15,6 +15,10 @@ import { representationLabel } from '@components/data/jsonMapper/representations
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
+import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
+import {
+  JsonMapperRepresentationAttributesForm_allSchemaAttributes$data,
+} from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import type { Theme } from '../../../../../components/Theme';
@@ -57,11 +61,10 @@ interface JsonMapperRepresentationFormProps
   prefixLabel: string;
   onDelete: () => void;
   selectedOption: string;
+  attributes: JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes']
 }
 
-const JsonMapperRepresentationForm: FunctionComponent<
-JsonMapperRepresentationFormProps
-> = ({
+const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFormProps> = ({
   form,
   field,
   index,
@@ -69,6 +72,7 @@ JsonMapperRepresentationFormProps
   handleRepresentationErrors,
   prefixLabel,
   onDelete,
+  attributes,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -92,9 +96,18 @@ JsonMapperRepresentationFormProps
   // -- EVENTS --
 
   const handleChangeEntityType = async (option: FieldOption | null) => {
+    const entitySchemaAttributes = attributes.find((schema) => schema.name === option?.id)?.attributes ?? [];
+    const attrs: { [key: string]: JsonMapperRepresentationAttributeFormData } = {};
+    for (let i = 0; i < entitySchemaAttributes.length; i += 1) {
+      const entitySchemaAttribute = entitySchemaAttributes[i];
+      attrs[entitySchemaAttribute.name] = {
+        key: entitySchemaAttribute.name,
+        mode: entitySchemaAttribute.type === 'ref' ? 'base' : 'simple',
+      };
+    }
     const newValue: JsonMapperRepresentationFormData = {
       ...value,
-      attributes: {},
+      attributes: attrs,
       target: {
         path: value?.target?.path,
         entity_type: option?.value ?? undefined,

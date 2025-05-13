@@ -66,7 +66,6 @@ JsonMapperRepresentationAttributeRefFormProps
   const isRelationFromOrTo = name.endsWith('from') || name.endsWith('to');
   const { setFieldValue, values } = form;
   const { entity_representations } = values;
-
   const [fromType, fromId] = getInfoForRef(
     Object.values(representation.attributes),
     entity_representations,

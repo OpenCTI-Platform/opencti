@@ -59,25 +59,34 @@ export const jsonMapperRepresentationToFormData = (
     (schema) => schema.name === representation.target.entity_type,
   )?.attributes ?? [];
   return {
+    attributes: entitySchemaAttributes.reduce((acc, schemaAttribute) => {
+      const attribute = representation.attributes.find((attr) => attr.key === schemaAttribute.name);
+      if (attribute) {
+        return {
+          ...acc,
+          [attribute.key]: jsonMapperAttributeToFormData(
+            attribute,
+            representation.target.entity_type,
+            computeDefaultValues,
+            schemaAttribute,
+          ),
+        };
+      }
+      return {
+        ...acc,
+        [schemaAttribute.name]: {
+          key: schemaAttribute.name,
+          mode: schemaAttribute.type === 'ref' ? 'base' : 'simple',
+        },
+      };
+    }, {}),
     id: representation.id,
-    type: representation.type,
     identifier: representation.identifier,
     target: {
       entity_type: representation.target.entity_type,
       path: representation.target.path,
     },
-    attributes: representation.attributes.reduce((acc, attribute) => {
-      const schemaAttribute = entitySchemaAttributes.find((attr) => attr.name === attribute.key);
-      return {
-        ...acc,
-        [attribute.key]: jsonMapperAttributeToFormData(
-          attribute,
-          representation.target.entity_type,
-          computeDefaultValues,
-          schemaAttribute,
-        ),
-      };
-    }, {}),
+    type: representation.type,
   };
 };
 
@@ -101,8 +110,9 @@ export const formDataToJsonMapperRepresentation = (
     attributes: (Object.entries(data.attributes)).flatMap(([name, attribute]) => {
       const mapperAttribute = formDataToJsonMapperAttribute(attribute, name);
       return (
-        isEmptyField(mapperAttribute.attr_path)
-        && isEmptyField(mapperAttribute.based_on)
+        isEmptyField(mapperAttribute.attr_path?.path)
+        && isEmptyField(mapperAttribute.complex_path?.formula)
+        && isEmptyField(mapperAttribute.based_on?.representations)
         && isEmptyField(mapperAttribute.default_values)
       )
         ? []

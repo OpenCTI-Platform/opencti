@@ -6,11 +6,11 @@ import Tooltip from '@mui/material/Tooltip';
 import SelectField from '../../../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../../../components/i18n';
 
-interface CsvMapperDefaultMarkingProps {
+interface JsonMapperDefaultMarkingProps {
   name: string
 }
 
-const JsonMapperDefaultMarking = ({ name }: CsvMapperDefaultMarkingProps) => {
+const JsonMapperDefaultMarking = ({ name }: JsonMapperDefaultMarkingProps) => {
   const { t_i18n } = useFormatter();
 
   return (
