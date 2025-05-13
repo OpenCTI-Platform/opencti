@@ -38,33 +38,35 @@ describe('Redis basic and utils', () => {
   });
 
   it('should store and overwrite forgot_password_otp)', async () => {
+    const id = uuid();
     const email = 'user@test.com';
     const firstOtp = 'first-otp';
     const secondOtp = 'second-otp';
 
-    await redisSetForgotPasswordOtp(email, firstOtp);
-    const storedFirst = await redisGetForgotPasswordOtp(email);
-    expect(storedFirst.otp).toBe(firstOtp);
+    await redisSetForgotPasswordOtp(id, { hashedOtp: firstOtp, email });
+    const storedFirst = await redisGetForgotPasswordOtp(id);
+    expect(storedFirst.hashedOtp).toBe(firstOtp);
 
-    await redisSetForgotPasswordOtp(email, secondOtp);
-    const storedSecond = await redisGetForgotPasswordOtp(email);
-    expect(storedSecond.otp).toBe(secondOtp);
+    await redisSetForgotPasswordOtp(id, { hashedOtp: secondOtp, email });
+    const storedSecond = await redisGetForgotPasswordOtp(id);
+    expect(storedSecond.hashedOtp).toBe(secondOtp);
   });
 
   it('should expire forgot_password_otp after TTL', async () => {
+    const id = uuid();
     const email = 'user@test.com';
     const otp = 'otp-with-ttl';
     const testTTL = 2;
 
-    await redisSetForgotPasswordOtp(email, otp, testTTL);
-    const stored = await redisGetForgotPasswordOtp(email);
-    expect(stored.otp).toBe(otp);
+    await redisSetForgotPasswordOtp(id, { hashedOtp: otp, email }, testTTL);
+    const stored = await redisGetForgotPasswordOtp(id);
+    expect(stored.hashedOtp).toBe(otp);
 
     await new Promise((resolve) => {
       setTimeout(() => resolve(), (testTTL + 1) * 1000);
     });
-    const expired = await redisGetForgotPasswordOtp(email);
-    expect(expired.otp).toBeNull();
+    const expired = await redisGetForgotPasswordOtp(id);
+    expect(expired.hashedOtp).toBeUndefined();
   });
 });
 
