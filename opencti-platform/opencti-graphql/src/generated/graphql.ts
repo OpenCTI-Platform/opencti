@@ -3183,8 +3183,9 @@ export enum CasesOrdering {
 }
 
 export type ChangePasswordInput = {
-  email: Scalars['String']['input'];
   newPassword: Scalars['String']['input'];
+  otp: Scalars['String']['input'];
+  transactionId: Scalars['String']['input'];
 };
 
 export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -13696,7 +13697,7 @@ export type Mutation = {
   aiVictimGenerateReport?: Maybe<Scalars['String']['output']>;
   artifactImport?: Maybe<Artifact>;
   askJobImport?: Maybe<File>;
-  askSendOtp?: Maybe<Scalars['Boolean']['output']>;
+  askSendOtp?: Maybe<Scalars['String']['output']>;
   attackPatternAdd?: Maybe<AttackPattern>;
   attackPatternEdit?: Maybe<AttackPatternEditMutations>;
   bookmarkAdd?: Maybe<StixDomainObject>;
@@ -30047,7 +30048,7 @@ export enum ValidationMode {
 
 export type Verify2faInput = {
   code: Scalars['String']['input'];
-  email: Scalars['String']['input'];
+  transactionId: Scalars['String']['input'];
 };
 
 export type VerifyOtp = {
@@ -30056,8 +30057,8 @@ export type VerifyOtp = {
 };
 
 export type VerifyOtpInput = {
-  email: Scalars['String']['input'];
   otp: Scalars['String']['input'];
+  transactionId: Scalars['String']['input'];
 };
 
 export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
@@ -37880,7 +37881,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   aiVictimGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiVictimGenerateReportArgs, 'id' | 'victimId'>>;
   artifactImport?: Resolver<Maybe<ResolversTypes['Artifact']>, ParentType, ContextType, RequireFields<MutationArtifactImportArgs, 'file'>>;
   askJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationAskJobImportArgs, 'fileName'>>;
-  askSendOtp?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationAskSendOtpArgs, 'input'>>;
+  askSendOtp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAskSendOtpArgs, 'input'>>;
   attackPatternAdd?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<MutationAttackPatternAddArgs, 'input'>>;
   attackPatternEdit?: Resolver<Maybe<ResolversTypes['AttackPatternEditMutations']>, ParentType, ContextType, RequireFields<MutationAttackPatternEditArgs, 'id'>>;
   bookmarkAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationBookmarkAddArgs, 'id' | 'type'>>;

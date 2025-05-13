@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { askSendOtp, generateOtp, getUser } from '../../../src/modules/auth/auth-domain';
+import { askSendOtp, generateOtp, getUser, verifyOtp } from '../../../src/modules/auth/auth-domain';
 import { AuthenticationFailure } from '../../../src/config/errors';
 import { testContext } from '../../utils/testQuery';
+import { validate as uuidValidate } from 'uuid';
+import { OTP_TTL, redisGetForgotPasswordOtp } from '../../../src/database/redis';
 
 describe('getUser', () => {
   it('Should be able to return a user with an email', async () => {
@@ -21,7 +23,7 @@ describe('getUser', () => {
   });
 });
 
-describe('generateCode', () => {
+describe('generateOtp', () => {
   it('Should return a 8 char code', async () => {
     const result = generateOtp();
     expect(result.length).toEqual(8);
@@ -32,13 +34,23 @@ describe('generateCode', () => {
   });
 });
 
-describe('askSendToken', () => {
-  it('Should return true with an existed user', () => {
-    const result = askSendOtp(testContext, { email: 'anais@opencti.io' });
-    expect(result).toBeTruthy();
+let transactionId: string;
+describe('askSendOtp', () => {
+  it('Should return an uuid with an existed user', async () => {
+    transactionId = await askSendOtp(testContext, { email: 'anais@opencti.io' });
+    expect(uuidValidate(transactionId)).toBeTruthy();
   });
-  it('Should return true with an wrong email', () => {
-    const result = askSendOtp(testContext, { email: 'noResul@opencti.io' });
-    expect(result).toBeTruthy();
+  it('Should find redis key', async () => {
+    const key = await redisGetForgotPasswordOtp(transactionId);
+    expect(key).toBeTruthy();
+    expect(key.hashedOtp).toBeTypeOf('string');
+    expect(key.email).toBe('anais@opencti.io');
+    expect(key.otp_activated).toBeFalsy();
+    expect(key.otp_validated).toBeFalsy();
+    expect(key.ttl).toBeLessThanOrEqual(OTP_TTL);
+  });
+  it('Should return an uuid with an wrong email', async () => {
+    const result = await askSendOtp(testContext, { email: 'noResul@opencti.io' });
+    expect(uuidValidate(result)).toBeTruthy();
   });
 });

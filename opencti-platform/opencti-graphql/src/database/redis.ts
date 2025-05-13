@@ -952,13 +952,16 @@ export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]
 // region - forgot password handling
 
 export const OTP_TTL = conf.get('app:forgot_password:otp_ttl');
-export const redisSetForgotPasswordOtp = async (user_email: string, otp: string, ttl: number = OTP_TTL) => {
-  const forgotPasswordOtpKeyName = `forgot_password_otp_${user_email}`;
-  await getClientBase().setex(forgotPasswordOtpKeyName, ttl, otp);
+export const redisSetForgotPasswordOtp = async (id: string, data: object, ttl: number = OTP_TTL) => {
+  const forgotPasswordOtpKeyName = `forgot_password_otp_${id}`;
+  await getClientBase().setex(forgotPasswordOtpKeyName, ttl, JSON.stringify(data));
 };
-export const redisGetForgotPasswordOtp = async (user_email: string) => {
-  const forgotPasswordOtpKeyName = `forgot_password_otp_${user_email}`;
-  return { otp: await getClientBase().get(forgotPasswordOtpKeyName), ttl: await getClientBase().ttl(forgotPasswordOtpKeyName) };
+export const redisGetForgotPasswordOtp = async (id: string) => {
+  const keyName = `forgot_password_otp_${id}`;
+  const str = await getClientBase().get(keyName) ?? '{}';
+  const values: { hashedOtp: string, email: string, otp_activated: boolean, otp_validated: boolean, otp_secret: string, userId: string } = JSON.parse(str);
+  const ttl = await getClientBase().ttl(keyName);
+  return { ...values, ttl };
 };
 
 // endregion - forgot password handling
