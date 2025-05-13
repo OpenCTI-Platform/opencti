@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { askSendOtp, generateOtp, getLocalProviderUser } from '../../../src/modules/auth/auth-domain';
-import { AuthenticationFailure } from '../../../src/config/errors';
 import { testContext } from '../../utils/testQuery';
 import { validate as uuidValidate } from 'uuid';
 import { OTP_TTL, redisGetForgotPasswordOtp } from '../../../src/database/redis';
