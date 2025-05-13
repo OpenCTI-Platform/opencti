@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import makeStyles from '@mui/styles/makeStyles';
+import useHelper from '../../../../utils/hooks/useHelper';
 import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
 import { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -18,7 +19,6 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import UserEdition from './UserEdition';
 import UserHistoryTab from './UserHistoryTab';
-import useHelper from 'src/utils/hooks/useHelper';
 
 const userEditionQuery = graphql`
   query RootUserEditionQuery($id: String!) {
@@ -149,7 +149,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
                 to={`/dashboard/settings/accesses/users/${data.id}/history`}
                 value={`/dashboard/settings/accesses/users/${data.id}/history`}
                 label={t_i18n('History')}
-              />}
+                                   />}
             </Tabs>
           </Box>
           <Routes>
