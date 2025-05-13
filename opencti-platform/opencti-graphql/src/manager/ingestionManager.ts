@@ -431,7 +431,7 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
       // Reset the pagination cursor, and update date
       const state = {
         current_state_cursor: undefined,
-        added_after_start: addedLastHeader ? utcDate(addedLastHeader) : utcDate(),
+        added_after_start: addedLastHeader ? utcDate(addedLastHeader).toISOString() : now(),
         last_execution_date: now()
       };
       const ingestionUpdate = await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
