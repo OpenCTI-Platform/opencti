@@ -1,4 +1,4 @@
-import type { BasicStoreEntityPIR, PirDependency } from './pir-types';
+import type { BasicStoreEntityPIR, ParsedPIR, PirDependency } from './pir-types';
 import type { AuthContext } from '../../types/user';
 import { listRelationsPaginated } from '../../database/middleware-loader';
 import { SYSTEM_USER } from '../../utils/access';
@@ -7,6 +7,23 @@ import { stixRefRelationshipEditField } from '../../domain/stixRefRelationship';
 import { FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { stixObjectOrRelationshipAddRefRelation } from '../../domain/stixObjectOrStixRelationship';
+
+/**
+ * Helper function to parse filters that are saved as string in elastic.
+ *
+ * @param pir The PIR to parse.
+ * @returns PIR with parsed filters.
+ */
+export const parsePir = (pir: BasicStoreEntityPIR): ParsedPIR => {
+  return {
+    ...pir,
+    pirFilters: JSON.parse(pir.pirFilters),
+    pirCriteria: pir.pirCriteria.map((c) => ({
+      ...c,
+      filters: JSON.parse(c.filters),
+    })),
+  };
+};
 
 export const computePirScore = (pir: BasicStoreEntityPIR, dependencies: PirDependency[]) => {
   const maxScore = pir.pirCriteria.reduce((acc, val) => acc + val.weight, 0);

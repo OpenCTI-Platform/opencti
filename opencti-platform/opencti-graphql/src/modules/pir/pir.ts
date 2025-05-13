@@ -24,6 +24,7 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPIR, StixPIR> = {
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'pirCriteria', label: 'PIR Criteria', type: 'object', format: 'flat', mandatoryType: 'internal', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'pirFilters', label: 'PIR Filters', type: 'string', format: 'json', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'lastEventId', label: 'Last event id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixPIR) => stix.name,
