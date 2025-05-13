@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import AdministrativeAreaDetails from '@components/locations/administrative_areas/AdministrativeAreaDetails';
+import LocationDetails from '@components/locations/LocationDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -71,6 +71,7 @@ const administrativeAreaFragment = graphql`
       }
     }
     workflowEnabled
+    ...LocationDetails_location
   }
 `;
 
@@ -92,7 +93,7 @@ const AdministrativeArea = ({
         classes={{ container: classes.gridContainer }}
       >
         <Grid item xs={4}>
-          <AdministrativeAreaDetails administrativeArea={administrativeArea} />
+          <LocationDetails locationData={administrativeArea} />
         </Grid>
         <Grid item xs={4}>
           <LocationMiniMap
