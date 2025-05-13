@@ -529,7 +529,7 @@ export const processCsvLines = async (
     await reportExpectation(context, ingestionUser, work.id);// csv file ends = 1 operation done.
 
     logApp.info(`[OPENCTI-MODULE] INGESTION Csv - Sent: ${bundleCount} bundles for ${objectsInBundleCount} objects.`);
-    const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast), last_execution_date: now() };
+    const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast).toISOString(), last_execution_date: now() };
     await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
   }
