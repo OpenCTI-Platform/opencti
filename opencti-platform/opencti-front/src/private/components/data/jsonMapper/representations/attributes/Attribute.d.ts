@@ -8,17 +8,19 @@ export type JsonMapperRepresentationAttributeEdit = Omit<JsonMapperRepresentatio
   default_values: string[] | null
 };
 
+export interface JsonAttrPathConfiguration {
+  pattern_date: string | null | undefined;
+  separator: string | null | undefined;
+  timezone: string | null | undefined;
+}
+
 export interface JsonMapperRepresentationAttributeFormData {
   key: string
   mode: string // 'simple' | ' complex' | 'base'
   attr_path?: {
     path: string
     independent: boolean | undefined | null
-    configuration: {
-      pattern_date: string | null | undefined;
-      separator: string | null | undefined;
-      timezone: string | null | undefined;
-    } | null | undefined
+    configuration: JsonAttrPathConfiguration | null | undefined
   } | null
   complex_path?: {
     formula: string

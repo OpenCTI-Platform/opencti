@@ -20,7 +20,7 @@ import type { BasicStoreObject } from '../types/store';
 import { INPUT_MARKINGS } from '../schema/general';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { CsvMapperOperator } from '../generated/graphql';
-import type { ComplexAttributePath, JsonMapperParsed, SimpleAttributePath } from '../modules/internal/jsonMapper/jsonMapper-types';
+import type { ComplexAttributePath, JsonMapperParsed, JsonMapperRepresentation, SimpleAttributePath } from '../modules/internal/jsonMapper/jsonMapper-types';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
 const USER_CHOICE_MARKING_CONFIG = 'user-choice';
@@ -41,11 +41,11 @@ export const formatValue = (value: string | boolean, type: AttrType, column: Att
     try {
       if (isNotEmptyField(pattern_date)) {
         if (isNotEmptyField(timezone)) {
-          return DateTime.fromFormat(value, pattern_date, { zone: timezone }).toISO();
+          return DateTime.fromFormat(value, pattern_date, { zone: timezone }).toUTC().toISO();
         }
-        return DateTime.fromFormat(value, pattern_date).toISO();
+        return DateTime.fromFormat(value, pattern_date).toUTC().toISO();
       }
-      return DateTime.fromISO(value).toISO();
+      return DateTime.fromISO(value).toUTC().toISO();
     } catch (error: any) {
       return null;
     }
@@ -269,9 +269,9 @@ const handleAttributes = (
  * We handle markings in a specific function instead of doing it inside the
  * handleAttributes() one because we need to do specific logic for this attribute.
  */
-const handleDefaultMarkings = (
+export const handleDefaultMarkings = (
   entitySetting: BasicStoreEntityEntitySetting | undefined,
-  representation: CsvMapperRepresentation,
+  representation: CsvMapperRepresentation | JsonMapperRepresentation,
   input: Record<string, InputType>,
   refEntities: Record<string, BasicStoreObject>,
   chosenMarkings: string[],

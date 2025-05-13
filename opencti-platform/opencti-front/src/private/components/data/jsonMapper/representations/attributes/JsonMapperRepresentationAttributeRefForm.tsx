@@ -251,7 +251,8 @@ JsonMapperRepresentationAttributeRefFormProps
           <JsonMapperRepresentationDialogOption configuration={value}>
             <JsonMapperRepresentationAttributeOptions
               schemaAttribute={schemaAttribute}
-              attributeName={name}
+              baseAttributeName={name}
+              configurationAttributeName={name}
               form={form}
             />
           </JsonMapperRepresentationDialogOption>
