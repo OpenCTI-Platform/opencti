@@ -56,6 +56,7 @@ generates:
         ExclusionList: ../modules/exclusionList/exclusionList-types#BasicStoreEntityExclusionList
         FintelTemplate: ../modules/fintelTemplate/fintelTemplate-types#BasicStoreEntityFintelTemplate
         SavedFilter: ../modules/savedFilter/savedFilter-types#BasicStoreEntitySavedFilter
+        FintelDesign: ../modules/fintelDesign/fintelDesign-types#BasicStoreEntityFintelDesign
   ./graphql.schema.json:
     plugins:
       - "introspection"

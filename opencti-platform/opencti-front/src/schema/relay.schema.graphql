@@ -8232,6 +8232,8 @@ type Query {
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
   savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
+  fintelDesign(id: ID!): FintelDesign
+  fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
 }
 
 type Subscription {
@@ -9086,6 +9088,9 @@ type Mutation {
   savedFilterFieldPatch(id: ID!, filters: String!): SavedFilter
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
+  fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
+  fintelDesignDelete(id: ID!): ID
+  fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12790,4 +12795,40 @@ input RequestAccessConfigureInput {
   approved_status_id: ID
   declined_status_id: ID
   approval_admin: [ID]
+}
+
+type FintelDesign implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  description: String
+  url: String
+  gradiantFromColor: String
+  gradiantToColor: String
+  textColor: String
+}
+
+input FintelDesignAddInput {
+  name: String!
+  description: String
+  url: String
+  gradiantFromColor: String
+  gradiantToColor: String
+  textColor: String
+}
+
+type FintelDesignEdge {
+  cursor: String!
+  node: FintelDesign
+}
+
+type FintelDesignConnection {
+  pageInfo: PageInfo!
+  edges: [FintelDesignEdge!]!
+}
+
+enum FintelDesignOrdering {
+  name
 }
