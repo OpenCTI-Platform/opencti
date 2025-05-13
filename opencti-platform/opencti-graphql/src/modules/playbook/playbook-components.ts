@@ -498,19 +498,21 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         ...containerData
       } as StoreCommon;
       const container = convertStoreToStix(storeContainer) as StixContainer;
-      // add all objects in the container if requested in the playbook confif
+      // add all objects in the container if requested in the playbook config
       if (all) {
         container.object_refs = bundle.objects.map((o: StixObject) => o.id);
       } else {
         container.object_refs = [baseData.id];
       }
-      if (isApplyCaseTemplateEnabled) {
-        if (caseTemplates.length > 0) {
-          const context = executionContext('playbook_components');
-          const bluepromise = await BluePromise.map(caseTemplates, (caseTemplate) => upsertTemplateForCase(context, SYSTEM_USER, container.id, caseTemplate.value));
-
-          console.log({ bluepromise });
-        }
+      const cases: Array<string> = [
+        ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+        ENTITY_TYPE_CONTAINER_CASE_RFI,
+        ENTITY_TYPE_CONTAINER_CASE_RFT,
+      ];
+      if (isApplyCaseTemplateEnabled && cases.includes(container_type) && caseTemplates.length > 0) {
+        const context = executionContext('playbook_components');
+        const caseTemplatesId = caseTemplates.map((caseTemplate) => caseTemplate.value);
+        await BluePromise.map(caseTemplatesId, (caseTemplateId) => upsertTemplateForCase(context, SYSTEM_USER, container.id, caseTemplateId));
       }
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
       // Following attributes are the same as the base instance: markings, labels, created_by, assignees, partcipants
@@ -534,7 +536,6 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
       }
       bundle.objects.push(container);
-      console.log({bundle})
     }
     return { output_port: 'out', bundle };
   }

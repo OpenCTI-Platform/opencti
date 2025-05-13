@@ -143,7 +143,8 @@ describe('playbook container wrapper component', () => {
       configuration: {
         container_type: 'Case-Incident',
         all: false,
-        newContainer: false
+        newContainer: false,
+        caseTemplates: [],
       }
     };
     const expectedBundleToIngest = {
