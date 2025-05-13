@@ -15,8 +15,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
-import { ListItemButton } from '@mui/material';
-import ListItem from '@mui/material/ListItem';
+import { ListItem, ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCyberObservableAddIndicators from './StixCyberObservableAddIndicators';
@@ -132,57 +131,57 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
   };
 
   return (
-    <div style={{ marginTop: 20 }}>
-      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('Indicators composed with this observable')}
-      </Typography>
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <IconButton
-          ref={AddOrCreateIndicatorsButtonRef}
-          aria-label='Add or create indicators button'
-          color="primary"
-          onClick={handleOpenAddOrCreateIndicatorMenu}
-          style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large"
-        >
-          <Add fontSize="small" />
-        </IconButton>
-        <Menu
-          anchorEl={AddOrCreateIndicatorsButtonRef.current}
-          open={isAddOrCreateIndicatorsMenuOpen}
-          onClose={handleCloseAddOrCreateIndicatorMenu}
-        >
-          <MenuItem onClick={handleOpenCreateIndicatorMenu}>
-            {t_i18n('Create')}
-          </MenuItem>
-          <MenuItem onClick={handleOpenAddIndicatorDrawer}>
-            {t_i18n('Add')}
-          </MenuItem>
-        </Menu>
-      </Security>
-      <div className="clearfix" />
-      <List style={{ marginTop: -15 }} aria-label='Stix cyber observable indicators list'>
-        {stixCyberObservable.indicators.edges.map((indicatorEdge) => (
-          <ListItem
-            key={indicatorEdge.node.id}
-            divider={true}
-            disablePadding
+    <>
+      <div style={{ marginTop: 20 }}>
+        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          {t_i18n('Indicators composed with this observable')}
+        </Typography>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IconButton
+            ref={AddOrCreateIndicatorsButtonRef}
+            aria-label='Add or create indicators button'
+            color="primary"
+            onClick={handleOpenAddOrCreateIndicatorMenu}
+            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+            size="large"
           >
-            <ListItemButton
-              aria-label={'stix cyber observable indicators item'}
-              classes={{ root: { paddingLeft: 10, height: 50 } }}
-              component={Link}
-              to={`/dashboard/observations/indicators/${indicatorEdge.node.id}`}
-              sx={{
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
+            <Add fontSize="small"/>
+          </IconButton>
+          <Menu
+            anchorEl={AddOrCreateIndicatorsButtonRef.current}
+            open={isAddOrCreateIndicatorsMenuOpen}
+            onClose={handleCloseAddOrCreateIndicatorMenu}
+          >
+            <MenuItem onClick={handleOpenCreateIndicatorMenu}>
+              {t_i18n('Create')}
+            </MenuItem>
+            <MenuItem onClick={handleOpenAddIndicatorDrawer}>
+              {t_i18n('Add')}
+            </MenuItem>
+          </Menu>
+        </Security>
+        <div className="clearfix"/>
+        <List style={{ marginTop: -15 }} aria-label='Stix cyber observable indicators list'>
+          {stixCyberObservable.indicators.edges.map((indicatorEdge) => (
+            <ListItem
+              key={indicatorEdge.node.id}
+              divider={true}
+              disablePadding
+              secondaryAction={
+                <StixCyberObservableIndicatorPopover
+                  observableId={stixCyberObservable.id}
+                  indicatorId={indicatorEdge.node.id}
+                />
+          }
             >
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <ListItemIcon classes={{ root: { color: theme.palette.primary.main } }}>
-                  <ItemIcon type={indicatorEdge.node.entity_type} />
+              <ListItemButton
+                aria-label={'stix cyber observable indicators item'}
+                style={{ paddingLeft: 10, height: 50 }}
+                component={Link}
+                to={`/dashboard/observations/indicators/${indicatorEdge.node.id}`}
+              >
+                <ListItemIcon style={{ color: theme.palette.primary.main }}>
+                  <ItemIcon type={indicatorEdge.node.entity_type}/>
                 </ListItemIcon>
                 <ListItemText
                   primary={
@@ -200,18 +199,13 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
                         {fd(indicatorEdge.node.created_at)}
                       </div>
                     </div>
-                  }
+              }
                 />
-              </div>
-              <StixCyberObservableIndicatorPopover
-                observableId={stixCyberObservable.id}
-                indicatorId={indicatorEdge.node.id}
-              />
-            </ListItemButton>
-          </ListItem>
-
-        ))}
-      </List>
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </div>
       <Dialog
         open={isCreateIndicatorMenuOpen}
         slotProps={{ paper: { elevation: 1 } }}
@@ -248,7 +242,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
         stixCyberObservable={stixCyberObservable}
         stixCyberObservableIndicators={stixCyberObservable.indicators.edges}
       />
-    </div>
+    </>
   );
 };
 
