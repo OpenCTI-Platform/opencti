@@ -18,8 +18,9 @@ import { SYSTEM_USER } from '../../utils/access';
 import { killUserSessions } from '../../database/session';
 import { logApp } from '../../config/conf';
 
-export const getUser = async (email: string): Promise<User> => {
+export const getLocalProviderUser = async (email: string): Promise<User> => {
   const user: any = await getUserByEmail(email);
+  if (!user) throw UnsupportedError('User not found');
   if (user.external) throw UnsupportedError('External user');
   return user;
 };
@@ -42,7 +43,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   const resetOtp = generateOtp();
   const transactionId = uuid();
   try {
-    const user = await getUser(input.email);
+    const user = await getLocalProviderUser(input.email);
     const { user_email, name, otp_activated, otp_secret, id } = user;
     const email = user_email.toLowerCase();
     // TODO : rework after using transactionId for the redis key in place of user_email
@@ -72,7 +73,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       message: `send an OTP to ${user_email}`,
     });
   } catch (e) {
-    // Prevent wrong email address, but return true too if it fails
+    // Prevent wrong email address, but return transactionId too if it fails
     logApp.error('Error occurred while sending password reset email:', { cause: e });
   }
   return transactionId;
