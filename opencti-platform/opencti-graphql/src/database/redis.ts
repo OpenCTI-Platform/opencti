@@ -963,6 +963,10 @@ export const redisGetForgotPasswordOtp = async (id: string) => {
   const ttl = await getClientBase().ttl(keyName);
   return { ...values, ttl };
 };
+export const redisDelForgotPassword = async (id: string) => {
+  const keyName = `forgot_password_otp_${id}`;
+  return getClientBase().del(keyName);
+};
 
 // endregion - forgot password handling
 

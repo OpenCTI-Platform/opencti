@@ -12,7 +12,7 @@ import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { ADMIN_USER } from '../../../tests/utils/testQuery';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
-import { redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../database/redis';
+import { redisDelForgotPassword, redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { SYSTEM_USER } from '../../utils/access';
 import { killUserSessions } from '../../database/session';
@@ -150,6 +150,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
       { key: 'password', value: [input.newPassword] }
     ]);
     await killUserSessions(authUser.id);
+    await redisDelForgotPassword(input.transactionId);
     const body = `Hi ${authUser.name},</br></br>`
       + 'We wanted to let you know that your account password was successfully changed.</br></br>'
       + 'If you initiated this change, no further action is required. However, if you did not authorize this change, please reset your password immediately and contact the system administrator so that we may investigate and take appropriate measures to secure your account.</br></br>'
