@@ -30,8 +30,9 @@ export const upsertTemplateForCase = async (context: AuthContext, user: AuthUser
   };
   const templateTasks = await listAllEntities<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
   // Convert template to real task
+  const objectMarking = currentCase?.[RELATION_OBJECT_MARKING] ?? [];
   const tasks = templateTasks.map((template) => {
-    return { name: template.name, description: template.description, objects: [id], objectMarking: currentCase[RELATION_OBJECT_MARKING] };
+    return { name: template.name, description: template.description, objects: [id], objectMarking };
   });
   // Create all tasks
   for (let index = 0; index < tasks.length; index += 1) {
@@ -40,7 +41,7 @@ export const upsertTemplateForCase = async (context: AuthContext, user: AuthUser
       name: task.name,
       description: task.description,
       objects: [id],
-      objectMarking: currentCase[RELATION_OBJECT_MARKING],
+      objectMarking,
     });
   }
   // Admin log

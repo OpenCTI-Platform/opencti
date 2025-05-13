@@ -16,6 +16,7 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
+import { Promise as BluePromise } from 'bluebird';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
 import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, INTERNAL_USERS, isUserCanAccessStixElement, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
@@ -57,7 +58,7 @@ import { internalFindByIds, listAllEntities, listAllRelations, storeLoadById } f
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
-import { logApp } from '../../config/conf';
+import { isFeatureEnabled, logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { extractStixRepresentative } from '../../database/stix-representative';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
@@ -88,6 +89,7 @@ import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { generateCreateMessage } from '../../database/generate-message';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
+import { upsertTemplateForCase } from '../case/case-domain';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -416,7 +418,7 @@ interface ContainerWrapperConfiguration {
   container_type: string
   all: boolean
   newContainer: boolean
-  caseTemplates: string[] | { label: string, value: string }[]
+  caseTemplates: { label: string, value: string }[]
 }
 const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapperConfiguration> = {
   type: 'object',
@@ -462,11 +464,12 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const { container_type, all, newContainer } = playbookNode.configuration;
+    const { container_type, all, newContainer, caseTemplates } = playbookNode.configuration;
     if (!PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.includes(container_type)) {
       throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
     }
     if (container_type) {
+      const isApplyCaseTemplateEnabled = isFeatureEnabled('APPLY_CASE_TEMPLATE_PLAYBOOK');
       const baseData = extractBundleBaseElement(dataInstanceId, bundle);
       const created = newContainer ? now() : baseData.extensions[STIX_EXT_OCTI].created_at;
       const representative = extractStixRepresentative(baseData);
@@ -501,6 +504,14 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       } else {
         container.object_refs = [baseData.id];
       }
+      if (isApplyCaseTemplateEnabled) {
+        if (caseTemplates.length > 0) {
+          const context = executionContext('playbook_components');
+          const bluepromise = await BluePromise.map(caseTemplates, (caseTemplate) => upsertTemplateForCase(context, SYSTEM_USER, container.id, caseTemplate.value));
+
+          console.log({ bluepromise });
+        }
+      }
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
       // Following attributes are the same as the base instance: markings, labels, created_by, assignees, partcipants
       if (baseData.object_marking_refs) {
@@ -523,6 +534,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
       }
       bundle.objects.push(container);
+      console.log({bundle})
     }
     return { output_port: 'out', bundle };
   }

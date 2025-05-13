@@ -33,7 +33,9 @@ const caseResolvers: Resolvers = {
     },
     caseSetTemplate: async (_, { id, caseTemplatesId }, context) => {
       await BluePromise.map(caseTemplatesId, (caseTemplateId) => upsertTemplateForCase(context, context.user, id, caseTemplateId));
-      return findById(context, context.user, id);
+      const toto = await findById(context, context.user, id);
+      console.log({ toto });
+      return toto;
     },
   }
 };
