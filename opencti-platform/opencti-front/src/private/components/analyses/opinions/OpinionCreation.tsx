@@ -171,8 +171,8 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
     <Formik<OpinionAddInput>
       initialValues={initialValues}
       validationSchema={opinionValidator}
-      validateOnChange={false} // Validation will occur on submission, required fields all have *'s
-      validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -334,8 +334,8 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
     <Formik<OpinionAddInput>
       initialValues={initialValues}
       validationSchema={opinionValidator}
-      validateOnChange={false} // Validation will occur on submission, required fields all have *'s
-      validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >

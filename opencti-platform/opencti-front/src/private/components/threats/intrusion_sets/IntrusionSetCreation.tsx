@@ -174,8 +174,8 @@ IntrusionSetFormProps
     <Formik<IntrusionSetAddInput>
       initialValues={initialValues}
       validationSchema={intrusionSetValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >

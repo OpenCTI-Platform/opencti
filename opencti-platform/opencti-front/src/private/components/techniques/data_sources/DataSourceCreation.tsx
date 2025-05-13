@@ -188,8 +188,8 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     <Formik<DataSourceAddInput>
       initialValues={initialValues}
       validationSchema={dataSourceValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >

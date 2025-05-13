@@ -6363,9 +6363,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:5.24.8":
-  version: 5.24.8
-  resolution: "@rjsf/core@npm:5.24.8"
+"@rjsf/core@npm:5.24.10":
+  version: 5.24.10
+  resolution: "@rjsf/core@npm:5.24.10"
   dependencies:
     lodash: "npm:^4.17.21"
     lodash-es: "npm:^4.17.21"
@@ -6375,13 +6375,13 @@ __metadata:
   peerDependencies:
     "@rjsf/utils": ^5.24.x
     react: ^16.14.0 || >=17
-  checksum: 10/c112399ed64e668a81a561365df17359d5d1d8ee087809a123d80c71185d0571eec604ff90866c7ee110dad79debb09907c4c72aa151028867a0e89c718fc039
+  checksum: 10/32b6ca1567f447de6ad4ace21d92c6a128ed43e3e833534225382a4de344ecf0004487f370a47d9fd8357438fa74c63aee026bc93678273a6ceaefd65b3d68e8
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:5.24.8":
-  version: 5.24.8
-  resolution: "@rjsf/mui@npm:5.24.8"
+"@rjsf/mui@npm:5.24.10":
+  version: 5.24.10
+  resolution: "@rjsf/mui@npm:5.24.10"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
@@ -6390,13 +6390,13 @@ __metadata:
     "@rjsf/core": ^5.24.x
     "@rjsf/utils": ^5.24.x
     react: ">=17"
-  checksum: 10/5dc0564197e7e3ab3c46c4c85d964db074e27af2625bd06374b85432ba78f0ab4bf1029a9a83681fab52c1578b70d74d5a10fa2b755097e60e7a48adfdd270a8
+  checksum: 10/bd80931bccb0b0cc78d748775e9ab22855783e0ff013001c3af815f079a9201a466c7a360fec3385a5177a17db7072386dbdc5dbf20c74fe8e54b61129daa471
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:5.24.8":
-  version: 5.24.8
-  resolution: "@rjsf/utils@npm:5.24.8"
+"@rjsf/utils@npm:5.24.10":
+  version: 5.24.10
+  resolution: "@rjsf/utils@npm:5.24.10"
   dependencies:
     json-schema-merge-allof: "npm:^0.8.1"
     jsonpointer: "npm:^5.0.1"
@@ -6405,7 +6405,7 @@ __metadata:
     react-is: "npm:^18.2.0"
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 10/57bde07b955dbe8290961a4b10293452f948a64938f4b1103b121b718d4c057c34191b891394f7a4c8f0b547ffc9278c0e940292d2fec4798f4f8dbfc217740e
+  checksum: 10/dc0a9d2e9f2ad1772eb7246fd31c80d6ca4ac8992449eab1e09bf6ccb67742d3e7ee56992bb078cff9e83674b3bb761b1cd15f49cb96102681a3b20feaf19f02
   languageName: node
   linkType: hard
 
@@ -8469,6 +8469,17 @@ __metadata:
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
   checksum: 10/a10f0dd836613924e48cf03dc2eff3fd21b14f764807aedaee4880a70c0f142aaebdb21da7ce27104d4c16ca00d0e452a20a20851f60e385a8d5bad1ae909d46
+  languageName: node
+  linkType: hard
+
+"axios@npm:1.9.0":
+  version: 1.9.0
+  resolution: "axios@npm:1.9.0"
+  dependencies:
+    follow-redirects: "npm:^1.15.6"
+    form-data: "npm:^4.0.0"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10/a2f90bba56820883879f32a237e2b9ff25c250365dcafd41cec41b3406a3df334a148f90010182dfdadb4b41dc59f6f0b3e8898ff41b666d1157b5f3f4523497
   languageName: node
   linkType: hard
 
@@ -14428,7 +14439,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"koa@npm:^2.16.0":
+"koa@npm:^2.16.1":
   version: 2.16.1
   resolution: "koa@npm:2.16.1"
   dependencies:
@@ -15647,7 +15658,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-coverage-reports@npm:^2.12.3":
+"monocart-coverage-reports@npm:^2.12.4":
   version: 2.12.4
   resolution: "monocart-coverage-reports@npm:2.12.4"
   dependencies:
@@ -15676,21 +15687,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monocart-reporter@npm:2.9.17":
-  version: 2.9.17
-  resolution: "monocart-reporter@npm:2.9.17"
+"monocart-reporter@npm:2.9.18":
+  version: 2.9.18
+  resolution: "monocart-reporter@npm:2.9.18"
   dependencies:
     console-grid: "npm:^2.2.3"
     eight-colors: "npm:^1.3.1"
-    koa: "npm:^2.16.0"
+    koa: "npm:^2.16.1"
     koa-static-resolver: "npm:^1.0.6"
     lz-utils: "npm:^2.1.0"
-    monocart-coverage-reports: "npm:^2.12.3"
+    monocart-coverage-reports: "npm:^2.12.4"
     monocart-locator: "npm:^1.0.2"
-    nodemailer: "npm:^6.10.0"
+    nodemailer: "npm:^6.10.1"
   bin:
     monocart: lib/cli.js
-  checksum: 10/5586eca830944f07251e45a4e8a7519b215e91b2a84eadfb8277d2d8c5bf22aabd38a91ac30fc3d9a3a7d662d6adc62502abe1f3f932ee2acf459f2079d31423
+  checksum: 10/760fa2a5fae748931dae7a19a6877516adb4712906532135a6e937670c090721355ccf74998c7acdbc26e3d544e0facf703cd03d09d1aba3f62d3361d61a2009
   languageName: node
   linkType: hard
 
@@ -15892,7 +15903,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:^6.10.0":
+"nodemailer@npm:^6.10.1":
   version: 6.10.1
   resolution: "nodemailer@npm:6.10.1"
   checksum: 10/d9911701641e06143a2deb0bd5deb518310972316c6e6eabc594af24353b0d67867f26cb8d72b0cfa385abef945149ac51ae40a40d2199e1088aef5829e58a3d
@@ -16146,9 +16157,9 @@ __metadata:
     "@mui/utils": "npm:6.4.9"
     "@mui/x-date-pickers": "npm:7.28.3"
     "@playwright/test": "npm:1.51.1"
-    "@rjsf/core": "npm:5.24.8"
-    "@rjsf/mui": "npm:5.24.8"
-    "@rjsf/utils": "npm:5.24.8"
+    "@rjsf/core": "npm:5.24.10"
+    "@rjsf/mui": "npm:5.24.10"
+    "@rjsf/utils": "npm:5.24.10"
     "@rollup/plugin-graphql": "npm:2.0.5"
     "@testing-library/dom": "npm:10.4.0"
     "@testing-library/jest-dom": "npm:6.6.3"
@@ -16173,7 +16184,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:4.4.1"
     analytics: "npm:0.8.16"
     apexcharts: "npm:4.7.0"
-    axios: "npm:1.8.4"
+    axios: "npm:1.9.0"
     babel-plugin-relay: "npm:18.2.0"
     buffer: "npm:6.0.3"
     chokidar: "npm:4.0.3"
@@ -16227,7 +16238,7 @@ __metadata:
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.48"
-    monocart-reporter: "npm:2.9.17"
+    monocart-reporter: "npm:2.9.18"
     pdfmake: "npm:0.2.18"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"

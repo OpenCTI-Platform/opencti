@@ -19,7 +19,7 @@ export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
 const TextField = (props: TextFieldProps) => {
   const { detectDuplicate, onBeforePaste, startAdornment, askAi, ...htmlProps } = props;
   const {
-    form: { setFieldValue, setFieldTouched },
+    form: { setFieldValue, setFieldTouched, submitCount },
     field: { name },
     onChange,
     onFocus,
@@ -78,19 +78,21 @@ const TextField = (props: TextFieldProps) => {
   const [, meta] = useField(name);
   const { value, ...otherProps } = fieldToTextField(htmlProps);
 
+  const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
+
   return (
     <MuiTextField
       {...otherProps}
       value={value ?? ''}
-      error={!isNil(meta.error) || otherProps.error}
+      error={showError}
       helperText={
         // eslint-disable-next-line no-nested-ternary
-        detectDuplicate && (isNil(meta.error) || !meta.touched) ? (
+        detectDuplicate && !showError ? (
           <StixDomainObjectDetectDuplicate
             types={detectDuplicate}
             value={meta.value}
           />
-        ) : meta.error ? (
+        ) : showError ? (
           meta.error
         ) : (
           props.helperText

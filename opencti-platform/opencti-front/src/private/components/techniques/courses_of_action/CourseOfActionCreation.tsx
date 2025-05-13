@@ -173,8 +173,8 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
     <Formik<CourseOfActionAddInput>
       initialValues={initialValues}
       validationSchema={courseOfActionValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >

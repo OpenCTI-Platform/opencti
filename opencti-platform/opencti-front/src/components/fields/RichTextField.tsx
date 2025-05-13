@@ -1,4 +1,4 @@
-import { FieldProps } from 'formik';
+import { FieldProps, useField } from 'formik';
 import React, { CSSProperties, useRef, useState } from 'react';
 import { ClassicEditor } from 'ckeditor5';
 import { useTheme } from '@mui/styles';
@@ -9,6 +9,7 @@ import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
 import Typography from '@mui/material/Typography';
 import Dialog from '@mui/material/Dialog';
 import FormHelperText from '@mui/material/FormHelperText';
+import { isNil } from 'ramda';
 import type { Theme } from '../Theme';
 import { getHtmlTextContent } from '../../utils/html';
 import CKEditor from '../CKEditor';
@@ -30,7 +31,7 @@ interface RichTextFieldProps extends FieldProps<string> {
 
 const RichTextField = ({
   field: { name, value },
-  form: { setFieldValue, setFieldTouched, errors },
+  form: { setFieldValue, setFieldTouched, errors, submitCount },
   disabled,
   onFocus,
   onChange,
@@ -47,9 +48,10 @@ const RichTextField = ({
   const { t_i18n } = useFormatter();
   const editorReference = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);
+  const [, meta] = useField(name);
 
   const fieldErrors = errors[name] as string;
-
+  const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
   const CKEditorInstance = (
     <CKEditor
       onReady={(editor) => {
@@ -87,7 +89,7 @@ const RichTextField = ({
       {!toolbarEmpty && (
         <div style={{ display: 'flex', alignItems: 'end', height: '24px' }}>
           {label && (
-            <InputLabel shrink required={required} error={!!fieldErrors}>
+            <InputLabel shrink required={required} error={showError}>
               {label}
             </InputLabel>
           )}
@@ -158,7 +160,7 @@ const RichTextField = ({
           </div>
         </Dialog>
       ) : CKEditorInstance}
-      {fieldErrors && (
+      {fieldErrors && showError && (
         <FormHelperText style={{ marginTop: theme.spacing(1) }} error>
           {fieldErrors}
         </FormHelperText>

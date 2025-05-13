@@ -199,8 +199,8 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     <Formik<NarrativeAddInput>
       initialValues={initialValues}
       validationSchema={narrativeValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >

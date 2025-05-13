@@ -180,8 +180,8 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     <Formik<ChannelAddInput>
       initialValues={initialValues}
       validationSchema={validator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >

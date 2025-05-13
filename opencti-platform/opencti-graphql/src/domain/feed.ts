@@ -12,8 +12,9 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import type { DomainFindById } from './domainTypes';
 import { publishUserAction } from '../listener/UserActionListener';
-import { SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
+import { isUserHasCapability, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { FilterMode } from '../generated/graphql';
+import { TAXIIAPI } from './user';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
   if (input.separator.length > 1) {
@@ -82,7 +83,7 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   return findById(context, user, id);
 };
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsArgs) => {
-  if (user) {
+  if (user && isUserHasCapability(user, TAXIIAPI)) {
     const options = { ...opts, includeAuthorities: true };
     return listEntitiesPaginated<BasicStoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);
   }

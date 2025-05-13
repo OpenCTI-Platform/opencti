@@ -282,8 +282,8 @@ const AuthorizedMembersField = ({
       {/* Internal Formik component to be able to use our custom field components */}
       <Formik<AuthorizedMembersFieldInternalValue>
         validationSchema={formikSchema}
-        validateOnChange={false}
-        validateOnBlur={false}
+        validateOnChange={true}
+        validateOnBlur={true}
         initialValues={{
           applyAccesses: applyAccesses ?? false,
           newAccessMember: null,

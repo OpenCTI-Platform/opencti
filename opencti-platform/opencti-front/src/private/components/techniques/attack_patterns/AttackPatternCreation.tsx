@@ -189,8 +189,8 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
     <Formik<AttackPatternAddInput>
       initialValues={initialValues}
       validationSchema={attackPatternValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >

@@ -170,8 +170,8 @@ ObservedDataFormProps
     <Formik<ObservedDataAddInput>
       initialValues={initialValues}
       validationSchema={observedDataValidator}
-      validateOnChange={false}
-      validateOnBlur={false}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onReset}
     >
