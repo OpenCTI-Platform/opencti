@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { askSendOtp, generateOtp, getUser, verifyOtp } from '../../../src/modules/auth/auth-domain';
+import { askSendOtp, generateOtp, getUser } from '../../../src/modules/auth/auth-domain';
 import { AuthenticationFailure } from '../../../src/config/errors';
 import { testContext } from '../../utils/testQuery';
 import { validate as uuidValidate } from 'uuid';
