@@ -17,6 +17,9 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { representationInitialization } from './representations/RepresentationUtils';
+import {
+  JsonMapperRepresentationAttributesForm_allSchemaAttributes$data,
+} from './representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -52,9 +55,10 @@ interface JsonMapperFormProps {
     formikHelpers: FormikHelpers<JsonMapperFormData>,
   ) => void;
   isDuplicated?: boolean,
+  attributes: JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes']
 }
 
-const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, onSubmit, isDuplicated }) => {
+const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, onSubmit, isDuplicated, attributes }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
 
@@ -196,6 +200,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                           component={JsonMapperRepresentationForm}
                           name={`entity_representations[${idx}]`}
                           index={idx}
+                          attributes={attributes}
                           availableTypes={availableEntityTypes}
                           handleRepresentationErrors={handleRepresentationErrors}
                           prefixLabel="entity_"

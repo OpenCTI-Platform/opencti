@@ -99,7 +99,7 @@ const JsonMapperCreation: FunctionComponent<JsonMapperCreationFormProps> = ({
       computeDefaultValues,
     );
   }
-  return <JsonMapperForm jsonMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated}/>;
+  return <JsonMapperForm attributes={data.csvMapperSchemaAttributes} jsonMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated}/>;
 };
 
 export default JsonMapperCreation;

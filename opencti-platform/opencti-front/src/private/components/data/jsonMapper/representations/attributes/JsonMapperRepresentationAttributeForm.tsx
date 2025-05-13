@@ -20,11 +20,6 @@ const useStyles = makeStyles(() => ({
     marginTop: '10px',
     gap: '10px',
   },
-  inputError: {
-    '& fieldset': {
-      borderColor: 'rgb(244, 67, 54)',
-    },
-  },
   redStar: {
     color: 'rgb(244, 67, 54)',
     marginLeft: '5px',
@@ -125,12 +120,6 @@ JsonMapperRepresentationAttributeFormProps
           <MenuItem value="complex">{t_i18n('Complex')}</MenuItem>
         </Field>
       </div>* */}
-      <Field
-        style={{ display: 'none' }}
-        component={TextField}
-        name="mode"
-        value="simple"
-      />
       <div>
         <Field
           component={TextField}
@@ -141,27 +130,6 @@ JsonMapperRepresentationAttributeFormProps
           label={t_i18n('JSON Path')}
           fullWidth={true}
         />
-        {/** <MUIAutocomplete
-          selectOnFocus
-          openOnFocus
-          autoSelect={false}
-          autoHighlight
-          options={options}
-          // attribute might be unselected yet, but we need value=null as this is a controlled component
-          value={value?.column_name ?? null}
-          onChange={(_, val) => onColumnChange(val)}
-          renderInput={(params) => (
-            <MuiTextField
-              {...params}
-              label={t_i18n('Column index')}
-              variant="outlined"
-              size="small"
-            />
-          )}
-          className={classNames({
-            [classes.inputError]: errors,
-          })}
-        />* */}
       </div>
       <div>
         {
