@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { GraphQLDateTime } from 'graphql-scalars';
 import { RULE_PREFIX } from './general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
@@ -302,9 +303,9 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
     throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this mandatory field cannot be nil`);
   }
   if (isDateAttributeDefinition(schemaDef) && !R.isNil(input)) {
-    const dateInput = new Date(input);
-    const isoDateInput = dateInput.toISOString();
-    if (isoDateInput !== input) {
+    try {
+      GraphQLDateTime.parseValue(input);
+    } catch {
       throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this date field is not in a valid format`);
     }
   }
