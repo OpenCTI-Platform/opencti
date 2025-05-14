@@ -104,6 +104,7 @@ class ExportButtons extends Component {
   }
 
   handleOpenPdf(event) {
+    console.log('ANGIE - handleOpenPdf');
     this.setState({ anchorElPdf: event.currentTarget });
   }
 
@@ -112,6 +113,7 @@ class ExportButtons extends Component {
   }
 
   exportPdf(domElementId, name, theme, background) {
+    console.log('ANGIE - exportPdf start');
     this.setState({ exporting: true });
     this.handleClosePdf();
     const { theme: currentTheme, pixelRatio = 1 } = this.props;
@@ -124,9 +126,11 @@ class ExportButtons extends Component {
         me.setValue(theme, 'theme');
       });
     }
+    console.log('ANGIE - exportPdf -1-');
     setTimeout(() => {
       const buttons = document.getElementById('export-buttons');
       buttons.setAttribute('style', 'display: none');
+      console.log('ANGIE - exportPdf -2-');
       exportPdf(
         domElementId,
         name,
@@ -139,6 +143,7 @@ class ExportButtons extends Component {
         pixelRatio,
         this.adjust,
       ).then(() => {
+        console.log('ANGIE - exportPdf -3- then');
         buttons.setAttribute('style', 'display: block');
         commitLocalUpdate((store) => {
           const me = store.getRoot().getLinkedRecord('me');
@@ -146,7 +151,7 @@ class ExportButtons extends Component {
           me.setValue(currentTheme.palette.mode, 'theme');
         });
         this.setState({ exporting: false });
-      });
+      }).catch((reason) => console.log('ANGIE - ERROR ', reason));
     }, timeout);
   }
 
