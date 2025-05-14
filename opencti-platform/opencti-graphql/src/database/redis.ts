@@ -697,6 +697,7 @@ interface StreamOption {
   withInternal?: boolean;
   autoReconnect?: boolean;
   streamName?: string;
+  streamBatchTime?: number
 }
 
 export const createStreamProcessor = <T extends BaseEvent> (
@@ -786,25 +787,24 @@ export const createStreamProcessor = <T extends BaseEvent> (
 
 // region fetch stream event range
 export const fetchStreamEventsRange = async (
-  streamName: string,
-  startEventId: string,
+  client: Cluster | Redis,
+  startEventId: string | undefined,
   callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
   opts: StreamOption = {},
 ) => {
-  let effectiveStartEventId = startEventId ?? '$'; // TODO PIR remove live and add startEventId at pir creation
-  console.log('effective start event id', effectiveStartEventId);
+  let effectiveStartEventId = startEventId; // TODO PIR remove live and add startEventId at pir creation
+  // console.log('effective start event id', effectiveStartEventId);
   try {
     // Consume the data stream
-    const client = getClientBase();
     const streamResult = await client.call(
       'XREAD',
       'COUNT',
       MAX_RANGE_MESSAGES,
       'BLOCK',
-      STREAM_BATCH_TIME,
+      opts.streamBatchTime ?? STREAM_BATCH_TIME,
       'STREAMS',
-      streamName,
-      effectiveStartEventId,
+      opts.streamName ?? REDIS_STREAM_NAME,
+      effectiveStartEventId ?? '$',
     ) as any[];
     // Process the event results
     if (streamResult && streamResult.length > 0) {
