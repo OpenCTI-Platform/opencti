@@ -24,7 +24,7 @@ import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import type { SseEvent, StreamNotifEvent } from '../types/event';
 import type { BasicStoreSettings } from '../types/settings';
-import type { AuthContext, AuthUser } from '../types/user';
+import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { now } from '../utils/format';
 import type { NotificationData } from '../utils/publisher-mock';
@@ -175,6 +175,22 @@ const processNotificationEvent = async (
   }
 };
 
+const createFullNotificationMessage = (notificationMessage: string, usersMap: Map<string, AuthUser>, streamMessage?: string, origin?: Partial<UserOrigin>) => {
+  let fullMessage = notificationMessage;
+  if (origin && streamMessage) {
+    const { user_id } = origin;
+    const streamUser = usersMap.get(user_id as string) as AuthUser;
+    if (streamUser) {
+      const streamBuiltMessage = `\`${streamUser.name}\` ${streamMessage}`;
+      if (streamBuiltMessage !== notificationMessage) {
+        fullMessage = `${notificationMessage} - ${streamBuiltMessage}`;
+      }
+    }
+  }
+
+  return fullMessage;
+};
+
 const processLiveNotificationEvent = async (
   context: AuthContext,
   notificationMap: Map<string, BasicStoreEntityTrigger>,
@@ -199,7 +215,11 @@ const processLiveNotificationEvent = async (
 
 const processDigestNotificationEvent = async (context: AuthContext, notificationMap: Map<string, BasicStoreEntityTrigger>, event: DigestEvent) => {
   const { target: user, data } = event;
-  await processNotificationEvent(context, notificationMap, event.notification_id, user, data);
+  const usersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const dataWithFullMessage = data.map((d) => {
+    return { ...d, message: createFullNotificationMessage(d.message, usersMap, d.streamMessage, d.origin) };
+  });
+  await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage);
 };
 
 const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEvent>>) => {
