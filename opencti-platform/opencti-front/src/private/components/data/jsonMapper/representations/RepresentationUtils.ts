@@ -55,11 +55,24 @@ export const jsonMapperRepresentationToFormData = (
   schemaAttributes: JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'],
   computeDefaultValues: ReturnType<typeof useComputeDefaultValues>,
 ): JsonMapperRepresentationFormData => {
+  const computedSchemaAttributes = [];
   const entitySchemaAttributes = schemaAttributes.find(
     (schema) => schema.name === representation.target.entity_type,
   )?.attributes ?? [];
+  for (let i = 0; i < entitySchemaAttributes.length; i += 1) {
+    const entitySchemaAttribute = entitySchemaAttributes[i];
+    if (entitySchemaAttribute.name === 'hashes') {
+      const innerMappings = entitySchemaAttribute.mappings ?? [];
+      for (let indexMapping = 0; indexMapping < innerMappings.length; indexMapping += 1) {
+        const innerMapping = innerMappings[indexMapping];
+        computedSchemaAttributes.push(innerMapping);
+      }
+    } else {
+      computedSchemaAttributes.push(entitySchemaAttribute);
+    }
+  }
   return {
-    attributes: entitySchemaAttributes.reduce((acc, schemaAttribute) => {
+    attributes: computedSchemaAttributes.reduce((acc, schemaAttribute) => {
       const attribute = representation.attributes.find((attr) => attr.key === schemaAttribute.name);
       if (attribute) {
         return {
@@ -68,7 +81,7 @@ export const jsonMapperRepresentationToFormData = (
             attribute,
             representation.target.entity_type,
             computeDefaultValues,
-            schemaAttribute,
+            schemaAttribute as JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes'][number]['attributes'][number],
           ),
         };
       }

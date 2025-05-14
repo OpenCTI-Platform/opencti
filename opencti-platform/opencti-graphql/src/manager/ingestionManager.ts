@@ -612,7 +612,7 @@ const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, pr
     if (queryParamsAttribute.state_operation === 'sum') {
       state[queryParamsAttribute.to] = parseInt(previousState[queryParamsAttribute.to] ?? 0, 10) + parseInt(newState[queryParamsAttribute.to] ?? 0, 10);
     } else {
-      state[queryParamsAttribute.to] = newState[queryParamsAttribute.to];
+      state[queryParamsAttribute.to] = isNotEmptyField(newState[queryParamsAttribute.to]) ? newState[queryParamsAttribute.to] : previousState[queryParamsAttribute.to];
     }
   }
   return state;
@@ -632,10 +632,11 @@ export const jsonExecutor = async (context: AuthContext) => {
       const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
       if (messages_number === 0) { // If no more ingestion to do
         const { bundle, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
-        // endregion
         logApp.info('pushBundleToConnectorQueue', bundle.objects.length);
-        // Push the bundle to absorption queue
-        await pushBundleToConnectorQueue(context, ingestion, bundle);
+        // Push the bundle to absorption queue if required
+        if (bundle.objects.length > 0) {
+          await pushBundleToConnectorQueue(context, ingestion, bundle);
+        }
         // Save new state for next execution
         const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
         const state = { ingestion_json_state: ingestionState, last_execution_date: now() };
