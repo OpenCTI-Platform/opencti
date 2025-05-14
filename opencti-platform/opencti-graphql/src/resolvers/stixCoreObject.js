@@ -12,6 +12,7 @@ import {
   findAll,
   findAllAuthMemberRestricted,
   findById,
+  globalSearch,
   groupingsPaginated,
   notesPaginated,
   observedDataPaginated,
@@ -27,7 +28,9 @@ import {
   stixCoreObjectEditContext,
   stixCoreObjectExportAsk,
   stixCoreObjectExportPush,
+  stixCoreObjectImportFile,
   stixCoreObjectImportPush,
+  stixCoreObjectRemoveFromDraft,
   stixCoreObjectsConnectedNumber,
   stixCoreObjectsDistribution,
   stixCoreObjectsDistributionByEntity,
@@ -59,9 +62,9 @@ const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
 
 const stixCoreObjectResolvers = {
   Query: {
+    globalSearch: (_, args, context) => globalSearch(context, context.user, args),
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
-    globalSearch: (_, args, context) => findAll(context, context.user, { ...args, globalSearch: true }),
     stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
     stixCoreObjectsRestricted: (_, args, context) => findAllAuthMemberRestricted(context, context.user, args),
     stixCoreObjectsTimeSeries: (_, args, context) => {
@@ -162,11 +165,13 @@ const stixCoreObjectResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
       askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
       importPush: (args) => stixCoreObjectImportPush(context, context.user, id, args.file, args),
+      uploadAndAskJobImport: (args) => stixCoreObjectImportFile(context, context.user, id, args.file, args),
       askAnalysis: ({ contentSource, contentType, connectorId }) => askElementAnalysisForConnector(context, context.user, id, contentSource, contentType, connectorId),
       analysisPush: (args) => stixCoreObjectAnalysisPush(context, context.user, id, args),
       analysisClear: ({ contentSource, contentType }) => analysisClear(context, context.user, id, contentSource, contentType),
       exportAsk: ({ input }) => stixCoreObjectExportAsk(context, context.user, id, input),
       exportPush: (args) => stixCoreObjectExportPush(context, context.user, id, args),
+      removeFromDraft: () => stixCoreObjectRemoveFromDraft(context, context.user, id),
     }),
     stixCoreObjectsExportAsk: (_, { input }, context) => stixCoreObjectsExportAsk(context, context.user, input),
     stixCoreObjectsExportPush: (_, { entity_id, entity_type, file, file_markings, listFilters }, context) => {

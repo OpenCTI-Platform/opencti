@@ -29,8 +29,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const objectMembersFieldSearchQuery = graphql`
-    query ObjectMembersFieldSearchQuery($search: String, $first: Int) {
-        members(search: $search, first: $first) {
+    query ObjectMembersFieldSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
+      members(search: $search, first: $first, entityTypes: $entityTypes) {
             edges {
                 node {
                     id
@@ -46,6 +46,8 @@ export interface OptionMember extends Option {
   type: string;
 }
 
+type MemberType = 'Group' | 'Organization' | 'User';
+
 interface ObjectMembersFieldProps {
   name: string;
   label?: string;
@@ -55,6 +57,7 @@ interface ObjectMembersFieldProps {
   helpertext?: string;
   disabled?: boolean;
   required?: boolean;
+  entityTypes?: MemberType[];
 }
 const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   name,
@@ -65,6 +68,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   helpertext,
   disabled = false,
   required = false,
+  entityTypes,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -73,6 +77,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
     fetchQuery(objectMembersFieldSearchQuery, {
       search: event && event.target.value ? event.target.value : '',
       first: 50,
+      entityTypes,
     })
       .toPromise()
       .then((data) => {

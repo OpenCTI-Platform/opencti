@@ -115,6 +115,7 @@ const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
       ],
     },
   }), [search]);
+
   const queryRef = useQueryLoading<EntitySelectSearchQuery>(
     entitySelectSearchQuery,
     variables,

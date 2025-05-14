@@ -3,19 +3,22 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { CityKnowledge_city$key } from './__generated__/CityKnowledge_city.graphql';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const cityKnowledgeFragment = graphql`
   fragment CityKnowledge_city on City {
     id
     name
     x_opencti_aliases
+    entity_type
   }
 `;
 
@@ -24,7 +27,10 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
     cityKnowledgeFragment,
     cityData,
   );
+  const location = useLocation();
   const link = `/dashboard/locations/cities/${city.id}/knowledge`;
+  const { schema } = useAuth();
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(city.entity_type, schema);
   return (
     <>
       <Routes>
@@ -56,9 +62,24 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           }
         />
         <Route
+          path="/all"
+          element={
+            <EntityStixCoreRelationships
+              key={location.pathname}
+              entityId={city.id}
+              relationshipTypes={allRelationshipsTypes}
+              entityLink={link}
+              defaultStartTime={city.startTime}
+              defaultStopTime={city.stopTime}
+              allDirections
+            />
+          }
+        />
+        <Route
           path="/threats"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['targets']}
               isRelationReversed
@@ -79,6 +100,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/related"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
@@ -107,6 +129,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/organizations"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Organization']}
@@ -119,6 +142,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/areas"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Administrative-Area']}
@@ -131,6 +155,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/countries"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Country']}
@@ -144,6 +169,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/regions"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Region']}
@@ -157,6 +183,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/threat_actors"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Threat-Actor']}
@@ -169,6 +196,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/intrusion_sets"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Intrusion-Set']}
@@ -181,6 +209,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/campaigns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Campaign']}
@@ -193,6 +222,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/incidents"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Incident']}
@@ -205,6 +235,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/malwares"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Malware']}
@@ -217,6 +248,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/attack_patterns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Attack-Pattern']}
@@ -229,6 +261,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/tools"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Tool']}
@@ -241,6 +274,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
           path="/observables"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={city.id}
               relationshipTypes={['related-to', 'located-at']}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}

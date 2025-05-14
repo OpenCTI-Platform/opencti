@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 import { FiltersRestrictions, isFilterEditable, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
-import { truncate } from '../../utils/String';
+import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
 import { Filter } from '../../utils/filters/filtersHelpers-types';
@@ -90,6 +90,8 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
   const menuClassName = deactivatePopoverMenu ? '' : classes.label;
+
+  // special case for nil/not_nil
   if (isOperatorNil) {
     return (
       <>
@@ -105,6 +107,28 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       </>
     );
   }
+
+  // special case for within operator in a 'last XX' format (ie : value1 is a relative date before now, and value2 is 'now')
+  if (filterOperator === 'within'
+    && isDateIntervalTranslatable(filterValues)
+  ) {
+    const relativeValue = translateDateInterval(filterValues, t_i18n);
+    return (
+      <>
+        <strong
+          className={menuClassName}
+          onClick={onCLick}
+        >
+          {label}
+        </strong>{' '}
+        <span>
+          {relativeValue}
+        </span>
+      </>
+    );
+  }
+
+  // general cases
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const values = filterValues.map((id) => {
     const isLocalModeSwitchable = isReadWriteFilter
@@ -116,23 +140,41 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     return (
       <Fragment key={id}>
-        <FilterValuesContent
-          redirection={tooltip ? false : redirection}
-          isFilterTooltip={!!tooltip}
-          filterKey={filterKey}
-          id={id}
-          value={value}
-          filterDefinition={filterDefinition}
-          filterOperator={filterOperator}
-        />
-        {filterKey !== 'regardingOf' && last(filterValues) !== id && (
-          <div
-            className={operatorClassName}
-            onClick={operatorOnClick}
-          >
-            {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
-          </div>
-        )}
+        {filterOperator === 'within'
+          ? <>
+            {filterValues[0] === id && <span>[</span>}
+            <FilterValuesContent
+              isFilterTooltip={!!tooltip}
+              filterKey={filterKey}
+              id={id}
+              value={value}
+              filterDefinition={filterDefinition}
+              filterOperator={filterOperator}
+            />
+            <span>
+              {last(filterValues) === id ? ']' : ', '}
+            </span>
+          </>
+          : <>
+            <FilterValuesContent
+              redirection={tooltip ? false : redirection}
+              isFilterTooltip={!!tooltip}
+              filterKey={filterKey}
+              id={id}
+              value={value}
+              filterDefinition={filterDefinition}
+              filterOperator={filterOperator}
+            />
+            {filterKey !== 'regardingOf' && last(filterValues) !== id && (
+              <div
+                className={operatorClassName}
+                onClick={operatorOnClick}
+              >
+                {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
+              </div>
+            )}
+          </>
+        }
       </Fragment>
     );
   });

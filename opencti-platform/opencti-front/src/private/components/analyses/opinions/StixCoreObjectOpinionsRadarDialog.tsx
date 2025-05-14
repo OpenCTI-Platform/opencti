@@ -184,7 +184,7 @@ StixCoreObjectOpinionsRadarDialogProps
         </IconButton>
         {opinionOptions.length > 0 && (
           <Dialog
-            PaperProps={{ elevation: 1 }}
+            slotProps={{ paper: { elevation: 1 } }}
             open={open}
             onClose={handleClose}
             fullWidth={true}
@@ -193,8 +193,8 @@ StixCoreObjectOpinionsRadarDialogProps
               enableReinitialize={true}
               initialValues={initialValues}
               validationSchema={opinionValidator}
-              validateOnChange={false} // Validation will occur on submission, required fields all have *'s
-              validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
+              validateOnChange={true}
+              validateOnBlur={true}
               onSubmit={onSubmit}
               onReset={handleClose}
             >

@@ -8,15 +8,15 @@ import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import type { SentinelConnectionOptions } from 'ioredis/built/connectors/SentinelConnector';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
-import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, waitInSec } from './utils';
+import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, waitInSec } from './utils';
 import { isStixExportableData } from '../schema/stixCoreObject';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { mergeDeepRightAll, now, utcDate } from '../utils/format';
-import { convertStoreToStix } from './stix-converter';
-import type { StoreObject, StoreRelation } from '../types/store';
+import { convertStoreToStix } from './stix-2-1-converter';
+import type { BasicStoreCommon, StoreObject, StoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BaseEvent, CreateEventOpts, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../types/event';
-import type { StixCoreObject } from '../types/stix-common';
+import type { StixCoreObject } from '../types/stix-2-1-common';
 import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';
@@ -28,6 +28,7 @@ import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { getDraftContext } from '../utils/draftContext';
 import type { ExclusionListCacheItem } from './exclusionListCache';
+import { refreshLocalCacheForEntity } from './cache';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -129,10 +130,10 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
     client = new Redis({ ...singleOptions, db: conf.get('redis:database') ?? 0, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
 
-  client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
-  client.on('ready', () => logApp.info(`[REDIS] Redis '${provider}' client ready`));
+  client.on('close', () => logApp.debug(`[REDIS] Redis '${provider}' client closed`));
+  client.on('ready', () => logApp.debug(`[REDIS] Redis '${provider}' client ready`));
   client.on('error', (err) => logApp.error('Redis client connection fail', { cause: err, provider }));
-  client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
+  client.on('reconnecting', () => logApp.debug(`[REDIS] '${provider}' Redis client reconnecting`));
   return client;
 };
 
@@ -319,10 +320,18 @@ export const getRedisVersion = async () => {
 /* v8 ignore next */
 export const notify = async (topic: string, instance: any, user: AuthUser) => {
   // Instance can be empty if user is currently looking for a deleted instance
-  if (instance) {
+  if (isNotEmptyField(instance)) {
+    let data;
     // Resolved object_refs must be dissoc from original objects as not directly used for live update
     // and can imply very large event message
-    const data = R.dissoc(INPUT_OBJECTS, instance);
+    if (Array.isArray(instance)) {
+      data = (instance as any[]).map((i) => R.dissoc(INPUT_OBJECTS, i));
+    } else {
+      data = R.dissoc(INPUT_OBJECTS, instance);
+    }
+    // Direct refresh the current instance cache
+    await refreshLocalCacheForEntity(topic, data as unknown as BasicStoreCommon);
+    // Dispatch the event for cluster refresh
     await getClientPubSub().publish(topic, { instance: data, user });
   }
   return instance;
@@ -349,8 +358,11 @@ export const delUserContext = async (user: AuthUser) => {
 // endregion
 
 // region locking (clientContext)
-export const redisAddDeletions = async (internalIds: Array<string>) => {
-  const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
+export const redisAddDeletions = async (internalIds: Array<string>, draftId: string | undefined = undefined) => {
+  let ids = Array.isArray(internalIds) ? internalIds : [internalIds];
+  if (draftId) {
+    ids = ids.map((id) => `${id}${draftId}`);
+  }
   await redisTx(getClientLock(), async (tx) => {
     const time = new Date().getTime();
     // remove the too old keys from the list of instances
@@ -379,17 +391,17 @@ const getStackTrace = () => {
 export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts) => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
+  const { retryCount = defaultLockOpts.retryCount, automaticExtension = defaultLockOpts.automaticExtension, draftId = defaultLockOpts.draftId } = opts;
   const initialCallStack = getStackTrace();
-  const draftId = opts.draftId ? opts.draftId : '';
-  const locks = R.uniq(resources).map((id) => `{locks}:${id}${draftId}`);
+  const resourcesId = R.uniq(resources).map((id) => `${id}${draftId}`);
+  const locks = R.uniq(resourcesId).map((id) => `{locks}:${id}${draftId}`);
   const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
   const maxTtl = conf.get('app:concurrency:max_ttl');
   const controller = new AbortController();
   const { signal } = controller;
-  const autoExtension = opts.automaticExtension ? opts.automaticExtension : true;
-  const redlock = new Redlock([getClientLock()], { retryCount: opts.retryCount, retryDelay, retryJitter });
+  const redlock = new Redlock([getClientLock()], { retryCount, retryDelay, retryJitter });
   // Get the lock
   let lock = await redlock.acquire(locks, maxTtl); // Force unlock after maxTtl
   const queue = () => {
@@ -403,7 +415,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   };
   const extend = async () => {
     try {
-      if (opts.retryCount !== 0) {
+      if (retryCount !== 0) {
         logApp.info('Extending resources for long processing task', { locks, stack: initialCallStack });
       }
       lock = await lock.extend(maxTtl);
@@ -421,14 +433,14 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   // If lock succeed we need to be sure that delete not occurred just before the resolution/lock
   // If we do not check for that, we could update an entity even though it was just deleted, resulting in the entity being created again
   const latestDeletions = await redisFetchLatestDeletions();
-  const deletedParticipantsIds = resources.filter((x) => latestDeletions.includes(x));
+  const deletedParticipantsIds = resourcesId.filter((x) => latestDeletions.includes(x));
   if (deletedParticipantsIds.length > 0) {
     // noinspection ExceptionCaughtLocallyJS
     await lock.release();
     throw LockTimeoutError({ participantIds: deletedParticipantsIds });
   }
   // If everything seems good, start auto extension if needed
-  if (autoExtension) {
+  if (automaticExtension) {
     queue();
   }
   // Return the lock and capable actions
@@ -936,3 +948,42 @@ export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]
 };
 
 // endregion - exclusion list cache handling
+
+// region - telemetry gauges
+const TELEMETRY_EVENT_KEY = 'telemetry_events';
+/**
+ * Increment a gauge by its name
+ * @param gaugeName
+ * @param countToAdd: 1 or more to be added in count
+ */
+export const redisSetTelemetryAdd = async (gaugeName: string, countToAdd: number) => {
+  const currentCountStr = await getClientBase().hget(TELEMETRY_EVENT_KEY, gaugeName);
+  if (currentCountStr) {
+    const currentCount: number = +currentCountStr;
+    if (!Number.isNaN(currentCount) && countToAdd > 0) {
+      await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, currentCount + countToAdd);
+    } else {
+      await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
+    }
+  } else {
+    await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
+  }
+};
+
+/**
+ * Get gauge value by name or 0 if not present in redis.
+ * @param gaugeName
+ */
+export const redisGetTelemetry = async (gaugeName: string) => {
+  const gaugeAsStr = await getClientBase().hget(TELEMETRY_EVENT_KEY, gaugeName);
+  const gaugeCount: number = gaugeAsStr ? +gaugeAsStr : 0;
+  return Number.isNaN(gaugeCount) ? 0 : gaugeCount;
+};
+
+/**
+ * delete the telemetry hset totally
+ */
+export const redisClearTelemetry = async () => {
+  return getClientBase().del(TELEMETRY_EVENT_KEY);
+};
+// endregion - telemetry gauges

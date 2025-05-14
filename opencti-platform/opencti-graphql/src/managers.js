@@ -12,7 +12,6 @@ import conf, {
   ENABLED_RULE_ENGINE,
   ENABLED_SYNC_MANAGER,
   ENABLED_TASK_SCHEDULER,
-  isFeatureEnabled,
   logApp
 } from './config/conf';
 import httpServer from './http/httpServer';
@@ -68,9 +67,7 @@ export const startModules = async () => {
   }
   // endregion
   // region draft validation built in connector
-  if (isFeatureEnabled('DRAFT_WORKSPACE')) {
-    await draftValidationConnector.start();
-  }
+  await draftValidationConnector.start();
 
   // endregion
   // region Task manager
@@ -171,9 +168,7 @@ export const shutdownModules = async () => {
   }
   // endregion
   // region draft validation built in connector
-  if (isFeatureEnabled('DRAFT_WORKSPACE')) {
-    stoppingPromises.push(draftValidationConnector.shutdown());
-  }
+  stoppingPromises.push(draftValidationConnector.shutdown());
   // endregion
   // region Task manager
   if (ENABLED_TASK_SCHEDULER) {

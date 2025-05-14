@@ -18,7 +18,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 const Taxii = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Data sharing: TAXII Collections | Data'));
+  setTitle(t_i18n('TAXII Collections | Data sharing | Data'));
   const LOCAL_STORAGE_KEY = 'taxii';
   const navigate = useNavigate();
   const location = useLocation();
@@ -93,6 +93,11 @@ const Taxii = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
+        createButton={
+          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+            <TaxiiCollectionCreation paginationOptions={paginationOptions} />
+          </Security>
+        }
       >
         <QueryRenderer
           query={TaxiiLinesQuery}
@@ -124,9 +129,6 @@ const Taxii = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />
       <SharingMenu/>
       {taxiiState.view === 'lines' ? renderLines(paginationOptions) : null}
-      <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-        <TaxiiCollectionCreation paginationOptions={paginationOptions} />
-      </Security>
     </Box>
   );
 };

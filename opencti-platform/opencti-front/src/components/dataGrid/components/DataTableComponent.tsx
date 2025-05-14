@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
@@ -15,6 +15,8 @@ import {
   useDataTableToggle,
 } from '../dataTableHooks';
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
+import callbackResizeObserver from '../../../utils/resizeObservers';
 
 type DataTableComponentProps = Pick<DataTableProps,
 | 'dataColumns'
@@ -24,6 +26,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'dataTableToolBarComponent'
 | 'variant'
 | 'actions'
+| 'icon'
 | 'availableFilterKeys'
 | 'initialValues'
 | 'disableNavigation'
@@ -32,7 +35,6 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'resolvePath'
 | 'redirectionModeEnabled'
 | 'useLineData'
-| 'useDataTable'
 | 'rootRef'
 | 'createButton'
 | 'disableToolBar'
@@ -40,7 +42,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'useComputeLink'
 | 'selectOnLineClick'
 | 'onLineClick'
-| 'canToggleLine'
+| 'data'
 | 'disableLineSelection'>;
 
 const DataTableComponent = ({
@@ -50,9 +52,9 @@ const DataTableComponent = ({
   initialValues,
   availableFilterKeys,
   dataQueryArgs,
+  data,
   redirectionModeEnabled = false,
   useLineData,
-  useDataTable,
   useComputeLink,
   settingsMessagesBannerHeight,
   filtersComponent,
@@ -61,6 +63,7 @@ const DataTableComponent = ({
   variant = DataTableVariant.default,
   rootRef,
   actions,
+  icon,
   createButton,
   disableNavigation,
   disableLineSelection,
@@ -68,7 +71,6 @@ const DataTableComponent = ({
   disableSelectAll,
   selectOnLineClick,
   onLineClick,
-  canToggleLine = true,
 }: DataTableComponentProps) => {
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
@@ -82,7 +84,7 @@ const DataTableComponent = ({
   const buildColumns = (withLocalStorage = true) => {
     const dataColumnsKeys = Object.keys(dataColumns);
     const localStorageColumnsKeys = Object.keys(localStorageColumns)
-      .filter((key) => key !== 'select' && key !== 'navigate');
+      .filter((key) => key !== 'select' && key !== 'navigate' && key !== 'icon');
 
     // Check if keys order/length is the same
     const isOrderSame = dataColumnsKeys.length === localStorageColumnsKeys.length
@@ -93,7 +95,9 @@ const DataTableComponent = ({
 
     return [
       // Checkbox if necessary
-      ...(canToggleLine && !disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
+      ...(!disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
+      // Icon if necessary
+      ...(icon ? [{ id: 'icon', visible: true } as DataTableColumn] : []),
       // Our real columns
       ...Object.entries(dataColumns).map(([key, column], index) => {
         const currentColumn = localStorageColumns?.[key];
@@ -134,6 +138,9 @@ const DataTableComponent = ({
   }, [columns]);
 
   const startsWithAction = useMemo(() => columns.at(0)?.id === 'select', [columns]);
+  const startsWithIcon = useMemo(() => {
+    return !!columns.find((column) => column.id === 'icon');
+  }, [columns]);
   const endsWithNavigate = useMemo(() => columns.at(-1)?.id === 'navigate', [columns]);
   const endsWithAction = useMemo(() => endsWithNavigate || !!actions, [endsWithNavigate, actions]);
 
@@ -146,7 +153,37 @@ const DataTableComponent = ({
   }, [page, currentPageSize]);
 
   const tableWidthState = useState(0);
+  const [tableWidth, setTableWidth] = tableWidthState;
   const tableRef = useRef<HTMLDivElement | null>(null);
+
+  const startColumnWidth = useMemo(() => {
+    if (startsWithIcon && startsWithAction) {
+      return ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE;
+    }
+    if (startsWithIcon) {
+      return ICON_COLUMN_SIZE;
+    }
+    return SELECT_COLUMN_SIZE;
+  }, [startsWithIcon, startsWithAction]);
+
+  // Keep table width up to date.
+  useLayoutEffect(() => {
+    let observer: ResizeObserver;
+    if (tableRef.current) {
+      const resize = (el: Element) => {
+        let offset = 10;
+        if (startsWithAction) offset += SELECT_COLUMN_SIZE;
+        if (startsWithIcon) offset += ICON_COLUMN_SIZE;
+        if (endsWithAction) offset += SELECT_COLUMN_SIZE;
+        if ((el.clientWidth - offset) !== tableWidth) {
+          setTableWidth(el.clientWidth - offset);
+        }
+      };
+      resize(tableRef.current);
+      observer = callbackResizeObserver(tableRef.current, resize);
+    }
+    return () => { observer?.disconnect(); };
+  }, [tableRef.current, tableWidth, endsWithAction, startsWithAction, startsWithIcon]);
 
   return (
     <DataTableProvider
@@ -160,7 +197,8 @@ const DataTableComponent = ({
         resolvePath,
         redirectionModeEnabled,
         useLineData,
-        useDataTable: useDataTable(dataQueryArgs),
+        dataQueryArgs,
+        data,
         useDataCellHelpers: useDataCellHelpers(helpers, variant),
         useDataTableToggle: useDataTableToggle(storageKey),
         useComputeLink: useComputeLink ?? defaultComputeLink,
@@ -172,16 +210,20 @@ const DataTableComponent = ({
         variant,
         rootRef,
         actions,
+        icon,
         createButton,
         disableNavigation,
         disableToolBar,
         disableSelectAll,
         selectOnLineClick,
         onLineClick,
+        disableLineSelection,
         page,
         setPage,
         tableWidthState,
         startsWithAction,
+        startsWithIcon,
+        startColumnWidth,
         endsWithAction,
         endsWithNavigate,
       }}
@@ -207,7 +249,6 @@ const DataTableComponent = ({
             pageStart={pageStart}
             pageSize={currentPageSize}
             hideHeaders={hideHeaders}
-            tableRef={tableRef}
           />
         </React.Suspense>
       </div>

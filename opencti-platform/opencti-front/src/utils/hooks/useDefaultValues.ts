@@ -34,6 +34,9 @@ export const useComputeDefaultValues = () => {
 
     // Handle object marking specific case : activate or deactivate default values (handle in access)
     if (attributeName === 'objectMarking') {
+      if (defaultValues[0]?.id === 'false') {
+        return false;
+      }
       return defaultValues[0]?.id ?? false;
     }
 
@@ -43,9 +46,11 @@ export const useComputeDefaultValues = () => {
           const parsed = JSON.parse(v.id);
           return {
             id: parsed.id,
+            member_id: parsed.member_id,
             name: parsed.name ?? '',
             entity_type: parsed.entity_type ?? '',
             access_right: parsed.access_right,
+            groups_restriction: parsed.groups_restriction,
           };
         })
         .filter((v) => !!v.id && !!v.access_right);
@@ -96,6 +101,10 @@ const useDefaultValues = <Values extends FormikValues>(
   }
   const defaultValuesAttributes = [...entitySettings.defaultValuesAttributes];
   const keys = Object.keys(initialValues);
+  // authorized_members renaming
+  if (keys.includes('authorized_members')) {
+    keys.push(INPUT_AUTHORIZED_MEMBERS);
+  }
   const defaultValues: Record<string, unknown> = {};
   let enableDefaultMarking = false;
   defaultValuesAttributes.forEach(
@@ -169,7 +178,11 @@ const useDefaultValues = <Values extends FormikValues>(
       }
     });
   }
-
+  // authorized_members renaming
+  if (defaultValues[INPUT_AUTHORIZED_MEMBERS]) {
+    defaultValues.authorized_members = defaultValues[INPUT_AUTHORIZED_MEMBERS];
+    delete defaultValues[INPUT_AUTHORIZED_MEMBERS];
+  }
   return {
     ...initialValues,
     ...defaultValues,

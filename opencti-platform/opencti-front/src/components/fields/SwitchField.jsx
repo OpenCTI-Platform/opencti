@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import MuiSwitch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
@@ -15,6 +15,7 @@ const SwitchField = (props) => {
     onChange,
     helpertext,
     tooltip,
+    initialValue,
   } = props;
   const { t_i18n } = useFormatter();
   const internalOnChange = useCallback(
@@ -30,6 +31,16 @@ const SwitchField = (props) => {
   const internalOnBlur = useCallback(() => {
     setFieldTouched(name, true);
   }, [setFieldTouched]);
+
+  useEffect(() => {
+    if (initialValue !== undefined) {
+      setFieldValue(name, initialValue);
+      if (typeof onChange === 'function') {
+        onChange(name, initialValue ? 'true' : 'false');
+      }
+    }
+  }, []);
+
   return (
     <div style={props.containerstyle}>
       <FormGroup>

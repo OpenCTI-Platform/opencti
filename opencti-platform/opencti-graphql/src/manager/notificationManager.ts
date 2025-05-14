@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { head } from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
@@ -7,12 +6,12 @@ import { createStreamProcessor, fetchRangeNotifications, storeNotificationEvent,
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
-import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
+import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
-import type { StixCoreObject, StixObject, StixRelationshipObject } from '../types/stix-common';
+import type { StixCoreObject, StixId, StixObject, StixRelationshipObject } from '../types/stix-2-1-common';
 import {
   type BasicStoreEntityDigestTrigger,
   type BasicStoreEntityLiveTrigger,
@@ -22,20 +21,17 @@ import {
 import { resolveFiltersMapForUser } from '../utils/filtering/filtering-resolution';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
+import { OPENCTI_ADMIN_UUID, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { extractStixRepresentative } from '../database/stix-representative';
-import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import type { BasicStoreCommon } from '../types/store';
-import type { StixRelation, StixSighting } from '../types/stix-sro';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { extractStixRepresentative, extractStixRepresentativeForUser } from '../database/stix-representative';
+import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { replaceFilterKey } from '../utils/filtering/filtering-utils';
 import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER } from '../utils/filtering/filtering-constants';
 import type { FilterGroup } from '../generated/graphql';
 import { DigestPeriod, TriggerEventType, TriggerType } from '../generated/graphql';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import type { Representative } from '../types/store';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -46,6 +42,7 @@ export const TRIGGER_EVENT_TYPES_VALUES = Object.values(TriggerEventType);
 export const TRIGGER_TYPE_VALUES = Object.values(TriggerType);
 export const DIGEST_PERIOD_VALUES = Object.values(DigestPeriod);
 export const TRIGGER_SCOPE_VALUES = ['knowledge', 'activity'];
+export const REQUEST_SHARE_ACCESS_INFO_TYPE = 'Request sharing';
 
 export interface ResolvedTrigger {
   users: Array<AuthUser>
@@ -83,61 +80,19 @@ export interface ActivityNotificationEvent extends StreamNotifEvent {
   origin: Partial<UserOrigin>
 }
 
+export interface ActionNotificationEvent extends StreamNotifEvent {
+  type: 'action'
+  targets: Array<{ user: NotificationUser, type: string, message: string }>
+  data: { id: StixId | null, representative: Representative }
+  origin: Partial<UserOrigin>
+}
+
 export interface DigestEvent extends StreamNotifEvent {
   type: 'digest'
   target: NotificationUser
   playbook_source?: string
   data: Array<{ notification_id: string, instance: StixObject, type: string, message: string }>
 }
-
-// region: user access information extractors
-// extract information from a sighting to have all the elements to check if a user has access to the from/to of the sighting
-const extractUserAccessPropertiesFromSighting = (sighting: StixSighting) => {
-  return [
-    {
-      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs,
-      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_granted_refs,
-      entity_type: sighting.extensions[STIX_EXT_OCTI].sighting_of_type,
-    } as BasicStoreCommon,
-    {
-      [RELATION_OBJECT_MARKING]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs,
-      [RELATION_GRANTED_TO]: sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_granted_refs,
-      entity_type: head(sighting.extensions[STIX_EXT_OCTI].where_sighted_types),
-    } as BasicStoreCommon
-  ];
-};
-
-// extract information from a relationship to have all the elements to check if a user has access to the from/to of the relationship
-const extractUserAccessPropertiesFromRelationship = (relation: StixRelation) => {
-  return [
-    {
-      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs,
-      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].source_ref_granted_refs,
-      entity_type: relation.extensions[STIX_EXT_OCTI].source_type,
-    } as BasicStoreCommon,
-    {
-      [RELATION_OBJECT_MARKING]: relation.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs,
-      [RELATION_GRANTED_TO]: relation.extensions[STIX_EXT_OCTI].target_ref_granted_refs,
-      entity_type: relation.extensions[STIX_EXT_OCTI].target_type,
-    } as BasicStoreCommon
-  ];
-};
-
-// extract information from a stix object to have all the elements to check if a user has access to the object
-const extractUserAccessPropertiesFromStixObject = (
-  instance: StixObject | StixRelationshipObject
-) => {
-  if (isStixSightingRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
-    const sighting = instance as StixSighting;
-    return extractUserAccessPropertiesFromSighting(sighting);
-  }
-  if (isStixCoreRelationship(instance.extensions[STIX_EXT_OCTI].type)) {
-    const relation = instance as StixRelation;
-    return extractUserAccessPropertiesFromRelationship(relation);
-  }
-  return [];
-};
-// endregion
 
 export const isLiveKnowledge = (n: ResolvedTrigger): n is ResolvedLive => {
   return n.trigger.trigger_scope === 'knowledge' && n.trigger.trigger_type === 'live';
@@ -152,7 +107,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     mode: 'or',
     filters: [
       { key: ['objectAssignee'], values: [user.internal_id], operator: 'eq', mode: 'or' },
-      { key: ['objectParticipant'], values: [user.internal_id], operator: 'eq', mode: 'or' }
+      { key: ['objectParticipant'], values: [user.internal_id], operator: 'eq', mode: 'or' },
     ],
     filterGroups: []
   };
@@ -165,16 +120,68 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     notifiers: user.personal_notifiers,
     filters: JSON.stringify(filters),
     instance_trigger: false,
-    authorized_members: [],
+    restricted_members: [],
+  } as unknown as BasicStoreEntityLiveTrigger;
+};
+
+export const platformNotification = (user: { id: string }) => `platform-notification-${user.id}`;
+const generatePlatformNotificationTrigger = (user: AuthUser) => {
+  return {
+    internal_id: platformNotification(user),
+    name: 'Platform',
+    trigger_type: 'live',
+    trigger_scope: 'internal',
+    event_types: TRIGGER_EVENT_TYPES_VALUES,
+    notifiers: user.personal_notifiers,
+    instance_trigger: false,
+    restricted_members: [],
+  } as unknown as BasicStoreEntityLiveTrigger;
+};
+
+// For now only for RFI request access creation
+const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
+  const filters = {
+    mode: 'and',
+    filters: [
+      // /!\ objectAuthorized is a specific filter only worker in STIX
+      // ONLY to use internally for this specific feature.
+      // Any other usage / modification on this required a tech lead validation
+      { key: ['objectAuthorized'], values: [user], operator: 'eq', mode: 'or' },
+      { key: ['entity_type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI], operator: 'eq', mode: 'or' },
+      { key: ['information_types'], values: [REQUEST_SHARE_ACCESS_INFO_TYPE], operator: 'eq', mode: 'or' },
+    ],
+    filterGroups: []
+  };
+  return {
+    internal_id: `default-rfi-trigger-${user.id}`,
+    name: 'Request sharing',
+    trigger_type: 'live',
+    trigger_scope: 'knowledge',
+    event_types: ['create'],
+    notifiers: user.personal_notifiers,
+    raw_filters: filters,
+    instance_trigger: false,
+    restricted_members: []
   } as unknown as BasicStoreEntityLiveTrigger;
 };
 
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const nativeTriggers = platformUsers.map((user) => ({ users: [user], trigger: generateAssigneeTrigger(user) }));
-  const definedTriggers = triggers.map((trigger) => {
-    const triggerAuthorizedMembersIds = trigger.authorized_members?.map((member) => member.id) ?? [];
+  const notificationTriggers = [];
+  // nativeTriggers
+  for (let index = 0; index < platformUsers.length; index += 1) {
+    const user = platformUsers[index];
+    notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
+    notificationTriggers.push({ users: [user], trigger: generatePlatformNotificationTrigger(user) });
+    if (user.id !== OPENCTI_ADMIN_UUID) { // Admin is a fallback in current alerting on RFI request access creation.
+      notificationTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
+    }
+  }
+  // definedTriggers
+  for (let index = 0; index < triggers.length; index += 1) {
+    const trigger = triggers[index];
+    const triggerAuthorizedMembersIds = trigger.restricted_members?.map((member) => member.id) ?? [];
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
     const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
@@ -183,9 +190,9 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
     const withoutInternalUsers = [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]
       .filter((u) => INTERNAL_USERS[u.id] === undefined);
     const users = R.uniqBy(R.prop('id'), withoutInternalUsers);
-    return { users, trigger };
-  });
-  return [...nativeTriggers, ...definedTriggers];
+    notificationTriggers.push({ users, trigger });
+  }
+  return notificationTriggers;
 };
 
 export const getLiveNotifications = async (context: AuthContext): Promise<Array<ResolvedLive>> => {
@@ -359,10 +366,7 @@ export const generateNotificationMessageForInstance = async (
   user: AuthUser,
   instance: StixObject | StixRelationshipObject,
 ) => {
-  const [from, to] = extractUserAccessPropertiesFromStixObject(instance);
-  const fromRestricted = from ? !(await isUserCanAccessStoreElement(context, user, from)) : false;
-  const toRestricted = to ? !(await isUserCanAccessStoreElement(context, user, to)) : false;
-  const instanceRepresentative = extractStixRepresentative(instance, { fromRestricted, toRestricted });
+  const instanceRepresentative = await extractStixRepresentativeForUser(context, user, instance);
   return `[${instance.type.toLowerCase()}] ${instanceRepresentative}`;
 };
 
@@ -453,10 +457,14 @@ export const buildTargetEvents = async (
   useSideEventMatching = false,
 ) => {
   const { data: { data }, event: eventType } = streamEvent;
-  const { event_types, notifiers, instance_trigger, filters } = trigger;
-  let finalFilters = filters ? JSON.parse(filters) : null;
+  const { event_types, notifiers, instance_trigger, filters, raw_filters } = trigger;
+  let finalFilters = raw_filters;
+  if (filters) {
+    finalFilters = JSON.parse(filters);
+  }
   if (useSideEventMatching) { // modify filters to look for instance trigger side events
-    finalFilters = replaceFilterKey(JSON.parse(trigger.filters), CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER);
+    const sideFilters = raw_filters ?? JSON.parse(trigger.filters);
+    finalFilters = replaceFilterKey(sideFilters, CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER);
   }
   let triggerEventTypes = event_types;
   if (instance_trigger && event_types.includes(EVENT_TYPE_UPDATE)) {
@@ -527,19 +535,6 @@ export const buildTargetEvents = async (
   return targets;
 };
 
-export const generateDefaultTrigger = (notifiers: string[], type: string) => {
-  return {
-    name: `Default Trigger for ${type}`,
-    trigger_type: 'live',
-    trigger_scope: 'knowledge',
-    event_types: TRIGGER_EVENT_TYPES_VALUES,
-    notifiers,
-    filters: '',
-    instance_trigger: false,
-    authorized_members: [],
-  } as unknown as BasicStoreEntityLiveTrigger;
-};
-
 const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   try {
     if (streamEvents.length === 0) {
@@ -548,7 +543,6 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
     const context = executionContext('notification_manager');
     const liveNotifications = await getLiveNotifications(context);
     const version = EVENT_NOTIFICATION_VERSION;
-
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
       const { data: { data, message: streamMessage, origin } } = streamEvent;

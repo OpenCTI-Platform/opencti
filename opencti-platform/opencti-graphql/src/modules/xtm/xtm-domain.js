@@ -105,7 +105,7 @@ const generatePlaceholder = async (externalId, platforms, architecture, scenario
     null,
     [{ value: 'opencti', color: '#001bda' }, { value: 'technical', color: '#b9461a' }],
     false,
-    `This placeholder is disabled because the TTP ${externalId} with platforms ${platforms.join(',')} and architecture ${architecture} is currently not covered. Please create the contracts for the missing TTPs`,
+    `This placeholder is disabled because the TTP ${externalId} with platforms ${platforms.join(',')} and architecture ${architecture} is currently not covered. Please create the payloads for the missing TTPs.`,
   );
 };
 

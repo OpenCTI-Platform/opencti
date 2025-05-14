@@ -1,10 +1,22 @@
-import React, { FunctionComponent } from 'react';
+import React, { CSSProperties, FunctionComponent } from 'react';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 
 export const PageContainerContext = React.createContext({ inPageContainer: false });
 
-const PageContainer: FunctionComponent<{ children: React.ReactNode, withRightMenu?: boolean, withGap?: boolean }> = ({ children, withRightMenu = false, withGap = false }) => {
+interface PageContainerProps {
+  children: React.ReactNode,
+  withRightMenu?: boolean,
+  withGap?: boolean
+  style?: CSSProperties
+}
+
+const PageContainer: FunctionComponent<PageContainerProps> = ({
+  children,
+  withRightMenu = false,
+  withGap = false,
+  style = {},
+}) => {
   const theme = useTheme<Theme>();
   return (
     <PageContainerContext.Provider value={{ inPageContainer: true }}>
@@ -16,6 +28,7 @@ const PageContainer: FunctionComponent<{ children: React.ReactNode, withRightMen
           display: 'flex',
           flexDirection: 'column',
           gap: withGap ? theme.spacing(2) : undefined,
+          ...style,
         }}
       >
         {children}

@@ -15,7 +15,6 @@ import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache'
 import { now, utcDate } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
-import { markAllSessionsForRefresh } from '../database/session';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEnterpriseEditionInfo, getEnterpriseEditionInfoFromPem, LICENSE_OPTION_TRIAL } from '../modules/settings/licensing';
@@ -104,6 +103,10 @@ export const getProtectedSensitiveConfig = async (context, user) => {
       enabled: booleanConf('protected_sensitive_config:ce_ee_toggle:enabled', false),
       protected_ids: [],
     },
+    connector_reset: {
+      enabled: booleanConf('protected_sensitive_config:connector_reset:enabled', false),
+      protected_ids: [],
+    },
     file_indexing: {
       enabled: booleanConf('protected_sensitive_config:file_indexing:enabled', false),
       protected_ids: [],
@@ -136,6 +139,7 @@ export const getSettings = async (context) => {
     platform_openbas_disable_display: nconf.get('xtm:openbas_disable_display'),
     platform_openerm_url: nconf.get('xtm:openerm_url'),
     platform_openmtd_url: nconf.get('xtm:openmtd_url'),
+    platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
     platform_ai_enabled: nconf.get('ai:enabled') ?? false,
     platform_ai_type: `${getAIEndpointType()} ${nconf.get('ai:type')}`,
     platform_ai_model: nconf.get('ai:model'),
@@ -191,10 +195,6 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     }
   }
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
-  if (data.some((i) => i.key === 'platform_organization')) {
-    // if we change platform_organization, we need to refresh all sessions
-    await markAllSessionsForRefresh();
-  }
   await publishUserAction({
     user,
     event_type: 'mutation',

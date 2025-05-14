@@ -1,5 +1,4 @@
 import { MessageOutlined, MoreVert } from '@mui/icons-material';
-import { ListItemSecondaryAction } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -8,6 +7,7 @@ import { makeStyles } from '@mui/styles';
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import IconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
@@ -67,7 +67,12 @@ const SettingsMessagesLine = ({
     return <ErrorNotFound />;
   }
   return (
-    <ListItem key={message.id} divider={true} classes={{ root: classes.item }}>
+    <ListItem
+      key={message.id}
+      divider={true}
+      classes={{ root: classes.item }}
+      secondaryAction={<SettingsMessagesPopover settingsId={entityId} message={message} />}
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <MessageOutlined />
       </ListItemIcon>
@@ -86,9 +91,6 @@ const SettingsMessagesLine = ({
           </div>
         }
       />
-      <ListItemSecondaryAction>
-        <SettingsMessagesPopover settingsId={entityId} message={message} />
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };
@@ -102,7 +104,17 @@ export const SettingsMessagesLineDummy = ({
 }) => {
   const classes = useStyles();
   return (
-    <ListItem divider={true} classes={{ root: classes.item }}>
+    <ListItem
+      divider={true}
+      classes={{ root: classes.item }}
+      secondaryAction={
+        <Box sx={{ root: classes.itemIconDisabled }}>
+          <IconButton disabled={true} aria-haspopup="true" size="large">
+            <MoreVert />
+          </IconButton>
+        </Box>
+      }
+    >
       <ListItemText
         primary={
           <div>
@@ -123,11 +135,6 @@ export const SettingsMessagesLineDummy = ({
           </div>
         }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <IconButton disabled={true} aria-haspopup="true" size="large">
-          <MoreVert />
-        </IconButton>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

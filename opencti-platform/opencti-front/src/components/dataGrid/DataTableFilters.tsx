@@ -42,7 +42,7 @@ export const DataTableDisplayFilters = ({
   const {
     useDataTablePaginationLocalStorage: {
       helpers,
-      viewStorage: { filters },
+      viewStorage: { filters, savedFilters },
     },
   } = useDataTableContext();
 
@@ -51,7 +51,7 @@ export const DataTableDisplayFilters = ({
   }
 
   return (
-    <div id="filter-container" style={{ minHeight: 10 }}>
+    <div id="filter-container" style={{ minHeight: 10, display: 'flex', alignItems: 'center' }}>
       <FilterIconButton
         helpers={helpers}
         availableFilterKeys={availableFilterKeys}
@@ -62,6 +62,7 @@ export const DataTableDisplayFilters = ({
         availableRelationFilterTypes={availableRelationFilterTypes}
         availableEntityTypes={availableEntityTypes}
         entityTypes={entityTypes}
+        hasSavedFilters={!!savedFilters}
         filtersRestrictions={{
           preventRemoveFor: additionalFilterKeys,
         }}
@@ -72,6 +73,7 @@ export const DataTableDisplayFilters = ({
 };
 
 const DataTableFilters = ({
+  additionalFilters,
   availableFilterKeys,
   searchContextFinal,
   availableEntityTypes,
@@ -98,7 +100,6 @@ const DataTableFilters = ({
       viewStorage: { numberOfElements, openExports, redirectionMode },
     },
   } = useDataTableContext();
-
   const { selectedElements } = useEntityToggle(storageKey);
 
   const exportDisabled = !exportContext || (numberOfElements
@@ -111,6 +112,22 @@ const DataTableFilters = ({
 
   const hasToggleGroup = additionalHeaderButtons || redirectionModeEnabled || !exportDisabled;
 
+  const exportFilterGroups = [];
+  if (isFilterGroupNotEmpty(additionalFilters)) {
+    exportFilterGroups.push(additionalFilters);
+  }
+  if (isFilterGroupNotEmpty(paginationOptions.filters)) {
+    exportFilterGroups.push(paginationOptions.filters);
+  }
+  const exportPaginationOptions = {
+    ...paginationOptions,
+    filters: {
+      mode: 'and',
+      filters: [],
+      filterGroups: exportFilterGroups,
+    },
+  };
+
   return (
     <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
@@ -122,6 +139,7 @@ const DataTableFilters = ({
         >
           {hasFilters && (
             <Filters
+              isDatatable
               helpers={helpers}
               searchContext={searchContextFinal}
               availableFilterKeys={availableFilterKeys}
@@ -194,7 +212,7 @@ const DataTableFilters = ({
             <StixDomainObjectsExports
               open={!!openExports}
               handleToggle={helpers.handleToggleExports}
-              paginationOptions={paginationOptions}
+              paginationOptions={exportPaginationOptions}
               exportContext={exportContext}
             />
           </Security>
@@ -205,7 +223,7 @@ const DataTableFilters = ({
             <StixCoreRelationshipsExports
               open={openExports}
               handleToggle={helpers.handleToggleExports}
-              paginationOptions={paginationOptions}
+              paginationOptions={exportPaginationOptions}
               exportContext={exportContext}
             />
           </Security>
@@ -216,7 +234,7 @@ const DataTableFilters = ({
             <StixCoreObjectsExports
               open={openExports}
               handleToggle={helpers.handleToggleExports}
-              paginationOptions={paginationOptions}
+              paginationOptions={exportPaginationOptions}
               exportContext={exportContext}
             />
           </Security>
@@ -227,7 +245,7 @@ const DataTableFilters = ({
             <StixCyberObservablesExports
               open={openExports}
               handleToggle={helpers.handleToggleExports}
-              paginationOptions={paginationOptions}
+              paginationOptions={exportPaginationOptions}
               exportContext={exportContext}
             />
           </Security>
@@ -235,8 +253,8 @@ const DataTableFilters = ({
       {redirectionModeEnabled && (
         <Dialog
           open={openSettings}
-          PaperProps={{ elevation: 1 }}
-          TransitionComponent={Transition}
+          slotProps={{ paper: { elevation: 1 } }}
+          slots={{ transition: Transition }}
           onClose={() => setOpenSettings(false)}
           maxWidth="xs"
           fullWidth

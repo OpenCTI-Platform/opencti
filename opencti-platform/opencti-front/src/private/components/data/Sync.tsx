@@ -27,7 +27,7 @@ const Sync = () => {
   const { setTitle } = useConnectedDocumentModifier();
   const { platformModuleHelpers } = useAuth();
 
-  setTitle(t_i18n('Ingestion: Remote OCTI Streams | Data'));
+  setTitle(t_i18n('Remote OCTI Streams | Ingestion | Data'));
 
   const {
     viewStorage,
@@ -93,7 +93,6 @@ const Sync = () => {
       <PageContainer withRightMenu>
         <Breadcrumbs
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]}
-          noMargin
         />
         <AlertInfo content={
           <>
@@ -109,6 +108,7 @@ const Sync = () => {
             .
           </>
         }
+          style={{ marginBottom: theme.spacing(2) }}
         />
         <ListLines
           sortBy={viewStorage.sortBy}
@@ -119,6 +119,11 @@ const Sync = () => {
           displayImport={false}
           secondaryAction={true}
           keyword={viewStorage.searchTerm}
+          createButton={
+            <Security needs={[INGESTION_SETINGESTIONS]}>
+              <SyncCreation paginationOptions={paginationOptions} />
+            </Security>
+          }
         >
           <QueryRenderer
             query={SyncLinesQuery}
@@ -134,9 +139,6 @@ const Sync = () => {
             )}
           />
         </ListLines>
-        <Security needs={[INGESTION_SETINGESTIONS]}>
-          <SyncCreation paginationOptions={paginationOptions} />
-        </Security>
       </PageContainer>
     </>
   );

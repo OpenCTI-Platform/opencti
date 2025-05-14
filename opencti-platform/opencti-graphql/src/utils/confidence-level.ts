@@ -6,6 +6,8 @@ import { logApp } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { isBypassUser } from './access';
 import type { Group } from '../types/group';
+import { RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
+import { INPUT_EXTERNAL_REFS, INPUT_LABELS } from '../schema/general';
 
 type ObjectWithConfidence = {
   id: string,
@@ -222,4 +224,17 @@ export const adaptUpdateInputsConfidence = <T extends ObjectWithConfidence>(user
   }
 
   return newInputs;
+};
+
+/**
+ * Determine if a ref relationship is concerned by confidence level.
+ * A user can add external references and labels even with a lower confidence level.
+ *
+ * @param refType The type of the ref relationship
+ * @returns True if the confidence should be checked on the ref.
+ */
+export const shouldCheckConfidenceOnRefRelationship = (refType: string) => {
+  const checkRelationRef = ![RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT_LABEL].includes(refType);
+  const checkInputRefName = ![INPUT_EXTERNAL_REFS, INPUT_LABELS].includes(refType);
+  return checkInputRefName && checkRelationRef;
 };

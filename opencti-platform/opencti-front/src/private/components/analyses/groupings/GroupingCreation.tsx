@@ -81,7 +81,14 @@ interface GroupingAddInput {
   objectLabel: Option[];
   externalReferences: { value: string }[];
   file: File | undefined;
-  authorized_members: { value: string, accessRight: string }[] | undefined;
+  authorized_members: {
+    value: string,
+    accessRight: string,
+    groupsRestriction: {
+      label: string,
+      value: string,
+      type: string
+    }[] }[] | undefined;
 }
 
 interface GroupingFormProps {
@@ -149,9 +156,10 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight }) => ({
+        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,
           access_right: accessRight,
+          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
         })),
       }),
     };
@@ -203,8 +211,8 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     <Formik<GroupingAddInput>
       initialValues={initialValues}
       validationSchema={validator}
-      validateOnChange={false} // Validation will occur on submission, required fields all have *'s
-      validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onClose}
     >

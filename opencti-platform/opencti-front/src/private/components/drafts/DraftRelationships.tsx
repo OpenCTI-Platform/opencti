@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { DraftRelationshipsLines_data$data } from '@components/drafts/__generated__/DraftRelationshipsLines_data.graphql';
@@ -9,15 +9,17 @@ import {
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemEntityType from '../../../components/ItemEntityType';
+import { computeLink } from '../../../utils/Entity';
 
 const draftRelationshipsLineFragment = graphql`
     fragment DraftRelationships_node on StixCoreRelationship {
         id
+        standard_id
         entity_type
         parent_types
         relationship_type
@@ -173,6 +175,7 @@ export const draftRelationshipsLinesFragment = graphql`
         ) @connection(key: "Pagination_draftWorkspaceRelationships") {
             edges {
                 node {
+                    id
                     ...DraftRelationships_node
                 }
             }
@@ -187,7 +190,11 @@ export const draftRelationshipsLinesFragment = graphql`
 
 const LOCAL_STORAGE_KEY = 'draft_relationships';
 
-const DraftRelationships = () => {
+interface DraftRelationshipsProps {
+  isReadOnly: boolean;
+}
+
+const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isReadOnly }) => {
   const { draftId } = useParams() as { draftId: string };
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -195,7 +202,6 @@ const DraftRelationships = () => {
   const initialValues = {
     filters: {
       ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['draft_change.draft_operation'], ['stix-core-relationship'], ['create', 'update', 'delete']),
     },
     searchTerm: '',
     sortBy: 'created_at',
@@ -215,6 +221,8 @@ const DraftRelationships = () => {
   } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
+  const relevantDraftOperationFilter = { key: 'draft_change.draft_operation', values: ['create', 'update', 'delete'], operator: 'eq', mode: 'or' };
+  const toolbarFilters = { ...contextFilters, filters: [...contextFilters.filters, relevantDraftOperationFilter] };
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,
@@ -230,7 +238,7 @@ const DraftRelationships = () => {
   const dataColumns: DataTableProps['dataColumns'] = {
     draftVersion: {
       isSortable: false,
-      percentWidth: 10,
+      percentWidth: 8,
     },
     fromType: {
       id: 'fromType',
@@ -241,8 +249,8 @@ const DraftRelationships = () => {
         <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
       ),
     },
-    fromName: { percentWidth: 10 },
-    relationship_type: {},
+    fromName: { percentWidth: 13 },
+    relationship_type: { percentWidth: 10 },
     toType: {
       id: 'toType',
       label: 'To type',
@@ -252,11 +260,11 @@ const DraftRelationships = () => {
         <ItemEntityType inList showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
       ),
     },
-    toName: { percentWidth: 10 },
-    createdBy: { percentWidth: 7, isSortable: isRuntimeSort },
-    creator: { percentWidth: 7, isSortable: isRuntimeSort },
+    toName: { percentWidth: 13 },
+    createdBy: { percentWidth: 8, isSortable: isRuntimeSort },
+    creator: { percentWidth: 8, isSortable: isRuntimeSort },
     created_at: { percentWidth: 12 },
-    objectMarking: { isSortable: isRuntimeSort },
+    objectMarking: { percentWidth: 8, isSortable: isRuntimeSort },
   };
 
   const preloadedPaginationProps = {
@@ -267,6 +275,15 @@ const DraftRelationships = () => {
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftRelationshipsLinesPaginationQuery>;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getRedirectionLink = (stixRelationship: any) => {
+    if (isReadOnly) {
+      const isUpdatedEntity = stixRelationship.draftVersion?.draft_operation === 'update' || stixRelationship.draftVersion?.draft_operation === 'update_linked';
+      return isUpdatedEntity ? `/dashboard/id/${stixRelationship.id}` : `/dashboard/id/${stixRelationship.standard_id}`;
+    }
+    return computeLink(stixRelationship);
+  };
+
   return (
     <span data-testid="draft-relationships-page">
       {queryRef && (
@@ -275,12 +292,12 @@ const DraftRelationships = () => {
         resolvePath={(data: DraftRelationshipsLines_data$data) => data.draftWorkspaceRelationships?.edges?.map((n) => n?.node)}
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
-        toolbarFilters={contextFilters}
+        useComputeLink={getRedirectionLink}
+        toolbarFilters={toolbarFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={draftRelationshipsLineFragment}
-        exportContext={{ entity_type: 'stix-core-relationship' }}
-        redirectionModeEnabled
-        disableSelectAll
+        entityTypes={['stix-core-relationship']}
+        removeFromDraftEnabled
       />
       )}
     </span>

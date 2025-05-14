@@ -189,7 +189,7 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
         disableNavigation
         disableToolBar
         disableSelectAll
-        canToggleLine={false}
+        disableLineSelection
         onLineClick={ (row) => navigate(`${resolveLink(row.entity_type)}/${row.id}`) }
       />
       )}

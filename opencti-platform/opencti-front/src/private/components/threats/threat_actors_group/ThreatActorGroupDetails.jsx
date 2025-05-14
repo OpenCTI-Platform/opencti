@@ -12,12 +12,14 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
+import Tooltip from '@mui/material/Tooltip';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import ImageCarousel from '../../../../components/ImageCarousel';
 import ThreatActorGroupLocation from './ThreatActorGroupLocation';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   paper: {
@@ -121,10 +123,12 @@ class ThreatActorGroupDetailsComponent extends Component {
               >
                 {t('Sophistication')}
               </Typography>
-              <ItemOpenVocab
-                type="threat-actor-group-sophistication-ov"
-                value={threatActorGroup.sophistication}
-              />
+              <FieldOrEmpty source={threatActorGroup.sophistication}>
+                <ItemOpenVocab
+                  type="threat-actor-group-sophistication-ov"
+                  value={threatActorGroup.sophistication}
+                />
+              </FieldOrEmpty>
             </Grid>
             <Grid item xs={4}>
               <Typography
@@ -134,10 +138,12 @@ class ThreatActorGroupDetailsComponent extends Component {
               >
                 {t('Resource level')}
               </Typography>
-              <ItemOpenVocab
-                type="attack-resource-level-ov"
-                value={threatActorGroup.resource_level}
-              />
+              <FieldOrEmpty source={threatActorGroup.resource_level}>
+                <ItemOpenVocab
+                  type="attack-resource-level-ov"
+                  value={threatActorGroup.resource_level}
+                />
+              </FieldOrEmpty>
             </Grid>
             <Grid item xs={4}>
               <Typography
@@ -147,10 +153,12 @@ class ThreatActorGroupDetailsComponent extends Component {
               >
                 {t('Primary motivation')}
               </Typography>
-              <ItemOpenVocab
-                type="attack-motivation-ov"
-                value={threatActorGroup.primary_motivation}
-              />
+              <FieldOrEmpty source={threatActorGroup.primary_motivation}>
+                <ItemOpenVocab
+                  type="attack-motivation-ov"
+                  value={threatActorGroup.primary_motivation}
+                />
+              </FieldOrEmpty>
             </Grid>
             <Grid item xs={4}>
               <Typography
@@ -200,7 +208,11 @@ class ThreatActorGroupDetailsComponent extends Component {
                         </ListItemIcon>
                         <ListItemText
                           primary={
-                            <pre className={classes.smallPre}>{goal}</pre>
+                            <pre className={classes.smallPre}>
+                              <Tooltip title={goal}>
+                                {truncate(goal, 12)}
+                              </Tooltip>
+                            </pre>
                           }
                         />
                       </ListItem>

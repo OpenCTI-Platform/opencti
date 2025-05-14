@@ -8,7 +8,7 @@ import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { patchSync } from '../domain/connector';
 import { EVENT_CURRENT_VERSION } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { utcDate } from '../utils/format';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { isEmptyField, wait } from '../database/utils';

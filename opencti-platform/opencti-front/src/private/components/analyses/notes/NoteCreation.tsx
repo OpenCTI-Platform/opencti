@@ -215,8 +215,8 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     <Formik<NoteAddInput>
       initialValues={initialValues}
       validationSchema={noteValidator}
-      validateOnChange={false} // Validation will occur on submission, required fields all have *'s
-      validateOnBlur={false} // Validation will occur on submission, required fields all have *'s
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
       onReset={onClose}
     >
@@ -372,7 +372,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
         <Dialog
           open={open}
           onClose={() => setOpen(false)}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
         >
           <DialogTitle>{t_i18n('Create a note')}</DialogTitle>
           <DialogContent>

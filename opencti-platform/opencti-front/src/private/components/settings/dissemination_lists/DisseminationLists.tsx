@@ -91,7 +91,7 @@ const DisseminationLists = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security: Dissemination lists | Settings'));
+  setTitle(t_i18n('Dissemination lists | Security | Settings'));
 
   const initialValues = {
     searchTerm: '',
@@ -124,29 +124,22 @@ const DisseminationLists = () => {
   );
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    icon: {
-      id: 'icon',
-      label: ' ',
-      isSortable: false,
-      percentWidth: 5,
-      render: () => <ItemIcon type="dissemination-list" />,
-    },
     name: {
       id: 'name',
       label: 'Name',
       isSortable: true,
-      percentWidth: 20,
+      percentWidth: 25,
     },
     description: {
       id: 'description',
       label: 'Description',
-      percentWidth: 60,
+      percentWidth: 53,
       isSortable: false,
     },
     lineNumber: {
       id: 'dissemination_list_values_count',
       label: 'Number of recipients',
-      percentWidth: 15,
+      percentWidth: 22,
       isSortable: true,
       render: (node: DisseminationListsLine_node$data) => node.emails.length || '-',
     },
@@ -185,9 +178,10 @@ const DisseminationLists = () => {
                 disableNavigation
                 preloadedPaginationProps={preloadedPaginationProps}
                 actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
+                createButton={<DisseminationListCreation paginationOptions={queryPaginationOptions} />}
+                icon={() => <ItemIcon type="dissemination-list" />}
               />
             )}
-            <DisseminationListCreation paginationOptions={queryPaginationOptions} />
           </>
         )}
       </PageContainer>

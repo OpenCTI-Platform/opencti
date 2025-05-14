@@ -427,10 +427,10 @@ const TasksList = ({ data }) => {
         );
       })}
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayMessages}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseMessages}
         fullScreen={true}
       >
@@ -466,10 +466,10 @@ const TasksList = ({ data }) => {
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayErrors}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseErrors}
         fullScreen={true}
       >

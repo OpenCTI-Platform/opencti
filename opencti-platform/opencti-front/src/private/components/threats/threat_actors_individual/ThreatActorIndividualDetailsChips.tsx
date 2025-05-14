@@ -47,10 +47,14 @@ ThreatActorIndividualDetailsChipsProps
   const { title, field, path, AddComponent } = typeMappings[relType];
 
   const getRelationshipsOfType = (rel_type: SupportedTypes) => {
+    const seen_persona_id_set = new Set<string>();
     const relations = [];
     for (const { node } of data.stixCoreRelationships?.edges ?? []) {
       const { relationship_type } = node ?? {};
-      if (relationship_type === rel_type) relations.push(node);
+      if (relationship_type === rel_type && node.to?.id !== undefined && !(seen_persona_id_set.has(node.to.id))) {
+        relations.push(node);
+        seen_persona_id_set.add(node.to.id);
+      }
     }
     return relations;
   };

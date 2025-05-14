@@ -9,7 +9,7 @@ import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { SYSTEM_USER } from '../utils/access';
-import { convertStoreToStix } from '../database/stix-converter';
+import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { getDraftContext } from '../utils/draftContext';
 
 export const createEntityAutoEnrichment = async (context, user, element, scope) => {
@@ -25,7 +25,7 @@ export const createEntityAutoEnrichment = async (context, user, element, scope) 
   const workMessage = draftContext ? `Enrichment (${elementStandardId}) in draft ${draftContext}` : `Enrichment (${elementStandardId})`;
   const workList = await Promise.all(
     map((connector) => {
-      return createWork(contextOutOfDraft, user, connector, workMessage, elementStandardId).then((work) => {
+      return createWork(contextOutOfDraft, user, connector, workMessage, elementStandardId, { draftContext }).then((work) => {
         return { connector, work };
       });
     }, targetConnectors)

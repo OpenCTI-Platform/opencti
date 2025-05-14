@@ -246,6 +246,7 @@ describe('Decay update testing', () => {
 
     // THEN
     expect(patchResult?.revoked, 'This indicator should be revoked.').toBeTruthy();
+    expect(patchResult?.x_opencti_detection, 'When revoked, detection must be set to false.').toBe(false);
     expect(patchResult?.x_opencti_score, 'This indicator should be updated to revoke score.').toBe(10);
     expect(patchResult?.decay_next_reaction_date, 'This indicator should not have a next reaction date.').toBeUndefined();
     expect(patchResult?.decay_history?.length, 'This indicator should have one more history data.').toBe(2);
@@ -274,6 +275,7 @@ describe('Decay update testing', () => {
 
     // THEN
     expect(patchResult?.revoked, 'This indicator should be revoked.').toBeTruthy();
+    expect(patchResult?.x_opencti_detection, 'When revoked, detection must be set to false.').toBe(false);
     expect(patchResult?.x_opencti_score, 'This indicator should be updated to revoke score.').toBe(20);
     expect(patchResult?.decay_next_reaction_date, 'This indicator should not have a next reaction date.').toBeUndefined();
   });
@@ -301,6 +303,7 @@ describe('Decay update testing', () => {
 
     // THEN
     expect(patchResult.revoked, 'This indicator should be revoked.').toBeTruthy();
+    expect(patchResult?.x_opencti_detection, 'When revoked, detection must be set to false.').toBe(false);
     expect(patchResult.x_opencti_score, 'This indicator should be updated to revoke score.').toBe(20);
     expect(patchResult.decay_next_reaction_date, 'This indicator should not have a next reaction date.').toBeUndefined();
   });
@@ -382,8 +385,8 @@ describe('Decay chart data generation', () => {
   });
 
   it('should compute live score serie correctly', () => {
-    // YYYY-MM-DDTHH:mm:ss.sssZ
-    const startDate = new Date('2023-12-15T00:00:00.000Z');
+    // YYYY-MM-DDTHH:mm:ss.sss
+    const startDate = new Date('2023-12-15T00:00:00.000');
 
     const computedScoreList: number[] = computeScoreList(100);
 

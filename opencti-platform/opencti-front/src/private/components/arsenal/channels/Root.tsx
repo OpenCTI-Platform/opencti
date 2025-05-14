@@ -217,7 +217,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <ChannelKnowledge channel={channel} />
+                    <ChannelKnowledge channelData={channel} />
                   </div>
                 }
               />

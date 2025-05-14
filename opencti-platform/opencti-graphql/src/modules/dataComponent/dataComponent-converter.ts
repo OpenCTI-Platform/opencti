@@ -1,7 +1,7 @@
-import { buildStixDomain, cleanObject } from '../../database/stix-converter';
+import { buildStixDomain, cleanObject } from '../../database/stix-2-1-converter';
 import type { StixDataComponent, StoreEntityDataComponent } from './dataComponent-types';
 import { INPUT_DATA_SOURCE } from './dataComponent-types';
-import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 const convertDataComponentToStix = (instance: StoreEntityDataComponent): StixDataComponent => {
   const stixDomainObject = buildStixDomain(instance);

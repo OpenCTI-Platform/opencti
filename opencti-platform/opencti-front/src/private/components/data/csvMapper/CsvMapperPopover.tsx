@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, UIEvent, useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
@@ -9,15 +9,28 @@ import CsvMapperEditionContainer, { csvMapperEditionContainerQuery } from '@comp
 import { CsvMapperEditionContainerQuery } from '@components/data/csvMapper/__generated__/CsvMapperEditionContainerQuery.graphql';
 import { csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import CsvMapperCreationContainer from '@components/data/csvMapper/CsvMapperCreationContainer';
+import fileDownload from 'js-file-download';
+import { CsvMapperPopoverExportQuery$data } from '@components/data/csvMapper/__generated__/CsvMapperPopoverExportQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import stopEvent from '../../../../utils/domEvent';
+import { fetchQuery } from '../../../../relay/environment';
 
 const csvMapperPopoverDelete = graphql`
   mutation CsvMapperPopoverDeleteMutation($id: ID!) {
     csvMapperDelete(id: $id)
+  }
+`;
+
+const csvMapperExportQuery = graphql`
+  query CsvMapperPopoverExportQuery($id: ID!) {
+    csvMapper(id: $id) {
+      name
+      toConfigurationExport
+    }
   }
 `;
 
@@ -42,7 +55,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
 
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
-    loadQuery({ id: csvMapperId });
+    loadQuery({ id: csvMapperId }, { fetchPolicy: 'network-only' });
     handleClose();
   };
 
@@ -60,8 +73,9 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
   const [commit] = useApiMutation(csvMapperPopoverDelete);
 
   const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete } = deletion;
   const submitDelete = () => {
-    deletion.setDeleting(true);
+    setDeleting(true);
     commit({
       variables: {
         id: csvMapperId,
@@ -75,10 +89,30 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
         );
       },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         handleClose();
       },
     });
+  };
+
+  const exportCsvMapper = async () => {
+    const { csvMapper } = await fetchQuery(
+      csvMapperExportQuery,
+      { id: csvMapperId },
+    ).toPromise() as CsvMapperPopoverExportQuery$data;
+
+    if (csvMapper) {
+      const blob = new Blob([csvMapper.toConfigurationExport], { type: 'text/json' });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_csvMapper_${csvMapper.name}.json`;
+      fileDownload(blob, fileName);
+    }
+  };
+
+  const onExport = async (e: UIEvent) => {
+    stopEvent(e);
+    setAnchorEl(undefined);
+    await exportCsvMapper();
   };
 
   return (
@@ -89,7 +123,8 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
-        <MenuItem onClick={deletion.handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
       </Menu>
       {queryRef && (
         <React.Suspense fallback={<div />}>
@@ -99,7 +134,7 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
             open={displayUpdate}
           />
           <CsvMapperCreationContainer
-            queryRef={queryRef}
+            editionQueryRef={queryRef}
             isDuplicated={true}
             paginationOptions={paginationOptions}
             onClose={() => setDisplayDuplicate(false)}
@@ -108,9 +143,9 @@ const CsvMapperPopover: FunctionComponent<CsvMapperPopoverProps> = ({
         </React.Suspense>
       )}
       <DeleteDialog
-        title={t_i18n('Do you want to delete this CSV mapper?')}
         deletion={deletion}
         submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this CSV mapper?')}
       />
     </>
   );

@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
-import * as R from 'ramda';
 import DataTableToolBar from '@components/data/DataTableToolBar';
 import { OperationType } from 'relay-runtime';
 import { GraphQLTaggedNode } from 'react-relay';
@@ -8,17 +7,18 @@ import { useTheme } from '@mui/styles';
 import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
 import SearchInput from '../SearchInput';
 import { DataTableProps } from './dataTableTypes';
-import useAuth from '../../utils/hooks/useAuth';
-import { useDataTable, useLineData } from './dataTableHooks';
+import { useLineData } from './dataTableHooks';
 import DataTableComponent from './components/DataTableComponent';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
 import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
+import { useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
 | 'additionalFilterKeys'
+| 'additionalFilters'
 | 'entityTypes'> & {
   hideSearch?: boolean
   hideFilters?: boolean
@@ -33,6 +33,7 @@ type DataTableInternalFiltersProps = Pick<DataTableProps,
 
 const DataTableInternalFilters = ({
   additionalFilterKeys,
+  additionalFilters,
   entityTypes,
   hideSearch,
   hideFilters,
@@ -75,6 +76,7 @@ const DataTableInternalFilters = ({
 
         {!hideFilters && (
           <DataTableFilters
+            additionalFilters={additionalFilters}
             availableFilterKeys={availableFilterKeys}
             searchContextFinal={searchContextFinal}
             availableEntityTypes={availableEntityTypes}
@@ -104,6 +106,8 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
 | 'toolbarFilters'
 | 'handleCopy'
 | 'removeAuthMembersEnabled'
+| 'removeFromDraftEnabled'
+| 'markAsReadEnabled'
 > & {
   taskScope?: string
   globalSearch?: string;
@@ -115,6 +119,8 @@ const DataTableInternalToolbar = ({
   toolbarFilters,
   globalSearch,
   removeAuthMembersEnabled,
+  removeFromDraftEnabled,
+  markAsReadEnabled,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -150,6 +156,8 @@ const DataTableInternalToolbar = ({
         taskScope={taskScope}
         handleCopy={handleCopy}
         removeAuthMembersEnabled={removeAuthMembersEnabled}
+        removeFromDraftEnabled={removeFromDraftEnabled}
+        markAsReadEnabled={markAsReadEnabled}
       />
     </div>
   );
@@ -163,15 +171,17 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'availableFilterKeys'
 | 'redirectionModeEnabled'
 | 'additionalFilterKeys'
+| 'additionalFilters'
 | 'variant'
 | 'actions'
+| 'icon'
 | 'rootRef'
 | 'onLineClick'
+| 'useComputeLink'
 | 'disableNavigation'
 | 'disableLineSelection'
 | 'disableToolBar'
 | 'disableSelectAll'
-| 'canToggleLine'
 | 'selectOnLineClick'
 | 'createButton'
 | 'entityTypes'> & {
@@ -183,8 +193,6 @@ type OCTIDataTableProps = Pick<DataTableProps,
 } & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
 
 const DataTable = (props: OCTIDataTableProps) => {
-  const { schema } = useAuth();
-
   const {
     availableFilterKeys: defaultAvailableFilterKeys,
     globalSearch,
@@ -194,6 +202,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     availableRelationFilterTypes,
     preloadedPaginationProps: dataQueryArgs,
     additionalFilterKeys,
+    additionalFilters,
     lineFragment,
     exportContext,
     entityTypes,
@@ -205,6 +214,8 @@ const DataTable = (props: OCTIDataTableProps) => {
     hideFilters,
     taskScope,
     removeAuthMembersEnabled,
+    removeFromDraftEnabled,
+    markAsReadEnabled,
   } = props;
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -215,12 +226,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     : { ...searchContextFinal, entityTypes: computedEntityTypes };
   let availableFilterKeys = defaultAvailableFilterKeys ?? [];
   if (availableFilterKeys.length === 0 && isNotEmptyField(computedEntityTypes)) {
-    const filterKeysMap = new Map();
-    computedEntityTypes.forEach((entityType: string) => {
-      const currentMap = schema.filterKeysSchema.get(entityType);
-      currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
-    });
-    availableFilterKeys = R.uniq(Array.from(filterKeysMap.keys())); // keys of the entity type if availableFilterKeys is not specified
+    availableFilterKeys = useAvailableFilterKeysForEntityTypes(computedEntityTypes);
   }
   if (additionalFilterKeys) {
     availableFilterKeys = availableFilterKeys.concat(additionalFilterKeys);
@@ -233,11 +239,11 @@ const DataTable = (props: OCTIDataTableProps) => {
         availableFilterKeys={availableFilterKeys}
         dataQueryArgs={{ ...dataQueryArgs }}
         useLineData={useLineData(lineFragment)}
-        useDataTable={useDataTable}
         settingsMessagesBannerHeight={settingsMessagesBannerHeight}
         filtersComponent={(
           <DataTableInternalFilters
             entityTypes={entityTypes}
+            additionalFilters={additionalFilters}
             additionalFilterKeys={additionalFilterKeys}
             additionalHeaderButtons={additionalHeaderButtons}
             availableEntityTypes={availableEntityTypes}
@@ -257,6 +263,8 @@ const DataTable = (props: OCTIDataTableProps) => {
             toolbarFilters={toolbarFilters}
             globalSearch={globalSearch}
             removeAuthMembersEnabled={removeAuthMembersEnabled}
+            removeFromDraftEnabled={removeFromDraftEnabled}
+            markAsReadEnabled={markAsReadEnabled}
           />
       )}
       />

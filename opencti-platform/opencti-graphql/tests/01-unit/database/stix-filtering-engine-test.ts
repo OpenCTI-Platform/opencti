@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import * as engine from '../../../src/utils/filtering/boolean-logic-engine';
 import type { Filter, FilterGroup } from '../../../src/generated/graphql';
 import { FilterMode, FilterOperator } from '../../../src/generated/graphql';
+import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 describe('Filter Boolean logic engine ', () => {
   describe('testGenericFilter', () => {
@@ -275,12 +276,6 @@ describe('Filter Boolean logic engine ', () => {
     };
 
     it('handles empty filters', () => {
-      const emptyFilterGroup: FilterGroup = {
-        mode: FilterMode.And,
-        filters: [],
-        filterGroups: [],
-      };
-
       expect(engine.testFilterGroup({ id: 'x', score: 50 }, emptyFilterGroup, testerByFilterKeyMap)).toEqual(true);
     });
 

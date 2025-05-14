@@ -1,5 +1,5 @@
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
-import { buildStixDomain, cleanObject } from '../../database/stix-converter';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import { buildStixDomain, cleanObject } from '../../database/stix-2-1-converter';
 import type { StixChannel, StoreEntityChannel } from './channel-types';
 
 const convertChannelToStix = (instance: StoreEntityChannel): StixChannel => {

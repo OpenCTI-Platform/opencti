@@ -48,7 +48,6 @@ export default {
         const size = Buffer.byteLength(JSON.stringify(contextVariables));
         const isWrite = context.operation && context.operation.operation === 'mutation';
         const contextUser = context.contextValue.user;
-        const origin = contextUser ? contextUser.origin : undefined;
         // Compute inner relations
         let innerRelationCount = 0;
         if (isWrite) {
@@ -72,10 +71,10 @@ export default {
         }
         const operationType = `${isWrite ? 'WRITE' : 'READ'}`;
         const callMetaData = {
-          user: origin,
+          user_id: contextUser?.id,
           type: operationType + (isCallError ? '_ERROR' : ''),
           inner_relation_creation: innerRelationCount,
-          operation: context.request.operationName ?? 'Unspecified',
+          operation: context.operationName ?? 'Unspecified',
           time: elapsed,
           size,
         };

@@ -15,25 +15,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import { graphql } from 'react-relay';
-import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
+import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
-import { isNotEmptyField } from '../../../../utils/utils';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useGenerateAuditMessage } from '../../../../utils/history';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -161,16 +161,7 @@ const AuditsList = ({
                     const color = audit.event_status === 'error'
                       ? theme.palette.error.main
                       : undefined;
-                    const isHistoryUpdate = data.entity_type === 'History'
-                      && data.event_type === 'update'
-                      && isNotEmptyField(audit.context_data?.entity_name);
-                    const message = `\`${audit.user?.name}\` ${
-                      audit.context_data?.message
-                    } ${
-                      isHistoryUpdate
-                        ? `for \`${audit.context_data?.entity_name}\` (${audit.context_data?.entity_type})`
-                        : ''
-                    }`;
+                    const message = useGenerateAuditMessage(audit);
                     const link = audit.context_data?.entity_type
                       ? `${resolveLink(
                         audit.context_data?.entity_type === 'Workspace'
@@ -179,10 +170,9 @@ const AuditsList = ({
                       )}/${audit.context_data?.entity_id}`
                       : undefined;
                     return (
-                      <ListItem
+                      <ListItemButton
                         key={audit.id}
                         dense={true}
-                        button={true}
                         className="noDrag"
                         classes={{ root: classes.item }}
                         divider={true}
@@ -243,7 +233,7 @@ const AuditsList = ({
                             </>
                           }
                         />
-                      </ListItem>
+                      </ListItemButton>
                     );
                   })}
                 </List>

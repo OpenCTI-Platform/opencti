@@ -4,7 +4,6 @@ import Avatar from '@mui/material/Avatar';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import List from '@mui/material/List';
 import makeStyles from '@mui/styles/makeStyles';
 import Skeleton from '@mui/material/Skeleton';
@@ -16,6 +15,7 @@ import SubTypeWorkflowStatusPopover from './SubTypeWorkflowStatusPopover';
 import { SubTypeWorkflow_subType$data } from './__generated__/SubTypeWorkflow_subType.graphql';
 import ItemCopy from '../../../../components/ItemCopy';
 import { useFormatter } from '../../../../components/i18n';
+import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -47,11 +47,21 @@ export const subTypeWorkflowEditionFragment = graphql`
     statuses {
       id
       order
+      scope
       template {
         name
         color
       }
     }
+    statusesRequestAccess {
+          id
+          order
+          scope
+          template {
+              name
+              color
+          }
+      } 
   }
 `;
 
@@ -59,12 +69,14 @@ interface SubTypeEditionContainerProps {
   handleClose: () => void
   queryRef: PreloadedQuery<SubTypeWorkflowEditionQuery>
   open?: boolean
+  scope: string
 }
 
 const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
   queryRef,
   handleClose,
   open,
+  scope,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -74,6 +86,12 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
       subTypeWorkflowEditionFragment,
       queryData.subType,
     ) as SubTypeWorkflow_subType$data;
+
+    let statusesToDisplay = subType.statuses;
+    if (scope === StatusScopeEnum.REQUEST_ACCESS) {
+      statusesToDisplay = subType.statusesRequestAccess;
+    }
+
     return (
       <Drawer
         open={open}
@@ -85,7 +103,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
             component="nav"
             aria-labelledby="nested-list-subheader"
           >
-            {subType.statuses?.filter((status) => Boolean(status.template))
+            {statusesToDisplay?.filter((status) => Boolean(status.template))
               .map((status, idx) => {
                 if (status === null || status.template === null) {
                   return (
@@ -106,6 +124,12 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
                   <ListItem
                     key={status.id}
                     divider={true}
+                    secondaryAction={
+                      <SubTypeWorkflowStatusPopover
+                        subTypeId={subType.id}
+                        statusId={status.id}
+                      />
+                    }
                   >
                     <ListItemAvatar>
                       <Avatar
@@ -138,17 +162,11 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
                         </>
                       }
                     />
-                    <ListItemSecondaryAction>
-                      <SubTypeWorkflowStatusPopover
-                        subTypeId={subType.id}
-                        statusId={status.id}
-                      />
-                    </ListItemSecondaryAction>
                   </ListItem>
                 );
               })}
           </List>
-          <SubTypeWorkflowStatusAdd subTypeId={subType.id} display={true} />
+          <SubTypeWorkflowStatusAdd subTypeId={subType.id} display={true} scope={scope} />
         </>
       </Drawer>
     );

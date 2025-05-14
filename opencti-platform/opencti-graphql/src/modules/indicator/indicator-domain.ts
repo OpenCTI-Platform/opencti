@@ -26,33 +26,34 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
 import {
-  type IndicatorAddInput,
-  type QueryIndicatorsArgs,
-  type QueryIndicatorsNumberArgs,
   type EditInput,
-  type StixCyberObservable,
   FilterMode,
   FilterOperator,
-  OrderingMode
+  type IndicatorAddInput,
+  OrderingMode,
+  type QueryIndicatorsArgs,
+  type QueryIndicatorsNumberArgs,
+  type StixCyberObservable
 } from '../../generated/graphql';
 import type { BasicStoreCommon, NumberResult } from '../../types/store';
 import {
-  findDecayRuleForIndicator,
+  computeChartDecayAlgoSerie,
+  type ComputeDecayChartInput,
+  computeDecayPointReactionDate,
   computeNextScoreReactionDate,
+  computeScoreFromExpectedTime,
+  computeScoreList,
+  computeTimeFromExpectedScore,
+  type DecayChartData,
   type DecayHistory,
   type DecayLiveDetails,
-  computeScoreList,
-  computeChartDecayAlgoSerie,
-  type DecayChartData,
-  type ComputeDecayChartInput,
-  computeScoreFromExpectedTime,
-  computeTimeFromExpectedScore,
-  computeDecayPointReactionDate
+  findDecayRuleForIndicator
 } from '../decayRule/decayRule-domain';
 import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
+import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -211,7 +212,13 @@ export const promoteIndicatorToObservables = async (context: AuthContext, user: 
   return createObservablesFromIndicator(context, user, input, indicator);
 };
 
-export const getObservableValuesFromPattern = (pattern: string) => extractObservablesFromIndicatorPattern(pattern);
+export const getObservableValuesFromPattern = (pattern: string, rawFormat = false) => {
+  const observableValues = extractObservablesFromIndicatorPattern(pattern);
+  if (rawFormat) {
+    return observableValues;
+  }
+  return observableValues.map((o) => (o.hashes ? { ...o, hashes: stixHashesToInput(o) } : o));
+};
 
 const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, patternType: string, patternValue: string) => {
   // check indicator syntax
@@ -254,6 +261,10 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const { formattedPattern } = await validateIndicatorPattern(context, user, indicator.pattern_type, indicator.pattern);
 
   const indicatorBaseScore = indicator.x_opencti_score ?? 50;
+  if (indicatorBaseScore < 0 || indicatorBaseScore > 100) {
+    throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
+  }
+
   const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
@@ -343,8 +354,11 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   }
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
+    const newScore = scoreEditInput.value[0];
+    if (newScore < 0 || newScore > 100) {
+      throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
+    }
     if (indicator.decay_applied_rule && !scoreEditInput.value.includes(indicator.decay_base_score)) {
-      const newScore = scoreEditInput.value[0];
       const updateDate = utcDate();
       finalInput.push({ key: 'decay_base_score', value: [newScore] });
       finalInput.push({ key: 'decay_base_score_date', value: [updateDate.toISOString()] });
@@ -378,6 +392,7 @@ export interface IndicatorPatch {
   x_opencti_score?: number,
   decay_history?: DecayHistory[],
   decay_next_reaction_date?: Date,
+  x_opencti_detection?: boolean,
 }
 
 export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator) => {
@@ -398,7 +413,7 @@ export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator)
       decay_history: decayHistory,
     };
     if (newStableScore <= model.decay_revoke_score) {
-      patch = { ...patch, revoked: true };
+      patch = { ...patch, revoked: true, x_opencti_detection: false };
     } else {
       const nextScoreReactionDate = computeNextScoreReactionDate(indicator.decay_base_score, newStableScore, model, moment(indicator.valid_from));
       if (nextScoreReactionDate) {

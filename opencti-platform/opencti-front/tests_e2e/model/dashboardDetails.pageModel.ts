@@ -24,12 +24,11 @@ export default class DashboardDetailsPage {
     return this.page.getByRole('menuitem', { name });
   }
 
-  getDeleteButton() {
-    return this.page.getByRole('button', { name: 'Delete' });
+  getConfirmButton() {
+    return this.page.getByRole('button', { name: 'Confirm' });
   }
 
   getDuplicateButton() {
     return this.page.getByRole('button', { name: 'Duplicate' });
   }
-
 }

@@ -30,7 +30,7 @@ const IngestionTaxii = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Ingestion: TAXII Feeds | Data'));
+  setTitle(t_i18n('TAXII Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
@@ -97,6 +97,11 @@ const IngestionTaxii = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
+        createButton={
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <IngestionTaxiiCreation paginationOptions={paginationOptions} />
+          </Security>
+        }
       >
         <QueryRenderer
           query={IngestionTaxiiLinesQuery}
@@ -112,9 +117,6 @@ const IngestionTaxii = () => {
           )}
         />
       </ListLines>
-      <Security needs={[INGESTION_SETINGESTIONS]}>
-        <IngestionTaxiiCreation paginationOptions={paginationOptions} />
-      </Security>
     </div>
   );
 };

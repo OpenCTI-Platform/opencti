@@ -48,7 +48,7 @@ const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCa
   representative: (stix: StixCaseIncident) => {
     return stix.name;
   },
-  converter: convertCaseIncidentToStix
+  converter_2_1: convertCaseIncidentToStix
 };
 
 registerDefinition(CASE_INCIDENT_DEFINITION);

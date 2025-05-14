@@ -412,6 +412,16 @@ const adjustColor = (color, amount = 1) => {
     )}`.substr(-2))}`;
 };
 
+export const isColorCloseToWhite = (hex, threshold = 0.9) => {
+  if (!hex) return false;
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substr(0, 2), 16);
+  const g = parseInt(c.substr(2, 2), 16);
+  const b = parseInt(c.substr(4, 2), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance >= threshold; // filter on too white colors
+};
+
 export const generateBannerMessageColors = (color) => {
   let messageColor;
   if (color && /^#[0-9A-F]{6}$/i.test(color)) {

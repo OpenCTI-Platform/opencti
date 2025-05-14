@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState, Suspense } from 'react';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';
@@ -26,6 +26,7 @@ import {
 import { PaginationOptions } from 'src/components/list_lines';
 import Drawer from '@components/common/drawer/Drawer';
 import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
+import Loader, { LoaderVariant } from 'src/components/Loader';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
@@ -44,6 +45,7 @@ import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../components/dataGrid/DataTable';
+import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -487,8 +489,6 @@ export interface TargetEntity {
   name?: string;
 }
 
-const getLocalStorageKey = (entityId: string) => `${entityId}_stixCoreRelationshipCreationFromEntity`;
-
 const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelationshipCreationFromEntityProps> = (props) => {
   const {
     targetEntities: targetEntitiesProps = [],
@@ -507,6 +507,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     openExports = false,
     handleReverseRelation = undefined,
   } = props;
+  const LOCAL_STORAGE_KEY = `stixCoreRelationshipCreationFromEntity-${entityId}-${targetStixDomainObjectTypes?.join('-')}-${targetStixCyberObservableTypes?.join('-')}`;
+
   let isOnlySDOs = false;
   let isOnlySCOs = false;
   let actualTypeFilterValues = [
@@ -565,8 +567,9 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const containerRef = useRef(null);
 
   const { viewStorage, helpers } = usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
-    getLocalStorageKey(entityId),
+    LOCAL_STORAGE_KEY,
     {},
+    true,
   );
   const { searchTerm = '', orderAsc: storageOrderAsc, sortBy: storageSortBy, filters } = viewStorage;
 
@@ -709,7 +712,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
 
   const {
     selectedElements,
-  } = useEntityToggle(getLocalStorageKey(entityId));
+  } = useEntityToggle(LOCAL_STORAGE_KEY);
 
   useEffect(() => {
     const newTargetEntities: TargetEntity[] = Object.values(selectedElements).map((item) => ({
@@ -793,10 +796,11 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       disableSelectAll
                       disableNavigation
                       selectOnLineClick
+                      variant={DataTableVariant.inline}
                       rootRef={tableRootRef ?? undefined}
                       dataColumns={buildColumns(platformModuleHelpers)}
                       resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
-                      storageKey={getLocalStorageKey(entityId)}
+                      storageKey={LOCAL_STORAGE_KEY}
                       lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
                       initialValues={{}}
                       toolbarFilters={contextFilters}
@@ -937,16 +941,15 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const relationshipTypes = R.uniq(R.filter(
+          const relationshipTypes = R.uniq(resolveRelationsTypes(
+            fromEntities[0].entity_type,
+            toEntities[0].entity_type,
+            schema?.schemaRelationsTypesMapping ?? new Map(),
+          ).filter(
             (n) => R.isNil(allowedRelationshipTypes)
               || allowedRelationshipTypes.length === 0
               || allowedRelationshipTypes.includes('stix-core-relationship')
               || allowedRelationshipTypes.includes(n),
-            resolveRelationsTypes(
-              fromEntities[0].entity_type,
-              toEntities[0].entity_type,
-              schema?.schemaRelationsTypesMapping ?? new Map(),
-            ),
           ));
           return (
             <StixCoreRelationshipCreationForm
@@ -1017,22 +1020,24 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         title={t_i18n('Create a relationship')}
         ref={containerRef}
       >
-        <QueryRenderer
-          query={stixCoreRelationshipCreationFromEntityQuery}
-          variables={{ id: entityId }}
-          render={({ props: renderProps }: ({ props: StixCoreRelationshipCreationFromEntityQuery$data })) => {
-            if (renderProps && renderProps.stixCoreObject) {
-              const { name, entity_type, observable_value } = renderProps.stixCoreObject;
-              return (
-                <>
-                  {step === 0 ? renderSelectEntity(entity_type, name || observable_value) : null}
-                  {step === 1 ? renderForm(renderProps.stixCoreObject) : null}
-                </>
-              );
-            }
-            return renderLoader();
-          }}
-        />
+        <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <QueryRenderer
+            query={stixCoreRelationshipCreationFromEntityQuery}
+            variables={{ id: entityId }}
+            render={({ props: renderProps }: ({ props: StixCoreRelationshipCreationFromEntityQuery$data })) => {
+              if (renderProps && renderProps.stixCoreObject) {
+                const { name, entity_type, observable_value } = renderProps.stixCoreObject;
+                return (
+                  <>
+                    {step === 0 ? renderSelectEntity(entity_type, name || observable_value) : null}
+                    {step === 1 ? renderForm(renderProps.stixCoreObject) : null}
+                  </>
+                );
+              }
+              return renderLoader();
+            }}
+          />
+        </Suspense>
       </Drawer>
     </>
   );

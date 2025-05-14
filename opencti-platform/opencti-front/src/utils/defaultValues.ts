@@ -1,7 +1,8 @@
 import { Option } from '@components/common/form/ReferenceField';
-import { INPUT_AUTHORIZED_MEMBERS } from './authorizedMembers';
+import { AuthorizedMemberOption, INPUT_AUTHORIZED_MEMBERS } from './authorizedMembers';
+import { AutoCompleteOption } from './field';
 
-export type DefaultValues = Option | Option[] | string | (string | null)[] | boolean | null;
+export type DefaultValues = AutoCompleteOption | AutoCompleteOption[] | Option | Option[] | string | (string | null)[] | boolean | null;
 
 const isBoolean = (defaultValues: DefaultValues) => {
   return typeof defaultValues === 'boolean';
@@ -35,11 +36,12 @@ export const defaultValuesToStringArray = (
 
   if (Array.isArray(defaultValues)) {
     if (attributeName === INPUT_AUTHORIZED_MEMBERS) {
-      default_values = (defaultValues as Option[])
+      default_values = (defaultValues as AuthorizedMemberOption[])
         .filter((v) => v.accessRight !== 'none')
         .map((v) => JSON.stringify({
           id: v.value,
           access_right: v.accessRight,
+          groups_restriction_ids: v.groupsRestriction ? v.groupsRestriction.map((g) => g.value) : [],
         }));
     } else if (isMultipleOption(defaultValues)) {
       // Handle multiple options

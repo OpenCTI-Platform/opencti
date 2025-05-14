@@ -1,5 +1,6 @@
 import React, { FunctionComponent, ReactNode, useState } from 'react';
 import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Drawer from '@mui/material/Drawer';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -20,7 +21,6 @@ import CreateFileForm, { CreateFileFormInputs } from '@components/common/form/Cr
 import StixCoreObjectContentFilesList from '@components/common/stix_core_objects/StixCoreObjectContentFilesList';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import StixCoreObjectFileExport, { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
-import { ListItemSecondaryAction } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { useFormatter } from '../../../../components/i18n';
@@ -30,6 +30,7 @@ import { isNilField } from '../../../../utils/utils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface ContentBlocProps {
   title: ReactNode
@@ -115,6 +116,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
   hasOutcomesTemplate,
 }) => {
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
   const isEnterpriseEdition = useEnterpriseEdition();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
@@ -177,21 +179,12 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
       {!isNilField(content) && (
         <ContentBloc title={t_i18n('Mappable content')}>
           <List>
-            <ListItemButton
+            <ListItem
               dense={true}
               divider={true}
-              selected={contentSelected}
-              onClick={handleSelectContent}
-            >
-              <ListItemIcon>
-                <FileOutline fontSize="small" />
-              </ListItemIcon>
-              <ListItemText
-                primary={t_i18n('Description & Main content')}
-                secondary={t_i18n('Description and content of the entity')}
-              />
-              <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
-                <ListItemSecondaryAction>
+              disablePadding
+              secondaryAction={!draftContext && (
+                <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
                   <IconButton
                     onClick={(e) => {
                       e.stopPropagation();
@@ -203,11 +196,24 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                   >
                     <MoreVert />
                   </IconButton>
-                </ListItemSecondaryAction>
-              </Security>
-            </ListItemButton>
+                </Security>
+              )
+              }
+            >
+              <ListItemButton
+                selected={contentSelected}
+                onClick={handleSelectContent}
+              >
+                <ListItemIcon>
+                  <FileOutline fontSize="small" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={t_i18n('Description & Main content')}
+                  secondary={t_i18n('Description and content of the entity')}
+                />
+              </ListItemButton>
+            </ListItem>
           </List>
-
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
@@ -285,7 +291,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                 </Tooltip>}
             </>
           }
-          actions={isEnterpriseEdition && (
+          actions={!draftContext && isEnterpriseEdition && (
             <StixCoreObjectFileExport
               scoId={stixCoreObjectId}
               scoName={stixCoreObjectName}

@@ -8,9 +8,10 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
+import { ListItemButton } from '@mui/material';
+import Box from '@mui/material/Box';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
@@ -65,20 +66,30 @@ class IndicatorEntityLineComponent extends Component {
     const link = `${entityLink}/relations/${node.id}`;
     return (
       <ListItem
-        classes={{ root: classes.item }}
         divider={true}
-        button={true}
-        component={Link}
-        to={link}
-        disabled={restricted}
+        secondaryAction={
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreRelationshipPopover
+              stixCoreRelationshipId={node.id}
+              paginationOptions={paginationOptions}
+              disabled={restricted}
+            />
+          </Security>
+        }
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.entity_type} />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              {displayRelation && (
+        <ListItemButton
+          classes={{ root: classes.item }}
+          component={Link}
+          to={link}
+          disabled={restricted}
+        >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <ItemIcon type={node.entity_type} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <div>
+                {displayRelation && (
                 <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.relationship_type.width }}
@@ -87,77 +98,69 @@ class IndicatorEntityLineComponent extends Component {
                     entityType={node.relationship_type}
                   />
                 </div>
-              )}
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
-                <ItemEntityType
-                  entityType={element.entity_type === 'stix_relation'
+                )}
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.entity_type.width }}
+                >
+                  <ItemEntityType
+                    entityType={element.entity_type === 'stix_relation'
                     || element.entity_type === 'stix-relation'
-                    ? element.parent_types[0]
-                    : element.entity_type}
-                  isRestricted={restricted}
-                  size='large'
-                  showIcon
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {/* eslint-disable-next-line no-nested-ternary */}
-                {!restricted
-                  ? element.entity_type === 'stix_relation'
+                      ? element.parent_types[0]
+                      : element.entity_type}
+                    isRestricted={restricted}
+                    size='large'
+                    showIcon
+                  />
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.name.width }}
+                >
+                  {/* eslint-disable-next-line no-nested-ternary */}
+                  {!restricted
+                    ? element.entity_type === 'stix_relation'
                     || element.entity_type === 'stix-relation'
-                    ? `${element.from.name} ${String.fromCharCode(8594)} ${
-                      element.to.name || element.to.observable_value
-                    }`
-                    : element.name || element.observable_value
-                  : t('Restricted')}
+                      ? `${element.from.name} ${String.fromCharCode(8594)} ${
+                        element.to.name || element.to.observable_value
+                      }`
+                      : element.name || element.observable_value
+                    : t('Restricted')}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.createdBy.width }}
+                >
+                  {R.pathOr('', ['createdBy', 'name'], node)}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.creator.width }}
+                >
+                  {(node.creators ?? []).map((c) => c?.name).join(', ')}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.start_time.width }}
+                >
+                  {fsd(node.start_time)}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.stop_time.width }}
+                >
+                  {fsd(node.stop_time)}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.confidence.width }}
+                >
+                  <ItemConfidence confidence={node.confidence} entityType='stix-core-relationship' variant="inList" />
+                </div>
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
-                {R.pathOr('', ['createdBy', 'name'], node)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.creator.width }}
-              >
-                {(node.creators ?? []).map((c) => c?.name).join(', ')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.start_time.width }}
-              >
-                {fsd(node.start_time)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.stop_time.width }}
-              >
-                {fsd(node.stop_time)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.confidence.width }}
-              >
-                <ItemConfidence confidence={node.confidence} entityType='stix-core-relationship' variant="inList" />
-              </div>
-            </div>
           }
-        />
-        <ListItemSecondaryAction>
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <StixCoreRelationshipPopover
-              stixCoreRelationshipId={node.id}
-              paginationOptions={paginationOptions}
-              disabled={restricted}
-            />
-          </Security>
-        </ListItemSecondaryAction>
+          />
+        </ListItemButton>
       </ListItem>
     );
   }
@@ -693,7 +696,15 @@ class IndicatorEntityLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns, displayRelation } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        secondaryAction={
+          <Box sx={{ root: classes.itemIconDisabled }}>
+            <MoreVert />
+          </Box>
+        }
+      >
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
           <Skeleton
             animation="wave"
@@ -776,9 +787,6 @@ class IndicatorEntityLineDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
-        </ListItemSecondaryAction>
       </ListItem>
     );
   }

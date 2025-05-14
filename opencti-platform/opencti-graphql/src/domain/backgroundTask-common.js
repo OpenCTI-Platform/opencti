@@ -16,10 +16,11 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { BackgroundTaskScope, Capabilities, FilterMode } from '../generated/graphql';
-import { extractFilterGroupValues, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { extractFilterGroupValues, findFiltersFromKey, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-constants';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -33,6 +34,7 @@ export const ACTION_TYPE_UNSHARE = 'UNSHARE';
 export const ACTION_TYPE_SHARE_MULTIPLE = 'SHARE_MULTIPLE';
 export const ACTION_TYPE_UNSHARE_MULTIPLE = 'UNSHARE_MULTIPLE';
 export const ACTION_TYPE_REMOVE_AUTH_MEMBERS = 'REMOVE_AUTH_MEMBERS';
+export const ACTION_TYPE_REMOVE_FROM_DRAFT = 'REMOVE_FROM_DRAFT';
 
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
@@ -46,7 +48,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
   const filters = isFilterGroupNotEmpty(baseFilterObject)
     ? (baseFilterObject?.filters ?? [])
     : [];
-  const entityTypeFilters = filters.filter((f) => f.key.includes('entity_type'));
+  const entityTypeFilters = findFiltersFromKey(filters, TYPE_FILTER);
   const entityTypeFiltersValues = entityTypeFilters.map((f) => f.values).flat();
   if (scope === BackgroundTaskScope.Settings) { // 01. Background task of scope Settings
     const isAuthorized = isUserHasCapability(user, SETTINGS_SETLABELS);
@@ -76,7 +78,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess('The targeted ids are not knowledge.');
       }
     } else if (taskType === TASK_TYPE_LIST) {
-      const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id)));
+      const objects = await Promise.all(ids.map((id) => internalLoadById(context, user, id, { includeDeletedInDraft: true })));
       const acceptedInternalTypes = objects.every((o) => o?.entity_type === ENTITY_TYPE_DELETE_OPERATION || o?.entity_type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const isNotKnowledge = objects.includes(undefined)
         || (!acceptedInternalTypes && !areParentTypesKnowledge(objects.map((o) => o.parent_types)))
@@ -97,7 +99,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       if (!isNotifications) {
         throw ForbiddenAccess('The targeted ids are not notifications.');
       }
-      const userFilters = filters.filter((f) => f.key === 'user_id');
+      const userFilters = findFiltersFromKey(filters, USER_ID_FILTER);
       const isUserData = userFilters.length > 0
         && userFilters[0].values.length === 1
         && userFilters[0].values[0] === user.id;
@@ -265,7 +267,7 @@ export const createDefaultTask = (user, input, taskType, taskExpectedNumber, sco
     task = {
       ...task,
       scope,
-      authorized_members: authorizedMembersForTask(user, scope),
+      restricted_members: authorizedMembersForTask(user, scope),
       authorized_authorities: authorizedAuthoritiesForTask(scope),
     };
   }
@@ -308,9 +310,6 @@ const authorizedMembersForTask = (user, scope) => {
 };
 
 export const createListTask = async (context, user, input) => {
-  if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot create background task in draft');
-  }
   const { actions, ids, scope } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_LIST);
   const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length, scope);

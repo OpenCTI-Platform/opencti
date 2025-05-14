@@ -14,6 +14,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
+import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -165,12 +166,15 @@ class StreamCollectionPopover extends Component {
           />
         </Drawer>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayDelete}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this live stream?')}
@@ -188,7 +192,7 @@ class StreamCollectionPopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

@@ -3,6 +3,7 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
+import { useFormatter } from './i18n';
 
 const useStyles = makeStyles(() => ({
   chipInList: {
@@ -58,6 +59,7 @@ const operationStylesDark = {
 const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
 
   const getChipStyle = () => {
     switch (draftOperation) {
@@ -74,6 +76,7 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
           ? { ...operationStylesLight.lightYellow }
           : { ...operationStylesDark.lightYellow };
       case 'delete':
+      case 'delete_linked':
         return theme.palette.mode === 'light'
           ? { ...operationStylesLight.red }
           : { ...operationStylesDark.red };
@@ -81,9 +84,27 @@ const ItemOperations: FunctionComponent<ItemOperationsProps> = ({ draftOperation
         return {};
     }
   };
+
+  const getChipTitle = () => {
+    switch (draftOperation) {
+      case 'create':
+        return t_i18n('does not exist in the main knowledge base');
+      case 'update':
+        return t_i18n('existed in main knowledge, modified in the draft');
+      case 'update_linked':
+        return t_i18n('impacted by a modification to a linked entity (relation, added in container...)');
+      case 'delete':
+        return t_i18n('existed in main knowledge base, deleted in draft');
+      case 'delete_linked':
+        return t_i18n('deleted as a result of the deletion of a linked entity');
+      default:
+        return t_i18n(draftOperation);
+    }
+  };
+
   return (
     <Chip
-      title={draftOperation}
+      title={getChipTitle()}
       label={draftOperation}
       classes={{ root: classes.chipInList }}
       variant="outlined"

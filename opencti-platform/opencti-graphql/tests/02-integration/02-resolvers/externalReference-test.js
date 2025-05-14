@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, queryAsAdmin, securityQuery } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { computeQueryTaskElements } from '../../../src/manager/taskManager';
 
@@ -81,8 +81,7 @@ describe('ExternalReference resolver standard behavior', () => {
     const externalReference = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: EXTERNAL_REFERENCE_TO_CREATE,
-    });
-    expect(externalReference).not.toBeNull();
+    }); expect(externalReference).not.toBeNull();
     expect(externalReference.data.externalReferenceAdd).not.toBeNull();
     expect(externalReference.data.externalReferenceAdd.source_name).toEqual('ExternalReferenceForTest');
     externalReferenceInternalId = externalReference.data.externalReferenceAdd.id;
@@ -206,6 +205,42 @@ describe('ExternalReference resolver standard behavior', () => {
       }
     `;
     const queryResult = await queryAsAdmin({
+      query: RELATION_ADD_QUERY,
+      variables: {
+        id: externalReferenceInternalId,
+        input: {
+          fromId: campaignId,
+          relationship_type: 'external-reference',
+        },
+      },
+    });
+    expect(queryResult.data.externalReferenceEdit.relationAdd.from.externalReferences.edges.length).toEqual(1);
+  });
+  it('should add relation in externalReference even with low confidence', async () => {
+    const campaign = await elLoadById(testContext, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    campaignId = campaign.internal_id;
+    const RELATION_ADD_QUERY = gql`
+      mutation ExternalReferenceEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
+        externalReferenceEdit(id: $id) {
+          relationAdd(input: $input) {
+            id
+            from {
+              ... on StixDomainObject {
+                externalReferences {
+                  edges {
+                    node {
+                      id
+                      standard_id
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await securityQuery({
       query: RELATION_ADD_QUERY,
       variables: {
         id: externalReferenceInternalId,

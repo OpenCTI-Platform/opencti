@@ -20,7 +20,6 @@ import useAuth from '../../../../../../utils/hooks/useAuth';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../../utils/filters/filtersHelpers-types';
 import DataTable from '../../../../../../components/dataGrid/DataTable';
-import { DataTableVariant } from '../../../../../../components/dataGrid/dataTableTypes';
 import { useQueryLoadingWithLoadQuery } from '../../../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../../../utils/hooks/usePreloadedPaginationFragment';
 import { useFormatter } from '../../../../../../components/i18n';
@@ -238,15 +237,15 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     <>
       {queryRef && (
       <DataTable
-        variant={DataTableVariant.inline}
         dataColumns={dataColumns}
         resolvePath={(data: EntityStixCoreRelationshipsIndicatorsEntitiesView_data$data) => (data.indicators?.edges ?? []).map((n) => n?.node)}
         storageKey={localStorageKey}
         initialValues={initialValues}
         toolbarFilters={contextFilters}
+        additionalFilters={contextFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment}
-        exportContext={{ entity_type: 'Indicator' }}
+        exportContext={{ entity_id: entityId, entity_type: 'Indicator' }}
         additionalHeaderButtons={[...viewButtons]}
       />
       )}

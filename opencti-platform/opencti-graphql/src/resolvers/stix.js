@@ -56,7 +56,7 @@ const stixResolvers = {
       delete: () => stixDelete(context, context.user, id),
       merge: ({ stixObjectsIds }) => stixObjectMerge(context, context.user, id, stixObjectsIds),
     }),
-    stixBundlePush: (_, { connectorId, bundle }, context) => sendStixBundle(context, context.user, connectorId, bundle),
+    stixBundlePush: (_, { connectorId, bundle, work_id }, context) => sendStixBundle(context, context.user, connectorId, bundle, work_id),
   },
   StixObject: {
     // eslint-disable-next-line

@@ -29,7 +29,7 @@ const VocabularyCategories = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Taxonomies: Vocabularies | Settings'));
+  setTitle(t_i18n('Vocabularies | Taxonomies | Settings'));
   const { categories, sortBy, orderAsc, searchTerm, handleSort, handleSearch } = useVocabularyCategoryAsQuery();
   const renderLines = () => {
     const dataColumns = {

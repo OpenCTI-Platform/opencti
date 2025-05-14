@@ -33,7 +33,7 @@ const DecayRules = () => {
   const classes = useStyles();
   const { fd, t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Customization: Decay Rules | Settings'));
+  setTitle(t_i18n('Decay Rules | Customization | Settings'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DecayRulesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -123,6 +123,7 @@ const DecayRules = () => {
         secondaryAction={false}
         keyword={searchTerm}
         numberOfElements={numberOfElements}
+        createButton={<DecayRuleCreation paginationOptions={queryPaginationOptions} />}
         message={t_i18n(
           'Decay rules are applied on indicators by priority order (from greatest to lowest, lowest being 0). '
           + 'There are built-in rules applied by default that are not editable, you can add a custom decay rule and define its priority order.',
@@ -159,7 +160,6 @@ const DecayRules = () => {
       <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Decay rules'), current: true }]} />
       {renderLines()}
-      <DecayRuleCreation paginationOptions={queryPaginationOptions} />
     </div>
   );
 };

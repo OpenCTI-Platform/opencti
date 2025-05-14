@@ -6,10 +6,12 @@ import {
   CONNECTED_TO_INSTANCE_FILTER,
   CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER,
   CREATED_BY_FILTER,
+  filterKeysWithMeValue,
   INDICATOR_FILTER,
   INSTANCE_REGARDING_OF,
   LABEL_FILTER,
   MARKING_FILTER,
+  ME_FILTER_VALUE,
   OBJECT_CONTAINS_FILTER,
   PARTICIPANT_FILTER,
   RELATION_FROM_FILTER,
@@ -17,14 +19,14 @@ import {
   WORKFLOW_FILTER
 } from './filtering-constants';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { StixObject } from '../../types/stix-common';
+import type { StixObject } from '../../types/stix-2-1-common';
 import { isUserCanAccessStixElement, SYSTEM_USER } from '../access';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../schema/stixDomainObject';
 import { extractFilterGroupValues, isFilterGroupNotEmpty } from './filtering-utils';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import type { BasicWorkflowStatus } from '../../types/store';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 // list of all filters that needs resolution
 export const RESOLUTION_FILTERS = [
@@ -96,6 +98,14 @@ const resolveFilter = async (
     // !!! it works to do the mode/operator filter on the status (and not on the template)
     // because a status can only have a single template and because the operators are full-match operators (eq/not_eq) !!!
     newFilterValues = statusIds;
+  }
+
+  // 3. handle the special case of dynamic @me value
+  if (key.some((k) => filterKeysWithMeValue.includes(k))) {
+    if (filter.values.includes(ME_FILTER_VALUE)) {
+      // eslint-disable-next-line no-param-reassign
+      filter.values = filter.values.map((v) => (v === ME_FILTER_VALUE ? user.id : v));
+    }
   }
 
   return {

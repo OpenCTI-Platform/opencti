@@ -8,6 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import { compose, map } from 'ramda';
 import List from '@mui/material/List';
+import { ListItemButton } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
 import { DraftChip } from '../../common/draft/DraftChip';
 import inject18n from '../../../../components/i18n';
@@ -23,8 +24,7 @@ const styles = (theme) => ({
   },
   name: {
     width: '20%',
-    height: 20,
-    lineHeight: '20px',
+    lineHeight: '28px',
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -32,8 +32,7 @@ const styles = (theme) => ({
   },
   description: {
     width: '70%',
-    height: 20,
-    lineHeight: '20px',
+    lineHeight: '28px',
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -60,10 +59,9 @@ class SectorLineComponent extends Component {
     const { classes, subSectors, node, isSubSector, t } = this.props;
     return (
       <div>
-        <ListItem
+        <ListItemButton
           classes={{ root: isSubSector ? classes.itemNested : classes.item }}
           divider={true}
-          button={true}
           component={Link}
           to={`/dashboard/entities/sectors/${node.id}`}
         >
@@ -71,6 +69,7 @@ class SectorLineComponent extends Component {
             <ItemIcon type="Sector" size={isSubSector ? 'small' : 'medium'} />
           </ListItemIcon>
           <ListItemText
+            sx={{ margin: 0, height: '28px' }}
             primary={
               <div>
                 <div className={classes.name}>
@@ -88,7 +87,7 @@ class SectorLineComponent extends Component {
           <ListItemIcon classes={{ root: classes.goIcon }}>
             <KeyboardArrowRightOutlined />
           </ListItemIcon>
-        </ListItem>
+        </ListItemButton>
         {subSectors && subSectors.length > 0 && (
           <List style={{ margin: 0, padding: 0 }}>
             {map(

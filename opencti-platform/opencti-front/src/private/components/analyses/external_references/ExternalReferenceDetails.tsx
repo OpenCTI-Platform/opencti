@@ -12,6 +12,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
+import DialogTitle from '@mui/material/DialogTitle';
 import { ExternalReferenceDetails_externalReference$data } from './__generated__/ExternalReferenceDetails_externalReference.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemCreators from '../../../../components/ItemCreators';
@@ -101,12 +102,15 @@ ExternalReferenceDetailsComponentProps
         </Grid>
       </Paper>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayExternalLink}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseExternalLink}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to browse this external link?')}
@@ -115,7 +119,7 @@ ExternalReferenceDetailsComponentProps
         <DialogActions>
           <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={handleBrowseExternalLink}>
-            {t_i18n('Browse the link')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

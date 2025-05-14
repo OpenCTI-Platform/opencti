@@ -38,7 +38,7 @@ const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabul
   representative: (stix: StixVocabulary) => {
     return stix.name;
   },
-  converter: convertVocabularyToStix,
+  converter_2_1: convertVocabularyToStix,
 };
 
 registerDefinition(VOCABULARY_DEFINITION);

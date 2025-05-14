@@ -25,18 +25,20 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
+  ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_THREAT_ACTOR,
   INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
+  INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
   INPUT_PARTICIPANT
 } from '../../schema/general';
-import { convertStoreToStix } from '../../database/stix-converter';
+import { convertStoreToStix } from '../../database/stix-2-1-converter';
 import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
-import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-sdo';
+import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-2-1-sdo';
 import { convertStixToInternalTypes, generateInternalType, getParentTypes } from '../../schema/schemaUtils';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -48,10 +50,10 @@ import {
   ENTITY_TYPE_TOOL,
   isStixDomainObjectContainer
 } from '../../schema/stixDomainObject';
-import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-common';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-extensions';
+import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
+import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { internalFindByIds, listAllRelations, storeLoadById } from '../../database/middleware-loader';
+import { internalFindByIds, listAllEntities, listAllRelations, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
@@ -71,7 +73,7 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { createStixPattern } from '../../python/pythonBridge';
 import { generateKeyValueForIndicator } from '../../domain/stixCyberObservable';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../../schema/stixCoreRelationship';
-import type { StixRelation } from '../../types/stix-sro';
+import type { StixRelation } from '../../types/stix-2-1-sro';
 import { extractValidObservablesFromIndicatorPattern, STIX_PATTERN_TYPE } from '../../utils/syntax';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../case/case-incident/case-incident-types';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
@@ -80,7 +82,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types'
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
-import { EditOperation } from '../../generated/graphql';
+import { EditOperation, FilterMode } from '../../generated/graphql';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
@@ -520,6 +522,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
 
 export interface SharingConfiguration {
   organizations: string[] | { label: string, value: string }[]
+  all: boolean
 }
 const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = {
   type: 'object',
@@ -530,11 +533,12 @@ const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = 
       default: [],
       $ref: 'Target organizations',
       items: { type: 'string', oneOf: [] }
-    }
+    },
+    all: { type: 'boolean', $ref: 'Share all elements included in the bundle', default: false },
   },
   required: ['organizations'],
 };
-const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
+export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   id: 'PLAYBOOK_SHARING_COMPONENT',
   name: 'Share with organizations',
   description: 'Share with organizations within the platform',
@@ -546,7 +550,7 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   schema: async () => PLAYBOOK_SHARING_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
-    const { organizations } = playbookNode.configuration;
+    const { organizations, all } = playbookNode.configuration;
     const organizationsValues = organizations.map((o) => (typeof o !== 'string' ? o.value : o));
     const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, organizationsValues, {
       type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -557,8 +561,12 @@ const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
       return { output_port: 'out', bundle }; // nothing to do since organizations are empty
     }
     const organizationIds = organizationsByIds.map((o) => o.standard_id);
-    const baseData = bundle.objects.find((o) => o.id === dataInstanceId) as StixCoreObject;
-    baseData.extensions[STIX_EXT_OCTI].granted_refs = [...(baseData.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
+    for (let index = 0; index < bundle.objects.length; index += 1) {
+      const element = bundle.objects[index];
+      if (all || element.id === dataInstanceId) {
+        element.extensions[STIX_EXT_OCTI].granted_refs = [...(element.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
+      }
+    }
     return { output_port: 'out', bundle };
   }
 };
@@ -603,6 +611,15 @@ const attributePathMapping: any = {
   },
   priority: {
     [ENTITY_TYPE_CONTAINER_CASE]: '/priority',
+  },
+  indicator_types: {
+    [ENTITY_TYPE_INDICATOR]: '/indicator_types',
+  },
+  [INPUT_KILLCHAIN]: {
+    [ENTITY_TYPE_INDICATOR]: '/kill_chain_phases',
+  },
+  x_mitre_platforms: {
+    [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_MITRE}/platforms`
   },
 };
 interface UpdateValueConfiguration {
@@ -685,7 +702,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
     };
     const convertValue = (attributeType: string, value: any) => {
       if (attributeType === 'numeric') return Number(value);
-      if (attributeType === 'boolean') return Boolean(value);
+      if (attributeType === 'boolean') return value.toLowerCase() === 'true';
       return value;
     };
     const patchOperations = [];
@@ -732,7 +749,10 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
     // Apply operations if needed
     if (patchOperations.length > 0) {
       const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
-      return { output_port: 'out', bundle: patchedBundle };
+      const diff = jsonpatch.compare(bundle, patchedBundle);
+      if (isNotEmptyField(diff)) {
+        return { output_port: 'out', bundle: patchedBundle };
+      }
     }
     return { output_port: 'unmodified', bundle };
   }
@@ -743,6 +763,8 @@ const RESOLVE_CONTAINER = 'resolve_container';
 const RESOLVE_NEIGHBORS = 'resolve_neighbors';
 const RESOLVE_INDICATORS = 'resolve_indicators';
 const RESOLVE_OBSERVABLES = 'resolve_observables';
+const RESOLVE_CONTAINER_CONTAINING = 'resolve_containers_containing';
+
 type StixWithSeenDates = StixThreatActor | StixCampaign | StixIncident | StixInfrastructure | StixMalware;
 const ENTITIES_DATE_SEEN_PREFIX = ['threat-actor--', 'campaign--', 'incident--', 'infrastructure--', 'malware--'];
 type SeenFilter = { element: StixWithSeenDates, isImpactedBefore: boolean, isImpactedAfter: boolean };
@@ -762,6 +784,7 @@ const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
         { const: RESOLVE_OBSERVABLES, title: 'Resolve observables an indicator is based on (add in bundle)' },
         { const: RESOLVE_CONTAINER, title: 'Resolve container references (add in bundle)' },
         { const: RESOLVE_NEIGHBORS, title: 'Resolve neighbors relations and entities (add in bundle)' },
+        { const: RESOLVE_CONTAINER_CONTAINING, title: 'Resolve containers containing the entity (add in bundle)' },
       ]
     },
     inferences: { type: 'boolean', $ref: 'Include inferred objects', default: false },
@@ -861,6 +884,20 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
           bundle.objects.push(...elements);
           return { output_port: 'out', bundle };
         }
+      }
+    }
+    if (rule === RESOLVE_CONTAINER_CONTAINING) {
+      const filters = {
+        mode: FilterMode.And,
+        filters: [{ key: ['objects'], values: [id], }],
+        filterGroups: []
+      };
+      const containers = await listAllEntities(context, AUTOMATION_MANAGER_USER, [ENTITY_TYPE_CONTAINER], { filters, connectionFormat: false, baseData: true });
+      const containersToResolve = containers.map((container) => container.id);
+      const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, containersToResolve);
+      if (elements.length > 0) {
+        bundle.objects.push(...elements);
+        return { output_port: 'out', bundle };
       }
     }
     if (rule === RESOLVE_NEIGHBORS) {

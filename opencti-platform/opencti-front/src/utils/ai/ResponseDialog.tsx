@@ -104,7 +104,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   return (
     <>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={isOpen}
         onClose={() => {
           setContent('');
@@ -126,18 +126,20 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 multiline={true}
                 onChange={(event) => setContent(event.target.value)}
                 fullWidth={true}
-                InputProps={{
-                  endAdornment: (
-                    <TextFieldAskAI
-                      currentValue={content}
-                      setFieldValue={(val) => {
-                        setContent(val);
-                      }}
-                      format="text"
-                      variant="text"
-                      disabled={isDisabled}
-                    />
-                  ),
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <TextFieldAskAI
+                        currentValue={content ?? ''}
+                        setFieldValue={(val) => {
+                          setContent(val);
+                        }}
+                        format="text"
+                        variant="text"
+                        disabled={isDisabled}
+                      />
+                    ),
+                  },
                 }}
               />
             )}
@@ -146,8 +148,6 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 id="response-dialog-editor"
                 data={content}
                 onChange={(_, editor) => {
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
                   setContent(editor.getData());
                 }}
                 disabled={isDisabled}
@@ -192,7 +192,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 format={format}
                 variant={format}
                 disabled={isDisabled}
-                style={format === 'html' ? { position: 'absolute', top: -2, right: 18 } : undefined}
+                style={format === 'html' ? { position: 'absolute', top: 2, right: 45 } : undefined}
               />
             )}
           </div>

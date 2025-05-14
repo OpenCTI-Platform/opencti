@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { getObservableValuesFromPattern } from './indicator-domain';
-import { buildKillChainPhases, buildMITREExtensions, buildStixDomain, cleanObject, convertToStixDate } from '../../database/stix-converter';
-import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { buildKillChainPhases, buildMITREExtensions, buildStixDomain, cleanObject, convertToStixDate } from '../../database/stix-2-1-converter';
+import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixIndicator, StoreEntityIndicator } from './indicator-types';
 import { isNotEmptyField } from '../../database/utils';
 
@@ -29,7 +29,7 @@ const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator =
         detection: instance.x_opencti_detection,
         score: instance.x_opencti_score,
         main_observable_type: instance.x_opencti_main_observable_type,
-        observable_values: getObservableValuesFromPattern(instance.pattern),
+        observable_values: getObservableValuesFromPattern(instance.pattern, true),
       }),
       [STIX_EXT_MITRE]: buildMITREExtensions(instance)
     }

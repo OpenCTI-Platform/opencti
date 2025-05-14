@@ -35,6 +35,10 @@ interface StixDomainObjectAttackPatternsKillChainProps {
 export const stixDomainObjectAttackPatternsKillChainContainerLineFragment = graphql`
   fragment StixDomainObjectAttackPatternsKillChainContainerLine_node on AttackPattern {
     id
+    draftVersion {
+      draft_id
+      draft_operation
+    }
     parent_types
     entity_type
     name
@@ -89,6 +93,10 @@ export const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
       edges {
         node {
           id
+          draftVersion {
+            draft_id
+            draft_operation
+          }
           name
           description
           x_mitre_id

@@ -94,7 +94,15 @@ const EntitySettingAttributes = ({
       width: '25%',
       isSortable: false,
       render: (data: EntitySettingAttributeLine_attribute$data) => {
-        return isNotEmptyField(data.defaultValues) ? (
+        let isDefaultValuesSet = isNotEmptyField(data.defaultValues);
+        if (data.name === 'objectMarking') {
+          if (isNotEmptyField(data.defaultValues)) {
+            if (data.defaultValues.every((v) => v.id === 'false')) {
+              isDefaultValuesSet = false;
+            }
+          }
+        }
+        return isDefaultValuesSet ? (
           <CheckCircleOutlined
             fontSize="small"
             color={data.editDefault ? 'success' : 'disabled'}

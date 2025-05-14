@@ -16,6 +16,7 @@ import IconButton from '@mui/material/IconButton';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
+import DialogTitle from '@mui/material/DialogTitle';
 import { useFormatter } from '../../../../components/i18n';
 import { noteMutationRelationDelete } from './AddNotesLines';
 import NotePopover from './NotePopover';
@@ -283,11 +284,14 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
       </CardContent>
       <Dialog
         open={displayDialog}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDialog}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to remove this note from this entity?')}
@@ -298,7 +302,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
             {t_i18n('Cancel')}
           </Button>
           <Button onClick={handleRemoval} color="secondary" disabled={removing}>
-            {t_i18n('Remove')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

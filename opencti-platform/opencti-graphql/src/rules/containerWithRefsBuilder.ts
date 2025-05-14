@@ -1,16 +1,16 @@
 /* eslint-disable camelcase */
 import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
-import { createInferredRelation, deleteInferredRuleElement, stixLoadById, generateUpdateMessage } from '../database/middleware';
+import { createInferredRelation, deleteInferredRuleElement, generateUpdateMessage, stixLoadById } from '../database/middleware';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { createRuleContent } from './rules-utils';
 import { convertStixToInternalTypes, generateInternalType } from '../schema/schemaUtils';
 import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
-import type { StixId, StixObject } from '../types/stix-common';
-import type { StixReport } from '../types/stix-sdo';
-import type { StixRelation } from '../types/stix-sro';
+import type { StixId, StixObject } from '../types/stix-2-1-common';
+import type { StixReport } from '../types/stix-2-1-sdo';
+import type { StixRelation } from '../types/stix-2-1-sro';
 import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../types/store';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import type { RelationCreation, UpdateEvent } from '../types/event';
 import { READ_DATA_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
@@ -41,12 +41,13 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   };
   type ArrayRefs = Array<{ partOfFromId: string, partOfId: string, partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
   // eslint-disable-next-line max-len
-  const createObjectRefsInferences = async (context: AuthContext, report: StixReport, addedTargets: ArrayRefs, deletedTargets: Array<BasicStoreRelation>): Promise<void> => {
+  const createObjectRefsInferences = async (context: AuthContext, data: StixReport, addedTargets: ArrayRefs, deletedTargets: Array<BasicStoreRelation>): Promise<void> => {
     if (addedTargets.length === 0 && deletedTargets.length === 0) {
       return;
     }
     const opts = { publishStreamEvent: false };
     const createdTargets: Array<BasicStoreObject> = [];
+    const report = await stixLoadById(context, RULE_MANAGER_USER, data.id) as StixReport;
     const { id: reportId, object_refs_inferred } = report.extensions[STIX_EXT_OCTI];
     const reportObjectRefIds = [...(report.object_refs ?? []), ...(object_refs_inferred ?? [])];
     // region handle creation
@@ -104,7 +105,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       if (deletedTargetRefs.length > 0) {
         inputs.push({ key: INPUT_OBJECTS, value: deletedTargetRefs, operation: UPDATE_OPERATION_REMOVE });
       }
-      const message = await generateUpdateMessage(context, report.extensions[STIX_EXT_OCTI].type, inputs);
+      const message = await generateUpdateMessage(context, RULE_MANAGER_USER, report.extensions[STIX_EXT_OCTI].type, inputs);
       const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, message);
       await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
     }

@@ -1,7 +1,7 @@
 import Tooltip from '@mui/material/Tooltip';
-import { IconButton, List, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText } from '@mui/material';
+import { IconButton, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import moment from 'moment/moment';
-import { MoreVert, EmailOutlined } from '@mui/icons-material';
+import { EmailOutlined, MoreVert } from '@mui/icons-material';
 import React, { Fragment, MouseEvent, useState } from 'react';
 import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
 import { FileLineDeleteMutation as deleteMutation } from '@components/common/files/FileLine';
@@ -25,6 +25,7 @@ import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EETooltip from '../entreprise_edition/EETooltip';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const renderIcon = (mimeType: string) => {
   switch (mimeType) {
@@ -76,7 +77,9 @@ const StixCoreObjectContentFilesList = ({
 }: StixCoreObjectContentFilesListProps) => {
   const theme = useTheme<Theme>();
   const { fld, t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
   const deletion = useDeletion({});
+  const { setDeleting, handleOpenDelete, handleCloseDelete, deleting } = deletion;
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -97,26 +100,27 @@ const StixCoreObjectContentFilesList = ({
   const submitDelete = () => {
     closePopover();
     if (!menuFile?.id) return;
-    deletion.handleCloseDelete();
-    deletion.setDeleting(true);
+    handleCloseDelete();
+    setDeleting(true);
     commitDelete({
       variables: { fileName: menuFile.id },
       onCompleted: () => {
-        deletion.setDeleting(false);
+        setDeleting(false);
         onFileChange(menuFile.id, true);
       },
     });
   };
 
-  const handleDelete = () => deletion.handleOpenDelete();
+  const handleDelete = () => handleOpenDelete();
 
   const handleClose = () => {
-    deletion.handleCloseDelete();
+    handleCloseDelete();
     closePopover();
   };
 
-  const handleDisseminate = (e: MouseEvent<HTMLButtonElement>) => {
+  const handleDisseminate = (e: MouseEvent<HTMLButtonElement>, file: ContentFile) => {
     e.stopPropagation();
+    setMenuFile(file);
     return setDrawerOpen(true);
   };
 
@@ -125,85 +129,97 @@ const StixCoreObjectContentFilesList = ({
   return (
     <List>
       {files.length === 0 && <ListItem dense={true} divider={true} />}
-      {files.map((file) => (
-        <Fragment key={file.id}>
-          <Tooltip title={`${file.name} (${file.metaData?.mimetype ?? ''})`}>
-            <ListItemButton
-              dense={true}
-              divider={true}
-              selected={file.id === currentFileId}
-              onClick={() => handleSelectFile(file.id)}
-              disabled={deletion.deleting}
-            >
-              <ListItemIcon>
-                {renderIcon(file.metaData?.mimetype ?? '')}
-              </ListItemIcon>
-              <ListItemText
-                sx={{
-                  '.MuiListItemText-primary': {
-                    overflowX: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    marginRight: '20px',
-                  },
-                }}
-                primary={file.name}
-                secondary={(
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ paddingBottom: theme.spacing(0.5) }}>
-                      {fld(file.lastModified ?? moment())}
-                    </span>
-                    <ItemMarkings markingDefinitions={file.objectMarking} limit={1} />
-                  </div>
-                )}
-              />
-              <ListItemSecondaryAction>
-                {file.metaData?.mimetype === 'application/pdf' && (
-                <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
+      {files.map((file) => {
+        const fileMimeType = file.metaData?.mimetype ?? '';
+        const canDisseminate = !draftContext && ['application/pdf', 'text/html'].includes(fileMimeType);
+
+        return (
+          <Fragment key={file.id}>
+            <Tooltip title={`${file.name} (${fileMimeType})`}>
+              <ListItem
+                dense={true}
+                divider={true}
+                disablePadding
+                secondaryAction={
                   <>
-                    <EETooltip title={t_i18n('Disseminate')}>
-                      <IconButton
-                        onClick={(e) => handleDisseminate(e)}
-                        size="small"
-                        style={{ color: isEnterpriseEdition ? theme.palette.ee.main : '' }}
-                        aria-label="disseminate"
-                        disabled={!isEnterpriseEdition}
-                      >
-                        <EmailOutlined />
-                      </IconButton>
-                    </EETooltip>
+                    {canDisseminate && (
+                      <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
+                        <>
+                          <EETooltip title={t_i18n('Disseminate')}>
+                            <IconButton
+                              onClick={(e) => handleDisseminate(e, file)}
+                              size="small"
+                              style={{ color: isEnterpriseEdition ? theme.palette.ee.main : '' }}
+                              aria-label="disseminate"
+                              disabled={!isEnterpriseEdition}
+                            >
+                              <EmailOutlined />
+                            </IconButton>
+                          </EETooltip>
+                        </>
+                      </Security>
+                    )}
+                    <IconButton
+                      onClick={(e) => openPopover(e, file)}
+                      aria-haspopup="true"
+                      color="primary"
+                      size="small"
+                    >
+                      <MoreVert />
+                    </IconButton>
                   </>
-                </Security>
-                )}
-                <IconButton
-                  onClick={(e) => openPopover(e, file)}
-                  aria-haspopup="true"
-                  color="primary"
-                  size="small"
+                }
+              >
+                <ListItemButton
+                  selected={file.id === currentFileId}
+                  onClick={() => handleSelectFile(file.id)}
+                  disabled={deleting}
                 >
-                  <MoreVert />
-                </IconButton>
-              </ListItemSecondaryAction>
-            </ListItemButton>
-          </Tooltip>
-          {file.metaData?.mimetype === 'application/pdf' && isEnterpriseEdition && (
-          <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
-            <Drawer
-              title={t_i18n('Disseminate a file')}
-              open={isDrawerOpen}
-              onClose={() => setDrawerOpen(false)}
-            >
-              <StixCoreObjectContentFilesDissemination
-                entityId={stixCoreObjectId}
-                fileId={file.id}
-                fileName={file.name}
+                  <ListItemIcon>
+                    {renderIcon(fileMimeType)}
+                  </ListItemIcon>
+                  <ListItemText
+                    sx={{
+                      '.MuiListItemText-primary': {
+                        overflowX: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        marginRight: '20px',
+                      },
+                    }}
+                    primary={file.name}
+                    secondary={(
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ paddingBottom: theme.spacing(0.5) }}>
+                          {fld(file.lastModified ?? moment())}
+                        </span>
+                        <ItemMarkings markingDefinitions={file.objectMarking} limit={1} />
+                      </div>
+                )}
+                  />
+                </ListItemButton>
+              </ListItem>
+            </Tooltip>
+            {canDisseminate && isEnterpriseEdition && (
+            <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
+              <Drawer
+                title={t_i18n('Disseminate a file')}
+                open={isDrawerOpen}
                 onClose={() => setDrawerOpen(false)}
-              />
-            </Drawer>
-          </Security>
-          )}
-        </Fragment>
-      ))}
+              >
+                <StixCoreObjectContentFilesDissemination
+                  entityId={stixCoreObjectId}
+                  fileId={menuFile?.id ?? ''}
+                  fileName={menuFile?.name ?? ''}
+                  fileType={menuFile?.metaData?.mimetype ?? ''}
+                  onClose={() => setDrawerOpen(false)}
+                />
+              </Drawer>
+            </Security>
+            )}
+          </Fragment>
+        );
+      })}
 
       <Menu
         anchorEl={anchorEl}
@@ -221,7 +237,7 @@ const StixCoreObjectContentFilesList = ({
           {t_i18n('Download file')}
         </MenuItem>
         )}
-        {canDownloadAsPdf && (
+        {!draftContext && canDownloadAsPdf && (
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
           <StixCoreObjectFileExport
             onClose={() => setAnchorEl(null)}
@@ -248,10 +264,10 @@ const StixCoreObjectContentFilesList = ({
           </MenuItem>
         </Security>
         <DeleteDialog
-          title={t_i18n('Are you sure you want to delete this file?')}
           deletion={deletion}
-          onClose={handleClose}
           submitDelete={submitDelete}
+          onClose={handleClose}
+          message={t_i18n('Do you want to delete this file?')}
         />
       </Menu>
     </List>

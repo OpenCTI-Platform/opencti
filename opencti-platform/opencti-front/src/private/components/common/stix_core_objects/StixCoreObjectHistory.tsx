@@ -32,14 +32,12 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
         spacing={3}
         sx={{
           marginBottom: theme.spacing(2),
-          marginTop: theme.spacing(1),
         }}
         data-testid='sco-history-content'
       >
         <Grid
           item
           xs={withoutRelations ? 12 : 6}
-          style={{ paddingTop: 0 }}
         >
           <Typography
             variant="h4"
@@ -48,7 +46,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           >
             {t_i18n('Entity')}
           </Typography>
-          <div style={{ float: 'right' }}>
+          <div style={{ float: 'right', marginTop: -15 }}>
             <SearchInput
               variant="thin"
               onSubmit={handleSearchEntity}
@@ -90,82 +88,82 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           />
         </Grid>
         {!withoutRelations && (
-        <Grid item xs={6} style={{ paddingTop: 0 }}>
-          <Typography
-            variant="h4"
-            gutterBottom
-            style={{ float: 'left', marginTop: 10 }}
-          >
-            {t_i18n('Relations of the entity')}
-          </Typography>
-          <div style={{ float: 'right' }}>
-            <SearchInput
-              variant="thin"
-              onSubmit={handleSearchRelations}
-              keyword={entitySearchTerm}
-            />
-          </div>
-          <div className="clearfix" />
-          <QueryRenderer
-            query={stixCoreObjectHistoryLinesQuery}
-            variables={{
-              filters: {
-                mode: 'and',
-                filters: [
-                  {
-                    key: 'event_type',
-                    values: ['create', 'delete', 'mutation'], // retro-compatibility
+          <Grid item xs={6}>
+            <Typography
+              variant="h4"
+              gutterBottom
+              style={{ float: 'left' }}
+            >
+              {t_i18n('Relations of the entity')}
+            </Typography>
+            <div style={{ float: 'right', marginTop: -15 }}>
+              <SearchInput
+                variant="thin"
+                onSubmit={handleSearchRelations}
+                keyword={entitySearchTerm}
+              />
+            </div>
+            <div className="clearfix" />
+            <QueryRenderer
+              query={stixCoreObjectHistoryLinesQuery}
+              variables={{
+                filters: {
+                  mode: 'and',
+                  filters: [
+                    {
+                      key: 'event_type',
+                      values: ['create', 'delete', 'mutation'], // retro-compatibility
+                    },
+                  ],
+                  filterGroups: [{
+                    mode: 'or',
+                    filters: [
+                      {
+                        key: 'event_scope',
+                        values: ['create', 'delete'],
+                      },
+                      {
+                        key: 'event_scope',
+                        values: [], // if event_scope is null, event_type is not
+                        operator: 'nil',
+                      },
+                    ],
+                    filterGroups: [],
                   },
-                ],
-                filterGroups: [{
-                  mode: 'or',
-                  filters: [
-                    {
-                      key: 'event_scope',
-                      values: ['create', 'delete'],
-                    },
-                    {
-                      key: 'event_scope',
-                      values: [], // if event_scope is null, event_type is not
-                      operator: 'nil',
-                    },
-                  ],
-                  filterGroups: [],
+                  {
+                    mode: 'or',
+                    filters: [
+                      {
+                        key: 'context_data.from_id',
+                        values: [stixCoreObjectId],
+                      },
+                      {
+                        key: 'context_data.to_id',
+                        values: [stixCoreObjectId],
+                      },
+                    ],
+                    filterGroups: [],
+                  }],
                 },
-                {
-                  mode: 'or',
-                  filters: [
-                    {
-                      key: 'context_data.from_id',
-                      values: [stixCoreObjectId],
-                    },
-                    {
-                      key: 'context_data.to_id',
-                      values: [stixCoreObjectId],
-                    },
-                  ],
-                  filterGroups: [],
-                }],
-              },
-              first: 20,
-              orderBy: 'timestamp',
-              orderMode: 'desc',
-              search: relationsSearchTerm,
-            }}
-            render={({ props }: { props: StixCoreObjectHistoryLines_data$data }) => {
-              if (props) {
-                return (
-                  <StixCoreObjectHistoryLines
-                    stixCoreObjectId={stixCoreObjectId}
-                    data={props}
-                    isRelationLog={true}
-                  />
-                );
-              }
-              return <Loader variant={LoaderVariant.inElement} />;
-            }}
-          />
-        </Grid>
+                first: 20,
+                orderBy: 'timestamp',
+                orderMode: 'desc',
+                search: relationsSearchTerm,
+              }}
+              render={({ props }: { props: StixCoreObjectHistoryLines_data$data }) => {
+                if (props) {
+                  return (
+                    <StixCoreObjectHistoryLines
+                      stixCoreObjectId={stixCoreObjectId}
+                      data={props}
+                      isRelationLog={true}
+                    />
+                  );
+                }
+                return <Loader variant={LoaderVariant.inElement} />;
+              }}
+            />
+          </Grid>
         )}
       </Grid>
     </div>

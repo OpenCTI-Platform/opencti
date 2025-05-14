@@ -4,7 +4,7 @@ import { Promise } from 'bluebird';
 import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
-import { AUTH_BEARER, authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
+import { TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
@@ -25,25 +25,17 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import {
-  BYPASS,
-  computeUserMemberAccessIds,
-  executionContext,
-  isUserCanAccessStixElement,
-  isUserHasCapability,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
-  SYSTEM_USER
-} from '../utils/access';
-import { streamEventId, FROM_START_STR, utcDate } from '../utils/format';
+import { BYPASS, computeUserMemberAccessIds, isUserCanAccessStixElement, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../utils/access';
+import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
-import { convertStoreToStix } from '../database/stix-converter';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
+import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { UnsupportedError } from '../config/errors';
 import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
 import { findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { getParentTypes } from '../schema/schemaUtils';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { listAllRelations } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { getEntitiesListFromCache } from '../database/cache';
@@ -52,6 +44,8 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/generate-message';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
+import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -61,13 +55,9 @@ const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_H
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
 const HEARTBEAT_PERIOD = conf.get('app:live_stream:heartbeat_period') ?? 5000;
 
-const sendErrorStatusAndKillSession = (req, res, httpStatus) => {
+const sendErrorStatus = (_req, res, httpStatus) => {
   try {
     res.status(httpStatus).end();
-    // only kill bearer sessions
-    if (req.session && req.session?.session_provider?.provider === AUTH_BEARER) {
-      req.session.destroy();
-    }
   } catch (error) {
     // We don't care but can be interesting for debug.
     logApp.info('Error when trying to kill a session', { error });
@@ -93,22 +83,22 @@ const createBroadcastClient = (channel) => {
 
 const authenticate = async (req, res, next) => {
   try {
-    const executeContext = executionContext('stream_authenticate');
-    const auth = await authenticateUserFromRequest(executeContext, req, res);
-    if (auth) {
-      req.userId = auth.id;
-      req.user = auth;
-      req.capabilities = auth.capabilities;
-      req.allowed_marking = auth.allowed_marking;
+    const context = await createAuthenticatedContext(req, res, 'stream');
+    if (context.user) {
+      req.context = context;
+      req.userId = context.user.id;
+      req.user = context.user;
+      req.capabilities = context.user.capabilities;
+      req.allowed_marking = context.user.allowed_marking;
       req.expirationTime = utcDate().add(1, 'days').toDate();
       next();
     } else {
       res.statusMessage = 'You are not authenticated, please check your credentials';
-      sendErrorStatusAndKillSession(req, res, 401);
+      sendErrorStatus(req, res, 401);
     }
   } catch (err) {
     res.statusMessage = `Error in stream: ${err.message}`;
-    sendErrorStatusAndKillSession(req, res, 500);
+    sendErrorStatus(req, res, 500);
   }
 };
 
@@ -117,7 +107,7 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
   if (id === DEFAULT_LIVE_STREAM) {
     if (!isUserHasCapability(user, BYPASS)) {
       res.statusMessage = 'You are not authorized, please check your credentials';
-      sendErrorStatusAndKillSession(req, res, 401);
+      sendErrorStatus(req, res, 401);
       return { error: res.statusMessage };
     }
     return { streamFilters: null, collection: null };
@@ -127,13 +117,13 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
   // If collection not found
   if (!collection) {
     res.statusMessage = 'You are not authorized, please check your credentials';
-    sendErrorStatusAndKillSession(req, res, 401);
+    sendErrorStatus(req, res, 401);
     return { error: res.statusMessage };
   }
   // Check if collection exist and started
   if (!collection.stream_live) {
     res.statusMessage = 'This live stream is stopped';
-    sendErrorStatusAndKillSession(req, res, 410);
+    sendErrorStatus(req, res, 410);
     logApp.info('This live stream is stopped but still requested', { streamCollectionId: id });
     return { error: 'This live stream is stopped' };
   }
@@ -145,16 +135,16 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
   // Access is restricted, user must be authenticated
   if (!user || !isUserHasCapability(user, TAXIIAPI)) {
     res.statusMessage = 'You are not authorized, please check your credentials';
-    sendErrorStatusAndKillSession(req, res, 401);
+    sendErrorStatus(req, res, 401);
     return { error: res.statusMessage };
   }
   // Access is restricted, check the current user
   const userAccessIds = computeUserMemberAccessIds(user);
-  const collectionAccessIds = (collection.authorized_members ?? []).map((a) => a.id);
+  const collectionAccessIds = (collection.restricted_members ?? []).map((a) => a.id);
   if (collectionAccessIds.length > 0) { // If restrictions have been setup
     if (!isUserHasCapability(user, BYPASS) && !collectionAccessIds.some((accessId) => userAccessIds.includes(accessId))) {
       res.statusMessage = 'You are not authorized, please check your credentials';
-      sendErrorStatusAndKillSession(req, res, 401);
+      sendErrorStatus(req, res, 401);
       return { error: res.statusMessage };
     }
   }
@@ -168,7 +158,7 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
     const isUserHaveAccess = filterMarkings.some((m) => userMarkings.includes(m));
     if (!isUserHaveAccess) {
       res.statusMessage = 'You need to have access to specific markings for this live stream';
-      sendErrorStatusAndKillSession(req, res, 401);
+      sendErrorStatus(req, res, 401);
       return { error: res.statusMessage };
     }
   }
@@ -176,9 +166,9 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
 };
 
 const authenticateForPublic = async (req, res, next) => {
-  const context = executionContext('stream_authenticate');
-  const auth = await authenticateUserFromRequest(context, req, res);
-  const user = auth ?? SYSTEM_USER;
+  const context = await createAuthenticatedContext(req, res, 'stream_authenticate');
+  const user = context.user ?? SYSTEM_USER;
+  req.context = context;
   req.userId = user.id;
   req.user = user;
   req.capabilities = user.capabilities;
@@ -189,9 +179,9 @@ const authenticateForPublic = async (req, res, next) => {
     user: req.user,
     id: req.params.id
   });
-  if (error || (!collection?.stream_public && !auth)) {
+  if (error || (!collection?.stream_public && !context.user)) {
     res.statusMessage = 'You are not authenticated, please check your credentials';
-    sendErrorStatusAndKillSession(req, res, 401);
+    sendErrorStatus(req, res, 401);
   } else {
     req.collection = collection;
     req.streamFilters = streamFilters;
@@ -229,7 +219,6 @@ const createSseMiddleware = () => {
   const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = processor ? await processor.info() : {};
     req.on('close', () => {
-      req.finished = true;
       client.close();
       delete broadcastClients[client.id];
       logApp.info(`[STREAM] Closing stream processor for ${client.id}`);
@@ -258,10 +247,10 @@ const createSseMiddleware = () => {
         channel.delay = d;
       },
       setLastEventId: (id) => { lastEventId = id; },
-      connected: () => !req.finished,
+      connected: () => !res.finished,
       sendEvent: (eventId, topic, event) => {
-        if (req.finished) {
-          // Write on an already terminated response
+        // Write on an already terminated response
+        if (res.finished || !res.writable) {
           return;
         }
         let message = '';
@@ -292,10 +281,9 @@ const createSseMiddleware = () => {
         logApp.info('[STREAM] Closing SSE channel', { clientId: channel.userId });
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         channel.expirationTime = 0;
-        if (!req.finished) {
+        if (!res.finished) {
           try {
             res.end();
-            req.session.destroy();
           } catch (e) {
             logApp.error('Stream session destroy fail', { cause: e, action: 'close', clientId: channel.userId });
           }
@@ -303,7 +291,7 @@ const createSseMiddleware = () => {
       },
     };
     const heartTimer = () => {
-      if (lastEventId && !req.finished) {
+      if (lastEventId) {
         const [idTime] = lastEventId.split('-');
         const idDate = utcDate(parseInt(idTime, 10)).toISOString();
         channel.sendEvent(lastEventId, 'heartbeat', idDate);
@@ -314,23 +302,22 @@ const createSseMiddleware = () => {
   };
   const genericStreamHandler = async (req, res) => {
     try {
-      const sessionUser = req.user;
-      const context = executionContext('raw_stream');
+      const { user, context } = req;
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
       const startStreamId = convertParameterToStreamId(paramStartFrom);
       // Generic stream only available for bypass users
-      if (!isUserHasCapability(sessionUser, BYPASS)) {
+      if (!isUserHasCapability(user, BYPASS)) {
         res.statusMessage = 'Consume generic stream is only authorized for bypass user';
-        sendErrorStatusAndKillSession(req, res, 401);
+        sendErrorStatus(req, res, 401);
         return;
       }
       const { client } = createSseChannel(req, res, startStreamId);
       const opts = { autoReconnect: true };
-      const processor = createStreamProcessor(sessionUser, sessionUser.user_email, async (elements, lastEventId) => {
+      const processor = createStreamProcessor(user, user.user_email, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
-          const instanceAccessible = await isUserCanAccessStixElement(context, sessionUser, data.data);
+          const instanceAccessible = await isUserCanAccessStixElement(context, user, data.data);
           if (instanceAccessible) {
             client.sendEvent(eventId, event, data);
           }
@@ -341,7 +328,7 @@ const createSseMiddleware = () => {
       await processor.start(startStreamId);
     } catch (err) {
       res.statusMessage = `Error in stream: ${err.message}`;
-      sendErrorStatusAndKillSession(req, res, 500);
+      sendErrorStatus(req, res, 500);
     }
   };
   const manageStreamConnectionHandler = async (req, res) => {
@@ -351,7 +338,7 @@ const createSseMiddleware = () => {
       if (client) {
         if (client.userId !== req.userId) {
           res.statusMessage = 'You cant access this resource';
-          sendErrorStatusAndKillSession(req, res, 401);
+          sendErrorStatus(req, res, 401);
         } else {
           const { delay = 0 } = req.body;
           client.setChannelDelay(delay);
@@ -359,11 +346,11 @@ const createSseMiddleware = () => {
         }
       } else {
         res.statusMessage = 'This is not your connection';
-        sendErrorStatusAndKillSession(req, res, 401);
+        sendErrorStatus(req, res, 401);
       }
     } catch (err) {
       res.statusMessage = `Error in connection management: ${err.message}`;
-      sendErrorStatusAndKillSession(req, res, 500);
+      sendErrorStatus(req, res, 500);
     }
   };
   const resolveAndPublishMissingRefs = async (context, cache, channel, req, eventId, stixData) => {
@@ -539,8 +526,7 @@ const createSseMiddleware = () => {
     const { id } = req.params;
     try {
       const cache = new LRUCache({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
-      const context = executionContext('live_stream');
-      const { user } = req;
+      const { user, context } = req;
       // If stream is starting after, we need to use the main database to catchup
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
       const startIsoDate = convertParameterToDate(paramStartFrom);
@@ -695,6 +681,7 @@ const createSseMiddleware = () => {
           return channel.connected();
         };
         const queryOptions = await convertFiltersToQueryOptions(streamFilters, {
+          defaultTypes: [STIX_CORE_RELATIONSHIPS, STIX_SIGHTING_RELATIONSHIP, ABSTRACT_STIX_OBJECT],
           after: startIsoDate,
           before: recoverIsoDate
         });
@@ -708,7 +695,7 @@ const createSseMiddleware = () => {
     } catch (e) {
       logApp.error('Stream handling error', { cause: e, id, type: 'live' });
       res.statusMessage = `Error in stream ${id}: ${e.message}`;
-      sendErrorStatusAndKillSession(req, res, 500);
+      sendErrorStatus(req, res, 500);
     }
   };
   return {

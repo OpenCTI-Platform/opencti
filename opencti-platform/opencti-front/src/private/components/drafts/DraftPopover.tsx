@@ -25,6 +25,8 @@ import { MESSAGING$ } from '../../../relay/environment';
 import { deleteNode } from '../../../utils/store';
 import { RelayError } from '../../../relay/relayTypes';
 import stopEvent from '../../../utils/domEvent';
+import DeleteDialog from '../../../components/DeleteDialog';
+import useDeletion from '../../../utils/hooks/useDeletion';
 
 const draftPopoverDeleteMutation = graphql`
     mutation DraftPopoverDeleteMutation($id: ID!) {
@@ -34,6 +36,7 @@ const draftPopoverDeleteMutation = graphql`
 
 interface DraftPopoverProps {
   draftId: string;
+  draftLocked: boolean;
   paginationOptions: DraftsLinesPaginationQuery$variables;
   updater?: (
     store: RecordSourceSelectorProxy<DraftContextBannerMutation$data>,
@@ -42,14 +45,13 @@ interface DraftPopoverProps {
 
 const DraftPopover: React.FC<DraftPopoverProps> = ({
   draftId,
+  draftLocked,
   paginationOptions,
   updater,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [openSwitch, setOpenSwitch] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [switchToDraft, setSwitchToDraft] = useState(false);
   const [commitSwitchToDraft] = useApiMutation<DraftContextBannerMutation>(draftContextBannerMutation);
   const deleteSuccessMessage = t_i18n('', {
@@ -80,15 +82,8 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
     setOpenSwitch(false);
   };
 
-  const handleOpenDelete = (event: UIEvent) => {
-    setOpenDelete(true);
-    handleClose(event);
-  };
-
-  const handleCloseDelete = (event: UIEvent) => {
-    stopEvent(event);
-    setOpenDelete(false);
-  };
+  const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
 
   const submitDelete = (event: UIEvent) => {
     stopEvent(event);
@@ -155,38 +150,24 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
           onClose={handleClose}
         >
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-          <MenuItem onClick={handleOpenSwitch}>{t_i18n('Switch to Draft')}</MenuItem>
+          <MenuItem onClick={handleOpenSwitch} disabled={draftLocked}>{t_i18n('Switch to Draft')}</MenuItem>
         </Menu>
-        <Dialog
-          open={openDelete}
-          PaperProps={{ elevation: 1 }}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={handleCloseDelete}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t_i18n('Do you want to delete this draft?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDelete} disabled={deleting}>{t_i18n('Cancel')}</Button>
-            <Button onClick={submitDelete} disabled={deleting} color="secondary">
-              {t_i18n('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <DeleteDialog
+          deletion={deletion}
+          submitDelete={submitDelete}
+          message={t_i18n('Do you want to delete this draft?')}
+        />
         <Dialog
           open={openSwitch}
-          PaperProps={{ elevation: 1 }}
-          TransitionComponent={Transition}
+          slotProps={{ paper: { elevation: 1 } }}
+          slots={{ transition: Transition }}
           onClose={handleCloseSwitch}
           fullWidth={true}
           maxWidth="xs"
         >
           <DialogTitle>{t_i18n('Switch to Draft Mode')}</DialogTitle>
           <DialogContent>
-            <DialogContentText>{t_i18n('You are about to switch to Draft mode. All your OpenCTI Plateform will be in draft. The selected Draft will be the draft by default.')}</DialogContentText>
+            <DialogContentText>{t_i18n('You are about to switch to Draft mode. All your OpenCTI platform will be in draft. The selected Draft will be the draft by default.')}</DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseSwitch}>{t_i18n('Cancel')}</Button>

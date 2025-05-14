@@ -37,6 +37,7 @@ import { getContainerKnowledge, resolveFiles } from '../utils/ai/dataResolutionH
 import { queryAi } from '../database/ai-llm';
 import { notify } from '../database/redis';
 import { AI_BUS } from '../modules/ai/ai-types';
+import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -387,14 +388,7 @@ export const aiSummary = async (context, user, args) => {
   const topics = await queryAi(null, systemPrompt, userPromptTopics, user);
 
   // refine result
-  const finalResult = result
-    .replace('```html', '')
-    .replace('```', '')
-    .replace('<html>', '')
-    .replace('</html>', '')
-    .replace('<body>', '')
-    .replace('</body>', '')
-    .trim();
+  const finalResult = cleanHtmlTags(result);
 
   const summary = {
     result: finalResult,

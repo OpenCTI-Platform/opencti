@@ -5,12 +5,12 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert } from '@mui/icons-material';
 import { FileDelimitedOutline } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
+import { ListItemButton } from '@mui/material';
 import FeedPopover from './FeedPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
@@ -65,63 +65,67 @@ class FeedLineLineComponent extends Component {
     const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
       <ListItem
-        classes={{ root: classes.item }}
         divider={true}
-        button={true}
-        component="a"
-        href={`/feeds/${node.id}`}
-        target={'_blank'} // open in new tab
-      >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <FileDelimitedOutline />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {node.name}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.feed_types.width }}
-              >
-                {node.feed_types.map((type) => t(`entity_${type}`)).join(', ')}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.rolling_time.width }}
-              >
-                <code>{node.rolling_time}</code>
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.columns.width }}
-              >
-                {node.feed_attributes.map((n) => n.attribute).join(`${node.separator} `)}
-              </div>
-              <div
-                className={classes.filtersItem}
-                style={{ width: dataColumns.filters.width }}
-              >
-                {isFilterGroupNotEmpty(filters)
-                  ? <FilterIconButton
-                      filters={filters}
-                      styleNumber={3}
-                      dataColumns={dataColumns}
-                    />
-                  : '-'}
-              </div>
-            </>
-          }
-        />
-        <ListItemSecondaryAction>
+        disablePadding
+        secondaryAction={
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <FeedPopover feedId={node.id} paginationOptions={paginationOptions} />
           </Security>
-        </ListItemSecondaryAction>
+        }
+      >
+        <ListItemButton
+          classes={{ root: classes.item }}
+          component="a"
+          href={`/feeds/${node.id}`}
+          target={'_blank'} // open in new tab
+
+        >
+          <ListItemIcon classes={{ root: classes.itemIcon }}>
+            <FileDelimitedOutline />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.name.width }}
+                >
+                  {node.name}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.feed_types.width }}
+                >
+                  {node.feed_types.map((type) => t(`entity_${type}`)).join(', ')}
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.rolling_time.width }}
+                >
+                  <code>{node.rolling_time}</code>
+                </div>
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.columns.width }}
+                >
+                  {node.feed_attributes.map((n) => n.attribute).join(`${node.separator} `)}
+                </div>
+                <div
+                  className={classes.filtersItem}
+                  style={{ width: dataColumns.filters.width }}
+                >
+                  {isFilterGroupNotEmpty(filters)
+                    ? <FilterIconButton
+                        filters={filters}
+                        styleNumber={3}
+                        dataColumns={dataColumns}
+                      />
+                    : '-'}
+                </div>
+              </>
+            }
+          />
+        </ListItemButton>
       </ListItem>
     );
   }
@@ -167,7 +171,11 @@ class FeedDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton
             animation="wave"
@@ -237,9 +245,6 @@ class FeedDummyComponent extends Component {
             </>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
-        </ListItemSecondaryAction>
       </ListItem>
     );
   }

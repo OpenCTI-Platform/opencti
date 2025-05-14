@@ -317,7 +317,7 @@ class AttackPatternsMatrixColumnsComponent extends Component {
           ...a,
           id: a.kill_chain_id,
           attackPatterns: R.sortBy(R.prop('name'), a.attackPatterns.filter(filterByKeyword).map((ap) => {
-            return { ...ap, id: ap.attack_pattern_id, level: this.level(ap, maxNumberOfSameAttackPattern) };
+            return { ...ap, id: ap.attack_pattern_id, entity_type: 'Attack-Pattern', level: this.level(ap, maxNumberOfSameAttackPattern) };
           })).filter((o) => (modeOnlyActive ? o.level > 0 : o.level >= 0)),
         };
       });

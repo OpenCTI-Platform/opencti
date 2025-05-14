@@ -47,12 +47,14 @@ import {
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import Drawer, { DrawerVariant } from '../../common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { FilterDefinition } from '../../../../utils/hooks/useAuth';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -158,10 +160,20 @@ const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().s
   authorized_members: Yup.array().nullable(),
 });
 
+const CreateFeedControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial
+    entityType='Feed'
+    {...props}
+  />
+);
+
 const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { onDrawerClose, open, paginationOptions, isDuplicated, feed } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+
   const [selectedTypes, setSelectedTypes] = useState(feed?.feed_types ?? []);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed?.filters) ?? emptyFilterGroup);
 
@@ -346,7 +358,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   return (
     <Drawer
       title={isDuplicated ? (t_i18n('Duplicate a feed')) : (t_i18n('Create a feed'))}
-      variant={isDuplicated ? undefined : DrawerVariant.createWithPanel}
+      variant={isFABReplaced || isDuplicated ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced && !isDuplicated ? CreateFeedControlledDial : undefined }
       open={open}
       onClose={onHandleClose}
     >
@@ -439,22 +452,24 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         label={t_i18n('Rolling time (in minutes)')}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <Tooltip
-                                title={t_i18n(
-                                  'Return all objects matching the filters that have been updated since this amount of minutes',
-                                )}
-                              >
-                                <InformationOutline
-                                  fontSize="small"
-                                  color="primary"
-                                  style={{ cursor: 'default' }}
-                                />
-                              </Tooltip>
-                            </InputAdornment>
-                          ),
+                        slotProps={{
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <Tooltip
+                                  title={t_i18n(
+                                    'Return all objects matching the filters that have been updated since this amount of minutes',
+                                  )}
+                                >
+                                  <InformationOutline
+                                    fontSize="small"
+                                    color="primary"
+                                    style={{ cursor: 'default' }}
+                                  />
+                                </Tooltip>
+                              </InputAdornment>
+                            ),
+                          },
                         }}
                       />
                       <Field
@@ -684,6 +699,7 @@ const FeedCreationFragment = createFragmentContainer(FeedCreation, {
       feed_public
       authorized_members {
         id
+        member_id
         name
       }
     }`,

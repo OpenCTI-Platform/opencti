@@ -1,5 +1,6 @@
 import { truncate } from './String';
 import { getFileUri, isEmptyField } from './utils';
+import { authorizedMembersToOptions } from './authorizedMembers';
 
 export const convertStatus = (t, element) => ((element?.status?.template?.name ?? null) === null
   ? ''
@@ -30,10 +31,7 @@ export const convertTriggers = (element) => (element?.triggers ?? []).map((n) =>
   value: n.id,
 }));
 
-export const convertAuthorizedMembers = (element) => (element?.authorized_members ?? []).map(({ id, name }) => ({
-  value: id,
-  label: name,
-}));
+export const convertAuthorizedMembers = (element) => authorizedMembersToOptions(element?.authorized_members ?? []);
 
 export const convertAssignees = (element) => (element?.objectAssignee ?? []).map((n) => ({
   label: n.name,

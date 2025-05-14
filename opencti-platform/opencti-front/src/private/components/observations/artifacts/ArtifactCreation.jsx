@@ -211,6 +211,7 @@ const ArtifactCreation = ({
                   setFieldValue={setFieldValue}
                   formikErrors={errors}
                   noMargin
+                  required
                 />
                 <Field
                   component={MarkdownField}

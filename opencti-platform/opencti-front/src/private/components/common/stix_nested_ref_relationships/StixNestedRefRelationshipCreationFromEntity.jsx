@@ -322,7 +322,6 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 const StixNestedRefRelationshipCreationFromEntity = ({
   entityId,
   entityType,
-  isRelationReversed,
   paginationOptions,
   targetStixCoreObjectTypes,
   variant,
@@ -443,14 +442,14 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     });
   };
 
-  const onSubmit = async (values, { setSubmitting, resetForm }) => {
+  const onSubmit = async (values, { setSubmitting, resetForm }, isReversedRelation) => {
     setSubmitting(true);
 
     for (const targetEntity of targetEntities) {
-      const fromEntityId = isRelationReversed
+      const fromEntityId = isReversedRelation
         ? targetEntity.id
         : entityId;
-      const toEntityId = isRelationReversed
+      const toEntityId = isReversedRelation
         ? entityId
         : targetEntity.id;
       const finalValues = {
@@ -689,14 +688,14 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     let toEntities = targetEntities;
     const isSameEntityType = toEntities.every((item) => item.entity_type === toEntities[0].entity_type);
     const isMultipleTo = toEntities.length > 1;
-    let relationshipTypes = [];
 
-    if (resolveEntityRef.from.length === 0 && resolveEntityRef.to.length !== 0) {
-      if (isRelationReversed) {
-        fromEntity = targetEntities;
-        toEntities = resolveEntityRef.entity;
-        relationshipTypes = resolveEntityRef.to;
-      }
+    let relationshipTypes = [];
+    const isReversedRelation = resolveEntityRef.from.length === 0 && resolveEntityRef.to.length !== 0;
+
+    if (isReversedRelation) {
+      fromEntity = targetEntities;
+      toEntities = resolveEntityRef.entity;
+      relationshipTypes = resolveEntityRef.to;
     } else {
       relationshipTypes = resolveEntityRef.from;
     }
@@ -704,7 +703,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     // This condition is to avoid to use relation that would did not work with some kind of entity type
     // nested objects with different entity type will soon be implemented
     if (!isSameEntityType) relationshipTypes = [];
-    const defaultRelationshipType = R.head(relationshipTypes);
+    const defaultRelationshipType = relationshipTypes[0];
 
     const defaultTime = now();
     const initialValues = {
@@ -713,12 +712,15 @@ const StixNestedRefRelationshipCreationFromEntity = ({
       stop_time: defaultTime,
     };
 
+    const fromEntityType = isReversedRelation ? fromEntity[0]?.entity_type : fromEntity?.entity_type;
+    const toEntityType = isReversedRelation ? toEntities?.entity_type : toEntities[0]?.entity_type;
+
     return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={stixNestedRefRelationshipValidation}
-        onSubmit={onSubmit}
+        onSubmit={(values, formikHelpers) => onSubmit(values, formikHelpers, isReversedRelation)}
         onReset={handleClose}
       >
         {({ submitForm, handleReset, isSubmitting }) => (
@@ -739,7 +741,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(fromEntity.entity_type)}`,
+                    border: `2px solid ${itemColor(fromEntityType)}`,
                     top: 10,
                     left: 0,
                   }}
@@ -748,24 +750,24 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                     className={classes.itemHeader}
                     style={{
                       borderBottom: `1px solid ${itemColor(
-                        fromEntity.entity_type,
+                        fromEntityType,
                       )}`,
                     }}
                   >
                     <div className={classes.icon}>
                       <ItemIcon
-                        type={fromEntity.entity_type}
-                        color={itemColor(fromEntity.entity_type)}
+                        type={fromEntityType}
+                        color={itemColor(fromEntityType)}
                         size="small"
                       />
                     </div>
                     <div className={classes.type}>
-                      {t_i18n(`entity_${fromEntity.entity_type}`)}
+                      {t_i18n(`entity_${fromEntityType}`)}
                     </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(getMainRepresentative(fromEntity), 20)}
+                      {truncate(getMainRepresentative(isReversedRelation ? fromEntity[0] : fromEntity), 20)}
                     </span>
                   </div>
                 </div>
@@ -775,7 +777,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(toEntities[0].entity_type)}`,
+                    border: `2px solid ${itemColor(toEntityType)}`,
                     top: 10,
                     right: 0,
                   }}
@@ -784,26 +786,26 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                     className={classes.itemHeader}
                     style={{
                       borderBottom: `1px solid ${itemColor(
-                        toEntities[0].entity_type,
+                        toEntityType,
                       )}`,
                     }}
                   >
                     <div className={classes.icon}>
                       <ItemIcon
-                        type={toEntities[0].entity_type}
-                        color={itemColor(toEntities[0].entity_type)}
+                        type={toEntityType}
+                        color={itemColor(toEntityType)}
                         size="small"
                       />
                     </div>
                     <div className={classes.type}>
-                      {t_i18n(`entity_${toEntities[0].entity_type}`)}
+                      {t_i18n(`entity_${toEntityType}`)}
                     </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
                       {isMultipleTo
                         ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                        : truncate(getMainRepresentative(toEntities[0]), 20)
+                        : (truncate(getMainRepresentative(isReversedRelation ? toEntities : toEntities[0]), 20))
                       }
                     </span>
                   </div>

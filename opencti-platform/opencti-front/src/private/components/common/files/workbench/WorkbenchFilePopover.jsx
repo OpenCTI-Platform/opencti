@@ -13,6 +13,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
+import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
@@ -121,12 +122,15 @@ class WorkbenchFilePopover extends Component {
           </MenuItem>
         </Menu>
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={this.state.displayDelete}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this workbench?')}
@@ -144,7 +148,7 @@ class WorkbenchFilePopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

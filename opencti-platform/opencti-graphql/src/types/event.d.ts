@@ -1,5 +1,5 @@
 import type { Operation } from 'fast-json-patch';
-import type { StixCoreObject } from './stix-common';
+import type { StixCoreObject } from './stix-2-1-common';
 import type { UserOrigin } from './user';
 import type { StoreRelation } from './store';
 
@@ -37,7 +37,7 @@ interface BaseEvent {
 
 interface StreamNotifEvent extends BaseEvent {
   notification_id: string
-  type: 'live' | 'digest';
+  type: 'live' | 'digest' | 'action';
 }
 
 interface StreamDataEvent extends BaseEvent {

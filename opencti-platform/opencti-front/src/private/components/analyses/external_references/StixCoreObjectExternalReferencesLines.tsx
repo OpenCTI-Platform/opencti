@@ -5,10 +5,8 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -29,6 +27,8 @@ import { FileLine_file$data } from '@components/common/files/__generated__/FileL
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { CsvMapperFieldOption } from '@components/common/form/CsvMapperField';
+import { ListItemButton } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
@@ -50,6 +50,8 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -115,7 +117,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
 > = ({ stixCoreObjectId, data, relay }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [displayDialog, setDisplayDialog] = useState(false);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(
     undefined,
@@ -127,7 +128,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
       && selectedConnector?.configurations?.length === 0;
   const [externalReferenceToRemove, setExternalReferenceToRemove] = useState<externalReferenceEdge_type | null>(null);
-  const [removing, setRemoving] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [fileToImport, setFileToImport] = useState<FileLine_file$data | null>(null);
   const externalReferencesEdges = data.stixCoreObject
@@ -144,14 +144,17 @@ StixCoreObjectExternalReferencesLinesContainerProps
   const handleToggleExpand = () => {
     setExpanded(!expanded);
   };
+
+  const deletion = useDeletion({});
+  const { handleOpenDelete, handleCloseDelete, setDeleting } = deletion;
   const handleOpenDialog = (
     externalReferenceEdge: externalReferenceEdge_type,
   ) => {
-    setDisplayDialog(true);
+    handleOpenDelete();
     setExternalReferenceToRemove(externalReferenceEdge);
   };
   const handleCloseDialog = () => {
-    setDisplayDialog(false);
+    handleCloseDelete();
     setExternalReferenceToRemove(null);
   };
   const handleOpenExternalLink = (url: string) => {
@@ -187,7 +190,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         );
       },
       onCompleted: () => {
-        setRemoving(false);
+        setDeleting(false);
         handleCloseDialog();
       },
       optimisticUpdater: undefined,
@@ -197,7 +200,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
     });
   };
   const handleRemoval = () => {
-    setRemoving(true);
+    setDeleting(true);
     removeExternalReference(externalReferenceToRemove);
   };
   const handleOpenImport = (
@@ -295,58 +298,63 @@ StixCoreObjectExternalReferencesLinesContainerProps
                   return (
                     <React.Fragment key={externalReference.id}>
                       <ListItem
-                        component={Link}
-                        to={`/dashboard/analyses/external_references/${externalReference.id}`}
                         dense={true}
                         divider={true}
-                        button={true}
+                        disablePadding
+                        secondaryAction={
+                          <>
+                            <Tooltip title={t_i18n('Browse the link')}>
+                              <IconButton
+                                onClick={() => handleOpenExternalLink(
+                                  externalReference.url ?? '',
+                                )
+                                }
+                                size="large"
+                                color="primary"
+                              >
+                                <OpenInBrowserOutlined />
+                              </IconButton>
+                            </Tooltip>
+                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                              <FileUploader
+                                entityId={externalReference.id}
+                                onUploadSuccess={() => relay.refetchConnection(200)
+                                }
+                                size={undefined}
+                              />
+                            </Security>
+                            <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                              <ExternalReferenceEnrichment
+                                externalReferenceId={externalReference.id}
+                              />
+                            </Security>
+                            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                              <ExternalReferencePopover
+                                id={externalReference.id}
+                                handleRemove={() => handleOpenDialog(externalReferenceEdge)
+                                }
+                                objectId={stixCoreObjectId}
+                                variant="inLine"
+                              />
+                            </Security>
+                          </>
+                        }
                       >
-                        <ListItemIcon>
-                          <ItemIcon type="External-Reference" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={truncate(
-                            `${externalReference.source_name} ${externalReferenceId}`,
-                            70,
-                          )}
-                          secondary={truncate(externalReferenceSecondary, 70)}
-                        />
-                        <ListItemSecondaryAction>
-                          <Tooltip title={t_i18n('Browse the link')}>
-                            <IconButton
-                              onClick={() => handleOpenExternalLink(
-                                externalReference.url ?? '',
-                              )
-                              }
-                              size="large"
-                              color="primary"
-                            >
-                              <OpenInBrowserOutlined />
-                            </IconButton>
-                          </Tooltip>
-                          <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                            <FileUploader
-                              entityId={externalReference.id}
-                              onUploadSuccess={() => relay.refetchConnection(200)
-                              }
-                              size={undefined}
-                            />
-                          </Security>
-                          <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                            <ExternalReferenceEnrichment
-                              externalReferenceId={externalReference.id}
-                            />
-                          </Security>
-                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                            <ExternalReferencePopover
-                              id={externalReference.id}
-                              handleRemove={() => handleOpenDialog(externalReferenceEdge)
-                              }
-                              objectId={stixCoreObjectId}
-                              variant="inLine"
-                            />
-                          </Security>
-                        </ListItemSecondaryAction>
+                        <ListItemButton
+                          component={Link}
+                          to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="External-Reference" />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={truncate(
+                              `${externalReference.source_name} ${externalReferenceId}`,
+                              70,
+                            )}
+                            secondary={truncate(externalReferenceSecondary, 70)}
+                          />
+                        </ListItemButton>
                       </ListItem>
                       {externalReference.importFiles?.edges
                         && externalReference.importFiles?.edges.length > 0 && (
@@ -378,41 +386,46 @@ StixCoreObjectExternalReferencesLinesContainerProps
                 return (
                   <React.Fragment key={externalReference.id}>
                     <ListItem
-                      component={Link}
-                      to={`/dashboard/analyses/external_references/${externalReference.id}`}
                       dense={true}
                       divider={true}
-                      button={true}
-                    >
-                      <ListItemIcon>
-                        <ItemIcon type="External-Reference" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={`${externalReference.source_name} ${externalReferenceId}`}
-                        secondary={truncate(externalReference.description, 120)}
-                      />
-                      <ListItemSecondaryAction>
-                        {!isFileAttached && (
-                          <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                            <FileUploader
-                              entityId={externalReference.id}
-                              onUploadSuccess={() => relay.refetchConnection(200)
+                      disablePadding
+                      secondaryAction={
+                        <>
+                          {!isFileAttached && (
+                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                              <FileUploader
+                                entityId={externalReference.id}
+                                onUploadSuccess={() => relay.refetchConnection(200)
+                                }
+                                size={undefined}
+                              />
+                            </Security>
+                          )}
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <ExternalReferencePopover
+                              id={externalReference.id}
+                              isExternalReferenceAttachment={isFileAttached}
+                              handleRemove={() => handleOpenDialog(externalReferenceEdge)
                               }
-                              size={undefined}
+                              objectId={stixCoreObjectId}
+                              variant="inLine"
                             />
                           </Security>
-                        )}
-                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                          <ExternalReferencePopover
-                            id={externalReference.id}
-                            isExternalReferenceAttachment={isFileAttached}
-                            handleRemove={() => handleOpenDialog(externalReferenceEdge)
-                            }
-                            objectId={stixCoreObjectId}
-                            variant="inLine"
-                          />
-                        </Security>
-                      </ListItemSecondaryAction>
+                        </>
+                      }
+                    >
+                      <ListItemButton
+                        component={Link}
+                        to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="External-Reference" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`${externalReference.source_name} ${externalReferenceId}`}
+                          secondary={truncate(externalReference.description, 120)}
+                        />
+                      </ListItemButton>
                     </ListItem>
                     {externalReference.importFiles?.edges
                       && externalReference.importFiles?.edges.length > 0 && (
@@ -471,34 +484,22 @@ StixCoreObjectExternalReferencesLinesContainerProps
           </Button>
         )}
       </Paper>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={handleRemoval}
+        message={t_i18n('Do you want to remove this external reference?')}
+      />
+
       <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDialog}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDialog}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to remove this external reference?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} disabled={removing}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={handleRemoval} disabled={removing}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={displayExternalLink}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseExternalLink}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to browse this external link?')}
@@ -507,7 +508,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         <DialogActions>
           <Button onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={handleBrowseExternalLink}>
-            {t_i18n('Browse the link')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -521,7 +522,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         {({ submitForm, handleReset, setFieldValue, isSubmitting, isValid }) => (
           <Form style={{ margin: '0 0 20px 0' }}>
             <Dialog
-              PaperProps={{ elevation: 1 }}
+              slotProps={{ paper: { elevation: 1 } }}
               open={!!fileToImport}
               keepMounted={true}
               onClose={() => handleReset()}

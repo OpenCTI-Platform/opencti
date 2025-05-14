@@ -17,7 +17,7 @@ const AutocompleteField = (props) => {
     ...otherProps
   } = props;
   const {
-    form: { setFieldValue, setFieldTouched },
+    form: { setFieldValue, setFieldTouched, submitCount },
     field: { name },
     onChange,
     onFocus,
@@ -65,6 +65,9 @@ const AutocompleteField = (props) => {
   const defaultGetOptionLabel = ((option) => (
     typeof option === 'object' ? truncate(option.label, optionLength) : truncate(option, optionLength)
   ));
+
+  const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
+
   return (
     <div style={{ position: 'relative' }}>
       <MUIAutocomplete
@@ -81,16 +84,18 @@ const AutocompleteField = (props) => {
           <TextField
             {...{ ...params, inputProps }}
             {...textfieldprops}
-            InputProps={{
-              ...InputProps,
-              endAdornment: endAdornment ?? InputProps.endAdornment,
+            slotProps={{
+              input: {
+                ...InputProps,
+                endAdornment: endAdornment ?? InputProps.endAdornment,
+              },
             }}
             value={value}
             name={name}
             required={required}
             fullWidth={true}
-            error={!isNil(meta.error)}
-            helperText={meta.error ?? textfieldprops?.helperText ?? ''}
+            error={showError}
+            helperText={showError ? meta.error : textfieldprops?.helperText }
           />
         )}
         onChange={internalOnChange}

@@ -507,17 +507,19 @@ class StixCoreObjectContentComponent extends Component {
                     multiline={true}
                     onChange={this.onTextFieldChange.bind(this)}
                     fullWidth={true}
-                    InputProps={{
-                      endAdornment: (
-                        <TextFieldAskAI
-                          currentValue={currentContent ?? ''}
-                          setFieldValue={(val) => {
-                            this.onTextFieldChange({ target: { value: val } });
-                          }}
-                          format="text"
-                          variant="text"
-                        />
-                      ),
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <TextFieldAskAI
+                            currentValue={currentContent ?? ''}
+                            setFieldValue={(val) => {
+                              this.onTextFieldChange({ target: { value: val } });
+                            }}
+                            format="text"
+                            variant="text"
+                          />
+                        ),
+                      },
                     }}
                   />
                 </div>
@@ -536,8 +538,8 @@ class StixCoreObjectContentComponent extends Component {
                 >
                   <CKEditor
                     data={currentContent ?? ''}
-                    onChange={() => {
-                      this.setState({ changed: true });
+                    onChange={(_, editor) => {
+                      this.setState({ currentContent: editor.getData(), changed: true });
                     }}
                     onBlur={(_, editor) => {
                       this.onHtmlFieldChange(editor.getData());

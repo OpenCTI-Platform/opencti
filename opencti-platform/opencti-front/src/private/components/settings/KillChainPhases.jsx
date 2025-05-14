@@ -103,7 +103,7 @@ const LOCAL_STORAGE_KEY = 'killChainPhases';
 const KillChainPhases = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Taxonomies: Kill Chain Phases | Settings'));
+  setTitle(t_i18n('Kill Chain Phases | Taxonomies | Settings'));
 
   const initialValues = {
     sortBy: 'x_opencti_order',
@@ -161,9 +161,9 @@ const KillChainPhases = () => {
           actions={(killChainPhase) => <KillChainPhasePopover killChainPhase={killChainPhase} paginationOptions={queryPaginationOptions} />}
           searchContextFinal={{ entityTypes: ['Kill-Chain-Phase'] }}
           disableNavigation
+          createButton={<KillChainPhaseCreation paginationOptions={queryPaginationOptions} />}
         />
       )}
-      <KillChainPhaseCreation paginationOptions={queryPaginationOptions} />
     </div>
   );
 };

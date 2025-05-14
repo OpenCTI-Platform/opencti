@@ -39,7 +39,7 @@ FilterValuesContentProps
   const filterType = filterDefinition?.type;
   let displayedValue = isFilterTooltip
     ? filterValue(filterKey, value, filterType, filterOperator)
-    : truncate(filterValue(filterKey, value, filterType, filterOperator), 15);
+    : truncate(filterValue(filterKey, value, filterType, filterOperator), 20);
   if (displayedValue === null) {
     return (
       <>

@@ -1,31 +1,26 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { SupportPackageLine_node$key } from '@components/settings/support/__generated__/SupportPackageLine_node.graphql';
 import ListItemText from '@mui/material/ListItemText';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { FileOutline } from 'mdi-material-ui';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { DeleteOutlined, DownloadingOutlined, GetAppOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CircularProgress from '@mui/material/CircularProgress';
 import Chip from '@mui/material/Chip';
 import { SupportPackageLineForceZipMutation$data } from '@components/settings/support/__generated__/SupportPackageLineForceZipMutation.graphql';
 import { APP_BASE_PATH, handleError, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import Transition from '../../../../components/Transition';
 import { deleteNode } from '../../../../utils/store';
 import { hexToRGB } from '../../../../utils/Colors';
 import { DataColumns } from '../../../../components/list_lines';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { minutesBetweenDates, now } from '../../../../utils/Time';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const styles = {
   bodyItem: {
@@ -111,8 +106,6 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
 }) => {
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(supportPackageLineFragment, node);
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [commitDelete] = useApiMutation(SupportPackageLineDeleteMutation);
   const [commitForceZip] = useApiMutation(SupportPackageLineForceZipMutation);
   const isProgress = data.package_status === 'IN_PROGRESS';
@@ -121,14 +114,8 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
   const isTimeout = !isReady && minutesBetweenDates(data.created_at, now()) > 5;
   const finalStatus = isTimeout ? 'TIMEOUT' : data.package_status;
 
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
-
+  const deletion = useDeletion({});
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitDelete({
@@ -174,7 +161,45 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
 
   return (
     <>
-      <ListItem divider={true} style={{ ...styles.item }}>
+      <ListItem
+        divider={true}
+        style={{ ...styles.item }}
+        secondaryAction={
+          <>
+            {!isReady && <Tooltip title={t_i18n('Force download on this support package')}>
+              <span>
+                <IconButton disabled={!isTooLong} onClick={handleForceZip}>
+                  <DownloadingOutlined fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>}
+            {isReady && <Tooltip title={t_i18n('Download this support package')}>
+              <span>
+                <IconButton
+                  disabled={!data.package_url}
+                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                    data.package_url || '',
+                  )}`}
+                >
+                  <GetAppOutlined fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>}
+            <Tooltip title={t_i18n('Delete this support package')}>
+              <span>
+                <IconButton
+                  disabled={!isReady && !isTooLong}
+                  color='inherit'
+                  onClick={handleOpenDelete}
+                  size="small"
+                >
+                  <DeleteOutlined fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </>
+        }
+      >
         <ListItemIcon>
           {isProgress && !isTimeout && (
             <CircularProgress
@@ -199,7 +224,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               <div style={{ width: dataColumns.name.width, ...styles.bodyItem }}>
                 {data.name}
               </div>
-              <div style={{ width: dataColumns.package_status.width, ...styles.bodyItem }}>
+              <div style={{ width: dataColumns.package_status.width, ...styles.bodyItem, paddingLeft: 15 }}>
                 <Chip
                   style={{
                     color: packageStatusColors[finalStatus],
@@ -212,71 +237,19 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                 />
               </div>
               <div
-                style={{ width: dataColumns.created_at.width, ...styles.bodyItem }}
+                style={{ width: dataColumns.created_at.width, ...styles.bodyItem, paddingLeft: 20 }}
               >
                 {fndt(data.created_at)}
               </div>
             </>
           }
         />
-        <ListItemSecondaryAction>
-          {!isReady && <Tooltip title={t_i18n('Force download on this support package')}>
-            <span>
-              <IconButton disabled={!isTooLong} onClick={handleForceZip}>
-                <DownloadingOutlined fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>}
-          {isReady && <Tooltip title={t_i18n('Download this support package')}>
-            <span>
-              <IconButton
-                disabled={!data.package_url}
-                href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                  data.package_url || '',
-                )}`}
-              >
-                <GetAppOutlined fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>}
-          <Tooltip title={t_i18n('Delete this support package')}>
-            <span>
-              <IconButton
-                disabled={!isReady && !isTooLong}
-                color='inherit'
-                onClick={handleOpenDelete}
-                size="small"
-              >
-                <DeleteOutlined fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </ListItemSecondaryAction>
       </ListItem>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this support package?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={submitDelete}
-            color="secondary"
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this support package?')}
+      />
     </>
   );
 };

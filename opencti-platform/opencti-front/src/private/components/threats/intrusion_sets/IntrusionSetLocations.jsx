@@ -8,11 +8,11 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
+import { ListItemButton } from '@mui/material';
 import AddLocations from './AddLocations';
 import { addLocationsMutationRelationDelete } from './AddLocationsLines';
 import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
@@ -21,6 +21,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   avatar: {
@@ -69,7 +70,6 @@ class IntrusionSetLocationsComponent extends Component {
         </Typography>
         <Security
           needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
         >
           <AddLocations
             intrusionSet={intrusionSet}
@@ -77,59 +77,59 @@ class IntrusionSetLocationsComponent extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <List style={{ marginTop: -10 }}>
-          {intrusionSet.locations.edges.length === 0 && (
-            <ListItem dense={true} divider={true} button={false}>
-              <ListItemText primary="-" />
-            </ListItem>
-          )}
-          {intrusionSet.locations.edges.map((locationEdge) => {
-            const location = locationEdge.node;
-            const link = resolveLink(location.entity_type);
-            const flag = location.entity_type === 'Country'
+        <FieldOrEmpty source={intrusionSet.locations.edges}>
+          <List style={{ marginTop: -10 }}>
+            {intrusionSet.locations.edges.map((locationEdge) => {
+              const location = locationEdge.node;
+              const link = resolveLink(location.entity_type);
+              const flag = location.entity_type === 'Country'
               && R.head(
                 (location.x_opencti_aliases ?? []).filter(
                   (n) => n?.length === 2,
                 ),
               );
-            return (
-              <ListItem
-                key={location.id}
-                dense={true}
-                divider={true}
-                button={true}
-                component={Link}
-                to={`${link}/${location.id}`}
-              >
-                <ListItemIcon>
-                  <ListItemIcon>
-                    {flag ? (
-                      <img
-                        style={{ width: 20 }}
-                        src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
-                        alt={location.name}
-                      />
-                    ) : (
-                      <ItemIcon type={location.entity_type} />
-                    )}
-                  </ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={location.name} />
-                <ListItemSecondaryAction>
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={this.removeLocation.bind(this, locationEdge)}
-                      size="large"
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  </Security>
-                </ListItemSecondaryAction>
-              </ListItem>
-            );
-          })}
-        </List>
+              return (
+                <ListItem
+                  key={location.id}
+                  dense={true}
+                  divider={true}
+                  disablePadding
+                  secondaryAction={
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={this.removeLocation.bind(this, locationEdge)}
+                        size="large"
+                      >
+                        <LinkOff />
+                      </IconButton>
+                    </Security>
+                  }
+                >
+                  <ListItemButton
+                    component={Link}
+                    to={`${link}/${location.id}`}
+                  >
+                    <ListItemIcon>
+                      <ListItemIcon>
+                        {flag ? (
+                          <img
+                            style={{ width: 20 }}
+                            src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                            alt={location.name}
+                          />
+                        ) : (
+                          <ItemIcon type={location.entity_type} />
+                        )}
+                      </ListItemIcon>
+                    </ListItemIcon>
+                    <ListItemText primary={location.name} />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+          </List>
+        </FieldOrEmpty>
       </>
     );
   }

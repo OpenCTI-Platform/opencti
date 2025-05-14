@@ -12,6 +12,7 @@ export const CREATED_BY_FILTER = 'createdBy';
 export const CREATOR_FILTER = 'creator_id';
 export const ASSIGNEE_FILTER = 'objectAssignee';
 export const PARTICIPANT_FILTER = 'objectParticipant';
+export const AUTHORIZED_FILTER = 'objectAuthorized';
 export const OBJECT_CONTAINS_FILTER = 'objects';
 export const RELATION_TO_SIGHTING_FILTER = 'toSightingId';
 // ---- entities
@@ -50,6 +51,12 @@ export const EPSS_SCORE_FILTER = 'x_opencti_epss_score';
 export const CVSS_BASE_SCORE_FILTER = 'x_opencti_cvss_base_score';
 export const CVSS_BASE_SEVERITY_FILTER = 'x_opencti_cvss_base_severity';
 export const REPORT_TYPES_FILTER = 'report_types';
+export const INCIDENT_RESPONSE_TYPES_FILTER = 'response_types';
+export const REQUEST_FOR_INFORMATION_TYPES_FILTER = 'information_types';
+export const REQUEST_FOR_TAKEDOWN_TYPES_FILTER = 'takedown_types';
+export const NOTE_TYPES_FILTER = 'note_types';
+export const INCIDENT_TYPE_FILTER = 'incident_type';
+
 // special cases
 export const IDS_FILTER = 'ids';
 export const SIGHTED_BY_FILTER = 'sightedBy';
@@ -76,6 +83,7 @@ export const MEMBERS_USER_FILTER = 'members_user';
 export const MEMBERS_GROUP_FILTER = 'members_group';
 export const MEMBERS_ORGANIZATION_FILTER = 'members_organization';
 export const ALIAS_FILTER = 'alias'; // handle both 'aliases' and 'x_opencti_aliases' attributes
+export const IS_INFERRED_FILTER = 'is_inferred'; // if an entity or relationship is inferred
 
 export const complexConversionFilterKeys = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
@@ -96,6 +104,10 @@ export const complexConversionFilterKeys = [
   RELATION_FROM_ROLE_FILTER, // nested relation for the from role of a relationship
   RELATION_TO_ROLE_FILTER, // nested relation for the to role of a relationship
   ALIAS_FILTER, // key that target both the 'aliases' and 'x_opencti_aliases' attributes
+  IS_INFERRED_FILTER, // if an entity or relationship is inferred
+  'authorized_members', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
+  'authorized_members.id', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
+  'restricted_members.id', // nested filter on restricted members
 ];
 
 // list of the special filtering keys
@@ -148,4 +160,15 @@ export const specialFilterKeysWhoseValueToResolve = [
   INSTANCE_RELATION_FILTER,
   RELATION_FROM_FILTER,
   RELATION_TO_FILTER
+];
+
+// special filter values
+export const ME_FILTER_VALUE = '@me';
+export const filterKeysWithMeValue = [
+  ASSIGNEE_FILTER,
+  PARTICIPANT_FILTER,
+  CONTEXT_CREATOR_FILTER,
+  CREATOR_FILTER,
+  CONTEXT_ENTITY_ID_FILTER,
+  MEMBERS_USER_FILTER,
 ];

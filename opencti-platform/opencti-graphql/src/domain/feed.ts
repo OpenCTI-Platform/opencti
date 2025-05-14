@@ -3,7 +3,7 @@ import { ENTITY_TYPE_FEED } from '../schema/internalObject';
 import { createEntity, deleteElementById } from '../database/middleware';
 import { listEntitiesPaginated, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { FeedAddInput, QueryFeedsArgs } from '../generated/graphql';
+import type { FeedAddInput, MemberAccessInput, QueryFeedsArgs } from '../generated/graphql';
 import type { BasicStoreEntityFeed } from '../types/store';
 import { elReplace } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
@@ -12,8 +12,9 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import type { DomainFindById } from './domainTypes';
 import { publishUserAction } from '../listener/UserActionListener';
-import { SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
+import { isUserHasCapability, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { FilterMode } from '../generated/graphql';
+import { TAXIIAPI } from './user';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
   if (input.separator.length > 1) {
@@ -64,7 +65,13 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   if (!feed) {
     throw FunctionalError(`Feed ${id} cant be found`);
   }
-  await elReplace(INDEX_INTERNAL_OBJECTS, id, { doc: input });
+  // authorized_members renaming
+  let finalInput = { ...input };
+  if (finalInput.authorized_members && finalInput.authorized_members.length > 0) {
+    finalInput = { ...finalInput, restricted_members: finalInput.authorized_members } as FeedAddInput & { restricted_members: MemberAccessInput[] };
+    delete finalInput.authorized_members;
+  }
+  await elReplace(INDEX_INTERNAL_OBJECTS, id, { doc: finalInput });
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -76,7 +83,7 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   return findById(context, user, id);
 };
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsArgs) => {
-  if (user) {
+  if (user && isUserHasCapability(user, TAXIIAPI)) {
     const options = { ...opts, includeAuthorities: true };
     return listEntitiesPaginated<BasicStoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);
   }

@@ -1,4 +1,4 @@
-import { Drawer, SxProps, Toolbar, Alert } from '@mui/material';
+import { Drawer, SxProps, Toolbar } from '@mui/material';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/styles';
@@ -113,11 +113,9 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     handleOpenDelete();
   };
 
-  const handleWidgetConfigOpen = (isOpen: boolean) => {
-    setIsWidgetFormOpen(isOpen);
-    if (!isOpen) {
-      setSelectedWidget(undefined);
-    }
+  const handleCloseWidgetConfig = () => {
+    setIsWidgetFormOpen(false);
+    setSelectedWidget(undefined);
   };
 
   const closeDeleteConfirm = () => {
@@ -237,7 +235,7 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
 
       <WidgetConfig
         open={isWidgetFormOpen}
-        setOpen={handleWidgetConfigOpen}
+        onClose={handleCloseWidgetConfig}
         onComplete={handleUpsertWidget}
         widget={selectedWidget?.widget}
         disabledSteps={[0]}
@@ -249,18 +247,12 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       />
 
       <DeleteDialog
-        title={(
-          <>
-            <span>{t_i18n('Are you sure you want to delete this widget?')}</span>
-            {isSelectedWidgetUsed && (
-              <Alert severity="warning" variant="outlined" sx={{ marginTop: 2 }}>
-                {t_i18n('You are about to delete a widget used in the template')}
-              </Alert>
-            )}
-          </>
-        )}
         deletion={deletion}
         submitDelete={submitDeleteWidget}
+        message={t_i18n('Do you want to delete this widget?')}
+        warning={isSelectedWidgetUsed
+          ? { message: t_i18n('You are about to delete a widget used in the template') }
+          : undefined}
       />
     </>
   );

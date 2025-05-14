@@ -9,13 +9,14 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@components/common/drawer/Drawer';
+import { ListItemButton } from '@mui/material';
 import { DataColumns } from '../../../../../components/list_lines';
 import { AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
-import { isNotEmptyField } from '../../../../../utils/utils';
 import MarkdownDisplay from '../../../../../components/MarkdownDisplay';
+import { useGenerateAuditMessage } from '../../../../../utils/history';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -86,14 +87,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const theme = useTheme<Theme>();
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
-  const isHistoryUpdate = data.entity_type === 'History'
-    && data.event_type === 'update'
-    && isNotEmptyField(data.context_data?.entity_name);
-  const message = `\`${data.user?.name}\` ${data.context_data?.message} ${
-    isHistoryUpdate
-      ? `for \`${data.context_data?.entity_name}\` (${data.context_data?.entity_type})`
-      : ''
-  }`;
+  const message = useGenerateAuditMessage(data);
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
   return (
     <>
@@ -129,10 +123,9 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
           </div>
         </>
       </Drawer>
-      <ListItem
+      <ListItemButton
         classes={{ root: classes.item }}
         divider={true}
-        button={true}
         onClick={() => setSelectedLog(data.id)}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -183,7 +176,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
             </div>
           }
         />
-      </ListItem>
+      </ListItemButton>
     </>
   );
 };

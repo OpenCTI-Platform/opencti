@@ -1,6 +1,6 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { AuthorizedMember } from '../../utils/access';
 import type { FilterGroup } from '../../generated/graphql';
 
@@ -14,7 +14,7 @@ export interface BasicStoreEntityWorkspace extends BasicStoreEntity {
   manifest: string;
   tags: Array<string>;
   type: string;
-  authorized_members: Array<AuthorizedMember>;
+  restricted_members: Array<AuthorizedMember>;
   object_refs: Array<string>;
   investigated_entities_ids: Array<string>;
 }
@@ -26,7 +26,7 @@ export interface StoreEntityWorkspace extends StoreEntity {
   manifest: string;
   tags: Array<string>;
   type: string;
-  authorized_members: Array<AuthorizedMember>;
+  restricted_members: Array<AuthorizedMember>;
   object_refs: Array<string>;
 }
 // endregion

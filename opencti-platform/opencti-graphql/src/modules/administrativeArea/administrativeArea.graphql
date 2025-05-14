@@ -166,6 +166,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
+        toStix: Boolean
     ): AdministrativeAreaConnection @auth(for: [KNOWLEDGE])
 }
 

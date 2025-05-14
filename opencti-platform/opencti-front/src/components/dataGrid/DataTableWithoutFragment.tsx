@@ -6,6 +6,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
 | 'storageKey'
 | 'rootRef'
 | 'actions'
+| 'icon'
 | 'disableNavigation'
 | 'disableLineSelection'
 | 'disableToolBar'
@@ -28,12 +29,12 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps) => {
   return (
     <DataTableComponent
       {...props}
-      useDataTable={() => ({ data })}
+      data={data}
       useLineData={(line) => line}
       dataQueryArgs={(line: never) => line}
       resolvePath={(a) => a}
       initialValues={{}}
-      canToggleLine={false}
+      disableLineSelection={true}
     />
   );
 };

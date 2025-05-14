@@ -26,7 +26,6 @@ import {
   extractIdsFromStoreObject,
   extractObjectsRestrictionsFromInputs,
   fillTimeSeries,
-  INDEX_DRAFT_OBJECTS,
   INDEX_INFERRED_RELATIONSHIPS,
   inferIndexFromConceptType,
   isEmptyField,
@@ -40,6 +39,7 @@ import {
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+  toBase64,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE
@@ -52,6 +52,7 @@ import {
   elHistogramCount,
   elIndexElements,
   elList,
+  elMarkElementsAsDraftDelete,
   elPaginate,
   elUpdateElement,
   elUpdateEntityConnections,
@@ -110,7 +111,7 @@ import {
   REL_INDEX_PREFIX,
   RULE_PREFIX
 } from '../schema/general';
-import { isAnId } from '../schema/schemaUtils';
+import { isAnId, isValidDate } from '../schema/schemaUtils';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
@@ -148,16 +149,17 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp, ORGA_SHARING_REQUEST_FF } from '../config/conf';
+import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
 import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
-  canRequestAccess,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
   INTERNAL_USERS,
   isBypassUser,
+  isMarkingAllowed,
+  isOrganizationAllowed,
   isUserCanAccessStoreElement,
   isUserHasCapability,
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
@@ -170,7 +172,7 @@ import {
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix } from './stix-converter';
+import { convertExternalReferenceToStix, convertStoreToStix } from './stix-2-1-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
@@ -178,6 +180,7 @@ import {
   internalFindByIds,
   internalLoadById,
   listAllRelations,
+  listAllToEntitiesThroughRelations,
   listEntities,
   listRelations,
   storeLoadById
@@ -194,7 +197,17 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage } from './generate-message';
-import { authorizedMembersActivationDate, confidence, creators, iAliasedIds, iAttributes, modified, updatedAt, xOpenctiStixIds } from '../schema/attribute-definition';
+import {
+  authorizedMembers,
+  authorizedMembersActivationDate,
+  confidence,
+  creators,
+  iAliasedIds,
+  iAttributes,
+  modified,
+  updatedAt,
+  xOpenctiStixIds
+} from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
@@ -203,20 +216,57 @@ import {
   adaptUpdateInputsConfidence,
   controlCreateInputWithUserConfidence,
   controlUpsertInputWithUserConfidence,
-  controlUserConfidenceAgainstElement
+  controlUserConfidenceAgainstElement,
+  shouldCheckConfidenceOnRefRelationship
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
 import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
-import { storeFileConverter } from './file-storage';
+import { getFileContent, storeFileConverter } from './file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
 const MAX_EXPLANATIONS_PER_RULE = nconf.get('rule_engine:max_explanations_per_rule') ?? 100;
 // endregion
+
+// region request access
+export const canRequestAccess = async (context, user, elements) => {
+  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  const hasPlatformOrg = !!settings.platform_organization;
+  const elementsThatRequiresAccess = [];
+  for (let i = 0; i < elements.length; i += 1) {
+    const currentElement = elements[i];
+    if (!isOrganizationAllowed(context, currentElement, user, hasPlatformOrg)) {
+      // Check that group has marking allowed or else request accesss RFI will be useless
+      const requestAccessSettings = await loadEntity(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'target_type', values: [ENTITY_TYPE_CONTAINER_CASE_RFI] }],
+          filterGroups: [],
+        }
+      });
+      if (requestAccessSettings.request_access_workflow && requestAccessSettings.request_access_workflow?.approval_admin.length > 0) {
+        const adminGroupId = requestAccessSettings.request_access_workflow?.approval_admin[0];
+        const adminGroupMarking = await listAllToEntitiesThroughRelations(context, user, adminGroupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+        const authorizedGroupMarkings = adminGroupMarking.map((a) => a.internal_id);
+
+        if (isMarkingAllowed(currentElement, authorizedGroupMarkings)) {
+          elementsThatRequiresAccess.push(elements[i]);
+        }
+      }
+    }
+  }
+  return elementsThatRequiresAccess;
+};
+// end region request access
 
 // region Loader common
 export const batchLoader = (loader) => {
@@ -464,12 +514,35 @@ export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
   return instance ? convertStoreToStix(instance) : undefined;
 };
+const convertStoreToStixWithResolvedFiles = async (instance) => {
+  const instanceInStix = convertStoreToStix(instance);
+  const nonResolvedFiles = instanceInStix.extensions[STIX_EXT_OCTI].files;
+  if (nonResolvedFiles) {
+    for (let i = 0; i < nonResolvedFiles.length; i += 1) {
+      const currentFile = nonResolvedFiles[i];
+      const currentFileUri = currentFile.uri;
+      const fileId = currentFileUri.replace('/storage/get/', '');
+      currentFile.data = toBase64(await getFileContent(fileId));
+      currentFile.no_trigger_import = true;
+    }
+  }
+  return instanceInStix;
+};
 export const stixLoadByIds = async (context, user, ids, opts = {}) => {
+  const { resolveStixFiles = false } = opts;
   const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
   // As stix load by ids doesn't respect the ordering we need to remap the result
   const loadedInstancesMap = new Map(elements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }))
     .flat().map((o) => o.ids.map((id) => [id, o.instance])).flat());
-  return ids.map((id) => loadedInstancesMap.get(id)).filter((i) => isNotEmptyField(i)).map((e) => convertStoreToStix(e));
+  if (resolveStixFiles) {
+    const fileResolvedInstancesPromise = ids.map((id) => loadedInstancesMap.get(id))
+      .filter((i) => isNotEmptyField(i))
+      .map((e) => (convertStoreToStixWithResolvedFiles(e)));
+    return Promise.all(fileResolvedInstancesPromise);
+  }
+  return ids.map((id) => loadedInstancesMap.get(id))
+    .filter((i) => isNotEmptyField(i))
+    .map((e) => (convertStoreToStix(e)));
 };
 export const stixLoadByIdStringify = async (context, user, id) => {
   const data = await stixLoadById(context, user, id);
@@ -480,13 +553,6 @@ export const stixLoadByFilters = async (context, user, types, args) => {
   return elements ? elements.map((element) => convertStoreToStix(element)) : [];
 };
 // endregion
-
-const isValidDate = (stringDate) => {
-  const dateParsed = Date.parse(stringDate);
-  if (!dateParsed) return false;
-  const dateInstance = new Date(dateParsed);
-  return dateInstance.toISOString() === stringDate;
-};
 
 // used to get a "restricted" value of a current attribute value depending on the value type
 const restrictValue = (entityValue) => {
@@ -1484,7 +1550,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     const mergedInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
     await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, opts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
-    await redisAddDeletions(sources.map((s) => s.internal_id));
+    await redisAddDeletions(sources.map((s) => s.internal_id), getDraftContext(context, user));
     // - END TRANSACTION
     return await storeLoadById(context, user, target.id, ABSTRACT_STIX_OBJECT).then((finalStixCoreObject) => {
       return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user);
@@ -1537,7 +1603,7 @@ const innerUpdateAttribute = (instance, rawInput) => {
   }
   return input;
 };
-const prepareAttributesForUpdate = async (context, user, instance, elements, upsert) => {
+const prepareAttributesForUpdate = async (context, user, instance, elements) => {
   const instanceType = instance.entity_type;
   const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
   return elements.map((input) => {
@@ -1563,11 +1629,12 @@ const prepareAttributesForUpdate = async (context, user, instance, elements, ups
       const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
       return { key: input.key, value: uniqAliases };
     }
-    // For upsert, workflow cant be reset or setup on un-existing workflow
-    if (input.key === X_WORKFLOW_ID && upsert) {
+    // For upsert or update, workflow cant be reset or setup on un-existing workflow
+    if (input.key === X_WORKFLOW_ID) {
       const workflowId = R.head(input.value);
-      const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
-      if (isEmptyField(workflowStatus)) { // If workflow is not found, remove the input
+      const instanceTypeStatuses = platformStatuses.filter((status) => status.type === instance.entity_type);
+      // If workflow is not found for current entity type, remove the input
+      if (instanceTypeStatuses?.length === 0 || !instanceTypeStatuses.some((entityStatus) => entityStatus.internal_id === workflowId)) {
         return null;
       }
     }
@@ -1642,7 +1709,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const instanceType = instance.entity_type;
   // Prepare attributes
-  const preparedElements = await prepareAttributesForUpdate(context, user, instance, elements, upsert);
+  const preparedElements = await prepareAttributesForUpdate(context, user, instance, elements);
   // region Check date range
   const inputKeys = elements.map((i) => i.key);
   if (inputKeys.includes(START_TIME) || inputKeys.includes(STOP_TIME)) {
@@ -1814,8 +1881,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   // Update all needed attributes with inner elements if needed
   const updatedInputs = [];
   const impactedInputs = [];
-  const isWorkflowChange = inputKeys.includes(X_WORKFLOW_ID);
-  const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
     const ins = innerUpdateAttribute(instance, input);
@@ -1832,22 +1897,8 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
             value: R.symmetricDifference(previous ?? [], input.value ?? []),
             previous,
           });
-        } else { // REPLACE
-          // Specific input resolution for workflow
-          // eslint-disable-next-line no-lonely-if
-          if (input.key === X_WORKFLOW_ID) {
-            // workflow_id is not a relation but message must contain the name and not the internal id
-            const workflowId = R.head(input.value);
-            const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
-            updatedInputs.push({
-              operation: input.operation,
-              key: input.key,
-              value: [workflowStatus ? workflowStatus.name : null],
-              previous,
-            });
-          } else {
-            updatedInputs.push({ ...input, previous });
-          }
+        } else {
+          updatedInputs.push({ ...input, previous });
         }
       }
       // endregion
@@ -1876,8 +1927,23 @@ const computeDateFromEventId = (context) => {
   return utcDate(parseInt(context.eventId.split('-')[0], 10)).toISOString();
 };
 
-export const generateUpdateMessage = async (context, entityType, inputs) => {
-  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
+export const generateUpdateMessage = async (context, user, entityType, inputs) => {
+  const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
+  const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
+  const resolvedInputs = inputs.map((i) => {
+    if (i.key === X_WORKFLOW_ID) {
+      // workflow_id is not a relation but message must contain the name and not the internal id
+      const workflowId = R.head(i.value);
+      const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
+      return ({
+        ...i,
+        value: [workflowStatus ? workflowStatus.name : null],
+      });
+    }
+    return i;
+  });
+
+  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, resolvedInputs);
   const patchElements = Object.entries(inputsByOperations);
   if (patchElements.length === 0) {
     throw UnsupportedError('Generating update message with empty inputs fail');
@@ -1885,7 +1951,7 @@ export const generateUpdateMessage = async (context, entityType, inputs) => {
 
   const authorizedMembersIds = patchElements.slice(0, 3).flatMap(([,operations]) => {
     return operations.slice(0, 3).flatMap(({ key, value }) => {
-      return key === 'authorized_members' ? (value ?? []).map(({ id }) => id) : [];
+      return key === authorizedMembers.name ? (value ?? []).map(({ id }) => id) : [];
     });
   });
   let members = [];
@@ -1922,11 +1988,11 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
   // Check user access update
   let accessOperation = 'edit';
-  if (updates.some((e) => e.key === 'authorized_members')) {
+  if (updates.some((e) => e.key === authorizedMembers.name)) {
     accessOperation = 'manage-access';
     if (schemaAttributesDefinition.getAttribute(initial.entity_type, authorizedMembersActivationDate.name)
-      && (!initial.authorized_members || initial.authorized_members.length === 0)
-      && updates.some((e) => e.key === 'authorized_members' && e.value?.length > 0)) {
+      && (!initial.restricted_members || initial.restricted_members.length === 0)
+      && updates.some((e) => e.key === authorizedMembers.name && e.value?.length > 0)) {
       updates.push({
         key: authorizedMembersActivationDate.name,
         value: [now()]
@@ -2126,7 +2192,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
             relationsToCreate.push(...newRelations);
-            updatedInputs.push({ key, value: refsToCreate, operation });
+            updatedInputs.push({ key, value: refsToCreate, operation, previous: updatedInstance[key] });
             updatedInstance[key] = [...(updatedInstance[key] || []), ...refsToCreate];
             updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
           }
@@ -2144,7 +2210,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
 
           if (relsToDelete.length > 0) {
             relationsToDelete.push(...relsToDelete);
-            updatedInputs.push({ key, value: refs, operation });
+            updatedInputs.push({ key, value: refs, operation, previous: updatedInstance[key] });
             updatedInstance[key] = (updatedInstance[key] || []).filter((c) => !targetIds.includes(c.internal_id));
             updatedInstance[relType] = updatedInstance[key].map((u) => u.internal_id);
           }
@@ -2230,7 +2296,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     }
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
-      const message = await generateUpdateMessage(context, updatedInstance.entity_type, updatedInputs);
+      const message = await generateUpdateMessage(context, user, updatedInstance.entity_type, updatedInputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -2257,7 +2323,13 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
     throw FunctionalError('Cant update undefined element');
   }
   // region confidence control
-  controlUserConfidenceAgainstElement(user, initial);
+  const checkConfidence = (Array.isArray(inputs) ? inputs : [inputs]).some(({ key, operation }) => {
+    if (operation !== 'add') return true;
+    return shouldCheckConfidenceOnRefRelationship(key);
+  });
+  if (checkConfidence && !opts.bypassIndividualUpdate) {
+    controlUserConfidenceAgainstElement(user, initial);
+  }
   const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
   // endregion
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
@@ -2554,14 +2626,21 @@ const isOutdatedUpdate = (context, element, attributeKey) => {
 
 const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
   // -- Independent update
+  let resolvedElement = element;
+  if (!opts.elementAlreadyResolved) {
+    resolvedElement = await storeLoadByIdWithRefs(context, user, element?.internal_id, { type });
+    if (!resolvedElement) {
+      throw FunctionalError('Cant find element to resolve', { id: element?.internal_id });
+    }
+  }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const updatePatch = { ...basePatch };
-  const { confidenceLevelToApply, isConfidenceMatch, isConfidenceUpper } = controlUpsertInputWithUserConfidence(user, updatePatch, element);
+  const { confidenceLevelToApply, isConfidenceMatch, isConfidenceUpper } = controlUpsertInputWithUserConfidence(user, updatePatch, resolvedElement);
   // Handle attributes updates
   if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
     const possibleNewStandardId = generateStandardId(type, basePatch);
-    const isStandardWillChange = element.standard_id !== possibleNewStandardId;
-    const rejectedIds = isStandardWillChange && isConfidenceMatch ? [element.standard_id, possibleNewStandardId] : [element.standard_id];
+    const isStandardWillChange = resolvedElement.standard_id !== possibleNewStandardId;
+    const rejectedIds = isStandardWillChange && isConfidenceMatch ? [resolvedElement.standard_id, possibleNewStandardId] : [resolvedElement.standard_id];
     const ids = [...(basePatch.x_opencti_stix_ids || [])];
     if (isNotEmptyField(basePatch.stix_id) && !rejectedIds.includes(basePatch.stix_id) && !ids.includes(basePatch.stix_id)) {
       ids.push(basePatch.stix_id);
@@ -2576,59 +2655,61 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   }
   // Upsert observed data count and times extensions
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-    const { date: cFo, updated: isCFoUpdated } = computeExtendedDateValues(updatePatch.first_observed, element.first_observed, ALIGN_OLDEST);
-    const { date: cLo, updated: isCLoUpdated } = computeExtendedDateValues(updatePatch.last_observed, element.last_observed, ALIGN_NEWEST);
+    const { date: cFo, updated: isCFoUpdated } = computeExtendedDateValues(updatePatch.first_observed, resolvedElement.first_observed, ALIGN_OLDEST);
+    const { date: cLo, updated: isCLoUpdated } = computeExtendedDateValues(updatePatch.last_observed, resolvedElement.last_observed, ALIGN_NEWEST);
     updatePatch.first_observed = cFo;
     updatePatch.last_observed = cLo;
     // Only update number_observed if part of the relation dates change
     if (isCFoUpdated || isCLoUpdated) {
-      updatePatch.number_observed = element.number_observed + updatePatch.number_observed;
+      updatePatch.number_observed = resolvedElement.number_observed + updatePatch.number_observed;
     }
   }
   if (type === ENTITY_TYPE_INDICATOR) {
     // Do not compute decay again when base score does not change
-    if (updatePatch.decay_applied_rule && (updatePatch.decay_base_score === element.decay_base_score || updatePatch.decay_base_score === element.x_opencti_score)) {
-      logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { element, basePatch });
+    // if the element was revoked, we need to update the score to reactivate the indicator
+    if (!resolvedElement.revoked && updatePatch.decay_applied_rule
+      && (updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score)) {
+      logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { resolvedElement, basePatch });
       // don't reset score, valid_from & valid_until
-      updatePatch.x_opencti_score = element.x_opencti_score; // don't change the score
-      updatePatch.valid_from = element.valid_from;
-      updatePatch.valid_until = element.valid_until;
+      updatePatch.x_opencti_score = resolvedElement.x_opencti_score; // don't change the score
+      updatePatch.valid_from = resolvedElement.valid_from;
+      updatePatch.valid_until = resolvedElement.valid_until;
       // don't reset decay attributes
-      updatePatch.decay_base_score = element.decay_base_score;
-      updatePatch.revoked = element.revoked;
-      updatePatch.decay_base_score_date = element.decay_base_score_date;
-      updatePatch.decay_applied_rule = element.decay_applied_rule;
+      // updatePatch.decay_base_score = element.decay_base_score; // no need since it's the same score
+      updatePatch.revoked = resolvedElement.revoked;
+      updatePatch.decay_base_score_date = resolvedElement.decay_base_score_date;
+      updatePatch.decay_applied_rule = resolvedElement.decay_applied_rule;
       updatePatch.decay_history = []; // History is multiple, forcing to empty array will prevent any modification
-      updatePatch.decay_next_reaction_date = element.decay_next_reaction_date;
+      updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
     } else {
       // As base_score as change, decay will be reset by upsert
-      logApp.debug('UPSERT INDICATOR -- Decay is reset', { element, basePatch });
+      logApp.debug('UPSERT INDICATOR -- Decay is reset', { resolvedElement, basePatch });
     }
   }
   // Upsert relations with times extensions
   if (isStixCoreRelationship(type)) {
-    const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, element.start_time, ALIGN_OLDEST);
-    const { date: cStopTime } = computeExtendedDateValues(updatePatch.stop_time, element.stop_time, ALIGN_NEWEST);
+    const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, resolvedElement.start_time, ALIGN_OLDEST);
+    const { date: cStopTime } = computeExtendedDateValues(updatePatch.stop_time, resolvedElement.stop_time, ALIGN_NEWEST);
     updatePatch.start_time = cStartTime;
     updatePatch.stop_time = cStopTime;
   }
   if (isStixSightingRelationship(type)) {
-    const { date: cFs, updated: isCFsUpdated } = computeExtendedDateValues(updatePatch.first_seen, element.first_seen, ALIGN_OLDEST);
-    const { date: cLs, updated: isCLsUpdated } = computeExtendedDateValues(updatePatch.last_seen, element.last_seen, ALIGN_NEWEST);
+    const { date: cFs, updated: isCFsUpdated } = computeExtendedDateValues(updatePatch.first_seen, resolvedElement.first_seen, ALIGN_OLDEST);
+    const { date: cLs, updated: isCLsUpdated } = computeExtendedDateValues(updatePatch.last_seen, resolvedElement.last_seen, ALIGN_NEWEST);
     updatePatch.first_seen = cFs;
     updatePatch.last_seen = cLs;
     if (isCFsUpdated || isCLsUpdated) {
-      updatePatch.attribute_count = element.attribute_count + updatePatch.attribute_count;
+      updatePatch.attribute_count = resolvedElement.attribute_count + updatePatch.attribute_count;
     }
   }
   const inputs = []; // All inputs impacted by modifications (+inner)
   // If file directly attached
   if (!isEmptyField(updatePatch.file)) {
-    const path = `import/${element.entity_type}/${element.internal_id}`;
-    const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: element });
+    const path = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
+    const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: resolvedElement });
     const convertedFile = storeFileConverter(user, file);
     // The impact in the database is the completion of the files
-    const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
+    const fileImpact = { key: 'x_opencti_files', value: [...(resolvedElement.x_opencti_files ?? []), convertedFile] };
     inputs.push(fileImpact);
   }
   // region confidence control / upsert
@@ -2643,11 +2724,11 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     const isInputAvailable = attributeKey in updatePatch;
     if (isInputAvailable) { // The attribute is explicitly available in the patch
       const inputData = updatePatch[attributeKey];
-      const isOutDatedModification = isOutdatedUpdate(context, element, attributeKey);
+      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
       const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creators.name; // Ids and creators consolidation is always granted
       const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
-      const isInputWithData = isNotEmptyField(inputData);
-      const isCurrentlyEmpty = isEmptyField(element[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
+      const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
+      const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
       // Field can be upsert if:
       // 1. Confidence is correct
       // 2. Attribute is declared upsert=true in the schema
@@ -2656,7 +2737,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
       if (!isOutDatedModification) {
         if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
-          inputs.push(...buildAttributeUpdate(isFullSync, attribute, element[attributeKey], inputData));
+          inputs.push(...buildAttributeUpdate(isFullSync, attribute, resolvedElement[attributeKey], inputData));
         }
       } else {
         logApp.info('Discarding outdated attribute update mutation', { key: attributeKey });
@@ -2664,19 +2745,19 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     }
   }
   // -- Upsert refs
-  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(element.entity_type).map((ref) => ref.name);
+  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(resolvedElement.entity_type).map((ref) => ref.name);
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
-    const relDef = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputField);
+    const relDef = schemaRelationsRefDefinition.getRelationRef(resolvedElement.entity_type, inputField);
     const isInputAvailable = inputField in updatePatch;
     if (isInputAvailable) {
       const patchInputData = updatePatch[inputField];
       const isInputWithData = isNotEmptyField(patchInputData);
       const isUpsertSynchro = context.synchronizedUpsert;
-      const isOutDatedModification = isOutdatedUpdate(context, element, inputField);
+      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, inputField);
       if (!isOutDatedModification) {
         if (relDef.multiple) {
-          const currentData = element[relDef.databaseName] ?? [];
+          const currentData = resolvedElement[relDef.databaseName] ?? [];
           const isCurrentWithData = isNotEmptyField(currentData);
           const targetData = (patchInputData ?? []).map((n) => n.internal_id);
           // Specific case for organization restriction, has EE must be activated.
@@ -2700,7 +2781,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           }
         } else { // not multiple
           // If expected data is different from current data...
-          const currentData = element[relDef.databaseName];
+          const currentData = resolvedElement[relDef.databaseName];
           const isCurrentEmptyData = isEmptyField(currentData);
           const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData);
           // ... and data can be updated:
@@ -2723,10 +2804,10 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
-    return await updateAttributeMetaResolved(context, user, element, inputs, updateOpts);
+    return await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
   }
   // -- No modification applied
-  return { element, event: null, isCreation: false };
+  return { element: resolvedElement, event: null, isCreation: false };
 };
 
 export const getExistingRelations = async (context, user, input, opts = {}) => {
@@ -2809,7 +2890,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
   const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
-  if (isStixRefRelationship(relationshipType)) {
+  if (isStixRefRelationship(relationshipType) && shouldCheckConfidenceOnRefRelationship(relationshipType)) {
     controlUserConfidenceAgainstElement(user, from);
   }
 
@@ -2877,7 +2958,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, locks: participantIds });
       }
       // If not upsert the element
-      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds });
+      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
     }
     // Check cyclic reference consistency for embedded relationships before creation
     if (isStixRefRelationship(relationshipType)) {
@@ -2921,7 +3002,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
         // Generate the new version of the from
         instance[key] = [...(instance[key] ?? []), targetElement];
       }
-      const message = await generateUpdateMessage(context, instance.entity_type, inputs);
+      const message = await generateUpdateMessage(context, user, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -3006,9 +3087,14 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   const input = { ...rawInput };
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
+  // authorized_members renaming
+  if (input.authorized_members?.length > 0) {
+    input.restricted_members = input.authorized_members;
+  }
+  delete input.authorized_members; // always remove authorized_members input, even if empty
   // endregion
   // validate authorized members access (when creating a new entity with authorized members)
-  if (input.authorized_members?.length > 0) {
+  if (input.restricted_members?.length > 0) {
     if (!validateUserAccessOperation(user, input, 'manage-access')) {
       throw ForbiddenAccess();
     }
@@ -3061,10 +3147,13 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
       // If nothing accessible for this user, throw ForbiddenAccess
       if (filteredEntities.length === 0) {
-        if (isFeatureEnabled(ORGA_SHARING_REQUEST_FF)) {
+        const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+        const rfiSetting = await getEntitySettingFromCache(context, ENTITY_TYPE_CONTAINER_CASE_RFI);
+        const isRequestAccessConfigured = isRequestAccessEnabled(settings, rfiSetting);
+        if (isRequestAccessConfigured === true && !getDraftContext(context, user)) {
           const entitiesThatRequiresAccess = await canRequestAccess(context, user, existingEntities);
           if (entitiesThatRequiresAccess.length > 0) {
-            throw AccessRequiredError('Restricted entity already exists, user can request access', { entityIds: entitiesThatRequiresAccess.map((value) => value.internal_id) });
+            throw AccessRequiredError('Restricted entity already exists, you can request access', { entityIds: entitiesThatRequiresAccess.map((value) => value.internal_id) });
           }
           throw UnsupportedError('Restricted entity already exists', { doc_code: 'RESTRICTED_ELEMENT' });
         } else {
@@ -3081,7 +3170,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
         return await upsertEntityRule(context, user, R.head(filteredEntities), input, { ...opts, locks: participantIds });
       }
       if (filteredEntities.length === 1) {
-        const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true };
+        const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true, elementAlreadyResolved: true };
         const element = await storeLoadByIdWithRefs(context, user, R.head(filteredEntities).internal_id, { type });
         return upsertElement(context, user, element, type, resolvedInput, upsertEntityOpts);
       }
@@ -3112,14 +3201,21 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
           }
         }
         // In this mode we can safely consider this entity like the existing one.
-        // We can upsert element except the aliases that are part of other entities
         const concurrentEntities = R.filter((e) => e.standard_id !== standardId, filteredEntities);
+        // We can upsert element except the aliases that are part of other entities
         const key = resolveAliasesField(type).name;
         const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
         const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
         const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), resolvedInput[key] || []);
-        const resolvedAliases = { ...resolvedInput, [key]: filteredAliases };
-        return upsertElement(context, user, existingByStandard, type, resolvedAliases, { ...opts, locks: participantIds });
+        // We need also to filter eventual STIX IDs present in other entities
+        const concurrentStixIds = R.flatten(R.map((c) => [c.x_opencti_stix_ids, c.standard_id], concurrentEntities));
+        const normedStixIds = R.uniq(concurrentStixIds);
+        const filteredStixIds = R.filter(
+          (i) => isNotEmptyField(i) && !normedStixIds.includes(i) && i !== existingByStandard.standard_id,
+          [...resolvedInput.x_opencti_stix_ids || [], resolvedInput.stix_id]
+        );
+        const finalEntity = { ...resolvedInput, [key]: filteredAliases, x_opencti_stix_ids: filteredStixIds };
+        return upsertElement(context, user, existingByStandard, type, finalEntity, { ...opts, locks: participantIds });
       }
       if (resolvedInput.update === true) {
         // The new one is new reference, merge all found entities
@@ -3219,7 +3315,6 @@ export const createInferredEntity = async (context, input, ruleContent, type) =>
 
 // region mutation deletion
 
-// We need to add the ability to revert deleted entities when in draft:
 const draftInternalDeleteElement = async (context, user, draftElement) => {
   let lock;
   const participantIds = [draftElement.internal_id];
@@ -3227,7 +3322,7 @@ const draftInternalDeleteElement = async (context, user, draftElement) => {
     // Try to get the lock in redis
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
 
-    await elDeleteElements(context, user, [draftElement]);
+    await elMarkElementsAsDraftDelete(context, user, [draftElement]);
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -3247,7 +3342,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
-  if (element._index.includes(INDEX_DRAFT_OBJECTS)) {
+  if (getDraftContext(context, user)) {
     return draftInternalDeleteElement(context, user, element);
   }
   // region confidence control
@@ -3276,7 +3371,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   const participantIds = [element.internal_id];
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    lock = await lockResources(participantIds);
     if (isStixRefRelationship(element.entity_type)) {
       const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
       const references = await Promise.all(referencesPromises);
@@ -3302,16 +3397,16 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
         // Generate the new version of the from
         instance[key] = withoutElementDeleted;
       }
-      const message = await generateUpdateMessage(context, instance.entity_type, inputs);
+      const message = await generateUpdateMessage(context, user, instance.entity_type, inputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
+      await elDeleteElements(context, user, [element]);
       const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
-      const deletePromise = elDeleteElements(context, user, [element]);
-      const [, , updateEvent] = await Promise.all([taskPromise, deletePromise, eventPromise]);
+      const [, updateEvent] = await Promise.all([taskPromise, eventPromise]);
       event = updateEvent;
       element.from = instance; // dynamically update the from to have an up to date relation
     } else {
@@ -3333,7 +3428,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       event = await storeDeleteEvent(context, user, element, opts);
     }
     // Temporary stored the deleted elements to prevent concurrent problem at creation
-    await redisAddDeletions(participantIds);
+    await redisAddDeletions(participantIds, getDraftContext(context, user));
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });

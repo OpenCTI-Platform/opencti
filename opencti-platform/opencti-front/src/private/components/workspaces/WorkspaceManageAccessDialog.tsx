@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { FormikHelpers } from 'formik/dist/types';
 import { graphql, useFragment } from 'react-relay';
 import FormAuthorizedMembers, { FormAuthorizedMembersInputs } from '@components/common/form/FormAuthorizedMembers';
-import { InvestigationGraph_workspace$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_workspace.graphql';
+import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
 import { WorkspaceManageAccessDialog_authorizedMembers$key } from './__generated__/WorkspaceManageAccessDialog_authorizedMembers.graphql';
 import { handleErrorInForm } from '../../../relay/environment';
 import { authorizedMembersToOptions } from '../../../utils/authorizedMembers';
@@ -24,9 +24,14 @@ const workspaceManageAccessDialogAuthorizedMembersFragment = graphql`
   fragment WorkspaceManageAccessDialog_authorizedMembers on Workspace {
     authorizedMembers {
       id
+      member_id
       name
       entity_type
       access_right
+      groups_restriction {
+        id
+        name
+      }
     }
   }
 `;
@@ -34,7 +39,7 @@ const workspaceManageAccessDialogAuthorizedMembersFragment = graphql`
 interface WorkspaceManageAccessDialogProps {
   workspaceId: string;
   authorizedMembersData: WorkspaceManageAccessDialog_authorizedMembers$key;
-  owner: InvestigationGraph_workspace$data['owner'];
+  owner: InvestigationGraph_fragment$data['owner'];
   handleClose: () => void;
   open: boolean;
 }
@@ -60,6 +65,7 @@ WorkspaceManageAccessDialogProps
           label: owner.name,
           type: owner.entity_type,
           accessRight: 'admin',
+          groupsRestriction: [],
         });
       }
     }

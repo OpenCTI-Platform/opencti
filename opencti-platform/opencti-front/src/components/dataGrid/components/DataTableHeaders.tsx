@@ -6,6 +6,7 @@ import { DragDropContext, Draggable, DraggableLocation, Droppable } from '@hello
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover/Popover';
 import { useTheme } from '@mui/styles';
+import Box from '@mui/material/Box';
 import { DataTableColumn, DataTableColumns, DataTableHeadersProps } from '../dataTableTypes';
 import DataTableHeader, { SELECT_COLUMN_SIZE } from './DataTableHeader';
 import type { Theme } from '../../Theme';
@@ -30,6 +31,8 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     disableToolBar,
     disableSelectAll,
     startsWithAction,
+    startsWithIcon,
+    startColumnWidth,
     endsWithAction,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
@@ -54,36 +57,46 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     setColumns(newColumns);
   };
 
-  const draggableColumns = useMemo(() => columns.filter(({ id }) => !['select', 'navigate'].includes(id)), [columns]);
+  const draggableColumns = useMemo(() => columns.filter(({ id }) => !['select', 'navigate', 'icon'].includes(id)), [columns]);
 
   const hasSelectedElements = numberOfSelectedElements > 0 || selectAll;
   const checkboxStyle: CSSProperties = {
     background: hasSelectedElements
       ? theme.palette.background.accent
       : 'transparent',
-    width: SELECT_COLUMN_SIZE,
+    minWidth: startColumnWidth,
   };
 
   const showToolbar = numberOfSelectedElements > 0 && !disableToolBar;
 
   return (
     <div ref={containerRef} style={{ display: 'flex', height: 42 }}>
-      {startsWithAction && (
-      <div data-testid="dataTableCheckAll" style={checkboxStyle}>
-        <Checkbox
-          checked={selectAll}
-          sx={{
-            marginRight: 1,
-            flex: '0 0 auto',
-            paddingLeft: 0,
-            '&:hover': {
-              background: 'transparent',
-            },
-          }}
-          onChange={handleToggleSelectAll}
-          disabled={!handleToggleSelectAll || disableSelectAll}
-        />
-      </div>
+      {(startsWithAction || startsWithIcon) && (
+        <div data-testid="dataTableCheckAll" style={checkboxStyle}>
+          {startsWithAction && (
+            <Checkbox
+              checked={selectAll}
+              sx={{
+                marginRight: 1,
+                flex: '0 0 auto',
+                paddingLeft: 0,
+                '&:hover': {
+                  background: 'transparent',
+                },
+              }}
+              onChange={handleToggleSelectAll}
+              disabled={!handleToggleSelectAll || disableSelectAll}
+            />
+          )}
+          {startsWithIcon && (
+            <Box sx={{
+              marginRight: 1,
+              flex: '0 0 auto',
+              paddingLeft: 0,
+            }}
+            />
+          ) }
+        </div>
       )}
 
       {showToolbar ? dataTableToolBarComponent : (
@@ -157,7 +170,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
           )}
 
           {columns
-            .filter(({ id }) => !['select', 'navigate'].includes(id))
+            .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
             .map((column) => (
               <DataTableHeader
                 key={column.id}

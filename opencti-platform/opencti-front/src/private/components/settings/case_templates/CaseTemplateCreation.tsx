@@ -1,33 +1,21 @@
 import Button from '@mui/material/Button';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
-import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import useHelper from 'src/utils/hooks/useHelper';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import CaseTemplateTasks from '../../common/form/CaseTemplateTasks';
-import { CaseTemplateAddInput } from './__generated__/CaseTemplateCreationMutation.graphql';
 import { CaseTemplateLinesPaginationQuery$variables } from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 
 const caseTemplateMutation = graphql`
   mutation CaseTemplateCreationMutation($input: CaseTemplateAddInput!) {
@@ -37,11 +25,14 @@ const caseTemplateMutation = graphql`
   }
 `;
 
-const caseTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  tasks: Yup.array(),
-});
+const CreateCaseTemplateControlledDial = (
+  props: DrawerControlledDialProps,
+) => (
+  <CreateEntityControlledDial
+    entityType="Case-Template"
+    {...props}
+  />
+);
 
 interface CaseTemplateCreationProps {
   paginationOptions?: CaseTemplateLinesPaginationQuery$variables;
@@ -50,19 +41,36 @@ interface CaseTemplateCreationProps {
 const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
   paginationOptions,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
-
-  const [commitMutation] = useApiMutation(caseTemplateMutation);
-
-  const onSubmit: FormikConfig<CaseTemplateAddInput>['onSubmit'] = (
-    values,
-    { setSubmitting, resetForm },
+  const theme = useTheme<Theme>();
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
+  const caseTemplateValidation = Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+    tasks: Yup.array(),
+  });
+  const initialValues = {
+    name: '',
+    description: '',
+    tasks: [],
+  };
+  const onSubmit = (
+    values: typeof initialValues,
+    { setSubmitting, resetForm }: {
+      setSubmitting: (flag: boolean) => void,
+      resetForm: () => void,
+    },
   ) => {
-    const input = { ...values, tasks: values.tasks.map(({ value }) => value) };
+    const finalValues = {
+      ...values,
+      tasks: values.tasks.map(({ value }) => value),
+    };
     setSubmitting(true);
     commitMutation({
-      variables: { input },
+      ...defaultCommitMutation,
+      mutation: caseTemplateMutation,
+      variables: { input: finalValues },
       updater: (store: RecordSourceSelectorProxy) => {
         insertNode(
           store,
@@ -71,6 +79,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
           'caseTemplateAdd',
         );
       },
+      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -81,29 +90,17 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
   return (
     <Drawer
       title={t_i18n('Create a case template')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced ? CreateCaseTemplateControlledDial : undefined}
     >
       {({ onClose }) => (
-        <Formik<CaseTemplateAddInput>
-          initialValues={{
-            name: '',
-            description: '',
-            tasks: [],
-          }}
-          validationSchema={caseTemplateValidation(t_i18n)}
-          onSubmit={(values, formikHelpers) => {
-            onSubmit(values, formikHelpers);
-            onClose();
-          }}
+        <Formik
+          initialValues={initialValues}
+          validationSchema={caseTemplateValidation}
+          onSubmit={onSubmit}
           onReset={onClose}
         >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
+          {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
             <Form>
               <Field
                 component={TextField}
@@ -125,12 +122,16 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                 onChange={setFieldValue}
                 values={values.tasks}
               />
-              <div className={classes.buttons}>
+              <div style={{
+                marginTop: 20,
+                textAlign: 'right',
+              }}
+              >
                 <Button
                   variant="contained"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
+                  style={{ marginLeft: theme.spacing(2) }}
                 >
                   {t_i18n('Cancel')}
                 </Button>
@@ -139,7 +140,7 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
                   color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
+                  style={{ marginLeft: theme.spacing(2) }}
                 >
                   {t_i18n('Create')}
                 </Button>

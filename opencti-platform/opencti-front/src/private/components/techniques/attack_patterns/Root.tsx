@@ -210,7 +210,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <AttackPatternKnowledge attackPattern={attackPattern} />
+                    <AttackPatternKnowledge attackPatternData={attackPattern} />
                   </div>
                 }
               />

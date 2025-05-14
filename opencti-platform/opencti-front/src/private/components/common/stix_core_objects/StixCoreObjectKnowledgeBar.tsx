@@ -83,7 +83,7 @@ interface SectionConfig {
     label: string;
     iconType: string;
     path: string;
-    count: number;
+    count?: number;
   }[];
 }
 
@@ -150,6 +150,16 @@ const StixCoreObjectKnowledgeBar = ({
   };
 
   const sectionsConfig: SectionConfig[] = [
+    {
+      title: 'All entities',
+      items: [
+        {
+          label: 'All',
+          iconType: 'All',
+          path: 'all',
+        },
+      ],
+    },
     {
       title: 'Entities',
       items: [
@@ -417,7 +427,7 @@ const StixCoreObjectKnowledgeBar = ({
                   to={`${stixCoreObjectLink}/${path}`}
                   iconType={iconType}
                   label={label}
-                  count={count}
+                  count={count ?? 0}
                 />
               ))}
             </MenuList>

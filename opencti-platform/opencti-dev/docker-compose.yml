@@ -1,7 +1,7 @@
 services:
   opencti-dev-redis:
     container_name: opencti-dev-redis
-    image: redis:7.4.2
+    image: redis:7.4.3
     restart: unless-stopped
     ports:
       - 6379:6379
@@ -14,7 +14,7 @@ services:
       - 5540:5540
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.0
     volumes:
       - esdata:/usr/share/elasticsearch/data
       - essnapshots:/usr/share/elasticsearch/snapshots
@@ -36,7 +36,7 @@ services:
       - 9300:9300
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
-    image: docker.elastic.co/kibana/kibana:8.17.2
+    image: docker.elastic.co/kibana/kibana:8.18.0
     environment:
       - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
     restart: unless-stopped
@@ -62,7 +62,7 @@ services:
   opencti-dev-opensearch:
     profiles: [ opensearch ]
     container_name: opencti-dev-opensearch
-    image: opensearchproject/opensearch:2.19.0
+    image: opensearchproject/opensearch:2.19.1
     volumes:
       - osdata:/usr/share/opensearch/data
       - ossnapshots:/usr/share/opensearch/snapshots
@@ -84,7 +84,7 @@ services:
       - 9600:9600
   opencti-dev-opensearch-dashboards:
     profiles: [ opensearch ]
-    image: opensearchproject/opensearch-dashboards:2.19.0
+    image: opensearchproject/opensearch-dashboards:2.19.1
     container_name: opencti-dev-opensearch-dashboards
     ports:
       - 5602:5601 # Map host port 5601 to container port 5601
@@ -92,7 +92,7 @@ services:
       - 5602 # Expose port 5601 for web access to OpenSearch Dashboards
     environment:
       OPENSEARCH_HOSTS: '["http://opencti-dev-opensearch:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
-      DISABLE_SECURITY_DASHBOARDS_PLUGIN: true
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: "true"
 
   opencti-dev-minio:
     container_name: opencti-dev-minio
@@ -113,8 +113,10 @@ services:
     restart: unless-stopped
   opencti-dev-rabbitmq:
     container_name: opencti-dev-rabbitmq
-    image: rabbitmq:4.0-management
+    image: rabbitmq:4.1-management
     restart: unless-stopped
+    volumes:
+      - ./rabbitmq.config:/etc/rabbitmq/conf.d/90-userdefined.conf
     ports:
       - 5672:5672
       - 15672:15672
@@ -133,7 +135,7 @@ services:
     container_name: opencti-dev-jaegertracing
     image: jaegertracing/all-in-one:latest
     environment:
-      COLLECTOR_OTLP_ENABLED: true
+      COLLECTOR_OTLP_ENABLED: "true"
     ports:
       - "16686:16686"
       - "4318:4318"
@@ -141,7 +143,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-otlp:
     container_name: opencti-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.120.0
+    image: otel/opentelemetry-collector-contrib:0.123.0
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
@@ -157,7 +159,7 @@ services:
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
       profiles: [ keycloak ]
-      image: quay.io/keycloak/keycloak:26.1.2
+      image: quay.io/keycloak/keycloak:26.2.0
       volumes:
         - keycloakdata:/opt/keycloak/data
       container_name: opencti-dev-keycloak

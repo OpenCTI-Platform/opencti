@@ -31,7 +31,7 @@ const Retention = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Customization: Retention | Settings'));
+  setTitle(t_i18n('Retention | Customization | Settings'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
@@ -99,6 +99,7 @@ const Retention = () => {
         sortBy={sortBy}
         orderAsc={orderAsc}
         handleSort={storageHelpers.handleSort}
+        createButton={<RetentionCreation paginationOptions={paginationOptions} />}
       >
         {queryRef && (
           <React.Suspense
@@ -120,7 +121,6 @@ const Retention = () => {
           </React.Suspense>
         )}
       </ListLines>
-      <RetentionCreation paginationOptions={paginationOptions} />
     </div>
   );
 };

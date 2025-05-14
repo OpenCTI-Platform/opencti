@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
@@ -9,24 +9,21 @@ import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-mate
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItem from '@mui/material/ListItem';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Link } from 'react-router-dom';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import Chip from '@mui/material/Chip';
+import { ListItemButton } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
 import { WorkbenchFileLineDeleteMutation, workbenchLineFragment } from '../../../data/import/ImportWorkbenchesContent';
 import FileWork from '../FileWork';
-import inject18n from '../../../../../components/i18n';
+import inject18n, { useFormatter } from '../../../../../components/i18n';
 import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 import { toB64 } from '../../../../../utils/String';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ItemMarkings from '../../../../../components/ItemMarkings';
+import DeleteDialog from '../../../../../components/DeleteDialog';
+import useDeletion from '../../../../../utils/hooks/useDeletion';
 
 const styles = (theme) => ({
   itemNested: {
@@ -109,15 +106,9 @@ Transition.displayName = 'TransitionSlide';
 
 const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, nested, nsdt }) => {
   const { me } = useAuth();
-  const [displayDelete, setDisplayDelete] = useState(false);
-
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
+  const { t_i18n } = useFormatter();
+  const deletion = useDeletion({});
+  const { handleOpenDelete, handleCloseDelete } = deletion;
 
   const executeRemove = (mutation, variables) => {
     commitMutation({
@@ -139,9 +130,9 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
     });
   };
 
-  const handleRemoveFile = (name) => {
-    executeRemove(WorkbenchFileLineDeleteMutation, { fileName: name });
-    setDisplayDelete(false);
+  const handleRemoveFile = () => {
+    executeRemove(WorkbenchFileLineDeleteMutation, { fileName: file.id });
+    handleCloseDelete();
   };
 
   const { uploadStatus, metaData } = file;
@@ -156,114 +147,102 @@ const WorkbenchFileLineComponent = ({ classes, t, file, dense, directDownload, n
       <ListItem
         divider={true}
         dense={dense === true}
-        classes={{ root: nested ? classes.itemNested : classes.item }}
-        button={true}
-        component={isOutdated ? null : Link}
-        disabled={isProgress}
-        to={`/dashboard/data/import/pending/${toB64(file.id)}`}
+        disablePadding
+        secondaryAction={
+          <>
+            {!directDownload && !isFail && (
+            <Tooltip title={t('Download this file')}>
+              <span>
+                <IconButton
+                  disabled={isProgress}
+                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                    file.id,
+                  )}`}
+                  aria-haspopup="true"
+                  color={nested ? 'inherit' : 'primary'}
+                  size="small"
+                >
+                  <GetAppOutlined fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+            )}
+            <Tooltip title={t('Delete this workbench')}>
+              <span>
+                <IconButton
+                  disabled={isProgress}
+                  color={nested ? 'inherit' : 'primary'}
+                  onClick={handleOpenDelete}
+                  size="small"
+                >
+                  <DeleteOutlined fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </>
+          }
       >
-        <ListItemIcon>
-          {isProgress && (
-          <CircularProgress
-            size={20}
-            color={nested ? 'primary' : 'inherit'}
-          />
-          )}
-          {!isProgress && (isFail || isOutdated) && (
-          <WarningOutlined
-            color={nested ? 'primary' : 'inherit'}
-            style={{ fontSize: 15, color: '#f44336' }}
-          />
-          )}
-          {!isProgress && !isFail && !isOutdated && (
-          <FileOutline color={nested ? 'primary' : 'inherit'} />
-          )}
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <>
-              <div className={classes.bodyItem} style={inlineStyles.name}>
-                {file.name.replace('.json', '')}
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.creator_name}>
-                {file.metaData.creator?.name || t('Unknown')}
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.labels}>
-                {file.metaData.labels_text ? file.metaData.labels_text.split(';').map((label, index) => (
-                  <Chip
-                    key={index}
-                    classes={{ root: classes.chipInList }}
-                    color="primary"
-                    variant="outlined"
-                    label={label.trim()}
-                  />
-                )) : null}
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.labels}>
-                <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1} />
-              </div>
-              <div className={classes.bodyItem} style={inlineStyles.lastModified}>
-                {nsdt(file.lastModified)}
-              </div>
-            </>
+        <ListItemButton
+          classes={{ root: nested ? classes.itemNested : classes.item }}
+          component={isOutdated ? null : Link}
+          disabled={isProgress}
+          to={`/dashboard/data/import/pending/${toB64(file.id)}`}
+        >
+          <ListItemIcon>
+            {isProgress && (
+            <CircularProgress
+              size={20}
+              color={nested ? 'primary' : 'inherit'}
+            />
+            )}
+            {!isProgress && (isFail || isOutdated) && (
+            <WarningOutlined
+              color={nested ? 'primary' : 'inherit'}
+              style={{ fontSize: 15, color: '#f44336' }}
+            />
+            )}
+            {!isProgress && !isFail && !isOutdated && (
+            <FileOutline color={nested ? 'primary' : 'inherit'} />
+            )}
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <>
+                <div className={classes.bodyItem} style={inlineStyles.name}>
+                  {file.name.replace('.json', '')}
+                </div>
+                <div className={classes.bodyItem} style={inlineStyles.creator_name}>
+                  {file.metaData.creator?.name || t('Unknown')}
+                </div>
+                <div className={classes.bodyItem} style={inlineStyles.labels}>
+                  {file.metaData.labels_text ? file.metaData.labels_text.split(';').map((label, index) => (
+                    <Chip
+                      key={index}
+                      classes={{ root: classes.chipInList }}
+                      color="primary"
+                      variant="outlined"
+                      label={label.trim()}
+                    />
+                  )) : null}
+                </div>
+                <div className={classes.bodyItem} style={inlineStyles.labels}>
+                  <ItemMarkings variant="inList" markingDefinitions={fileMarkings} limit={1} />
+                </div>
+                <div className={classes.bodyItem} style={inlineStyles.lastModified}>
+                  {nsdt(file.lastModified)}
+                </div>
+              </>
             }
-        />
-        <ListItemSecondaryAction>
-          {!directDownload && !isFail && (
-          <Tooltip title={t('Download this file')}>
-            <span>
-              <IconButton
-                disabled={isProgress}
-                href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                  file.id,
-                )}`}
-                aria-haspopup="true"
-                color={nested ? 'inherit' : 'primary'}
-                size="small"
-              >
-                <GetAppOutlined fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>
-          )}
-          <Tooltip title={t('Delete this workbench')}>
-            <span>
-              <IconButton
-                disabled={isProgress}
-                color={nested ? 'inherit' : 'primary'}
-                onClick={handleOpenDelete}
-                size="small"
-              >
-                <DeleteOutlined fontSize="small" />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </ListItemSecondaryAction>
+          />
+        </ListItemButton>
       </ListItem>
+
       <FileWork file={file} />
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayDelete}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t('Do you want to delete this workbench?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete}>
-            {t('Cancel')}
-          </Button>
-          <Button
-            onClick={() => handleRemoveFile(file.id)}
-            color="secondary"
-          >
-            {t('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={handleRemoveFile}
+        message={t_i18n('Do you want to delete this workbench?')}
+      />
     </>
   );
 };

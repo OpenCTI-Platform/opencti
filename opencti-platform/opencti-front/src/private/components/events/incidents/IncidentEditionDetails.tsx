@@ -14,6 +14,7 @@ import { IncidentEditionDetailsFieldPatchMutation } from './__generated__/Incide
 import { IncidentEditionDetailsFocusMutation } from './__generated__/IncidentEditionDetailsFocusMutation.graphql';
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
+import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { parse } from '../../../../utils/Time';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -63,21 +64,6 @@ const incidentEditionDetailsFragment = graphql`
   }
 `;
 
-const incidentEditionDetailsValidation = (t: (v: string) => string) => Yup.object().shape({
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date()
-    .nullable()
-    .min(
-      Yup.ref('first_seen'),
-      "The last seen date can't be before first seen date",
-    )
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  objective: Yup.string().nullable(),
-  source: Yup.string().nullable(),
-});
-
 interface IncidentEditionDetailsProps {
   incidentRef: IncidentEditionDetails_incident$key;
   context?: readonly (GenericContext | null)[] | null;
@@ -117,6 +103,27 @@ IncidentEditionDetailsProps
       },
     });
   };
+
+  const INCIDENT_TYPE = 'Incident';
+  const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
+  const basicShape = yupShapeConditionalRequired({
+    first_seen: Yup.date()
+      .nullable()
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    last_seen: Yup.date()
+      .nullable()
+      .min(
+        Yup.ref('first_seen'),
+        "The last seen date can't be before first seen date",
+      )
+      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    objective: Yup.string().nullable(),
+    source: Yup.string().nullable(),
+  }, mandatoryAttributes);
+  const incidentEditionDetailsValidation = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
+    basicShape,
+  );
 
   const onSubmit: FormikConfig<IncidentEditionDetailsFormValues>['onSubmit'] = (
     values,
@@ -171,7 +178,9 @@ IncidentEditionDetailsProps
     <Formik<IncidentEditionDetailsFormValues>
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={incidentEditionDetailsValidation(t_i18n)}
+      validationSchema={incidentEditionDetailsValidation}
+      validateOnChange={true}
+      validateOnBlur={true}
       onSubmit={onSubmit}
     >
       {({
@@ -187,6 +196,7 @@ IncidentEditionDetailsProps
           <Field
             component={DateTimePickerField}
             name="first_seen"
+            required={(mandatoryAttributes.includes('first_seen'))}
             disabled={isInferred}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
@@ -202,6 +212,7 @@ IncidentEditionDetailsProps
           <Field
             component={DateTimePickerField}
             name="last_seen"
+            required={(mandatoryAttributes.includes('last_seen'))}
             label={t_i18n('Last seen')}
             disabled={isInferred}
             onFocus={handleChangeFocus}
@@ -220,6 +231,7 @@ IncidentEditionDetailsProps
             component={TextField}
             variant="standard"
             name="source"
+            required={(mandatoryAttributes.includes('source'))}
             label={t_i18n('Source')}
             fullWidth={true}
             style={{ marginTop: 20 }}
@@ -233,6 +245,7 @@ IncidentEditionDetailsProps
             component={TextField}
             variant="standard"
             name="objective"
+            required={(mandatoryAttributes.includes('objective'))}
             label={t_i18n('Objective')}
             fullWidth={true}
             multiline={true}

@@ -16,11 +16,22 @@ export class TelemetryMeterManager {
   // Number of users in the platform
   usersCount = 0;
 
-  // Number of active users
-  activeUsersCount = 0;
-
   // Number of active connectors
   activeConnectorsCount = 0;
+
+  disseminationCount = 0;
+
+  // Number of active drafts
+  draftCount = 0;
+
+  // Number of active workbenches
+  workbenchCount = 0;
+
+  // Number of NLQ query call
+  nlqQueryCount = 0;
+
+  // Number of RFI of request access type that are created
+  requestAccessCreationCount = 0;
 
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
@@ -38,16 +49,32 @@ export class TelemetryMeterManager {
     this.instancesCount = n;
   }
 
-  setActiveUsersCount(n: number) {
-    this.activeUsersCount = n;
-  }
-
   setUsersCount(n: number) {
     this.usersCount = n;
   }
 
   setActiveConnectorsCount(n: number) {
     this.activeConnectorsCount = n;
+  }
+
+  setDisseminationCount(n: number) {
+    this.disseminationCount = n;
+  }
+
+  setDraftCount(n: number) {
+    this.draftCount = n;
+  }
+
+  setWorkbenchCount(n: number) {
+    this.workbenchCount = n;
+  }
+
+  setNlqQueryCount(n: number) {
+    this.nlqQueryCount = n;
+  }
+
+  setRequestAccessCreatedCount(n: number) {
+    this.requestAccessCreationCount = n;
   }
 
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
@@ -65,9 +92,13 @@ export class TelemetryMeterManager {
     // This kind of gauge count be synchronous, waiting for opentelemetry-js 3668
     // https://github.com/open-telemetry/opentelemetry-js/issues/3668
     this.registerGauge('total_users_count', 'number of users', 'usersCount');
-    this.registerGauge('active_users_count', 'number of active users', 'activeUsersCount');
     this.registerGauge('total_instances_count', 'cluster number of instances', 'instancesCount');
     this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
+    this.registerGauge('call_dissemination', 'dissemination feature usage', 'disseminationCount');
+    this.registerGauge('active_drafts_count', 'number of active drafts', 'draftCount');
+    this.registerGauge('active_workbenches_count', 'number of active workbenches', 'workbenchCount');
+    this.registerGauge('call_nlq', 'NLQ feature usage', 'nlqQueryCount');
+    this.registerGauge('request_access_creation_count', 'Number of RFI of request access type that are created', 'requestAccessCreationCount');
   }
 }

@@ -8,7 +8,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import IconButton from '@mui/material/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -23,10 +22,10 @@ import { SimplePaletteColorOptions } from '@mui/material/styles/createPalette';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import { UserUserRenewTokenMutation } from '@components/settings/users/__generated__/UserUserRenewTokenMutation.graphql';
 import Tooltip from '@mui/material/Tooltip';
+import DialogTitle from '@mui/material/DialogTitle';
+import { ListItemButton } from '@mui/material';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
-import UserEdition from './UserEdition';
-import { userEditionQuery } from './UserPopover';
 import { handleError, QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { now, timestamp, yearsAgo } from '../../../../utils/Time';
@@ -40,7 +39,6 @@ import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
 import Triggers from '../common/Triggers';
 import { UserAuditsTimeSeriesQuery$data } from './__generated__/UserAuditsTimeSeriesQuery.graphql';
-import { UserPopoverEditionQuery$data } from './__generated__/UserPopoverEditionQuery.graphql';
 import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -495,19 +493,18 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <FieldOrEmpty source={user.roles ?? []}>
                   <List>
                     {(user.roles ?? []).map((role) => (userHasSettingsCapability ? (
-                      <ListItem
+                      <ListItemButton
                         key={role?.id}
                         dense={true}
                         divider={true}
                         component={Link}
-                        button={true}
                         to={`/dashboard/settings/accesses/roles/${role?.id}`}
                       >
                         <ListItemIcon>
                           <ItemIcon type="Role" />
                         </ListItemIcon>
                         <ListItemText primary={role?.name} />
-                      </ListItem>
+                      </ListItemButton>
                     ) : (
                       <ListItem key={role?.id} dense={true} divider={true}>
                         <ListItemIcon>
@@ -526,11 +523,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <FieldOrEmpty source={user.groups?.edges}>
                   <List>
                     {(user.groups?.edges ?? []).map((groupEdge) => (userHasSettingsCapability ? (
-                      <ListItem
+                      <ListItemButton
                         key={groupEdge?.node.id}
                         dense={true}
                         divider={true}
-                        button={true}
                         component={Link}
                         to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
                       >
@@ -538,7 +534,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           <ItemIcon type="Group" />
                         </ListItemIcon>
                         <ListItemText primary={groupEdge?.node.name} />
-                      </ListItem>
+                      </ListItemButton>
                     ) : (
                       <ListItem
                         key={groupEdge?.node.id}
@@ -561,11 +557,10 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <FieldOrEmpty source={user.objectOrganization?.edges}>
                   <List>
                     {user.objectOrganization?.edges.map((organizationEdge) => (
-                      <ListItem
+                      <ListItemButton
                         key={organizationEdge.node.id}
                         dense={true}
                         divider={true}
-                        button={true}
                         component={Link}
                         to={`/dashboard/settings/accesses/organizations/${organizationEdge.node.id}`}
                       >
@@ -586,7 +581,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           />
                         </ListItemIcon>
                         <ListItemText primary={organizationEdge.node.name} />
-                      </ListItem>
+                      </ListItemButton>
                     ))}
                   </List>
                 </FieldOrEmpty>
@@ -614,14 +609,22 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </Security>
                 <div className="clearfix" />
                 <FieldOrEmpty source={orderedSessions}>
-                  <List style={{ marginTop: -2 }}>
+                  <List style={{ marginTop: -2, width: '100%', maxHeight: 400, overflowY: 'auto' }}>
                     {orderedSessions
                       && orderedSessions.map((session: Session) => (
                         <ListItem
                           key={session.id}
                           dense={true}
                           divider={true}
-                          button={false}
+                          secondaryAction={
+                            <IconButton
+                              aria-label="Kill"
+                              onClick={() => handleOpenKillSession(session.id)}
+                              size="small"
+                            >
+                              <DeleteOutlined fontSize="small" />
+                            </IconButton>
+                          }
                         >
                           <ListItemIcon>
                             <ItemIcon type="Session" />
@@ -641,15 +644,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                               </>
                             }
                           />
-                          <ListItemSecondaryAction>
-                            <IconButton
-                              aria-label="Kill"
-                              onClick={() => handleOpenKillSession(session.id)}
-                              size="small"
-                            >
-                              <DeleteOutlined fontSize="small" />
-                            </IconButton>
-                          </ListItemSecondaryAction>
                         </ListItem>
                       ))}
                   </List>
@@ -676,7 +670,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
         </Grid>
         <Triggers recipientId={user.id} filterKey="authorized_members.id" />
         <Grid item xs={6} style={{ marginTop: 10 }}>
-          <Typography variant="h4" gutterBottom={true}>
+          <Typography variant="h4" gutterBottom={true} style={{ paddingBottom: '21px' }}>
             {t_i18n('Operations')}
           </Typography>
           <Paper
@@ -786,23 +780,16 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           )}
         </Grid>
       </Grid>
-      <QueryRenderer
-        query={userEditionQuery}
-        variables={{ id: user.id }}
-        render={({ props }: { props: UserPopoverEditionQuery$data }) => {
-          if (props && props.user) {
-            return <UserEdition user={props.user} />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
       <Dialog
         open={displayKillSession}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseKillSession}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to kill this session?')}
@@ -817,17 +804,20 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             color="secondary"
             disabled={killing}
           >
-            {t_i18n('Kill')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
       <Dialog
         open={displayKillSessions}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseKillSessions}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to kill all the sessions of this user?')}
@@ -842,17 +832,20 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             color="secondary"
             disabled={killing}
           >
-            {t_i18n('Kill all')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>
       <Dialog
         open={displayRenewToken}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseRenewToken}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to revoke this user token ? Once the token is revoked all access are forbidden, please verify that the token is not used by connectors or other API calls before revoking.')}
@@ -866,7 +859,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             onClick={submitRenewToken}
             color="secondary"
           >
-            {t_i18n('Revoke')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

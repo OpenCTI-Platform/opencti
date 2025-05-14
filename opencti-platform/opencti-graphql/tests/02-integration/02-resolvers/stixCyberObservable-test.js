@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { internalAdminQuery, queryAsAdmin } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
@@ -44,18 +44,65 @@ describe('StixCyberObservable resolver standard behavior', () => {
   let stixCyberObservableInternalId;
   let networkTrafficInternalId;
   const stixCyberObservableStixId = 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c';
+
+  const CREATE_QUERY = gql`
+      mutation StixCyberObservableAdd(
+        $type: String!,
+        $IPv4Addr: IPv4AddrAddInput,
+        $NetworkTraffic: NetworkTrafficAddInput,
+        $Text: TextAddInput,
+        $x_opencti_score: Int
+      ) {
+        stixCyberObservableAdd(type: $type,
+          IPv4Addr: $IPv4Addr,
+          NetworkTraffic: $NetworkTraffic,
+          Text: $Text
+          x_opencti_score: $x_opencti_score
+        ) {
+          id
+          observable_value
+          x_opencti_score
+          ... on IPv4Addr {
+            value
+          }
+          ... on NetworkTraffic {
+            dst_port
+          }
+          ... on Text {
+            value
+          }
+        }
+      }
+    `;
+
+  const UPDATE_QUERY = gql`
+      mutation StixCyberObservableEdit($id: ID!, $input: [EditInput]!) {
+        stixCyberObservableEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            x_opencti_score
+          }
+        }
+      }
+    `;
+
+  it('should not create stixCyberObservable with score value outside of 0 and 100', async () => {
+    // Create
+    const STIX_OBSERVABLE_TO_CREATE = {
+      type: 'Text',
+      stix_id: 'text--921c202b-5706-499d-9484-b5cf9bc6f70c',
+      Text: {
+        value: 'Test',
+      },
+      x_opencti_score: 101,
+    };
+    const stixCyberObservable = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: STIX_OBSERVABLE_TO_CREATE,
+    });
+    expect(stixCyberObservable.errors[0].message).toEqual('The score should be between 0 and 100');
+  });
   it('should stixCyberObservable created', async () => {
-    const CREATE_QUERY = gql`
-            mutation StixCyberObservableAdd($type: String!, $IPv4Addr: IPv4AddrAddInput) {
-                stixCyberObservableAdd(type: $type, IPv4Addr: $IPv4Addr) {
-                    id
-                    observable_value
-                    ... on IPv4Addr {
-                        value
-                    }
-                }
-            }
-        `;
     // Create the stixCyberObservable
     const STIX_OBSERVABLE_TO_CREATE = {
       type: 'IPv4-Addr',
@@ -74,17 +121,6 @@ describe('StixCyberObservable resolver standard behavior', () => {
     stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
   });
   it('should stixCyberObservable network traffic created', async () => {
-    const CREATE_QUERY = gql`
-            mutation StixCyberObservableAdd($type: String!, $NetworkTraffic: NetworkTrafficAddInput) {
-                stixCyberObservableAdd(type: $type, NetworkTraffic: $NetworkTraffic) {
-                    id
-                    observable_value
-                    ... on NetworkTraffic {
-                        dst_port
-                    }
-                }
-            }
-        `;
     // Create the stixCyberObservable
     const STIX_OBSERVABLE_TO_CREATE = {
       type: 'Network-Traffic',
@@ -118,16 +154,6 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(queryResult.data.stixCyberObservables.edges.length).toEqual(6);
   });
   it('should update stixCyberObservable', async () => {
-    const UPDATE_QUERY = gql`
-            mutation StixCyberObservableEdit($id: ID!, $input: [EditInput]!) {
-                stixCyberObservableEdit(id: $id) {
-                    fieldPatch(input: $input) {
-                        id
-                        x_opencti_score
-                    }
-                }
-            }
-        `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: {
@@ -136,6 +162,26 @@ describe('StixCyberObservable resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixCyberObservableEdit.fieldPatch.x_opencti_score).toEqual(20);
+  });
+  it('should not update stixCyberObservable with score value outside of 0 and 100', async () => {
+    // Update above 100
+    const queryResultAbove100 = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: stixCyberObservableInternalId,
+        input: { key: 'x_opencti_score', value: '142' },
+      },
+    });
+    expect(queryResultAbove100.errors[0].message).toEqual('The score should be between 0 and 100');
+    // Update below 0
+    const queryResultBelow0 = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: stixCyberObservableInternalId,
+        input: { key: 'x_opencti_score', value: '-42' },
+      },
+    });
+    expect(queryResultBelow0.errors[0].message).toEqual('The score should be between 0 and 100');
   });
   it('should context patch stixCyberObservable', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -222,7 +268,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(queryResult.data.stixCyberObservableEdit.relationDelete.objectMarking.length).toEqual(0);
   });
   it('should add observable in note', async () => {
-    const CREATE_QUERY = gql`
+    const CREATE_NOTE_QUERY = gql`
             mutation NoteAdd($input: NoteAddInput!) {
                 noteAdd(input: $input) {
                     id
@@ -241,7 +287,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
       },
     };
     const note = await queryAsAdmin({
-      query: CREATE_QUERY,
+      query: CREATE_NOTE_QUERY,
       variables: NOTE_TO_CREATE,
     });
     expect(note).not.toBeNull();

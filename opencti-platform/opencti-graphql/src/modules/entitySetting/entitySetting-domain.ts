@@ -188,22 +188,28 @@ export const queryDefaultValuesAttributesForSetting = async (
   const attributes = await getEntitySettingSchemaAttributes(context, user, entitySetting);
   const defaultValuesAttributes = await Promise.all(attributes.filter((a) => a.defaultValues).map(async (a) => {
     if (a.name === authorizedMembers.name && a.defaultValues) {
-      const membersIds = a.defaultValues.map((d) => JSON.parse(d.id).id);
+      const defaultValuesParsed = a.defaultValues.map((d) => JSON.parse(d.id));
+      const membersIds = defaultValuesParsed.map((d) => d.id);
+      const groupsRestrictionIds = defaultValuesParsed.flatMap((d) => d.groups_restriction_ids ?? []);
       const args = {
         connectionFormat: false,
         filters: {
           mode: 'and',
-          filters: [{ key: 'internal_id', values: membersIds }],
+          filters: [{ key: 'internal_id', values: [...membersIds, ...groupsRestrictionIds] }],
           filterGroups: [],
         },
       };
       const members = await findAllMembers(context, user, args);
-      const membersDefaultValues = a.defaultValues.map((d) => {
-        const defaultValueObject = JSON.parse(d.id);
+      const membersDefaultValues = defaultValuesParsed.map((d) => {
+        const defaultValueObject = { ...d };
         const memberId = defaultValueObject.id;
         const member = members.find((m) => (m as BasicStoreEntity).id === memberId) as BasicStoreEntity;
         defaultValueObject.name = member?.name ?? '';
         defaultValueObject.entity_type = member?.entity_type ?? '';
+        defaultValueObject.groups_restriction = (defaultValueObject.groups_restriction_ids ?? []).map((groupId: string) => {
+          const group = members.find((m) => (m as BasicStoreEntity).id === groupId) as BasicStoreEntity;
+          return { id: groupId, name: group?.name ?? 'unknown' };
+        });
         const jsonValue = JSON.stringify(defaultValueObject);
         return { ...d, id: jsonValue, name: jsonValue };
       });

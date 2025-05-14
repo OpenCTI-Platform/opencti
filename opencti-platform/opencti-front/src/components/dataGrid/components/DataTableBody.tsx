@@ -4,8 +4,9 @@ import DataTableHeaders from './DataTableHeaders';
 import { DataTableBodyProps, DataTableLineProps, DataTableVariant } from '../dataTableTypes';
 import DataTableLine, { DataTableLinesDummy } from './DataTableLine';
 import { useDataTableContext } from './DataTableContext';
-import { SELECT_COLUMN_SIZE } from './DataTableHeader';
+import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
+import { useDataTable } from '../dataTableHooks';
 
 const DataTableBody = ({
   settingsMessagesBannerHeight = 0,
@@ -14,23 +15,15 @@ const DataTableBody = ({
   pageStart,
   pageSize,
   hideHeaders = false,
-  tableRef,
 }: DataTableBodyProps) => {
   const {
     rootRef,
     variant,
     resolvePath,
-    tableWidthState: [tableWidth, setTableWidth],
-    startsWithAction,
-    endsWithAction,
+    tableWidthState: [tableWidth],
     actions,
     columns,
-    useDataTable: {
-      data: queryData,
-      isLoading,
-      loadMore,
-      hasMore,
-    },
+    dataQueryArgs,
     useDataTableToggle: {
       selectedElements,
       onToggleEntity,
@@ -38,7 +31,15 @@ const DataTableBody = ({
     useDataTablePaginationLocalStorage: {
       viewStorage: { filters },
     },
+    data,
   } = useDataTableContext();
+
+  const {
+    data: queryData,
+    isLoading,
+    loadMore,
+    hasMore,
+  } = data ? { data } : useDataTable(dataQueryArgs); // data is from datatableWithoutFragment
 
   const resolvedData = useMemo(() => {
     if (!queryData) {
@@ -52,24 +53,6 @@ const DataTableBody = ({
       loadMore?.(pageSize);
     }
   }, [resolvedData]);
-
-  // Keep table width up to date.
-  useLayoutEffect(() => {
-    let observer: ResizeObserver;
-    if (tableRef.current) {
-      const resize = (el: Element) => {
-        let offset = 10;
-        if (startsWithAction) offset += SELECT_COLUMN_SIZE;
-        if (endsWithAction) offset += SELECT_COLUMN_SIZE;
-        if ((el.clientWidth - offset) !== tableWidth) {
-          setTableWidth(el.clientWidth - offset);
-        }
-      };
-      resize(tableRef.current);
-      observer = callbackResizeObserver(tableRef.current, resize);
-    }
-    return () => { observer?.disconnect(); };
-  }, [tableRef.current, tableWidth, startsWithAction, endsWithAction]);
 
   const onToggleShiftEntity: DataTableLineProps['onToggleShiftEntity'] = (currentIndex, currentEntity, event) => {
     if (selectedElements && !R.isEmpty(selectedElements)) {
@@ -145,10 +128,10 @@ const DataTableBody = ({
 
   const rowWidth = useMemo(() => (
     Math.floor(columns.reduce((acc, col) => {
-      const width = col.percentWidth
-        ? tableWidth * (col.percentWidth / 100)
-        : SELECT_COLUMN_SIZE;
-      return acc + width;
+      if (col.percentWidth) {
+        return acc + tableWidth * (col.percentWidth / 100);
+      }
+      return acc + (col.id === 'icon' ? ICON_COLUMN_SIZE : SELECT_COLUMN_SIZE);
     }, actions ? SELECT_COLUMN_SIZE + 9 : 9)) // 9 is for scrollbar.
   ), [columns, tableWidth]);
 

@@ -57,7 +57,7 @@ const Groups = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security: Groups | Settings'));
+  setTitle(t_i18n('Groups | Security | Settings'));
   const params = buildViewParamsFromUrlAndStorage(
     navigate,
     location,
@@ -141,6 +141,7 @@ const Groups = () => {
         displayImport={false}
         secondaryAction={false}
         keyword={searchTerm}
+        createButton={<GroupCreation paginationOptions={paginationOptions} />}
       >
         <QueryRenderer
           query={groupsLinesQuery}
@@ -169,7 +170,6 @@ const Groups = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Groups'), current: true }]} />
       <AccessesMenu />
       {groupState.view === 'lines' ? renderLines(paginationOptions) : ''}
-      <GroupCreation paginationOptions={paginationOptions} />
     </div>
   );
 };

@@ -10,7 +10,6 @@ import DialogActions from '@mui/material/DialogActions';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Radio from '@mui/material/Radio';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -90,6 +89,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const navigate = useNavigate();
   const isKnowledgeUploader = useGranted([KNOWLEDGE_KNUPLOAD]);
   const defaultLanguageName = getDefaultAiLanguage();
+
   const [language, setLanguage] = useState(defaultLanguageName);
   const [content, setContent] = useState('');
   const [acceptedResult, setAcceptedResult] = useState<string | null>(null);
@@ -103,12 +103,18 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
   const [disableResponse, setDisableResponse] = useState(false);
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
+
   const action = 'container-report' as 'container-report' | 'summarize-files' | 'convert-files';
   const handleOpenAskAI = () => setDisplayAskAI(true);
-  const handleCloseAskAI = () => setDisplayAskAI(false);
+  const handleCloseAskAI = () => {
+    setContent('');
+    setDisplayAskAI(false);
+  };
+
   const [commitMutationUpdateContent] = useApiMutation<StixCoreObjectMappableContentFieldPatchMutation>(stixCoreObjectMappableContentFieldPatchMutation);
   const [commitMutationCreateFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(stixCoreObjectContentFilesUploadStixCoreObjectMutation);
   const [commitMutationContainerReport] = useApiMutation<StixCoreObjectAskAIContainerReportMutation>(stixCoreObjectAskAIContainerReportMutation);
+
   const handleAskAiContent = () => {
     handleCloseOptions();
     setDisableResponse(true);
@@ -134,6 +140,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
       },
     });
   };
+
   const handleAskAi = () => {
     // check paragraphs value is correct
     if (action === 'container-report' || action === 'summarize-files') {
@@ -148,10 +155,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
       handleAskAiContent();
     }
   };
+
   const handleCancelDestination = () => {
     setAcceptedResult(null);
     setDisplayAskAI(true);
   };
+
   const submitAcceptedResult = () => {
     setIsSubmitting(true);
     if (destination === 'content') {
@@ -206,10 +215,11 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
       });
     }
   };
+
   return (
     <>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={optionsOpen}
         onClose={handleCloseOptions}
         fullWidth={true}
@@ -303,7 +313,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
         </DialogActions>
       </Dialog>
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={acceptedResult !== null}
         onClose={() => setAcceptedResult(null)}
         fullWidth={true}
@@ -313,12 +323,10 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
         <DialogContent>
           <List>
             {isContainerWithContent(instanceType) && format !== 'json' && (
-              <ListItem dense={true} divider={true}>
-                <ListItemText
-                  primary={t_i18n('Main content')}
-                  secondary={t_i18n('Put in the embedded content of the entity')}
-                />
-                <ListItemSecondaryAction>
+              <ListItem
+                dense={true}
+                divider={true}
+                secondaryAction={
                   <Radio
                     checked={destination === 'content'}
                     onChange={() => setDestination('content')}
@@ -326,16 +334,19 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
                     name="destination"
                     inputProps={{ 'aria-label': 'destination' }}
                   />
-                </ListItemSecondaryAction>
+                }
+              >
+                <ListItemText
+                  primary={t_i18n('Main content')}
+                  secondary={t_i18n('Put in the embedded content of the entity')}
+                />
               </ListItem>
             )}
             {isKnowledgeUploader && (
-              <ListItem dense={true} divider={true}>
-                <ListItemText
-                  primary={t_i18n('New file')}
-                  secondary={t_i18n('Create a new file with the content')}
-                />
-                <ListItemSecondaryAction>
+              <ListItem
+                dense={true}
+                divider={true}
+                secondaryAction={
                   <Radio
                     checked={destination === 'file'}
                     onChange={() => setDestination('file')}
@@ -343,7 +354,12 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
                     name="destination"
                     inputProps={{ 'aria-label': 'destination' }}
                   />
-                </ListItemSecondaryAction>
+                }
+              >
+                <ListItemText
+                  primary={t_i18n('New file')}
+                  secondary={t_i18n('Create a new file with the content')}
+                />
               </ListItem>
             )}
           </List>

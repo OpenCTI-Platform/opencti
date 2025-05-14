@@ -11,9 +11,12 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DialogTitle from '@mui/material/DialogTitle';
+import DialogContentText from '@mui/material/DialogContentText';
+import { AlertTitle } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import UserEdition from './UserEdition';
 import Transition from '../../../../components/Transition';
 
@@ -86,7 +89,7 @@ class UserPopover extends Component {
   }
 
   render() {
-    const { t, userId, disabled } = this.props;
+    const { t, disabled, userEditionData } = this.props;
     return (
       <>
         <IconButton
@@ -113,36 +116,32 @@ class UserPopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <QueryRenderer
-          query={userEditionQuery}
-          variables={{ id: userId }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <UserEdition
-                  user={props.user}
-                  open={this.state.displayUpdate}
-                  handleClose={this.handleCloseUpdate.bind(this)}
-                />
-              );
-            }
-            return <div />;
-          }}
+        <UserEdition
+          userEditionData={userEditionData}
+          open={this.state.displayUpdate}
+          handleClose={this.handleCloseUpdate.bind(this)}
         />
         <Dialog
           open={this.state.displayDelete}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
-          <DialogTitle>{t('Do you want to delete this user?')}</DialogTitle>
-          <DialogContent dividers>
-            <ul>
-              <li>{t('All notifications, triggers and digests associated with the user will be deleted.')}</li>
-              <li>{t('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
-            </ul>
-            {t('If you want to keep the associated information, we recommend deactivating the user instead.')}
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to delete this user?')}
+            </DialogContentText>
+            <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
+              <AlertTitle>{t('If you want to keep the associated information, we recommend deactivating the user instead.')}</AlertTitle>
+              <ul>
+                <li>{t('All notifications, triggers and digests associated with the user will be deleted.')}</li>
+                <li>{t('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
+              </ul>
+            </Alert>
           </DialogContent>
           <DialogActions>
             <Button
@@ -156,7 +155,7 @@ class UserPopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

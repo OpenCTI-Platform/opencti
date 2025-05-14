@@ -17,7 +17,7 @@ import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
-import { isStixCoreObjects } from '../../../../../../utils/stixTypeUtils';
+import { isStixCoreObjects, isStixCoreRelationships } from '../../../../../../utils/stixTypeUtils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -59,7 +59,7 @@ CsvMapperRepresentationAttributeRefFormProps
 
   const { name, value } = field;
   const { setFieldValue, values } = form;
-  const { entity_representations } = values;
+  const { entity_representations, relationship_representations } = values;
 
   const [fromType, fromId] = getInfoForRef(
     Object.values(representation.attributes),
@@ -117,8 +117,12 @@ CsvMapperRepresentationAttributeRefFormProps
       schema.sdos.map((sdo) => sdo.label).forEach((sdoType) => everyRepresentationTypes.push(sdoType));
       schema.scos.map((sco) => sco.label).forEach((scoType) => everyRepresentationTypes.push(scoType));
     }
+    if (isStixCoreRelationships(everyRepresentationTypes)) {
+      schema.scrs.map((sco) => sco.label).forEach((srcType) => everyRepresentationTypes.push(srcType));
+    }
+    const allElements = [...entity_representations, ...relationship_representations];
     options = filterOptions(
-      entity_representations
+      allElements
         .filter((r) => r.target_type && everyRepresentationTypes.includes(r.target_type)),
     );
   }
@@ -189,7 +193,10 @@ CsvMapperRepresentationAttributeRefFormProps
             autoSelect={false}
             autoHighlight
             multiple
-            getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
+            getOptionLabel={(option) => {
+              const optionIndex = entity_representations.indexOf(option) >= 0 ? entity_representations.indexOf(option) : relationship_representations.indexOf(option);
+              return representationLabel(optionIndex, option, t_i18n);
+            }}
             options={options}
             value={getBasedOnRepresentations(value, options) || null}
             onChange={(_, val) => onValueChange(val)}

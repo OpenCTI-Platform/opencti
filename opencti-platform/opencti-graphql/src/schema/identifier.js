@@ -19,7 +19,7 @@ import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { now } from '../utils/format';
 import { isBasicRelationship } from './stixRelationship';
-import { convertTypeToStixType } from '../database/stix-converter';
+import { convertTypeToStixType } from '../database/stix-2-1-converter';
 import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationship';
 
 // region hashes
@@ -173,7 +173,7 @@ const stixBaseEntityContribution = {
     [I.ENTITY_TYPE_RULE]: () => uuidv4(),
     [I.ENTITY_TYPE_HISTORY]: () => uuidv4(),
     [I.ENTITY_TYPE_STATUS_TEMPLATE]: [{ src: NAME_FIELD }],
-    [I.ENTITY_TYPE_STATUS]: [{ src: 'template_id' }, { src: 'type' }],
+    [I.ENTITY_TYPE_STATUS]: [{ src: 'template_id' }, { src: 'type' }, { src: 'scope' }],
     [I.ENTITY_TYPE_FEED]: () => uuidv4(),
     [I.ENTITY_TYPE_TAXII_COLLECTION]: () => uuidv4(),
     [I.ENTITY_TYPE_BACKGROUND_TASK]: () => uuidv4(),

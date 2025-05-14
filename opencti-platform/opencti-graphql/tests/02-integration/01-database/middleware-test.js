@@ -951,6 +951,24 @@ describe('Upsert and merge entities', () => {
     expect(loadMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
     expect(loadMalware.x_opencti_stix_ids.includes('malware--907bb632-e3c2-52fa-b484-cf166a7d377e')).toBeTruthy();
     expect(loadMalware.aliases.sort()).toEqual(['NEW MALWARE ALIAS', 'MALWARE_TEST'].sort());
+
+    // Upsert definition per standard ID
+    upMalware = {
+      name: 'NEW NAME',
+      // This is the standard ID for "NEW NAME"
+      stix_id: 'malware--284e60cb-6b78-5ca5-a81c-b84b6bc12c02',
+      // Standard ID of Paradise malware in the original dataset
+      x_opencti_stix_ids: ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'],
+      confidence: 90, // 90 = 90, so it's upserted
+    };
+    upsertedMalware = await addMalware(testContext, ADMIN_USER, upMalware);
+    expect(upsertedMalware.id).toEqual(createdMalware.id);
+    expect(upsertedMalware.x_opencti_stix_ids.length).toEqual(2);
+    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--600f3c54-c8b2-534a-a718-52a6693ba9de')).toBeTruthy();
+    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--907bb632-e3c2-52fa-b484-cf166a7d377e')).toBeTruthy();
+    // This ID needs to be filtered
+    expect(upsertedMalware.x_opencti_stix_ids.includes('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c')).toBeFalsy();
+
     // Delete the markings
     const clear = await internalLoadById(testContext, ADMIN_USER, clearMarking);
     await deleteRelationsByFromAndTo(
@@ -1196,6 +1214,21 @@ describe('Upsert and merge entities', () => {
     await deleteElementById(testContext, ADMIN_USER, individual1.id, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
     await deleteElementById(testContext, ADMIN_USER, organization2.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   });
+  it('should upsert on multi match entity not create multiple authors', async () => {
+    const organization1 = await createOrganization({ name: 'MALWARE_CREATED_BY_ORGANIZATION_01' });
+    const organization2 = await createOrganization({ name: 'MALWARE_CREATED_BY_ORGANIZATION_02' });
+    const malwareA = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_CREATED_BY_ORGANIZATION_01', createdBy: organization1.id, confidence: 40 });
+    const malwareB = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_TO_MATCH_WITH_ALIAS' });
+    const malwareAUpsert = await addMalware(testContext, ADMIN_USER, { name: 'MALWARE_CREATED_BY_ORGANIZATION_01', createdBy: organization2.id, confidence: 60, aliases: ['MALWARE_TO_MATCH_WITH_ALIAS'] });
+    const malwareAfterUpsert = await storeLoadByIdWithRefs(testContext, ADMIN_USER, malwareAUpsert.id);
+    expect(malwareAfterUpsert.createdBy).not.toBeUndefined();
+    expect(malwareAfterUpsert.createdBy.id).toEqual(organization2.id);
+    // Cleanup
+    await deleteElementById(testContext, ADMIN_USER, malwareA.id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteElementById(testContext, ADMIN_USER, malwareB.id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteElementById(testContext, ADMIN_USER, organization1.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    await deleteElementById(testContext, ADMIN_USER, organization2.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  });
   it('should observable merged by update', async () => {
     // Merged 3 Stix File into one
     const md5 = await createFile({
@@ -1403,7 +1436,6 @@ describe('Elements upsert behaviors', () => {
 describe('Elements deduplication behaviors', () => {
   it('should prevent update resulting in duplicate entities', async () => {
     const WHITE_TLP = { standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9', internal_id: null };
-    const WHITE_USER = buildStandardUser([WHITE_TLP]);
     const greenMarking = 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da';
     const group1Name = 'THREAT_NAME_1';
     const group2Name = 'THREAT_NAME_2';
@@ -1422,7 +1454,7 @@ describe('Elements deduplication behaviors', () => {
 
     // Update should be prevented by deduplication
     const inputUpdate = { key: 'name', value: [group1Name] };
-    const update = () => updateAttribute(testContext, WHITE_USER, group2.id, ENTITY_TYPE_THREAT_ACTOR_GROUP, [inputUpdate]);
+    const update = () => updateAttribute(testContext, ADMIN_USER, group2.id, ENTITY_TYPE_THREAT_ACTOR_GROUP, [inputUpdate]);
     await expect(update()).rejects.toEqual(
       new GraphQLError('This update will produce a duplicate')
     );

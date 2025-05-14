@@ -9,6 +9,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import { ObjectMarkingFieldAllowedMarkingQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldAllowedMarkingQuery.graphql';
 import { ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data } from '@components/common/form/__generated__/ObjectMarkingFieldOtherUserAllowedMarkingsQuery.graphql';
+import DialogTitle from '@mui/material/DialogTitle';
 import useAuth from '../../../../utils/hooks/useAuth';
 import ItemIcon from '../../../../components/ItemIcon';
 import Transition from '../../../../components/Transition';
@@ -267,24 +268,24 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
         renderOption={renderOption}
       />
       <Dialog
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         open={!!newMarking}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCancellation}
       >
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t_i18n('You are about to change the marking with another rank.')}
-          </DialogContentText>
-          <DialogContentText>
-            {t_i18n('Are you sure you want to make the change?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancellation}>{t_i18n('Cancel')}</Button>
           <Button color="secondary" onClick={submitUpdate}>
-            {t_i18n('Replace')}
+            {t_i18n('Confirm')}
           </Button>
         </DialogActions>
       </Dialog>

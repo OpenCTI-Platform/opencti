@@ -210,6 +210,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       </Tooltip>
     ),
   },
+  usages: {
+    id: 'usages',
+    label: 'Usages',
+    percentWidth: 20,
+    isSortable: false,
+    render: ({ usages }) => {
+      const value = usages != null ? usages : '-';
+      return defaultRender(value);
+    },
+  },
   confidence: {
     id: 'confidence',
     label: 'Confidence',
@@ -1185,7 +1195,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ draftVersion }) => (
       <ItemOperations
-        draftOperation={draftVersion.draft_operation}
+        draftOperation={draftVersion?.draft_operation}
       />
     ),
   },
@@ -1224,12 +1234,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
       return defaultRender(value);
     },
-  },
-  icon: {
-    id: 'icon',
-    label: ' ',
-    percentWidth: 3,
-    isSortable: false,
   },
   x_opencti_aliases: {
     id: 'x_opencti_aliases',

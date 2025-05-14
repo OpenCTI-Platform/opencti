@@ -199,7 +199,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
   const classes = useStyles();
   const { t_i18n, nsdt, md, n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Customization: Rules Engine | Settings'));
+  setTitle(t_i18n('Rules Engine | Customization | Settings'));
   const theme = useTheme();
   const [displayDisable, setDisplayDisable] = useState(false);
   const [displayEnable, setDisplayEnable] = useState(false);
@@ -652,9 +652,9 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       })}
       <Dialog
         open={displayEnable}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseEnable}
       >
         <DialogContent>
@@ -686,9 +686,9 @@ const RulesListComponent = ({ relay, data, keyword }) => {
       </Dialog>
       <Dialog
         open={displayDisable}
-        PaperProps={{ elevation: 1 }}
+        slotProps={{ paper: { elevation: 1 } }}
         keepMounted={true}
-        TransitionComponent={Transition}
+        slots={{ transition: Transition }}
         onClose={handleCloseDisable}
       >
         <DialogContent>

@@ -1,6 +1,6 @@
 import useAuth from './useAuth';
 
-export type SensitiveConfigType = 'ce_ee_toggle' | 'file_indexing' | 'groups' | 'markings' | 'platform_organization' | 'roles' | 'rules';
+export type SensitiveConfigType = 'ce_ee_toggle' | 'file_indexing' | 'groups' | 'markings' | 'platform_organization' | 'roles' | 'rules' | 'connector_reset';
 
 const useSensitiveModifications = (type?: SensitiveConfigType, id?: string) => {
   const { me, settings } = useAuth();

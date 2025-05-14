@@ -1,5 +1,5 @@
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { AuthorizedMember } from '../../utils/access';
 
@@ -12,7 +12,7 @@ export interface BasicStoreEntityNotifier extends BasicStoreEntity {
   built_in: boolean
   notifier_connector_id: string
   notifier_configuration: string
-  authorized_members: AuthorizedMember[]
+  restricted_members: AuthorizedMember[]
 }
 
 export interface StoreEntityNotifier extends StoreEntity {

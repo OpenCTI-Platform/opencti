@@ -14,8 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 export const ENTITY_TYPE_DISSEMINATION_LIST = 'DisseminationList';
 

@@ -32,7 +32,7 @@ export const PUBLIC_DASHBOARD_DEFINITION: ModuleDefinition<StoreEntityPublicDash
   representative: (stix: StixPublicDashboard) => {
     return stix.name;
   },
-  converter: convertPublicDashboardToStix
+  converter_2_1: convertPublicDashboardToStix
 };
 
 registerDefinition(PUBLIC_DASHBOARD_DEFINITION);

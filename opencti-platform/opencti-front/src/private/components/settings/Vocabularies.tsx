@@ -39,7 +39,7 @@ const Vocabularies = () => {
   const classes = useStyles();
   const { t_i18n, n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Taxonomies: Vocabularies | Settings'));
+  setTitle(t_i18n('Vocabularies | Taxonomies | Settings'));
   const params = useParams() as { category: string };
   const { typeToCategory } = useVocabularyCategory();
   const category = typeToCategory(params.category);

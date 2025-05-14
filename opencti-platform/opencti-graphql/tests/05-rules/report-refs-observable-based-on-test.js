@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { FIVE_MINUTES, queryAsAdmin, TEN_SECONDS, testContext } from '../utils/testQuery';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
@@ -16,6 +16,7 @@ import { addStixCyberObservable } from '../../src/domain/stixCyberObservable';
 import { ENTITY_IPV4_ADDR } from '../../src/schema/stixCyberObservable';
 import { addIndicator } from '../../src/modules/indicator/indicator-domain';
 import ReportRefsObservableBasedOnRule from '../../src/rules/report-refs-observable-based-on/ReportRefObservableBasedOnRule';
+import { IS_INFERRED_FILTER } from '../../src/utils/filtering/filtering-constants';
 
 describe('Report refs observable rule', () => {
   it(
@@ -196,6 +197,60 @@ describe('Report refs observable rule', () => {
       await wait(TEN_SECONDS); // let some time to rule-manager to delete the elements
       const afterDeleteDERelations = await getInferences(RELATION_OBJECT);
       expect(afterDeleteDERelations.length).toBe(2);
+      // endregion
+
+      // region 7............................ Test the 'is_inferred' special filter key
+      const RELATIONSHIP_QUERY = gql`
+        query stixRelationships(
+          $filters: FilterGroup
+        ) {
+          stixRelationships(filters: $filters) {
+            edges {
+              node {
+                id
+              }
+            }
+          }
+        }
+      `;
+      const filterTrueQueryResult = await queryAsAdmin({
+        query: RELATIONSHIP_QUERY,
+        variables: {
+          first: 20,
+          filters: {
+            mode: 'or',
+            filters: [
+              {
+                key: IS_INFERRED_FILTER,
+                operator: 'eq',
+                values: ['true'],
+                mode: 'or',
+              }
+            ],
+            filterGroups: [],
+          },
+        }
+      });
+      expect(filterTrueQueryResult.data.stixRelationships.edges.length).toEqual(2);
+      const filterNotFalseQueryResult = await queryAsAdmin({
+        query: RELATIONSHIP_QUERY,
+        variables: {
+          first: 20,
+          filters: {
+            mode: 'or',
+            filters: [
+              {
+                key: IS_INFERRED_FILTER,
+                operator: 'not_eq',
+                values: ['false'],
+                mode: 'or',
+              }
+            ],
+            filterGroups: [],
+          },
+        }
+      });
+      expect(filterNotFalseQueryResult.data.stixRelationships.edges.length).toEqual(2);
       // endregion
 
       // Disable the rule

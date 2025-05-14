@@ -2,19 +2,15 @@ import React, { useState } from 'react';
 import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import Slide, { SlideProps } from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import GroupEdition from './GroupEdition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -23,11 +19,6 @@ const useStyles = makeStyles(() => ({
     margin: 0,
   },
 }));
-
-const Transition = React.forwardRef((props: SlideProps, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 const groupPopoverCleanContext = graphql`
   mutation GroupPopoverCleanContextMutation($id: ID!) {
@@ -53,8 +44,6 @@ const GroupPopover = ({ groupId, disabled = false }: { groupId: string, disabled
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayUpdate, setDisplayUpdate] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [commitCleanContext] = useApiMutation(groupPopoverCleanContext);
   const [commitDeleteMutation] = useApiMutation(groupPopoverDeletionMutation);
 
@@ -78,15 +67,8 @@ const GroupPopover = ({ groupId, disabled = false }: { groupId: string, disabled
     setDisplayUpdate(false);
   };
 
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-
-  const handleCloseDelete = () => {
-    setDisplayDelete(false);
-  };
-
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitDeleteMutation({
@@ -118,27 +100,11 @@ const GroupPopover = ({ groupId, disabled = false }: { groupId: string, disabled
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <GroupEdition groupId={groupId} handleClose={handleCloseUpdate} open={displayUpdate} />
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this group?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this group?')}
+      />
     </div>
   );
 };

@@ -3,19 +3,22 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { AdministrativeAreaKnowledge_administrativeArea$key } from './__generated__/AdministrativeAreaKnowledge_administrativeArea.graphql';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const administrativeAreaKnowledgeFragment = graphql`
   fragment AdministrativeAreaKnowledge_administrativeArea on AdministrativeArea {
     id
     name
     x_opencti_aliases
+    entity_type
   }
 `;
 
@@ -28,7 +31,10 @@ const AdministrativeAreaKnowledge = ({
     administrativeAreaKnowledgeFragment,
     administrativeAreaData,
   );
+  const location = useLocation();
   const link = `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`;
+  const { schema } = useAuth();
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(administrativeArea.entity_type, schema);
   return (
     <>
       <Routes>
@@ -60,9 +66,24 @@ const AdministrativeAreaKnowledge = ({
           }
         />
         <Route
+          path="/all"
+          element={
+            <EntityStixCoreRelationships
+              key={location.pathname}
+              entityId={administrativeArea.id}
+              relationshipTypes={allRelationshipsTypes}
+              entityLink={link}
+              defaultStartTime={administrativeArea.startTime}
+              defaultStopTime={administrativeArea.stopTime}
+              allDirections
+            />
+          }
+        />
+        <Route
           path="/threats"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               isRelationReversed
@@ -83,6 +104,7 @@ const AdministrativeAreaKnowledge = ({
           path="/related"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['related-to']}
               stixCoreObjectTypes={[
@@ -110,6 +132,7 @@ const AdministrativeAreaKnowledge = ({
           path="/organizations"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Organization']}
@@ -122,6 +145,7 @@ const AdministrativeAreaKnowledge = ({
           path="/regions"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Region']}
@@ -134,6 +158,7 @@ const AdministrativeAreaKnowledge = ({
           path="/countries"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['Country']}
@@ -146,6 +171,7 @@ const AdministrativeAreaKnowledge = ({
           path="/cities"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['located-at']}
               stixCoreObjectTypes={['City']}
@@ -158,6 +184,7 @@ const AdministrativeAreaKnowledge = ({
           path="/threat_actors"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Threat-Actor']}
@@ -170,6 +197,7 @@ const AdministrativeAreaKnowledge = ({
           path="/intrusion_sets"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['targets', 'originates-from']}
               stixCoreObjectTypes={['Intrusion-Set']}
@@ -182,6 +210,7 @@ const AdministrativeAreaKnowledge = ({
           path="/campaigns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Campaign']}
@@ -194,6 +223,7 @@ const AdministrativeAreaKnowledge = ({
           path="/incidents"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Incident']}
@@ -206,6 +236,7 @@ const AdministrativeAreaKnowledge = ({
           path="/malwares"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Malware']}
@@ -218,6 +249,7 @@ const AdministrativeAreaKnowledge = ({
           path="/attack_patterns"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Attack-Pattern']}
@@ -230,6 +262,7 @@ const AdministrativeAreaKnowledge = ({
           path="/tools"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['targets']}
               stixCoreObjectTypes={['Tool']}
@@ -242,6 +275,7 @@ const AdministrativeAreaKnowledge = ({
           path="/observables"
           element={
             <EntityStixCoreRelationships
+              key={location.pathname}
               entityId={administrativeArea.id}
               relationshipTypes={['related-to', 'located-at']}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}

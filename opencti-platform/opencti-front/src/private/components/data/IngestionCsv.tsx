@@ -32,7 +32,7 @@ const IngestionCsv = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Ingestion: CSV Feeds | Data'));
+  setTitle(t_i18n('CSV Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
@@ -94,6 +94,16 @@ const IngestionCsv = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         keyword={searchTerm}
+        createButton={
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <IngestionCsvCreationContainer
+              open={false}
+              handleClose={() => { }}
+              paginationOptions={paginationOptions}
+              isDuplicated={false}
+            />
+          </Security>
+        }
       >
         {queryRef && (
           <React.Suspense
@@ -134,15 +144,6 @@ const IngestionCsv = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('CSV feeds'), current: true }]} />
       <IngestionMenu/>
       {renderLines()}
-      <Security needs={[INGESTION_SETINGESTIONS]}>
-        <IngestionCsvCreationContainer
-          open={false}
-          handleClose={() => {
-          }}
-          paginationOptions={paginationOptions}
-          isDuplicated={false}
-        />
-      </Security>
     </div>
   );
 };

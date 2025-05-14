@@ -1,7 +1,8 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
-import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { AuthorizedMember } from '../../utils/access';
+import type { FilterGroup } from '../../generated/graphql';
 
 // Outcomes
 
@@ -16,15 +17,17 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   event_types: string[]
   notifiers: string[]
   trigger_ids: string[]
-  authorized_members: Array<AuthorizedMember>;
+  restricted_members: Array<AuthorizedMember>;
   instance_trigger: boolean
   filters: string
+  raw_filters: FilterGroup
 }
 
 export interface BasicStoreEntityLiveTrigger extends BasicStoreEntityTrigger {
   trigger_type: 'live'
   trigger_scope: 'knowledge' | 'activity'
   filters: string
+  raw_filters: FilterGroup
 }
 
 export interface BasicStoreEntityDigestTrigger extends BasicStoreEntityTrigger {
@@ -40,7 +43,7 @@ export interface StoreEntityTrigger extends StoreEntity {
   trigger_type: string
   event_types: string[]
   notifiers: string[]
-  authorized_members: Array<AuthorizedMember>;
+  restricted_members: Array<AuthorizedMember>;
   instance_trigger: boolean
 }
 
@@ -59,7 +62,7 @@ export const NOTIFICATION_NUMBER = 'NotificationNumber';
 export interface NotificationContentEvent {
   operation: string
   message: string
-  instance_id?: string
+  instance_id?: string | null
 }
 
 export interface NotificationAddInput {
@@ -71,6 +74,7 @@ export interface NotificationAddInput {
     events: Array<NotificationContentEvent>
   }>
   trigger_id?: string
+  user_id: string
 }
 
 // region Database types

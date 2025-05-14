@@ -8,6 +8,7 @@ import { getFileContent } from './file-storage';
 import { logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
 import { redisGetExclusionListCache, redisSetExclusionListCache, redisUpdateExclusionListStatus } from './redis';
 import { FunctionalError } from '../config/errors';
+import type { HashInput } from '../generated/graphql';
 
 export interface ExclusionListCacheItem {
   id: string
@@ -95,7 +96,7 @@ export const syncExclusionListCache = async (cacheDate: string) => {
   await redisUpdateExclusionListStatus({ [PLATFORM_INSTANCE_ID]: cacheDate });
 };
 
-export const checkObservableValue = async (observableValue: any) => {
+export const checkObservableValue = async (observableValue: { type: string, value: string, hashes: Array<HashInput> }) => {
   const { type, value, hashes } = observableValue;
   if (!type || (!value && !hashes)) {
     return null;
@@ -104,7 +105,7 @@ export const checkObservableValue = async (observableValue: any) => {
     throw FunctionalError('Failed to load exclusion list cache.', { exclusionListCache });
   }
   if (isStixCyberObservableHashedObservable(type)) {
-    const hashesValues = Object.values(hashes) as string[];
+    const hashesValues = hashes.map((h) => h.hash);
     for (let i = 0; i < hashesValues.length; i += 1) {
       const hashCheck = checkExclusionLists(hashesValues[i], type, exclusionListCache);
       if (hashCheck) {

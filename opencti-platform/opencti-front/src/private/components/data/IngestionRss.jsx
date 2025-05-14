@@ -30,7 +30,7 @@ const IngestionRss = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Ingestion: RSS Feeds | Data'));
+  setTitle(t_i18n('RSS Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
@@ -92,6 +92,11 @@ const IngestionRss = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
+        createButton={
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <IngestionRssCreation paginationOptions={paginationOptions} />
+          </Security>
+        }
       >
         <QueryRenderer
           query={IngestionRssLinesQuery}
@@ -107,9 +112,6 @@ const IngestionRss = () => {
           )}
         />
       </ListLines>
-      <Security needs={[INGESTION_SETINGESTIONS]}>
-        <IngestionRssCreation paginationOptions={paginationOptions} />
-      </Security>
     </div>
   );
 };

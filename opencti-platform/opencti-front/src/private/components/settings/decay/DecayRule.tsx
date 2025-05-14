@@ -169,7 +169,11 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                     </Box>
                   </Typography>
                   <FieldOrEmpty source={decayRule.decay_observable_types}>
-                    <span>{decayRule.decay_observable_types?.join(', ')}</span>
+                    <span>
+                      {decayRule.decay_observable_types
+                        ?.map((option) => t_i18n(`entity_${option}`))
+                        .join(', ')}
+                    </span>
                   </FieldOrEmpty>
                 </Grid>
                 <Grid item xs={12}>

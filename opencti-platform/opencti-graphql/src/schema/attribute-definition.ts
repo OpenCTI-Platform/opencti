@@ -1,4 +1,4 @@
-import { ENTITY_TYPE_USER } from './internalObject';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from './internalObject';
 import { ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP } from './general';
 import { getDraftOperations } from '../modules/draftWorkspace/draftOperations';
 
@@ -108,7 +108,6 @@ export const draftIds: AttributeDefinition = {
   upsert: false,
   isFilterable: false,
   entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
-  featureFlag: 'DRAFT_WORKSPACE'
 };
 
 export const draftContext: AttributeDefinition = {
@@ -120,8 +119,7 @@ export const draftContext: AttributeDefinition = {
   multiple: false,
   editDefault: false,
   upsert: false,
-  isFilterable: false,
-  featureFlag: 'DRAFT_WORKSPACE'
+  isFilterable: true,
 };
 
 export const draftChange: AttributeDefinition = {
@@ -135,7 +133,6 @@ export const draftChange: AttributeDefinition = {
   multiple: false,
   upsert: false,
   isFilterable: true,
-  featureFlag: 'DRAFT_WORKSPACE',
   mappings: [
     { name: 'draft_operation', label: 'Draft operation', type: 'string', format: 'enum', values: getDraftOperations(), mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'draft_updates_patch', label: 'Draft update patch', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
@@ -239,10 +236,10 @@ export const files: AttributeDefinition = {
 };
 
 export const authorizedMembers: AttributeDefinition = {
-  name: 'authorized_members',
+  name: 'restricted_members',
   label: 'Authorized members',
   type: 'object',
-  format: 'standard',
+  format: 'nested',
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
@@ -250,9 +247,8 @@ export const authorizedMembers: AttributeDefinition = {
   isFilterable: false,
   mappings: [
     id,
-    { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-    { name: 'entity_type', label: 'Entity type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'access_right', label: 'Access right', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    { name: 'groups_restriction_ids', label: 'Groups restriction IDs', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_GROUP], editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
   ]
 };
 

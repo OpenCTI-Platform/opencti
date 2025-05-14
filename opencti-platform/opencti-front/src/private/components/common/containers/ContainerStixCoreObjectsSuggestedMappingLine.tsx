@@ -4,7 +4,6 @@ import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { CloseOutlined, MoreVert } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
@@ -16,6 +15,7 @@ import {
 } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
 import { Theme } from '@mui/material/styles/createTheme';
 import { DraftChip } from '@components/common/draft/DraftChip';
+import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
@@ -107,82 +107,86 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      button={true}
-      component={Link}
-      to={`${resolveLink(matchedEntity.entity_type)}/${matchedEntity.id}`}
-    >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={matchedEntity.entity_type} />
-      </ListItemIcon>
-      <ListItemText
-        primary={
-          <>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <Chip
-                classes={{ root: classes.chipInList }}
-                style={{
-                  backgroundColor: hexToRGB(itemColor(matchedEntity.entity_type), 0.08),
-                  color: itemColor(matchedEntity.entity_type),
-                  border: `1px solid ${itemColor(matchedEntity.entity_type)}`,
-                }}
-                label={t_i18n(`entity_${matchedEntity.entity_type}`)}
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
-              {matchedEntity.createdBy?.name}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.value.width }}
-            >
-              {matchedEntity.representative?.main}
-              {matchedEntity.draftVersion && (<DraftChip/>)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <ItemMarkings
-                variant="inList"
-                markingDefinitions={matchedEntity.objectMarking ?? []}
-                limit={1}
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.matched_text.width }}
-            >
-              {matchedString}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.mapping.width }}
-            >
-              <Chip
-                classes={{ root: classes.chipInList }}
-                label={
-                    contentMappingCount[matchedString]
-                      ? contentMappingCount[matchedString]
-                      : '0'
-                  }
-              />
-            </div>
-          </>
-        }
-      />
-      <ListItemSecondaryAction>
+      disablePadding
+      secondaryAction={
         <IconButton
           onClick={() => handleRemoveSuggestedMappingLine(matchedEntity)}
         >
           <CloseOutlined/>
         </IconButton>
-      </ListItemSecondaryAction>
+    }
+    >
+      <ListItemButton
+        component={Link}
+        classes={{ root: classes.item }}
+        to={`${resolveLink(matchedEntity.entity_type)}/${matchedEntity.id}`}
+      >
+        <ListItemIcon classes={{ root: classes.itemIcon }}>
+          <ItemIcon type={matchedEntity.entity_type} />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.entity_type.width }}
+              >
+                <Chip
+                  classes={{ root: classes.chipInList }}
+                  style={{
+                    backgroundColor: hexToRGB(itemColor(matchedEntity.entity_type), 0.08),
+                    color: itemColor(matchedEntity.entity_type),
+                    border: `1px solid ${itemColor(matchedEntity.entity_type)}`,
+                  }}
+                  label={t_i18n(`entity_${matchedEntity.entity_type}`)}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                {matchedEntity.createdBy?.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.value.width }}
+              >
+                {matchedEntity.representative?.main}
+                {matchedEntity.draftVersion && (<DraftChip/>)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectMarking.width }}
+              >
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitions={matchedEntity.objectMarking ?? []}
+                  limit={1}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.matched_text.width }}
+              >
+                {matchedString}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.mapping.width }}
+              >
+                <Chip
+                  classes={{ root: classes.chipInList }}
+                  label={
+                    contentMappingCount[matchedString]
+                      ? contentMappingCount[matchedString]
+                      : '0'
+                  }
+                />
+              </div>
+            </>
+        }
+        />
+      </ListItemButton>
     </ListItem>
   );
 };
@@ -191,7 +195,15 @@ export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: Contain
   const classes = useStyles();
   const { dataColumns } = props;
   return (
-    <ListItem classes={{ root: classes.item }} divider={true}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      secondaryAction={
+        <IconButton disabled={true} aria-haspopup="true" size="large" classes={classes.itemIconDisabled}>
+          <MoreVert/>
+        </IconButton>
+      }
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
@@ -215,11 +227,6 @@ export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: Contain
           </div>
         }
       />
-      <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-        <IconButton disabled={true} aria-haspopup="true" size="large">
-          <MoreVert/>
-        </IconButton>
-      </ListItemSecondaryAction>
     </ListItem>
   );
 };

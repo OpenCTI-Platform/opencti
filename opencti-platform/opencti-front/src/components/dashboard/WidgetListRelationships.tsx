@@ -23,10 +23,9 @@ const WidgetListRelationships = ({
 }: WidgetListRelationshipsProps) => {
   const buildColumns = useMemo((): DataTableProps['dataColumns'] => {
     const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
-    const iconWidth = 3;
-    const percentWidth = (100 - iconWidth) / (columns.length ?? 1);
+    const percentWidth = 100 / (columns.length ?? 1);
 
-    const newColumns = (
+    return (
       columnKeys.reduce<DataTableProps['dataColumns']>(
         (acc, current) => ({
           ...acc,
@@ -35,19 +34,6 @@ const WidgetListRelationships = ({
         {},
       )
     ) as DataTableProps['dataColumns'];
-
-    const iconColumn = {
-      percentWidth: iconWidth,
-      label: ' ',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      render: (stixRelationship: any) => (
-        <ItemIcon
-          type={stixRelationship.is_inferred ? 'autofix' : stixRelationship.entity_type}
-          color="primary"
-        />
-      ),
-    };
-    return { icon: iconColumn, ...newColumns };
   }, [columns]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,6 +54,12 @@ const WidgetListRelationships = ({
         pageSize='50'
         disableNavigation={publicWidget}
         rootRef={rootRef}
+        icon={(stixRelationship: { is_inferred: boolean, entity_type: string }) => (
+          <ItemIcon
+            type={stixRelationship.is_inferred ? 'autofix' : stixRelationship.entity_type}
+            color="primary"
+          />
+        )}
       />
     </div>
   );

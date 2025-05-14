@@ -51,6 +51,7 @@ export const fileManagerAskJobImportMutation = graphql`
     $connectorId: String
     $configuration: String
     $bypassValidation: Boolean
+    $forceValidation: Boolean
     $validationMode: ValidationMode
   ) {
     askJobImport(
@@ -58,6 +59,7 @@ export const fileManagerAskJobImportMutation = graphql`
       connectorId: $connectorId
       configuration: $configuration
       bypassValidation: $bypassValidation
+      forceValidation: $forceValidation
       validationMode: $validationMode
     ) {
       ...FileLine_file
@@ -304,7 +306,7 @@ const FileManager = ({
           {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 open={!!fileToImport}
                 keepMounted={true}
                 onClose={handleCloseImport}
@@ -407,7 +409,7 @@ const FileManager = ({
           {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
-                PaperProps={{ elevation: 1 }}
+                slotProps={{ paper: { elevation: 1 } }}
                 open={openExport}
                 keepMounted={true}
                 onClose={resetForm}

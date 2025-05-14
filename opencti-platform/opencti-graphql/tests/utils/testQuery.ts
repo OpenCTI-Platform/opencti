@@ -15,6 +15,7 @@ import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKIN
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
 import type { ConfidenceLevel } from '../../src/generated/graphql';
+import { findById } from '../../src/domain/user';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -22,8 +23,8 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const RAW_EVENTS_SIZE = 1160;
-export const SYNC_LIVE_EVENTS_SIZE = 612;
+export const RAW_EVENTS_SIZE = 1212;
+export const SYNC_LIVE_EVENTS_SIZE = 613;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -39,6 +40,7 @@ export const FIFTEEN_MINUTES = 300 * FIVE_MINUTES;
 export const DATA_FILE_TEST = 'DATA-TEST-STIX2_v2.json';
 
 export const testContext = executionContext('testing');
+export const inPlatformContext = { ...testContext, user_inside_platform_organization: true };
 
 export const generateBasicAuth = (email?: string, password?: string) => {
   const buff = Buffer.from(`${email ?? API_EMAIL}:${password ?? API_PASSWORD}`, 'utf-8');
@@ -46,10 +48,7 @@ export const generateBasicAuth = (email?: string, password?: string) => {
 };
 
 export const createHttpClient = (email?: string, password?: string) => {
-  const jar = new CookieJar();
   return wrapper(axios.create({
-    withCredentials: true,
-    jar,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -80,6 +79,7 @@ interface QueryOption {
   eventId?: string
   previousStandard?: string
   synchronizedUpsert?: string
+  applicantId?: string
 }
 export const executeInternalQuery = async (client: AxiosInstance, query: unknown, variables = {}, options: QueryOption = {}) => {
   const headers: any = {};
@@ -87,12 +87,13 @@ export const executeInternalQuery = async (client: AxiosInstance, query: unknown
   if (options.eventId) headers['opencti-event-id'] = options.eventId;
   if (options.previousStandard) headers['previous-standard'] = options.previousStandard;
   if (options.synchronizedUpsert) headers['synchronized-upsert'] = options.synchronizedUpsert;
+  if (options.applicantId) headers['opencti-applicant-id'] = options.applicantId;
   const response = await client.post(`${API_URI}/graphql`, { query, variables }, { withCredentials: true, headers });
   return response.data;
 };
 const adminClient = createHttpClient();
-export const internalAdminQuery = async (query: unknown, variables = {}) => {
-  return executeInternalQuery(adminClient, query, variables);
+export const internalAdminQuery = async (query: unknown, variables = {}, options: QueryOption = {}) => {
+  return executeInternalQuery(adminClient, query, variables, options);
 };
 
 // Roles
@@ -322,8 +323,6 @@ export const ADMIN_USER: AuthUser = {
   roles: [ADMINISTRATOR_ROLE],
   groups: [],
   capabilities: [{ name: BYPASS }],
-  all_marking: [],
-  inside_platform_organization: true,
   allowed_marking: [],
   default_marking: [],
   origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
@@ -347,6 +346,7 @@ export const USER_PARTICIPATE: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'participate@opencti.io' }),
   email: 'participate@opencti.io',
   password: 'participate',
+  organizations: [TEST_ORGANIZATION],
   groups: [GREEN_GROUP],
   client: createHttpClient('participate@opencti.io', 'participate')
 };
@@ -384,6 +384,7 @@ export const USER_DISINFORMATION_ANALYST: UserTestData = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'anais@opencti.io' }),
   email: 'anais@opencti.io',
   password: 'disinformation',
+  organizations: [PLATFORM_ORGANIZATION],
   groups: [GREEN_DISINFORMATION_ANALYST_GROUP],
   client: createHttpClient('anais@opencti.io', 'disinformation')
 };
@@ -512,8 +513,8 @@ const assignOrganizationToUser = async (organization: OrganizationTestData, user
 };
 // endregion
 
-export const adminQuery = async (request: any) => {
-  return internalAdminQuery(print(request.query), request.variables);
+export const adminQuery = async (request: any, options: QueryOption = {}) => {
+  return internalAdminQuery(print(request.query), request.variables, options);
 };
 
 export const editorQuery = async (request: any, options: QueryOption = {}) => {
@@ -523,6 +524,7 @@ export const editorQuery = async (request: any, options: QueryOption = {}) => {
 export const securityQuery = async (request: any) => {
   return executeInternalQuery(USER_SECURITY.client, print(request.query), request.variables);
 };
+
 export const participantQuery = async (request: any) => {
   return executeInternalQuery(USER_PARTICIPATE.client, print(request.query), request.variables);
 };
@@ -630,6 +632,13 @@ export const getUserIdByEmail = async (email: string) => {
   }
   return data.users.edges[0].node.id;
 };
+export const getAuthUser = async (id: string) => {
+  const user = await findById(testContext, ADMIN_USER, id);
+  return {
+    ...user,
+    origin: { referer: 'test', user_id: user.internal_id },
+  } as AuthUser;
+};
 
 // endregion
 
@@ -697,8 +706,6 @@ export const buildStandardUser = (
     roles: [DEFAULT_ROLE],
     groups: [],
     capabilities: capabilities ?? [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }],
-    all_marking: (allMarkings ?? []) as StoreMarkingDefinition[],
-    inside_platform_organization: true,
     allowed_marking: allowedMarkings as StoreMarkingDefinition[],
     default_marking: [],
     max_shareable_marking: [],
@@ -739,8 +746,8 @@ const serverFromUser = new ApolloServer<AuthContext>({
   persistedQueries: false,
 });
 
-export const queryAsAdmin = async <T = Record<string, any>>(request: any) => {
-  const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: executionContext('test', ADMIN_USER) });
+export const queryAsAdmin = async <T = Record<string, any>>(request: any, draftContext?: any) => {
+  const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: executionContext('test', ADMIN_USER, draftContext ?? undefined) });
   if (body.kind === 'single') {
     return body.singleResult;
   }

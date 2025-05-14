@@ -2,7 +2,6 @@ import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Checkbox from '@mui/material/Checkbox';
@@ -249,15 +248,10 @@ const GroupEditionMarkingsComponent = ({
                       (g) => markingDefinition.id === g.id,
                     );
                     return (
-                      <ListItem key={markingDefinition.id} divider={true}>
-                        <ListItemIcon>
-                          <ItemIcon
-                            type="Marking-Definition"
-                            color={markingDefinition.x_opencti_color ?? undefined}
-                          />
-                        </ListItemIcon>
-                        <ListItemText primary={markingDefinition.definition} />
-                        <ListItemSecondaryAction>
+                      <ListItem
+                        key={markingDefinition.id}
+                        divider={true}
+                        secondaryAction={
                           <Checkbox
                             onChange={(event) => handleToggleAllowedMarkings(
                               markingDefinition.id,
@@ -267,7 +261,15 @@ const GroupEditionMarkingsComponent = ({
                             }
                             checked={groupMarkingDefinition !== undefined}
                           />
-                        </ListItemSecondaryAction>
+                        }
+                      >
+                        <ListItemIcon>
+                          <ItemIcon
+                            type="Marking-Definition"
+                            color={markingDefinition.x_opencti_color ?? undefined}
+                          />
+                        </ListItemIcon>
+                        <ListItemText primary={markingDefinition.definition} />
                       </ListItem>
                     );
                   })}

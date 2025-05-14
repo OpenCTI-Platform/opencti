@@ -54,6 +54,7 @@ type DecayChartData {
 type ObservablesValues {
   type: String
   value: String
+  hashes: [Hash!]
 }
 
 type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -219,7 +220,7 @@ input IndicatorAddInput {
   confidence: Int
   revoked: Boolean
   lang: String
-  x_opencti_score: Int
+  x_opencti_score: Int @constraint(min: 0, max: 100)
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
   x_mitre_platforms: [String!]
@@ -248,6 +249,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
+    toStix: Boolean
   ): IndicatorConnection @auth(for: [KNOWLEDGE])
   indicatorsTimeSeries(
     objectId: String

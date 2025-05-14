@@ -17,6 +17,8 @@ import { ArrowRightAlt, Edit } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
+import DialogTitle from '@mui/material/DialogTitle';
+import StixCoreRelationshipInference from '../../common/stix_core_relationships/StixCoreRelationshipInference';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
@@ -28,7 +30,6 @@ import StixSightingRelationshipEdition, { stixSightingRelationshipEditionDeleteM
 import { commitMutation } from '../../../../relay/environment';
 import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
 import ItemAuthor from '../../../../components/ItemAuthor';
-import StixSightingRelationshipInference from './StixSightingRelationshipInference';
 import StixSightingRelationshipExternalReferences from '../../analyses/external_references/StixSightingRelationshipExternalReferences';
 import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
 import Security from '../../../../utils/Security';
@@ -437,13 +438,9 @@ class StixSightingRelationshipContainer extends Component {
                         {t('Description')}
                       </Typography>
                       <MarkdownDisplay
-                        content={
-                          stixSightingRelationship.x_opencti_inferences
-                          !== null ? (
-                            <i>{t('Inferred knowledge')}</i>
-                            ) : (
-                              stixSightingRelationship.description
-                            )
+                        content={stixSightingRelationship.x_opencti_inferences !== null
+                          ? t('Inferred knowledge')
+                          : stixSightingRelationship.description
                         }
                         remarkGfmPlugin={true}
                         commonmark={true}
@@ -545,11 +542,10 @@ class StixSightingRelationshipContainer extends Component {
               </Typography>
               {stixSightingRelationship.x_opencti_inferences.map(
                 (inference) => (
-                  <StixSightingRelationshipInference
+                  <StixCoreRelationshipInference
                     key={inference.rule.id}
                     inference={inference}
-                    stixSightingRelationship={stixSightingRelationship}
-                    paddingRight={paddingRight}
+                    stixRelationship={stixSightingRelationship}
                   />
                 ),
               )}
@@ -608,11 +604,14 @@ class StixSightingRelationshipContainer extends Component {
         )}
         <Dialog
           open={this.state.displayDelete}
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           keepMounted={true}
-          TransitionComponent={Transition}
+          slots={{ transition: Transition }}
           onClose={this.handleCloseDelete.bind(this)}
         >
+          <DialogTitle>
+            {t('Are you sure?')}
+          </DialogTitle>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this sighting?')}
@@ -630,7 +629,7 @@ class StixSightingRelationshipContainer extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>

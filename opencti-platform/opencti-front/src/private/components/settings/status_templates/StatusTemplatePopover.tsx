@@ -2,24 +2,22 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PopoverProps } from '@mui/material/Popover';
 import Drawer from '@components/common/drawer/Drawer';
+import { StatusTemplatesLinesPaginationQuery$variables } from '@components/settings/status_templates/__generated__/StatusTemplatesLinesPaginationQuery.graphql';
+import { StatusTemplatesLine_node$data } from '@components/settings/status_templates/__generated__/StatusTemplatesLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StatusTemplateEdition from './StatusTemplateEdition';
 import { deleteNode } from '../../../../utils/store';
-import Transition from '../../../../components/Transition';
 import { StatusTemplatePopoverEditionQuery$data } from './__generated__/StatusTemplatePopoverEditionQuery.graphql';
+import DeleteDialog from '../../../../components/DeleteDialog';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -44,12 +42,12 @@ const statusTemplateEditionQuery = graphql`
 `;
 
 interface StatusTemplatePopoverProps {
-  statusTemplateId: string;
-  paginationOptions: { search: string; orderMode: string; orderBy: string };
+  data: StatusTemplatesLine_node$data
+  paginationOptions?: StatusTemplatesLinesPaginationQuery$variables;
 }
 
 const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
-  statusTemplateId,
+  data,
   paginationOptions,
 }) => {
   const classes = useStyles();
@@ -57,8 +55,6 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
-  const [displayDelete, setDisplayDelete] = useState<boolean>(false);
-  const [deleting, setDeleting] = useState<boolean>(false);
 
   const handleOpen = (event: React.MouseEvent) => setAnchorEl(event.currentTarget);
 
@@ -71,25 +67,20 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
 
   const handleCloseUpdate = () => setDisplayUpdate(false);
 
-  const handleOpenDelete = () => {
-    setDisplayDelete(true);
-    handleClose();
-  };
-
-  const handleCloseDelete = () => setDisplayDelete(false);
-
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
   const submitDelete = () => {
     setDeleting(true);
     commitMutation({
       mutation: statusTemplatePopoverDeletionMutation,
       variables: {
-        id: statusTemplateId,
+        id: data.id,
       },
       updater: (store: RecordSourceSelectorProxy) => deleteNode(
         store,
         'Pagination_statusTemplates',
         paginationOptions,
-        statusTemplateId,
+        data.id,
       ),
       onCompleted: () => {
         setDeleting(false);
@@ -118,7 +109,7 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
       >
         <QueryRenderer
           query={statusTemplateEditionQuery}
-          variables={{ id: statusTemplateId }}
+          variables={{ id: data.id }}
           render={({
             props,
           }: {
@@ -136,27 +127,11 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
           }}
         />
       </Drawer>
-      <Dialog
-        open={displayDelete}
-        PaperProps={{ elevation: 1 }}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseDelete}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to delete this status template?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDelete} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete this template?')}
+      />
     </div>
   );
 };

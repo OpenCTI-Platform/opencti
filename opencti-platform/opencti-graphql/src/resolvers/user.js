@@ -11,7 +11,7 @@ import {
   addBookmark,
   addUser,
   assignOrganizationToUser,
-  authenticateUser,
+  sessionAuthenticateUser,
   batchCreator,
   batchRolesForUsers,
   batchUserEffectiveConfidenceLevel,
@@ -70,7 +70,7 @@ const creatorLoader = batchLoader(batchCreator);
 
 const userResolvers = {
   Query: {
-    me: (_, __, context) => findById(context, context.user, context.user.id),
+    me: (_, __, context) => context.user,
     user: (_, { id }, context) => findById(context, context.user, id),
     otpGeneration: (_, __, context) => otpUserGeneration(context.user),
     users: (_, args, context) => findAll(context, context.user, args),
@@ -166,7 +166,7 @@ const userResolvers = {
         // As soon as credential is validated, stop looking for another provider
         if (user) {
           const context = executionContext(`${provider}_strategy`);
-          loggedUser = await authenticateUser(context, req, user, provider);
+          loggedUser = await sessionAuthenticateUser(context, req, user, provider);
           break;
         }
       }

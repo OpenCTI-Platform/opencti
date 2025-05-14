@@ -4,17 +4,20 @@ import { UseMutationConfig, VariablesOf } from 'react-relay';
 import { Alert, Typography, List, ListItem, Tooltip } from '@mui/material';
 import { useFormatter } from '../../components/i18n';
 
+type ObjectType = 'entities' | 'observables' | 'files';
+
 interface UseBulkCommitArgs<M extends MutationParameters> {
   commit: (args: UseMutationConfig<M>) => void
   relayUpdater?: SelectorStoreUpdater<M['response']>
-  type?: 'entities' | 'observables'
+  type?: ObjectType
 }
 
 interface UseBulkCommit_commits<M extends MutationParameters> {
   variables: VariablesOf<M>[]
-  onStepError?: (err: Error) => void
-  onStepCompleted?: () => void
+  onStepError?: (err: Error, v: VariablesOf<M>) => void
+  onStepCompleted?: (v: VariablesOf<M>) => void
   onCompleted?: (total: number) => void
+  commit?: (args: UseMutationConfig<M>) => void
 }
 
 interface BulkResultProps<M extends MutationParameters> {
@@ -22,7 +25,7 @@ interface BulkResultProps<M extends MutationParameters> {
 }
 
 function useBulkCommit<M extends MutationParameters>({
-  commit,
+  commit: defaultCommit, // Default commit function
   relayUpdater,
   type = 'entities',
 }: UseBulkCommitArgs<M>) {
@@ -44,49 +47,60 @@ function useBulkCommit<M extends MutationParameters>({
     if (currentCount === count && count !== 0) {
       onBulkCompleted.current?.(count);
     }
-  }, [count, currentCount, setCurrentCount, setCount]);
+  }, [count, currentCount]);
 
+  // Accepts an optional `commit` function override
   const bulkCommit = ({
+    commit = defaultCommit, // Fallback to default commit
     variables,
     onStepCompleted,
     onStepError,
     onCompleted,
-  }: UseBulkCommit_commits<M>) => {
+  }: UseBulkCommit_commits<M> & { commit?: (args: UseMutationConfig<M>) => void }) => {
+    if (!commit) {
+      throw new Error('bulkCommit: No commit function provided.');
+    }
+
     onBulkCompleted.current = onCompleted;
     setCount(variables.length);
     setCurrentCount(0);
     setInError([]);
+
     variables.forEach((variable) => {
       commit({
-        variables: variable,
+        variables: variable as VariablesOf<M>, // Explicitly cast variables
         updater: relayUpdater,
         onError: (error) => {
           setCurrentCount((c) => c + 1);
-          setInError((err) => [...err, [variable, error]]);
-          onStepError?.(error);
+          setInError((err) => [...err, [variable as VariablesOf<M>, error]]);
+          onStepError?.(error, variable);
         },
         onCompleted: () => {
           setCurrentCount((c) => c + 1);
-          onStepCompleted?.();
+          onStepCompleted?.(variable);
         },
       });
     });
   };
 
-  const createdLabel = type === 'entities'
-    ? t_i18n('entities created')
-    : t_i18n('observables created');
+  const successLabel: Record<ObjectType, string> = {
+    entities: t_i18n('entities created'),
+    observables: t_i18n('observables created'),
+    files: t_i18n('files imported'),
+  };
 
-  const notCreatedLabel = type === 'entities'
-    ? t_i18n('entities not created')
-    : t_i18n('observables not created');
+  const errorLabel: Record<ObjectType, string> = {
+    entities: t_i18n('entities not created'),
+    observables: t_i18n('observables not created'),
+    files: t_i18n('files not imported'),
+  };
 
   const BulkResult = ({ variablesToString }: BulkResultProps<M>) => (
     <>
-      {currentCount === count && (
+      {currentCount === count && currentCount - inError.length > 0 && (
         <Alert variant="outlined" sx={{ marginTop: 2 }}>
           <Typography>
-            {currentCount - inError.length} {createdLabel}
+            {currentCount - inError.length} {successLabel[type]}
           </Typography>
         </Alert>
       )}
@@ -102,7 +116,7 @@ function useBulkCommit<M extends MutationParameters>({
           }}
         >
           <Typography>
-            {inError.length} {notCreatedLabel}
+            {inError.length} {errorLabel[type]}
           </Typography>
           <List dense>
             {inError.map(([variables, error], index) => {

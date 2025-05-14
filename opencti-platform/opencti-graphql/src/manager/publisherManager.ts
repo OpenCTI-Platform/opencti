@@ -28,9 +28,18 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { now } from '../utils/format';
 import type { NotificationData } from '../utils/publisher-mock';
-import { type ActivityNotificationEvent, type DigestEvent, getNotifications, type KnowledgeNotificationEvent, type NotificationUser } from './notificationManager';
+import {
+  type ActionNotificationEvent,
+  type ActivityNotificationEvent,
+  type DigestEvent,
+  getNotifications,
+  type KnowledgeNotificationEvent,
+  type NotificationUser
+} from './notificationManager';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { extractRepresentative } from '../database/entity-representative';
+import { extractStixRepresentativeForUser } from '../database/stix-representative';
+import { findById } from '../domain/user';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -55,8 +64,9 @@ export const internalProcessNotification = async (
       const event = { operation: type, message, instance_id: instance.id };
       const eventNotification = notificationMap.get(notification_id);
       if (eventNotification) {
-        const { main } = extractRepresentative(instance);
-        const notificationName = main;
+        const notificationUser = await findById(context, SYSTEM_USER, user.user_id);
+        const notificationName = 'extensions' in instance ? await extractStixRepresentativeForUser(context, notificationUser, instance, true)
+          : extractRepresentative(instance)?.main;
         if (generatedContent[notificationName]) {
           generatedContent[notificationName] = [...generatedContent[notificationName], event];
         } else {
@@ -168,7 +178,7 @@ const processNotificationEvent = async (
 const processLiveNotificationEvent = async (
   context: AuthContext,
   notificationMap: Map<string, BasicStoreEntityTrigger>,
-  event: KnowledgeNotificationEvent | ActivityNotificationEvent
+  event: KnowledgeNotificationEvent | ActivityNotificationEvent | ActionNotificationEvent
 ) => {
   const { targets, data: instance, origin: { user_id } } = event;
   const streamUser = (await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER)).get(user_id as string) as AuthUser;
@@ -194,13 +204,16 @@ const processDigestNotificationEvent = async (context: AuthContext, notification
 
 const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEvent>>) => {
   try {
+    if (streamEvents.length === 0) {
+      // return;
+    }
     const context = executionContext('publisher_manager');
     const notifications = await getNotifications(context);
     const notificationMap = new Map(notifications.map((n) => [n.trigger.internal_id, n.trigger]));
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
       const { data: { notification_id, type } } = streamEvent;
-      if (type === 'live') {
+      if (type === 'live' || type === 'action') {
         const liveEvent = streamEvent as SseEvent<KnowledgeNotificationEvent>;
         await processLiveNotificationEvent(context, notificationMap, liveEvent.data);
       }

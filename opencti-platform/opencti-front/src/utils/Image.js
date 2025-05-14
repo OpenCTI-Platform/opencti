@@ -24,6 +24,7 @@ export const exportImage = (
       .toBlob(container, {
         useCORS: true,
         allowTaint: true,
+        skipFonts: true,
         pixelRatio,
         backgroundColor,
         style: { margin: 0 },

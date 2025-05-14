@@ -13,7 +13,7 @@ import { AISummaryHistoryStixCoreObjectAskAiHistoryQuery$data } from '@component
 import { useFormatter } from '../../../../components/i18n';
 import { getDefaultAiLanguage } from '../../../../utils/ai/Common';
 import { fetchQuery } from '../../../../relay/environment';
-import { copyToClipboard } from '../../../../utils/utils';
+import { copyToClipboard, cleanHtmlTags } from '../../../../utils/utils';
 
 const subscription = graphql`
     subscription AISummaryHistorySubscription($id: ID!) {
@@ -92,15 +92,8 @@ const AISummaryHistory = ({ id, loading, setLoading }: AISummaryHistoryProps) =>
   // Subscription
   const handleResponse = (response: AISummaryHistorySubscription$data | null | undefined) => {
     const newContent = response ? (response as AISummaryHistorySubscription$data).aiBus?.content : null;
-    const finalContent = (newContent ?? '')
-      .replace('```html', '')
-      .replace('```', '')
-      .replace('<html>', '')
-      .replace('</html>', '')
-      .replace('<body>', '')
-      .replace('</body>', '')
-      .trim();
-    return setContent(finalContent ?? '');
+    const finalContent = cleanHtmlTags(newContent);
+    return setContent(finalContent);
   };
   const subConfig = useMemo<GraphQLSubscriptionConfig<AISummaryHistorySubscription>>(
     () => ({

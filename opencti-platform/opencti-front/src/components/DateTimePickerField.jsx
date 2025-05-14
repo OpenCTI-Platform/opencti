@@ -2,8 +2,8 @@ import React from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { fieldToDateTimePicker } from 'formik-mui-lab';
 import { useField } from 'formik';
-import * as R from 'ramda';
 import { useIntl } from 'react-intl';
+import { isNil } from 'ramda';
 import { parse } from '../utils/Time';
 
 const dateTimeFormatsMap = {
@@ -30,8 +30,8 @@ const dateTimeFormatsMapWithSeconds = {
 
 const DateTimePickerField = (props) => {
   const {
-    form: { setFieldValue, setFieldTouched },
-    field: { name },
+    form: { setFieldValue, setFieldTouched, submitCount },
+    field: { name, value },
     onChange,
     onFocus,
     onSubmit,
@@ -41,6 +41,7 @@ const DateTimePickerField = (props) => {
   } = props;
   const intl = useIntl();
   const [field, meta] = useField(name);
+  const parsedValue = typeof value === 'string' ? new Date(value) : value; // Convert string to Date (MUI v6)
   const internalOnAccept = React.useCallback(
     (date) => {
       setFieldTouched(name, true);
@@ -67,19 +68,23 @@ const DateTimePickerField = (props) => {
   }, [onFocus, name]);
   const internalOnBlur = React.useCallback(() => {
     setFieldTouched(name, true);
-    const { value } = field;
     if (typeof onSubmit === 'function') {
       onSubmit(name, value ? parse(value).toISOString() : null);
     }
   }, [setFieldTouched, onSubmit, name, field]);
+
+  const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
+
   if (withSeconds) {
     return (
       <DateTimePicker
         {...fieldToDateTimePicker(props)}
+        value={parsedValue}
         variant="inline"
         required={required}
         disableToolbar={false}
         autoOk={true}
+        error={showError}
         allowKeyboardControl={true}
         onAccept={internalOnAccept}
         onChange={internalOnChange}
@@ -92,8 +97,8 @@ const DateTimePickerField = (props) => {
             ...textFieldProps,
             onFocus: internalOnFocus,
             onBlur: internalOnBlur,
-            error: !R.isNil(meta.error),
-            helperText: (!R.isNil(meta.error) && meta.error) || textFieldProps.helperText,
+            error: showError,
+            helperText: showError ? meta.error : (textFieldProps.helperText ?? ''),
           },
         }}
       />
@@ -102,10 +107,12 @@ const DateTimePickerField = (props) => {
   return (
     <DateTimePicker
       {...fieldToDateTimePicker(props)}
+      value={parsedValue} // Ensuring Date type
       variant="inline"
       required={required}
       disableToolbar={false}
       autoOk={true}
+      error={showError}
       allowKeyboardControl={true}
       onAccept={internalOnAccept}
       onChange={internalOnChange}
@@ -116,8 +123,8 @@ const DateTimePickerField = (props) => {
           ...textFieldProps,
           onFocus: internalOnFocus,
           onBlur: internalOnBlur,
-          error: !R.isNil(meta.error),
-          helperText: (!R.isNil(meta.error) && meta.error) || (textFieldProps.helperText ?? ''),
+          error: showError,
+          helperText: showError ? meta.error : (textFieldProps.helperText ?? ''),
         },
       }}
     />

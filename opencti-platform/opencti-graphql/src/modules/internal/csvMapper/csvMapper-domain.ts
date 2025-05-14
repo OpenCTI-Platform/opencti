@@ -1,10 +1,18 @@
+import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import { type BasicStoreEntityCsvMapper, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
+import { type BasicStoreEntityCsvMapper, type CsvMapperRepresentation, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../../parser/csv-bundler';
-import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapper, parseCsvMapperWithDefaultValues, validateCsvMapper } from './csvMapper-utils';
+import {
+  convertRepresentationsIds,
+  type CsvMapperSchemaAttribute,
+  type CsvMapperSchemaAttributes,
+  parseCsvMapper,
+  parseCsvMapperWithDefaultValues,
+  validateCsvMapper
+} from './csvMapper-utils';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_ATTRIBUTES, INTERNAL_REFS } from '../../../domain/attribute-utils';
@@ -19,6 +27,9 @@ import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from '..
 import { FunctionalError } from '../../../config/errors';
 import { parseReadableToLines } from '../../../parser/csv-parser';
 import type { FileUploadData } from '../../../database/file-storage-helper';
+import pjson from '../../../../package.json';
+import { extractContentFrom } from '../../../utils/fileToContent';
+import { isCompatibleVersionWithMinimal } from '../../../utils/version';
 
 // -- UTILS --
 
@@ -90,6 +101,58 @@ export const deleteCsvMapper = async (context: AuthContext, user: AuthUser, csvM
 export const getParsedRepresentations = async (context: AuthContext, user: AuthUser, csvMapper: BasicStoreEntityCsvMapper) => {
   const parsedMapper = await parseCsvMapperWithDefaultValues(context, user, csvMapper);
   return parsedMapper.representations;
+};
+
+export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvMapper: BasicStoreEntityCsvMapper) => {
+  const {
+    name,
+    has_header,
+    separator,
+    representations,
+    skipLineChar,
+  } = csvMapper;
+  const parsedRepresentations: CsvMapperRepresentation[] = JSON.parse(representations);
+  await convertRepresentationsIds(context, user, parsedRepresentations, 'internal');
+  return JSON.stringify({
+    openCTI_version: pjson.version,
+    type: 'csvMapper',
+    configuration: {
+      name,
+      has_header,
+      separator,
+      representations: parsedRepresentations,
+      skipLineChar,
+    }
+  });
+};
+
+const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
+
+export const csvMapperAddInputFromImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+  const parsedData = await extractContentFrom(file);
+
+  // check platform version compatibility
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_COMPATIBLE_VERSION)) {
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
+  }
+
+  // convert default values ids in representations
+  const representations = parsedData.configuration.representations as CsvMapperRepresentation[];
+  await convertRepresentationsIds(context, user, representations, 'stix');
+  const csvMapper = {
+    ...parsedData.configuration,
+    representations: JSON.stringify(representations),
+  };
+  const parsedRepresentations = await getParsedRepresentations(context, user, csvMapper);
+
+  const csvMapperAddInput = {
+    ...parsedData.configuration,
+    representations: parsedRepresentations,
+  };
+  return csvMapperAddInput;
 };
 
 // -- Schema

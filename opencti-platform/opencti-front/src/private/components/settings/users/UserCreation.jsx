@@ -23,6 +23,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../utils/store';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
+import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import SwitchField from '../../../../components/fields/SwitchField';
 
 const userMutation = graphql`
@@ -57,6 +59,13 @@ const userValidation = (t) => Yup.object().shape({
   prevent_default_groups: Yup.boolean(),
 });
 
+const CreateUserControlledDial = (props) => (
+  <CreateEntityControlledDial
+    entityType='User'
+    {...props}
+  />
+);
+
 const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const { settings } = useAuth();
   const theme = useTheme();
@@ -64,6 +73,8 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 
   const { groups: defaultGroups } = usePreloadedQuery(groupsQuery, defaultGroupsQueryRef);
+  const { isFeatureEnable } = useHelper();
+  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const { objectOrganization, groups, user_confidence_level, ...rest } = values;
@@ -99,7 +110,11 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
   return (
     <Drawer
       title={t_i18n('Create a user')}
-      variant={DrawerVariant.createWithPanel}
+      variant={isFABReplaced ? undefined : DrawerVariant.createWithPanel}
+      controlledDial={isFABReplaced
+        ? CreateUserControlledDial
+        : undefined
+      }
     >
       {({ onClose }) => (
         <>

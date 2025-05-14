@@ -147,7 +147,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
 
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security: Policies | Settings'));
+  setTitle(t_i18n('Policies | Security | Settings'));
   const handleSubmitField = (name: string, value: string | string[] | Option | null) => {
     policiesValidation()
       .validateAt(name, { [name]: value })
@@ -224,10 +224,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             />
                           </EETooltip>
                           <Dialog
-                            PaperProps={{ elevation: 1 }}
+                            slotProps={{ paper: { elevation: 1 } }}
                             open={openPlatformOrganizationChanges}
                             keepMounted
-                            TransitionComponent={Transition}
+                            slots={{ transition: Transition }}
                             onClose={() => setOpenPlatformOrganizationChanges(false)}
                           >
                             <DialogTitle>{t_i18n('Numerous repercussions linked to the activation of this feature')}</DialogTitle>

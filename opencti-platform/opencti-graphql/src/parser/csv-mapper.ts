@@ -381,15 +381,31 @@ export const mappingProcess = async (
   // Resolution des representations & markings - refIds = default values for representation attributes
   const { representations, user_chosen_markings } = mapper;
 
-  const representationEntities = representations
-    .filter((r) => r.type === CsvMapperRepresentationType.Entity)
-    .sort((r1, r2) => r1.attributes.filter((attr) => attr.based_on).length - r2.attributes.filter((attr) => attr.based_on).length);
   const representationRelationships = representations.filter((r) => r.type === CsvMapperRepresentationType.Relationship);
+
+  const representationEntitiesWithoutBasedOnRelationships = representations
+    .filter((r) => {
+      const isEntity = r.type === CsvMapperRepresentationType.Entity;
+      const entityHasRefToRelations = !r.attributes.some((a) => {
+      // Check for each attribute of entity if it has based_on representations
+        return a.based_on?.representations?.some((b) => {
+        // Check if at least one of based_on ref is a relation in CSV Mapper
+          return representationRelationships.some((rel) => rel.id === b);
+        });
+      });
+      return isEntity && entityHasRefToRelations;
+    })
+    .sort((r1, r2) => r1.attributes.filter((attr) => attr.based_on).length - r2.attributes.filter((attr) => attr.based_on).length);
+
+  // representations thar are not in representationEntitiesWithoutBasedOnRelationships
+  const representationEntitiesWithBasedOnRelationships = representations
+    .filter((r) => r.type === CsvMapperRepresentationType.Entity && !representationEntitiesWithoutBasedOnRelationships.some((r1) => r1.id === r.id));
+
   const results = new Map<string, Record<string, InputType>>();
 
   // 1. entities sort by no based on at first
-  for (let i = 0; i < representationEntities.length; i += 1) {
-    const representation = representationEntities[i];
+  for (let i = 0; i < representationEntitiesWithoutBasedOnRelationships.length; i += 1) {
+    const representation = representationEntitiesWithoutBasedOnRelationships[i];
     const input = await mapRecord(
       context,
       user,
@@ -407,6 +423,23 @@ export const mappingProcess = async (
   // 2. relationships
   for (let i = 0; i < representationRelationships.length; i += 1) {
     const representation = representationRelationships[i];
+    const input = await mapRecord(
+      context,
+      user,
+      record,
+      representation,
+      results,
+      refEntities,
+      user_chosen_markings ?? []
+    );
+    if (input) {
+      results.set(representation.id, input);
+    }
+  }
+
+  // 3. entities with based on relationships at last
+  for (let i = 0; i < representationEntitiesWithBasedOnRelationships.length; i += 1) {
+    const representation = representationEntitiesWithBasedOnRelationships[i];
     const input = await mapRecord(
       context,
       user,

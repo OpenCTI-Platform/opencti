@@ -3,7 +3,7 @@ import { elAggregationCount } from '../../src/database/engine';
 import { ADMIN_USER, createHttpClient, executeExternalQuery, testContext } from '../utils/testQuery';
 import { READ_DATA_INDICES } from '../../src/database/utils';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
-import { convertStoreToStix } from '../../src/database/stix-converter';
+import { convertStoreToStix } from '../../src/database/stix-2-1-converter';
 import { checkInstanceDiff } from '../utils/testStream';
 import { logAudit } from '../../src/config/conf';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../../src/modules/deleteOperation/deleteOperation-types';
@@ -62,6 +62,10 @@ export const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
     }
   `;
 
+export const VOCABULARY_NUMBERS = 343;
+export const INDICATOR_NUMBERS = 28;
+export const MALWARE_NUMBERS = 27;
+export const LABEL_NUMBERS = 13;
 export const UPLOADED_FILE_SIZE = 42204;
 
 const filterOutDeleteOperationRefs = {
@@ -78,10 +82,10 @@ const filterOutDeleteOperationRefs = {
 export const checkPreSyncContent = async () => {
   const initObjectAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
   const objectMap = new Map(initObjectAggregation.map((i) => [i.label, i.value]));
-  expect(objectMap.get('Indicator')).toEqual(28);
-  expect(objectMap.get('Malware')).toEqual(27);
-  expect(objectMap.get('Label')).toEqual(13);
-  expect(objectMap.get('Vocabulary')).toEqual(342);
+  expect(objectMap.get('Indicator')).toEqual(INDICATOR_NUMBERS);
+  expect(objectMap.get('Malware')).toEqual(MALWARE_NUMBERS);
+  expect(objectMap.get('Label')).toEqual(LABEL_NUMBERS);
+  expect(objectMap.get('Vocabulary')).toEqual(VOCABULARY_NUMBERS);
   // Relations
   const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type', filters: filterOutDeleteOperationRefs });
   const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
@@ -94,10 +98,17 @@ export const checkPreSyncContent = async () => {
   return { objectMap, relMap, initStixReport };
 };
 export const checkMapConsistency = (before, after) => {
+  const failedExpects = [];
   after.forEach((value, key) => {
     const compareValue = before.get(key);
-    expect(`${key} - ${value}`).toEqual(`${key} - ${compareValue}`);
+    const current = `${key} - ${value}`;
+    const expected = `${key} - ${compareValue}`;
+    if (current !== expected) {
+      failedExpects.push({ current, expected });
+    }
+    // expect(`${key} - ${value}`).toEqual(`${key} - ${compareValue}`);
   });
+  expect(failedExpects.length, `checkMapConsistency failed ${JSON.stringify(failedExpects)}`).toEqual(0);
 };
 export const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
   const client = createHttpClient();

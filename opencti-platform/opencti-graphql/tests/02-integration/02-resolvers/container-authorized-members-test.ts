@@ -16,6 +16,7 @@ import {
 import { adminQueryWithSuccess, disableEE, enableCEAndUnSetOrganization, enableEE, enableEEAndSetOrganization, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 import conf from '../../../src/config/conf';
+import { authorizedMembers } from '../../../src/schema/attribute-definition';
 
 const CREATE_QUERY = gql`
   mutation CaseIncidentAdd($input: CaseIncidentAddInput!) {
@@ -25,7 +26,7 @@ const CREATE_QUERY = gql`
       name
       description
       authorized_members {
-        id
+        member_id
         access_right
       }
       currentUserAccessRight
@@ -50,7 +51,7 @@ const READ_QUERY = gql`
       standard_id
       name
       authorized_members {
-        id
+        member_id
         access_right
       }
       currentUserAccessRight
@@ -65,7 +66,7 @@ const READ_REPORT_QUERY = gql`
       standard_id
       name
       authorized_members {
-        id
+        member_id
         access_right
       }
       currentUserAccessRight
@@ -111,7 +112,7 @@ const EDIT_AUTHORIZED_MEMBERS_QUERY = gql`
         id
         currentUserAccessRight
         authorized_members {
-          id
+          member_id
           access_right
         }
         authorized_members_activation_date
@@ -197,7 +198,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
   });
   it('should SECURITY user not edit authorized members because missing capa', async () => {
     userEditorId = await getUserIdByEmail(USER_EDITOR.email);
-    const authorizedMembers = {
+    const restrictedMembers = {
       id: caseIncident.id,
       input: [
         {
@@ -208,7 +209,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     };
     await queryAsUserIsExpectedForbidden(USER_SECURITY.client, {
       query: EDIT_AUTHORIZED_MEMBERS_QUERY,
-      variables: authorizedMembers,
+      variables: restrictedMembers,
     });
   });
   it('should Admin user edit authorized members', async () => {
@@ -229,7 +230,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       }
     ]);
@@ -264,11 +265,11 @@ describe('Case Incident Response standard behavior with authorized_members activ
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       },
       {
-        id: userEditorId,
+        member_id: userEditorId,
         access_right: 'view'
       }
     ]);
@@ -349,11 +350,11 @@ describe('Case Incident Response standard behavior with authorized_members activ
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       },
       {
-        id: userEditorId,
+        member_id: userEditorId,
         access_right: 'admin'
       }
     ]);
@@ -413,7 +414,7 @@ describe('Case Incident Response standard behavior with authorized_members activ
     // Activate authorized members for IR
     const authorizedMembersConfiguration = JSON.stringify([
       {
-        name: 'authorized_members',
+        name: authorizedMembers.name,
         default_values: [
           JSON.stringify({
             id: ADMIN_USER.id,
@@ -439,13 +440,13 @@ describe('Case Incident Response standard behavior with authorized_members activ
     expect(caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd.authorized_members).not.toBeUndefined();
     expect(caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       }
     ]);
     caseIncidentResponseAuthorizedMembersFromSettings = caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd;
     // Clean
-    const cleanAuthorizedMembersConfiguration = JSON.stringify([{ name: 'authorized_members', default_values: null }]);
+    const cleanAuthorizedMembersConfiguration = JSON.stringify([{ name: authorizedMembers.name, default_values: null }]);
     const cleanEntitySettingsResult = await adminQuery({
       query: ENTITY_SETTINGS_UPDATE_QUERY,
       variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [cleanAuthorizedMembersConfiguration] } },
@@ -607,11 +608,11 @@ describe('Case Incident Response and organization sharing standard behavior with
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       },
       {
-        id: userEditorId,
+        member_id: userEditorId,
         access_right: 'view'
       }
     ]);
@@ -732,11 +733,11 @@ describe('Restricted entities listing', () => {
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(caseIRUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       },
       {
-        id: userEditorId,
+        member_id: userEditorId,
         access_right: 'view'
       }
     ]);
@@ -776,11 +777,11 @@ describe('Restricted entities listing', () => {
     expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
     expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).toEqual([
       {
-        id: ADMIN_USER.id,
+        member_id: ADMIN_USER.id,
         access_right: 'admin'
       },
       {
-        id: userEditorId,
+        member_id: userEditorId,
         access_right: 'view'
       }
     ]);
@@ -805,7 +806,7 @@ describe('Restricted entities listing', () => {
       query: DELETE_QUERY,
       variables: { id: caseIrId },
     });
-    // Verify is no longer found
+    // Verify that it is no longer found
     const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult?.data?.caseIncident).toBeNull();

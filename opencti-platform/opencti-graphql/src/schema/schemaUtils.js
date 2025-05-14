@@ -53,6 +53,13 @@ export const shortHash = (element) => {
   return hash.slice(0, 8);
 };
 
+export const isValidDate = (stringDate) => {
+  const dateParsed = Date.parse(stringDate);
+  if (!dateParsed) return false;
+  const dateInstance = new Date(dateParsed);
+  return dateInstance.toISOString() === stringDate;
+};
+
 const pascalize = (str) => {
   return str
     .match(/[a-z0-9]+/gi)
@@ -91,6 +98,7 @@ export const generateInternalType = (entity) => {
       return ENTITY_IPV4_ADDR;
     case 'ipv6-addr':
       return ENTITY_IPV6_ADDR;
+    case 'stixfile':
     case 'file':
       return ENTITY_HASHED_OBSERVABLE_STIX_FILE;
     default:

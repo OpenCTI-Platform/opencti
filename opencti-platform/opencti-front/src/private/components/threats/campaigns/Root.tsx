@@ -221,7 +221,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <CampaignKnowledge campaign={campaign} />
+                    <CampaignKnowledge campaignData={campaign} />
                   </div>
                 }
               />

@@ -17,6 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fetchQuery } from '../../../../relay/environment';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import { displayEntityTypeForTranslation } from '../../../../utils/String';
 
 export const stixCoreObjectsFieldSearchQuery = graphql`
   query StixCoreObjectsFieldSearchQuery($search: String, $types: [String]) {
@@ -209,7 +210,15 @@ const useStyles = makeStyles(() => ({
 }));
 
 const StixCoreObjectsField = (props) => {
-  const { name, style, helpertext, required = false } = props;
+  const {
+    name,
+    style,
+    helpertext,
+    required = false,
+    multiple = true,
+    label,
+    disabled = false,
+  } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: entityTypes } = useAttributes();
@@ -246,11 +255,7 @@ const StixCoreObjectsField = (props) => {
   };
   const entitiesTypes = R.pipe(
     R.map((n) => ({
-      label: t_i18n(
-        n.toString()[0] === n.toString()[0].toUpperCase()
-          ? `entity_${n.toString()}`
-          : `relationship_${n.toString()}`,
-      ),
+      label: t_i18n(displayEntityTypeForTranslation(n)),
       value: n,
       type: n,
     })),
@@ -260,19 +265,20 @@ const StixCoreObjectsField = (props) => {
     <>
       <Field
         component={AutocompleteField}
+        disabled={disabled}
         style={style}
         name={name}
         required={required}
-        multiple={true}
+        multiple={multiple}
         textfieldprops={{
           variant: 'standard',
-          label: t_i18n('Entities'),
+          label: label ?? (multiple ? t_i18n('Entities') : t_i18n('Entity')),
           helperText: helpertext,
           onFocus: searchStixCoreObjects,
         }}
         endAdornment={(
           <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
-            <IconButton onClick={handleOpenSearchScope} size="small" edge="end">
+            <IconButton onClick={handleOpenSearchScope} size="small" edge="end" disabled={disabled}>
               <PaletteOutlined
                 fontSize="small"
                 color={searchScope[name] && searchScope[name].length > 0 ? 'secondary' : 'primary'}
@@ -317,7 +323,7 @@ const StixCoreObjectsField = (props) => {
         options={stixCoreObjects}
         onInputChange={searchStixCoreObjects}
         renderOption={(innerProps, option) => (
-          <li {...innerProps}>
+          <li {...innerProps} key={option.id}>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type={option.type} />
             </div>

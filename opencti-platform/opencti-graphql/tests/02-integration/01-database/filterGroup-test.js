@@ -251,6 +251,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.length).toEqual(5);
   });
   it('should list entities according to filters: one filter', async () => {
+    // report_types = threat-report
     const queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
       variables: {
@@ -2129,6 +2130,45 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       } });
     expect(queryResult.data.reports.edges.length).toEqual(1);
+  });
+
+  it('should list entities according to relative date time range filters', async () => {
+    // published within [2023-09-01, 2023-09-30]
+    let queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'published',
+            values: ['2023-09-01T23:20:00.000Z', '2023-09-30T23:20:00.000Z'],
+            operator: 'within',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(3); // the reports published in September 2023: report1, report2, report4
+    // published within last 2 years and now
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'published',
+            values: ['now-2y', 'now'],
+            operator: 'within',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(3); // the reports published in the last 2 years: report1, report2, report4
   });
 
   it('should test environment deleted', async () => {

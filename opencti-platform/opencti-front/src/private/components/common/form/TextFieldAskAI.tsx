@@ -88,6 +88,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { enabled, configured } = useAI();
+
   const [content, setContent] = useState('');
   const [disableResponse, setDisableResponse] = useState(false);
   const [openToneOptions, setOpenToneOptions] = useState(false);
@@ -96,6 +97,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null; }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
+
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (isEnterpriseEdition) {
       event.preventDefault();
@@ -111,13 +113,18 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   };
   const handleCloseToneOptions = () => setOpenToneOptions(false);
   const handleOpenAskAI = () => setDisplayAskAI(true);
-  const handleCloseAskAI = () => setDisplayAskAI(false);
+  const handleCloseAskAI = () => {
+    setContent('');
+    setDisplayAskAI(false);
+  };
+
   const [commitMutationFixSpelling] = useApiMutation<TextFieldAskAIFixSpellingMutation>(textFieldAskAIFixSpellingMutation);
   const [commitMutationMakeShorter] = useApiMutation<TextFieldAskAIMakeShorterMutation>(textFieldAskAIMakeShorterMutation);
   const [commitMutationMakeLonger] = useApiMutation<TextFieldAskAIMakeLongerMutation>(textFieldAskAIMakeLongerMutation);
   const [commitMutationChangeTone] = useApiMutation<TextFieldAskAIChangeToneMutation>(textFieldAskAIChangeToneMutation);
   const [commitMutationSummarize] = useApiMutation<TextFieldAskAISummarizeMutation>(textFieldAskAISummarizeMutation);
   const [commitMutationExplain] = useApiMutation<TextFieldAskAIExplainMutation>(textFieldAskAIExplainMutation);
+
   const handleAskAi = (action: string, canBeAccepted = true) => {
     setDisableResponse(true);
     handleCloseMenu();
@@ -232,6 +239,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
         // do nothing
     }
   };
+
   const renderButton = () => {
     return (
       <>
@@ -240,7 +248,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             size="small"
             onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
             disabled={disabled || currentValue.length < 10}
-            style={{ marginTop: 4, color: theme.palette.ai.main }}
+            style={{ color: theme.palette.ai.main }}
           >
             <AutoAwesomeOutlined fontSize='small' />
           </IconButton>
@@ -289,7 +297,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
         />
         )}
         <Dialog
-          PaperProps={{ elevation: 1 }}
+          slotProps={{ paper: { elevation: 1 } }}
           open={openToneOptions}
           onClose={handleCloseToneOptions}
           fullWidth={true}
@@ -329,22 +337,23 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
       </>
     );
   };
+
   if (variant === 'markdown') {
     return (
-      <div style={style || { position: 'absolute', top: 17, right: 0 }}>
+      <div style={style || { position: 'absolute', top: 17, right: 0, paddingTop: 4 }}>
         {renderButton()}
       </div>
     );
   }
   if (variant === 'html') {
     return (
-      <div style={style || { position: 'absolute', top: -12, right: 30 }}>
+      <div style={style || { position: 'absolute', top: -12, right: 30, paddingTop: 4 }}>
         {renderButton()}
       </div>
     );
   }
   return (
-    <InputAdornment position="end" style={{ position: 'absolute', top: 7, right: 0 }}>
+    <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
       {renderButton()}
     </InputAdornment>
   );

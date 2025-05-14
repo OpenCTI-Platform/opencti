@@ -3,6 +3,8 @@ import type { Dispatch, MutableRefObject, ReactNode, SetStateAction } from 'reac
 import React from 'react';
 import { GraphQLTaggedNode } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover/Popover';
+import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
+import { OperationType } from 'relay-runtime';
 import type { LocalStorage } from '../../utils/hooks/useLocalStorageModel';
 import { NumberOfElements, PaginationLocalStorage, UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
@@ -46,10 +48,11 @@ export interface DataTableContextProps {
   resolvePath: (data: any) => any
   redirectionModeEnabled?: boolean
   useLineData: DataTableProps['useLineData']
-  useDataTable: ReturnType<DataTableProps['useDataTable']>
+  dataQueryArgs: UsePreloadedPaginationFragment<OperationType>,
+  data: unknown,
   useDataCellHelpers: DataTableProps['useDataCellHelpers']
   useDataTableToggle: ReturnType<DataTableProps['useDataTableToggle']>
-  useComputeLink: (entity: any) => string
+  useComputeLink: (entity: any) => string | undefined
   useDataTableColumnsLocalStorage: ReturnType<DataTableProps['useDataTableColumnsLocalStorage']>
   useDataTablePaginationLocalStorage: ReturnType<DataTableProps['useDataTablePaginationLocalStorage']>
   onAddFilter: DataTableProps['onAddFilter']
@@ -57,18 +60,22 @@ export interface DataTableContextProps {
   formatter: DataTableProps['formatter']
   variant: DataTableVariant
   actions?: DataTableProps['actions']
+  icon?: DataTableProps['icon']
   rootRef?: DataTableProps['rootRef']
   createButton?: DataTableProps['createButton']
   resetColumns: () => void
   disableNavigation: DataTableProps['disableNavigation']
   disableToolBar: DataTableProps['disableToolBar']
   disableSelectAll: DataTableProps['disableSelectAll']
+  disableLineSelection: DataTableProps['disableLineSelection']
   selectOnLineClick: DataTableProps['selectOnLineClick']
   onLineClick: DataTableProps['onLineClick']
   page: number
   setPage:Dispatch<SetStateAction<number>>
   tableWidthState: [number, Dispatch<SetStateAction<number>>]
   startsWithAction: boolean
+  startsWithIcon: boolean
+  startColumnWidth: number
   endsWithAction: boolean
   endsWithNavigate: boolean
 }
@@ -82,8 +89,10 @@ export interface DataTableProps {
   handleCopy?: () => void
   lineFragment?: GraphQLTaggedNode
   dataQueryArgs: any
+  data?: unknown
   availableFilterKeys?: string[] | undefined;
   redirectionModeEnabled?: boolean
+  additionalFilters?: FilterGroup
   additionalFilterKeys?: string[]
   entityTypes?: string[]
   settingsMessagesBannerHeight?: number
@@ -106,7 +115,7 @@ export interface DataTableProps {
     initialValue: LocalStorage,
     ignoreUri?: boolean,
   ) => PaginationLocalStorage<T>
-  useComputeLink?: (entity: any) => string
+  useComputeLink?: (entity: any) => string | undefined
   useDataTableToggle: (key: string) => {
     selectedElements: Record<string, any>
     deSelectedElements: Record<string, any>
@@ -125,6 +134,7 @@ export interface DataTableProps {
   variant?: DataTableVariant
   rootRef?: HTMLDivElement
   actions?: (row: any) => ReactNode
+  icon?: (row: any) => ReactNode
   createButton?: ReactNode
   pageSize?: string
   disableNavigation?: boolean
@@ -132,10 +142,11 @@ export interface DataTableProps {
   disableToolBar?: boolean
   disableSelectAll?: boolean
   removeAuthMembersEnabled?: boolean
+  removeFromDraftEnabled?: boolean
+  markAsReadEnabled?: boolean
   selectOnLineClick?: boolean
   onLineClick?: (line: any) => void
   hideHeaders?: boolean
-  canToggleLine?: boolean
   message?: string
   isLocalStorageEnabled?: boolean
 }
@@ -147,7 +158,6 @@ export interface DataTableBodyProps {
   pageSize: number
   pageStart: number
   hideHeaders: DataTableProps['hideHeaders']
-  tableRef: MutableRefObject<HTMLDivElement | null>
 }
 
 export interface DataTableDisplayFiltersProps {
@@ -159,6 +169,7 @@ export interface DataTableDisplayFiltersProps {
 }
 
 export interface DataTableFiltersProps {
+  additionalFilters?: DataTableProps['additionalFilters'];
   availableFilterKeys?: string[] | undefined;
   availableRelationFilterTypes?: Record<string, string[]> | undefined
   availableEntityTypes?: string[]

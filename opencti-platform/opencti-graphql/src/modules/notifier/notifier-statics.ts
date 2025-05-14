@@ -330,7 +330,11 @@ ${HEADER_TEMPLATE}
                                                                       <table border="0" cellspacing="0" cellpadding="0">
                                                                          <tbody>
                                                                             <tr>
-                                                                               <td align="center" style="border-radius: 3px;" bgcolor="#eaf0f6" width="30px"><a href="<%=platform_uri%>/dashboard/id/<%= contentEvent.instance_id %>?source=email&<%=url_suffix%>" target="_blank" style="border: 1px solid #eaf0f6; border-radius: 3px; color: #FFFFFF; display: inline-block; font-size: 14px; font-weight: 400; line-height: 1; padding: 12px 20px; text-decoration: none; width: 30px; min-width: 30px; white-space: nowrap; border: 1px solid #cbd6e2; color: #425b76; height: 12px; padding: 8px 12px; font-size: 12px; line-height: 12px;">View</a></td>
+                                                                               <td align="center" style="border-radius: 3px;" bgcolor="#eaf0f6" width="30px">
+                                                                               <% if(contentEvent.instance_id && contentEvent.operation !== 'delete') {%>
+                                                                                    <a href="<%=platform_uri%>/dashboard/id/<%= contentEvent.instance_id %>?source=email&<%=url_suffix%>" target="_blank" style="border: 1px solid #eaf0f6; border-radius: 3px; color: #FFFFFF; display: inline-block; font-size: 14px; font-weight: 400; line-height: 1; padding: 12px 20px; text-decoration: none; width: 30px; min-width: 30px; white-space: nowrap; border: 1px solid #cbd6e2; color: #425b76; height: 12px; padding: 8px 12px; font-size: 12px; line-height: 12px;">View</a>
+                                                                               <% } %>
+                                                                               </td>
                                                                             </tr>
                                                                          </tbody>
                                                                       </table>
@@ -579,7 +583,11 @@ export const SIMPLIFIED_EMAIL_TEMPLATE = `
                                                                       <table border="0" cellspacing="0" cellpadding="0">
                                                                          <tbody>
                                                                             <tr>
-                                                                               <td align="center" style="border-radius: 3px;" bgcolor="#eaf0f6" width="30px"><a href="<%=platform_uri%>/dashboard/id/<%= contentEvent.instance_id %>?source=email&<%=url_suffix%>" target="_blank" style="border: 1px solid #eaf0f6; border-radius: 3px; color: #FFFFFF; display: inline-block; font-size: 14px; font-weight: 400; line-height: 1; padding: 12px 20px; text-decoration: none; width: 30px; min-width: 30px; white-space: nowrap; border: 1px solid #cbd6e2; color: #425b76; height: 12px; padding: 8px 12px; font-size: 12px; line-height: 12px;">View</a></td>
+                                                                               <td align="center" style="border-radius: 3px;" bgcolor="#eaf0f6" width="30px">
+                                                                               <% if(contentEvent.instance_id && contentEvent.operation !== 'delete') {%>
+                                                                                    <a href="<%=platform_uri%>/dashboard/id/<%= contentEvent.instance_id %>?source=email&<%=url_suffix%>" target="_blank" style="border: 1px solid #eaf0f6; border-radius: 3px; color: #FFFFFF; display: inline-block; font-size: 14px; font-weight: 400; line-height: 1; padding: 12px 20px; text-decoration: none; width: 30px; min-width: 30px; white-space: nowrap; border: 1px solid #cbd6e2; color: #425b76; height: 12px; padding: 8px 12px; font-size: 12px; line-height: 12px;">View</a>
+                                                                               <% } %>
+                                                                               </td>
                                                                             </tr>
                                                                          </tbody>
                                                                       </table>

@@ -18,7 +18,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 const Feed = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Data sharing: CSV Feeds | Data'));
+  setTitle(t_i18n('CSV Feeds | Data sharing | Data'));
   const LOCAL_STORAGE_KEY = 'feed';
   const navigate = useNavigate();
   const location = useLocation();
@@ -92,6 +92,11 @@ const Feed = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={feedState.searchTerm}
+        createButton={
+          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+            <FeedCreation paginationOptions={paginationOptions} />
+          </Security>
+        }
       >
         <QueryRenderer
           query={FeedLinesQuery}
@@ -123,9 +128,6 @@ const Feed = () => {
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('CSV feeds'), current: true }]} />
       <SharingMenu/>
       {feedState.view === 'lines' ? renderLines(paginationOptions) : ''}
-      <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-        <FeedCreation paginationOptions={paginationOptions} />
-      </Security>
     </Box>
   );
 };
