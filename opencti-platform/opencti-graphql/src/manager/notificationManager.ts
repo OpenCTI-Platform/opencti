@@ -91,7 +91,7 @@ export interface DigestEvent extends StreamNotifEvent {
   type: 'digest'
   target: NotificationUser
   playbook_source?: string
-  data: Array<{ notification_id: string, instance: StixObject, type: string, message: string, origin: Partial<UserOrigin>, streamMessage?: string }>
+  data: Array<{ notification_id: string, instance: StixObject, type: string, message: string, origin?: Partial<UserOrigin>, streamMessage?: string }>
 }
 
 export const isLiveKnowledge = (n: ResolvedTrigger): n is ResolvedLive => {
