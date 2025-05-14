@@ -2,12 +2,13 @@ import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR } from './pir-types';
-import { type PirAddInput } from '../../generated/graphql';
-import { createEntity } from '../../database/middleware';
+import { type EditInput, type PirAddInput } from '../../generated/graphql';
+import { createEntity, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
+import { SYSTEM_USER } from '../../utils/access';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPIR>(context, user, id, ENTITY_TYPE_PIR);
@@ -51,4 +52,9 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
 export const deletePir = (context: AuthContext, user: AuthUser, pirId: string) => {
   // TODO PIR remove pir id from historic events
   return deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
+};
+
+export const updatePir = async (context: AuthContext, user: AuthUser, pirId: string, input: EditInput[]) => {
+  const { element } = await updateAttribute(context, SYSTEM_USER, pirId, ENTITY_TYPE_PIR, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_PIR].EDIT_TOPIC, element, user);
 };

@@ -299,7 +299,10 @@ const platformPirs = (context: AuthContext) => {
   const reloadPirs = () => {
     return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_PIR], { connectionFormat: false });
   };
-  return { values: null, fn: reloadPirs };
+  const refreshPirs = (values: BasicStoreEntityPIR[], instance: BasicStoreEntityPIR) => {
+    return values.filter((v) => v.id !== instance.id).concat(instance);
+  };
+  return { values: null, fn: reloadPirs, refresh: refreshPirs };
 };
 
 type SubEvent = { instance: StoreEntity | StoreRelation };
