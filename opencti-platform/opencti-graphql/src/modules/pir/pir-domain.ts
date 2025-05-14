@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR } from './pir-types';
@@ -18,8 +19,10 @@ export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptio
 };
 
 const PIR_RESCAN_PERIOD = 30 * 24 * 3600 * 1000; // 1 month in milliseconds
+const TEST_PIR_RESCAN_PERIOD = 3600 * 1000; // 1h hour in milliseconds // TODO PIR
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
+  const rescanStartDate = now() - TEST_PIR_RESCAN_PERIOD; // rescan start date in seconds
   // -- create PIR --
   const finalInput = {
     ...input,
@@ -27,7 +30,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
       ...c,
       id: uuidv4(),
     })),
-    // lastEventId: PIR_rescan_period before the effective last event id // TODO PIR
+    lastEventId: `${rescanStartDate}-0`,
   };
   const created: BasicStoreEntityPIR = await createEntity(
     context,
