@@ -131,7 +131,10 @@ export const applyMigration = (context) => {
         logMigration.info('[MIGRATION] Migration process completed');
         resolve(state);
       });
-    }).catch((reason) => logApp.error('[MIGRATION] error on load', { cause: reason }));
+    }).catch((reason) => {
+      logApp.error('[MIGRATION] error on load', { cause: reason });
+      reject(reason);
+    });
   }).then(async (state) => {
     // After migration, path the current version runtime
     const statusPatch = { platformVersion: PLATFORM_VERSION };
