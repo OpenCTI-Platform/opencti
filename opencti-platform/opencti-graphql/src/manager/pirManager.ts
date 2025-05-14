@@ -9,13 +9,19 @@ import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
 import { internalLoadById, listRelationsPaginated } from '../database/middleware-loader';
-import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR, type PirDependency } from '../modules/pir/pir-types';
-import { EditOperation } from '../generated/graphql';
+import {
+  type BasicStoreEntityPIR,
+  ENTITY_TYPE_PIR,
+  type ParsedPIR,
+  type PirDependency
+} from '../modules/pir/pir-types';
+import { ConnectorType, EditOperation } from '../generated/graphql';
 import { flagSource, parsePir, updatePirDependencies } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { createRedisClient, fetchStreamEventsRange } from '../database/redis';
 import { updatePir } from '../modules/pir/pir-domain';
 import type { BasicStoreCommon } from '../types/store';
+import { connectorIdFromIngestId, registerConnector } from '../domain/connector';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';

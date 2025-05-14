@@ -3872,6 +3872,7 @@ export enum ConnectorType {
   InternalEnrichment = 'INTERNAL_ENRICHMENT',
   InternalExportFile = 'INTERNAL_EXPORT_FILE',
   InternalImportFile = 'INTERNAL_IMPORT_FILE',
+  InternalIngestionPir = 'INTERNAL_INGESTION_PIR',
   Stream = 'STREAM'
 }
 
