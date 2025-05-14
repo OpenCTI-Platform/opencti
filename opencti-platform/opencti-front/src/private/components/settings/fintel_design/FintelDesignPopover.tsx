@@ -12,7 +12,6 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import DeleteDialog from '../../../../components/DeleteDialog';
-import FintelDesignEdition from './FintelDesignEdition';
 
 export const fintelDesignPopoverDeletionMutation = graphql`
   mutation FintelDesignPopoverDeletionMutation($id: ID!) {
@@ -33,7 +32,6 @@ const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
   const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [isEditionFormOpen, setIsEditionFormOpen] = useState<boolean>(false);
 
   const [commitDelete] = useApiMutation(fintelDesignPopoverDeletionMutation);
 
@@ -62,13 +60,6 @@ const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
     });
   };
 
-  // edition
-  const handleDisplayEdit = () => {
-    setIsEditionFormOpen(true);
-    handleClose();
-  };
-  const handleCloseEditionForm = () => setIsEditionFormOpen(false);
-
   return (
     <>
       <IconButton
@@ -79,7 +70,6 @@ const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
@@ -87,13 +77,6 @@ const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this fintel design?')}
       />
-      {isEditionFormOpen && (
-        <FintelDesignEdition
-          data={data}
-          isOpen={isEditionFormOpen}
-          onClose={handleCloseEditionForm}
-        />
-      )}
     </>
   );
 };
