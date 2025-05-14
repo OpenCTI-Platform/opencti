@@ -24,12 +24,12 @@ const CustomizationMenu: FunctionComponent = () => {
       label: 'Decay rules',
     },
     {
-      path: '/dashboard/settings/customization/exclusion_lists',
-      label: 'Exclusion lists',
-    },
-    {
       path: '/dashboard/settings/customization/fintel_designs',
       label: 'Fintel Design',
+    },
+    {
+      path: '/dashboard/settings/customization/exclusion_lists',
+      label: 'Exclusion lists',
     },
   ];
 
