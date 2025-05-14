@@ -184,11 +184,11 @@ const AttackPatternsMatrixColumns = ({
     .map((a) => ({
       ...a,
       attackPatterns: a.attackPatterns
-        ?.filter((ap) => !searchTerm || (searchTerm === ''
-      || ap.name.toLowerCase().includes(searchTerm.toLowerCase())
-      || ap.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      || ap.x_mitre_id?.toLowerCase().includes(searchTerm.toLowerCase())
-      || ap.subAttackPatternsSearchText?.toLowerCase().includes(searchTerm.toLowerCase())))
+        ?.filter((ap) => !searchTerm
+        || ap.name.toLowerCase().includes(searchTerm.toLowerCase())
+        || ap.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        || ap.x_mitre_id?.toLowerCase().includes(searchTerm.toLowerCase())
+        || ap.subAttackPatternsSearchText?.toLowerCase().includes(searchTerm.toLowerCase()))
         .map((ap) => ({
           ...ap,
           id: ap.attack_pattern_id,
@@ -244,9 +244,9 @@ const AttackPatternsMatrixColumns = ({
                 <Box key={col.kill_chain_id} sx={{ mr: 1.5 }}>
                   <Box sx={{ textAlign: 'center', mb: 1 }}>
                     <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{truncate(col.phase_name, 18)}</Typography>
-                    <Typography variant="caption">{`${col?.attackPatterns?.length} techniques`}</Typography>
+                    <Typography variant="caption">{`${col.attackPatterns?.length} techniques`}</Typography>
                   </Box>
-                  {col?.attackPatterns?.map((ap) => {
+                  {col.attackPatterns?.map((ap) => {
                     const isHovered = hover[ap.id];
                     const level = isHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
                     const position = isHovered && level === 0 ? 2 : 1;
