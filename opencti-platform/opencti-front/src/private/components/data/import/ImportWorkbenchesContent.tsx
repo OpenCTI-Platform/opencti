@@ -7,6 +7,7 @@ import { ImportWorkbenchesContentLines_data$data } from '@components/data/import
 import ImportMenu from '@components/data/ImportMenu';
 import WorkbenchCreation from '@components/common/files/workbench/WorkbenchCreation';
 import ImportActionsPopover from '@components/common/files/ImportActionsPopover';
+import { useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -116,6 +117,7 @@ export const LOCAL_STORAGE_KEY = 'importWorkbenches';
 const ImportWorkbenchesContent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+  const navigate = useNavigate();
   setTitle(t_i18n('Analyst Workbench | Import | Data'));
 
   const initialValues = {
@@ -220,7 +222,7 @@ const ImportWorkbenchesContent = () => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
             if (!isProgress && !(metaData?.errors && metaData?.errors.length > 0)) {
-              window.location.pathname = `/dashboard/data/import/workbench/${toB64(id)}`;
+              navigate(`/dashboard/data/import/workbench/${toB64(id)}`);
             }
           }}
           createButton={<WorkbenchCreation paginationOptions={queryPaginationOptions}/>}
