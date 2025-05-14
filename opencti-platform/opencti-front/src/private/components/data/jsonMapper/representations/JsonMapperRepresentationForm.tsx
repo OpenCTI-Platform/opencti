@@ -100,10 +100,21 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
     const attrs: { [key: string]: JsonMapperRepresentationAttributeFormData } = {};
     for (let i = 0; i < entitySchemaAttributes.length; i += 1) {
       const entitySchemaAttribute = entitySchemaAttributes[i];
-      attrs[entitySchemaAttribute.name] = {
-        key: entitySchemaAttribute.name,
-        mode: entitySchemaAttribute.type === 'ref' ? 'base' : 'simple',
-      };
+      if (entitySchemaAttribute.name === 'hashes') {
+        const innerMappings = entitySchemaAttribute.mappings ?? [];
+        for (let indexMapping = 0; indexMapping < innerMappings.length; indexMapping += 1) {
+          const innerMapping = innerMappings[indexMapping];
+          attrs[innerMapping.name] = {
+            key: innerMapping.name,
+            mode: innerMapping.type === 'ref' ? 'base' : 'simple',
+          };
+        }
+      } else {
+        attrs[entitySchemaAttribute.name] = {
+          key: entitySchemaAttribute.name,
+          mode: entitySchemaAttribute.type === 'ref' ? 'base' : 'simple',
+        };
+      }
     }
     const newValue: JsonMapperRepresentationFormData = {
       ...value,
