@@ -8,7 +8,6 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
-import { SYSTEM_USER } from '../../utils/access';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPIR>(context, user, id, ENTITY_TYPE_PIR);
@@ -55,6 +54,6 @@ export const deletePir = (context: AuthContext, user: AuthUser, pirId: string) =
 };
 
 export const updatePir = async (context: AuthContext, user: AuthUser, pirId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute(context, SYSTEM_USER, pirId, ENTITY_TYPE_PIR, input);
+  const { element } = await updateAttribute(context, user, pirId, ENTITY_TYPE_PIR, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_PIR].EDIT_TOPIC, element, user);
 };

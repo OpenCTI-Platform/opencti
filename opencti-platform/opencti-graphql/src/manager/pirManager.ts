@@ -1,5 +1,5 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext, PIR_MANAGER_USER } from '../utils/access';
 import type { DataEvent, SseEvent } from '../types/event';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { ABSTRACT_STIX_CORE_OBJECT, STIX_TYPE_RELATION } from '../schema/general';
@@ -47,7 +47,7 @@ const onRelationCreated = async (
   const relationshipId: string = relationship.extensions?.[STIX_EXT_OCTI]?.id;
   if (!relationshipId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
 
-  const source = await findById(context, SYSTEM_USER, sourceId);
+  const source = await findById(context, PIR_MANAGER_USER, sourceId);
   const sourceFlagged = (source[RELATION_IN_PIR] ?? []).length > 0;
   console.log('[POC PIR] Event create matching', { source, relationship, matchingCriteria });
 
@@ -84,7 +84,7 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: B
   if (!sourceId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no source id found`);
   const relationshipId: string = relationship.extensions?.[STIX_EXT_OCTI]?.id;
   if (!relationshipId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
-  const rels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id }); // TODO PIR don't use pagination
+  const rels = await listRelationsPaginated(context, PIR_MANAGER_USER, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id }); // TODO PIR don't use pagination
   // eslint-disable-next-line no-restricted-syntax
   for (const rel of rels.edges) {
     const relDependencies = (rel as any).node.pir_dependencies as PirDependency[];
@@ -92,7 +92,7 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: B
     console.log('newRelDependencies', newRelDependencies);
     if (newRelDependencies.length === 0) {
       // delete the rel between source and PIR
-      await stixObjectOrRelationshipDeleteRefRelation(context, SYSTEM_USER, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_CORE_OBJECT);
+      await stixObjectOrRelationshipDeleteRefRelation(context, PIR_MANAGER_USER, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_CORE_OBJECT);
       console.log('[POC PIR] PIR rel deleted');
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
@@ -119,13 +119,13 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR
     await Promise.all(eventsContent.map(async (event) => {
       const { data } = event;
       // Check PIR filters (filters that do not count as criteria).
-      const eventMatchesPirFilters = await isStixMatchFilterGroup(context, SYSTEM_USER, data, parsedPir.pirFilters);
+      const eventMatchesPirFilters = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, parsedPir.pirFilters);
       if (eventMatchesPirFilters) {
         // Check PIR criteria one by one (because we need to know which one matches or not).
         const matchingCriteria: typeof parsedPir.pirCriteria = [];
         // eslint-disable-next-line no-restricted-syntax
         for (const pirCriterion of parsedPir.pirCriteria) {
-          const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, pirCriterion.filters);
+          const isMatch = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pirCriterion.filters);
           if (isMatch) {
             matchingCriteria.push(pirCriterion);
           }
@@ -153,7 +153,7 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR
 const pirManagerHandler = async () => {
   const redisClient = await createRedisClient(PIR_MANAGER_LABEL, false);
   const context = executionContext(PIR_MANAGER_CONTEXT);
-  const allPIR = await getEntitiesListFromCache<BasicStoreEntityPIR>(context, SYSTEM_USER, ENTITY_TYPE_PIR);
+  const allPIR = await getEntitiesListFromCache<BasicStoreEntityPIR>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
 
   // Loop through all PIR one by one.
   await Promise.all(allPIR.map(async (pir) => {
@@ -167,7 +167,7 @@ const pirManagerHandler = async () => {
     );
     // Update pir last event id.
     if (lastEventId !== pir.lastEventId) {
-      await updatePir(context, SYSTEM_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
+      await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
     }
   }));
 };
