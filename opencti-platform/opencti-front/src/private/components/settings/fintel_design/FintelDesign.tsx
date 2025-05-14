@@ -5,16 +5,23 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import Paper from '@mui/material/Paper';
+import * as Yup from 'yup';
 import { useParams } from 'react-router-dom';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
+import CustomizationMenu from '@components/settings/CustomizationMenu';
+import { Field, Form, Formik } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import PageContainer from '../../../../components/PageContainer';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FintelDesignQuery } from './__generated__/FintelDesignQuery.graphql';
-import CustomizationMenu from "@components/settings/CustomizationMenu";
-import Breadcrumbs from "../../../../components/Breadcrumbs";
+import Breadcrumbs from '../../../../components/Breadcrumbs';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import TextField from '../../../../components/TextField';
+import ColorPickerField from '../../../../components/ColorPickerField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 
 const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
@@ -26,6 +33,21 @@ const fintelDesignQuery = graphql`
     }
   }
 `;
+
+const fintelDesignFieldPatchMutation = graphql`
+  mutation FintelDesignFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
+    fintelDesignFieldPatch(id: $id, input: $input) {
+      id
+      name
+      description
+      url
+      gradiantFromColor
+      gradiantToColor
+      textColor
+    }
+  }
+`;
+
 const fintelDesignComponentFragment = graphql`
   fragment FintelDesign_fintelDesign on FintelDesign {
     id
@@ -52,9 +74,34 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
     fintelDesignComponentFragment,
     queryResult.fintelDesign,
   );
-  console.log('fintalDesign', fintelDesign);
   if (!fintelDesign) return null;
 
+  const [commitFieldPatch] = useApiMutation(fintelDesignFieldPatchMutation);
+
+  const initialValues = {
+    name: fintelDesign.name,
+    description: fintelDesign.description,
+    url: fintelDesign.url,
+    gradiantFromColor: fintelDesign.gradiantFromColor,
+    gradiantToColor: fintelDesign.gradiantToColor,
+    textColor: fintelDesign.textColor,
+  };
+
+  const fintelDesignValidation = () => Yup.object().shape({
+    url: Yup.string().nullable(),
+    gradiantFromColor: Yup.string().nullable(),
+    gradiantToColor: Yup.string().nullable(),
+    textColor: Yup.string().nullable(),
+  });
+
+  const handleFieldChange = (name: string, value: string) => {
+    commitFieldPatch({
+      variables: {
+        id: fintelDesign.id,
+        input: [{ key: name, value: (value) ?? '' }],
+      },
+    });
+  };
   return (
     <>
       <div>
@@ -102,21 +149,76 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               }}
               variant="outlined"
             >
-              <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t_i18n('Logo')}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
-                  {t_i18n('Gradiant color')}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
-                  {t_i18n('Cover page text color')}
-                </Typography>
-              </Grid>
+              <Formik
+                onSubmit={() => {}}
+                enableReinitialize={true}
+                initialValues={initialValues}
+                validationSchema={fintelDesignValidation}
+                validateOnChange={true}
+                validateOnBlur={true}
+              >
+                {() => (
+                  <Form>
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="name"
+                      label={t_i18n('Name')}
+                      fullWidth
+                      onSubmit={handleFieldChange}
+                    />
+                    <Field
+                      component={MarkdownField}
+                      name="description"
+                      label={t_i18n('Description')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows={2}
+                      onSubmit={handleFieldChange}
+                      style={fieldSpacingContainerStyle}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="url"
+                      label={t_i18n('Fintel Design Favicon Url')}
+                      fullWidth
+                      onSubmit={handleFieldChange}
+                      style={fieldSpacingContainerStyle}
+                    />
+                    <Field
+                      component={ColorPickerField}
+                      name="gradiantFromColor"
+                      label={t_i18n('Gradiant From color')}
+                      placeholder={t_i18n('Default')}
+                      fullWidth
+                      onSubmit={handleFieldChange}
+                      variant="standard"
+                      style={fieldSpacingContainerStyle}
+                    />
+                    <Field
+                      component={ColorPickerField}
+                      name="gradiantToColor"
+                      label={t_i18n('Gradiant To color')}
+                      placeholder={t_i18n('Default')}
+                      fullWidth
+                      onSubmit={handleFieldChange}
+                      variant="standard"
+                      style={fieldSpacingContainerStyle}
+                    />
+                    <Field
+                      component={ColorPickerField}
+                      name="textColor"
+                      label={t_i18n('Text color')}
+                      placeholder={t_i18n('Default')}
+                      fullWidth
+                      onSubmit={handleFieldChange}
+                      variant="standard"
+                      style={fieldSpacingContainerStyle}
+                    />
+                  </Form>
+                )}
+              </Formik>
             </Paper>
           </Grid>
           <Grid item xs={6}>
@@ -131,7 +233,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               }}
               variant="outlined"
             >
-              <div>coucou</div>
+              <div>Preview to be added in chunk 3</div>
             </Paper>
           </Grid>
         </Grid>
