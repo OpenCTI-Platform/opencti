@@ -16,7 +16,6 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
-import { Promise as BluePromise } from 'bluebird';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
 import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, INTERNAL_USERS, isUserCanAccessStixElement, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
@@ -49,7 +48,8 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_TOOL,
-  isStixDomainObjectContainer
+  isStixDomainObjectContainer,
+  STIX_DOMAIN_OBJECT_CONTAINER_CASES
 } from '../../schema/stixDomainObject';
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
@@ -89,7 +89,7 @@ import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { generateCreateMessage } from '../../database/generate-message';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
-import { upsertTemplateForCase } from '../case/case-domain';
+import { findAllByCaseTemplateId } from '../task/task-domain';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -504,15 +504,16 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       } else {
         container.object_refs = [baseData.id];
       }
-      const cases: Array<string> = [
-        ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
-        ENTITY_TYPE_CONTAINER_CASE_RFI,
-        ENTITY_TYPE_CONTAINER_CASE_RFT,
-      ];
-      if (isApplyCaseTemplateEnabled && cases.includes(container_type) && caseTemplates.length > 0) {
+      if (isApplyCaseTemplateEnabled && STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
         const context = executionContext('playbook_components');
-        const caseTemplatesId = caseTemplates.map((caseTemplate) => caseTemplate.value);
-        await BluePromise.map(caseTemplatesId, (caseTemplateId) => upsertTemplateForCase(context, SYSTEM_USER, container.id, caseTemplateId));
+        for (let i = 0; i < caseTemplates.length; i += 1) {
+          const tasks = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
+          for (let j = 0; j < tasks.length; j += 1) {
+            const convertedTask = convertStoreToStix(tasks[j]) as StixContainer;
+            convertedTask.object_refs = [container.id];
+            bundle.objects.push(convertedTask);
+          }
+        }
       }
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
       // Following attributes are the same as the base instance: markings, labels, created_by, assignees, partcipants
