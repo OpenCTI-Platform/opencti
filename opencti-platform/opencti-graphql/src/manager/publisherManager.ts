@@ -196,18 +196,12 @@ const processLiveNotificationEvent = async (
   notificationMap: Map<string, BasicStoreEntityTrigger>,
   event: KnowledgeNotificationEvent | ActivityNotificationEvent | ActionNotificationEvent
 ) => {
-  const { targets, data: instance, origin: { user_id } } = event;
-  const streamUser = (await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER)).get(user_id as string) as AuthUser;
+  const { targets, data: instance, origin } = event;
+  const usersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const { streamMessage } = event as KnowledgeNotificationEvent;
   for (let index = 0; index < targets.length; index += 1) {
     const { user, type, message } = targets[index];
-    let notificationMessage = message;
-    if (streamUser && (event as KnowledgeNotificationEvent).streamMessage) {
-      const { streamMessage } = event as KnowledgeNotificationEvent;
-      const streamBuiltMessage = `\`${streamUser.name}\` ${streamMessage}`;
-      if (streamBuiltMessage !== notificationMessage) {
-        notificationMessage = `${message} - ${streamBuiltMessage}`;
-      }
-    }
+    const notificationMessage = createFullNotificationMessage(message, usersMap, streamMessage, origin);
     const data = [{ notification_id: event.notification_id, instance, type, message: notificationMessage }];
     await processNotificationEvent(context, notificationMap, event.notification_id, user, data);
   }
