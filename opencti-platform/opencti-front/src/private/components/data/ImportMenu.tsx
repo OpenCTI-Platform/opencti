@@ -2,18 +2,11 @@ import React from 'react';
 import Tab from '@mui/material/Tab';
 import { Link, useLocation } from 'react-router-dom';
 import Tabs from '@mui/material/Tabs';
-import useHelper from '../../../utils/hooks/useHelper';
 import { useFormatter } from '../../../components/i18n';
 
 const ImportMenu = () => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
-
-  if (!isNewImportScreensEnabled) {
-    return null;
-  }
 
   return (
     <Tabs value={location.pathname} sx={{ paddingBottom: 3 }}>

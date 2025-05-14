@@ -15,7 +15,6 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { toB64 } from '../../../../utils/String';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
@@ -55,8 +54,6 @@ export const workbenchLineFragment = graphql`
     works {
       id
     }
-    # TODO remove when FF NEW_IMPORT_SCREENS will be removed
-    ...FileWork_file
   }
 `;
 
@@ -119,9 +116,6 @@ export const LOCAL_STORAGE_KEY = 'importWorkbenches';
 const ImportWorkbenchesContent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  const { isFeatureEnable } = useHelper();
-  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   setTitle(t_i18n('Analyst Workbench | Import | Data'));
 
   const initialValues = {
@@ -205,16 +199,10 @@ const ImportWorkbenchesContent = () => {
 
   return (
     <div style={{ height: '100%' }} className="break">
-      {isNewImportScreensEnabled ? (
-        <>
-          <Breadcrumbs
-            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
-          />
-          <ImportMenu/>
-        </>
-      ) : (
-        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Analyst workbenches'), current: true }]}/>
-      )}
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+      />
+      <ImportMenu/>
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -235,7 +223,7 @@ const ImportWorkbenchesContent = () => {
               window.location.pathname = `/dashboard/data/import/workbench/${toB64(id)}`;
             }
           }}
-          createButton={isFABReplaced && (<WorkbenchCreation paginationOptions={queryPaginationOptions}/>)}
+          createButton={<WorkbenchCreation paginationOptions={queryPaginationOptions}/>}
           actions={(file: ImportWorkbenchesContentFileLine_file$data) => (
             <ImportActionsPopover
               file={file}
@@ -244,9 +232,6 @@ const ImportWorkbenchesContent = () => {
             />
           )}
         />
-      )}
-      {!isFABReplaced && (
-        <WorkbenchCreation paginationOptions={queryPaginationOptions}/>
       )}
     </div>
   );

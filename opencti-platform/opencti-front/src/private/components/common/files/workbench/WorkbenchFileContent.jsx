@@ -65,7 +65,6 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
-import useHelper from '../../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -333,9 +332,6 @@ const WorkbenchFileContentComponent = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const classes = useStyles();
-
-  const { isFeatureEnable } = useHelper();
-  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
 
   // region state
   const [currentTab, setCurrentTab] = useState(0);
@@ -961,7 +957,7 @@ const WorkbenchFileContentComponent = ({
                 )}/${file.metaData.entity.id}`;
                 navigate(`${entityLink}/files`);
               } else {
-                navigate(isNewImportScreensEnabled ? '/dashboard/data/import/draft' : '/dashboard/drafts');
+                navigate('/dashboard/data/import/draft');
               }
             },
             onError: (error) => {

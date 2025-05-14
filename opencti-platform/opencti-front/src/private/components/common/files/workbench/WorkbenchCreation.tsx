@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import Drawer, { DrawerControlledDialProps, DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { FormikConfig } from 'formik/dist/types';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { WorkbenchCreationMutation } from '@components/common/files/workbench/__generated__/WorkbenchCreationMutation.graphql';
@@ -19,12 +19,10 @@ import TextField from '../../../../../components/TextField';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import AutocompleteFreeSoloField from '../../../../../components/AutocompleteFreeSoloField';
-import { Option } from '../../form/ReferenceField';
 import ItemIcon from '../../../../../components/ItemIcon';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import type { Theme } from '../../../../../components/Theme';
 import CreateEntityControlledDial from '../../../../../components/CreateEntityControlledDial';
-import useHelper from '../../../../../utils/hooks/useHelper';
 
 const workbenchCreationMutation = graphql`
   mutation WorkbenchCreationMutation(
@@ -56,8 +54,8 @@ interface WorkbenchCreationProps {
 
 interface WorkbenchFileFormValues {
   name: string;
-  labels: Option[];
-  fileMarkings: Option[];
+  labels: FieldOption[];
+  fileMarkings: FieldOption[];
 }
 
 const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, onReset, entity, paginationOptions }) => {
@@ -188,7 +186,7 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
             options={[]}
             renderOption={(
               props: React.HTMLAttributes<HTMLLIElement>,
-              option: Option,
+              option: FieldOption,
             ) => (
               <li {...props}>
                 <div style={{
@@ -255,8 +253,6 @@ const WorkbenchCreation = ({
   paginationOptions: ImportWorkbenchesContentQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_uploadedFiles', paginationOptions, 'uploadPending');
   const CreateWorkbenchControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType='Workbench' {...props} />
@@ -265,8 +261,7 @@ const WorkbenchCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a workbench')}
-      variant={isFABReplaced ? undefined : DrawerVariant.create}
-      controlledDial={isFABReplaced ? CreateWorkbenchControlledDial : undefined}
+      controlledDial={CreateWorkbenchControlledDial}
     >
       {({ onClose }) => (
         <WorkbenchCreationForm

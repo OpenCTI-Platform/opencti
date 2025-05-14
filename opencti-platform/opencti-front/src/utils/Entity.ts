@@ -1,9 +1,4 @@
-import useHelper from './hooks/useHelper';
-
 export const resolveLink = (type = 'unknown'): string | null => {
-  const { isFeatureEnable } = useHelper();
-  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
-
   switch (type) {
     case 'Dashboard':
     case 'dashboard': // for using resolveLink in workspaces
@@ -104,7 +99,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Group':
       return '/dashboard/settings/accesses/groups';
     case 'DraftWorkspace':
-      return isNewImportScreensEnabled ? '/dashboard/data/import/draft' : '/dashboard/drafts';
+      return '/dashboard/data/import/draft';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

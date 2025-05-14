@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
-import { Option } from '@components/common/form/ReferenceField';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
 import { graphql, UseMutationConfig, usePreloadedQuery } from 'react-relay';
@@ -34,7 +33,7 @@ import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { RelayError } from '../../../../../relay/relayTypes';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
-import useHelper from '../../../../../utils/hooks/useHelper';
+import { FieldOption } from '../../../../../utils/field';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -105,7 +104,7 @@ interface ImportFilesDialogProps {
 }
 
 export type OptionsFormValues = {
-  fileMarkings: Option[];
+  fileMarkings: FieldOption[];
   associatedEntity: AssociatedEntityOption | null;
   validationMode?: 'draft' | 'workbench';
   name: string;
@@ -113,9 +112,6 @@ export type OptionsFormValues = {
 
 const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
-
-  const { isFeatureEnable } = useHelper();
-  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
 
   const draftContext = useDraftContext();
   const {
@@ -325,7 +321,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   const optionsContext = useFormik<OptionsFormValues>({
     enableReinitialize: true,
     initialValues: {
-      fileMarkings: [] as Option[],
+      fileMarkings: [] as FieldOption[],
       associatedEntity: entity ? { value: entity.id, label: entity.name || entity.id, type: entity.entity_type } : null,
       validationMode: importMode === 'manual' ? 'draft' : undefined,
       name: '',
@@ -394,7 +390,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
             color="secondary"
             onClick={() => setDraftContext()}
             component={Link}
-            to={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/files` : `/dashboard/drafts/${draftId}/files`}
+            to={`/dashboard/data/import/draft/${draftId}/files`}
           >
             {t_i18n('Navigate to draft')}
           </Button>

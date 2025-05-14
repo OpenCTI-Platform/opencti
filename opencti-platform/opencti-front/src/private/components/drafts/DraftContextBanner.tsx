@@ -23,7 +23,6 @@ import Transition from '../../../components/Transition';
 import { TEN_SECONDS } from '../../../utils/Time';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import ErrorNotFound from '../../../components/ErrorNotFound';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const interval$ = interval(TEN_SECONDS * 3);
 
@@ -81,9 +80,6 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
   const navigate = useNavigate();
   const draftContext = useDraftContext();
 
-  const { isFeatureEnable } = useHelper();
-  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
-
   const { draftWorkspace } = usePreloadedQuery<DraftContextBannerQuery>(draftContextBannerQuery, queryRef);
   if (!draftWorkspace) {
     return (<ErrorNotFound />);
@@ -98,7 +94,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
         input: { key: 'draft_context', value: '' },
       },
       onCompleted: () => {
-        navigate(isNewImportScreensEnabled ? '/dashboard/data/import/draft' : '/dashboard/drafts');
+        navigate('/dashboard/data/import/draft');
       },
     });
   };
@@ -118,7 +114,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             onCompleted: () => {
               setApproving(false);
               MESSAGING$.notifySuccess('Draft validation in progress');
-              navigate(isNewImportScreensEnabled ? '/dashboard/data/import/draft' : '/');
+              navigate('/dashboard/data/import/draft');
             },
           });
         },

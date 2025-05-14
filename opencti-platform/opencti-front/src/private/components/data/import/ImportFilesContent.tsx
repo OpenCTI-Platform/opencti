@@ -6,8 +6,6 @@ import { ImportFilesContentLines_data$data } from '@components/data/import/__gen
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
 import ImportActionsPopover from '@components/common/files/ImportActionsPopover';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
-import Fab from '@mui/material/Fab';
-import { Add } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
@@ -16,7 +14,6 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { getFileUri } from '../../../../utils/utils';
 import UploadImport from '../../../../components/UploadImport';
 
@@ -122,9 +119,6 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Upload Files | Import | Data'));
-  const { isFeatureEnable } = useHelper();
-  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
-  const isFABReplaced = isFeatureEnable('FAB_REPLACEMENT');
   const [openImportFilesDialog, setOpenImportFilesDialog] = useState<boolean>(false);
 
   const initialValues = {
@@ -200,17 +194,15 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
   };
 
   return (
-    <div style={{ height: '100%', paddingRight: isNewImportScreensEnabled ? 0 : 200 }} className="break">
-      {!inDraftOverview && (isNewImportScreensEnabled ? (
+    <div style={{ height: '100%', paddingRight: 0 }} className="break">
+      {!inDraftOverview && (
         <>
           <Breadcrumbs
             elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
           />
           <ImportMenu/>
         </>
-      ) : (
-        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]}/>
-      ))}
+      )}
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -231,7 +223,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
               window.location.pathname = getFileUri(id);
             }
           }}
-          createButton={isFABReplaced && (<UploadImport variant="contained"/>)}
+          createButton={<UploadImport variant="contained"/>}
           actions={(file: ImportFilesContentFileLine_file$data) => (
             <ImportActionsPopover
               file={file}
@@ -243,20 +235,6 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
       )}
       {openImportFilesDialog && (
         <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)}/>
-      )}
-      {!isFABReplaced && (
-        <Fab
-          onClick={() => setOpenImportFilesDialog(true)}
-          color="primary"
-          aria-label="Add"
-          style={{
-            position: 'fixed',
-            bottom: 30,
-            right: 30,
-          }}
-        >
-          <Add />
-        </Fab>
       )}
     </div>
   );

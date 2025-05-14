@@ -19,7 +19,6 @@ import Paper from '@mui/material/Paper';
 import ImportFilesContent from '@components/data/import/ImportFilesContent';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
-import useHelper from '../../../utils/hooks/useHelper';
 
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import ErrorNotFound from '../../../components/ErrorNotFound';
@@ -27,7 +26,6 @@ import { getCurrentTab } from '../../../utils/utils';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
-import Import from '../data/import/Import';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
 
@@ -79,8 +77,6 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
-  const { isFeatureEnable } = useHelper();
-  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
 
   const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
   if (!draftWorkspace) {
@@ -129,27 +125,14 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
     <>
       {isDraftReadOnly && (
       <>
-        {isNewImportScreensEnabled ? (
-          <>
-            <Breadcrumbs
-              elements={[
-                { label: t_i18n('Data') },
-                { label: t_i18n('Import'), link: '/dashboard/data/import' },
-                { label: t_i18n('Drafts'), link: '/dashboard/data/import/draft' },
-                { label: name, current: true },
-              ]}
-            />
-          </>
-        ) : (
-          <Breadcrumbs elements={[
-            {
-              label: t_i18n('Drafts'),
-              link: '/dashboard/drafts',
-            },
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Data') },
+            { label: t_i18n('Import'), link: '/dashboard/data/import' },
+            { label: t_i18n('Drafts'), link: '/dashboard/data/import/draft' },
             { label: name, current: true },
           ]}
-          />
-        )}
+        />
         {validationWork && (
         <Paper
           key={validationWork.id}
@@ -180,44 +163,44 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
       >
         <Tabs
           id="tabs-container"
-          value={getCurrentTab(location.pathname, draftId, isNewImportScreensEnabled ? '/dashboard/data/import/draft/entities' : '/dashboard/drafts/entities')}
+          value={getCurrentTab(location.pathname, draftId, '/dashboard/data/import/draft/entities')}
         >
           <Tab
             component={Link}
-            to={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/entities` : `/dashboard/drafts/${draftId}/entities`}
-            value={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/entities` : `/dashboard/drafts/${draftId}/entities`}
+            to={`/dashboard/data/import/draft/${draftId}/entities`}
+            value={`/dashboard/data/import/draft/${draftId}/entities`}
             label={
               <span>{t_i18n('Entities')} ({objectsCount.entitiesCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/observables` : `/dashboard/drafts/${draftId}/observables`}
-            value={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/observables` : `/dashboard/drafts/${draftId}/observables`}
+            to={`/dashboard/data/import/draft/${draftId}/observables`}
+            value={`/dashboard/data/import/draft/${draftId}/observables`}
             label={
               <span>{t_i18n('Observables')} ({objectsCount.observablesCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/relationships` : `/dashboard/drafts/${draftId}/relationships`}
-            value={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/relationships` : `/dashboard/drafts/${draftId}/relationships`}
+            to={`/dashboard/data/import/draft/${draftId}/relationships`}
+            value={`/dashboard/data/import/draft/${draftId}/relationships`}
             label={
               <span>{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/sightings` : `/dashboard/drafts/${draftId}/sightings`}
-            value={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/sightings` : `/dashboard/drafts/${draftId}/sightings`}
+            to={`/dashboard/data/import/draft/${draftId}/sightings`}
+            value={`/dashboard/data/import/draft/${draftId}/sightings`}
             label={
               <span>{t_i18n('Sightings')} ({objectsCount.sightingsCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/containers` : `/dashboard/drafts/${draftId}/containers`}
-            value={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/containers` : `/dashboard/drafts/${draftId}/containers`}
+            to={`/dashboard/data/import/draft/${draftId}/containers`}
+            value={`/dashboard/data/import/draft/${draftId}/containers`}
             label={
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
@@ -225,8 +208,8 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
           {!isDraftReadOnly && (
           <Tab
             component={Link}
-            to={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/files` : `/dashboard/drafts/${draftId}/files`}
-            value={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/files` : `/dashboard/drafts/${draftId}/files`}
+            to={`/dashboard/data/import/draft/${draftId}/files`}
+            value={`/dashboard/data/import/draft/${draftId}/files`}
             label={t_i18n('Files')}
           />)}
         </Tabs>
@@ -235,7 +218,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
         <Route
           path="/"
           element={<Navigate
-            to={isNewImportScreensEnabled ? `/dashboard/data/import/draft/${draftId}/entities` : `/dashboard/drafts/${draftId}/entities`}
+            to={`/dashboard/data/import/draft/${draftId}/entities`}
             replace={true}
                    />}
         />
@@ -261,7 +244,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
         />
         <Route
           path="/files"
-          element={isNewImportScreensEnabled ? (<ImportFilesContent inDraftOverview/>) : (<Import inDraftOverview/>)}
+          element={<ImportFilesContent inDraftOverview/>}
         />
       </Routes>
     </>

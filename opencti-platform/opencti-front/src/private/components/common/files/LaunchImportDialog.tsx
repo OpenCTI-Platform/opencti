@@ -15,9 +15,8 @@ import { ImportWorksDrawerQuery, ImportWorksDrawerQuery$data } from '@components
 import { fileWorksQuery } from '@components/common/files/ImportWorksDrawer';
 import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
-import { Option } from '@components/common/form/ReferenceField';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
@@ -67,7 +66,12 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   };
 
   const onSubmitImport = (
-    values: { connector_id: string; configuration: string; objectMarking: Option[]; validation_mode: string },
+    values: {
+      connector_id: string;
+      configuration: string;
+      objectMarking: FieldOption[];
+      validation_mode: string
+    },
     { setSubmitting, resetForm }: { setSubmitting: (isSubmitting: boolean) => void; resetForm: () => void },
   ) => {
     const { connector_id, configuration, objectMarking, validation_mode } = values;

@@ -16,7 +16,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
-import useHelper from '../../../utils/hooks/useHelper';
 import DraftPopover from './DraftPopover';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -120,8 +119,6 @@ const Drafts: React.FC = () => {
   const draftColor = getDraftModeColor(theme);
   const validatedDraftColor = theme.palette.success.main;
   const draftContext = useDraftContext();
-  const { isFeatureEnable } = useHelper();
-  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Drafts'));
 
@@ -208,16 +205,10 @@ const Drafts: React.FC = () => {
 
   return (
     <span data-testid="draft-page">
-      {isNewImportScreensEnabled ? (
-        <>
-          <Breadcrumbs
-            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
-          />
-          <ImportMenu/>
-        </>
-      ) : (
-        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Drafts'), current: true }]}/>
-      )}
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+      />
+      <ImportMenu/>
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

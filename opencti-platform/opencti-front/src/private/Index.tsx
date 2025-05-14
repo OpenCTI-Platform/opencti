@@ -65,9 +65,6 @@ const Index = ({ settings }: IndexProps) => {
     paddingTop: `calc( 16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 24 for margin, 48 for top bar
   };
 
-  const { isFeatureEnable } = useHelper();
-  const isNewImportScreensEnabled = isFeatureEnable('NEW_IMPORT_SCREENS');
-
   // Change the theme body attribute when the mode changes in
   // the palette because some components like CKEditor uses this
   // body attribute to display correct styles.
@@ -104,10 +101,7 @@ const Index = ({ settings }: IndexProps) => {
             <Routes>
               <Route path="/" element={draftContext?.id
                 ? (
-                  <Navigate to={isNewImportScreensEnabled
-                    ? `/dashboard/data/import/draft/${draftContext.id}/`
-                    : `/dashboard/drafts/${draftContext.id}/`} replace={true}
-                  />
+                  <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true}/>
                 )
                 : boundaryWrapper(Dashboard)}
               />
@@ -124,10 +118,7 @@ const Index = ({ settings }: IndexProps) => {
               {/* Need to refactor below */}
               <Route path="/entities/*" element={boundaryWrapper(RootEntities)}/>
               <Route path="/locations/*" element={boundaryWrapper(RootLocation)}/>
-              <Route
-                path={isNewImportScreensEnabled ? '/data/import/draft/*' : '/drafts/*'}
-                element={boundaryWrapper(RootDrafts)}
-              />
+              <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)}/>
               <Route path="/data/*" element={boundaryWrapper(RootData)}/>
               {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)}/>)}
               <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)}/>
