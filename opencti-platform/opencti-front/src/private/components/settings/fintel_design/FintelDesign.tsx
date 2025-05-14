@@ -55,8 +55,12 @@ import PageContainer from '../../../../components/PageContainer';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FintelDesignQuery } from './__generated__/FintelDesignQuery.graphql';
-import CustomizationMenu from "@components/settings/CustomizationMenu";
-import Breadcrumbs from "../../../../components/Breadcrumbs";
+import Breadcrumbs from '../../../../components/Breadcrumbs';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import TextField from '../../../../components/TextField';
+import ColorPickerField from '../../../../components/ColorPickerField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 
 const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
@@ -68,6 +72,21 @@ const fintelDesignQuery = graphql`
     }
   }
 `;
+
+const fintelDesignFieldPatchMutation = graphql`
+  mutation FintelDesignFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
+    fintelDesignFieldPatch(id: $id, input: $input) {
+      id
+      name
+      description
+      url
+      gradiantFromColor
+      gradiantToColor
+      textColor
+    }
+  }
+`;
+
 const fintelDesignComponentFragment = graphql`
   fragment FintelDesign_fintelDesign on FintelDesign {
     id
