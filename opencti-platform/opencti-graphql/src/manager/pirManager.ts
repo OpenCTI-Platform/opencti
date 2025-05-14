@@ -8,14 +8,14 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
-import { findById } from '../domain/stixCoreObject';
-import { listRelationsPaginated } from '../database/middleware-loader';
+import { internalLoadById, listRelationsPaginated } from '../database/middleware-loader';
 import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR, type PirDependency } from '../modules/pir/pir-types';
 import { EditOperation } from '../generated/graphql';
 import { flagSource, parsePir, updatePirDependencies } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { createRedisClient, fetchStreamEventsRange } from '../database/redis';
 import { updatePir } from '../modules/pir/pir-domain';
+import type { BasicStoreCommon } from '../types/store';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -47,26 +47,27 @@ const onRelationCreated = async (
   const relationshipId: string = relationship.extensions?.[STIX_EXT_OCTI]?.id;
   if (!relationshipId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
 
-  const source = await findById(context, PIR_MANAGER_USER, sourceId);
-  const sourceFlagged = (source[RELATION_IN_PIR] ?? []).length > 0;
-  console.log('[POC PIR] Event create matching', { source, relationship, matchingCriteria });
+  const source = await internalLoadById<BasicStoreCommon>(context, PIR_MANAGER_USER, sourceId);
+  if (source) { // if element still exist
+    const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pir.id);
+    console.log('[POC PIR] Event create matching', { source, relationship, matchingCriteria });
 
-  const pirDependencies = matchingCriteria.map((criterion) => ({
-    relationship_id: relationshipId,
-    criterion: {
-      ...criterion,
-      filters: JSON.stringify(criterion.filters)
-    },
-  }));
-
-  if (sourceFlagged) {
-    console.log('[POC PIR] Source already flagged');
-    await updatePirDependencies(context, sourceId, pir, pirDependencies, EditOperation.Add);
-    console.log('[POC PIR] Meta Ref relation updated');
-  } else {
-    console.log('[POC PIR] Source NOT flagged');
-    await flagSource(context, sourceId, pir, pirDependencies);
-    console.log('[POC PIR] Meta Ref relation created');
+    const pirDependencies = matchingCriteria.map((criterion) => ({
+      relationship_id: relationshipId,
+      criterion: {
+        ...criterion,
+        filters: JSON.stringify(criterion.filters)
+      },
+    }));
+    if (sourceFlagged) {
+      console.log('[POC PIR] Source already flagged');
+      await updatePirDependencies(context, sourceId, pir, pirDependencies, EditOperation.Add);
+      console.log('[POC PIR] Meta Ref relation updated');
+    } else {
+      console.log('[POC PIR] Source NOT flagged');
+      await flagSource(context, sourceId, pir, pirDependencies);
+      console.log('[POC PIR] Meta Ref relation created');
+    }
   }
 };
 
