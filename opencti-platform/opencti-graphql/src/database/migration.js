@@ -137,5 +137,5 @@ export const applyMigration = (context) => {
     const statusPatch = { platformVersion: PLATFORM_VERSION };
     await patchAttribute(context, SYSTEM_USER, state.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
     logApp.info(`[MIGRATION] Platform version updated to ${PLATFORM_VERSION}`);
-  }).catch((reason) => logApp.error('[MIGRATION] error on current version reference update', { cause: reason }));
+  }); // no catch to make sure the platform stops if migration throws an error
 };
