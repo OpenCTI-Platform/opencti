@@ -9,6 +9,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
+import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPIR>(context, user, id, ENTITY_TYPE_PIR);
@@ -47,12 +48,17 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
     message: `creates PIR \`${created.name}\``,
     context_data: { id: pirId, entity_type: ENTITY_TYPE_PIR, input: finalInput },
   });
+  // create rabbit queue for pir
+  await registerConnectorForPir(context, { id: pirId, ...finalInput });
   // -- notify the PIR creation --
   return notify(BUS_TOPICS[ENTITY_TYPE_PIR].ADDED_TOPIC, created, user);
 };
 
-export const deletePir = (context: AuthContext, user: AuthUser, pirId: string) => {
+export const deletePir = async (context: AuthContext, user: AuthUser, pirId: string) => {
   // TODO PIR remove pir id from historic events
+  // remove rabbit queue
+  await unregisterConnectorForIngestion(context, pirId);
+  // delete the PIR
   return deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
 };
 

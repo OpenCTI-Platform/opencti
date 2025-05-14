@@ -1893,6 +1893,7 @@ enum ConnectorType {
   INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
   STREAM
+  INTERNAL_INGESTION_PIR
 }
 
 input ConnectorWithConfig {
