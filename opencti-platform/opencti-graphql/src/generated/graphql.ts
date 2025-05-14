@@ -1915,7 +1915,6 @@ export enum Capabilities {
   Investigation = 'INVESTIGATION',
   InvestigationInupdate = 'INVESTIGATION_INUPDATE',
   InvestigationInupdateIndelete = 'INVESTIGATION_INUPDATE_INDELETE',
-  Jsonmappers = 'JSONMAPPERS',
   Knowledge = 'KNOWLEDGE',
   KnowledgeKnaskimport = 'KNOWLEDGE_KNASKIMPORT',
   KnowledgeKndissemination = 'KNOWLEDGE_KNDISSEMINATION',
@@ -11174,6 +11173,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   markings?: Maybe<Array<Scalars['String']['output']>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
+  scheduling_period?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
@@ -11190,6 +11190,7 @@ export type IngestionCsvAddInput = {
   ingestion_running?: InputMaybe<Scalars['Boolean']['input']>;
   markings?: InputMaybe<Array<Scalars['String']['input']>>;
   name: Scalars['String']['input'];
+  scheduling_period?: InputMaybe<Scalars['String']['input']>;
   uri: Scalars['String']['input'];
   user_id: Scalars['String']['input'];
 };
@@ -11242,6 +11243,7 @@ export type IngestionJson = BasicObject & InternalObject & {
   pagination_with_sub_page_query_verb?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   query_attributes?: Maybe<Array<IngestionQueryAttribute>>;
+  scheduling_period?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
@@ -11265,6 +11267,7 @@ export type IngestionJsonAddInput = {
   pagination_with_sub_page_attribute_path?: InputMaybe<Scalars['String']['input']>;
   pagination_with_sub_page_query_verb?: InputMaybe<Scalars['String']['input']>;
   query_attributes?: InputMaybe<Array<QueryAttribute>>;
+  scheduling_period?: InputMaybe<Scalars['String']['input']>;
   uri: Scalars['String']['input'];
   user_id: Scalars['String']['input'];
   verb: Scalars['String']['input'];
@@ -11316,6 +11319,7 @@ export type IngestionRss = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   report_types?: Maybe<Array<Scalars['String']['output']>>;
+  scheduling_period?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
@@ -11330,6 +11334,7 @@ export type IngestionRssAddInput = {
   name: Scalars['String']['input'];
   object_marking_refs?: InputMaybe<Array<Scalars['String']['input']>>;
   report_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  scheduling_period?: InputMaybe<Scalars['String']['input']>;
   uri: Scalars['String']['input'];
   user_id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -37262,6 +37267,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   markings?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -37308,6 +37314,7 @@ export type IngestionJsonResolvers<ContextType = any, ParentType extends Resolve
   pagination_with_sub_page_query_verb?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   query_attributes?: Resolver<Maybe<Array<ResolversTypes['IngestionQueryAttribute']>>, ParentType, ContextType>;
+  scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -37353,6 +37360,7 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   report_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

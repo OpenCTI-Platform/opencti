@@ -20,6 +20,7 @@ import { HeaderFieldAdd } from '@components/common/form/HeaderField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { IngestionJsonAttributes, IngestionJsonHeader } from '@components/data/ingestionJson/IngestionJsonCreation';
+import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -60,6 +61,7 @@ export const ingestionJsonEditionFragment = graphql`
     id
     name
     description
+    scheduling_period
     uri
     body
     verb
@@ -107,6 +109,7 @@ interface IngestionJsonEditionForm {
   references?: ExternalReferencesValues
   name: string,
   description?: string | null,
+  scheduling_period?: string | null,
   uri: string,
   verb: string
   body: string | null | undefined
@@ -191,6 +194,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
     const input = {
       name: values.name,
       description: values.description,
+      scheduling_period: values.scheduling_period,
       uri: values.uri,
       verb: values.verb,
       body: values.body,
@@ -218,6 +222,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
   const initialValues = {
     name: ingestionJsonData.name,
     description: ingestionJsonData.description,
+    scheduling_period: ingestionJsonData.scheduling_period ?? 'auto',
     uri: ingestionJsonData.uri,
     body: ingestionJsonData.body,
     verb: ingestionJsonData.verb,
@@ -295,6 +300,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
+          <IngestionSchedulingField/>
           <Field
             component={TextField}
             variant="standard"

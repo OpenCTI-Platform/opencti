@@ -128,8 +128,7 @@ const extractSimpleMultiPathFromJson = (
       return formatedData ? String(formatedData).trim() : '';
     });
   }
-  const formatedData = format(val, attrDef, attribute);
-  return formatedData ? String(formatedData).trim() : '';
+  return format(val, attrDef, attribute);
 };
 
 const extractSimplePathFromJson = (
@@ -260,9 +259,6 @@ const handleBasedOnAttribute = async (
       entities = (attribute.based_on.representations ?? [])
         .map((id) => otherEntities.get(id)).flat()
         .filter((e) => e !== undefined && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[];
-      if (entities.length === 0) {
-        logApp.info('EMPTY BASED_ON', { based_on: attribute.based_on, mappedIdentifiers, definition });
-      }
     } else {
       entities = (attribute.based_on.representations ?? [])
         .map((id) => otherEntities.get(id)).flat()

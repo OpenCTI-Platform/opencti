@@ -6,6 +6,8 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
+
+import IngestionSchedulingField from '../IngestionSchedulingField';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -90,6 +92,7 @@ const IngestionRssCreation = (props) => {
     const input = {
       name: values.name,
       description: values.description,
+      scheduling_period: values.scheduling_period,
       uri: values.uri,
       report_types: values.report_types,
       user_id: values.user_id?.value,
@@ -123,6 +126,7 @@ const IngestionRssCreation = (props) => {
             name: '',
             description: '',
             uri: '',
+            scheduling_period: 'PT1H',
             report_types: [],
             user_id: '',
             created_by_ref: '',
@@ -150,6 +154,7 @@ const IngestionRssCreation = (props) => {
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
+              <IngestionSchedulingField/>
               <Field
                 component={TextField}
                 variant="standard"

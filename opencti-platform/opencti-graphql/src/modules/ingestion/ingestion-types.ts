@@ -11,6 +11,7 @@ export const ENTITY_TYPE_INGESTION_RSS = 'IngestionRss';
 export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
   name: string
   description: string
+  scheduling_period: string
   uri: string
   user_id: string | undefined
   created_by_ref: string | undefined
@@ -92,6 +93,7 @@ export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
   current_state_hash: string;
   name: string
   description: string
+  scheduling_period: string
   uri: string
   csvMapper: CsvMapper
   csv_mapper_id: string
@@ -130,6 +132,7 @@ export const ENTITY_TYPE_INGESTION_JSON = 'IngestionJson';
 export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
   name: string
   description: string
+  scheduling_period: string
   uri: string
   verb: 'get' | 'post'
   body: string

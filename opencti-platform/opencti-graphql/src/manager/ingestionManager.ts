@@ -13,7 +13,7 @@ import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { FROM_START_STR, now, sanitizeForMomentParsing, sinceNowInMinutes, utcDate } from '../utils/format';
+import { FROM_START_STR, isDateInRange, now, sanitizeForMomentParsing, sinceNowInMinutes, utcDate } from '../utils/format';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
@@ -67,6 +67,14 @@ const asArray = (data: unknown) => {
     return [data];
   }
   return [];
+};
+
+const isMustExecuteIteration = (last_execution_date: Date | undefined, scheduling_period: string) => {
+  if (isNotEmptyField(scheduling_period) && scheduling_period !== 'auto' && last_execution_date) {
+    const isInRange = isDateInRange(last_execution_date, scheduling_period, utcDate());
+    return !isInRange;
+  }
+  return true;
 };
 
 const shouldExecuteIngestion = (ingestion: BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv, min_interval_minutes: number) => {
@@ -279,33 +287,35 @@ const rssExecutor = async (context: AuthContext, turndownService: TurndownServic
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
-    const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
-    // If ingestion have remaining messages in the queue dont fetch any new data
-    if (messages_number > 0) {
-      logApp.info(`[OPENCTI-MODULE] INGESTION Rss, skipping ${ingestion.name} - queue already filled with messages (${messages_number})`);
-      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
-      ingestionPromises.push(ingestionPromise);
-    // If last execution was done before RSS_FEED_MIN_INTERVAL_MINUTES minutes, dont fetch any new data
-    } else if (!shouldExecuteIngestion(ingestion, RSS_FEED_MIN_INTERVAL_MINUTES)) {
-      logApp.info(`[OPENCTI-MODULE] INGESTION Rss, skipping ${ingestion.name} - last run is more recent than ${RSS_FEED_MIN_INTERVAL_MINUTES} minutes.`);
-      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { messages_size });
-      ingestionPromises.push(ingestionPromise);
-    // If no message in queue and last execution is old enough, fetch new data
-    } else {
-      const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
-        .catch((e) => {
-          logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
-          if (e instanceof AxiosError) {
-            if (e?.response?.headers) {
-              if (e.response.headers['cf-mitigated']) {
-                logApp.warn(`[OPENCTI-MODULE] INGESTION Rss - Cloudflare challenge fail for ${ingestion.uri}`);
+    if (isMustExecuteIteration(ingestion.last_execution_date, ingestion.scheduling_period)) {
+      const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
+      // If ingestion have remaining messages in the queue dont fetch any new data
+      if (messages_number > 0) {
+        logApp.info(`[OPENCTI-MODULE] INGESTION Rss, skipping ${ingestion.name} - queue already filled with messages (${messages_number})`);
+        const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
+        ingestionPromises.push(ingestionPromise);
+        // If last execution was done before RSS_FEED_MIN_INTERVAL_MINUTES minutes, dont fetch any new data
+      } else if (!shouldExecuteIngestion(ingestion, RSS_FEED_MIN_INTERVAL_MINUTES)) {
+        logApp.info(`[OPENCTI-MODULE] INGESTION Rss, skipping ${ingestion.name} - last run is more recent than ${RSS_FEED_MIN_INTERVAL_MINUTES} minutes.`);
+        const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { messages_size });
+        ingestionPromises.push(ingestionPromise);
+        // If no message in queue and last execution is old enough, fetch new data
+      } else {
+        const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
+          .catch((e) => {
+            logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
+            if (e instanceof AxiosError) {
+              if (e?.response?.headers) {
+                if (e.response.headers['cf-mitigated']) {
+                  logApp.warn(`[OPENCTI-MODULE] INGESTION Rss - Cloudflare challenge fail for ${ingestion.uri}`);
+                }
               }
             }
-          }
-          // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-          patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
-        });
-      ingestionPromises.push(ingestionPromise);
+            // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
+            patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
+          });
+        ingestionPromises.push(ingestionPromise);
+      }
     }
   }
   return Promise.all(ingestionPromises);
@@ -565,27 +575,28 @@ const csvExecutor = async (context: AuthContext) => {
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
-    const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
-
-    // If ingestion have remaining messages in the queue dont fetch any new data
-    if (messages_number > 0) {
-      logApp.info(`[OPENCTI-MODULE] INGESTION Csv, skipping ${ingestion.name} - queue already filled with messages (${messages_number})`);
-      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
-      ingestionPromises.push(ingestionPromise);
-    // If last execution was done before CSV_FEED_MIN_INTERVAL_MINUTES minutes, dont fetch any new data
-    } else if (!shouldExecuteIngestion(ingestion, CSV_FEED_MIN_INTERVAL_MINUTES)) {
-      logApp.info(`[OPENCTI-MODULE] INGESTION Csv, skipping ${ingestion.name} - last run is more recent than ${CSV_FEED_MIN_INTERVAL_MINUTES} minutes.`);
-      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { messages_size });
-      ingestionPromises.push(ingestionPromise);
-    // If no message in queue and last execution is old enough, fetch new data
-    } else {
-      const ingestionPromise = csvDataHandler(context, ingestion)
-        .catch((e) => {
-          logApp.warn('[OPENCTI-MODULE] INGESTION - Csv ingestion execution', { cause: e, name: ingestion.name });
-          // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
-          patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
-        });
-      ingestionPromises.push(ingestionPromise);
+    if (isMustExecuteIteration(ingestion.last_execution_date, ingestion.scheduling_period)) {
+      const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
+      // If ingestion have remaining messages in the queue dont fetch any new data
+      if (messages_number > 0) {
+        logApp.info(`[OPENCTI-MODULE] INGESTION Csv, skipping ${ingestion.name} - queue already filled with messages (${messages_number})`);
+        const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
+        ingestionPromises.push(ingestionPromise);
+        // If last execution was done before CSV_FEED_MIN_INTERVAL_MINUTES minutes, dont fetch any new data
+      } else if (!shouldExecuteIngestion(ingestion, CSV_FEED_MIN_INTERVAL_MINUTES)) {
+        logApp.info(`[OPENCTI-MODULE] INGESTION Csv, skipping ${ingestion.name} - last run is more recent than ${CSV_FEED_MIN_INTERVAL_MINUTES} minutes.`);
+        const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { messages_size });
+        ingestionPromises.push(ingestionPromise);
+        // If no message in queue and last execution is old enough, fetch new data
+      } else {
+        const ingestionPromise = csvDataHandler(context, ingestion)
+          .catch((e) => {
+            logApp.warn('[OPENCTI-MODULE] INGESTION - Csv ingestion execution', { cause: e, name: ingestion.name });
+            // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
+            patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
+          });
+        ingestionPromises.push(ingestionPromise);
+      }
     }
   }
   return Promise.all(ingestionPromises);
@@ -617,21 +628,23 @@ export const jsonExecutor = async (context: AuthContext) => {
   const ingestions = await findAllJsonIngestions(context, SYSTEM_USER, opts);
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
-    const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
-    if (messages_number === 0) { // If no more ingestion to do
-      const { bundle, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
-      // endregion
-      logApp.info('pushBundleToConnectorQueue', bundle.objects.length);
-      // Push the bundle to absorption queue
-      await pushBundleToConnectorQueue(context, ingestion, bundle);
-      // Save new state for next execution
-      const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
-      const state = { ingestion_json_state: ingestionState, last_execution_date: now() };
-      await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
-      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
-    } else {
-      // Update the state
-      await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
+    if (isMustExecuteIteration(ingestion.last_execution_date, ingestion.scheduling_period)) {
+      const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
+      if (messages_number === 0) { // If no more ingestion to do
+        const { bundle, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
+        // endregion
+        logApp.info('pushBundleToConnectorQueue', bundle.objects.length);
+        // Push the bundle to absorption queue
+        await pushBundleToConnectorQueue(context, ingestion, bundle);
+        // Save new state for next execution
+        const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
+        const state = { ingestion_json_state: ingestionState, last_execution_date: now() };
+        await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+        await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
+      } else {
+        // Update the state
+        await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
+      }
     }
   }
 };

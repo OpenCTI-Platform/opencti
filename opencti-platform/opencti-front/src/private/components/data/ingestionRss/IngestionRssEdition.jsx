@@ -4,6 +4,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import IngestionSchedulingField from '../IngestionSchedulingField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -84,6 +85,7 @@ const IngestionRssEditionContainer = ({
     R.pick([
       'name',
       'description',
+      'scheduling_period',
       'uri',
       'user_id',
       'created_by_ref',
@@ -122,6 +124,7 @@ const IngestionRssEditionContainer = ({
               style={fieldSpacingContainerStyle}
               onSubmit={handleSubmitField}
             />
+            <IngestionSchedulingField/>
             <Field
               component={TextField}
               variant="standard"
@@ -196,6 +199,7 @@ const IngestionRssEditionFragment = createFragmentContainer(
         id
         name
         uri
+        scheduling_period
         report_types
         ingestion_running
         current_state_date
