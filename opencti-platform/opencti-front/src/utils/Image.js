@@ -66,7 +66,7 @@ export const exportPdf = (
   const imageWidth = offsetWidth * pixelRatio;
   const imageHeight = offsetHeight * pixelRatio;
   console.log('ANGIE - exportPdf in image params', { offsetWidth, offsetHeight, imageWidth, imageHeight, backgroundColor, name, adjust, container, pixelRatio });
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     console.log(`ANGIE - exportPdf in image htmlToImage start container:${container.className}`);
     console.log('ANGIE - exportPdf in image params 2', { offsetWidth, offsetHeight, imageWidth, imageHeight, backgroundColor, name, adjust, container, pixelRatio });
     htmlToImage
@@ -129,7 +129,8 @@ export const exportPdf = (
         resolve();
       })
       .catch((reason) => {
-        console.log('ANGIE error in exportPdf in image', reason);
+        console.log('ANGIE error in exportPdf in image', JSON.stringify(reason));
+        reject(reason);
       });
   });
 };
