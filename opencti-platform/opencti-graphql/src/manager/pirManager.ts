@@ -14,8 +14,8 @@ import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR, type PirDepe
 import { EditOperation } from '../generated/graphql';
 import { flagSource, parsePir, updatePirDependencies } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
-import { createRedisClient, fetchStreamEventsRange, REDIS_STREAM_NAME } from '../database/redis';
-import { patchAttribute } from '../database/middleware';
+import { createRedisClient, fetchStreamEventsRange } from '../database/redis';
+import { updatePir } from '../modules/pir/pir-domain';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -134,12 +134,10 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR
         if (matchingCriteria.length > 0) {
           switch (event.type) {
             case 'create':
-              console.log(`PIR ${pir.name}: create`, { pirName: pir.name, event });
-              // await onRelationCreated(context, data, pir, matchingCriteria);
+              await onRelationCreated(context, data, pir, matchingCriteria);
               break;
             case 'delete':
-              console.log(`PIR ${pir.name}: delete`, { pirName: pir.name, event });
-              // await onRelationDeleted(context, data, pir);
+              await onRelationDeleted(context, data, pir);
               break;
             default: // Nothing to do.
           }
@@ -169,7 +167,7 @@ const pirManagerHandler = async () => {
     );
     // Update pir last event id.
     if (lastEventId !== pir.lastEventId) {
-      await patchAttribute(context, SYSTEM_USER, pir.id, ENTITY_TYPE_PIR, { lastEventId });
+      await updatePir(context, SYSTEM_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
     }
   }));
 };
