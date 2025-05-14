@@ -19,7 +19,7 @@ import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../dat
 import { type BasicStoreEntityIngestionJson, type DataParam, ENTITY_TYPE_INGESTION_JSON } from './ingestion-types';
 import { verifyIngestionAuthenticationContent } from './ingestion-common';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
-import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
+import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperParsed } from '../internal/jsonMapper/jsonMapper-types';
 import { type EditInput, IngestionAuthType, type IngestionJsonAddInput, type JsonMapperTestResult } from '../../generated/graphql';
@@ -33,7 +33,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import jsonMappingExecution from '../../parser/json-mapper';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 interface JsonQueryFetchOpts {
   maxResults?: number;
@@ -261,16 +261,18 @@ export const patchJsonIngestion = async (context: AuthContext, user: AuthUser, i
 
 export const ingestionJsonResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   await patchJsonIngestion(context, user, ingestionId, { ingestion_json_state: null });
-  const ingestionUpdated = await findById(context, user, ingestionId);
+  const ingestion = await findById(context, user, ingestionId);
+  const connectorId = connectorIdFromIngestId(ingestion.id);
+  await patchAttribute(context, SYSTEM_USER, connectorId, ENTITY_TYPE_CONNECTOR, { connector_state: null });
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `reset state of json ingestion ${ingestionUpdated.name}`,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input: ingestionUpdated }
+    message: `reset state of json ingestion ${ingestion.name}`,
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input: ingestion }
   });
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, ingestionUpdated, user);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, ingestion, user);
 };
 
 export const testJsonIngestionMapping = async (context: AuthContext, _user: AuthUser, input: IngestionJsonAddInput): Promise<JsonMapperTestResult> => {
