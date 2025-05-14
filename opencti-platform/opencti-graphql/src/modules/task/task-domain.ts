@@ -1,6 +1,13 @@
 import { BUS_TOPICS } from '../../config/conf';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { type EntityOptions, internalLoadById, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import {
+  type EntityOptions,
+  internalLoadById, listAllEntities,
+  listAllEntitiesThroughRelations,
+  listEntitiesPaginated,
+  listEntitiesThroughRelationsPaginated,
+  storeLoadById
+} from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 
@@ -16,6 +23,8 @@ import { now } from '../../utils/format';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { BasicStoreEntityCase } from '../case/case-types';
 import type { BasicStoreCommon } from '../../types/store';
+import {TEMPLATE_TASK_RELATION} from "../case/case-template/case-template-types";
+import {type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE} from "./task-template/task-template-types";
 
 export const findById: DomainFindById<BasicStoreEntityTask> = (context: AuthContext, user: AuthUser, templateId: string) => {
   return storeLoadById(context, user, templateId, ENTITY_TYPE_CONTAINER_TASK);
@@ -23,6 +32,18 @@ export const findById: DomainFindById<BasicStoreEntityTask> = (context: AuthCont
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityTask>) => {
   return listEntitiesPaginated<BasicStoreEntityTask>(context, user, [ENTITY_TYPE_CONTAINER_TASK], opts);
+};
+
+export const findAllByCaseTemplateId = async (context: AuthContext, user: AuthUser, caseTemplateId: string) => {
+  // Get all tasks from template
+  const opts = {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: [buildRefRelationKey(TEMPLATE_TASK_RELATION)], values: [caseTemplateId] }],
+      filterGroups: [],
+    }
+  };
+  return listAllEntities<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
 };
 
 export const caseTasksPaginated = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<T>) => {
