@@ -12,7 +12,7 @@ import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { ADMIN_USER } from '../../../tests/utils/testQuery';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
-import { redisDelForgotPassword, redisGetForgotPasswordOtp, redisSetForgotPasswordOtp } from '../../database/redis';
+import { OTP_TTL, redisDelForgotPassword, redisGetForgotPasswordOtp, redisGetForgotPasswordOtpPointer, redisSetForgotPasswordOtp } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { SYSTEM_USER } from '../../utils/access';
 import { killUserSessions } from '../../database/session';
@@ -43,16 +43,23 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   const resetOtp = generateOtp();
   const transactionId = uuid();
   try {
+    // Retrieve user information
     const user = await getLocalProviderUser(input.email);
     const { user_email, name, otp_activated, otp_secret, id } = user;
     const email = user_email.toLowerCase();
-    // TODO : rework after using transactionId for the redis key in place of user_email
-    // Prevent code generation if generated less than 30 seconds ago
-    // const storedOtp = await redisGetForgotPasswordOtp(input.email);
-    // const isTooRecentStoredOtp = storedOtp.ttl > (OTP_TTL - 30);
-    // if (isTooRecentStoredOtp) return transactionId;
+    // Check the 30-second delay key
+    const storedOtp = await redisGetForgotPasswordOtpPointer(input.email);
+    const isTooRecentStoredOtp = storedOtp.ttl > (OTP_TTL - 30);
+    if (isTooRecentStoredOtp) return transactionId;
+    // Delete the previous OTP if it exists based on the pointer
+    const previousPointer = await redisGetForgotPasswordOtpPointer(email);
+    if (previousPointer.id) {
+      await redisDelForgotPassword(previousPointer.id, email);
+    }
+    // Generate and store the new OTP; create a new pointer using the new UUID
     const hashedOtp = bcrypt.hashSync(resetOtp);
     await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, otp_activated: otp_activated ?? false, otp_validated: false, otp_secret, userId: id });
+    // Create and send the email
     const body = `Hi ${name},</br></br>`
         + 'A request has been made to reset your OpenCTI password.</br></br>'
         + 'Enter the following password recovery code:</br></br>'
@@ -64,6 +71,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
     };
     await sendMail(sendMailArgs);
+    // Audit log for sending the OTP
     await publishUserAction({
       user: SYSTEM_USER,
       event_type: 'authentication',
@@ -75,6 +83,15 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   } catch (e) {
     // Prevent wrong email address, but return transactionId too if it fails
     logApp.error('Error occurred while sending password reset email:', { cause: e });
+    // Audit log in case of error during OTP sending
+    await publishUserAction({
+      user: SYSTEM_USER,
+      event_type: 'authentication',
+      event_scope: 'forgot',
+      event_access: 'administration',
+      context_data: undefined,
+      message: `failed to send OTP to ${input.email}`,
+    });
   }
   return transactionId;
 };
@@ -151,7 +168,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
       { key: 'password', value: [input.newPassword] }
     ]);
     await killUserSessions(authUser.id);
-    await redisDelForgotPassword(input.transactionId);
+    await redisDelForgotPassword(input.transactionId, email);
     const body = `Hi ${authUser.name},</br></br>`
       + 'We wanted to let you know that your account password was successfully changed.</br></br>'
       + 'If you initiated this change, no further action is required. However, if you did not authorize this change, please reset your password immediately and contact the system administrator so that we may investigate and take appropriate measures to secure your account.</br></br>'
