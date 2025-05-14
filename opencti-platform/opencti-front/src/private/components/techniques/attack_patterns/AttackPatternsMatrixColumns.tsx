@@ -14,13 +14,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 
-type AttackPattern = NonNullable<
-NonNullable<
-NonNullable<
-AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']
->['attackPatternsOfPhases']
->[number]['attackPatterns']
->[number];
+type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
 
 type AttackPatternElement = AttackPattern & {
   id: AttackPattern['attack_pattern_id'],
