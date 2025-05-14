@@ -68,7 +68,8 @@ import {
   PlayCircleOutlined,
   ArchitectureOutlined,
   PlaylistRemoveOutlined,
-  AttachEmailOutlined, DrawOutlined,
+  AttachEmailOutlined,
+  DrawOutlined,
 } from '@mui/icons-material';
 import {
   AutoFix,
