@@ -45,5 +45,5 @@ type Query {
 type Mutation {
     savedFilterAdd(input: SavedFilterAddInput!): SavedFilter @auth
     savedFilterDelete(id: ID!): ID @auth
-    savedFilterFieldPatch(id: ID!, filters: String!): SavedFilter @auth
+    savedFilterFieldPatch(id: ID!, input: [EditInput!]): SavedFilter @auth
 }
