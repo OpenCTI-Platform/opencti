@@ -125,7 +125,7 @@ const Drafts: React.FC = () => {
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
-    sortBy: 'name',
+    sortBy: 'created_at',
     orderAsc: false,
     openExports: false,
     redirectionMode: 'overview',

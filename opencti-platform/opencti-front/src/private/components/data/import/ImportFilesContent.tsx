@@ -176,6 +176,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
   const dataColumns = {
     name: { percentWidth: 50 },
     createdBy: {
+      label: 'Creator',
       percentWidth: 15,
       render: (({ metaData }: ImportFilesContentFileLine_file$data) => metaData?.creator?.name ?? '-'),
     },
@@ -186,7 +187,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
       id: 'lastModified',
       label: 'Modification date',
       isSortable: true,
-      percentWidth: 19,
+      percentWidth: 20,
       render: ({ lastModified }: ImportFilesContentFileLine_file$data, { fd }: {
         fd: (date: Date) => string
       }) => fd(lastModified),
@@ -194,7 +195,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
   };
 
   return (
-    <div style={{ height: '100%', paddingRight: 0 }} className="break">
+    <div style={{ height: '100%' }} className="break">
       {!inDraftOverview && (
         <>
           <Breadcrumbs

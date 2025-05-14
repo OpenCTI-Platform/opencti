@@ -3,11 +3,9 @@ import React from 'react';
 import { ImportWorkbenchesContentQuery, ImportWorkbenchesContentQuery$variables } from '@components/data/import/__generated__/ImportWorkbenchesContentQuery.graphql';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
-import { ImportWorkbenchesContentLines_data$data } from '@components/data/import/__generated__/ImportWorkbenchesContentLines_data.graphql';
 import ImportMenu from '@components/data/ImportMenu';
 import WorkbenchCreation from '@components/common/files/workbench/WorkbenchCreation';
 import ImportActionsPopover from '@components/common/files/ImportActionsPopover';
-import { useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -17,6 +15,7 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import { toB64 } from '../../../../utils/String';
+import { ImportWorkbenchesContentLines_data$data } from './__generated__/ImportWorkbenchesContentLines_data.graphql';
 
 export const WorkbenchFileLineDeleteMutation = graphql`
   mutation ImportWorkbenchesContentFileLineDeleteMutation($fileName: String) {
@@ -34,6 +33,10 @@ export const workbenchLineFragment = graphql`
     lastModifiedSinceMin
     objectMarking {
       id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
     }
     metaData {
       mimetype
@@ -117,7 +120,6 @@ export const LOCAL_STORAGE_KEY = 'importWorkbenches';
 const ImportWorkbenchesContent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  const navigate = useNavigate();
   setTitle(t_i18n('Analyst Workbench | Import | Data'));
 
   const initialValues = {
@@ -174,11 +176,12 @@ const ImportWorkbenchesContent = () => {
   const dataColumns = {
     name: { percentWidth: 50 },
     createdBy: {
-      percentWidth: 15,
+      label: 'Creator',
+      percentWidth: 10,
       render: (({ metaData }: ImportWorkbenchesContentFileLine_file$data) => metaData?.creator?.name ?? '-'),
     },
     objectLabel: {
-      percentWidth: 15,
+      percentWidth: 10,
       render: ({ metaData }: ImportWorkbenchesContentFileLine_file$data) => {
         return (
           <StixCoreObjectLabels
@@ -188,11 +191,14 @@ const ImportWorkbenchesContent = () => {
         );
       },
     },
+    objectMarking: {
+      percentWidth: 10,
+    },
     lastModified: {
       id: 'lastModified',
       label: 'Modification date',
       isSortable: true,
-      percentWidth: 19,
+      percentWidth: 20,
       render: ({ lastModified }: ImportWorkbenchesContentFileLine_file$data, { fd }: {
         fd: (date: Date) => string
       }) => fd(lastModified),
@@ -218,13 +224,9 @@ const ImportWorkbenchesContent = () => {
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
           taskScope={'IMPORT'}
           redirectionModeEnabled
-          onLineClick={(file: ImportWorkbenchesContentFileLine_file$data) => {
-            const { id, metaData, uploadStatus } = file;
-            const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
-            if (!isProgress && !(metaData?.errors && metaData?.errors.length > 0)) {
-              navigate(`/dashboard/data/import/workbench/${toB64(id)}`);
-            }
-          }}
+          useComputeLink={({ id }: ImportWorkbenchesContentFileLine_file$data) => (
+            `/dashboard/data/import/workbench/${toB64(id)}`
+          )}
           createButton={<WorkbenchCreation paginationOptions={queryPaginationOptions}/>}
           actions={(file: ImportWorkbenchesContentFileLine_file$data) => (
             <ImportActionsPopover
