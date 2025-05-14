@@ -20,7 +20,8 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ListItemButton } from '@mui/material';
+import { Badge, ListItemButton } from '@mui/material';
+import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
@@ -30,9 +31,9 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
-    marginBottom: 20,
+    marginBottom: 5,
   },
   line: {
     content: ' ',
@@ -45,9 +46,9 @@ const styles = (theme) => ({
   },
   avatar: {
     float: 'left',
-    width: 40,
-    height: 40,
-    margin: '5px 10px 0 0',
+    width: 30,
+    height: 30,
+    margin: '7px 0 0 0',
   },
   content: {
     width: 'auto',
@@ -62,7 +63,7 @@ const styles = (theme) => ({
     width: '100%',
     height: '100%',
     padding: '8px 15px 0 15px',
-    backgroundColor: theme.palette.background.shadow,
+    background: 0,
   },
   description: {
     height: '100%',
@@ -74,7 +75,8 @@ const styles = (theme) => ({
     float: 'right',
     textAlign: 'right',
     width: 180,
-    paddingTop: 2,
+    paddingTop: 4,
+    fontSize: 11,
   },
 });
 
@@ -110,157 +112,22 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
   }
 
   renderIcon(eventScope, isRelation, eventMesage, commit) {
+    const { theme } = this.props;
     if (isRelation) {
       if (eventScope === 'create') {
         return (
           <Avatar
-            sx={[{
-              width: 30,
-              height: 30,
-              backgroundColor: pink[500],
-              color: '#ffffff',
-            }, commit ? {
-              cursor: 'pointer',
-            } : {
-              cursor: 'auto',
-            }]}
+            sx={{
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${pink[500]}`,
+              color: theme.palette.text.primary,
+              cursor: commit ? 'pointer' : 'auto',
+            }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkOutlined fontSize="small" />
-          </Avatar>
-        );
-      }
-      if (eventScope === 'delete') {
-        return (
-          <Avatar
-            sx={[{
-              width: 30,
-              height: 30,
-              backgroundColor: deepPurple[500],
-              color: '#ffffff',
-            }, commit ? {
-              cursor: 'pointer',
-            } : {
-              cursor: 'auto',
-            }]}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <LinkOffOutlined fontSize="small" />
-          </Avatar>
-        );
-      }
-    } else {
-      if (eventScope === 'create') {
-        return (
-          <Avatar
-            sx={[{
-              width: 30,
-              height: 30,
-              backgroundColor: pink[500],
-              color: '#ffffff',
-            }, commit ? {
-              cursor: 'pointer',
-            } : {
-              cursor: 'auto',
-            }]}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <AddOutlined fontSize="small" />
-          </Avatar>
-        );
-      }
-      if (eventScope === 'merge') {
-        return (
-          <Avatar
-            sx={[{
-              width: 30,
-              height: 30,
-              backgroundColor: teal[500],
-              color: '#ffffff',
-            }, commit ? {
-              cursor: 'pointer',
-            } : {
-              cursor: 'auto',
-            }]}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <Merge fontSize="small" />
-          </Avatar>
-        );
-      }
-      if (eventScope === 'update' && eventMesage.includes('replaces')) {
-        return (
-          <Avatar
-            sx={[{
-              width: 30,
-              height: 30,
-              backgroundColor: green[500],
-              color: '#ffffff',
-            }, commit ? {
-              cursor: 'pointer',
-            } : {
-              cursor: 'auto',
-            }]}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <EditOutlined fontSize="small" />
-          </Avatar>
-        );
-      }
-      if (eventScope === 'update' && eventMesage.includes('changes')) {
-        return (
-          <Avatar
-            sx={[{
-              width: 30,
-              height: 30,
-              backgroundColor: green[500],
-              color: '#ffffff',
-            }, commit ? {
-              cursor: 'pointer',
-            } : {
-              cursor: 'auto',
-            }]}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <EditOutlined fontSize="small" />
-          </Avatar>
-        );
-      }
-      if (eventScope === 'update' && eventMesage.includes('adds')) {
-        return (
-          <Avatar
-            sx={[{
-              width: 30,
-              height: 30,
-              backgroundColor: indigo[500],
-              color: '#ffffff',
-            }, commit ? {
-              cursor: 'pointer',
-            } : {
-              cursor: 'auto',
-            }]}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <LinkVariantPlus fontSize="small" />
-          </Avatar>
-        );
-      }
-      if (eventScope === 'update' && eventMesage.includes('removes')) {
-        return (
-          <Avatar
-            sx={[{
-              width: 30,
-              height: 30,
-              backgroundColor: deepOrange[500],
-              color: '#ffffff',
-            }, commit ? {
-              cursor: 'pointer',
-            } : {
-              cursor: 'auto',
-            }]}
-            onClick={() => commit && this.handleOpen()}
-          >
-            <LinkVariantRemove fontSize="small" />
+            <LinkOutlined style={{ fontSize: 12 }} />
           </Avatar>
         );
       }
@@ -268,13 +135,134 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
         return (
           <Avatar
             sx={{
-              width: 30,
-              height: 30,
-              backgroundColor: red[500],
-              color: '#ffffff',
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${deepPurple[500]}`,
+              color: theme.palette.text.primary,
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <LinkOffOutlined style={{ fontSize: 12 }} />
+          </Avatar>
+        );
+      }
+    } else {
+      if (eventScope === 'create') {
+        return (
+          <Avatar
+            sx={{
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${pink[500]}`,
+              color: theme.palette.text.primary,
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <AddOutlined style={{ fontSize: 12 }} />
+          </Avatar>
+        );
+      }
+      if (eventScope === 'merge') {
+        return (
+          <Avatar
+            sx={{
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${teal[500]}`,
+              color: theme.palette.text.primary,
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <Merge style={{ fontSize: 12 }} />
+          </Avatar>
+        );
+      }
+      if (eventScope === 'update' && eventMesage.includes('replaces')) {
+        return (
+          <Avatar
+            sx={{
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${green[500]}`,
+              color: theme.palette.text.primary,
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <EditOutlined style={{ fontSize: 12 }} />
+          </Avatar>
+        );
+      }
+      if (eventScope === 'update' && eventMesage.includes('changes')) {
+        return (
+          <Avatar
+            sx={{
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${green[500]}`,
+              color: theme.palette.text.primary,
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <EditOutlined style={{ fontSize: 12 }} />
+          </Avatar>
+        );
+      }
+      if (eventScope === 'update' && eventMesage.includes('adds')) {
+        return (
+          <Avatar
+            sx={{
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${indigo[500]}`,
+              color: theme.palette.text.primary,
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <LinkVariantPlus style={{ fontSize: 12 }} />
+          </Avatar>
+        );
+      }
+      if (eventScope === 'update' && eventMesage.includes('removes')) {
+        return (
+          <Avatar
+            sx={{
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${deepOrange[500]}`,
+              color: theme.palette.text.primary,
+              cursor: commit ? 'pointer' : 'auto',
+            }}
+            onClick={() => commit && this.handleOpen()}
+          >
+            <LinkVariantRemove style={{ fontSize: 12 }} />
+          </Avatar>
+        );
+      }
+      if (eventScope === 'delete') {
+        return (
+          <Avatar
+            sx={{
+              width: 25,
+              height: 25,
+              backgroundColor: 'transparent',
+              border: `1px solid ${red[500]}`,
+              color: theme.palette.text.primary,
             }}
           >
-            <DeleteOutlined fontSize="small" />
+            <DeleteOutlined style={{ fontSize: 12 }} />
           </Avatar>
         );
       }
@@ -282,13 +270,16 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
     return (
       <Avatar
         style={{
-          backgroundColor: yellow[800],
-          color: '#ffffff',
+          width: 25,
+          height: 25,
+          backgroundColor: 'transparent',
+          border: `1px solid ${yellow[500]}`,
+          color: theme.palette.text.primary,
           cursor: commit ? 'pointer' : 'auto',
         }}
         onClick={() => commit && this.handleOpen()}
       >
-        <HelpOutlined fontSize="small" />
+        <HelpOutlined style={{ fontSize: 12 }} />
       </Avatar>
     );
   }
@@ -298,11 +289,18 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>
-          {this.renderIcon(
-            node.event_scope,
-            isRelation,
-            node.context_data.message,
-          )}
+          <Badge
+            color="secondary"
+            overlap="circular"
+            badgeContent="M"
+            invisible={node.context_data.commit === null}
+          >
+            {this.renderIcon(
+              node.event_scope,
+              isRelation,
+              node.context_data.message,
+            )}
+          </Badge>
         </div>
         <div
           className={classes.content}
@@ -494,5 +492,6 @@ const StixSightingRelationshipHistoryLine = createFragmentContainer(
 
 export default compose(
   inject18n,
+  withTheme,
   withStyles(styles),
 )(StixSightingRelationshipHistoryLine);
