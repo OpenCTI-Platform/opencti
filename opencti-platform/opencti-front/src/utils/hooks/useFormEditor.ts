@@ -62,7 +62,7 @@ const useFormEditor = (
 
   const validate = (
     name: string,
-    values: number | number[] | string | Date | FieldOption | FieldOption[],
+    values: number | number[] | string | Date | FieldOption | FieldOption[] | null,
     callback: () => void,
   ) => {
     if (schemaFields[name]) {
@@ -140,16 +140,17 @@ const useFormEditor = (
   };
 
   // Simple
-  const changeCreated = (name: string, value: FieldOption) => {
+  const changeCreated = (name: string, value: FieldOption | '') => {
     if (!enableReferences) {
-      validate(name, value, () => {
+      validate(name, value !== '' ? value : null, () => {
+        const finalValue = value !== '' ? (value as FieldOption).value : null;
         commitFieldPatch({
           variables: {
             id: data.id,
             input: [
               {
                 key: 'createdBy',
-                value: [value.value],
+                value: [finalValue],
               },
             ],
           },

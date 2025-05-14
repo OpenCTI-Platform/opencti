@@ -15595,8 +15595,8 @@ export type MutationSavedFilterDeleteArgs = {
 
 
 export type MutationSavedFilterFieldPatchArgs = {
-  filters: Scalars['String']['input'];
   id: Scalars['ID']['input'];
+  input?: InputMaybe<Array<EditInput>>;
 };
 
 
@@ -38177,7 +38177,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ruleSetActivation?: Resolver<ResolversTypes['Rule'], ParentType, ContextType, RequireFields<MutationRuleSetActivationArgs, 'enable' | 'id'>>;
   savedFilterAdd?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterAddArgs, 'input'>>;
   savedFilterDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSavedFilterDeleteArgs, 'id'>>;
-  savedFilterFieldPatch?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterFieldPatchArgs, 'filters' | 'id'>>;
+  savedFilterFieldPatch?: Resolver<Maybe<ResolversTypes['SavedFilter']>, ParentType, ContextType, RequireFields<MutationSavedFilterFieldPatchArgs, 'id'>>;
   sectorAdd?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, RequireFields<MutationSectorAddArgs, 'input'>>;
   sectorEdit?: Resolver<Maybe<ResolversTypes['SectorEditMutations']>, ParentType, ContextType, RequireFields<MutationSectorEditArgs, 'id'>>;
   sessionKill?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSessionKillArgs, 'id'>>;

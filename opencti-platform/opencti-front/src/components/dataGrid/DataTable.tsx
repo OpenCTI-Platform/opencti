@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
-import * as R from 'ramda';
 import DataTableToolBar from '@components/data/DataTableToolBar';
 import { OperationType } from 'relay-runtime';
 import { GraphQLTaggedNode } from 'react-relay';
@@ -8,7 +7,6 @@ import { useTheme } from '@mui/styles';
 import DataTableFilters, { DataTableDisplayFilters } from './DataTableFilters';
 import SearchInput from '../SearchInput';
 import { DataTableProps } from './dataTableTypes';
-import useAuth from '../../utils/hooks/useAuth';
 import { useLineData } from './dataTableHooks';
 import DataTableComponent from './components/DataTableComponent';
 import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
@@ -16,6 +14,7 @@ import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
 import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
+import { useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
 | 'additionalFilterKeys'
@@ -194,8 +193,6 @@ type OCTIDataTableProps = Pick<DataTableProps,
 } & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
 
 const DataTable = (props: OCTIDataTableProps) => {
-  const { schema } = useAuth();
-
   const {
     availableFilterKeys: defaultAvailableFilterKeys,
     globalSearch,
@@ -229,12 +226,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     : { ...searchContextFinal, entityTypes: computedEntityTypes };
   let availableFilterKeys = defaultAvailableFilterKeys ?? [];
   if (availableFilterKeys.length === 0 && isNotEmptyField(computedEntityTypes)) {
-    const filterKeysMap = new Map();
-    computedEntityTypes.forEach((entityType: string) => {
-      const currentMap = schema.filterKeysSchema.get(entityType);
-      currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
-    });
-    availableFilterKeys = R.uniq(Array.from(filterKeysMap.keys())); // keys of the entity type if availableFilterKeys is not specified
+    availableFilterKeys = useAvailableFilterKeysForEntityTypes(computedEntityTypes);
   }
   if (additionalFilterKeys) {
     availableFilterKeys = availableFilterKeys.concat(additionalFilterKeys);

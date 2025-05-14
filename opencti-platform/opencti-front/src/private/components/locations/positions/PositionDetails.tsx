@@ -166,9 +166,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Description')}
             </Typography>
-            {position.description && (
-              <ExpandableMarkdown source={position.description} limit={300} />
-            )}
+            <ExpandableMarkdown source={position.description} limit={300} />
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
