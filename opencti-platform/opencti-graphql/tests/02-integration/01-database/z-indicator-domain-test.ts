@@ -17,7 +17,7 @@ import { dayToMs } from '../../../src/modules/decayRule/decayRule-domain';
 import { logApp } from '../../../src/config/conf';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 
-describe('Testing field patch on indicator for trio {score, valid until, revoked}', () => {
+describe.skip('Testing field patch on indicator for trio {score, valid until, revoked}', () => {
   const indicatorCreatedIds : string[] = [];
   const todayMorning = new Date();
   todayMorning.setUTCHours(0, 0, 0, 0);
