@@ -356,13 +356,17 @@ RelationshipDetailsComponentProps
     return (
       <>
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t_i18n('First seen')}
+          {stixRelationship.entity_type !== 'stix-sighting-relationship'
+            ? t_i18n('Start time')
+            : t_i18n('First seen')}
         </Typography>
         {stixRelationship.entity_type !== 'stix-sighting-relationship'
           ? fldt(stixRelationship.start_time)
           : fldt(stixRelationship.first_seen)}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
-          {t_i18n('Last seen')}
+          {stixRelationship.entity_type !== 'stix-sighting-relationship'
+            ? t_i18n('Stop time')
+            : t_i18n('Last seen')}
         </Typography>
         {stixRelationship.entity_type !== 'stix-sighting-relationship'
           ? fldt(stixRelationship.stop_time)
