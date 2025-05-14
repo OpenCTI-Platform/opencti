@@ -14,7 +14,7 @@ import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR, type PirDepe
 import { EditOperation } from '../generated/graphql';
 import { flagSource, parsePir, updatePirDependencies } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
-import { fetchStreamEventsRange, REDIS_STREAM_NAME } from '../database/redis';
+import { createRedisClient, fetchStreamEventsRange, REDIS_STREAM_NAME } from '../database/redis';
 import { patchAttribute } from '../database/middleware';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
@@ -25,6 +25,7 @@ const PIR_MANAGER_INTERVAL = 6000; // TODO PIR: use config instead
 const PIR_MANAGER_LOCK_KEY = 'pir_manager_lock'; // TODO PIR: use config instead
 const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
 
+// region relationship create/delete
 /**
  * Called when an event of create new relationship matches a PIR criteria.
  * If the source of the relationship is already flagged update its dependencies,
@@ -100,18 +101,20 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: B
     } // nothing to do
   }
 };
+// endregion
 
-const processStreamEventsForPir = (
-  context:AuthContext,
-  pir: BasicStoreEntityPIR,
-) => {
+const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR) => {
   const parsedPir = parsePir(pir);
-  const processStreamEvents = async (
-    streamEvents: Array<SseEvent<DataEvent>>,
-  ) => {
+
+  return async (streamEvents: Array<SseEvent<DataEvent>>) => {
     const eventsContent = streamEvents
       .map((e) => e.data)
       .filter((e) => e.data.type === STIX_TYPE_RELATION);
+
+    if (eventsContent.length > 0) {
+      console.log(`PIR ${pir.name}: events`, { streamEvents });
+    }
+
     // Check every event received to see if it matches the PIR.
     await Promise.all(eventsContent.map(async (event) => {
       const { data } = event;
@@ -131,10 +134,12 @@ const processStreamEventsForPir = (
         if (matchingCriteria.length > 0) {
           switch (event.type) {
             case 'create':
-              await onRelationCreated(context, data, pir, matchingCriteria);
+              console.log(`PIR ${pir.name}: create`, { pirName: pir.name, event });
+              // await onRelationCreated(context, data, pir, matchingCriteria);
               break;
             case 'delete':
-              await onRelationDeleted(context, data, pir);
+              console.log(`PIR ${pir.name}: delete`, { pirName: pir.name, event });
+              // await onRelationDeleted(context, data, pir);
               break;
             default: // Nothing to do.
           }
@@ -142,23 +147,30 @@ const processStreamEventsForPir = (
       }
     }));
   };
-  return processStreamEvents;
 };
 
 /**
  * Handler called every {PIR_MANAGER_INTERVAL} and studying a range of stream events.
- *
  */
 const pirManagerHandler = async () => {
+  const redisClient = await createRedisClient(PIR_MANAGER_LABEL, false);
   const context = executionContext(PIR_MANAGER_CONTEXT);
   const allPIR = await getEntitiesListFromCache<BasicStoreEntityPIR>(context, SYSTEM_USER, ENTITY_TYPE_PIR);
 
   // Loop through all PIR one by one.
   await Promise.all(allPIR.map(async (pir) => {
-    // Fetch relationship stream events within a range
-    const { lastEventId } = await fetchStreamEventsRange(REDIS_STREAM_NAME, pir.lastEventId, processStreamEventsForPir(context, pir), {});
-    // update pir last event id
-    await patchAttribute(context, SYSTEM_USER, pir.id, ENTITY_TYPE_PIR, { lastEventId });
+    // Fetch stream events since last event id caught by the PIR.
+    console.log(`PIR ${pir.name}: from ${pir.lastEventId ?? '$'}`);
+    const { lastEventId } = await fetchStreamEventsRange(
+      redisClient,
+      pir.lastEventId,
+      processStreamEventsForPir(context, pir),
+      { streamBatchTime: PIR_MANAGER_INTERVAL }
+    );
+    // Update pir last event id.
+    if (lastEventId !== pir.lastEventId) {
+      await patchAttribute(context, SYSTEM_USER, pir.id, ENTITY_TYPE_PIR, { lastEventId });
+    }
   }));
 };
 
