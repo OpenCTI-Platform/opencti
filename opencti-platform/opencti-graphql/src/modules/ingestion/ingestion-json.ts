@@ -42,6 +42,7 @@ const INGESTION_JSON_DEFINITION: ModuleDefinition<StoreEntityIngestionJson, Stix
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'scheduling_period', label: 'Scheduling period', type: 'string', format: 'text', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'uri', label: 'Uri', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'body', label: 'body', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'verb', label: 'verb', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },

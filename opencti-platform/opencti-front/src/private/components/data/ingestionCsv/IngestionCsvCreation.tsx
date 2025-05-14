@@ -19,6 +19,7 @@ import { ingestionCsvEditionFragment } from '@components/data/ingestionCsv/Inges
 import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
+import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -71,6 +72,7 @@ export interface IngestionCsvAddInput {
   message?: string | null
   references?: ExternalReferencesValues
   description?: string | null
+  scheduling_period?: string | null
   uri: string
   csv_mapper_id: string | FieldOption
   authentication_type: IngestionAuthType | string
@@ -179,6 +181,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     const input = {
       name: values.name,
       description: values.description,
+      scheduling_period: values.scheduling_period,
       uri: values.uri,
       csv_mapper_id: typeof values.csv_mapper_id === 'string' ? values.csv_mapper_id : values.csv_mapper_id?.value,
       authentication_type: values.authentication_type,
@@ -209,6 +212,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   const initialValues: IngestionCsvAddInput = isDuplicated && ingestionCsvData ? {
     name: `${ingestionCsvData.name} - copy`,
     description: ingestionCsvData.description,
+    scheduling_period: ingestionCsvData.scheduling_period ?? 'PT1H',
     uri: ingestionCsvData.uri,
     csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
     authentication_type: ingestionCsvData.authentication_type,
@@ -229,6 +233,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   } : {
     name: '',
     description: '',
+    scheduling_period: 'PT1H',
     uri: '',
     csv_mapper_id: '',
     authentication_type: 'none',
@@ -266,6 +271,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
+          <IngestionSchedulingField/>
           <Field
             component={TextField}
             variant="standard"

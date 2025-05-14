@@ -16,6 +16,7 @@ import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/Ingestio
 import makeStyles from '@mui/styles/makeStyles';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
+import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -58,6 +59,7 @@ export const ingestionCsvEditionFragment = graphql`
     id
     name
     description
+    scheduling_period
     uri
     authentication_type
     authentication_value
@@ -94,6 +96,7 @@ interface IngestionCsvEditionForm {
   references?: ExternalReferencesValues
   name: string,
   description?: string | null,
+  scheduling_period?: string | null,
   uri: string,
   authentication_type: string,
   authentication_value?: string | null,
@@ -237,6 +240,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   const initialValues = {
     name: ingestionCsvData.name,
     description: ingestionCsvData.description,
+    scheduling_period: ingestionCsvData.scheduling_period ?? 'auto',
     uri: ingestionCsvData.uri,
     authentication_type: ingestionCsvData.authentication_type,
     authentication_value: ingestionCsvData.authentication_type === BEARER_AUTH ? ingestionCsvData.authentication_value : undefined,
@@ -308,6 +312,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             style={fieldSpacingContainerStyle}
             onSubmit={handleSubmitField}
           />
+          <IngestionSchedulingField/>
           <Field
             component={TextField}
             variant="standard"

@@ -82,7 +82,6 @@ enum Capabilities {
   INGESTION
   INGESTION_SETINGESTIONS
   CSVMAPPERS
-  JSONMAPPERS
   VIRTUAL_ORGANIZATION_ADMIN
 }
 
@@ -11593,6 +11592,7 @@ type IngestionRss implements InternalObject & BasicObject {
   updated_at: DateTime
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
   user: Creator
   defaultCreatedBy: Identity
@@ -11624,6 +11624,7 @@ type IngestionRssEdge {
 input IngestionRssAddInput {
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
   current_state_date: DateTime
   ingestion_running: Boolean
@@ -11752,6 +11753,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   updated_at: DateTime
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
   csvMapper: CsvMapper!
   authentication_type: IngestionAuthType!
@@ -11787,6 +11789,7 @@ type IngestionCsvEdge {
 input IngestionCsvAddInput {
   name: String!
   description: String
+  scheduling_period: String
   authentication_type: IngestionAuthType!
   authentication_value: String
   current_state_date: DateTime
@@ -11822,6 +11825,7 @@ type IngestionJson implements InternalObject & BasicObject {
   updated_at: DateTime
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
   verb: String!
   body: String
@@ -11877,6 +11881,7 @@ input QueryAttribute {
 input IngestionJsonAddInput {
   name: String!
   description: String
+  scheduling_period: String
   authentication_type: IngestionAuthType!
   authentication_value: String
   current_state_date: DateTime

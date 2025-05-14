@@ -22,6 +22,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { HeaderFieldAdd } from '@components/common/form/HeaderField';
 import { QueryAttributeFieldAdd } from '@components/common/form/QueryAttributeField';
+import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -95,6 +96,7 @@ export interface IngestionJsonAddInput {
   headers: IngestionJsonHeader[]
   query_attributes: IngestionJsonAttributes[]
   description?: string | null
+  scheduling_period?: string | null
   json_mapper_id: string | FieldOption
   authentication_type: IngestionAuthType | string
   authentication_value?: string | null
@@ -194,6 +196,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     const input = {
       name: values.name,
       description: values.description,
+      scheduling_period: values.scheduling_period,
       uri: values.uri,
       verb: values.verb,
       body: values.body,
@@ -231,6 +234,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
   const initialValues: IngestionJsonAddInput = isDuplicated && ingestionJsonData ? {
     name: `${ingestionJsonData.name} - copy`,
     description: ingestionJsonData.description,
+    scheduling_period: ingestionJsonData.scheduling_period ?? 'auto',
     uri: ingestionJsonData.uri,
     verb: ingestionJsonData.verb ?? 'GET',
     body: ingestionJsonData.body ?? '',
@@ -258,6 +262,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
   } : {
     name: '',
     description: '',
+    scheduling_period: 'auto',
     uri: '',
     body: '',
     verb: 'GET',
@@ -302,6 +307,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
+          <IngestionSchedulingField/>
           <Field
             component={TextField}
             variant="standard"
