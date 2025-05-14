@@ -82,7 +82,7 @@ import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicato
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
-import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
+import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from '../task/task-types';
 import { EditOperation, FilterMode } from '../../generated/graphql';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
@@ -507,11 +507,24 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       if (isApplyCaseTemplateEnabled && STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
         const context = executionContext('playbook_components');
         for (let i = 0; i < caseTemplates.length; i += 1) {
-          const tasks = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
-          for (let j = 0; j < tasks.length; j += 1) {
-            const convertedTask = convertStoreToStix(tasks[j]) as StixContainer;
-            convertedTask.object_refs = [container.id];
-            bundle.objects.push(convertedTask);
+          const taskTemplates = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
+          for (let j = 0; j < taskTemplates.length; j += 1) {
+            const taskData = {
+              name: taskTemplates[j].name,
+              description: taskTemplates[j].description,
+            };
+            const taskStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_TASK, taskData);
+            const storeTask = {
+              internal_id: generateInternalId(),
+              standard_id: taskStandardId,
+              entity_type: ENTITY_TYPE_CONTAINER_TASK,
+              parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
+              ...taskData,
+            } as StoreEntityTask;
+            const task = convertStoreToStix(storeTask) as StixTask;
+            task.object_refs = [container.id];
+            bundle.objects.push(task);
+            container.object_refs.push(task.id);
           }
         }
       }
