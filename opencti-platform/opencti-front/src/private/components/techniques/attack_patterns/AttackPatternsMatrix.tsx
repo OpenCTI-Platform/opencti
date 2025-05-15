@@ -12,8 +12,6 @@ export interface AttackPatternsMatrixProps {
   marginRight?: boolean;
   attackPatterns: NonNullable<NonNullable<StixDomainObjectAttackPatternsKillChainContainer_data$data>['attackPatterns']>['edges'][0]['node'][];
   searchTerm?: string;
-  handleToggleColorsReversed: () => void;
-  currentColorsReversed: boolean;
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain?: string;
   noBottomBar?: boolean;
@@ -22,8 +20,6 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   attackPatterns,
   marginRight,
   searchTerm,
-  handleToggleColorsReversed,
-  currentColorsReversed,
   handleAdd,
   selectedKillChain,
   noBottomBar,
@@ -45,8 +41,6 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
             attackPatterns={attackPatterns}
             marginRight={marginRight}
             searchTerm={searchTerm ?? ''}
-            handleToggleColorsReversed={handleToggleColorsReversed}
-            currentColorsReversed={currentColorsReversed}
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
             noBottomBar={noBottomBar}
