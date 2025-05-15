@@ -47,6 +47,7 @@ const sourcesFlaggedFragment = graphql`
     orderBy: { type: "StixRefRelationshipsOrdering", defaultValue: created }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     toId: { type: "StixRef" }
+    relationship_type: { type: "[String]" }
   )
   @refetchable(queryName: "PirsSourcesFlaggedRefetchQuery") {
     stixRefRelationships(
@@ -56,6 +57,7 @@ const sourcesFlaggedFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       toId: $toId
+      relationship_type: $relationship_type
     ) @connection(key: "PaginationPirKnowledge_stixRefRelationships") {
       edges {
         node {
@@ -80,6 +82,7 @@ const sourcesFlaggedListQuery = graphql`
     $orderBy: StixRefRelationshipsOrdering
     $orderMode: OrderingMode
     $toId: StixRef
+    $relationship_type: [String]
   ) {
     ...PirKnowledge_SourcesFlaggedFragment
     @arguments(
@@ -89,6 +92,7 @@ const sourcesFlaggedListQuery = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       toId: $toId
+      relationship_type: $relationship_type
     )
   }
 `;
@@ -129,6 +133,7 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
+    relationship_type: ['in-pir'],
   } as unknown as PirKnowledgeSourcesFlaggedListQuery$variables;
 
   const queryRef = useQueryLoading<PirKnowledgeSourcesFlaggedListQuery>(

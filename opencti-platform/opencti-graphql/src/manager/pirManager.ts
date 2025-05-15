@@ -49,7 +49,7 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: B
       console.log('[POC PIR] PIR rel deleted');
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
-      await updatePirDependencies(context, sourceId, pir, newRelDependencies);
+      await updatePirDependencies(context, PIR_MANAGER_USER, sourceId, pir, newRelDependencies);
       console.log('[POC PIR] PIR rel updated', { newRelDependencies });
     } // nothing to do
   }
