@@ -62,6 +62,7 @@ export const ingestionCsvEditionFragment = graphql`
     authentication_type
     authentication_value
     ingestion_running
+    csv_mapper_type
     csvMapper {
       id
       name

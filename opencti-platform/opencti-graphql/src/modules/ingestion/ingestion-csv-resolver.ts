@@ -4,6 +4,7 @@ import type { Resolvers } from '../../generated/graphql';
 import {
   addIngestionCsv,
   csvFeedAddInputFromImport,
+  csvFeedGetCsvMapper,
   deleteIngestionCsv,
   findAllPaginated,
   findById,
@@ -23,10 +24,7 @@ const ingestionCsvResolvers: Resolvers = {
   },
   IngestionCsv: {
     user: (ingestionCsv, _, context) => creatorLoader.load(ingestionCsv.user_id, context, context.user),
-    csvMapper: (ingestionCsv, _, context) => {
-      // TODO how should we handle csvMapper id ?
-      return ingestionCsv.csv_mapper_type === 'inline' ? { id: ingestionCsv.id, ...JSON.parse(ingestionCsv.csv_mapper) } : findCsvMapperForIngestionById(context, context.user, ingestionCsv.csv_mapper_id);
-    },
+    csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(ingestionCsv, context),
   },
   Mutation: {
     ingestionCsvTester: (_, { input }, context) => {

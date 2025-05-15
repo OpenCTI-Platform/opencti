@@ -4,7 +4,7 @@ import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../dat
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
-import type { CsvMapperTestResult, EditInput, IngestionCsvAddInput } from '../../generated/graphql';
+import { type CsvMapperTestResult, type EditInput, type IngestionCsvAddInput, IngestionCsvMapperType } from '../../generated/graphql';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
@@ -22,7 +22,7 @@ import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
-const CSV_FEED_FEATURE_FLAG = 'CSV_FEED';
+export const CSV_FEED_FEATURE_FLAG = 'CSV_FEED';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -167,10 +167,11 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
 
-  const csvMapper = input.csv_mapper_type === 'inline' ? JSON.parse(input.csv_mapper ?? '') : await findCsvMapperById(context, user, input.csv_mapper_id!);
+  console.log({ input });
+  console.log('inline', input.csv_mapper_type === IngestionCsvMapperType.Inline);
+  const csvMapper = input.csv_mapper_type === IngestionCsvMapperType.Inline ? JSON.parse(input.csv_mapper ?? '') : await findCsvMapperById(context, user, input.csv_mapper_id!);
   const parsedMapper = parseCsvMapper(csvMapper);
   const ingestion = {
-    csv_mapper_id: input.csv_mapper_id,
     uri: input.uri,
     authentication_type: input.authentication_type,
     authentication_value: input.authentication_value
@@ -179,6 +180,7 @@ export const testCsvIngestionMapping = async (context: AuthContext, user: AuthUs
   if (parsedMapper.has_header) {
     removeHeaderFromFullFile(csvLines, parsedMapper.skipLineChar);
   }
+  console.log({ parsedMapper });
 
   const bundlerOpts : CsvBundlerTestOpts = {
     applicantUser: user,
@@ -211,4 +213,8 @@ export const csvFeedAddInputFromImport = async (context: AuthContext, user: Auth
     ...parsedData.configuration,
     csvMapper: transformCsvMapperConfig(parsedData.configuration.csv_mapper.configuration, context, user),
   };
+};
+
+export const csvFeedGetCsvMapper = (ingestionCsv: BasicStoreEntityIngestionCsv, context: AuthContext) => {
+  return ingestionCsv.csv_mapper_type === 'inline' ? JSON.parse(ingestionCsv.csv_mapper!) : findCsvMapperForIngestionById(context, context.user!, ingestionCsv.csv_mapper_id!);
 };

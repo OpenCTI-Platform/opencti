@@ -8189,7 +8189,6 @@ type Query {
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
-  ingestionCsvsCount(filters: FilterGroup): Int
   csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
   indicator(id: String!): Indicator
   indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IndicatorConnection
@@ -11734,6 +11733,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   name: String!
   description: String
   uri: String!
+  csv_mapper_type: IngestionCsvMapperType
   csvMapper: CsvMapper!
   authentication_type: IngestionAuthType!
   authentication_value: String

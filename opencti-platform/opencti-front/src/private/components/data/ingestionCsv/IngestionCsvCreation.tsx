@@ -461,7 +461,7 @@ export const IngestionCsvCreationContainer: FunctionComponent<IngestionCsvCreati
   const ingestionCsvDataRef = ingestionCsv ? useFragment<IngestionCsvEditionFragment_ingestionCsv$key>(ingestionCsvEditionFragment, ingestionCsv) : null;
   const duplicateCsvData = ingestionCsvDataRef ? {
     ...ingestionCsvDataRef,
-    name: ingestionCsvDataRef?.name ? `${ingestionCsvDataRef?.name} - copy` : '',
+    name: `${ingestionCsvDataRef.name} - copy`,
   } as IngestionCsvEditionFragment_ingestionCsv$data : null;
   return (
     <Drawer

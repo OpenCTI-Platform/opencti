@@ -11136,6 +11136,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   authentication_value?: Maybe<Scalars['String']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   csvMapper: CsvMapper;
+  csv_mapper_type?: Maybe<IngestionCsvMapperType>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   current_state_hash?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -19826,7 +19827,6 @@ export type Query = {
   infrastructures?: Maybe<InfrastructureConnection>;
   ingestionCsv?: Maybe<IngestionCsv>;
   ingestionCsvs?: Maybe<IngestionCsvConnection>;
-  ingestionCsvsCount?: Maybe<Scalars['Int']['output']>;
   ingestionRss?: Maybe<IngestionRss>;
   ingestionRsss?: Maybe<IngestionRssConnection>;
   ingestionTaxii?: Maybe<IngestionTaxii>;
@@ -20955,11 +20955,6 @@ export type QueryIngestionCsvsArgs = {
   orderBy?: InputMaybe<IngestionCsvOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type QueryIngestionCsvsCountArgs = {
-  filters?: InputMaybe<FilterGroup>;
 };
 
 
@@ -36826,6 +36821,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   csvMapper?: Resolver<ResolversTypes['CsvMapper'], ParentType, ContextType>;
+  csv_mapper_type?: Resolver<Maybe<ResolversTypes['IngestionCsvMapperType']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   current_state_hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -39511,7 +39507,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   infrastructures?: Resolver<Maybe<ResolversTypes['InfrastructureConnection']>, ParentType, ContextType, Partial<QueryInfrastructuresArgs>>;
   ingestionCsv?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<QueryIngestionCsvArgs, 'id'>>;
   ingestionCsvs?: Resolver<Maybe<ResolversTypes['IngestionCsvConnection']>, ParentType, ContextType, Partial<QueryIngestionCsvsArgs>>;
-  ingestionCsvsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, Partial<QueryIngestionCsvsCountArgs>>;
   ingestionRss?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<QueryIngestionRssArgs, 'id'>>;
   ingestionRsss?: Resolver<Maybe<ResolversTypes['IngestionRssConnection']>, ParentType, ContextType, Partial<QueryIngestionRsssArgs>>;
   ingestionTaxii?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiArgs, 'id'>>;

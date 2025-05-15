@@ -1,4 +1,3 @@
-import Button from '@mui/material/Button';
 import React, { BaseSyntheticEvent, FunctionComponent, useRef, useState } from 'react';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
@@ -7,7 +6,6 @@ import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ing
 import { IngestionCsvImportQuery$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvImportQuery.graphql';
 import { IngestionCsvEditionFragment_ingestionCsv$data } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import { FileUploadOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
 import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -65,7 +63,6 @@ interface IngestionCsvImportProps {
   paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
 }
 const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ paginationOptions }) => {
-  const theme = useTheme();
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState<boolean>(false);
   const [ingestCSVData, setIngestCSVData] = useState<IngestionCsvImportQuery$data['csvFeedAddInputFromImport'] | undefined>(undefined);

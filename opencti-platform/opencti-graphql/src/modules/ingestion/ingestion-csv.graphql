@@ -9,6 +9,7 @@ type IngestionCsv implements InternalObject & BasicObject {
     name: String!
     description: String
     uri: String!
+    csv_mapper_type: IngestionCsvMapperType
     csvMapper: CsvMapper!
     authentication_type: IngestionAuthType!
     authentication_value: String
@@ -68,7 +69,6 @@ type Query {
         includeAuthorities: Boolean
         search: String
     ): IngestionCsvConnection @auth(for: [INGESTION])
-    ingestionCsvsCount(filters: FilterGroup): Int @auth(for: [INGESTION])
     csvFeedAddInputFromImport(
         file: Upload!
     ): CSVFeedAddInputFromImport! @auth(for: [INGESTION, CSVMAPPERS])
