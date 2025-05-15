@@ -57,7 +57,7 @@ export const updatePirDependencies = async (
   const pirMetaRel = pirMetaRels.edges[0].node;
   // region compute score
   const deps = operation === 'add' ? [...pirMetaRel.pir_dependencies, ...pirDependencies] : pirDependencies;
-  const pir_score = computePirScore(context, user, pirId, deps);
+  const pir_score = await computePirScore(context, user, pirId, deps);
   await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_dependencies: deps, pir_score });
 };
 
@@ -82,7 +82,7 @@ export const createPirRel = async (
     fromId: sourceId,
     toId: pirId,
     pir_dependencies: pirDependencies,
-    pir_score: computePirScore(context, user, pirId, pirDependencies),
+    pir_score: await computePirScore(context, user, pirId, pirDependencies),
   };
   await createRelation(context, user, addRefInput);
 };
