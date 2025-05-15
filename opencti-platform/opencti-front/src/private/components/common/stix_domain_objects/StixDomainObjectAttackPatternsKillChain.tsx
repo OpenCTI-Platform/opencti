@@ -1,11 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined, InvertColorsOffOutlined, ViewColumnOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined, ViewColumnOutlined } from '@mui/icons-material';
 import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
-import IconButton from '@mui/material/IconButton';
 import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
@@ -21,11 +20,12 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { AttackPatternsMatrixColumnsQuery } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumnsQuery.graphql';
-import { attackPatternsMatrixColumnsFragment, attackPatternsMatrixColumnsQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrixColumns';
+import { attackPatternsMatrixColumnsFragment } from '@components/techniques/attack_patterns/AttackPatternsMatrixColumns';
 import * as R from 'ramda';
 import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumns_data.graphql';
 import StixCoreRelationships from '@components/common/stix_core_relationships/StixCoreRelationships';
+import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixQuery.graphql';
+import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -80,7 +80,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   defaultStartTime: string;
   defaultStopTime: string;
   storageKey: string;
-  killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixColumnsQuery>;
+  killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
 }
 
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
@@ -103,7 +103,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   killChainDataQueryRef,
 }) => {
   const { t_i18n } = useFormatter();
-  const [currentColorsReversed, setCurrentColorsReversed] = useState(false);
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
@@ -113,10 +112,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const refetch = React.useCallback(() => {
     loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
-
-  const handleToggleColorsReversed = () => {
-    setCurrentColorsReversed(!currentColorsReversed);
-  };
 
   const handleAdd = (entity: TargetEntity) => {
     setTargetEntities([entity]);
@@ -134,8 +129,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
       .map((n) => n?.node);
   }
 
-  const killChainsData = usePreloadedFragment<AttackPatternsMatrixColumnsQuery, AttackPatternsMatrixColumns_data$key>({
-    queryDef: attackPatternsMatrixColumnsQuery,
+  const killChainsData = usePreloadedFragment<AttackPatternsMatrixQuery, AttackPatternsMatrixColumns_data$key>({
+    queryDef: attackPatternsMatrixQuery,
     fragmentDef: attackPatternsMatrixColumnsFragment,
     queryRef: killChainDataQueryRef,
   });
@@ -300,32 +295,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
         </div>
         )}
         <div style={{ float: 'right', margin: 0 }}>
-          {currentView !== 'list' && currentView !== 'courses-of-action' && currentView !== 'matrix-in-line' && currentView !== 'relationships' && (
-          <Tooltip
-            title={
-              currentColorsReversed
-                ? t_i18n('Disable invert colors')
-                : t_i18n('Enable invert colors')
-            }
-          >
-            <span
-              style={{
-                marginRight: 10,
-              }}
-            >
-              <IconButton
-                style={{
-                  transform: 'translateY(-5px)',
-                }}
-                color={currentColorsReversed ? 'secondary' : 'primary'}
-                onClick={handleToggleColorsReversed}
-                size="large"
-              >
-                <InvertColorsOffOutlined fontSize="medium"/>
-              </IconButton>
-            </span>
-          </Tooltip>
-          )}
           <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
             {[...viewButtons]}
             {typeof handleToggleExports === 'function' && !exportDisabled && (
@@ -401,8 +370,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           <StixDomainObjectAttackPatternsKillChainMatrix
             data={data}
             searchTerm={searchTerm}
-            handleToggleColorsReversed={handleToggleColorsReversed}
-            currentColorsReversed={currentColorsReversed}
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
           />
