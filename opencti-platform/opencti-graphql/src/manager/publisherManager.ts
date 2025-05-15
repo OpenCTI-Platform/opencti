@@ -179,7 +179,7 @@ const createFullNotificationMessage = (notificationMessage: string, usersMap: Ma
   let fullMessage = notificationMessage;
   if (origin && streamMessage) {
     const { user_id } = origin;
-    const streamUser = usersMap.get(user_id as string) as AuthUser;
+    const streamUser = usersMap.get(user_id ?? '');
     if (streamUser) {
       const streamBuiltMessage = `\`${streamUser.name}\` ${streamMessage}`;
       if (streamBuiltMessage !== notificationMessage) {
