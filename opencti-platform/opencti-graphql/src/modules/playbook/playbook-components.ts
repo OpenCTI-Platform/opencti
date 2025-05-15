@@ -524,12 +524,11 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
             const task = convertStoreToStix(storeTask) as StixTask;
             task.object_refs = [container.id];
             bundle.objects.push(task);
-            container.object_refs.push(task.id);
           }
         }
       }
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
-      // Following attributes are the same as the base instance: markings, labels, created_by, assignees, partcipants
+      // Following attributes are the same as the base instance: markings, labels, created_by, assignees, participants
       if (baseData.object_marking_refs) {
         container.object_marking_refs = baseData.object_marking_refs;
       }
