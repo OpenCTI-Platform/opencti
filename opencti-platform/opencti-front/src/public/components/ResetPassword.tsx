@@ -30,7 +30,7 @@ mutation ResetPasswordAskSendOtpMutation($input: AskSendOtpInput!){
 export const VerifyOtpMutation = graphql`
 mutation ResetPasswordVerifyOtpMutation($input: VerifyOtpInput!){
   verifyOtp(input: $input) {
-    otp_activated
+    mfa_activated
   }
 }
 `;
@@ -62,7 +62,7 @@ interface ResetFormValues {
   email: string;
 }
 
-interface ValidateTokenFormValues {
+interface ValidateOtpFormValues {
   otp: string;
 }
 
@@ -73,7 +73,7 @@ interface ResetPasswordFormValues {
 
 const STEP_ASK_RESET = 'ask';
 const STEP_VALIDATE_OTP = 'validate';
-const STEP_2FA = '2fa';
+const STEP_MFA = 'mfa';
 const STEP_RESET_PASSWORD = 'reset';
 const FLASH_COOKIE = 'opencti_flash';
 
@@ -143,7 +143,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
     });
   };
 
-  const onSubmitValidateOtp: FormikConfig<ValidateTokenFormValues>['onSubmit'] = async (
+  const onSubmitValidateOtp: FormikConfig<ValidateOtpFormValues>['onSubmit'] = async (
     values,
     { setSubmitting, resetForm, setErrors },
   ) => {
@@ -156,12 +156,12 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
         },
       },
       onCompleted: (response: ResetPasswordVerifyOtpMutation$data) => {
-        const mfaActivated = response.verifyOtp?.otp_activated;
+        const mfaActivated = response.verifyOtp?.mfa_activated;
         setOtpError(false);
         setOtp(values.otp);
         setSubmitting(false);
         resetForm();
-        setStep(mfaActivated ? STEP_2FA : STEP_RESET_PASSWORD);
+        setStep(mfaActivated ? STEP_MFA : STEP_RESET_PASSWORD);
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -197,7 +197,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
     });
   };
 
-  const onCompletedVerify2fa = () => {
+  const onCompletedVerifyMfa = () => {
     setStep(STEP_RESET_PASSWORD);
   };
 
@@ -270,8 +270,8 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
           )}
         </Formik>
       )}
-      {step === STEP_2FA && (
-        <OTPForm variant="resetPassword" transactionId={transactionId} onCompleted={onCompletedVerify2fa} />
+      {step === STEP_MFA && (
+        <OTPForm variant="resetPassword" transactionId={transactionId} onCompleted={onCompletedVerifyMfa} />
       )}
       {step === STEP_RESET_PASSWORD && (
         <Formik

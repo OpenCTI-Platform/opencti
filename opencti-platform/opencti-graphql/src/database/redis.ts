@@ -955,7 +955,7 @@ export const OTP_TTL = conf.get('app:forgot_password:otp_ttl');
 
 export const redisSetForgotPasswordOtp = async (
   id: string,
-  data: { email: string; hashedOtp: string; otp_activated: boolean; otp_validated: boolean; otp_secret: string | null | undefined; userId: string },
+  data: { email: string; hashedOtp: string; mfa_activated: boolean; mfa_validated: boolean; mfa_secret: string | null | undefined; userId: string },
   ttl: number = OTP_TTL
 ) => {
   const forgotPasswordOtpKeyName = `forgot_password_otp_${id}`;
@@ -966,7 +966,7 @@ export const redisSetForgotPasswordOtp = async (
 export const redisGetForgotPasswordOtp = async (id: string) => {
   const keyName = `forgot_password_otp_${id}`;
   const str = await getClientBase().get(keyName) ?? '{}';
-  const values: { hashedOtp: string, email: string, otp_activated: boolean, otp_validated: boolean, otp_secret: string, userId: string } = JSON.parse(str);
+  const values: { hashedOtp: string, email: string, mfa_activated: boolean, mfa_validated: boolean, mfa_secret: string, userId: string } = JSON.parse(str);
   const ttl = await getClientBase().ttl(keyName);
   return { ...values, ttl };
 };

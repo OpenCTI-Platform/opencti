@@ -26,9 +26,9 @@ const logoutMutation = graphql`
   }
 `;
 
-const ResetPassword2faMutation = graphql`
-  mutation OTPFormResetPasswordOtpLoginMutation($input: Verify2faInput!) {
-    verify2fa(input: $input)
+const ResetPasswordMfaMutation = graphql`
+  mutation OTPFormResetPasswordOtpLoginMutation($input: VerifyMfaInput!) {
+    verifyMfa(input: $input)
   }
 `;
 
@@ -40,7 +40,7 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', transacti
   const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data: string) => setCode(data);
   const [commitLogoutMutation] = useApiMutation(logoutMutation);
-  const [commitOtpMutation] = useApiMutation(variant === 'login' ? otpMutation : ResetPassword2faMutation);
+  const [commitOtpMutation] = useApiMutation(variant === 'login' ? otpMutation : ResetPasswordMfaMutation);
   const handleLogout = () => {
     commitLogoutMutation({
       variables: {},

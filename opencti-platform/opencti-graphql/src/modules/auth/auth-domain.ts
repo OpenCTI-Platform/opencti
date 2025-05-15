@@ -6,7 +6,7 @@ import { findById, getUserByEmail, userEditField } from '../../domain/user';
 import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
 import { sendMail } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
-import type { AskSendOtpInput, Verify2faInput, User, VerifyOtpInput, ChangePasswordInput } from '../../generated/graphql';
+import type { AskSendOtpInput, ChangePasswordInput, User, VerifyMfaInput, VerifyOtpInput } from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -41,11 +41,20 @@ interface SendMailArgs {
 export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
   const resetOtp = generateOtp();
+  console.log('resetOtp', resetOtp);
   const transactionId = uuid();
+  console.log('transactionId', transactionId);
   try {
     // Retrieve user information
     const user = await getLocalProviderUser(input.email);
-    const { user_email, name, otp_activated, otp_secret, id } = user;
+    console.log('Email', user.user_email);
+    const {
+      user_email,
+      name,
+      otp_activated: mfa_activated,
+      otp_secret: mfa_secret,
+      id
+    } = user;
     const email = user_email.toLowerCase();
     // Check the 30-second delay key
     const storedOtp = await redisGetForgotPasswordOtpPointer(input.email);
@@ -58,7 +67,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     }
     // Generate and store the new OTP; create a new pointer using the new UUID
     const hashedOtp = bcrypt.hashSync(resetOtp);
-    await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, otp_activated: otp_activated ?? false, otp_validated: false, otp_secret, userId: id });
+    await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, mfa_activated: mfa_activated ?? false, mfa_validated: false, mfa_secret, userId: id });
     // Create and send the email
     const body = `Hi ${name},</br></br>`
         + 'A request has been made to reset your OpenCTI password.</br></br>'
@@ -97,7 +106,9 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
 };
 
 export const verifyOtp = async (input: VerifyOtpInput) => {
-  const { hashedOtp, email, otp_activated } = await redisGetForgotPasswordOtp(input.transactionId);
+  console.log('Verifying OTP for transactionId:', input.transactionId);
+  const { hashedOtp, email, mfa_activated } = await redisGetForgotPasswordOtp(input.transactionId);
+  console.log('hashedOtp', hashedOtp);
   if (!hashedOtp) {
     await publishUserAction({
       user: SYSTEM_USER,
@@ -129,29 +140,29 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
     context_data: undefined,
     message: `OTP checked is valid for ${email}`,
   });
-  return { otp_activated };
+  return { mfa_activated };
 };
 
-export const verify2fa = async (input: Verify2faInput) => {
-  const { hashedOtp, email, otp_activated, otp_secret, ttl, userId } = await redisGetForgotPasswordOtp(input.transactionId);
-  if (!otp_activated || !otp_secret) {
+export const verifyMfa = async (input: VerifyMfaInput) => {
+  const { hashedOtp, email, mfa_activated, mfa_secret, ttl, userId } = await redisGetForgotPasswordOtp(input.transactionId);
+  if (!mfa_activated || !mfa_secret) {
     throw AuthenticationFailure();
   }
-  const isValidated = authenticator.check(input.code, otp_secret);
+  const isValidated = authenticator.check(input.mfaOtp, mfa_secret);
   if (!isValidated) {
     throw AuthenticationFailure();
   } else {
-    await redisSetForgotPasswordOtp(input.transactionId, { hashedOtp, email, otp_activated, otp_validated: isValidated, otp_secret, userId }, ttl);
+    await redisSetForgotPasswordOtp(input.transactionId, { hashedOtp, email, mfa_activated, mfa_validated: isValidated, mfa_secret, userId }, ttl);
   }
   return isValidated;
 };
 
 export const changePassword = async (context: AuthContext, input: ChangePasswordInput) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
-  const { hashedOtp, email, otp_activated, otp_validated, userId } = await redisGetForgotPasswordOtp(input.transactionId);
+  const { hashedOtp, email, mfa_activated, mfa_validated, userId } = await redisGetForgotPasswordOtp(input.transactionId);
   const isMatch = bcrypt.compareSync(input.otp, hashedOtp);
-  const isState2faValid = !otp_activated || (otp_activated && otp_validated);
-  if (!isMatch || !isState2faValid) {
+  const isStateMfaValid = !mfa_activated || (mfa_activated && mfa_validated);
+  if (!isMatch || !isStateMfaValid) {
     await publishUserAction({
       user: SYSTEM_USER,
       event_type: 'authentication',
