@@ -256,11 +256,11 @@ const handleBasedOnAttribute = async (
     let entities;
     if (attribute.based_on.identifier) {
       const mappedIdentifiers = extractTargetIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
-      entities = (attribute.based_on.representations ?? [])
+      entities = attribute.based_on.representations
         .map((id) => otherEntities.get(id)).flat()
         .filter((e) => e !== undefined && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[];
     } else {
-      entities = (attribute.based_on.representations ?? [])
+      entities = attribute.based_on.representations
         .map((id) => otherEntities.get(id)).flat()
         .filter((e) => e !== undefined) as Record<string, InputType>[];
     }
