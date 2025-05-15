@@ -82,6 +82,7 @@ export const addPirDependency = async (
   pirId: string,
   input: PirDependencyAddInput,
 ) => {
+  console.log('----------in addPirDependency--------------');
   const { relationshipId, sourceId, matchingCriteria } = input;
   const source = await internalLoadById<BasicStoreCommon>(context, PIR_MANAGER_USER, sourceId);
   if (source) { // if element still exist
