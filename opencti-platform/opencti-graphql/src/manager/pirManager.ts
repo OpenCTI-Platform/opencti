@@ -88,7 +88,7 @@ const addPirDependencyToQueue = async (
   console.log('jsonBundle', jsonBundle);
   const message = {
     type: 'bundle',
-    applicant_id: PIR_MANAGER_USER,
+    applicant_id: PIR_MANAGER_USER.id,
     work_id: work.id,
     update: true,
     content,
