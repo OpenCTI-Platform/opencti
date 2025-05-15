@@ -5,7 +5,6 @@ import type { FilterGroup } from '../../generated/graphql';
 export const ENTITY_TYPE_PIR = 'PIR';
 
 export interface PIRCriterion {
-  id: string
   filters: string
   weight: number
 }
@@ -29,7 +28,6 @@ export interface StixPIR extends StixInternal {
 }
 
 export interface ParsedPIRCriterion {
-  id: string
   filters: FilterGroup
   weight: number
 }

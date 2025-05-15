@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { deletePir, findAll, findById, pirAdd } from './pir-domain';
+import { addPirDependency, deletePir, findAll, findById, pirAdd } from './pir-domain';
 import { batchLoader } from '../../database/middleware';
 import { batchCreators } from '../../domain/user';
 
@@ -16,6 +16,7 @@ const pirResolvers: Resolvers = {
   Mutation: {
     pirAdd: (_, { input }, context) => pirAdd(context, context.user, input),
     pirDelete: (_, { id }, context) => deletePir(context, context.user, id),
+    pirAddDependency: (_, { id, input }, context) => addPirDependency(context, context.user, id, input),
   }
 };
 

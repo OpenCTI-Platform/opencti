@@ -1,5 +1,4 @@
 type PIRCriterion {
-    id: ID!
     filters: String!
     weight: Int!
 }
@@ -73,8 +72,15 @@ input PIRAddInput {
     pirFilters: String!
 }
 
+input PIRDependencyAddInput {
+    relationshipId: ID!
+    sourceId: ID!
+    matchingCriteria: [PIRCriterionInput!]!
+}
+
 # Mutations
 type Mutation {
     pirAdd(input: PIRAddInput!): PIR @auth(for: [KNOWLEDGE])
     pirDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
+    pirAddDependency(id: ID!, input: PIRDependencyAddInput!): ID @auth(for: [KNOWLEDGE])
 }
