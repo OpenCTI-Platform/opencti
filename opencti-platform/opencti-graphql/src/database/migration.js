@@ -131,11 +131,14 @@ export const applyMigration = (context) => {
         logMigration.info('[MIGRATION] Migration process completed');
         resolve(state);
       });
-    }).catch((reason) => logApp.error('[MIGRATION] error on load', { cause: reason }));
+    }).catch((reason) => {
+      logApp.error('[MIGRATION] error on load', { cause: reason });
+      reject(reason);
+    });
   }).then(async (state) => {
     // After migration, path the current version runtime
     const statusPatch = { platformVersion: PLATFORM_VERSION };
     await patchAttribute(context, SYSTEM_USER, state.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
     logApp.info(`[MIGRATION] Platform version updated to ${PLATFORM_VERSION}`);
-  }).catch((reason) => logApp.error('[MIGRATION] error on current version reference update', { cause: reason }));
+  }); // no catch to make sure the platform stops if migration throws an error
 };
