@@ -160,7 +160,6 @@
     "relay": "relay-compiler relay.config.json",
     "dev": "yarn relay && vite",
     "dev:vite:debug": "yarn relay && vite --debug plugin-transform",
-    "start": "yarn relay && node builder/dev/dev.js",
     "esbuild": "node builder/prod/prod.js",
     "build": "yarn relay && yarn esbuild",
     "build:standalone": "yarn relay && yarn esbuild --keep",

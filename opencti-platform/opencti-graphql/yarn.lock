@@ -6097,13 +6097,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"blocked-at@npm:1.2.0":
-  version: 1.2.0
-  resolution: "blocked-at@npm:1.2.0"
-  checksum: 10/7780737b1ceab0747d27b55469bd80b353ac394c5e40ce0882849da15a0e7178f0bc51ddc2d29e4858358080623fb4f37cb979e8dcab3a1ab3fd6c59cc31c272
-  languageName: node
-  linkType: hard
-
 "bluebird@npm:3.7.2, bluebird@npm:~3.7.2":
   version: 3.7.2
   resolution: "bluebird@npm:3.7.2"
@@ -6193,13 +6186,6 @@ __metadata:
   version: 1.0.0
   resolution: "buffer-crc32@npm:1.0.0"
   checksum: 10/ef3b7c07622435085c04300c9a51e850ec34a27b2445f758eef69b859c7827848c2282f3840ca6c1eef3829145a1580ce540cab03ccf4433827a2b95d3b09ca7
-  languageName: node
-  linkType: hard
-
-"buffer-from@npm:^1.0.0":
-  version: 1.1.2
-  resolution: "buffer-from@npm:1.1.2"
-  checksum: 10/0448524a562b37d4d7ed9efd91685a5b77a50672c556ea254ac9a6d30e3403a517d8981f10e565db24e8339413b43c97ca2951f10e399c6125a0d8911f5679bb
   languageName: node
   linkType: hard
 
@@ -11808,7 +11794,6 @@ __metadata:
     axios: "npm:1.9.0"
     axios-cookiejar-support: "npm:5.0.5"
     bcryptjs: "npm:2.4.3"
-    blocked-at: "npm:1.2.0"
     bluebird: "npm:3.7.2"
     body-parser: "npm:1.20.3"
     canonicalize: "npm:2.1.0"
@@ -11889,7 +11874,7 @@ __metadata:
     semver: "npm:7.7.1"
     set-interval-async: "npm:3.0.3"
     showdown: "npm:2.1.0"
-    source-map-support: "npm:0.5.21"
+    source-map: "npm:0.7.4"
     tough-cookie: "npm:5.1.2"
     ts-loader: "npm:9.5.2"
     turndown: "npm:7.2.0"
@@ -13530,16 +13515,6 @@ __metadata:
   version: 1.2.1
   resolution: "source-map-js@npm:1.2.1"
   checksum: 10/ff9d8c8bf096d534a5b7707e0382ef827b4dd360a577d3f34d2b9f48e12c9d230b5747974ee7c607f0df65113732711bb701fe9ece3c7edbd43cb2294d707df3
-  languageName: node
-  linkType: hard
-
-"source-map-support@npm:0.5.21":
-  version: 0.5.21
-  resolution: "source-map-support@npm:0.5.21"
-  dependencies:
-    buffer-from: "npm:^1.0.0"
-    source-map: "npm:^0.6.0"
-  checksum: 10/8317e12d84019b31e34b86d483dd41d6f832f389f7417faf8fc5c75a66a12d9686e47f589a0554a868b8482f037e23df9d040d29387eb16fa14cb85f091ba207
   languageName: node
   linkType: hard
 
