@@ -3,7 +3,6 @@ import convertSavedFiltersToStix from './savedFilter-converter';
 import { ENTITY_TYPE_SAVED_FILTER, type StoreEntitySavedFilter, type StixSavedFilter } from './savedFilter-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { isFeatureEnabled } from '../../config/conf';
 import { creators, createdAt } from '../../schema/attribute-definition';
 
 const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSavedFilter> = {
@@ -62,8 +61,4 @@ const SAVED_FILTER_DEFINITION: ModuleDefinition<StoreEntitySavedFilter, StixSave
   converter_2_1: convertSavedFiltersToStix,
 };
 
-const isSavedFiltersEnabled = isFeatureEnabled('SAVED_FILTERS');
-
-if (isSavedFiltersEnabled) {
-  registerDefinition(SAVED_FILTER_DEFINITION);
-}
+registerDefinition(SAVED_FILTER_DEFINITION);
