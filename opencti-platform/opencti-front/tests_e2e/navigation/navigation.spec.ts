@@ -28,6 +28,13 @@ import FeedbackPage from "../model/feedback.pageModel";
 import FeedbackDetailsPage from 'tests_e2e/model/feedbackDetails.pageModel';
 import EventsIncidentPage from "../model/EventsIncident.pageModel";
 import EventsIncidentDetailsPage from "../model/EventsIncidentDetails.pageModel";
+import SightingsPage from "../model/sightings.pageModel";
+import SightingsOverviewPage from "../model/sightingsOverview.pageModel";
+import ObservedDataPage from 'tests_e2e/model/observedData.pageModel';
+import ObservedDataDetailsPage from "../model/observedDataDetails.pageModel";
+import EntitiesTabPageModel from "../model/EntitiesTab.pageModel";
+import ObservablesTabPageModel from "../model/ObservablesTab.pageModel";
+import ArtifactPage from "../model/Artifact.pageModel";
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -110,26 +117,6 @@ const navigateMalwareAnalyses = async (page: Page) => {
   await malwareAnalysesDetailsPage.tabs.goToHistoryTab();
   const historyTab = new StixCoreObjectHistoryTab(page);
   await expect(historyTab.getPage()).toBeVisible();
-};
-
-/**
- * Goal: validate that enrich button is opening without errors in Observations > Observables.
- * @param page
- */
-const navigateObservables = async (page: Page) => {
-  const observableInitData = '1.2.3.4';
-
-  const observablePage = new ObservablesPage(page);
-  await observablePage.navigateFromMenu();
-  await expect(observablePage.getPage()).toBeVisible();
-  await expect(page.getByText(observableInitData)).toBeVisible();
-  await observablePage.getItemFromList(observableInitData).click();
-
-  const observableDetailsPage = new ObservableDetailsPage(page);
-  await expect(observableDetailsPage.getPage()).toBeVisible();
-  await observableDetailsPage.getEnrichButton().click();
-
-  await expect(page.getByText('Enrichment connectors')).toBeVisible();
 };
 
 /**
@@ -392,6 +379,11 @@ const navigateRft = async (page: Page) => {
   await expect(dataTab.getPage()).toBeVisible();
 };
 
+/**
+ * Goal: validate that everything is opening without errors in Cases > Tasks.
+ * @param page
+ */
+
 const navigateTasks = async (page: Page) => {
   const taskNameFromInitData = 'Task Name';
   const taskPage = new TaskPage(page);
@@ -416,6 +408,11 @@ const navigateTasks = async (page: Page) => {
   const historyTab = new StixCoreObjectHistoryTab(page);
   await expect(historyTab.getPage()).toBeVisible();
 };
+
+/**
+ * Goal: validate that everything is opening without errors in Cases > Feedbacks.
+ * @param page
+ */
 
 const navigateFeedbacks = async (page: Page) => {
   const feedbackNameFromInitData = 'Feedback Name';
@@ -442,6 +439,11 @@ const navigateFeedbacks = async (page: Page) => {
   await expect(historyTab.getPage()).toBeVisible();
 };
 
+/**
+ * Goal: validate that everything is opening without errors in Events > Incidents.
+ * @param page
+ */
+
 const navigateEventsIncident = async (page: Page) => {
   const eventsIncidentFromInitData = 'Incident Name';
   const eventIncidentPage = new EventsIncidentPage(page);
@@ -452,8 +454,124 @@ const navigateEventsIncident = async (page: Page) => {
   await eventIncidentPage.getItemFromList(eventsIncidentFromInitData).click();
 
   const eventsIncidentDetailsPage = new EventsIncidentDetailsPage(page);
+  await expect(eventsIncidentDetailsPage.getPage()).toBeVisible();
+
+  // - Knowledge
+  await eventsIncidentDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('incident-response-knowledge')).toBeVisible();
+
+  // -- Content
+  await eventsIncidentDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixDomainObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
+
+  // -- Analyses
+  await eventsIncidentDetailsPage.tabs.goToAnalysesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+  await page.getByLabel('Lines view').click();
+  await page.getByLabel('Graph view').click();
+  await page.getByLabel('List settings').click();
+  await page.getByLabel('Open export panel').click();
+
+  // -- Data
+  await eventsIncidentDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await eventsIncidentDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+/**
+ * Goal: validate that everything is opening without errors in Events > Sightings.
+ * @param page
+ */
+
+const navigateSightings = async (page: Page) => {
+  const sightingsNameFromInitData = 'Sightings Name';
+  const sightingPage = new SightingsPage(page);
+  await sightingPage.navigateFromMenu();
+
+  await expect(sightingPage.getPage()).toBeVisible();
+  await expect(sightingPage.getItemFromList(sightingsNameFromInitData)).toBeVisible();
+  await sightingPage.getItemFromList(sightingsNameFromInitData).click();
+
+  await expect(page.getByTestId('sightings-overview')).toBeVisible();
+};
+
+/**
+ * Goal: validate that everything is opening without errors in Events > Observed Data.
+ * @param page
+ */
+
+const navigateObservedData = async (page: Page) => {
+  const observedDataFromInitData = 'Observed Data Name';
+  const observedDataPage = new ObservedDataPage(page);
+  await observedDataPage.navigateFromMenu();
+
+  await expect(observedDataPage.getPage()).toBeVisible();
+  await expect(observedDataPage.getItemFromList(observedDataFromInitData)).toBeVisible();
+  await observedDataPage.getItemFromList(observedDataFromInitData).click();
+
+  const observedDataDetailsPage = new ObservedDataDetailsPage(page);
+  await expect(observedDataDetailsPage.getPage()).toBeVisible();
+
+  // - Entities
+  await observedDataDetailsPage.tabs.goToEntitiesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Observables
+  await observedDataDetailsPage.tabs.goToObservablesTab();
+  await expect(page.getByPlaceholder('Search these results...')).toBeVisible();
+
+  // -- Data
+  await observedDataDetailsPage.tabs.goToDataTab();
+  await expect(page.getByRole('heading', { name: 'Uploaded files' })).toBeVisible();
+
+  // -- History
+  await observedDataDetailsPage.tabs.goToHistoryTab();
+  const historyTab = new StixCoreObjectHistoryTab(page);
+  await expect(historyTab.getPage()).toBeVisible();
+};
+
+/**
+ * Goal: validate that enrich button is opening without errors in Observations > Observables.
+ * @param page
+ */
+const navigateObservables = async (page: Page) => {
+  const observableInitData = '1.2.3.4';
+
+  const observablePage = new ObservablesPage(page);
+  await observablePage.navigateFromMenu();
+  await expect(observablePage.getPage()).toBeVisible();
+  await expect(page.getByText(observableInitData)).toBeVisible();
+  await observablePage.getItemFromList(observableInitData).click();
+
+  const observableDetailsPage = new ObservableDetailsPage(page);
+  await expect(observableDetailsPage.getPage()).toBeVisible();
+  await observableDetailsPage.getEnrichButton().click();
+
+  await expect(page.getByText('Enrichment connectors')).toBeVisible();
+};
+
+/**
+ * Goal: validate that enrich button is opening without errors in Observations > Artifacts.
+ * @param page
+ */
+
+const navigateArtifact = async (page: Page) => {
+  const artifactInitData = 'a84c0993164fe1ed44130c31da764c20';
+  const artifactPage = new ArtifactPage(page);
+  await artifactPage.navigateFromMenu();
+  await expect(artifactPage.getPage()).toBeVisible();
+  await expect(page.getByText(artifactInitData)).toBeVisible();
+  await artifactPage.getItemFromList(artifactInitData).click();
+
+
 
 }
+
 
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
