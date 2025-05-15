@@ -24,8 +24,18 @@ export class TelemetryMeterManager {
   // Number of active drafts
   draftCount = 0;
 
+  draftCreationCount = 0;
+
+  draftValidationCount = 0;
+
   // Number of active workbenches
   workbenchCount = 0;
+
+  workbenchUploadCount = 0;
+
+  workbenchDraftConvertionCount = 0;
+
+  workbenchValidationCount = 0;
 
   // Number of NLQ query call
   nlqQueryCount = 0;
@@ -65,8 +75,28 @@ export class TelemetryMeterManager {
     this.draftCount = n;
   }
 
+  setDraftCreationCount(n: number) {
+    this.draftCreationCount = n;
+  }
+
+  setDraftValidationCount(n: number) {
+    this.draftValidationCount = n;
+  }
+
   setWorkbenchCount(n: number) {
     this.workbenchCount = n;
+  }
+
+  setWorkbenchUploadCount(n: number) {
+    this.workbenchUploadCount = n;
+  }
+
+  setWorkbenchDraftConvertionCount(n: number) {
+    this.workbenchDraftConvertionCount = n;
+  }
+
+  setWorkbenchValidationCount(n: number) {
+    this.workbenchValidationCount = n;
   }
 
   setNlqQueryCount(n: number) {
@@ -97,7 +127,12 @@ export class TelemetryMeterManager {
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
     this.registerGauge('call_dissemination', 'dissemination feature usage', 'disseminationCount');
     this.registerGauge('active_drafts_count', 'number of active drafts', 'draftCount');
+    this.registerGauge('draft_creation_count', 'number of draft creation', 'draftCreationCount');
+    this.registerGauge('draft_validation_count', 'number of draft validation', 'draftValidationCount');
     this.registerGauge('active_workbenches_count', 'number of active workbenches', 'workbenchCount');
+    this.registerGauge('workbench_upload_count', 'number of workbench upload - creation and updates', 'workbenchUploadCount');
+    this.registerGauge('workbench_draft_convertion_count', 'number of workbench to draft convertion', 'workbenchDraftConvertionCount');
+    this.registerGauge('workbench_validation_count', 'number of workbench validation', 'workbenchValidationCount');
     this.registerGauge('call_nlq', 'NLQ feature usage', 'nlqQueryCount');
     this.registerGauge('request_access_creation_count', 'Number of RFI of request access type that are created', 'requestAccessCreationCount');
   }
