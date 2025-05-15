@@ -20,11 +20,12 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import { AttackPatternsMatrixColumnsQuery } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumnsQuery.graphql';
-import { attackPatternsMatrixColumnsFragment, attackPatternsMatrixColumnsQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrixColumns';
+import { attackPatternsMatrixColumnsFragment } from '@components/techniques/attack_patterns/AttackPatternsMatrixColumns';
 import * as R from 'ramda';
 import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumns_data.graphql';
 import StixCoreRelationships from '@components/common/stix_core_relationships/StixCoreRelationships';
+import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixQuery.graphql';
+import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -79,7 +80,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   defaultStartTime: string;
   defaultStopTime: string;
   storageKey: string;
-  killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixColumnsQuery>;
+  killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
 }
 
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
@@ -128,8 +129,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
       .map((n) => n?.node);
   }
 
-  const killChainsData = usePreloadedFragment<AttackPatternsMatrixColumnsQuery, AttackPatternsMatrixColumns_data$key>({
-    queryDef: attackPatternsMatrixColumnsQuery,
+  const killChainsData = usePreloadedFragment<AttackPatternsMatrixQuery, AttackPatternsMatrixColumns_data$key>({
+    queryDef: attackPatternsMatrixQuery,
     fragmentDef: attackPatternsMatrixColumnsFragment,
     queryRef: killChainDataQueryRef,
   });
