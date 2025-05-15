@@ -31,7 +31,6 @@ const pirFragment = graphql`
     }
     pirFilters
     pirCriteria {
-      id
       weight
       filters
     }
