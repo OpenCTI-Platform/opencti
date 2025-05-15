@@ -14214,6 +14214,7 @@ export type Mutation = {
   otpUserDeactivation?: Maybe<MeUser>;
   pingConnector?: Maybe<Connector>;
   pirAdd?: Maybe<Pir>;
+  pirAddDependency?: Maybe<Scalars['ID']['output']>;
   pirDelete?: Maybe<Scalars['ID']['output']>;
   playbookAdd?: Maybe<Playbook>;
   playbookAddLink: Scalars['String']['output'];
@@ -15735,6 +15736,12 @@ export type MutationPingConnectorArgs = {
 
 export type MutationPirAddArgs = {
   input: PirAddInput;
+};
+
+
+export type MutationPirAddDependencyArgs = {
+  id: Scalars['ID']['input'];
+  input: PirDependencyAddInput;
 };
 
 
@@ -18775,13 +18782,18 @@ export type PirConnection = {
 export type PirCriterion = {
   __typename?: 'PIRCriterion';
   filters: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
   weight: Scalars['Int']['output'];
 };
 
 export type PirCriterionInput = {
   filters: Scalars['String']['input'];
   weight: Scalars['Int']['input'];
+};
+
+export type PirDependencyAddInput = {
+  matchingCriteria: Array<PirCriterionInput>;
+  relationshipId: Scalars['ID']['input'];
+  sourceId: Scalars['ID']['input'];
 };
 
 export type PirEdge = {
@@ -32881,6 +32893,7 @@ export type ResolversTypes = ResolversObject<{
   PIRConnection: ResolverTypeWrapper<PirConnection>;
   PIRCriterion: ResolverTypeWrapper<PirCriterion>;
   PIRCriterionInput: PirCriterionInput;
+  PIRDependencyAddInput: PirDependencyAddInput;
   PIREdge: ResolverTypeWrapper<PirEdge>;
   PIROrdering: PirOrdering;
   PackageStatus: PackageStatus;
@@ -33746,6 +33759,7 @@ export type ResolversParentTypes = ResolversObject<{
   PIRConnection: PirConnection;
   PIRCriterion: PirCriterion;
   PIRCriterionInput: PirCriterionInput;
+  PIRDependencyAddInput: PirDependencyAddInput;
   PIREdge: PirEdge;
   PageInfo: PageInfo;
   Participant: Participant;
@@ -39201,6 +39215,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otpUserDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   pirAdd?: Resolver<Maybe<ResolversTypes['PIR']>, ParentType, ContextType, RequireFields<MutationPirAddArgs, 'input'>>;
+  pirAddDependency?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirAddDependencyArgs, 'id' | 'input'>>;
   pirDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirDeleteArgs, 'id'>>;
   playbookAdd?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddArgs, 'input'>>;
   playbookAddLink?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddLinkArgs, 'id' | 'input'>>;
@@ -40048,7 +40063,6 @@ export type PirConnectionResolvers<ContextType = any, ParentType extends Resolve
 
 export type PirCriterionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PIRCriterion'] = ResolversParentTypes['PIRCriterion']> = ResolversObject<{
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   weight?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

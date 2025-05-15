@@ -9117,6 +9117,7 @@ type Mutation {
   changePassword(input: ChangePasswordInput!): Boolean
   pirAdd(input: PIRAddInput!): PIR
   pirDelete(id: ID!): ID
+  pirAddDependency(id: ID!, input: PIRDependencyAddInput!): ID
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -13067,7 +13068,6 @@ input RequestAccessConfigureInput {
 }
 
 type PIRCriterion {
-  id: ID!
   filters: String!
   weight: Int!
 }
@@ -13140,4 +13140,10 @@ input PIRAddInput {
   name: String!
   pirCriteria: [PIRCriterionInput!]!
   pirFilters: String!
+}
+
+input PIRDependencyAddInput {
+  relationshipId: ID!
+  sourceId: ID!
+  matchingCriteria: [PIRCriterionInput!]!
 }

@@ -1,17 +1,14 @@
-import { v4 as uuidv4 } from 'uuid';
 import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR } from './pir-types';
-import { type EditInput, EditOperation, type PirAddInput } from '../../generated/graphql';
+import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR } from './pir-types';
+import { type EditInput, EditOperation, type PirAddInput, type PirDependencyAddInput } from '../../generated/graphql';
 import { createEntity, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
-import { FunctionalError } from '../../config/errors';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreCommon } from '../../types/store';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
 import { PIR_MANAGER_USER } from '../../utils/access';
@@ -33,10 +30,6 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
   // -- create PIR --
   const finalInput = {
     ...input,
-    pirCriteria: input.pirCriteria.map((c) => ({
-      ...c,
-      id: uuidv4(),
-    })),
     lastEventId: `${rescanStartDate}-0`,
   };
   const created: BasicStoreEntityPIR = await createEntity(
@@ -86,19 +79,14 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
 export const addPirDependency = async (
   context: AuthContext,
   user: AuthUser,
-  relationship: any,
-  pir: BasicStoreEntityPIR,
-  matchingCriteria: ParsedPIR['pirCriteria']
+  pirId: string,
+  input: PirDependencyAddInput,
 ) => {
-  const sourceId: string = relationship.extensions?.[STIX_EXT_OCTI]?.source_ref;
-  if (!sourceId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no source id found`);
-  const relationshipId: string = relationship.extensions?.[STIX_EXT_OCTI]?.id;
-  if (!relationshipId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
-
+  const { relationshipId, sourceId, matchingCriteria } = input;
   const source = await internalLoadById<BasicStoreCommon>(context, PIR_MANAGER_USER, sourceId);
   if (source) { // if element still exist
-    const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pir.id);
-    console.log('[POC PIR] Event create matching', { source, relationship, matchingCriteria });
+    const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pirId);
+    console.log('[POC PIR] Event create matching', { source, relationshipId, matchingCriteria });
 
     const pirDependencies = matchingCriteria.map((criterion) => ({
       relationship_id: relationshipId,
@@ -109,12 +97,13 @@ export const addPirDependency = async (
     }));
     if (sourceFlagged) {
       console.log('[POC PIR] Source already flagged');
-      await updatePirDependencies(context, user, sourceId, pir, pirDependencies, EditOperation.Add);
+      await updatePirDependencies(context, user, sourceId, pirId, pirDependencies, EditOperation.Add);
       console.log('[POC PIR] Meta Ref relation updated');
     } else {
       console.log('[POC PIR] Source NOT flagged');
-      await createPirRel(context, user, sourceId, pir, pirDependencies);
+      await createPirRel(context, user, sourceId, pirId, pirDependencies);
       console.log('[POC PIR] Meta Ref relation created');
     }
   }
+  return pirId;
 };
