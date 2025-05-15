@@ -73,7 +73,7 @@ export interface NotificationAddInput {
     title: string,
     events: Array<NotificationContentEvent>
   }>
-  trigger_id?: string
+  trigger_id?: string | string[]
   user_id: string
 }
 
