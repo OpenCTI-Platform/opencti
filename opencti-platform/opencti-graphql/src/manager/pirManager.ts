@@ -49,7 +49,7 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: B
       console.log('[POC PIR] PIR rel deleted');
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
-      await updatePirDependencies(context, PIR_MANAGER_USER, sourceId, pir, newRelDependencies);
+      await updatePirDependencies(context, PIR_MANAGER_USER, sourceId, pir.id, newRelDependencies);
       console.log('[POC PIR] PIR rel updated', { newRelDependencies });
     } // nothing to do
   }
@@ -85,9 +85,13 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR
         }
         // If the event matches PIR, do the right thing depending on the type of event.
         if (matchingCriteria.length > 0) {
+          const sourceId: string = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
+          if (!sourceId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no source id found`);
+          const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
+          if (!relationshipId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
           switch (event.type) {
             case 'create':
-              await addPirDependency(context, PIR_MANAGER_USER, data, pir, matchingCriteria);
+              await addPirDependency(context, PIR_MANAGER_USER, pir.id, { relationshipId, sourceId, matchingCriteria });
               break;
             case 'delete':
               await onRelationDeleted(context, data, pir);
