@@ -4,9 +4,9 @@ import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
-import { AttackPatternsMatrixProps } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
+import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
 import { AttackPatternsMatrixColumns_data$data, AttackPatternsMatrixColumns_data$key } from './__generated__/AttackPatternsMatrixColumns_data.graphql';
-import { AttackPatternsMatrixColumnsQuery } from './__generated__/AttackPatternsMatrixColumnsQuery.graphql';
+import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
 import AttackPatternsMatrixBar from './AttackPatternsMatrixBar';
 import { computeLevel } from '../../../../utils/Number';
 import { truncate } from '../../../../utils/String';
@@ -25,7 +25,7 @@ type AttackPatternElement = AttackPattern & {
 interface AttackPatternsMatrixColumnsProps extends AttackPatternsMatrixProps {
   handleToggleModeOnlyActive?: () => void;
   currentModeOnlyActive?: boolean;
-  queryRef: PreloadedQuery<AttackPatternsMatrixColumnsQuery>;
+  queryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
 }
 
 const colors = (defaultColor = '#ffffff') => [
@@ -42,12 +42,6 @@ const colors = (defaultColor = '#ffffff') => [
   ['#d32f2f', 'rgba(211,47,47,0.2)'],
   ['#b71c1c', 'rgba(183,28,28,0.2)'],
 ];
-
-export const attackPatternsMatrixColumnsQuery = graphql`
-  query AttackPatternsMatrixColumnsQuery {
-    ...AttackPatternsMatrixColumns_data
-  }
-`;
 
 export const attackPatternsMatrixColumnsFragment = graphql`
   fragment AttackPatternsMatrixColumns_data on Query {
@@ -90,7 +84,7 @@ const AttackPatternsMatrixColumns = ({
   const [modeOnlyActive, setModeOnlyActive] = useState(currentModeOnlyActive ?? false);
   const [currentKillChain, setCurrentKillChain] = useState(selectedKillChain);
 
-  const data = usePreloadedQuery<AttackPatternsMatrixColumnsQuery>(attackPatternsMatrixColumnsQuery, queryRef);
+  const data = usePreloadedQuery<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, queryRef);
   const { attackPatternsMatrix } = useFragment<AttackPatternsMatrixColumns_data$key>(
     attackPatternsMatrixColumnsFragment,
     data,

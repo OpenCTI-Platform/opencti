@@ -3,10 +3,11 @@ import { TargetEntity } from '@components/common/stix_core_relationships/StixCor
 import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
+import { graphql } from 'react-relay';
 import Loader from '../../../../components/Loader';
-import AttackPatternsMatrixColumns, { attackPatternsMatrixColumnsQuery } from './AttackPatternsMatrixColumns';
-import { AttackPatternsMatrixColumnsQuery } from './__generated__/AttackPatternsMatrixColumnsQuery.graphql';
+import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
 
 export interface AttackPatternsMatrixProps {
   marginRight?: boolean;
@@ -16,6 +17,13 @@ export interface AttackPatternsMatrixProps {
   selectedKillChain?: string;
   noBottomBar?: boolean;
 }
+
+export const attackPatternsMatrixQuery = graphql`
+  query AttackPatternsMatrixQuery {
+    ...AttackPatternsMatrixColumns_data
+  }
+`;
+
 const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   attackPatterns,
   marginRight,
@@ -24,7 +32,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   selectedKillChain,
   noBottomBar,
 }) => {
-  const queryRef = useQueryLoading<AttackPatternsMatrixColumnsQuery>(attackPatternsMatrixColumnsQuery, {});
+  const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 
   return (
     <div style={{
