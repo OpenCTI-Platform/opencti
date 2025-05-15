@@ -7,8 +7,8 @@ input VerifyOtpInput {
   transactionId : String!
 }
 
-input Verify2faInput {
-  code: String!
+input VerifyMfaInput {
+  mfaOtp: String!
   transactionId: String!
 }
 
@@ -19,13 +19,13 @@ input ChangePasswordInput {
 }
 
 type VerifyOtp {
-  otp_activated: Boolean!
+  mfa_activated: Boolean!
 }
 
 ## Mutations
 type Mutation {
   askSendOtp(input: AskSendOtpInput!): String @public @rateLimit(limit: 1, duration: 1)
   verifyOtp(input: VerifyOtpInput!): VerifyOtp @public @rateLimit(limit: 1, duration: 1)
-  verify2fa(input: Verify2faInput!): Boolean @public @rateLimit(limit: 1, duration: 1)
+  verifyMfa(input: VerifyMfaInput!): Boolean @public @rateLimit(limit: 1, duration: 1)
   changePassword(input: ChangePasswordInput!): Boolean @public @rateLimit(limit: 1, duration: 1)
 }

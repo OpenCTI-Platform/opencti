@@ -9089,7 +9089,7 @@ type Mutation {
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
-  verify2fa(input: Verify2faInput!): Boolean
+  verifyMfa(input: VerifyMfaInput!): Boolean
   changePassword(input: ChangePasswordInput!): Boolean
 }
 
@@ -12803,8 +12803,8 @@ input VerifyOtpInput {
   transactionId: String!
 }
 
-input Verify2faInput {
-  code: String!
+input VerifyMfaInput {
+  mfaOtp: String!
   transactionId: String!
 }
 
@@ -12815,5 +12815,5 @@ input ChangePasswordInput {
 }
 
 type VerifyOtp {
-  otp_activated: Boolean!
+  mfa_activated: Boolean!
 }
