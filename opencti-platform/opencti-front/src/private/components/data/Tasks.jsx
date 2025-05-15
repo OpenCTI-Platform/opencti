@@ -30,7 +30,7 @@ const Tasks = () => {
   const optionsInProgress = {
     count: 50,
     orderBy: 'created_at',
-    orderMode: 'desc',
+    orderMode: 'asc',
     includeAuthorities: true,
     filters: {
       mode: 'and',
