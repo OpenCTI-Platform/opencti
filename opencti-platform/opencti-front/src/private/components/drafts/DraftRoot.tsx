@@ -19,7 +19,6 @@ import Paper from '@mui/material/Paper';
 import ImportFilesContent from '@components/data/import/ImportFilesContent';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
-
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import { getCurrentTab } from '../../../utils/utils';
@@ -217,10 +216,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
       <Routes>
         <Route
           path="/"
-          element={<Navigate
-            to={`/dashboard/data/import/draft/${draftId}/entities`}
-            replace={true}
-                   />}
+          element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true}/>}
         />
         <Route
           path="/entities"

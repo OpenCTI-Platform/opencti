@@ -64,7 +64,6 @@ const Index = ({ settings }: IndexProps) => {
     minHeight: '100vh',
     paddingTop: `calc( 16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`, // 24 for margin, 48 for top bar
   };
-
   // Change the theme body attribute when the mode changes in
   // the palette because some components like CKEditor uses this
   // body attribute to display correct styles.

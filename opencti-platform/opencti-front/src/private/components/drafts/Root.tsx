@@ -8,7 +8,6 @@ const DraftRoot = lazy(() => import('./DraftRoot'));
 
 const Root = () => {
   const draftContext = useDraftContext();
-
   return (
     <Routes>
       <Route

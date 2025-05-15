@@ -19,6 +19,7 @@ const DraftBlock: FunctionComponent<DraftBlockProps> = ({ title, body, sx }) => 
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
   const draftContext = useDraftContext();
+
   return (
     <Link
       to={`/dashboard/data/import/draft/${draftContext?.id}`}
