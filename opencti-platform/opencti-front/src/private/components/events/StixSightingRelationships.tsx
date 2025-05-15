@@ -361,7 +361,7 @@ const StixSightingRelationships = () => {
   };
 
   return (
-    <>
+    <span data-testid="sightings-page">
       <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: t_i18n('Sightings'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -375,7 +375,7 @@ const StixSightingRelationships = () => {
           exportContext={{ entity_type: 'stix-sighting-relationship' }}
         />
       )}
-    </>
+    </span>
   );
 };
 
