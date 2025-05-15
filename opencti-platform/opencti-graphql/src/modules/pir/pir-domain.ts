@@ -109,7 +109,7 @@ export const addPirDependency = async (
     }));
     if (sourceFlagged) {
       console.log('[POC PIR] Source already flagged');
-      await updatePirDependencies(context, sourceId, pir, pirDependencies, EditOperation.Add);
+      await updatePirDependencies(context, user, sourceId, pir, pirDependencies, EditOperation.Add);
       console.log('[POC PIR] Meta Ref relation updated');
     } else {
       console.log('[POC PIR] Source NOT flagged');
