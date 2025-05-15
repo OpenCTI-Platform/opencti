@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { validate as uuidValidate } from 'uuid';
 import { askSendOtp, generateOtp, getLocalProviderUser } from '../../../src/modules/auth/auth-domain';
 import { testContext } from '../../utils/testQuery';
-import { validate as uuidValidate } from 'uuid';
 import { OTP_TTL, redisGetForgotPasswordOtp } from '../../../src/database/redis';
 
 describe('getLocalProviderUser', () => {
@@ -14,11 +14,11 @@ describe('getLocalProviderUser', () => {
     expect(user.name).toEqual('anais@opencti.io');
   });
   it('Should throw an error if no user founded', async () => {
-    expect(async () => await getLocalProviderUser('noResul@opencti.io')).rejects.toThrow('User not found');
+    expect(async () => getLocalProviderUser('noResul@opencti.io')).rejects.toThrow('User not found');
   });
   it('Should throw an error if user is external', async () => {
     // admin is external
-    expect(async () => await getLocalProviderUser('admin@opencti.io')).rejects.toThrow('External user');
+    expect(async () => getLocalProviderUser('admin@opencti.io')).rejects.toThrow('External user');
   });
 });
 
@@ -44,8 +44,8 @@ describe('askSendOtp', () => {
     expect(key).toBeTruthy();
     expect(key.hashedOtp).toBeTypeOf('string');
     expect(key.email).toBe('anais@opencti.io');
-    expect(key.otp_activated).toBeFalsy();
-    expect(key.otp_validated).toBeFalsy();
+    expect(key.mfa_activated).toBeFalsy();
+    expect(key.mfa_validated).toBeFalsy();
     expect(key.ttl).toBeLessThanOrEqual(OTP_TTL);
   });
   it('Should return an uuid with an wrong email', async () => {
