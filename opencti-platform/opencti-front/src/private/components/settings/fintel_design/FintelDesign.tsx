@@ -128,7 +128,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
           elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Customization') },
-            { label: t_i18n('Fintel Designs'), link: '/dashboard/settings/customization/fintel_designs' },
+            { label: t_i18n('Fintel design'), link: '/dashboard/settings/customization/fintel_designs' },
             { label: `${fintelDesign.name}`, current: true },
           ]}
         />
@@ -181,7 +181,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
                       component={TextField}
                       variant="standard"
                       name="url"
-                      label={t_i18n('Fintel Design Favicon Url')}
+                      label={t_i18n('Logo URL')}
                       fullWidth
                       onSubmit={handleFieldChange}
                       style={fieldSpacingContainerStyle}
@@ -189,7 +189,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
                     <Field
                       component={ColorPickerField}
                       name="gradiantFromColor"
-                      label={t_i18n('Gradiant From color')}
+                      label={t_i18n('Background primary color')}
                       placeholder={t_i18n('Default')}
                       fullWidth
                       onSubmit={handleFieldChange}
@@ -199,7 +199,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
                     <Field
                       component={ColorPickerField}
                       name="gradiantToColor"
-                      label={t_i18n('Gradiant To color')}
+                      label={t_i18n('Background secondary color')}
                       placeholder={t_i18n('Default')}
                       fullWidth
                       onSubmit={handleFieldChange}

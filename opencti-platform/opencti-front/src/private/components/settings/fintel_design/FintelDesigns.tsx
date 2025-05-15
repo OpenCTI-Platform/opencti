@@ -19,6 +19,7 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import ItemIcon from '../../../../components/ItemIcon';
 import PageContainer from '../../../../components/PageContainer';
 import AlertInfo from '../../../../components/AlertInfo';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 const fintelDesignsQuery = graphql`
   query FintelDesignsLinesPaginationQuery(
@@ -61,6 +62,7 @@ export const fintelDesignsFragment = graphql`
     ) @connection(key: "Pagination_fintelDesigns") {
       edges {
         node {
+          id
           ...FintelDesignsLine_node
         }
       }
@@ -89,7 +91,8 @@ const LOCAL_STORAGE_KEY = 'view-fintel-designs';
 
 const FintelDesigns = () => {
   const { t_i18n } = useFormatter();
-
+  const { setTitle } = useConnectedDocumentModifier();
+  setTitle(t_i18n('Fintel design | Customization | Settings'));
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
@@ -156,7 +159,7 @@ const FintelDesigns = () => {
           elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Customization') },
-            { label: t_i18n('Fintel Designs'), current: true },
+            { label: t_i18n('Fintel design'), current: true },
           ]}
         />
         <AlertInfo
@@ -171,6 +174,7 @@ const FintelDesigns = () => {
           toolbarFilters={contextFilters}
           useComputeLink={getRedirectionLink}
           lineFragment={fintelDesignsLineFragment}
+          disableLineSelection
           preloadedPaginationProps={preloadedPaginationProps}
           createButton={<FintelDesignCreation paginationOptions={queryPaginationOptions} />}
           icon={() => <ItemIcon type="fintel-design" />}
