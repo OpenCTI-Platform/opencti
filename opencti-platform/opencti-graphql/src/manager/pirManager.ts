@@ -9,11 +9,17 @@ import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
 import { listRelationsPaginated } from '../database/middleware-loader';
-import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type PirDependency } from '../modules/pir/pir-types';
+import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIRCriterion, type PirDependency } from '../modules/pir/pir-types';
 import { parsePir, updatePirDependencies } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { createRedisClient, fetchStreamEventsRange } from '../database/redis';
-import { addPirDependency, updatePir } from '../modules/pir/pir-domain';
+import { updatePir } from '../modules/pir/pir-domain';
+import { pushToWorkerForConnector } from '../database/rabbitmq';
+import { connectorIdFromIngestId } from '../domain/connector';
+import { createWork } from '../domain/work';
+import { ConnectorType } from '../generated/graphql';
+import convertEntityPIRToStix from '../modules/pir/pir-converter';
+import { buildStixBundle } from '../database/stix-2-1-converter';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -56,6 +62,40 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: B
 };
 // endregion
 
+const addPirDependencyToQueue = async (
+  context: AuthContext,
+  pir: BasicStoreEntityPIR,
+  relationshipId: string,
+  sourceId: string,
+  matchingCriteria: ParsedPIRCriterion[],
+) => {
+  const connectorId = connectorIdFromIngestId(pir.id);
+  const work: any = await createWork(
+    context,
+    PIR_MANAGER_USER,
+    { internal_id: connectorId, connector_type: ConnectorType.InternalIngestionPir },
+    `Add dependency ${matchingCriteria} for ${sourceId} in pir ${pir.name}`
+  );
+  const stixPir = convertEntityPIRToStix(pir);
+  stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'add_pir_dependency';
+  const pirBundle = {
+    ...stixPir,
+    input: { relationshipId, sourceId, matchingCriteria },
+  };
+  const stixPirBundle = buildStixBundle([pirBundle]);
+  const jsonBundle = JSON.stringify(stixPirBundle);
+  const content = Buffer.from(jsonBundle, 'utf-8').toString('base64');
+  console.log('jsonBundle', jsonBundle);
+  const message = {
+    type: 'bundle',
+    applicant_id: PIR_MANAGER_USER,
+    work_id: work.id,
+    update: true,
+    content,
+  };
+  await pushToWorkerForConnector(connectorId, message);
+};
+
 const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR) => {
   const parsedPir = parsePir(pir);
 
@@ -91,7 +131,8 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR
           if (!relationshipId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
           switch (event.type) {
             case 'create':
-              await addPirDependency(context, PIR_MANAGER_USER, pir.id, { relationshipId, sourceId, matchingCriteria });
+              // send addPirDependency to queue
+              await addPirDependencyToQueue(context, pir, relationshipId, sourceId, matchingCriteria);
               break;
             case 'delete':
               await onRelationDeleted(context, data, pir);
