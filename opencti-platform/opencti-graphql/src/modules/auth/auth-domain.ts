@@ -106,9 +106,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
 };
 
 export const verifyOtp = async (input: VerifyOtpInput) => {
-  console.log('Verifying OTP for transactionId:', input.transactionId);
   const { hashedOtp, email, mfa_activated } = await redisGetForgotPasswordOtp(input.transactionId);
-  console.log('hashedOtp', hashedOtp);
   if (!hashedOtp) {
     await publishUserAction({
       user: SYSTEM_USER,

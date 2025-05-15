@@ -114,7 +114,9 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
     setResendOtp(true);
     askSentOtpCommitMutation({
       variables: { input: { email } },
-      onCompleted: () => {},
+      onCompleted: (response) => {
+        setTransactionId(response.askSendOtp ?? '');
+      },
     });
   };
 
