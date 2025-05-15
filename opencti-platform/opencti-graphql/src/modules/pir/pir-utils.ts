@@ -1,11 +1,9 @@
 import type { BasicStoreEntityPIR, ParsedPIR, PirDependency } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listRelationsPaginated } from '../../database/middleware-loader';
-import { SYSTEM_USER } from '../../utils/access';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
-import { stixRefRelationshipEditField } from '../../domain/stixRefRelationship';
 import { FunctionalError } from '../../config/errors';
-import { createRelation } from '../../database/middleware';
+import { createRelation, patchAttribute } from '../../database/middleware';
 
 /**
  * Helper function to parse filters that are saved as string in elastic.
@@ -43,12 +41,13 @@ export const computePirScore = (pir: BasicStoreEntityPIR, dependencies: PirDepen
  */
 export const updatePirDependencies = async (
   context: AuthContext,
+  user: AuthUser,
   sourceId: string,
   pir: BasicStoreEntityPIR,
   pirDependencies: PirDependency[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
-  const pirMetaRels = await listRelationsPaginated(context, SYSTEM_USER, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id, });
+  const pirMetaRels = await listRelationsPaginated(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id, });
   if (pirMetaRels.edges.length !== 1) {
     // If < 1 then the meta relationship does not exist.
     // If > 1, well this case should not be possible at all.
@@ -57,13 +56,8 @@ export const updatePirDependencies = async (
   const pirMetaRel = pirMetaRels.edges[0].node;
   // region compute score
   const deps = operation === 'add' ? [...pirMetaRel.pir_dependencies, ...pirDependencies] : pirDependencies;
-  const score = computePirScore(pir, deps);
-  const editInput = [
-    { key: 'pir_dependencies', value: pirDependencies, operation },
-    { key: 'pir_score', value: [score] },
-  ];
-  const updatedRef = await stixRefRelationshipEditField(context, SYSTEM_USER, pirMetaRel.id, editInput);
-  console.log('REF', updatedRef);
+  const pir_score = computePirScore(pir, deps);
+  await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_dependencies: deps, pir_score });
 };
 
 /**
