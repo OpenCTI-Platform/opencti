@@ -8,20 +8,12 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
-import { internalLoadById, listRelationsPaginated } from '../database/middleware-loader';
-import {
-  type BasicStoreEntityPIR,
-  ENTITY_TYPE_PIR,
-  type ParsedPIR,
-  type PirDependency
-} from '../modules/pir/pir-types';
-import { ConnectorType, EditOperation } from '../generated/graphql';
-import { flagSource, parsePir, updatePirDependencies } from '../modules/pir/pir-utils';
+import { listRelationsPaginated } from '../database/middleware-loader';
+import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type PirDependency } from '../modules/pir/pir-types';
+import { parsePir, updatePirDependencies } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { createRedisClient, fetchStreamEventsRange } from '../database/redis';
-import { updatePir } from '../modules/pir/pir-domain';
-import type { BasicStoreCommon } from '../types/store';
-import { connectorIdFromIngestId, registerConnector } from '../domain/connector';
+import { addPirDependency, updatePir } from '../modules/pir/pir-domain';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -30,52 +22,6 @@ const PIR_MANAGER_CONTEXT = 'pir_manager';
 const PIR_MANAGER_INTERVAL = 6000; // TODO PIR: use config instead
 const PIR_MANAGER_LOCK_KEY = 'pir_manager_lock'; // TODO PIR: use config instead
 const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
-
-// region relationship create/delete
-/**
- * Called when an event of create new relationship matches a PIR criteria.
- * If the source of the relationship is already flagged update its dependencies,
- * otherwise create a new meta relationship between the source and the PIR.
- *
- * @param context To be able to call engine.
- * @param relationship The caught relationship matching the PIR.
- * @param pir The PIR matched by the relationship.
- * @param matchingCriteria The criteria that match.
- */
-const onRelationCreated = async (
-  context: AuthContext,
-  relationship: any,
-  pir: BasicStoreEntityPIR,
-  matchingCriteria: ParsedPIR['pirCriteria']
-) => {
-  const sourceId: string = relationship.extensions?.[STIX_EXT_OCTI]?.source_ref;
-  if (!sourceId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no source id found`);
-  const relationshipId: string = relationship.extensions?.[STIX_EXT_OCTI]?.id;
-  if (!relationshipId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
-
-  const source = await internalLoadById<BasicStoreCommon>(context, PIR_MANAGER_USER, sourceId);
-  if (source) { // if element still exist
-    const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pir.id);
-    console.log('[POC PIR] Event create matching', { source, relationship, matchingCriteria });
-
-    const pirDependencies = matchingCriteria.map((criterion) => ({
-      relationship_id: relationshipId,
-      criterion: {
-        ...criterion,
-        filters: JSON.stringify(criterion.filters)
-      },
-    }));
-    if (sourceFlagged) {
-      console.log('[POC PIR] Source already flagged');
-      await updatePirDependencies(context, sourceId, pir, pirDependencies, EditOperation.Add);
-      console.log('[POC PIR] Meta Ref relation updated');
-    } else {
-      console.log('[POC PIR] Source NOT flagged');
-      await flagSource(context, sourceId, pir, pirDependencies);
-      console.log('[POC PIR] Meta Ref relation created');
-    }
-  }
-};
 
 /**
  * Called when an event of delete a relationship matches a PIR criteria.
@@ -141,12 +87,12 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR
         if (matchingCriteria.length > 0) {
           switch (event.type) {
             case 'create':
-              await onRelationCreated(context, data, pir, matchingCriteria);
+              await addPirDependency(context, PIR_MANAGER_USER, data, pir, matchingCriteria);
               break;
             case 'delete':
               await onRelationDeleted(context, data, pir);
               break;
-            default: // Nothing to do.
+            default: // Nothing to do. // TODO PIR update logic
           }
         }
       }
@@ -160,10 +106,10 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR
 const pirManagerHandler = async () => {
   const redisClient = await createRedisClient(PIR_MANAGER_LABEL, false);
   const context = executionContext(PIR_MANAGER_CONTEXT);
-  const allPIR = await getEntitiesListFromCache<BasicStoreEntityPIR>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
+  const allPIR = await getEntitiesListFromCache<BasicStoreEntityPIR>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR); // TODO PIR cache ?
 
   // Loop through all PIR one by one.
-  await Promise.all(allPIR.map(async (pir) => {
+  await Promise.all(allPIR.map(async (pir) => { // TODO PIR blue promise (gérer le max concurrence des promesses pouvant etre faites en parallèle)
     // Fetch stream events since last event id caught by the PIR.
     console.log(`PIR ${pir.name}: from ${pir.lastEventId ?? '$'}`);
     const { lastEventId } = await fetchStreamEventsRange(
