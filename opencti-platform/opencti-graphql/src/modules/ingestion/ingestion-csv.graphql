@@ -8,6 +8,7 @@ type IngestionCsv implements InternalObject & BasicObject {
     updated_at: DateTime
     name: String!
     description: String
+    scheduling_period: String
     uri: String!
     csvMapper: CsvMapper!
     authentication_type: IngestionAuthType!
@@ -58,6 +59,7 @@ type Query {
 input IngestionCsvAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
+    scheduling_period: String
     authentication_type: IngestionAuthType!
     authentication_value: String
     current_state_date: DateTime

@@ -28,9 +28,6 @@ export const indicatorsWithLabelsExpectedBundle: StixBundle = {
         'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
           converter_csv: '[ipv4-addr:value = \'198.168.8.5\'],IPv4-Addr,filigran,0b41f3',
           extension_type: 'property-extension',
-          labels_ids: [
-            undefined,
-          ],
           main_observable_type: 'IPv4-Addr',
           observable_values: [
             {
@@ -59,9 +56,6 @@ export const indicatorsWithLabelsExpectedBundle: StixBundle = {
         'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
           converter_csv: '[ipv4-addr:value = \'198.168.8.6\'],IPv4-Addr,filigran,0b41f3',
           extension_type: 'property-extension',
-          labels_ids: [
-            undefined,
-          ],
           main_observable_type: 'IPv4-Addr',
           observable_values: [
             {
