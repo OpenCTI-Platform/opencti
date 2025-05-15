@@ -43,21 +43,6 @@ const colors = (defaultColor = '#ffffff') => [
   ['#b71c1c', 'rgba(183,28,28,0.2)'],
 ];
 
-const colorsReversed = (defaultColor = '#ffffff') => [
-  [defaultColor, 'transparent', 'rgba(255,255,255,0.1)'],
-  ['#ffffff', 'rgba(255,255,255,0.2)'],
-  ['#c5e1a5', 'rgba(197,225,165,0.2)'],
-  ['#aed581', 'rgba(174,213,129,0.2)'],
-  ['#9ccc65', 'rgba(156,204,101,0.2)'],
-  ['#8bc34a', 'rgba(139,195,74,0.2)'],
-  ['#66bb6a', 'rgba(102,187,106,0.2)'],
-  ['#4caf50', 'rgba(76,175,80,0.2)'],
-  ['#43a047', 'rgba(67,160,71,0.2)'],
-  ['#388e3c', 'rgba(56,142,60,0.2)'],
-  ['#2e7d32', 'rgba(46,125,50,0.2)'],
-  ['#1b5e20', 'rgba(27,94,32,0.2)'],
-];
-
 export const attackPatternsMatrixColumnsQuery = graphql`
   query AttackPatternsMatrixColumnsQuery {
     ...AttackPatternsMatrixColumns_data
@@ -92,8 +77,6 @@ const AttackPatternsMatrixColumns = ({
   marginRight = false,
   searchTerm = '',
   handleToggleModeOnlyActive,
-  handleToggleColorsReversed,
-  currentColorsReversed,
   currentModeOnlyActive,
   handleAdd,
   selectedKillChain,
@@ -105,7 +88,6 @@ const AttackPatternsMatrixColumns = ({
   const [selectedAttackPattern, setSelectedAttackPattern] = useState<AttackPatternElement | null>(null);
   const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
   const [modeOnlyActive, setModeOnlyActive] = useState(currentModeOnlyActive ?? false);
-  const [modeColorsReversed, setModeColorsReversed] = useState(currentColorsReversed ?? false);
   const [currentKillChain, setCurrentKillChain] = useState(selectedKillChain);
 
   const data = usePreloadedQuery<AttackPatternsMatrixColumnsQuery>(attackPatternsMatrixColumnsQuery, queryRef);
@@ -136,7 +118,6 @@ const AttackPatternsMatrixColumns = ({
   };
 
   const toggleMode = () => handleToggleModeOnlyActive || setModeOnlyActive((prev) => !prev);
-  const toggleColors = () => handleToggleColorsReversed || setModeColorsReversed((prev) => !prev);
   const onKillChainChange = (e: React.ChangeEvent<{ value: string }>) => {
     setCurrentKillChain(e.target.value);
   };
@@ -231,8 +212,6 @@ const AttackPatternsMatrixColumns = ({
               <AttackPatternsMatrixBar
                 currentModeOnlyActive={modeOnlyActive}
                 handleToggleModeOnlyActive={toggleMode}
-                currentColorsReversed={modeColorsReversed}
-                handleToggleColorsReversed={toggleColors}
                 currentKillChain={currentKillChain}
                 handleChangeKillChain={onKillChainChange}
                 killChains={killChains}
@@ -251,9 +230,7 @@ const AttackPatternsMatrixColumns = ({
                     const level = isHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
                     const position = isHovered && level === 0 ? 2 : 1;
 
-                    const colorArray = modeColorsReversed
-                      ? colorsReversed(theme.palette.background.accent)
-                      : colors(theme.palette.background.accent);
+                    const colorArray = colors(theme.palette.background.accent);
                     return (
                       <Box
                         key={ap.id}

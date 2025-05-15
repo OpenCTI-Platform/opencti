@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import { FilterListOutlined, InvertColorsOffOutlined } from '@mui/icons-material';
+import { FilterListOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
@@ -31,11 +31,9 @@ class AttackPatternsMatrixBar extends Component {
       t,
       classes,
       currentModeOnlyActive,
-      currentColorsReversed,
       currentKillChain,
       handleChangeKillChain,
       handleToggleModeOnlyActive,
-      handleToggleColorsReversed,
       killChains,
       navOpen,
     } = this.props;
@@ -115,23 +113,6 @@ class AttackPatternsMatrixBar extends Component {
                       </IconButton>
                     </span>
                   </Tooltip>
-                  <Tooltip
-                    title={
-                      currentColorsReversed
-                        ? t('Disable invert colors')
-                        : t('Enable invert colors')
-                    }
-                  >
-                    <span>
-                      <IconButton
-                        color={currentColorsReversed ? 'secondary' : 'primary'}
-                        onClick={handleToggleColorsReversed.bind(this)}
-                        size="large"
-                      >
-                        <InvertColorsOffOutlined />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
                 </div>
               </div>
             </div>
@@ -147,8 +128,6 @@ AttackPatternsMatrixBar.propTypes = {
   t: PropTypes.func,
   currentModeOnlyActive: PropTypes.bool,
   handleToggleModeOnlyActive: PropTypes.func,
-  currentColorsReversed: PropTypes.bool,
-  handleToggleColorsReversed: PropTypes.func,
   currentKillChain: PropTypes.string,
   handleChangeKillChain: PropTypes.func,
   killChains: PropTypes.array,

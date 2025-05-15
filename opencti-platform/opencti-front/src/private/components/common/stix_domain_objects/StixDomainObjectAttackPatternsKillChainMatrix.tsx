@@ -8,8 +8,6 @@ import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPattern
 interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   searchTerm: string;
   data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
-  handleToggleColorsReversed: () => void;
-  currentColorsReversed: boolean;
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain: string;
 }
@@ -17,8 +15,6 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
   {
     searchTerm,
     data,
-    handleToggleColorsReversed,
-    currentColorsReversed,
     handleAdd,
     selectedKillChain,
   },
@@ -29,8 +25,6 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
       attackPatterns={attackPatterns}
       searchTerm={searchTerm}
       marginRight={true}
-      handleToggleColorsReversed={handleToggleColorsReversed}
-      currentColorsReversed={currentColorsReversed}
       noBottomBar={true}
       handleAdd={handleAdd}
       selectedKillChain={selectedKillChain}

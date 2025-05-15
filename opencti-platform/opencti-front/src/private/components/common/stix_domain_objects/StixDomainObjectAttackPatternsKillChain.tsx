@@ -1,11 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined, InvertColorsOffOutlined, ViewColumnOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined, ViewColumnOutlined } from '@mui/icons-material';
 import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
-import IconButton from '@mui/material/IconButton';
 import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
@@ -103,7 +102,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   killChainDataQueryRef,
 }) => {
   const { t_i18n } = useFormatter();
-  const [currentColorsReversed, setCurrentColorsReversed] = useState(false);
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
@@ -113,10 +111,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const refetch = React.useCallback(() => {
     loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
-
-  const handleToggleColorsReversed = () => {
-    setCurrentColorsReversed(!currentColorsReversed);
-  };
 
   const handleAdd = (entity: TargetEntity) => {
     setTargetEntities([entity]);
@@ -300,32 +294,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
         </div>
         )}
         <div style={{ float: 'right', margin: 0 }}>
-          {currentView !== 'list' && currentView !== 'courses-of-action' && currentView !== 'matrix-in-line' && currentView !== 'relationships' && (
-          <Tooltip
-            title={
-              currentColorsReversed
-                ? t_i18n('Disable invert colors')
-                : t_i18n('Enable invert colors')
-            }
-          >
-            <span
-              style={{
-                marginRight: 10,
-              }}
-            >
-              <IconButton
-                style={{
-                  transform: 'translateY(-5px)',
-                }}
-                color={currentColorsReversed ? 'secondary' : 'primary'}
-                onClick={handleToggleColorsReversed}
-                size="large"
-              >
-                <InvertColorsOffOutlined fontSize="medium"/>
-              </IconButton>
-            </span>
-          </Tooltip>
-          )}
           <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
             {[...viewButtons]}
             {typeof handleToggleExports === 'function' && !exportDisabled && (
@@ -401,8 +369,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           <StixDomainObjectAttackPatternsKillChainMatrix
             data={data}
             searchTerm={searchTerm}
-            handleToggleColorsReversed={handleToggleColorsReversed}
-            currentColorsReversed={currentColorsReversed}
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
           />

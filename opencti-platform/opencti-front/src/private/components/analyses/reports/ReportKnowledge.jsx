@@ -101,9 +101,7 @@ const AttackPatternMatrixComponent = (props) => {
     report,
     currentKillChain,
     currentModeOnlyActive,
-    currentColorsReversed,
     handleChangeKillChain,
-    handleToggleColorsReversed,
     handleToggleModeOnlyActive,
   } = props;
   const attackPatternObjects = useFragment(ReportAttackPatternsFragment, data.report);
@@ -134,9 +132,7 @@ const AttackPatternMatrixComponent = (props) => {
       attackPatterns={attackPatterns}
       currentKillChain={currentKillChain}
       currentModeOnlyActive={currentModeOnlyActive}
-      currentColorsReversed={currentColorsReversed}
       handleChangeKillChain={handleChangeKillChain}
-      handleToggleColorsReversed={handleToggleColorsReversed}
       handleToggleModeOnlyActive={handleToggleModeOnlyActive}
       handleAdd={handleAddEntity}
     />
@@ -162,7 +158,6 @@ class ReportKnowledgeComponent extends Component {
     );
     this.state = {
       currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
-      currentColorsReversed: propOr(false, 'currentColorsReversed', params),
       currentKillChain: propOr('mitre-attack', 'currentKillChain', params),
       timeLineDisplayRelationships: propOr(
         false,
@@ -188,13 +183,6 @@ class ReportKnowledgeComponent extends Component {
   handleToggleModeOnlyActive() {
     this.setState(
       { currentModeOnlyActive: !this.state.currentModeOnlyActive },
-      () => this.saveView(),
-    );
-  }
-
-  handleToggleColorsReversed() {
-    this.setState(
-      { currentColorsReversed: !this.state.currentColorsReversed },
       () => this.saveView(),
     );
   }
@@ -277,7 +265,6 @@ class ReportKnowledgeComponent extends Component {
     } = this.props;
     const {
       currentModeOnlyActive,
-      currentColorsReversed,
       currentKillChain,
       timeLineFilters,
       timeLineDisplayRelationships,
@@ -437,9 +424,7 @@ class ReportKnowledgeComponent extends Component {
                         report={report}
                         currentKillChain={currentKillChain}
                         currentModeOnlyActive={currentModeOnlyActive}
-                        currentColorsReversed={currentColorsReversed}
                         handleChangeKillChain={this.handleChangeKillChain.bind(this)}
-                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(this)}
                         handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(this)}
                       />
                     );

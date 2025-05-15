@@ -98,9 +98,7 @@ const AttackPatternMatrixComponent = (props) => {
     grouping,
     currentKillChain,
     currentModeOnlyActive,
-    currentColorsReversed,
     handleChangeKillChain,
-    handleToggleColorsReversed,
     handleToggleModeOnlyActive,
   } = props;
   const attackPatternObjects = useFragment(GroupingAttackPatternsFragment, data.grouping);
@@ -131,9 +129,7 @@ const AttackPatternMatrixComponent = (props) => {
       attackPatterns={attackPatterns}
       currentKillChain={currentKillChain}
       currentModeOnlyActive={currentModeOnlyActive}
-      currentColorsReversed={currentColorsReversed}
       handleChangeKillChain={handleChangeKillChain}
-      handleToggleColorsReversed={handleToggleColorsReversed}
       handleToggleModeOnlyActive={handleToggleModeOnlyActive}
       handleAdd={handleAddEntity}
     />
@@ -159,7 +155,6 @@ class GroupingKnowledgeComponent extends Component {
     );
     this.state = {
       currentModeOnlyActive: propOr(false, 'currentModeOnlyActive', params),
-      currentColorsReversed: propOr(false, 'currentColorsReversed', params),
       currentKillChain: propOr('mitre-attack', 'currentKillChain', params),
     };
   }
@@ -180,13 +175,6 @@ class GroupingKnowledgeComponent extends Component {
     );
   }
 
-  handleToggleColorsReversed() {
-    this.setState(
-      { currentColorsReversed: !this.state.currentColorsReversed },
-      () => this.saveView(),
-    );
-  }
-
   handleChangeKillChain(event) {
     const { value } = event.target;
     this.setState({ currentKillChain: value }, () => this.saveView());
@@ -199,7 +187,7 @@ class GroupingKnowledgeComponent extends Component {
       params: { '*': mode },
       enableReferences,
     } = this.props;
-    const { currentModeOnlyActive, currentColorsReversed, currentKillChain } = this.state;
+    const { currentModeOnlyActive, currentKillChain } = this.state;
     return (
       <div
         style={{
@@ -287,9 +275,7 @@ class GroupingKnowledgeComponent extends Component {
                         grouping={grouping}
                         currentKillChain={currentKillChain}
                         currentModeOnlyActive={currentModeOnlyActive}
-                        currentColorsReversed={currentColorsReversed}
                         handleChangeKillChain={this.handleChangeKillChain.bind(this)}
-                        handleToggleColorsReversed={this.handleToggleColorsReversed.bind(this)}
                         handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(this)}
                       />
                     );
