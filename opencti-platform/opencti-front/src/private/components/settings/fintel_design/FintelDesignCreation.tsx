@@ -11,7 +11,6 @@ import { useTheme } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -154,7 +153,7 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
           <Field
             component={ColorPickerField}
             name="gradiantFromColor"
-            label={t_i18n('Gradiant From Color')}
+            label={t_i18n('Background primary color')}
             placeholder={t_i18n('Default')}
             InputLabelProps={{
               shrink: true,
@@ -165,7 +164,7 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
           <Field
             component={ColorPickerField}
             name="gradiantToColor"
-            label={t_i18n('Gradiant To Color')}
+            label={t_i18n('Background secondary color')}
             placeholder={t_i18n('Default')}
             InputLabelProps={{
               shrink: true,
@@ -176,7 +175,7 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
           <Field
             component={ColorPickerField}
             name="textColor"
-            label={t_i18n('Text Color')}
+            label={t_i18n('Text color')}
             placeholder={t_i18n('Default')}
             InputLabelProps={{
               shrink: true,
