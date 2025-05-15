@@ -2,31 +2,20 @@ import { graphql } from 'react-relay';
 import React, { useState } from 'react';
 import ImportMenu from '@components/data/ImportMenu';
 import { ImportFilesContentQuery, ImportFilesContentQuery$variables } from '@components/data/import/__generated__/ImportFilesContentQuery.graphql';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import { DeleteOutlined, GetAppOutlined } from '@mui/icons-material';
 import { ImportFilesContentLines_data$data } from '@components/data/import/__generated__/ImportFilesContentLines_data.graphql';
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
+import ImportActionsPopover from '@components/common/files/ImportActionsPopover';
+import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { useFormatter } from '../../../../components/i18n';
-import { APP_BASE_PATH } from '../../../../relay/environment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { deleteNode } from '../../../../utils/store';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import stopEvent from '../../../../utils/domEvent';
-import useDeletion from '../../../../utils/hooks/useDeletion';
-import DeleteDialog from '../../../../components/DeleteDialog';
-
-export const WorkbenchFileLineDeleteMutation = graphql`
-  mutation ImportFilesContentFileLineDeleteMutation($fileName: String) {
-    deleteImport(fileName: $fileName)
-  }
-`;
+import { getFileUri } from '../../../../utils/utils';
+import UploadImport from '../../../../components/UploadImport';
 
 export const workbenchLineFragment = graphql`
   fragment ImportFilesContentFileLine_file on File {
@@ -59,6 +48,9 @@ export const workbenchLineFragment = graphql`
         name
       }
       entity_id
+    }
+    works {
+      id
     }
   }
 `;
@@ -119,11 +111,15 @@ export const importFilesContentQuery = graphql`
 
 const LOCAL_STORAGE_KEY = 'importFiles';
 
-const ImportFilesContent = () => {
+interface ImportFilesContentProps {
+  inDraftOverview?: boolean;
+}
+
+const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Upload Files | Import | Data'));
-  const [fileId, setFileId] = useState<string>('');
+  const [openImportFilesDialog, setOpenImportFilesDialog] = useState<boolean>(false);
 
   const initialValues = {
     filters: emptyFilterGroup,
@@ -132,7 +128,11 @@ const ImportFilesContent = () => {
     orderAsc: false,
   };
 
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ImportFilesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<ImportFilesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
   const { filters } = viewStorage;
   const finalFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['InternalFile']);
   const queryPaginationOptions = {
@@ -149,41 +149,6 @@ const ImportFilesContent = () => {
     nodePath: ['importFiles', 'pageInfo', 'globalCount'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<ImportFilesContentQuery>;
-
-  const deletion = useDeletion({});
-  const { handleOpenDelete, handleCloseDelete } = deletion;
-
-  const handleRemove = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, id: string) => {
-    stopEvent(e);
-    setFileId(id);
-    handleOpenDelete();
-  };
-
-  const [deleteFile] = useApiMutation(WorkbenchFileLineDeleteMutation);
-  const handleRemoveFile = () => {
-    deleteFile({
-      variables: { fileName: fileId },
-      optimisticUpdater: (store) => {
-        const fileStore = store.get(fileId);
-        fileStore?.setValue(0, 'lastModifiedSinceMin');
-        fileStore?.setValue('progress', 'uploadStatus');
-      },
-      updater: (store) => {
-        const fileStore = store.get(fileId);
-        fileStore?.setValue(0, 'lastModifiedSinceMin');
-        fileStore?.setValue('progress', 'uploadStatus');
-        deleteNode(store, 'Pagination_global_importFiles', queryPaginationOptions, fileId);
-      },
-      onCompleted: () => {
-        setFileId('');
-        handleCloseDelete();
-      },
-      onError: () => {
-        setFileId('');
-        handleCloseDelete();
-      },
-    });
-  };
 
   const toolbarFilters = {
     mode: 'and',
@@ -208,75 +173,69 @@ const ImportFilesContent = () => {
     filterGroups: finalFilters ? [finalFilters] : [],
   };
 
+  const dataColumns = {
+    name: { percentWidth: 50 },
+    createdBy: {
+      label: 'Creator',
+      percentWidth: 15,
+      render: (({ metaData }: ImportFilesContentFileLine_file$data) => metaData?.creator?.name ?? '-'),
+    },
+    objectMarking: {
+      percentWidth: 15,
+    },
+    lastModified: {
+      id: 'lastModified',
+      label: 'Modification date',
+      isSortable: true,
+      percentWidth: 20,
+      render: ({ lastModified }: ImportFilesContentFileLine_file$data, { fd }: {
+        fd: (date: Date) => string
+      }) => fd(lastModified),
+    },
+  };
+
   return (
-    <div style={{ height: '100%', paddingRight: 200 }} className="break">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Uploaded Files'), current: true }]} />
-      <ImportMenu />
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={handleRemoveFile}
-        message={t_i18n('Do you want to delete this file?')}
-      />
+    <div style={{ height: '100%' }} className="break">
+      {!inDraftOverview && (
+        <>
+          <Breadcrumbs
+            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
+          />
+          <ImportMenu/>
+        </>
+      )}
       {queryRef && (
         <DataTable
-          dataColumns={{
-            name: { percentWidth: 50 },
-            createdBy: {
-              percentWidth: 15,
-              render: (({ metaData: { creator } }) => creator?.name ?? '-'),
-            },
-            objectMarking: {
-              percentWidth: 15,
-            },
-            lastModified: {
-              id: 'lastModified',
-              label: 'Modification date',
-              isSortable: true,
-              percentWidth: 19,
-              render: ({ lastModified }, { fd }) => fd(lastModified),
-            },
-          }}
+          dataColumns={dataColumns}
           resolvePath={(data: ImportFilesContentLines_data$data) => data.importFiles?.edges?.map(({ node }) => node)}
           storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={toolbarFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={workbenchLineFragment}
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
-          toolbarFilters={toolbarFilters}
-          lineFragment={workbenchLineFragment}
-          initialValues={initialValues}
-          preloadedPaginationProps={preloadedPaginationProps}
           taskScope={'IMPORT'}
-          actions={(file: ImportFilesContentFileLine_file$data) => {
+          redirectionModeEnabled
+          onLineClick={(file: ImportFilesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
-            return (
-              <div style={{ marginLeft: -10 }}>
-                {!(metaData?.errors && metaData?.errors.length > 0) && (
-                  <Tooltip title={t_i18n('Download this file')}>
-                    <IconButton
-                      disabled={isProgress}
-                      href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(id)}`}
-                      aria-haspopup="true"
-                      color={'primary'}
-                      size="small"
-                    >
-                      <GetAppOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                <Tooltip title={t_i18n('Delete this file')}>
-                  <IconButton
-                    disabled={isProgress}
-                    color={'primary'}
-                    onClick={(e) => handleRemove(e, id)}
-                    size="small"
-                  >
-                    <DeleteOutlined fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            );
+            if (!isProgress && !(metaData?.errors && metaData?.errors.length > 0)) {
+              window.location.pathname = getFileUri(id);
+            }
           }}
+          createButton={<UploadImport variant="contained"/>}
+          actions={(file: ImportFilesContentFileLine_file$data) => (
+            <ImportActionsPopover
+              file={file}
+              paginationOptions={queryPaginationOptions}
+              paginationKey={'Pagination_global_importFiles'}
+            />
+          )}
         />
+      )}
+      {openImportFilesDialog && (
+        <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)}/>
       )}
     </div>
   );

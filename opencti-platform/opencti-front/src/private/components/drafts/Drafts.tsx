@@ -7,6 +7,7 @@ import { Drafts_node$data } from '@components/drafts/__generated__/Drafts_node.g
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import ImportMenu from '@components/data/ImportMenu';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -124,7 +125,7 @@ const Drafts: React.FC = () => {
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
-    sortBy: 'name',
+    sortBy: 'created_at',
     orderAsc: false,
     openExports: false,
     redirectionMode: 'overview',
@@ -170,6 +171,7 @@ const Drafts: React.FC = () => {
       isSortable: true,
     },
     draft_status: {
+      id: 'draft_status',
       label: 'Status',
       percentWidth: 10,
       isSortable: true,
@@ -193,6 +195,7 @@ const Drafts: React.FC = () => {
       ),
     },
     draft_validation_progress: {
+      id: 'draft_validation_progress',
       label: 'Validation progress',
       percentWidth: 10,
       isSortable: false,
@@ -202,29 +205,32 @@ const Drafts: React.FC = () => {
 
   return (
     <span data-testid="draft-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Drafts'), current: true }]} />
-      {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        toolbarFilters={contextFilters}
-        preloadedPaginationProps={preloadedPaginationProps}
-        lineFragment={DraftLineFragment}
-        exportContext={{ entity_type: 'DraftWorkspace' }}
-        redirectionModeEnabled
-        createButton={!draftContext && (
-          <DraftCreation paginationOptions={queryPaginationOptions} />
-        )}
-        actions={(row) => (
-          <DraftPopover
-            draftId={row.id}
-            draftLocked={row.draft_status !== 'open'}
-            paginationOptions={queryPaginationOptions}
-          />
-        )}
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
       />
+      <ImportMenu/>
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={DraftLineFragment}
+          exportContext={{ entity_type: 'DraftWorkspace' }}
+          redirectionModeEnabled
+          createButton={!draftContext && (
+            <DraftCreation paginationOptions={queryPaginationOptions}/>
+          )}
+          actions={(row) => (
+            <DraftPopover
+              draftId={row.id}
+              draftLocked={row.draft_status !== 'open'}
+              paginationOptions={queryPaginationOptions}
+            />
+          )}
+        />
       )}
     </span>
   );

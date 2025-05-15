@@ -559,8 +559,8 @@ const LeftBar = () => {
             <StyledTooltip title={!navOpen && t_i18n('Draft overview')} placement="right">
               <MenuItem
                 component={Link}
-                to={`/dashboard/drafts/${draftContext.id}/`}
-                selected={location.pathname.includes(`/dashboard/drafts/${draftContext.id}/`)}
+                to={`/dashboard/data/import/draft/${draftContext.id}/`}
+                selected={location.pathname.includes(`/dashboard/data/import/draft/${draftContext.id}/`)}
                 dense={true}
                 classes={{ root: classes.menuItem }}
               >
@@ -887,7 +887,7 @@ const LeftBar = () => {
             <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <MenuItem
                 ref={anchors.data}
-                selected={!navOpen && location.pathname.includes('/dashboard/data')}
+                selected={!navOpen && location.pathname.includes('/dashboard/data') && !draftContext}
                 dense={true}
                 classes={{ root: classes.menuItem }}
                 onClick={(e) => (isMobile || navOpen ? handleSelectedMenuToggle('data') : handleGoToPage(e, '/dashboard/data'))}
@@ -918,29 +918,6 @@ const LeftBar = () => {
                 ],
               )}
             </Security>
-            {!draftContext && (
-              <Security needs={[KNOWLEDGE]}>
-                <StyledTooltip title={!navOpen && t_i18n('Drafts')} placement="right">
-                  <MenuItem
-                    component={Link}
-                    to="/dashboard/drafts"
-                    selected={location.pathname.includes('/dashboard/drafts')}
-                    dense={true}
-                    classes={{ root: classes.menuItem }}
-                  >
-                    <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                      <ArchitectureOutlined/>
-                    </ListItemIcon>
-                    {navOpen && (
-                    <ListItemText
-                      classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Drafts')}
-                    />
-                    )}
-                  </MenuItem>
-                </StyledTooltip>
-              </Security>
-            )}
             {
               isTrashEnable() && (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>

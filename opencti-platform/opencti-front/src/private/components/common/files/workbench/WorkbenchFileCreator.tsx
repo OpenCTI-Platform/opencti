@@ -78,7 +78,7 @@ interface WorkbenchFileCreatorProps {
   entity?: WorkbenchFileViewer_entity$data;
 }
 
-const workbenchFileCreatorStixCoreObjectQuery = graphql`
+export const workbenchFileCreatorStixCoreObjectQuery = graphql`
   query WorkbenchFileCreatorStixCoreObjectQuery($id: String!) {
     stixCoreObject(id: $id) {
       id

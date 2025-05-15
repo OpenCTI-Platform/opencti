@@ -94,7 +94,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
         input: { key: 'draft_context', value: '' },
       },
       onCompleted: () => {
-        navigate('/');
+        navigate('/dashboard/data/import/draft');
       },
     });
   };
@@ -114,7 +114,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             onCompleted: () => {
               setApproving(false);
               MESSAGING$.notifySuccess('Draft validation in progress');
-              navigate('/');
+              navigate('/dashboard/data/import/draft');
             },
           });
         },
