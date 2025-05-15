@@ -93,7 +93,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from '../domain/stixObjectOrStixRelationship';
 import { getEntityFromCache } from '../database/cache';
-import { flagSource } from '../modules/pir/pir-utils';
+import { createPirRel } from '../modules/pir/pir-utils';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -178,7 +178,7 @@ export const computePirTaskElements = async (context, user, task) => {
   const pirDependenciesMap = new Map(JSON.parse(pir_dependencies_map));
   // Apply the actions for each element
   await Promise.all(Array.from(pirDependenciesMap.keys())
-    .map((sourceId) => flagSource(context, sourceId, { id: pir_id, pirCriteria: pir_criteria }, pirDependenciesMap.get(sourceId))));
+    .map((sourceId) => createPirRel(context, sourceId, { id: pir_id, pirCriteria: pir_criteria }, pirDependenciesMap.get(sourceId))));
   const actions = [{ type: ACTION_TYPE_PIR_INITIAL_META_CREATE, context: { rule: task } }];
   return { actions, elements: processingElements };
 };

@@ -1,12 +1,11 @@
 import type { BasicStoreEntityPIR, ParsedPIR, PirDependency } from './pir-types';
-import type { AuthContext } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import { listRelationsPaginated } from '../../database/middleware-loader';
 import { SYSTEM_USER } from '../../utils/access';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
 import { stixRefRelationshipEditField } from '../../domain/stixRefRelationship';
 import { FunctionalError } from '../../config/errors';
-import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
-import { stixObjectOrRelationshipAddRefRelation } from '../../domain/stixObjectOrStixRelationship';
+import { createRelation } from '../../database/middleware';
 
 /**
  * Helper function to parse filters that are saved as string in elastic.
@@ -76,26 +75,19 @@ export const updatePirDependencies = async (
  * @param pir The PIR.
  * @param pirDependencies Criteria matched by the relationship.
  */
-export const flagSource = async (
+export const createPirRel = async (
   context: AuthContext,
+  user: AuthUser,
   sourceId: string,
   pir: BasicStoreEntityPIR,
   pirDependencies: PirDependency[],
 ) => {
   const addRefInput = {
     relationship_type: RELATION_IN_PIR,
+    fromId: sourceId,
     toId: pir.id,
     pir_dependencies: pirDependencies,
+    pir_score: computePirScore(pir, pirDependencies),
   };
-  // First create the meta relationship.
-  await stixObjectOrRelationshipAddRefRelation(
-    context,
-    SYSTEM_USER,
-    sourceId,
-    addRefInput,
-    ABSTRACT_STIX_CORE_OBJECT,
-  );
-  // And then add the dependencies in the meta relationship.
-  // TODO PIR: improve this if possible to avoid making 2 calls.
-  await updatePirDependencies(context, sourceId, pir, pirDependencies);
+  await createRelation(context, user, addRefInput);
 };
