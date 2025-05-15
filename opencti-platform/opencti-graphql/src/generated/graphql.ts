@@ -29542,7 +29542,6 @@ export type User = BasicObject & InternalObject & {
   otp_activated?: Maybe<Scalars['Boolean']['output']>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   otp_qr?: Maybe<Scalars['String']['output']>;
-  otp_secret?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
@@ -42222,7 +42221,6 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  otp_secret?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

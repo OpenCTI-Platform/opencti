@@ -5,8 +5,8 @@ import { v4 as uuid } from 'uuid';
 import { findById, getUserByEmail, userEditField } from '../../domain/user';
 import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
 import { sendMail } from '../../database/smtp';
-import type { AuthContext } from '../../types/user';
-import type { AskSendOtpInput, ChangePasswordInput, User, VerifyMfaInput, VerifyOtpInput } from '../../generated/graphql';
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { AskSendOtpInput, ChangePasswordInput, VerifyMfaInput, VerifyOtpInput } from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -18,7 +18,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { killUserSessions } from '../../database/session';
 import { logApp } from '../../config/conf';
 
-export const getLocalProviderUser = async (email: string): Promise<User> => {
+export const getLocalProviderUser = async (email: string): Promise<AuthUser> => {
   const user: any = await getUserByEmail(email);
   if (!user) throw UnsupportedError('User not found');
   if (user.external) throw UnsupportedError('External user');
@@ -41,13 +41,10 @@ interface SendMailArgs {
 export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
   const resetOtp = generateOtp();
-  console.log('resetOtp', resetOtp);
   const transactionId = uuid();
-  console.log('transactionId', transactionId);
   try {
     // Retrieve user information
     const user = await getLocalProviderUser(input.email);
-    console.log('Email', user.user_email);
     const {
       user_email,
       name,
