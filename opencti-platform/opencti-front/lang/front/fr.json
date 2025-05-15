@@ -2093,7 +2093,7 @@
   "No history about this entity.": "Aucun historique à propos cette entité.",
   "No history about this relationship.": "Aucun historique à propos de cette relation",
   "No import connectors on this platform": "Aucun connecteur d'import sur cette plateforme",
-  "No import works for this file": "Aucune importation ne fonctionne pour ce fichier",
+  "No import works for this file": "Pas d'executions d'import pour ce fichier",
   "No label": "Aucun label",
   "No Malware analysis on this observable.": "Aucune analyse de code malveillant sur cet observable.",
   "No malware analysis on this observable.": "Pas d'analyse de logiciels malveillants sur cet observable.",
