@@ -464,6 +464,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
+    logApp.info({ dataInstanceId, playbookNode, bundle });
     const { container_type, all, newContainer, caseTemplates } = playbookNode.configuration;
     if (!PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.includes(container_type)) {
       throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
