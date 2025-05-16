@@ -504,29 +504,6 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       } else {
         container.object_refs = [baseData.id];
       }
-      if (isApplyCaseTemplateEnabled && STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
-        const context = executionContext('playbook_components');
-        for (let i = 0; i < caseTemplates.length; i += 1) {
-          const taskTemplates = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
-          for (let j = 0; j < taskTemplates.length; j += 1) {
-            const taskData = {
-              name: taskTemplates[j].name,
-              description: taskTemplates[j].description,
-            };
-            const taskStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_TASK, taskData);
-            const storeTask = {
-              internal_id: generateInternalId(),
-              standard_id: taskStandardId,
-              entity_type: ENTITY_TYPE_CONTAINER_TASK,
-              parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
-              ...taskData,
-            } as StoreEntityTask;
-            const task = convertStoreToStix(storeTask) as StixTask;
-            task.object_refs = [container.id];
-            bundle.objects.push(task);
-          }
-        }
-      }
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
       // Following attributes are the same as the base instance: markings, labels, created_by, assignees, participants
       if (baseData.object_marking_refs) {
@@ -547,6 +524,30 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       // if the base instance is an incident and we wrap into an Incident Case, we set the same severity
       if ((<StixIncident>baseData).severity && container_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
+      }
+      if (isApplyCaseTemplateEnabled && STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
+        const context = executionContext('playbook_components');
+        for (let i = 0; i < caseTemplates.length; i += 1) {
+          const taskTemplates = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
+          for (let j = 0; j < taskTemplates.length; j += 1) {
+            const taskData = {
+              name: taskTemplates[j].name,
+              description: taskTemplates[j].description,
+            };
+            const taskStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_TASK, taskData);
+            const storeTask = {
+              internal_id: generateInternalId(),
+              standard_id: taskStandardId,
+              entity_type: ENTITY_TYPE_CONTAINER_TASK,
+              parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
+              ...taskData,
+            } as StoreEntityTask;
+            const task = convertStoreToStix(storeTask) as StixTask;
+            task.object_refs = [container.id];
+            task.object_marking_refs = container.object_marking_refs;
+            bundle.objects.push(task);
+          }
+        }
       }
       bundle.objects.push(container);
     }
