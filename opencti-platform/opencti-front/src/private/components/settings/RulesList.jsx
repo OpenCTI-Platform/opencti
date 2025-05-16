@@ -451,6 +451,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                   R.filter((p) => p.node.rule === rule.id, tasks),
                 ),
               );
+              const taskWork = task?.work;
               const displayDefinition = rule.display;
               return (
                 <Grid
@@ -503,7 +504,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                               </FormGroup>
                             </Grid>
                             <Grid item xs={12}>
-                              {isEngineEnabled && task && (
+                              {isEngineEnabled && taskWork && (
                               <div
                                 style={{
                                   width: '100%',
@@ -513,30 +514,23 @@ const RulesListComponent = ({ relay, data, keyword }) => {
                                 }}
                               >
                                 {task.enable
-                                  ? t_i18n(
-                                    task.completed
-                                      ? 'This rule has been applied on the existing data'
-                                      : 'Applying this rule on the existing data',
-                                  )
-                                  : t_i18n(
-                                    task.completed
-                                      ? 'Rule has been cleaned up on the existing data'
-                                      : 'Cleaning up this rule on the existing data',
-                                  )}
+                                  ? t_i18n(taskWork.status === 'complete' ? 'This rule has been applied on the existing data' : 'Applying this rule on the existing data')
+                                  : t_i18n(taskWork.status === 'complete' ? 'Rule has been cleaned up on the existing data' : 'Cleaning up this rule on the existing data')
+                                }
                                 <LinearProgress
                                   classes={{ root: classes.progress }}
                                   variant="determinate"
                                   value={
                                   // eslint-disable-next-line no-nested-ternary
-                                  task.task_expected_number === 0
-                                    ? task.completed
+                                  taskWork.tracking?.import_expected_number === 0
+                                    ? taskWork.status === 'complete'
                                       ? 100
                                       : 0
-                                    : task.completed
+                                    : taskWork.status === 'complete'
                                       ? 100
                                       : Math.round(
-                                        (task.task_processed_number
-                                          / task.task_expected_number)
+                                        ((taskWork.tracking?.import_processed_number ?? 0)
+                                          / (taskWork.tracking?.import_expected_number ?? 100))
                                           * 100,
                                       )
                                 }
@@ -829,6 +823,32 @@ export default createRefetchContainer(
               task_expected_number
               task_processed_number
               completed
+              work {
+                id
+                connector {
+                  name
+                }
+                user {
+                  name
+                }
+                completed_time
+                received_time
+                tracking {
+                  import_expected_number
+                  import_processed_number
+                }
+                messages {
+                  timestamp
+                  message
+                }
+                errors {
+                  timestamp
+                  message
+                }
+                status
+                timestamp
+                draft_context
+              }
               ... on RuleTask {
                 rule
                 enable
