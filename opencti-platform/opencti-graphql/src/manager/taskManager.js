@@ -124,7 +124,8 @@ export const taskList = async (context, user, task, callback) => {
     orderMode: task_order_mode || 'desc',
     // processing elements in descending order makes possible restoring from trash elements with dependencies
     orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
-    baseData: true
+    baseData: true,
+    includeDeletedInDraft: true,
   };
   const elements = await internalFindByIds(context, user, task_ids, options);
   callback(elements);
@@ -161,8 +162,11 @@ const baseOperationBuilder = (actionType, operations, element) => {
   if (actionType === 'KNOWLEDGE_CHANGE') {
     baseOperationObject.opencti_operation = 'patch';
     baseOperationObject.opencti_field_patch = operations.map((action) => {
-      const attrKey = schemaRelationsRefDefinition
-        .convertDatabaseNameToInputName(element.entity_type, action.context.field);
+      let attrKey = action.context.field;
+      if (action.context.type === 'RELATION') {
+        attrKey = schemaRelationsRefDefinition
+          .convertDatabaseNameToInputName(element.entity_type, action.context.field);
+      }
       return { key: attrKey, value: action.context.values, operation: action.type.toLowerCase() };
     });
   }
@@ -240,11 +244,11 @@ const buildBundleElement = (element, actionType, operations) => {
   const baseObject = {
     id: element.standard_id,
     type: convertTypeToStixType(element.entity_type),
-    ...baseOperationBuilder(actionType, operations, element),
     extensions: {
       [STIX_EXT_OCTI]: {
         id: element.internal_id,
-        type: element.entity_type
+        type: element.entity_type,
+        ...baseOperationBuilder(actionType, operations, element),
       }
     }
   };
