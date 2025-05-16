@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { useParams } from 'react-router-dom';
 import { FintelDesignQuery } from '@components/settings/fintel_design/__generated__/FintelDesignQuery.graphql';
@@ -7,11 +7,10 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import Paper from '@mui/material/Paper';
-import * as Yup from 'yup';
 import { useParams } from 'react-router-dom';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import CustomizationMenu from '@components/settings/CustomizationMenu';
-import { Field, Form, Formik } from 'formik';
+import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import PageContainer from '../../../../components/PageContainer';
@@ -19,11 +18,9 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FintelDesignQuery } from './__generated__/FintelDesignQuery.graphql';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import TextField from '../../../../components/TextField';
-import ColorPickerField from '../../../../components/ColorPickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import { htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPdf';
+import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
+import PdfViewer from '../../../../components/PdfViewer';
 
 const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
@@ -69,20 +66,6 @@ const fintelDesignQuery = graphql`
       name
       ...FintelDesign_fintelDesign
       ...FintelDesignsLine_node
-    }
-  }
-`;
-
-const fintelDesignFieldPatchMutation = graphql`
-  mutation FintelDesignFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
-    fintelDesignFieldPatch(id: $id, input: $input) {
-      id
-      name
-      description
-      url
-      gradiantFromColor
-      gradiantToColor
-      textColor
     }
   }
 `;
@@ -103,6 +86,15 @@ interface FintelDesignComponentProps {
   queryRef: PreloadedQuery<FintelDesignQuery>
 }
 
+export type FintelDesignFormValues = {
+  name: string
+  description?: string | null | undefined
+  url?: string | null | undefined
+  gradiantFromColor?: string | null | undefined
+  gradiantToColor?: string | null | undefined
+  textColor?: string | null | undefined
+};
+
 const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   queryRef,
 }) => {
@@ -114,8 +106,10 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
     queryResult.fintelDesign,
   );
   if (!fintelDesign) return null;
+  const [pdf, setPdf] = useState<File>();
+  const { buildFileFromTemplate } = useFileFromTemplate();
 
-  const [commitFieldPatch] = useApiMutation(fintelDesignFieldPatchMutation);
+  const [formValues, setFormValues] = useState<FintelDesignFormValues>();
 
   const initialValues = {
     name: fintelDesign.name,
@@ -141,6 +135,10 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
       },
     });
   };
+  useEffect(() => {
+    buildPreview();
+  }, [formValues]);
+
   return (
     <>
       <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -183,76 +181,10 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               }}
               variant="outlined"
             >
-              <Formik
-                onSubmit={() => {}}
-                enableReinitialize={true}
-                initialValues={initialValues}
-                validationSchema={fintelDesignValidation}
-                validateOnChange={true}
-                validateOnBlur={true}
-              >
-                {() => (
-                  <Form>
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="name"
-                      label={t_i18n('Name')}
-                      fullWidth
-                      onSubmit={handleFieldChange}
-                    />
-                    <Field
-                      component={MarkdownField}
-                      name="description"
-                      label={t_i18n('Description')}
-                      fullWidth={true}
-                      multiline={true}
-                      rows={2}
-                      onSubmit={handleFieldChange}
-                      style={fieldSpacingContainerStyle}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="url"
-                      label={t_i18n('Logo URL')}
-                      fullWidth
-                      onSubmit={handleFieldChange}
-                      style={fieldSpacingContainerStyle}
-                    />
-                    <Field
-                      component={ColorPickerField}
-                      name="gradiantFromColor"
-                      label={t_i18n('Background primary color')}
-                      placeholder={t_i18n('Default')}
-                      fullWidth
-                      onSubmit={handleFieldChange}
-                      variant="standard"
-                      style={fieldSpacingContainerStyle}
-                    />
-                    <Field
-                      component={ColorPickerField}
-                      name="gradiantToColor"
-                      label={t_i18n('Background secondary color')}
-                      placeholder={t_i18n('Default')}
-                      fullWidth
-                      onSubmit={handleFieldChange}
-                      variant="standard"
-                      style={fieldSpacingContainerStyle}
-                    />
-                    <Field
-                      component={ColorPickerField}
-                      name="textColor"
-                      label={t_i18n('Text color')}
-                      placeholder={t_i18n('Default')}
-                      fullWidth
-                      onSubmit={handleFieldChange}
-                      variant="standard"
-                      style={fieldSpacingContainerStyle}
-                    />
-                  </Form>
-                )}
-              </Formik>
+              <FintelDesignForm
+                fintelDesign={fintelDesign}
+                onChange={(values) => setFormValues(values)}
+              />
             </Paper>
           </Grid>
           <Grid item xs={6}>
@@ -267,7 +199,9 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               }}
               variant="outlined"
             >
-              <div>Preview to be added in chunk 3</div>
+              {pdf && (
+                <PdfViewer pdf={pdf} />
+              )}
             </Paper>
           </Grid>
         </Grid>
