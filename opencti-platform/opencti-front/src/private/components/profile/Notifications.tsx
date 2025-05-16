@@ -137,7 +137,6 @@ const Notifications: FunctionComponent = () => {
     notificationLineNotificationDeleteMutation,
   );
   const [notificationToDelete, setNotificationToDelete] = useState<NotificationsLine_node$data>();
-  const [openNotifDrawer, setOpenNotifDrawer] = useState<boolean>(false);
   const [notificationDigestToOpen, setNotificationDigestToOpen] = useState<NotificationsLine_node$data>();
 
   setTitle(t_i18n('Notifications'));
@@ -147,7 +146,6 @@ const Notifications: FunctionComponent = () => {
     const isDigest = events.length > 1;
     if (isDigest) {
       setNotificationDigestToOpen(data);
-      setOpenNotifDrawer(true);
     }
   };
 
@@ -461,11 +459,13 @@ const Notifications: FunctionComponent = () => {
           </DialogActions>
         </Dialog>
       )}
-      <DigestNotificationDrawer
-        notification={notificationDigestToOpen}
-        open={openNotifDrawer}
-        onClose={() => { setOpenNotifDrawer(false); }}
-      />
+      {!!notificationDigestToOpen && (
+        <DigestNotificationDrawer
+          notification={notificationDigestToOpen}
+          open={!!notificationDigestToOpen}
+          onClose={() => { setNotificationDigestToOpen(undefined); }}
+        />
+      )}
     </div>
   );
 };
