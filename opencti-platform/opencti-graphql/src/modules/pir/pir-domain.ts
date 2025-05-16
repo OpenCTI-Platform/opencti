@@ -84,9 +84,11 @@ export const addPirDependency = async (
 ) => {
   console.log('----------in addPirDependency--------------');
   const { relationshipId, sourceId, matchingCriteria } = input;
+  const pir = await storeLoadById<BasicStoreEntityPIR>(context, user, pirId, ENTITY_TYPE_PIR);
+  const pirInternalId = pir.id;
   const source = await internalLoadById<BasicStoreCommon>(context, PIR_MANAGER_USER, sourceId);
-  if (source) { // if element still exist
-    const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pirId);
+  if (source && pir) { // if element still exist
+    const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pirInternalId);
     console.log('[POC PIR] Event create matching', { source, relationshipId, matchingCriteria });
 
     const pirDependencies = matchingCriteria.map((criterion) => ({
@@ -98,13 +100,13 @@ export const addPirDependency = async (
     }));
     if (sourceFlagged) {
       console.log('[POC PIR] Source already flagged');
-      await updatePirDependencies(context, user, sourceId, pirId, pirDependencies, EditOperation.Add);
+      await updatePirDependencies(context, user, sourceId, pirInternalId, pirDependencies, EditOperation.Add);
       console.log('[POC PIR] Meta Ref relation updated');
     } else {
       console.log('[POC PIR] Source NOT flagged');
-      await createPirRel(context, user, sourceId, pirId, pirDependencies);
+      await createPirRel(context, user, sourceId, pirInternalId, pirDependencies);
       console.log('[POC PIR] Meta Ref relation created');
     }
   }
-  return pirId;
+  return pirInternalId;
 };
