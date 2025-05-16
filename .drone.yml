@@ -82,11 +82,11 @@ steps:
       - name: cache-node-frontend-e2e
         path: /drone/src/opencti-platform/opencti-front/node_modules
     commands:
-      - apt-get update
       - cd opencti-platform/opencti-front
       - yarn install
       - yarn generate-licenses
-      - test -a ../thid-party-licenses.txt
+      - test -f ../third-party-licenses.txt
+      - cat ../third-party-licenses.txt
 
   - name: frontend-tests
     image: node:22-alpine
