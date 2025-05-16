@@ -153,7 +153,7 @@
       "max_list_size": 500
     },
     "forgot_password": {
-      "otp_ttl": 600
+      "otp_ttl_second": 600
     }
   },
   "demo_mode": false,
