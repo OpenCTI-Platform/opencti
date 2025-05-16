@@ -154,7 +154,9 @@ steps:
     image: node:22.14.0
     commands:
       - cd opencti-platform/opencti-front
-      - npx generate-license-file --config generatelicenseconfig.json --no-spinner --ci
+      - yarn install
+      - yarn generate-licenses
+      - test -a ../thid-party-licenses.txt
 
   - name: build-circleci
     image: curlimages/curl
