@@ -78,9 +78,13 @@ const addPirDependencyToQueue = async (
   );
   const stixPir = convertEntityPIRToStix(pir);
   stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'add_pir_dependency';
+  const formattedMatchingCriteria = matchingCriteria.map((c) => ({
+    ...c,
+    filters: JSON.stringify(c.filters),
+  }));
   const pirBundle = {
     ...stixPir,
-    input: { relationshipId, sourceId, matchingCriteria },
+    input: { relationshipId, sourceId, matchingCriteria: formattedMatchingCriteria },
   };
   const stixPirBundle = buildStixBundle([pirBundle]);
   const jsonBundle = JSON.stringify(stixPirBundle);
