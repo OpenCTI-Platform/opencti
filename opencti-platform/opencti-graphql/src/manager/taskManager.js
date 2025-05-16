@@ -124,7 +124,8 @@ export const taskList = async (context, user, task, callback) => {
     orderMode: task_order_mode || 'desc',
     // processing elements in descending order makes possible restoring from trash elements with dependencies
     orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
-    baseData: true
+    baseData: true,
+    includeDeletedInDraft: true,
   };
   const elements = await internalFindByIds(context, user, task_ids, options);
   callback(elements);
