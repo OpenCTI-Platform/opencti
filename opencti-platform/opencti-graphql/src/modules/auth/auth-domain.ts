@@ -17,6 +17,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { SYSTEM_USER } from '../../utils/access';
 import { killUserSessions } from '../../database/session';
 import { logApp } from '../../config/conf';
+import type { SendMailArgs } from '../../types/smtp';
 
 export const getLocalProviderUser = async (email: string): Promise<AuthUser> => {
   const user: any = await getUserByEmail(email);
@@ -30,13 +31,6 @@ export const generateOtp = () => {
   crypto.getRandomValues(array);
   return Array.from(array, (n) => (n % 10).toString()).join('');
 };
-
-interface SendMailArgs {
-  from: string;
-  to: string;
-  subject: string;
-  html: string;
-}
 
 export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
