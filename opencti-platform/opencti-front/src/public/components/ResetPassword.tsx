@@ -71,16 +71,18 @@ interface ResetPasswordFormValues {
   password_validation: string;
 }
 
-const STEP_ASK_RESET = 'ask';
-const STEP_VALIDATE_OTP = 'validate';
-const STEP_MFA = 'mfa';
-const STEP_RESET_PASSWORD = 'reset';
+enum Step {
+  ASK_RESET = 'ask',
+  VALIDATE_OTP = 'validate',
+  MFA = 'mfa',
+  RESET_PASSWORD = 'reset',
+}
 const FLASH_COOKIE = 'opencti_flash';
 
 const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const [step, setStep] = useState(STEP_ASK_RESET);
+  const [step, setStep] = useState(Step.ASK_RESET);
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const [email, setEmail] = useState('');
   const [transactionId, setTransactionId] = useState('');
@@ -136,7 +138,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
         setEmail(values.email);
         setSubmitting(false);
         resetForm();
-        setStep(STEP_VALIDATE_OTP);
+        setStep(Step.VALIDATE_OTP);
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -163,7 +165,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
         setOtp(values.otp);
         setSubmitting(false);
         resetForm();
-        setStep(mfaActivated ? STEP_MFA : STEP_RESET_PASSWORD);
+        setStep(mfaActivated ? Step.MFA : Step.RESET_PASSWORD);
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -200,12 +202,12 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
   };
 
   const onCompletedVerifyMfa = () => {
-    setStep(STEP_RESET_PASSWORD);
+    setStep(Step.RESET_PASSWORD);
   };
 
   return (
     <>
-      {step === STEP_ASK_RESET && (
+      {step === Step.ASK_RESET && (
         <Formik
           initialValues={{ email: '' }}
           initialTouched={{ email: !R.isEmpty(flashError) }}
@@ -234,7 +236,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
           )}
         </Formik>
       )}
-      {step === STEP_VALIDATE_OTP && (
+      {step === Step.VALIDATE_OTP && (
         <Formik
           onSubmit={onSubmitValidateOtp}
           initialTouched={{ otp: !R.isEmpty(flashError) }}
@@ -272,10 +274,10 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
           )}
         </Formik>
       )}
-      {step === STEP_MFA && (
+      {step === Step.MFA && (
         <OTPForm variant="resetPassword" transactionId={transactionId} onCompleted={onCompletedVerifyMfa} />
       )}
-      {step === STEP_RESET_PASSWORD && (
+      {step === Step.RESET_PASSWORD && (
         <Formik
           onSubmit={onSubmitValidatePassword}
           initialTouched={{ otp: !R.isEmpty(flashError) }}
