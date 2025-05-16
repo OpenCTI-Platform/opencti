@@ -951,17 +951,17 @@ export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]
 
 // region - forgot password handling
 
-export const OTP_TTL = conf.get('app:forgot_password:otp_ttl');
+export const OTP_TTL = conf.get('app:forgot_password:otp_ttl_second') || 600;
 
 export const redisSetForgotPasswordOtp = async (
-  id: string,
+  transactionId: string,
   data: { email: string; hashedOtp: string; mfa_activated: boolean; mfa_validated: boolean; mfa_secret: string | null | undefined; userId: string },
   ttl: number = OTP_TTL
 ) => {
-  const forgotPasswordOtpKeyName = `forgot_password_otp_${id}`;
+  const forgotPasswordOtpKeyName = `forgot_password_otp_${transactionId}`;
   const pointerKey = `forgot_password_transactionId_${data.email}`;
   await getClientBase().setex(forgotPasswordOtpKeyName, ttl, JSON.stringify(data));
-  await getClientBase().setex(pointerKey, ttl, id);
+  await getClientBase().setex(pointerKey, ttl, transactionId);
 };
 export const redisGetForgotPasswordOtp = async (id: string) => {
   const keyName = `forgot_password_otp_${id}`;
