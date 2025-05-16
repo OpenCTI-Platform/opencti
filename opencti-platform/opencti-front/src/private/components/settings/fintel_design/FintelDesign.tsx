@@ -169,7 +169,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
           spacing={3}
           style={{ margin: 0, paddingRight: 20 }}
         >
-          <Grid item xs={6} style={{ paddingLeft: 0 }}>
+          <Grid item xs={4} style={{ paddingLeft: 0 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Configuration')}
             </Typography>
@@ -187,7 +187,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               />
             </Paper>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={8}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Preview')}
             </Typography>
