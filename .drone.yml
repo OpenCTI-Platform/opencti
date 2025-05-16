@@ -150,6 +150,12 @@ steps:
       - cd opencti-platform/opencti-front
       - node script/verify-translation.js
 
+  - name: frontend-generate-licenses
+    image: node:22.14.0
+    commands:
+      - cd opencti-platform/opencti-front
+      - npx generate-license-file --config generatelicenseconfig.json --no-spinner --ci
+
   - name: build-circleci
     image: curlimages/curl
     commands:
