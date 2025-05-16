@@ -8189,6 +8189,7 @@ type Query {
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
+  csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
   indicator(id: String!): Indicator
   indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IndicatorConnection
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
@@ -11737,6 +11738,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   name: String!
   description: String
   uri: String!
+  csv_mapper_type: IngestionCsvMapperType
   csvMapper: CsvMapper!
   authentication_type: IngestionAuthType!
   authentication_value: String
@@ -11758,6 +11760,11 @@ enum IngestionCsvOrdering {
   _score
 }
 
+enum IngestionCsvMapperType {
+  inline
+  id
+}
+
 type IngestionCsvConnection {
   pageInfo: PageInfo!
   edges: [IngestionCsvEdge!]!
@@ -11768,6 +11775,16 @@ type IngestionCsvEdge {
   node: IngestionCsv!
 }
 
+type CSVFeedAddInputFromImport {
+  name: String!
+  description: String!
+  uri: String!
+  authentication_type: String!
+  markings: [String!]!
+  authentication_value: String!
+  csvMapper: CsvMapperAddInputFromImport!
+}
+
 input IngestionCsvAddInput {
   name: String!
   description: String
@@ -11775,7 +11792,9 @@ input IngestionCsvAddInput {
   authentication_value: String
   current_state_date: DateTime
   uri: String!
-  csv_mapper_id: String!
+  csv_mapper_id: String
+  csv_mapper: String
+  csv_mapper_type: IngestionCsvMapperType
   ingestion_running: Boolean
   user_id: String!
   markings: [String!]
