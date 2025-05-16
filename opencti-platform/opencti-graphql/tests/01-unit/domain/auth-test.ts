@@ -33,8 +33,8 @@ describe('generateOtp', () => {
   });
 });
 
-let transactionId: string;
 describe('askSendOtp', () => {
+  let transactionId: string;
   it('Should return an uuid with an existed user', async () => {
     transactionId = await askSendOtp(testContext, { email: 'anais@opencti.io' });
     expect(uuidValidate(transactionId)).toBeTruthy();
