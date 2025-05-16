@@ -792,8 +792,7 @@ export const fetchStreamEventsRange = async (
   callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
   opts: StreamOption = {},
 ) => {
-  let effectiveStartEventId = startEventId; // TODO PIR remove live and add startEventId at pir creation
-  // console.log('effective start event id', effectiveStartEventId);
+  let effectiveStartEventId = startEventId;
   try {
     // Consume the data stream
     const streamResult = await client.call(
