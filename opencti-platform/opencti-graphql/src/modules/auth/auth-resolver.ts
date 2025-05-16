@@ -10,8 +10,8 @@ const authResolvers: Resolvers = {
     verifyOtp: (_, { input }) => {
       return verifyOtp(input);
     },
-    verifyMfa: (_, { input }) => {
-      return verifyMfa(input);
+    verifyMfa: (_, { input }, context) => {
+      return verifyMfa(context, input);
     },
     changePassword: (_, { input }, context) => {
       return changePassword(context, input);
