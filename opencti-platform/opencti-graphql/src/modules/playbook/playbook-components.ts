@@ -90,6 +90,7 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { generateCreateMessage } from '../../database/generate-message';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { findAllByCaseTemplateId } from '../task/task-domain';
+import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -449,6 +450,31 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS = [
   ENTITY_TYPE_CONTAINER_TASK,
 ];
 
+export const addTaskFromTaskTemplate = (
+  taskTemplates: BasicStoreEntityTaskTemplate[],
+  container: StixContainer,
+  bundle: StixBundle
+) => {
+  for (let j = 0; j < taskTemplates.length; j += 1) {
+    const taskData = {
+      name: taskTemplates[j].name,
+      description: taskTemplates[j].description,
+    };
+    const taskStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_TASK, taskData);
+    const storeTask = {
+      internal_id: generateInternalId(),
+      standard_id: taskStandardId,
+      entity_type: ENTITY_TYPE_CONTAINER_TASK,
+      parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
+      ...taskData,
+    } as StoreEntityTask;
+    const task = convertStoreToStix(storeTask) as StixTask;
+    task.object_refs = [container.id];
+    task.object_marking_refs = container.object_marking_refs;
+    bundle.objects.push(task);
+  }
+};
+
 export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {
   id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
   name: 'Container wrapper',
@@ -530,24 +556,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         const context = executionContext('playbook_components');
         for (let i = 0; i < caseTemplates.length; i += 1) {
           const taskTemplates = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
-          for (let j = 0; j < taskTemplates.length; j += 1) {
-            const taskData = {
-              name: taskTemplates[j].name,
-              description: taskTemplates[j].description,
-            };
-            const taskStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_TASK, taskData);
-            const storeTask = {
-              internal_id: generateInternalId(),
-              standard_id: taskStandardId,
-              entity_type: ENTITY_TYPE_CONTAINER_TASK,
-              parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
-              ...taskData,
-            } as StoreEntityTask;
-            const task = convertStoreToStix(storeTask) as StixTask;
-            task.object_refs = [container.id];
-            task.object_marking_refs = container.object_marking_refs;
-            bundle.objects.push(task);
-          }
+          addTaskFromTaskTemplate(taskTemplates, container, bundle);
         }
       }
       bundle.objects.push(container);
