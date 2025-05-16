@@ -8365,6 +8365,7 @@ export type FintelDesignEdge = {
 };
 
 export enum FintelDesignOrdering {
+  CreatedAt = 'created_at',
   Name = 'name'
 }
 
@@ -20740,7 +20741,7 @@ export type QueryFiltersRepresentativesArgs = {
 
 
 export type QueryFintelDesignArgs = {
-  id: Scalars['ID']['input'];
+  id: Scalars['String']['input'];
 };
 
 

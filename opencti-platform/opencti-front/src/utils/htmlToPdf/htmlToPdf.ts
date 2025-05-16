@@ -3,6 +3,7 @@ import { compiler } from 'markdown-to-jsx';
 import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
+import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import { fileUri } from '../../relay/environment';
 import { capitalizeWords } from '../String';
 import logoWhite from '../../static/images/logo_text_white.png';
@@ -69,11 +70,23 @@ export const htmlToPdf = (fileName: string, content: string) => {
  * @param content HTML content.
  * @param templateName Name of the template used for PDF generation.
  * @param markingNames Markings of the outcome report.
+ * @param fintelDesign Design of the template
  * @returns PDF object ready to be downloaded.
  */
-export const htmlToPdfReport = async (reportName: string, content: string, templateName: string, markingNames: string[]) => {
+export const htmlToPdfReport = async (
+  reportName: string,
+  content: string,
+  templateName: string,
+  markingNames: string[],
+  fintelDesign?: FintelDesign_fintelDesign$data,
+) => {
   const formattedTemplateName = capitalizeWords(templateName);
-  const logoBase64 = await getBase64ImageFromURL(fileUri(logoWhite));
+  let logoBase64;
+  try {
+    logoBase64 = await getBase64ImageFromURL(fileUri(fintelDesign && fintelDesign.url && fintelDesign.url.length > 0
+      ? fintelDesign.url
+      : logoWhite));
+  } catch { logoBase64 = await getBase64ImageFromURL(fileUri(logoWhite)); }
 
   let htmlData = removeUnnecessaryHtml(content);
   htmlData = setImagesWidth(htmlData);
@@ -93,10 +106,13 @@ export const htmlToPdfReport = async (reportName: string, content: string, templ
     },
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
+  const linearGradiant = [fintelDesign?.gradiantFromColor ?? '#00020C', fintelDesign?.gradiantToColor ?? '#001BDA'];
+  const textColor = fintelDesign?.textColor ?? WHITE;
+
   const docDefinition: TDocumentDefinitions = {
     pageMargins: [20, 30],
     styles: {
-      colorWhite: { color: WHITE },
+      colorWhite: { color: textColor },
       colorLight: { color: GREY },
       textMd: { fontSize: 14 },
       textXl: { fontSize: 40 },
@@ -143,7 +159,7 @@ export const htmlToPdfReport = async (reportName: string, content: string, templ
           y: 0,
           w: 600,
           h: 850,
-          linearGradient: ['#00020C', '#001BDA'],
+          linearGradient: linearGradiant,
         }],
       },
       {
@@ -152,8 +168,8 @@ export const htmlToPdfReport = async (reportName: string, content: string, templ
         margin: [0, 380, 0, 0],
       },
     ],
-    background: pdfBackground,
-    header: pdfHeader,
+    background: pdfBackground(linearGradiant),
+    header: pdfHeader(linearGradiant),
     footer: pdfFooter(markingNames),
     pageBreakBefore: pdfPageBreaks,
   };

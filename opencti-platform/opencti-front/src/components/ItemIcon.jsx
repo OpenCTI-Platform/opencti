@@ -69,6 +69,7 @@ import {
   ArchitectureOutlined,
   PlaylistRemoveOutlined,
   AttachEmailOutlined,
+  DrawOutlined,
 } from '@mui/icons-material';
 import {
   AutoFix,
@@ -549,6 +550,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <PlaylistRemoveOutlined style={style} fontSize={fontSize} role="img" />;
     case 'dissemination-list':
       return <AttachEmailOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'fintel-design':
+      return <DrawOutlined style={style} fontSize={fontSize} role="img" />;
     case 'autofix':
       return <AutoFix style={style} fontSize={fontSize} role="img" />;
     case 'default':
