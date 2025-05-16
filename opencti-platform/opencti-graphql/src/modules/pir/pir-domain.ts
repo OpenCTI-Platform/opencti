@@ -13,6 +13,7 @@ import type { BasicStoreCommon } from '../../types/store';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
 import { PIR_MANAGER_USER } from '../../utils/access';
 import { createPirRel, updatePirDependencies } from './pir-utils';
+import { FunctionalError } from '../../config/errors';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPIR>(context, user, id, ENTITY_TYPE_PIR);
@@ -26,8 +27,8 @@ export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptio
 const TEST_PIR_RESCAN_PERIOD = 3600 * 1000; // 1h hour in milliseconds // TODO PIR
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
-  const rescanStartDate = now() - TEST_PIR_RESCAN_PERIOD; // rescan start date in seconds
   // -- create PIR --
+  const rescanStartDate = now() - TEST_PIR_RESCAN_PERIOD; // rescan start date in seconds
   const finalInput = {
     ...input,
     lastEventId: `${rescanStartDate}-0`,
@@ -38,17 +39,17 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
     finalInput,
     ENTITY_TYPE_PIR,
   );
-  const pirId = created.id;
+
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'create',
     event_access: 'extended',
     message: `creates PIR \`${created.name}\``,
-    context_data: { id: pirId, entity_type: ENTITY_TYPE_PIR, input: finalInput },
+    context_data: { id: created.id, entity_type: ENTITY_TYPE_PIR, input: finalInput },
   });
   // create rabbit queue for pir
-  await registerConnectorForPir(context, { id: pirId, ...finalInput });
+  await registerConnectorForPir(context, { id: created.id, ...finalInput });
   // -- notify the PIR creation --
   return notify(BUS_TOPICS[ENTITY_TYPE_PIR].ADDED_TOPIC, created, user);
 };
@@ -76,9 +77,9 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
    * otherwise create a new meta relationship between the source and the PIR.
    *
    * @param context To be able to call engine.
-   * @param relationship The caught relationship matching the PIR.
-   * @param pir The PIR matched by the relationship.
-   * @param matchingCriteria The criteria that match.
+   * @param user User making the request.
+   * @param pirId The ID of the PIR matched by the relationship.
+   * @param input The data needed to create the dependency.
    */
 export const addPirDependency = async (
   context: AuthContext,
@@ -86,13 +87,16 @@ export const addPirDependency = async (
   pirId: string,
   input: PirDependencyAddInput,
 ) => {
-  console.log('----------in addPirDependency--------------');
-  const { relationshipId, sourceId, matchingCriteria } = input;
   const pir = await storeLoadById<BasicStoreEntityPIR>(context, user, pirId, ENTITY_TYPE_PIR);
-  const pirInternalId = pir.id;
+  if (!pir) {
+    throw FunctionalError('No PIR found');
+  }
+
+  const { relationshipId, sourceId, matchingCriteria } = input;
   const source = await internalLoadById<BasicStoreCommon>(context, PIR_MANAGER_USER, sourceId);
-  if (source && pir) { // if element still exist
-    const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pirInternalId);
+
+  if (source) { // if element still exist
+    const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pir.id);
     console.log('[POC PIR] Event create matching', { source, relationshipId, matchingCriteria });
 
     const pirDependencies = matchingCriteria.map((criterion) => ({
@@ -104,13 +108,13 @@ export const addPirDependency = async (
     }));
     if (sourceFlagged) {
       console.log('[POC PIR] Source already flagged');
-      await updatePirDependencies(context, user, sourceId, pirInternalId, pirDependencies, EditOperation.Add);
+      await updatePirDependencies(context, user, sourceId, pir.id, pirDependencies, EditOperation.Add);
       console.log('[POC PIR] Meta Ref relation updated');
     } else {
       console.log('[POC PIR] Source NOT flagged');
-      await createPirRel(context, user, sourceId, pirInternalId, pirDependencies);
+      await createPirRel(context, user, sourceId, pir.id, pirDependencies);
       console.log('[POC PIR] Meta Ref relation created');
     }
   }
-  return pirInternalId;
+  return pir.id;
 };
