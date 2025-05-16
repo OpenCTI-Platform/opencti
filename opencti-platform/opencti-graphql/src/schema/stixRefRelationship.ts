@@ -912,7 +912,7 @@ export const inPir: RefAttribute = {
   mandatoryType: 'no',
   editDefault: false,
   multiple: true,
-  upsert: false, // TODO PIR check upsert
+  upsert: false,
   isRefExistingForTypes(this, _, toType) {
     return this.toTypes.includes(toType);
   },
