@@ -36,6 +36,13 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     value: item,
   }));
 
+  const handleReset = () => {
+    setSelectedSavedFilter(undefined);
+    setCurrentSavedFilter(undefined);
+    setInputValue('');
+    helpers.handleRemoveSavedFilters();
+  };
+
   useEffect(() => {
     if (savedFilters) {
       const currentSavedFilters = options.find((item) => item.value.id === savedFilters.id);
@@ -54,14 +61,10 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
       });
       setInputValue(currentSavedFilter.name);
     }
+    if (!currentSavedFilter && selectedSavedFilter) {
+      handleReset();
+    }
   }, [currentSavedFilter]);
-
-  const handleReset = () => {
-    setSelectedSavedFilter(undefined);
-    setCurrentSavedFilter(undefined);
-    setInputValue('');
-    helpers.handleRemoveSavedFilters();
-  };
 
   useEffect(() => {
     if (isDisabled && !!selectedSavedFilter) {
