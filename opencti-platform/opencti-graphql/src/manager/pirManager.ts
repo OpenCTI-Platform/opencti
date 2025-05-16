@@ -1,3 +1,4 @@
+import { Promise as BluePromise } from 'bluebird';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import { executionContext, PIR_MANAGER_USER } from '../utils/access';
 import type { DataEvent, SseEvent } from '../types/event';
@@ -9,7 +10,7 @@ import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
 import { listRelationsPaginated } from '../database/middleware-loader';
-import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIRCriterion, type PirDependency } from '../modules/pir/pir-types';
+import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIRCriterion, type PirDependency, type StoreEntityPIR } from '../modules/pir/pir-types';
 import { parsePir, updatePirDependencies } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { createRedisClient, fetchStreamEventsRange } from '../database/redis';
@@ -48,7 +49,6 @@ const onRelationDeleted = async (context: AuthContext, relationship: any, pir: B
   for (const rel of rels.edges) {
     const relDependencies = (rel as any).node.pir_dependencies as PirDependency[];
     const newRelDependencies = relDependencies.filter((dep) => dep.relationship_id !== relationshipId);
-    console.log('newRelDependencies', newRelDependencies);
     if (newRelDependencies.length === 0) {
       // delete the rel between source and PIR
       await stixObjectOrRelationshipDeleteRefRelation(context, PIR_MANAGER_USER, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_CORE_OBJECT);
@@ -76,7 +76,7 @@ const addPirDependencyToQueue = async (
     { internal_id: connectorId, connector_type: ConnectorType.InternalIngestionPir },
     `Add dependency ${matchingCriteria} for ${sourceId} in pir ${pir.name}`
   );
-  const stixPir = convertEntityPIRToStix(pir);
+  const stixPir = convertEntityPIRToStix(pir as StoreEntityPIR);
   stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'add_pir_dependency';
   const formattedMatchingCriteria = matchingCriteria.map((c) => ({
     ...c,
@@ -89,7 +89,6 @@ const addPirDependencyToQueue = async (
   const stixPirBundle = buildStixBundle([pirBundle]);
   const jsonBundle = JSON.stringify(stixPirBundle);
   const content = Buffer.from(jsonBundle, 'utf-8').toString('base64');
-  console.log('jsonBundle', jsonBundle);
   const message = {
     type: 'bundle',
     applicant_id: PIR_MANAGER_USER.id,
@@ -108,12 +107,8 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR
       .map((e) => e.data)
       .filter((e) => e.data.type === STIX_TYPE_RELATION);
 
-    if (eventsContent.length > 0) {
-      console.log(`PIR ${pir.name}: events`, { streamEvents });
-    }
-
     // Check every event received to see if it matches the PIR.
-    await Promise.all(eventsContent.map(async (event) => {
+    await BluePromise.map(eventsContent, async (event) => {
       const { data } = event;
       // Check PIR filters (filters that do not count as criteria).
       const eventMatchesPirFilters = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, parsedPir.pirFilters);
@@ -145,7 +140,7 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR
           }
         }
       }
-    }));
+    }, { concurrency: 5 });
   };
 };
 
@@ -158,7 +153,7 @@ const pirManagerHandler = async () => {
   const allPIR = await getEntitiesListFromCache<BasicStoreEntityPIR>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR); // TODO PIR cache ?
 
   // Loop through all PIR one by one.
-  await Promise.all(allPIR.map(async (pir) => { // TODO PIR blue promise (gérer le max concurrence des promesses pouvant etre faites en parallèle)
+  await BluePromise.map(allPIR, async (pir) => {
     // Fetch stream events since last event id caught by the PIR.
     console.log(`PIR ${pir.name}: from ${pir.lastEventId ?? '$'}`);
     const { lastEventId } = await fetchStreamEventsRange(
@@ -171,7 +166,7 @@ const pirManagerHandler = async () => {
     if (lastEventId !== pir.lastEventId) {
       await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
     }
-  }));
+  }, { concurrency: 5 });
 };
 
 // Configuration of the manager.
