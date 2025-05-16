@@ -8244,6 +8244,8 @@ type Query {
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   pirs(first: Int, after: ID, orderBy: PIROrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PIRConnection
+  fintelDesign(id: ID!): FintelDesign
+  fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
 }
 
 type Subscription {
@@ -8737,7 +8739,7 @@ type Mutation {
   uploadImport(file: Upload!, fileMarkings: [String]): File
   uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, file_markings: [String!], refreshEntity: Boolean): File
-  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode): File
+  askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean): File
   resetFileIndexing: Boolean
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer
   synchronizerEdit(id: ID!): SynchronizerEditMutations
@@ -9106,6 +9108,7 @@ type Mutation {
   disseminationListSend(id: ID!, input: DisseminationListSendInput!): Boolean
   savedFilterAdd(input: SavedFilterAddInput!): SavedFilter
   savedFilterDelete(id: ID!): ID
+  savedFilterFieldPatch(id: ID!, input: [EditInput!]): SavedFilter
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
@@ -9118,6 +9121,9 @@ type Mutation {
   pirAdd(input: PIRAddInput!): PIR
   pirDelete(id: ID!): ID
   pirAddDependency(id: ID!, input: PIRDependencyAddInput!): ID
+  fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
+  fintelDesignDelete(id: ID!): ID
+  fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -13146,4 +13152,40 @@ input PIRDependencyAddInput {
   relationshipId: ID!
   sourceId: ID!
   matchingCriteria: [PIRCriterionInput!]!
+}
+
+type FintelDesign implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  description: String
+  url: String
+  gradiantFromColor: String
+  gradiantToColor: String
+  textColor: String
+}
+
+input FintelDesignAddInput {
+  name: String!
+  description: String
+  url: String
+  gradiantFromColor: String
+  gradiantToColor: String
+  textColor: String
+}
+
+type FintelDesignEdge {
+  cursor: String!
+  node: FintelDesign
+}
+
+type FintelDesignConnection {
+  pageInfo: PageInfo!
+  edges: [FintelDesignEdge!]!
+}
+
+enum FintelDesignOrdering {
+  name
 }
