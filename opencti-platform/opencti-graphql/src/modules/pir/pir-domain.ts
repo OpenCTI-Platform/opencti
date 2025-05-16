@@ -6,7 +6,7 @@ import { type EditInput, EditOperation, type PirAddInput, type PirDependencyAddI
 import { createEntity, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon } from '../../types/store';
@@ -22,7 +22,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptio
   return listEntitiesPaginated<BasicStoreEntityPIR>(context, user, [ENTITY_TYPE_PIR], opts);
 };
 
-const PIR_RESCAN_PERIOD = 30 * 24 * 3600 * 1000; // 1 month in milliseconds
+// const PIR_RESCAN_PERIOD = 30 * 24 * 3600 * 1000; // 1 month in milliseconds
 const TEST_PIR_RESCAN_PERIOD = 3600 * 1000; // 1h hour in milliseconds // TODO PIR
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
@@ -56,7 +56,11 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
 export const deletePir = async (context: AuthContext, user: AuthUser, pirId: string) => {
   // TODO PIR remove pir id from historic events
   // remove rabbit queue
-  await unregisterConnectorForIngestion(context, pirId);
+  try {
+    await unregisterConnectorForIngestion(context, pirId);
+  } catch (e) {
+    logApp.error('[OPENCTI] Error while unregistering PIR connector', { cause: e });
+  }
   // delete the PIR
   return deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
 };
