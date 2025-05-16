@@ -89,7 +89,6 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
 };
 
 const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
-  console.log('---event---', event);
   // Listened events: stix core relationships, 'contains', pir meta rels
   const eventData = event.data.data;
   // 1. detect stix core relationships
@@ -138,7 +137,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
   // resolve granted_refs
   const grantedRefsResolved = await resolveGrantedRefsIds(context, events);
   // Build the history data
-  const historyElements = events.map((event) => {
+  return events.map((event) => {
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
     const stix = event.data.data;
@@ -178,7 +177,6 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
       }
     }
     if (stix.type === STIX_TYPE_RELATION) {
-      console.log('[POC PIR] History rel', { event, stix });
       const rel: StixRelation = stix as StixRelation;
       contextData.from_id = rel.extensions[STIX_EXT_OCTI].source_ref;
       contextData.to_id = rel.extensions[STIX_EXT_OCTI].target_ref;
@@ -221,7 +219,6 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
       'rel_granted.internal_id': R.uniq(eventGrantedRefsIds),
     };
   });
-  return historyElements;
 };
 
 const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {

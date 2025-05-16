@@ -105,7 +105,7 @@ export const READ_STIX_INDICES = [
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLES,
 ];
-export const READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED = [ // TODO PIR add pir rel index or not?
+export const READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED = [
   READ_INDEX_STIX_META_OBJECTS,
   READ_INDEX_STIX_META_RELATIONSHIPS,
   READ_INDEX_PIR_RELS,
@@ -302,7 +302,6 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   if (isStixSightingRelationship(conceptType)) return INDEX_STIX_SIGHTING_RELATIONSHIPS;
 
   // Use only META Index on new ref relationship
-  console.log('concept type', conceptType);
   if (conceptType === RELATION_IN_PIR) return INDEX_PIR_RELS;
   if (isStixRefRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
 

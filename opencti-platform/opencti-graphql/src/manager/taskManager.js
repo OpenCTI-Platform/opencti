@@ -11,7 +11,6 @@ import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_ENRICHMENT,
   ACTION_TYPE_MERGE,
-  ACTION_TYPE_PIR_INITIAL_META_CREATE,
   ACTION_TYPE_PROMOTE,
   ACTION_TYPE_REMOVE,
   ACTION_TYPE_REPLACE,
@@ -72,7 +71,6 @@ import {
   ACTION_TYPE_UNSHARE,
   ACTION_TYPE_UNSHARE_MULTIPLE,
   TASK_TYPE_LIST,
-  TASK_TYPE_PIR,
   TASK_TYPE_QUERY,
   TASK_TYPE_RULE
 } from '../domain/backgroundTask-common';
@@ -93,7 +91,6 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from '../domain/stixObjectOrStixRelationship';
 import { getEntityFromCache } from '../database/cache';
-import { createPirRel } from '../modules/pir/pir-utils';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -169,17 +166,6 @@ const computeRuleTaskElements = async (context, user, task) => {
     const element = elements[elementIndex];
     processingElements.push({ element: element.node, next: element.cursor });
   }
-  return { actions, elements: processingElements };
-};
-
-export const computePirTaskElements = async (context, user, task) => {
-  const { pir_dependencies_map, pir_id, pir_criteria } = task;
-  const processingElements = [];
-  const pirDependenciesMap = new Map(JSON.parse(pir_dependencies_map));
-  // Apply the actions for each element
-  await Promise.all(Array.from(pirDependenciesMap.keys())
-    .map((sourceId) => createPirRel(context, sourceId, { id: pir_id, pirCriteria: pir_criteria }, pirDependenciesMap.get(sourceId))));
-  const actions = [{ type: ACTION_TYPE_PIR_INITIAL_META_CREATE, context: { rule: task } }];
   return { actions, elements: processingElements };
 };
 
@@ -652,8 +638,7 @@ export const taskHandler = async () => {
     const isQueryTask = task.type === TASK_TYPE_QUERY;
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
-    const isPirTask = task.type === TASK_TYPE_PIR;
-    if (!isQueryTask && !isListTask && !isRuleTask && !isPirTask) {
+    if (!isQueryTask && !isListTask && !isRuleTask) {
       logApp.error('[OPENCTI-MODULE] Task manager unsupported type', { type: task.type });
       return;
     }
@@ -677,9 +662,6 @@ export const taskHandler = async () => {
     }
     if (isRuleTask) {
       jobToExecute = await computeRuleTaskElements(fullContext, user, task);
-    }
-    if (isPirTask) {
-      jobToExecute = await computePirTaskElements(fullContext, SYSTEM_USER, task);
     }
     // Process the elements (empty = end of execution)
     const processingElements = jobToExecute.elements;
