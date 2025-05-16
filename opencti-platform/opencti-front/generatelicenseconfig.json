@@ -1,5 +1,5 @@
 {
   "inputs": ['./package.json', '../opencti-graphql/package.json'],
-  "output": "../thid-party-licenses.txt",
+  "output": "../third-party-licenses.txt",
   "overwrite": true
 }
