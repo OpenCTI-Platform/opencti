@@ -82,6 +82,7 @@ steps:
       - name: cache-node-frontend-e2e
         path: /drone/src/opencti-platform/opencti-front/node_modules
     commands:
+      - apt-get update
       - cd opencti-platform/opencti-front
       - yarn install
       - yarn generate-licenses
