@@ -49,7 +49,6 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       user_email,
       name,
       otp_activated: mfa_activated,
-      otp_secret: mfa_secret,
       id
     } = user;
     const email = user_email.toLowerCase();
@@ -64,7 +63,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     }
     // Generate and store the new OTP; create a new pointer using the new UUID
     const hashedOtp = bcrypt.hashSync(resetOtp);
-    await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, mfa_activated: mfa_activated ?? false, mfa_validated: false, mfa_secret, userId: id });
+    await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, mfa_activated: mfa_activated ?? false, mfa_validated: false, userId: id });
     // Create and send the email
     const body = `Hi ${name},</br></br>`
         + 'A request has been made to reset your OpenCTI password.</br></br>'
@@ -138,8 +137,9 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
   return { mfa_activated };
 };
 
-export const verifyMfa = async (input: VerifyMfaInput) => {
-  const { hashedOtp, email, mfa_activated, mfa_secret, ttl, userId } = await redisGetForgotPasswordOtp(input.transactionId);
+export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => {
+  const { hashedOtp, email, mfa_activated, ttl, userId } = await redisGetForgotPasswordOtp(input.transactionId);
+  const { otp_secret: mfa_secret } = await findById(context, ADMIN_USER, userId);
   if (!mfa_activated || !mfa_secret) {
     throw AuthenticationFailure();
   }
@@ -147,7 +147,7 @@ export const verifyMfa = async (input: VerifyMfaInput) => {
   if (!isValidated) {
     throw AuthenticationFailure();
   } else {
-    await redisSetForgotPasswordOtp(input.transactionId, { hashedOtp, email, mfa_activated, mfa_validated: isValidated, mfa_secret, userId }, ttl);
+    await redisSetForgotPasswordOtp(input.transactionId, { hashedOtp, email, mfa_activated, mfa_validated: isValidated, userId }, ttl);
   }
   return isValidated;
 };

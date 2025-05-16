@@ -955,7 +955,7 @@ export const OTP_TTL = conf.get('app:forgot_password:otp_ttl_second') || 600;
 
 export const redisSetForgotPasswordOtp = async (
   transactionId: string,
-  data: { email: string; hashedOtp: string; mfa_activated: boolean; mfa_validated: boolean; mfa_secret: string | null | undefined; userId: string },
+  data: { email: string; hashedOtp: string; mfa_activated: boolean; mfa_validated: boolean; userId: string },
   ttl: number = OTP_TTL
 ) => {
   const forgotPasswordOtpKeyName = `forgot_password_otp_${transactionId}`;

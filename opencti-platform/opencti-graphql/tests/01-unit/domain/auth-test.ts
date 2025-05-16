@@ -8,9 +8,6 @@ describe('getLocalProviderUser', () => {
   it('Should be able to return a user with an email', async () => {
     const user = await getLocalProviderUser('anais@opencti.io');
     expect(user.user_email).toEqual('anais@opencti.io');
-  });
-  it('Should be able to return a user with a name', async () => {
-    const user = await getLocalProviderUser('anais@opencti.io');
     expect(user.name).toEqual('anais@opencti.io');
   });
   it('Should throw an error if no user founded', async () => {
