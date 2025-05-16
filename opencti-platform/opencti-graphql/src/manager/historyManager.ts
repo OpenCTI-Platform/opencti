@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
+import type { AddOperation } from 'fast-json-patch/module/core';
 import { createStreamProcessor, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
@@ -24,6 +25,8 @@ import type { AuthContext } from '../types/user';
 import { FilterMode, FilterOperator, OrderingMode } from '../generated/graphql';
 import { extractStixRepresentative } from '../database/stix-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { inPir } from '../schema/stixRefRelationship';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
@@ -42,6 +45,7 @@ interface HistoryContext {
   labels_ids?: Array<string>;
   created_by_ref_id?: string;
   marking_definitions?: Array<string>;
+  pir_ids?: Array<string>;
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -84,13 +88,56 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
   return organizationByIdsMap;
 };
 
+const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
+  // Listened events: stix core relationships, 'contains', pir meta rels
+  const eventData = event.data.data;
+  // 1. detect stix core relationships
+  if (eventData.type === 'relationship') {
+    if (isStixCoreRelationship((eventData as StixRelation).relationship_type)) {
+      const sourceId = (eventData as StixRelation).source_ref;
+      const targetId = (eventData as StixRelation).target_ref;
+      const extensions = (eventData as StixRelation).extensions[STIX_EXT_OCTI];
+      if ((extensions.source_ref_pir_refs ?? []).length > 0) {
+        console.log('[POC PIR] Event for RELATIONSHIP in PIR history', { event, pirIds: extensions.source_ref_pir_refs, sourceId });
+        return extensions.source_ref_pir_refs;
+      } if ((extensions.target_ref_pir_refs ?? []).length > 0) {
+        console.log('[POC PIR] Event for RELATIONSHIP in PIR history', { event, pirIds: extensions.target_ref_pir_refs, targetId });
+        return extensions.target_ref_pir_refs;
+      }
+    }
+  }
+  if (event.event === 'update' && (event.data as UpdateEvent).context.patch) {
+    const updateEvent: UpdateEvent = event.data as UpdateEvent;
+    // 2. detect 'contains' rel
+    const pirIds = updateEvent.context.related_restrictions?.pir_ids ?? [];
+    if (pirIds.length > 0) {
+      console.log('[POC PIR] Event for CONTAINS in PIR history', { event, pirIds });
+      return pirIds;
+    }
+    // 3. detect in-pir rels
+    if (event.data.message.includes(inPir.label)) {
+      if (event.data.message.includes('adds')) {
+        const pirPatch = updateEvent.context.patch[0] as AddOperation<string[]>;
+        console.log('[POC PIR] Event for create `In PIR` meta rel', { event, pirPatch });
+        return pirPatch.value;
+      }
+      if (event.data.message.includes('removes')) {
+        const pirPatch = updateEvent.context.reverse_patch[0] as AddOperation<string[]>;
+        console.log('[POC PIR] Event for remove `In PIR` meta rel', { event, pirPatch });
+        return pirPatch.value;
+      }
+    }
+  }
+  return [];
+};
+
 export const buildHistoryElementsFromEvents = async (context:AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   // load all markings to resolve object_marking_refs
   const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   // resolve granted_refs
   const grantedRefsResolved = await resolveGrantedRefsIds(context, events);
   // Build the history data
-  const historyElements = events.map((event) => {
+  return events.map((event) => {
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
     const stix = event.data.data;
@@ -150,6 +197,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
+    contextData.pir_ids = generatePirIdsFromHistoryEvent(event);
     return {
       _index: INDEX_HISTORY,
       internal_id: event.id,
@@ -171,7 +219,6 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
       'rel_granted.internal_id': R.uniq(eventGrantedRefsIds),
     };
   });
-  return historyElements;
 };
 
 const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {

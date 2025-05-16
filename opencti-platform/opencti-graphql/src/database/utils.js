@@ -11,7 +11,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import conf from '../config/conf';
 import { now } from '../utils/format';
-import { isStixRefRelationship, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_IN_PIR, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { getDraftContext } from '../utils/draftContext';
 import { INPUT_OBJECTS } from '../schema/general';
@@ -71,6 +71,9 @@ export const INDEX_INFERRED_RELATIONSHIPS = `${ES_INDEX_PREFIX}_inferred_relatio
 export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS}*`;
 export const INDEX_DRAFT_OBJECTS = `${ES_INDEX_PREFIX}_draft_objects`;
 export const READ_INDEX_DRAFT_OBJECTS = `${INDEX_DRAFT_OBJECTS}*`;
+export const INDEX_PIR_RELS = `${ES_INDEX_PREFIX}_pir_rels`;
+export const READ_INDEX_PIR_RELS = `${INDEX_PIR_RELS}*`;
+
 export const isInferredIndex = (index) => index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS);
 export const isDraftIndex = (index) => index && index.startsWith(INDEX_DRAFT_OBJECTS);
 
@@ -93,6 +96,7 @@ export const WRITE_PLATFORM_INDICES = [
   INDEX_DRAFT_OBJECTS,
   INDEX_STIX_SIGHTING_RELATIONSHIPS,
   INDEX_STIX_META_RELATIONSHIPS,
+  INDEX_PIR_RELS,
 ];
 
 export const READ_STIX_INDICES = [
@@ -104,6 +108,7 @@ export const READ_STIX_INDICES = [
 export const READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED = [
   READ_INDEX_STIX_META_OBJECTS,
   READ_INDEX_STIX_META_RELATIONSHIPS,
+  READ_INDEX_PIR_RELS,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   ...READ_STIX_INDICES,
 ];
@@ -297,6 +302,7 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   if (isStixSightingRelationship(conceptType)) return INDEX_STIX_SIGHTING_RELATIONSHIPS;
 
   // Use only META Index on new ref relationship
+  if (conceptType === RELATION_IN_PIR) return INDEX_PIR_RELS;
   if (isStixRefRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
 
   throw DatabaseError('Cant find index', { type: conceptType });
@@ -335,16 +341,20 @@ export const extractIdsFromStoreObject = (instance) => {
 
 export const extractObjectsRestrictionsFromInputs = (inputs, entityType) => {
   const markings = [];
+  const pir_ids = [];
   if (isStixDomainObjectContainer(entityType)) {
     inputs.forEach((input) => {
       if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
         const objectMarking = input.value.flatMap((value) => value[RELATION_OBJECT_MARKING] ?? []);
+        const pirIds = input.value.flatMap((value) => value[RELATION_IN_PIR] ?? []);
         markings.push(...objectMarking);
+        pir_ids.push(...pirIds);
       }
     });
   }
   return {
-    markings
+    markings,
+    pir_ids,
   };
 };
 
