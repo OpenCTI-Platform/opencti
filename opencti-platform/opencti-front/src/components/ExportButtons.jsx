@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
-import { commitLocalUpdate } from '../relay/environment';
+import { commitLocalUpdate, MESSAGING$ } from '../relay/environment';
 import { exportImage, exportPdf } from '../utils/Image';
 import inject18n from './i18n';
 import Loader from './Loader';
@@ -104,6 +104,7 @@ class ExportButtons extends Component {
   }
 
   handleOpenPdf(event) {
+    console.log('ANGIE - handleOpenPdf');
     this.setState({ anchorElPdf: event.currentTarget });
   }
 
@@ -112,9 +113,10 @@ class ExportButtons extends Component {
   }
 
   exportPdf(domElementId, name, theme, background) {
+    console.log('ANGIE - exportPdf start');
     this.setState({ exporting: true });
     this.handleClosePdf();
-    const { theme: currentTheme, pixelRatio = 1 } = this.props;
+    const { theme: currentTheme, pixelRatio = 1, t } = this.props;
     let timeout = 4000;
     if (theme !== currentTheme.palette.mode) {
       timeout = 6000;
@@ -124,9 +126,11 @@ class ExportButtons extends Component {
         me.setValue(theme, 'theme');
       });
     }
+    console.log('ANGIE - exportPdf -1-');
     setTimeout(() => {
       const buttons = document.getElementById('export-buttons');
       buttons.setAttribute('style', 'display: none');
+      console.log('ANGIE - exportPdf -2-');
       exportPdf(
         domElementId,
         name,
@@ -139,14 +143,17 @@ class ExportButtons extends Component {
         pixelRatio,
         this.adjust,
       ).then(() => {
+        console.log('ANGIE - exportPdf -3- then');
         buttons.setAttribute('style', 'display: block');
-        commitLocalUpdate((store) => {
-          const me = store.getRoot().getLinkedRecord('me');
-          me.setValue(false, 'exporting');
-          me.setValue(currentTheme.palette.mode, 'theme');
+      }).catch(() => MESSAGING$.notifyError(t('Dashboard cannot be exported')))
+        .finally(() => {
+          commitLocalUpdate((store) => {
+            const me = store.getRoot().getLinkedRecord('me');
+            me.setValue(false, 'exporting');
+            me.setValue(currentTheme.palette.mode, 'theme');
+          });
+          this.setState({ exporting: false });
         });
-        this.setState({ exporting: false });
-      });
     }, timeout);
   }
 
