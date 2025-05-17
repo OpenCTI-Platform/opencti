@@ -36,6 +36,7 @@ import type { BasicStoreCommon } from '../../types/store';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { BASIC_EMAIL_TEMPLATE } from '../../utils/emailTemplates/basicEmailTemplate';
 import { addDisseminationCount } from '../../manager/telemetryManager';
+import type { SendMailArgs } from '../../types/smtp';
 
 const MAX_DISSEMINATION_LIST_SIZE = conf.get('app:dissemination_list:max_list_size') || 500;
 
@@ -48,15 +49,6 @@ export const findAll = async (context: AuthContext, user: AuthUser, args: QueryD
   await checkEnterpriseEdition(context);
   return listEntitiesPaginated<BasicStoreEntityDisseminationList>(context, user, [ENTITY_TYPE_DISSEMINATION_LIST], args);
 };
-
-interface SendMailArgs {
-  from: string;
-  to: string;
-  bcc?: string[];
-  subject: string;
-  html: string;
-  attachments?: any[];
-}
 
 /**
  * Actual sending of email, used by the background task.

@@ -9086,6 +9086,10 @@ type Mutation {
   savedFilterFieldPatch(id: ID!, input: [EditInput!]): SavedFilter
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
+  askSendOtp(input: AskSendOtpInput!): String
+  verifyOtp(input: VerifyOtpInput!): VerifyOtp
+  verifyMfa(input: VerifyMfaInput!): Boolean
+  changePassword(input: ChangePasswordInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12787,4 +12791,28 @@ input RequestAccessConfigureInput {
   approved_status_id: ID
   declined_status_id: ID
   approval_admin: [ID]
+}
+
+input AskSendOtpInput {
+  email: String!
+}
+
+input VerifyOtpInput {
+  otp: String!
+  transactionId: String!
+}
+
+input VerifyMfaInput {
+  mfaOtp: String!
+  transactionId: String!
+}
+
+input ChangePasswordInput {
+  transactionId: String!
+  otp: String!
+  newPassword: String!
+}
+
+type VerifyOtp {
+  mfa_activated: Boolean!
 }
