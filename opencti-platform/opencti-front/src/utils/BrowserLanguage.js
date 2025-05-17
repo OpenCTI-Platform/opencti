@@ -2,13 +2,14 @@ import * as R from 'ramda';
 
 export const LANGUAGES = {
   AUTO: 'auto',
+  CHINESE: 'zh-cn',
   ENGLISH: 'en-us',
   FRENCH: 'fr-fr',
-  SPANISH: 'es-es',
-  JAPANESE: 'ja-jp',
-  CHINESE: 'zh-cn',
   GERMAN: 'de-de',
+  ITALIAN: 'it-it',
+  JAPANESE: 'ja-jp',
   KOREAN: 'ko-kr',
+  SPANISH: 'es-es',
 };
 
 export const DEFAULT_LANG = LANGUAGES.ENGLISH;
@@ -28,13 +29,14 @@ const browserLanguagePropertyKeys = [
 ];
 
 const availableLanguages = [
+  LANGUAGES.CHINESE,
   LANGUAGES.ENGLISH,
   LANGUAGES.FRENCH,
-  LANGUAGES.SPANISH,
-  LANGUAGES.JAPANESE,
-  LANGUAGES.CHINESE,
   LANGUAGES.GERMAN,
+  LANGUAGES.ITALIAN,
+  LANGUAGES.JAPANESE,
   LANGUAGES.KOREAN,
+  LANGUAGES.SPANISH,
 ];
 
 const detectedLocale = R.pipe(

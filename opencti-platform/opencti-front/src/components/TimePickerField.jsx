@@ -7,23 +7,25 @@ import { useIntl } from 'react-intl';
 import { parse } from '../utils/Time';
 
 const timeFormatsMap = {
-  'en-us': 'hh:mm a',
-  'fr-fr': 'HH:mm',
-  'es-es': 'HH:mm',
-  'ja-jp': 'hh:mm a',
-  'zh-cn': 'hh:mm a',
   'de-de': 'HH:mm',
+  'en-us': 'hh:mm a',
+  'es-es': 'HH:mm',
+  'fr-fr': 'HH:mm',
+  'it-it': 'HH:mm',
+  'ja-jp': 'hh:mm a',
   'ko-kr': 'hh:mm a',
+  'zh-cn': 'hh:mm a',
 };
 
 const timeFormatsMapWithSeconds = {
-  'en-us': 'hh:mm:ss a',
-  'fr-fr': 'HH:mm:ss',
-  'es-es': 'HH:mm:ss',
-  'ja-jp': 'hh:mm:ss a',
-  'zh-cn': 'hh:mm:ss a',
   'de-de': 'HH:mm:ss',
+  'en-us': 'hh:mm:ss a',
+  'es-es': 'HH:mm:ss',
+  'fr-fr': 'HH:mm:ss',
+  'it-it': 'HH:mm:ss',
+  'ja-jp': 'hh:mm:ss a',
   'ko-kr': 'hh:mm:ss a',
+  'zh-cn': 'hh:mm:ss a',
 };
 
 const TimePickerField = (props) => {
