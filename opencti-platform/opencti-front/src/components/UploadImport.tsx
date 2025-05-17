@@ -34,16 +34,14 @@ const UploadImport = ({
 
   return (
     <>
-      {openImportFilesDialog && (
-        <ImportFilesDialog
-          open={openImportFilesDialog}
-          handleClose={() => {
-            onSuccess?.();
-            setOpenImportFilesDialog(false);
-          }}
-          entityId={entityId}
-        />
-      )}
+      <ImportFilesDialog
+        open={openImportFilesDialog}
+        handleClose={() => {
+          onSuccess?.();
+          setOpenImportFilesDialog(false);
+        }}
+        entityId={entityId}
+      />
       {variant === 'icon' ? (
         <Tooltip title={title} aria-label={title}>
           <IconButton
