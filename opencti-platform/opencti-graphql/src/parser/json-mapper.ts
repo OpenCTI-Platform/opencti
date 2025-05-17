@@ -119,7 +119,7 @@ const extractSimpleMultiPathFromJson = (
   const val = JSONPath.JSONPath({
     path,
     json: onBase ? base : record,
-    wrap: attrDef?.multiple ?? false,
+    wrap: attrDef.multiple ?? false,
     flatten: true
   });
   if (Array.isArray(val)) {
