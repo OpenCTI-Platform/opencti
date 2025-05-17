@@ -1,10 +1,10 @@
-import { type JsonMapperParsed, JsonMapperRepresentationType } from '../modules/internal/jsonMapper/jsonMapper-types';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
-import { ENTITY_SOFTWARE } from '../schema/stixCyberObservable';
+import { type JsonMapperParsed, JsonMapperRepresentationType } from '../../../src/modules/internal/jsonMapper/jsonMapper-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
+import { ENTITY_TYPE_VULNERABILITY } from '../../../src/schema/stixDomainObject';
+import { ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 
-export const mispJsonMapper3: Partial<JsonMapperParsed> = {
+export const cisa_mapper: Partial<JsonMapperParsed> = {
   id: 'misp-json-mapper',
   entity_type: 'JsonMapper',
   name: 'MispJsonMapper',
@@ -194,7 +194,7 @@ export const mispJsonMapper3: Partial<JsonMapperParsed> = {
   ]
 };
 
-export const json3 = `{
+export const cisa_data = `{
     "title": "CISA Catalog of Known Exploited Vulnerabilities",
     "catalogVersion": "2025.01.14",
     "dateReleased": "2025-01-14T19:09:06.4021Z",

@@ -123,15 +123,23 @@ const extractSimpleMultiPathFromJson = (
     flatten: true
   });
   if (Array.isArray(val)) {
-    return val.map((value) => {
+    const formattedValues = val.map((value) => {
       const formatedData = format(value, attrDef, attribute);
       return formatedData ? String(formatedData).trim() : '';
     });
+    if (attrDef.multiple) {
+      return formattedValues;
+    }
+    return formattedValues.join(',');
   }
-  return format(val, attrDef, attribute);
+  const formattedValue = format(val, attrDef, attribute);
+  if (attrDef.multiple) {
+    return [formattedValue];
+  }
+  return formattedValue;
 };
 
-const extractSimplePathFromJson = (
+const extractSimpleIdentifierFromJson = (
   base: JSON,
   record: JSON,
   attribute: SimpleAttributePath,
@@ -143,8 +151,7 @@ const extractSimplePathFromJson = (
 
 const extractIdentifierFromJson = (base: JSON, record: JSON, identifier: string, attrDef: AttributeDefinition) => {
   const identifiers = identifier.split(',');
-  return identifiers.map((id) => extractSimplePathFromJson(base, record, { path: id }, attrDef))
-    .join('-');
+  return identifiers.map((id) => extractSimpleIdentifierFromJson(base, record, { path: id }, attrDef)).join('-');
 };
 
 const orderedIdentifiersCombinations = <T>(arrays: T[][]): T[][] => {
@@ -194,7 +201,7 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.mode === 'simple' && attribute.attr_path) {
-    const computedValue = extractSimplePathFromJson(base, record, attribute.attr_path, definition);
+    const computedValue = extractSimpleMultiPathFromJson(base, record, attribute.attr_path, definition);
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
@@ -327,7 +334,7 @@ const computeOrderedRepresentations = (representations: JsonMapperRepresentation
   return [baseEntities, basedOnEntities, relationships];
 };
 
-const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: string | object, mapper: JsonMapperParsed) => {
+const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: string | object, mapper: JsonMapperParsed, variables: Record<string, unknown> = {}) => {
   const refEntities = await handleRefEntities(context, SYSTEM_USER, mapper);
   const chosenMarkings = mapper.user_chosen_markings ?? [];
   const results = new Map<string, Record<string, InputType>[]>();
@@ -336,7 +343,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
   for (let index = 0; index < baseArray.length; index += 1) {
     const element = baseArray[index];
     // region variables
-    const dataVars: any = {};
+    const dataVars: any = { ...variables };
     for (let indexVar = 0; indexVar < (mapper.variables ?? []).length; indexVar += 1) {
       const variable = (mapper.variables ?? [])[indexVar];
       dataVars[variable.name] = await extractComplexPathFromJson(baseJson, {}, element, variable.path);

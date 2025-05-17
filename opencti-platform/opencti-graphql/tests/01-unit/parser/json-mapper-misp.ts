@@ -1,11 +1,17 @@
-import { type JsonMapperParsed, JsonMapperRepresentationType } from '../modules/internal/jsonMapper/jsonMapper-types';
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_MALWARE } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { ENTITY_DOMAIN_NAME, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_IPV4_ADDR } from '../schema/stixCyberObservable';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
+import { type JsonMapperParsed, JsonMapperRepresentationType } from '../../../src/modules/internal/jsonMapper/jsonMapper-types';
+import {
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_MALWARE
+} from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
+import { ENTITY_DOMAIN_NAME, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
+import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 
-export const mispJsonMapper2: Partial<JsonMapperParsed> = {
+export const misp_mapper: Partial<JsonMapperParsed> = {
   id: 'misp-json-mapper',
   entity_type: 'JsonMapper',
   name: 'MispJsonMapper',
@@ -1265,7 +1271,7 @@ export const mispJsonMapper2: Partial<JsonMapperParsed> = {
   ]
 };
 
-export const json2 = `{
+export const misp_data = `{
     "Event": {
         "id": "558",
         "orgc_id": "2",

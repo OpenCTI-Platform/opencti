@@ -10,13 +10,13 @@ interface CodeBlockProps {
   customHeight?: string;
 }
 
-const CodeBlock: FunctionComponent<CodeBlockProps> = ({ language, code, customHeight }) => {
+const CodeBlock: FunctionComponent<CodeBlockProps> = ({ language, code, customHeight = '400px' }) => {
   const theme = useTheme<Theme>();
   return (
     <SyntaxHighlighter
       language={language}
       style={theme.palette.mode === 'dark' ? a11yDark : coy}
-      customStyle={{ height: customHeight ?? '400px', minWidth: '550px' }}
+      customStyle={{ height: customHeight, minWidth: '550px' }}
       showLineNumbers
     >
       {code}
