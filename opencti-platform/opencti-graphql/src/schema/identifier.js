@@ -418,6 +418,15 @@ export const isStandardIdSameWay = (previousInstance, updatedInstance) => {
   return R.equals(previousWay, currentWay);
 };
 
+const generateValuesFromWay = (way, values) => {
+  const targetValues = {};
+  for (let index = 0; index < way.length; index += 1) {
+    const key = way[index].src;
+    targetValues[key] = isEmptyField(values[key]) ? null : values[key];
+  }
+  return targetValues;
+};
+
 const isStandardIdChanged = (previous, updated, operation) => {
   // If the way change, is not an upgrade
   if (!isStandardIdSameWay(previous, updated)) {
@@ -425,9 +434,9 @@ const isStandardIdChanged = (previous, updated, operation) => {
   }
   // If same way, test if only adding is part of operation
   const { way: previousWay } = generateDataUUID(previous.entity_type, previous);
-  const dataPrevious = R.fromPairs(Object.entries(previous).filter(([k]) => previousWay.map((w) => w.src).includes(k)));
+  const dataPrevious = generateValuesFromWay(previousWay, previous);
   const { way: currentWay } = generateDataUUID(updated.entity_type, updated);
-  const dataUpdated = R.fromPairs(Object.entries(updated).filter(([k]) => currentWay.map((w) => w.src).includes(k)));
+  const dataUpdated = generateValuesFromWay(currentWay, updated);
   const patch = jsonpatch.compare(dataPrevious, dataUpdated);
   const numberOfOperations = patch.length;
   // If no operations, standard id will not change
