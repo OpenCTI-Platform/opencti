@@ -14213,6 +14213,7 @@ export type Mutation = {
   pirAdd?: Maybe<Pir>;
   pirAddDependency?: Maybe<Scalars['ID']['output']>;
   pirDelete?: Maybe<Scalars['ID']['output']>;
+  pirDeleteDependency?: Maybe<Scalars['ID']['output']>;
   playbookAdd?: Maybe<Playbook>;
   playbookAddLink: Scalars['String']['output'];
   playbookAddNode: Scalars['String']['output'];
@@ -15737,6 +15738,12 @@ export type MutationPirAddDependencyArgs = {
 
 export type MutationPirDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationPirDeleteDependencyArgs = {
+  id: Scalars['ID']['input'];
+  input: PirDependencyDeleteInput;
 };
 
 
@@ -18740,6 +18747,11 @@ export type PirCriterionInput = {
 
 export type PirDependencyAddInput = {
   matchingCriteria: Array<PirCriterionInput>;
+  relationshipId: Scalars['ID']['input'];
+  sourceId: Scalars['ID']['input'];
+};
+
+export type PirDependencyDeleteInput = {
   relationshipId: Scalars['ID']['input'];
   sourceId: Scalars['ID']['input'];
 };
@@ -32587,6 +32599,7 @@ export type ResolversTypes = ResolversObject<{
   PIRCriterion: ResolverTypeWrapper<PirCriterion>;
   PIRCriterionInput: PirCriterionInput;
   PIRDependencyAddInput: PirDependencyAddInput;
+  PIRDependencyDeleteInput: PirDependencyDeleteInput;
   PIREdge: ResolverTypeWrapper<PirEdge>;
   PIROrdering: PirOrdering;
   PackageStatus: PackageStatus;
@@ -33448,6 +33461,7 @@ export type ResolversParentTypes = ResolversObject<{
   PIRCriterion: PirCriterion;
   PIRCriterionInput: PirCriterionInput;
   PIRDependencyAddInput: PirDependencyAddInput;
+  PIRDependencyDeleteInput: PirDependencyDeleteInput;
   PIREdge: PirEdge;
   PageInfo: PageInfo;
   Participant: Participant;
@@ -38900,6 +38914,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   pirAdd?: Resolver<Maybe<ResolversTypes['PIR']>, ParentType, ContextType, RequireFields<MutationPirAddArgs, 'input'>>;
   pirAddDependency?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirAddDependencyArgs, 'id' | 'input'>>;
   pirDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirDeleteArgs, 'id'>>;
+  pirDeleteDependency?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirDeleteDependencyArgs, 'id' | 'input'>>;
   playbookAdd?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddArgs, 'input'>>;
   playbookAddLink?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddLinkArgs, 'id' | 'input'>>;
   playbookAddNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddNodeArgs, 'id' | 'input'>>;
