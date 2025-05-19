@@ -162,8 +162,11 @@ const baseOperationBuilder = (actionType, operations, element) => {
   if (actionType === 'KNOWLEDGE_CHANGE') {
     baseOperationObject.opencti_operation = 'patch';
     baseOperationObject.opencti_field_patch = operations.map((action) => {
-      const attrKey = schemaRelationsRefDefinition
-        .convertDatabaseNameToInputName(element.entity_type, action.context.field);
+      let attrKey = action.context.field;
+      if (action.context.type === 'RELATION') {
+        attrKey = schemaRelationsRefDefinition
+          .convertDatabaseNameToInputName(element.entity_type, action.context.field);
+      }
       return { key: attrKey, value: action.context.values, operation: action.type.toLowerCase() };
     });
   }
