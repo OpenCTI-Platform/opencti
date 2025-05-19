@@ -5,7 +5,7 @@ import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
-import { VocabulariesLines_DataQuery$variables } from '@components/settings/__generated__/VocabulariesLines_DataQuery.graphql';
+import { VocabulariesLinesPaginationQuery$variables } from '@components/settings/__generated__/VocabulariesLinesPaginationQuery.graphql';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
@@ -17,7 +17,7 @@ import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSo
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 interface VocabularyCreationProps {
-  paginationOptions: VocabulariesLines_DataQuery$variables;
+  paginationOptions: VocabulariesLinesPaginationQuery$variables;
   category: VocabularyCategory;
 }
 

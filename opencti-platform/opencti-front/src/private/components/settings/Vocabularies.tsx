@@ -170,12 +170,12 @@ const Vocabularies = () => {
           lineFragment={vocabFragment}
           disableNavigation
           preloadedPaginationProps={preloadedPaginationProps}
-          actions={(vocab) => <VocabularyPopover vocab={vocab} paginationOptions={paginationOptions} />}
+          actions={(vocab) => <VocabularyPopover vocab={vocab} paginationOptions={queryPaginationOptions} />}
           searchContextFinal={{ entityTypes: ['Vocabulary'] }}
           icon={() => <ShortTextOutlined sx={{ color: theme.palette.primary.main }} />}
           createButton={<VocabularyCreation
             category={category}
-            paginationOptions={paginationOptions}
+            paginationOptions={queryPaginationOptions}
                         />}
         />
       )}
