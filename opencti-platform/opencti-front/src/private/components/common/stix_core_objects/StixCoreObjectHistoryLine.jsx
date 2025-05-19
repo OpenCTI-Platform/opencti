@@ -111,7 +111,6 @@ class StixCoreObjectHistoryLineComponent extends Component {
   }
 
   renderIcon(eventScope, isRelation, eventMesage, commit) {
-    console.log('eventScope', eventScope);
     const { theme } = this.props;
     if (isRelation) {
       if (eventScope === 'create') {
