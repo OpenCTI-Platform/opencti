@@ -280,6 +280,7 @@ const RulesListComponent = ({ relay, data, keyword }) => {
     R.map((o) => ({ key: o, name: t_i18n(o) })),
     sortByNameCaseInsensitive,
   )(Object.keys(rules));
+  console.log(rules, categories);
   const tasks = R.pathOr([], ['backgroundTasks', 'edges'], data);
   const modules = R.pathOr([], ['settings', 'platform_modules'], data);
   const isEngineEnabled = R.head(
