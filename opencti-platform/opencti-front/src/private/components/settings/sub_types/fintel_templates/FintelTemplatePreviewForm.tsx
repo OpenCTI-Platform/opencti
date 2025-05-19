@@ -77,8 +77,9 @@ const FintelTemplatePreviewForm = ({
               label={t_i18n('Entity')}
             />
             <FintelDesignField
+              name="fintelDesign"
+              label={t_i18n('Fintel Design')}
               onChange={setFieldValue}
-              containerStyle={fieldSpacingContainerStyle}
             />
             <ObjectMarkingField
               name="contentMaxMarkings"
