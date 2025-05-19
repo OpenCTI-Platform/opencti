@@ -4,6 +4,7 @@ import { ENTITY_TYPE_PIR, type StixPIR, type StoreEntityPIR } from './pir-types'
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertEntityPIRToStix from './pir-converter';
 import { createdAt, creators, updatedAt } from '../../schema/attribute-definition';
+import { isFeatureEnabled } from '../../config/conf';
 
 const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPIR, StixPIR> = {
   type: {
@@ -31,4 +32,4 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPIR, StixPIR> = {
   converter_2_1: convertEntityPIRToStix
 };
 
-registerDefinition(ENTITY_PIR_DEFINITION);
+if (isFeatureEnabled('PIR')) registerDefinition(ENTITY_PIR_DEFINITION);

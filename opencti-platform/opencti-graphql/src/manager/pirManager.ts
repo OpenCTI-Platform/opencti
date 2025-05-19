@@ -21,6 +21,7 @@ import { createWork } from '../domain/work';
 import { ConnectorType } from '../generated/graphql';
 import convertEntityPIRToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
+import { isFeatureEnabled } from '../config/conf';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'PIR Manager';
@@ -188,4 +189,4 @@ const PIR_MANAGER_DEFINITION: ManagerDefinition = {
   }
 };
 // Automatically register manager on start.
-registerManager(PIR_MANAGER_DEFINITION);
+if (isFeatureEnabled('PIR')) registerManager(PIR_MANAGER_DEFINITION);

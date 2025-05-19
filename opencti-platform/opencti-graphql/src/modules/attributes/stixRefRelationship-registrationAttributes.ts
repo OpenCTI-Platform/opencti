@@ -16,7 +16,8 @@ const stixRefRelationshipsAttributes: AttributeDefinition[] = [
     editDefault: false,
     multiple: false,
     upsert: true,
-    isFilterable: true
+    isFilterable: true,
+    featureFlag: 'PIR',
   },
   {
     name: 'pir_dependencies',
@@ -28,6 +29,7 @@ const stixRefRelationshipsAttributes: AttributeDefinition[] = [
     multiple: true,
     upsert: true,
     isFilterable: true,
+    featureFlag: 'PIR',
   },
 ];
 
