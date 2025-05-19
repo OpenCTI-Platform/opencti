@@ -23,7 +23,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
   const {
     useDataTablePaginationLocalStorage: {
       helpers,
-      viewStorage: { filters, savedFilters },
+      viewStorage: { savedFilters },
     },
   } = useDataTableContext();
 
@@ -71,12 +71,6 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
       handleReset();
     }
   }, [isDisabled]);
-
-  useEffect(() => {
-    if (!filters?.filters.length && !filters?.filterGroups.length) {
-      handleReset();
-    }
-  }, [filters]);
 
   const handleChange = (selectionOption: AutocompleteOptionType) => {
     setSelectedSavedFilter(selectionOption);
