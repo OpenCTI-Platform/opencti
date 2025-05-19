@@ -24,7 +24,7 @@ class Indicator:
 
     @staticmethod
     def generate_id(pattern):
-        data = {"pattern": pattern}
+        data = {"pattern": pattern.strip()}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "indicator--" + id

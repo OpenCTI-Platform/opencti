@@ -227,9 +227,9 @@ class Opinion:
         if created is not None:
             if isinstance(created, datetime.datetime):
                 created = created.isoformat()
-            data = {"opinion": opinion, "created": created}
+            data = {"opinion": opinion.strip(), "created": created}
         else:
-            data = {"opinion": opinion}
+            data = {"opinion": opinion.strip()}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "opinion--" + id

@@ -457,9 +457,9 @@ class Note:
         if created is not None:
             if isinstance(created, datetime.datetime):
                 created = created.isoformat()
-            data = {"content": content, "created": created}
+            data = {"content": content.strip(), "created": created}
         else:
-            data = {"content": content}
+            data = {"content": content.strip()}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "note--" + id
