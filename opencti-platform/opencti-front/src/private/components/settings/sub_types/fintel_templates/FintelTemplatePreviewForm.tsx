@@ -6,13 +6,26 @@ import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '@co
 import { useParams } from 'react-router-dom';
 import EntitySelectField from '@components/common/form/EntitySelectField';
 import { EntityOption } from '@components/common/form/EntitySelect';
+import FintelDesignField from '@components/common/form/FintelDesignField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { useFormatter } from '../../../../../components/i18n';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { isEmptyObject } from '../../../../../utils/object';
 
+export interface FintelDesign {
+  id: string,
+  name: string,
+  url: string,
+  description: string,
+  gradiantFromColor: string,
+  gradiantToColor: string,
+  textColor: string,
+  ' $fragmentType': 'FintelDesign_fintelDesign';
+}
+
 export interface FintelTemplatePreviewFormInputs {
   entity: EntityOption | null;
+  fintelDesign: FintelDesign | null;
   contentMaxMarkings: FieldOption[];
   fileMarkings: FieldOption[];
 }
@@ -35,6 +48,7 @@ const FintelTemplatePreviewForm = ({
 
   const initialValues: FintelTemplatePreviewFormInputs = {
     entity: null,
+    fintelDesign: null,
     contentMaxMarkings: [],
     fileMarkings: [],
   };
@@ -61,6 +75,10 @@ const FintelTemplatePreviewForm = ({
               component={EntitySelectField}
               types={[subTypeId]}
               label={t_i18n('Entity')}
+            />
+            <FintelDesignField
+              onChange={setFieldValue}
+              containerStyle={fieldSpacingContainerStyle}
             />
             <ObjectMarkingField
               name="contentMaxMarkings"

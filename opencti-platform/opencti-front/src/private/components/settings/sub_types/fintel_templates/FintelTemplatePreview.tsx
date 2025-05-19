@@ -3,6 +3,7 @@ import { Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
+import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import { useFintelTemplateContext } from './FintelTemplateContext';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
@@ -75,6 +76,7 @@ const FintelTemplatePreview = ({
   const buildPreview = async (
     scoId: string,
     scoName: string,
+    fintelDesign: FintelDesign_fintelDesign$data,
     maxMarkings: string[],
     fileMarkings: string[],
   ) => {
@@ -86,7 +88,7 @@ const FintelTemplatePreview = ({
       instance_filters: null,
     };
     const htmlTemplate = await buildFileFromTemplate(scoId, maxMarkings, undefined, template);
-    const PDF = await htmlToPdfReport(scoName, htmlTemplate, 'Preview', fileMarkings);
+    const PDF = await htmlToPdfReport(scoName, htmlTemplate, 'Preview', fileMarkings, fintelDesign);
     PDF.getBlob((blob) => {
       const file = new File([blob], 'Preview.pdf', { type: blob.type });
       setPdf(file);
@@ -94,11 +96,12 @@ const FintelTemplatePreview = ({
   };
 
   useEffect(() => {
-    const { fileMarkings, entity, contentMaxMarkings } = formValues ?? {};
-    if (!entity || !isTabActive) return;
+    const { fileMarkings, entity, contentMaxMarkings, fintelDesign } = formValues ?? {};
+    if (!entity || !isTabActive || !fintelDesign) return;
     buildPreview(
       entity.value,
       entity.label,
+      fintelDesign,
       (contentMaxMarkings ?? []).map((m) => m.value),
       (fileMarkings ?? []).map((m) => m.label),
     );
