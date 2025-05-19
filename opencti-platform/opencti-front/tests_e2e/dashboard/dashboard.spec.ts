@@ -189,6 +189,19 @@ test('Dashboard CRUD', async ({ page }) => {
   await expect(dashboardDetailsPage.getTitle('Full Dashboard')).toBeVisible();
   const errors = page.getByText('An unknown error occurred.');
   await expect(errors).toHaveCount(0);
+
+  await expect(dashboardDetailsPage.getExportPDFButton()).toBeVisible();
+
+  // Export dashboard as PDF, should succeed to get a file.
+  const downloadPDFPromise = page.waitForEvent('download');
+  await dashboardDetailsPage.getExportPDFButton().click();
+  await dashboardDetailsPage.getExportPDFButtonThemeMenu('Dark').click();
+
+  const downloadPdf = await downloadPDFPromise;
+  expect(downloadPdf.suggestedFilename()).toBeDefined();
+  await downloadPdf.saveAs(`./test-results/e2e-files/${downloadPdf.suggestedFilename()}`);
+
+  // Delete imported dashboard
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Delete').click();
   await dashboardDetailsPage.getConfirmButton().click();
