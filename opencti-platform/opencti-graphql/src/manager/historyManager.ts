@@ -4,7 +4,7 @@ import * as jsonpatch from 'fast-json-patch';
 import type { AddOperation } from 'fast-json-patch/module/core';
 import { createStreamProcessor, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
-import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
+import conf, { booleanConf, ENABLED_DEMO_MODE, isFeatureEnabled, logApp } from '../config/conf';
 import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
@@ -197,7 +197,9 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
-    contextData.pir_ids = generatePirIdsFromHistoryEvent(event);
+    if (isFeatureEnabled('PIR')) {
+      contextData.pir_ids = generatePirIdsFromHistoryEvent(event);
+    }
     return {
       _index: INDEX_HISTORY,
       internal_id: event.id,
