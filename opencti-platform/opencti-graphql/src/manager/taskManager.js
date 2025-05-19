@@ -160,61 +160,61 @@ const baseOperationBuilder = (actionType, operations, element) => {
   const baseOperationObject = {};
   // Knowledge management
   if (actionType === 'KNOWLEDGE_CHANGE') {
-    baseOperationObject.opencti_operation = 'patch';
-    baseOperationObject.opencti_field_patch = operations.map((action) => {
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_field_patch = operations.map((action) => {
       const attrKey = schemaRelationsRefDefinition
         .convertDatabaseNameToInputName(element.entity_type, action.context.field);
       return { key: attrKey, value: action.context.values, operation: action.type.toLowerCase() };
     });
   }
   if (actionType === 'KNOWLEDGE_TRASH') {
-    baseOperationObject.opencti_operation = 'delete';
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = 'delete';
   }
   if (actionType === ACTION_TYPE_RESTORE) {
-    baseOperationObject.opencti_operation = 'restore';
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = 'restore';
   }
   if (actionType === 'KNOWLEDGE_REMOVE') {
-    baseOperationObject.opencti_operation = 'delete_force';
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = 'delete_force';
   }
   if (actionType === ACTION_TYPE_ENRICHMENT) {
-    baseOperationObject.opencti_operation = 'enrichment';
-    baseOperationObject.connector_ids = operations[0].context.values;
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = 'enrichment';
+    baseOperationObject.extensions[STIX_EXT_OCTI].connector_ids = operations[0].context.values;
   }
   if (actionType === ACTION_TYPE_MERGE) {
-    baseOperationObject.opencti_operation = 'merge';
-    baseOperationObject.merge_target_id = element.id; // To be compliant with current worker implementation
-    baseOperationObject.merge_source_ids = operations[0].context.values;
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = 'merge';
+    baseOperationObject.extensions[STIX_EXT_OCTI].merge_target_id = element.id; // To be compliant with current worker implementation
+    baseOperationObject.extensions[STIX_EXT_OCTI].merge_source_ids = operations[0].context.values;
   }
   // Draft management
   if (actionType === ACTION_TYPE_REMOVE_FROM_DRAFT) {
-    baseOperationObject.opencti_operation = 'revert_draft';
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = 'revert_draft';
   }
   // Rule management
   if (actionType === ACTION_TYPE_RULE_APPLY) {
-    baseOperationObject.opencti_operation = actionType.toLowerCase();
-    baseOperationObject.opencti_rule = operations[0].context.rule_id;
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = actionType.toLowerCase();
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_rule = operations[0].context.rule_id;
   }
   if (actionType === ACTION_TYPE_RULE_CLEAR) {
-    baseOperationObject.opencti_operation = actionType.toLowerCase();
-    baseOperationObject.opencti_rule = operations[0].context.rule_id;
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = actionType.toLowerCase();
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_rule = operations[0].context.rule_id;
   }
   if (actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN) {
-    baseOperationObject.opencti_operation = 'rules_rescan';
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = 'rules_rescan';
   }
   // Share / Unshare
   if (isShareAction(actionType)) {
-    baseOperationObject.opencti_operation = 'share';
-    baseOperationObject.sharing_organization_ids = operations[0].context.values;
-    baseOperationObject.sharing_direct_container = false;
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = 'share';
+    baseOperationObject.extensions[STIX_EXT_OCTI].sharing_organization_ids = operations[0].context.values;
+    baseOperationObject.extensions[STIX_EXT_OCTI].sharing_direct_container = false;
   }
   if (isUnshareAction(actionType)) {
-    baseOperationObject.opencti_operation = 'unshare';
-    baseOperationObject.sharing_organization_ids = operations[0].context.values;
-    baseOperationObject.sharing_direct_container = false;
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = 'unshare';
+    baseOperationObject.extensions[STIX_EXT_OCTI].sharing_organization_ids = operations[0].context.values;
+    baseOperationObject.extensions[STIX_EXT_OCTI].sharing_direct_container = false;
   }
   // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
-    baseOperationObject.opencti_operation = 'clear_access_restriction';
+    baseOperationObject.extensions[STIX_EXT_OCTI].opencti_operation = 'clear_access_restriction';
   }
   return baseOperationObject;
 };
