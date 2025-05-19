@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
-import { StixCoreObjectHistoryLines_data$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLines_data.graphql';
+import { StixCoreObjectHistoryLinesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
-import { QueryRenderer } from '../../../../relay/environment';
 import SearchInput from '../../../../components/SearchInput';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 type StixCoreObjectHistoryProps = {
   stixCoreObjectId: string;
@@ -24,6 +24,75 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
   const handleSearchEntity = (value: string) => setEntitySearchTerm(value);
 
   const handleSearchRelations = (value: string) => setRelationsSearchTerm(value);
+
+  const objectsQueryRef = useQueryLoading<StixCoreObjectHistoryLinesQuery>(
+    stixCoreObjectHistoryLinesQuery,
+    {
+      filters: {
+        mode: 'and',
+        filterGroups: [],
+        filters: [
+          { key: ['context_data.id'], values: [stixCoreObjectId] },
+          {
+            key: ['event_type'],
+            values: ['mutation', 'create', 'update', 'delete', 'merge'],
+          },
+        ],
+      },
+      first: 20,
+      orderBy: 'timestamp',
+      orderMode: 'desc',
+      search: entitySearchTerm,
+    },
+  );
+
+  const relationsQueryRef = useQueryLoading<StixCoreObjectHistoryLinesQuery>(
+    stixCoreObjectHistoryLinesQuery,
+    {
+      filters: {
+        mode: 'and',
+        filters: [
+          {
+            key: ['event_type'],
+            values: ['create', 'delete', 'mutation'], // retro-compatibility
+          },
+        ],
+        filterGroups: [{
+          mode: 'or',
+          filters: [
+            {
+              key: ['event_scope'],
+              values: ['create', 'delete'],
+            },
+            {
+              key: ['event_scope'],
+              values: [], // if event_scope is null, event_type is not
+              operator: 'nil',
+            },
+          ],
+          filterGroups: [],
+        },
+        {
+          mode: 'or',
+          filters: [
+            {
+              key: ['context_data.from_id'],
+              values: [stixCoreObjectId],
+            },
+            {
+              key: ['context_data.to_id'],
+              values: [stixCoreObjectId],
+            },
+          ],
+          filterGroups: [],
+        }],
+      },
+      first: 20,
+      orderBy: 'timestamp',
+      orderMode: 'desc',
+      search: relationsSearchTerm,
+    },
+  );
 
   return (
     <div style={{ height: '100%' }}>
@@ -54,38 +123,16 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
             />
           </div>
           <div className="clearfix" />
-          <QueryRenderer
-            query={stixCoreObjectHistoryLinesQuery}
-            variables={{
-              filters: {
-                mode: 'and',
-                filterGroups: [],
-                filters: [
-                  { key: 'context_data.id', values: [stixCoreObjectId] },
-                  {
-                    key: 'event_type',
-                    values: ['mutation', 'create', 'update', 'delete', 'merge'],
-                  },
-                ],
-              },
-              first: 20,
-              orderBy: 'timestamp',
-              orderMode: 'desc',
-              search: entitySearchTerm,
-            }}
-            render={({ props }: { props: StixCoreObjectHistoryLines_data$data }) => {
-              if (props) {
-                return (
-                  <StixCoreObjectHistoryLines
-                    stixCoreObjectId={stixCoreObjectId}
-                    data={props}
-                    isRelationLog={false}
-                  />
-                );
-              }
-              return <Loader variant={LoaderVariant.inElement} />;
-            }}
-          />
+          {objectsQueryRef
+            && <React.Suspense
+              fallback={<Loader variant={LoaderVariant.inElement} />}
+               >
+              <StixCoreObjectHistoryLines
+                queryRef={objectsQueryRef}
+                isRelationLog={false}
+              />
+            </React.Suspense>
+            }
         </Grid>
         {!withoutRelations && (
           <Grid item xs={6}>
@@ -100,69 +147,20 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
               <SearchInput
                 variant="thin"
                 onSubmit={handleSearchRelations}
-                keyword={entitySearchTerm}
+                keyword={relationsSearchTerm}
               />
             </div>
             <div className="clearfix" />
-            <QueryRenderer
-              query={stixCoreObjectHistoryLinesQuery}
-              variables={{
-                filters: {
-                  mode: 'and',
-                  filters: [
-                    {
-                      key: 'event_type',
-                      values: ['create', 'delete', 'mutation'], // retro-compatibility
-                    },
-                  ],
-                  filterGroups: [{
-                    mode: 'or',
-                    filters: [
-                      {
-                        key: 'event_scope',
-                        values: ['create', 'delete'],
-                      },
-                      {
-                        key: 'event_scope',
-                        values: [], // if event_scope is null, event_type is not
-                        operator: 'nil',
-                      },
-                    ],
-                    filterGroups: [],
-                  },
-                  {
-                    mode: 'or',
-                    filters: [
-                      {
-                        key: 'context_data.from_id',
-                        values: [stixCoreObjectId],
-                      },
-                      {
-                        key: 'context_data.to_id',
-                        values: [stixCoreObjectId],
-                      },
-                    ],
-                    filterGroups: [],
-                  }],
-                },
-                first: 20,
-                orderBy: 'timestamp',
-                orderMode: 'desc',
-                search: relationsSearchTerm,
-              }}
-              render={({ props }: { props: StixCoreObjectHistoryLines_data$data }) => {
-                if (props) {
-                  return (
-                    <StixCoreObjectHistoryLines
-                      stixCoreObjectId={stixCoreObjectId}
-                      data={props}
-                      isRelationLog={true}
-                    />
-                  );
-                }
-                return <Loader variant={LoaderVariant.inElement} />;
-              }}
-            />
+            {relationsQueryRef
+              && <React.Suspense
+                fallback={<Loader variant={LoaderVariant.inElement} />}
+                 >
+                <StixCoreObjectHistoryLines
+                  queryRef={relationsQueryRef}
+                  isRelationLog={true}
+                />
+              </React.Suspense>
+            }
           </Grid>
         )}
       </Grid>
