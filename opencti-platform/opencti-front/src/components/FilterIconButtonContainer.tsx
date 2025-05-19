@@ -329,6 +329,7 @@ FilterIconButtonContainerProps
           : tooltipContent
     }
       arrow
+      placement="bottom-start"
     >
       <Box sx={boxStyle}>
         {displayedFilters.map((currentFilter, index) => {
