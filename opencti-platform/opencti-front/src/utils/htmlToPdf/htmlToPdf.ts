@@ -78,7 +78,7 @@ export const htmlToPdfReport = async (
   content: string,
   templateName: string,
   markingNames: string[],
-  fintelDesign?: FintelDesign_fintelDesign$data,
+  fintelDesign: FintelDesign_fintelDesign$data,
 ) => {
   const formattedTemplateName = capitalizeWords(templateName);
   let logoBase64;
@@ -106,8 +106,11 @@ export const htmlToPdfReport = async (
     },
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
-  const linearGradiant = [fintelDesign?.gradiantFromColor ?? '#00020C', fintelDesign?.gradiantToColor ?? '#001BDA'];
-  const textColor = fintelDesign?.textColor ?? WHITE;
+  const linearGradiant = [
+    fintelDesign.gradiantFromColor || '#00020C',
+    fintelDesign.gradiantToColor || '#001BDA',
+  ];
+  const textColor = fintelDesign?.textColor || WHITE;
 
   const docDefinition: TDocumentDefinitions = {
     pageMargins: [20, 30],
