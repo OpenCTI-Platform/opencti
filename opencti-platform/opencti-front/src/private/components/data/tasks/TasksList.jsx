@@ -21,7 +21,6 @@ import Slide from '@mui/material/Slide';
 import { Delete } from 'mdi-material-ui';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import WorkDetail from '../connectors/WorkDetail';
 import TasksFilterValueContainer from '../../../../components/TasksFilterValueContainer';
 import TaskStatus from '../../../../components/TaskStatus';
 import { useFormatter } from '../../../../components/i18n';
@@ -236,9 +235,14 @@ const TasksList = ({ data }) => {
         if (task.completed) {
           status = 'complete';
         } else if (task.task_processed_number > 0) {
-          status = 'progress';
+          status = 'provisioning';
         } else {
           status = 'wait';
+        }
+        if (task.work) {
+          if (task.work.status === 'wait' || task.work.status === 'progress') {
+            status = 'processing';
+          }
         }
         let filters = null;
         let listIds = '';
@@ -248,6 +252,19 @@ const TasksList = ({ data }) => {
             : convertFiltersFromOldFormat(task.task_filters);
         } else if (task.task_ids) {
           listIds = truncate(R.join(', ', task.task_ids), 60);
+        }
+        const lastTaskExecutionDate = task.work ? task.work.completed_time : task.last_execution_date;
+        let progressValue = 0;
+        if (task.work) {
+          if (task.work.status === 'complete') {
+            progressValue = 100;
+          } else if (task.work.status === 'wait') {
+            progressValue = 0;
+          } else {
+            progressValue = Math.round((100 * (task.work.tracking?.import_processed_number ?? 0)) / (task.work.tracking?.import_expected_number ?? 100));
+          }
+        } else {
+          progressValue = 100;
         }
         return (
           <Paper
@@ -260,12 +277,6 @@ const TasksList = ({ data }) => {
               <Grid item xs={5}>
                 <Grid container={true} spacing={1}>
                   <Grid item xs={12}>
-                    {(task.scope ?? task.type)
-                        && <Grid item xs={2}>
-                          <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
-                        </Grid>
-                    }
-                    <br/>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
                     </Typography>
@@ -383,8 +394,16 @@ const TasksList = ({ data }) => {
                         ? t_i18n('Task end time')
                         : t_i18n('Task last execution time')}
                     </Typography>
-                    {nsdt(task.last_execution_date)}
+                    {nsdt(lastTaskExecutionDate)}
                   </Grid>
+                  {(task.scope ?? task.type)
+                      && <Grid item xs={2}>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t_i18n('Scope')}
+                        </Typography>
+                        <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
+                      </Grid>
+                  }
                   <Grid item xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Status')}
@@ -398,22 +417,10 @@ const TasksList = ({ data }) => {
                     <LinearProgress
                       classes={{ root: classes.progress }}
                       variant="determinate"
-                      value={
-                          // eslint-disable-next-line no-nested-ternary
-                          task.task_expected_number === 0
-                            ? 0
-                            : task.completed
-                              ? 100
-                              : Math.round(
-                                (task.task_processed_number
-                                  / task.task_expected_number)
-                                  * 100,
-                              )
-                        }
+                      value={progressValue}
                     />
                   </Grid>
                 </Grid>
-                { task.work && <><WorkDetail work={task.work} /></> }
                 <br/>
               </Grid>
               <Button
