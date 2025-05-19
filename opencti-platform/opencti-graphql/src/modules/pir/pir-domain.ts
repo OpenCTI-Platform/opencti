@@ -1,9 +1,9 @@
 import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, internalLoadById, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR } from './pir-types';
-import { type EditInput, EditOperation, type PirAddInput, type PirDependencyAddInput } from '../../generated/graphql';
-import { createEntity, updateAttribute } from '../../database/middleware';
+import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type PirDependency } from './pir-types';
+import { type EditInput, EditOperation, type PirAddInput, type PirDependencyAddInput, type PirDependencyDeleteInput } from '../../generated/graphql';
+import { createEntity, deleteRelationsByFromAndTo, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
@@ -11,9 +11,9 @@ import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon } from '../../types/store';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
-import { PIR_MANAGER_USER } from '../../utils/access';
 import { createPirRel, updatePirDependencies } from './pir-utils';
 import { FunctionalError } from '../../config/errors';
+import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPIR>(context, user, id, ENTITY_TYPE_PIR);
@@ -93,7 +93,7 @@ export const addPirDependency = async (
   }
 
   const { relationshipId, sourceId, matchingCriteria } = input;
-  const source = await internalLoadById<BasicStoreCommon>(context, PIR_MANAGER_USER, sourceId);
+  const source = await internalLoadById<BasicStoreCommon>(context, user, sourceId);
 
   if (source) { // if element still exist
     const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pir.id);
@@ -115,6 +115,44 @@ export const addPirDependency = async (
       await createPirRel(context, user, sourceId, pir.id, pirDependencies);
       console.log('[POC PIR] Meta Ref relation created');
     }
+  }
+  return pir.id;
+};
+
+/**
+ * Called when an event of delete a relationship matches a PIR criteria.
+ *
+ * @param context To be able to call engine.
+ * @param relationship The caught relationship matching the PIR.
+ * @param pir The PIR matched by the relationship.
+ */
+export const deletePirDependency = async (
+  context: AuthContext,
+  user: AuthUser,
+  pirId: string,
+  input: PirDependencyDeleteInput,
+) => {
+  const pir = await storeLoadById<BasicStoreEntityPIR>(context, user, pirId, ENTITY_TYPE_PIR);
+  if (!pir) {
+    throw FunctionalError('No PIR found');
+  }
+  const { relationshipId, sourceId } = input;
+  console.log('[POC PIR] Event delete matching', { relationshipId, pirId });
+  // fetch rel between object and pir
+  const rels = await listRelationsPaginated(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id }); // TODO PIR don't use pagination
+  // eslint-disable-next-line no-restricted-syntax
+  for (const rel of rels.edges) {
+    const relDependencies = (rel as any).node.pir_dependencies as PirDependency[];
+    const newRelDependencies = relDependencies.filter((dep) => dep.relationship_id !== relationshipId);
+    if (newRelDependencies.length === 0) {
+      // delete the rel between source and PIR
+      await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP); // TODO PIR not working
+      console.log('[POC PIR] PIR rel deleted');
+    } else if (newRelDependencies.length < relDependencies.length) {
+      // update dependencies
+      await updatePirDependencies(context, user, sourceId, pir.id, newRelDependencies);
+      console.log('[POC PIR] PIR rel updated', { newRelDependencies });
+    } // nothing to do
   }
   return pir.id;
 };

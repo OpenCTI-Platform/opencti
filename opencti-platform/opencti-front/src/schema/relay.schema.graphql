@@ -9121,6 +9121,7 @@ type Mutation {
   pirAdd(input: PIRAddInput!): PIR
   pirDelete(id: ID!): ID
   pirAddDependency(id: ID!, input: PIRDependencyAddInput!): ID
+  pirDeleteDependency(id: ID!, input: PIRDependencyDeleteInput!): ID
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
@@ -13152,6 +13153,11 @@ input PIRDependencyAddInput {
   relationshipId: ID!
   sourceId: ID!
   matchingCriteria: [PIRCriterionInput!]!
+}
+
+input PIRDependencyDeleteInput {
+  relationshipId: ID!
+  sourceId: ID!
 }
 
 type FintelDesign implements BasicObject & InternalObject {

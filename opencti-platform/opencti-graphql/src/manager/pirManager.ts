@@ -3,15 +3,12 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 import { executionContext, PIR_MANAGER_USER } from '../utils/access';
 import type { DataEvent, SseEvent } from '../types/event';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
-import { ABSTRACT_STIX_CORE_OBJECT, STIX_TYPE_RELATION } from '../schema/general';
-import { stixObjectOrRelationshipDeleteRefRelation } from '../domain/stixObjectOrStixRelationship';
+import { STIX_TYPE_RELATION } from '../schema/general';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { RELATION_IN_PIR } from '../schema/stixRefRelationship';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
-import { listRelationsPaginated } from '../database/middleware-loader';
-import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIRCriterion, type PirDependency, type StoreEntityPIR } from '../modules/pir/pir-types';
-import { parsePir, updatePirDependencies } from '../modules/pir/pir-utils';
+import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIRCriterion, type StoreEntityPIR } from '../modules/pir/pir-types';
+import { parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { createRedisClient, fetchStreamEventsRange } from '../database/redis';
 import { updatePir } from '../modules/pir/pir-domain';
@@ -30,38 +27,6 @@ const PIR_MANAGER_CONTEXT = 'pir_manager';
 const PIR_MANAGER_INTERVAL = 6000; // TODO PIR: use config instead
 const PIR_MANAGER_LOCK_KEY = 'pir_manager_lock'; // TODO PIR: use config instead
 const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
-
-/**
- * Called when an event of delete a relationship matches a PIR criteria.
- *
- * @param context To be able to call engine.
- * @param relationship The caught relationship matching the PIR.
- * @param pir The PIR matched by the relationship.
- */
-const onRelationDeleted = async (context: AuthContext, relationship: any, pir: BasicStoreEntityPIR) => {
-  console.log('[POC PIR] Event delete matching', { relationship, pir });
-  // fetch rel between object and pir
-  const sourceId: string = relationship.extensions?.[STIX_EXT_OCTI]?.source_ref;
-  if (!sourceId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no source id found`);
-  const relationshipId: string = relationship.extensions?.[STIX_EXT_OCTI]?.id;
-  if (!relationshipId) throw FunctionalError(`Cannot flag the source with PIR ${pir.id}, no relationship id found`);
-  const rels = await listRelationsPaginated(context, PIR_MANAGER_USER, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id }); // TODO PIR don't use pagination
-  // eslint-disable-next-line no-restricted-syntax
-  for (const rel of rels.edges) {
-    const relDependencies = (rel as any).node.pir_dependencies as PirDependency[];
-    const newRelDependencies = relDependencies.filter((dep) => dep.relationship_id !== relationshipId);
-    if (newRelDependencies.length === 0) {
-      // delete the rel between source and PIR
-      await stixObjectOrRelationshipDeleteRefRelation(context, PIR_MANAGER_USER, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_CORE_OBJECT);
-      console.log('[POC PIR] PIR rel deleted');
-    } else if (newRelDependencies.length < relDependencies.length) {
-      // update dependencies
-      await updatePirDependencies(context, PIR_MANAGER_USER, sourceId, pir.id, newRelDependencies);
-      console.log('[POC PIR] PIR rel updated', { newRelDependencies });
-    } // nothing to do
-  }
-};
-// endregion
 
 const addPirDependencyToQueue = async (
   context: AuthContext,
@@ -86,6 +51,38 @@ const addPirDependencyToQueue = async (
   const pirBundle = {
     ...stixPir,
     input: { relationshipId, sourceId, matchingCriteria: formattedMatchingCriteria },
+  };
+  const stixPirBundle = buildStixBundle([pirBundle]);
+  const jsonBundle = JSON.stringify(stixPirBundle);
+  const content = Buffer.from(jsonBundle, 'utf-8').toString('base64');
+  const message = {
+    type: 'bundle',
+    applicant_id: PIR_MANAGER_USER.id,
+    work_id: work.id,
+    update: true,
+    content,
+  };
+  await pushToWorkerForConnector(connectorId, message);
+};
+
+const removePirDependencyFromQueue = async (
+  context: AuthContext,
+  pir: BasicStoreEntityPIR,
+  relationshipId: string,
+  sourceId: string,
+) => {
+  const connectorId = connectorIdFromIngestId(pir.id);
+  const work: any = await createWork(
+    context,
+    PIR_MANAGER_USER,
+    { internal_id: connectorId, connector_type: ConnectorType.InternalIngestionPir },
+    `Remove dependency ${relationshipId} for ${sourceId} in pir ${pir.name}`
+  );
+  const stixPir = convertEntityPIRToStix(pir as StoreEntityPIR);
+  stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'delete_pir_dependency';
+  const pirBundle = {
+    ...stixPir,
+    input: { relationshipId, sourceId },
   };
   const stixPirBundle = buildStixBundle([pirBundle]);
   const jsonBundle = JSON.stringify(stixPirBundle);
@@ -135,7 +132,7 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPIR
               await addPirDependencyToQueue(context, pir, relationshipId, sourceId, matchingCriteria);
               break;
             case 'delete':
-              await onRelationDeleted(context, data, pir);
+              await removePirDependencyFromQueue(context, pir, relationshipId, sourceId);
               break;
             default: // Nothing to do. // TODO PIR update logic
           }
