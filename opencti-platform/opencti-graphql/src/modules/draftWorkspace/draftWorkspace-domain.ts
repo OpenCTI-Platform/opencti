@@ -39,6 +39,7 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
 import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -184,6 +185,7 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
   };
   const draftWorkspaceInput = { ...input, ...defaultOps };
   const createdDraftWorkspace = await createEntity(context, user, draftWorkspaceInput, ENTITY_TYPE_DRAFT_WORKSPACE);
+  await addDraftCreationCount();
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -339,6 +341,8 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
   const { element } = await updateAttribute(context, user, draft_id, ENTITY_TYPE_DRAFT_WORKSPACE, draftValidationInput);
   await notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].EDIT_TOPIC, element, user);
   await deleteDraftContextFromUsers(context, user, draft_id);
+
+  await addDraftValidationCount();
 
   return work;
 };
