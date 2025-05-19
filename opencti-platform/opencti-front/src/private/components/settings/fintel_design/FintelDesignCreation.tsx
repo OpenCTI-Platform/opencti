@@ -93,8 +93,8 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
     });
   };
 
-  const fintelDesignCreationValidator = (t: (value: string) => string) => Yup.object().shape({
-    name: Yup.string().required(t('This field is required')),
+  const fintelDesignCreationValidator = Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     url: Yup.string().nullable(),
     gradiantFromColor: Yup.string().nullable(),
@@ -116,7 +116,7 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
       initialValues={initialValues}
       validateOnBlur={false}
       validateOnChange={false}
-      validationSchema={fintelDesignCreationValidator(t_i18n)}
+      validationSchema={fintelDesignCreationValidator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
