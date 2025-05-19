@@ -798,13 +798,13 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
       const newExternalRefs = [...(previous[INPUT_EXTERNAL_REFS] ?? []), addedExternalRef];
       const instance = { ...previous, x_opencti_files: resolvedFiles, [INPUT_EXTERNAL_REFS]: newExternalRefs };
       const message = is_upsert
-        ? `uploads a new version of \`${up.name}\` in \`files\` and \`external_references\``
+        ? `adds a new version of \`${up.name}\` in \`files\` and \`external_references\``
         : `adds \`${up.name}\` in \`files\` and \`external_references\``;
       await storeUpdateEvent(context, user, previous, instance, message);
     } else {
       const instance = { ...previous, x_opencti_files: resolvedFiles };
       const message = is_upsert
-        ? `uploads a new version of \`${up.name}\` in \`files\``
+        ? `adds a new version of \`${up.name}\` in \`files\``
         : `adds \`${up.name}\` in \`files\``;
       await storeUpdateEvent(context, user, previous, instance, message);
     }

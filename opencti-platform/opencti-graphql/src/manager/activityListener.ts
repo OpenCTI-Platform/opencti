@@ -188,7 +188,7 @@ const initActivityManager = () => {
           const { file_name, entity_name, entity_type, path, input } = action.context_data;
           // @ts-expect-error input type unknown
           let message = input?.is_upsert
-            ? `uploads a new version of \`${file_name}\` in \`files\` for \`${entity_name}\` (${entity_type})`
+            ? `adds a new version of \`${file_name}\` in \`files\` for \`${entity_name}\` (${entity_type})`
             : `adds \`${file_name}\` in \`files\` for \`${entity_name}\` (${entity_type})`;
           if (path.includes('import/pending')) {
             message = `creates Analyst Workbench \`${file_name}\` for \`${entity_name}\` (${entity_type})`;
