@@ -1,21 +1,38 @@
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React, { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
+import React, { FunctionComponent, useState } from 'react';
 import { Field } from 'formik';
-import { FintelDesignFieldQuery } from '@components/common/form/__generated__/FintelDesignFieldQuery.graphql';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { FieldOption } from '../../../../utils/field';
+import { FintelDesignFieldQuery$data } from '@components/common/form/__generated__/FintelDesignFieldQuery.graphql';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
+import { fetchQuery } from '../../../../relay/environment';
+
+type FintelDesignFieldOption = {
+  label: string,
+  value: string,
+};
 
 const fintelDesignFieldQuery = graphql`
-  query FintelDesignFieldQuery {
-    fintelDesigns {
+  query FintelDesignFieldQuery(
+    $orderMode: OrderingMode,
+    $orderBy: FintelDesignOrdering
+    $filters: FilterGroup
+  ) {
+    fintelDesigns(
+      orderMode: $orderMode
+      orderBy: $orderBy
+      filters: $filters
+    ) {
       edges {
         node {
           id
           name
+          description
+          url
+          gradiantFromColor
+          gradiantToColor
+          textColor
         }
       }
     }
@@ -23,47 +40,61 @@ const fintelDesignFieldQuery = graphql`
 `;
 
 interface FintelDesignFieldComponentProps {
-  onChange?: (name: string, value: FieldOption) => void;
-  onSubmit?: (name: string, value: FieldOption) => void;
-  containerStyle?: Record<string, string | number>;
+  label?: string
+  name: string;
+  style?: React.CSSProperties,
   helpertext?: string;
-  queryRef: PreloadedQuery<FintelDesignFieldQuery>;
-  label?: string;
+  onChange: (name: string, value: FieldOption[]) => void;
+  required?: boolean
 }
 
-const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentProps> = ({
-  containerStyle,
-  onChange,
-  onSubmit,
-  helpertext,
-  queryRef,
+const FintelDesignField: FunctionComponent<FintelDesignFieldComponentProps> = ({
   label,
+  name,
+  style,
+  helpertext,
+  onChange,
+  required = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery(fintelDesignFieldQuery, queryRef);
-  const fintelDesignOptions = data.fintelDesigns?.edges?.map(({ node }) => ({
-    value: node?.id,
-    label: node?.name,
-  }));
+
+  const [fintelDesign, setFintelDesign] = useState<FintelDesignFieldOption[]>([]);
+
+  const searchFintelDesigns = () => {
+    fetchQuery(fintelDesignFieldQuery, { orderBy: 'name', orderMode: 'asc' })
+      .toPromise()
+      .then((data) => {
+        const fintelDesignData = (data as FintelDesignFieldQuery$data).fintelDesigns?.edges ?? [];
+        const fintel = fintelDesignData.map((n) => {
+          const fintelLabel = n?.node?.name ?? '';
+          return {
+            label: fintelLabel,
+            value: n?.node?.id ?? '',
+          };
+        });
+        setFintelDesign(fintel);
+      });
+  };
 
   return (
     <div style={{ width: '100%' }}>
       <Field
         component={AutocompleteField}
-        name="fintelDesigns"
-        multiple
+        name={name}
+        multiple={false}
+        disabled={false}
         textfieldprops={{
           variant: 'standard',
-          label: t_i18n(label ?? 'Fintel designs'),
+          label: label ?? t_i18n('Fintel Designs'),
           helperText: helpertext,
+          onFocus: searchFintelDesigns,
         }}
-        onChange={(name: string, value: FieldOption) => {
-          if (onChange) onChange(name, value);
-          if (onSubmit) onSubmit(name, value);
-        }}
-        style={containerStyle}
+        required={required}
+        onChange={typeof onChange === 'function' ? onChange : null}
+        style={fieldSpacingContainerStyle ?? style}
         noOptionsText={t_i18n('No available options')}
-        options={fintelDesignOptions}
+        options={fintelDesign}
+        onInputChange={searchFintelDesigns}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
           option: { label: string },
@@ -76,19 +107,6 @@ const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentPr
         classes={{ clearIndicator: { display: 'none' } }}
       />
     </div>
-  );
-};
-
-type FintelDesignFieldProps = Omit<FintelDesignFieldComponentProps, 'queryRef'>;
-
-const FintelDesignField: FunctionComponent<FintelDesignFieldProps> = (props) => {
-  const queryRef = useQueryLoading<FintelDesignFieldQuery>(fintelDesignFieldQuery);
-  return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <FintelDesignFieldComponent {...props} queryRef={queryRef} />
-    </React.Suspense>
-  ) : (
-    <Loader variant={LoaderVariant.inElement} />
   );
 };
 
