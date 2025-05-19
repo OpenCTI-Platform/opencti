@@ -907,6 +907,9 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'brand-abuse' },
   ],
   // S
+  security_platform_type_ov: [
+    { key: 'none' },
+  ],
   service_status_ov: [
     {
       key: 'SERVICE_CONTINUE_PENDING',

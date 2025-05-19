@@ -48,7 +48,7 @@ const elWhiteUser = async () => {
   return buildStandardUser([{ internal_id: TLP_WHITE.internal_id, standard_id: TLP_WHITE.standard_id }], ALL_TLP);
 };
 
-const VOCABULARY_COUNT = 340;
+const VOCABULARY_COUNT = 341;
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', async () => {
@@ -414,7 +414,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(43);
+    expect(entityTypeMap.get('EntitySetting')).toBe(44);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
     expect(entityTypeMap.get('StixFile')).toBe(1);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
@@ -563,7 +563,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(43);
+    expect(entityTypeMap.get('EntitySetting')).toBe(44);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
     expect(entityTypeMap.get('StixFile')).toBe(1);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
@@ -696,7 +696,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Capability')).toBe(41);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(43);
+    expect(entityTypeMap.get('EntitySetting')).toBe(44);
     expect(entityTypeMap.get('StixFile')).toBe(1);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
     expect(entityTypeMap.get('ManagerConfiguration')).toBe(1);

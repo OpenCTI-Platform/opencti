@@ -68,6 +68,7 @@ import './fintelTemplate/fintelTemplate';
 import './disseminationList/disseminationList';
 import './savedFilter/savedFilter';
 import './fintelDesign/fintelDesign';
+import './securityPlatform/securityPlatform';
 
 // incomplete modules
 import './report/report';
