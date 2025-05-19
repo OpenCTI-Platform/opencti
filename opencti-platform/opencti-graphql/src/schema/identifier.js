@@ -19,7 +19,7 @@ import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { now } from '../utils/format';
 import { isBasicRelationship } from './stixRelationship';
-import { convertTypeToStixType } from '../database/stix-2-1-converter';
+import { cleanObject, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationship';
 
 // region hashes
@@ -418,25 +418,18 @@ export const isStandardIdSameWay = (previousInstance, updatedInstance) => {
   return R.equals(previousWay, currentWay);
 };
 
-const generateValuesFromWay = (way, values) => {
-  const targetValues = {};
-  for (let index = 0; index < way.length; index += 1) {
-    const key = way[index].src;
-    targetValues[key] = isEmptyField(values[key]) ? null : values[key];
-  }
-  return targetValues;
-};
-
 const isStandardIdChanged = (previous, updated, operation) => {
   // If the way change, is not an upgrade
   if (!isStandardIdSameWay(previous, updated)) {
     return false;
   }
   // If same way, test if only adding is part of operation
-  const { way: previousWay } = generateDataUUID(previous.entity_type, previous);
-  const dataPrevious = generateValuesFromWay(previousWay, previous);
-  const { way: currentWay } = generateDataUUID(updated.entity_type, updated);
-  const dataUpdated = generateValuesFromWay(currentWay, updated);
+  const cleanPrevious = cleanObject(previous);
+  const { way: previousWay } = generateDataUUID(previous.entity_type, cleanPrevious);
+  const dataPrevious = R.fromPairs(Object.entries(cleanPrevious).filter(([k]) => previousWay.map((w) => w.src).includes(k)));
+  const cleanUpdated = cleanObject(updated);
+  const { way: currentWay } = generateDataUUID(updated.entity_type, cleanUpdated);
+  const dataUpdated = R.fromPairs(Object.entries(cleanUpdated).filter(([k]) => currentWay.map((w) => w.src).includes(k)));
   const patch = jsonpatch.compare(dataPrevious, dataUpdated);
   const numberOfOperations = patch.length;
   // If no operations, standard id will not change
