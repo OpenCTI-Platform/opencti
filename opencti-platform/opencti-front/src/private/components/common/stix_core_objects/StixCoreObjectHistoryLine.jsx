@@ -111,6 +111,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
   }
 
   renderIcon(eventScope, isRelation, eventMesage, commit) {
+    console.log('eventScope', eventScope);
     const { theme } = this.props;
     if (isRelation) {
       if (eventScope === 'create') {
@@ -216,7 +217,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventScope === 'update' && eventMesage.includes('adds')) {
+      if (eventScope === 'update' && (eventMesage.includes('adds') || eventMesage.includes('new version'))) {
         return (
           <Avatar
             sx={{

@@ -785,17 +785,31 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
         resolvedFiles.push(f);
       }
     });
+    // check if it is an import of a new file or a file already in the entity
+    let is_upsert = false;
+    if (previous?.x_opencti_files && previous.x_opencti_files.length > 0) {
+      const entityFilesIds = previous.x_opencti_files.map((f) => f.id);
+      if (entityFilesIds.includes(up.id)) {
+        is_upsert = true; // the file is already in the entity
+      }
+    }
+    // store the update event
     if (addedExternalRef) {
       const newExternalRefs = [...(previous[INPUT_EXTERNAL_REFS] ?? []), addedExternalRef];
       const instance = { ...previous, x_opencti_files: resolvedFiles, [INPUT_EXTERNAL_REFS]: newExternalRefs };
-      const message = `adds \`${up.name}\` in \`files\` and \`external_references\``;
+      const message = is_upsert
+        ? `uploads a new version of \`${up.name}\` in \`files\` and \`external_references\``
+        : `adds \`${up.name}\` in \`files\` and \`external_references\``;
       await storeUpdateEvent(context, user, previous, instance, message);
     } else {
       const instance = { ...previous, x_opencti_files: resolvedFiles };
-      await storeUpdateEvent(context, user, previous, instance, `adds \`${up.name}\` in \`files\``);
+      const message = is_upsert
+        ? `uploads a new version of \`${up.name}\` in \`files\``
+        : `adds \`${up.name}\` in \`files\``;
+      await storeUpdateEvent(context, user, previous, instance, message);
     }
     // Add in activity only for notifications
-    const contextData = buildContextDataForFile(previous, filePath, up.name, up.metaData.file_markings);
+    const contextData = buildContextDataForFile(previous, filePath, up.name, up.metaData.file_markings, { is_upsert });
     await publishUserAction({
       user,
       event_type: 'file',
