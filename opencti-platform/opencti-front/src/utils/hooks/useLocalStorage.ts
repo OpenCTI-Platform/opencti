@@ -709,6 +709,7 @@ export const usePaginationLocalStorage = <U>(
         filters: initialValue.filters ?? emptyFilterGroup,
         searchTerm: initialValue.searchTerm ?? '',
         numberOfElements: viewStorage.numberOfElements,
+        savedFilters: undefined,
       };
       setValue(newValue);
       dispatch(`${key}_paginationStorage`, newValue);
