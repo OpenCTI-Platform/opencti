@@ -3164,6 +3164,7 @@
   "The value must be a number": "값은 숫자여야 합니다",
   "The value must be a string": "값은 문자열이어야 합니다",
   "The value must be an email address": "값은 이메일 주소여야 합니다",
+  "The value must be an integer": "값은 정수여야 합니다",
   "The value must be an URL": "값은 URL이어야 합니다",
   "The value must be between min and max value": "값은 최소 값과 최대 값 사이여야 합니다",
   "The value must be greater than or equal to 0": "값은 0 이상이어야 합니다",
