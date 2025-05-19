@@ -26,7 +26,7 @@ import { isEmptyField, MAX_EVENT_LOOP_PROCESSING_TIME, READ_DATA_INDICES, READ_D
 import { elList } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
-import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
+import { executionContext, isUserInPlatformOrganization, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import { getRule } from '../domain/rules';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
@@ -63,6 +63,8 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObjectContainer, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { getParentTypes } from '../schema/schemaUtils';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { getEntityFromCache } from '../database/cache';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -485,7 +487,7 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
         }
         // Add the container at the end
         const container = buildBundleElement(element, actionType, operations);
-        container.sharing_direct_container = true;
+        container.extensions[STIX_EXT_OCTI].sharing_direct_container = true;
         containerObjects.push(container);
         // Send actions to queue
         await sendResultToQueue(context, user, task, containerObjects, { forceNoSplit: true });
@@ -553,14 +555,16 @@ const taskHandlerGenerator = (context) => {
       return;
     }
     // endregion
-    const draftID = task.draft_context ?? '';
-    const fullContext = { ...context, draft_context: draftID };
     const startPatch = { last_execution_date: now() };
     await updateTask(context, task.id, startPatch);
     // Fetch the user responsible for the task
     const rawUser = await resolveUserByIdFromCache(context, task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
     logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
+    const draftID = task.draft_context ?? '';
+    const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
+    const fullContext = { ...context, draft_context: draftID, user_inside_platform_organization };
     // region MASSIVE WORKER OPERATIONS
     // Current format is not aligned with worker practices
     // We need to reformat the actions to back process support
