@@ -966,7 +966,7 @@ export const redisSetForgotPasswordOtp = async (
 export const redisGetForgotPasswordOtp = async (id: string) => {
   const keyName = `forgot_password_otp_${id}`;
   const str = await getClientBase().get(keyName) ?? '{}';
-  const values: { hashedOtp: string, email: string, mfa_activated: boolean, mfa_validated: boolean, mfa_secret: string, userId: string } = JSON.parse(str);
+  const values: { hashedOtp: string, email: string, mfa_activated: boolean, mfa_validated: boolean, userId: string } = JSON.parse(str);
   const ttl = await getClientBase().ttl(keyName);
   return { ...values, ttl };
 };
