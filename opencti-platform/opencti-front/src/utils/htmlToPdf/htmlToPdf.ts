@@ -19,6 +19,7 @@ import pdfHeader from './utils/pdfHeader';
 import pdfFooter from './utils/pdfFooter';
 import { DARK, GREY, WHITE } from './utils/constants';
 import { dateFormat } from '../Time';
+import {FintelDesign} from "@components/settings/sub_types/fintel_templates/FintelTemplatePreviewForm";
 
 /**
  * NOT MEANT FOR EXPORT

@@ -7,7 +7,7 @@ import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_desi
 import { useFintelTemplateContext } from './FintelTemplateContext';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
-import FintelTemplatePreviewForm, { FintelTemplatePreviewFormInputs } from './FintelTemplatePreviewForm';
+import FintelTemplatePreviewForm, {FintelDesign, FintelTemplatePreviewFormInputs } from './FintelTemplatePreviewForm';
 import useFileFromTemplate from '../../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { htmlToPdfReport } from '../../../../../utils/htmlToPdf/htmlToPdf';
 import PdfViewer from '../../../../../components/PdfViewer';
@@ -76,7 +76,7 @@ const FintelTemplatePreview = ({
   const buildPreview = async (
     scoId: string,
     scoName: string,
-    fintelDesign: FintelDesign_fintelDesign$data,
+    fintelDesign: FintelDesign,
     maxMarkings: string[],
     fileMarkings: string[],
   ) => {
@@ -88,7 +88,7 @@ const FintelTemplatePreview = ({
       instance_filters: null,
     };
     const htmlTemplate = await buildFileFromTemplate(scoId, maxMarkings, undefined, template);
-    const PDF = await htmlToPdfReport(scoName, htmlTemplate, 'Preview', fileMarkings, fintelDesign);
+    const PDF = await htmlToPdfReport(scoName, htmlTemplate, 'Preview', fileMarkings, fintelDesign as unknown as FintelDesign_fintelDesign$data);
     PDF.getBlob((blob) => {
       const file = new File([blob], 'Preview.pdf', { type: blob.type });
       setPdf(file);
