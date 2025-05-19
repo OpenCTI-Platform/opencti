@@ -26,8 +26,6 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
     fintelDesign(id: $id) {
-      id
-      name
       ...FintelDesign_fintelDesign
       ...FintelDesignsLine_node
     }
@@ -87,7 +85,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
     textColor: fintelDesign.textColor,
   };
 
-  const fintelDesignValidation = () => Yup.object().shape({
+  const fintelDesignValidation = Yup.object().shape({
     url: Yup.string().nullable(),
     gradiantFromColor: Yup.string().nullable(),
     gradiantToColor: Yup.string().nullable(),
@@ -104,11 +102,11 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   };
   return (
     <>
-      <div>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <Typography
           variant="h1"
           gutterBottom={true}
-          style={{ float: 'left', marginRight: 10 }}
+          style={{ marginRight: 10 }}
         >
           {fintelDesign.name}
         </Typography>
@@ -243,7 +241,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
 };
 
 const FintelDesign = () => {
-  const { fintelDesignId } = useParams() as { fintelDesignId: string };
+  const { fintelDesignId }: { fintelDesignId?: string } = useParams();
   if (!fintelDesignId) return null;
   const queryRef = useQueryLoading<FintelDesignQuery>(
     fintelDesignQuery,

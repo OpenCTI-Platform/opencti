@@ -7,6 +7,7 @@ import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
+import { useTheme } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
@@ -15,6 +16,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import ColorPickerField from '../../../../components/ColorPickerField';
+import type { Theme } from '../../../../components/Theme';
 
 const fintelDesignCreationMutation = graphql`
   mutation FintelDesignCreationAddMutation($input: FintelDesignAddInput!) {
@@ -54,6 +56,7 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
   onCompleted,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const [commit] = useApiMutation(fintelDesignCreationMutation);
   const onSubmit: FormikConfig<FintelDesignCreationFormData>['onSubmit'] = (
     values,
@@ -118,7 +121,7 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <Form style={{ margin: theme.spacing(0) }}>
           <Field
             component={TextField}
             name="name"

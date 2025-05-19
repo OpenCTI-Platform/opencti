@@ -13,7 +13,7 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
-export const fintelDesignPopoverDeletionMutation = graphql`
+const fintelDesignPopoverDeletionMutation = graphql`
   mutation FintelDesignPopoverDeletionMutation($id: ID!) {
     fintelDesignDelete(id: $id)
   }
