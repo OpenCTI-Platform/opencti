@@ -1,8 +1,8 @@
-import type { StixPIR, StoreEntityPIR } from './pir-types';
+import type { StixPir, StoreEntityPir } from './pir-types';
 import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
-const convertEntityPIRToStix = (instance: StoreEntityPIR): StixPIR => {
+const convertEntityPirToStix = (instance: StoreEntityPir): StixPir => {
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,
@@ -16,4 +16,4 @@ const convertEntityPIRToStix = (instance: StoreEntityPIR): StixPIR => {
   };
 };
 
-export default convertEntityPIRToStix;
+export default convertEntityPirToStix;

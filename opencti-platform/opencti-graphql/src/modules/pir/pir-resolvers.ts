@@ -10,7 +10,7 @@ const pirResolvers: Resolvers = {
     pir: (_, { id }, context) => findById(context, context.user, id),
     pirs: (_, args, context) => findAll(context, context.user, args),
   },
-  PIR: {
+  Pir: {
     creators: (pir, _, context) => creatorsLoader.load(pir.creator_id, context, context.user),
   },
   Mutation: {

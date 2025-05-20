@@ -1,4 +1,4 @@
-type PIRCriterion {
+type PirCriterion {
     filters: String!
     weight: Int!
 }
@@ -6,10 +6,10 @@ type PIRCriterion {
 # Used in StixRefRelationship
 type PirDependency {
     relationship_id: ID!
-    criterion: PIRCriterion!
+    criterion: PirCriterion!
 }
 
-type PIR implements InternalObject & BasicObject {
+type Pir implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
     standard_id: String!
@@ -17,14 +17,14 @@ type PIR implements InternalObject & BasicObject {
     created_at: DateTime!
     updated_at: DateTime!
     creators: [Creator!]
-    # PIR
+    # Pir
     name: String!
-    pirCriteria: [PIRCriterion!]!
+    pirCriteria: [PirCriterion!]!
     pirFilters: String!
 }
 
 # Ordering
-enum PIROrdering {
+enum PirOrdering {
     name
     created_at
     updated_at
@@ -32,30 +32,30 @@ enum PIROrdering {
 }
 
 # Relay connections
-type PIRConnection {
+type PirConnection {
     pageInfo: PageInfo!
-    edges: [PIREdge!]!
+    edges: [PirEdge!]!
 }
-type PIREdge {
+type PirEdge {
     cursor: String!
-    node: PIR!
+    node: Pir!
 }
 
 # Queries
 type Query {
-    pir(id: ID!): PIR @auth(for: [KNOWLEDGE])
+    pir(id: ID!): Pir @auth(for: [KNOWLEDGE])
     pirs(
         first: Int
         after: ID
-        orderBy: PIROrdering
+        orderBy: PirOrdering
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): PIRConnection @auth(for: [KNOWLEDGE])
+    ): PirConnection @auth(for: [KNOWLEDGE])
 }
 
 # Mutations inputs
-input PIRCriterionInput {
+input PirCriterionInput {
     weight: Int!
     filters: String!
 }
@@ -63,30 +63,30 @@ input PIRCriterionInput {
 # Used in StixRefRelationshipAddInput
 input PirDependencyInput {
     relationship_id: ID!
-    criterion: PIRCriterionInput!
+    criterion: PirCriterionInput!
 }
 
-input PIRAddInput {
+input PirAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
-    pirCriteria: [PIRCriterionInput!]!
+    pirCriteria: [PirCriterionInput!]!
     pirFilters: String!
 }
 
-input PIRDependencyAddInput {
+input PirDependencyAddInput {
     relationshipId: ID!
     sourceId: ID!
-    matchingCriteria: [PIRCriterionInput!]!
+    matchingCriteria: [PirCriterionInput!]!
 }
 
-input PIRDependencyDeleteInput {
+input PirDependencyDeleteInput {
     relationshipId: ID!
     sourceId: ID!
 }
 
 # Mutations
 type Mutation {
-    pirAdd(input: PIRAddInput!): PIR @auth(for: [KNOWLEDGE_KNUPDATE])
+    pirAdd(input: PirAddInput!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
     pirDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    pirAddDependency(id: ID!, input: PIRDependencyAddInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
-    pirDeleteDependency(id: ID!, input: PIRDependencyDeleteInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
+    pirAddDependency(id: ID!, input: PirDependencyAddInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
+    pirDeleteDependency(id: ID!, input: PirDependencyDeleteInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
 }

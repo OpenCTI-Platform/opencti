@@ -135,7 +135,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Media-Content':
     case 'Persona':
       return '/dashboard/observations/observables';
-    case 'PIR':
+    case 'Pir':
       return '/dashboard/pirs';
     default:
       return null;

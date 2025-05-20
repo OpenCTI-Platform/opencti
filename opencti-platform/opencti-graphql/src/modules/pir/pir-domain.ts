@@ -1,7 +1,7 @@
 import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type PirDependency } from './pir-types';
+import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirDependency } from './pir-types';
 import { type EditInput, EditOperation, type PirAddInput, type PirDependencyAddInput, type PirDependencyDeleteInput } from '../../generated/graphql';
 import { createEntity, deleteRelationsByFromAndTo, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -16,24 +16,24 @@ import { FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
-  return storeLoadById<BasicStoreEntityPIR>(context, user, id, ENTITY_TYPE_PIR);
+  return storeLoadById<BasicStoreEntityPir>(context, user, id, ENTITY_TYPE_PIR);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPIR>) => {
-  return listEntitiesPaginated<BasicStoreEntityPIR>(context, user, [ENTITY_TYPE_PIR], opts);
+export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPir>) => {
+  return listEntitiesPaginated<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
 };
 
 // const PIR_RESCAN_PERIOD = 30 * 24 * 3600 * 1000; // 1 month in milliseconds
 const TEST_PIR_RESCAN_PERIOD = 3600 * 1000; // 1h hour in milliseconds // TODO PIR
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
-  // -- create PIR --
+  // -- create Pir --
   const rescanStartDate = now() - TEST_PIR_RESCAN_PERIOD; // rescan start date in seconds
   const finalInput = {
     ...input,
     lastEventId: `${rescanStartDate}-0`,
   };
-  const created: BasicStoreEntityPIR = await createEntity(
+  const created: BasicStoreEntityPir = await createEntity(
     context,
     user,
     finalInput,
@@ -45,12 +45,12 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
     event_type: 'mutation',
     event_scope: 'create',
     event_access: 'extended',
-    message: `creates PIR \`${created.name}\``,
+    message: `creates Pir \`${created.name}\``,
     context_data: { id: created.id, entity_type: ENTITY_TYPE_PIR, input: finalInput },
   });
   // create rabbit queue for pir
   await registerConnectorForPir(context, { id: created.id, ...finalInput });
-  // -- notify the PIR creation --
+  // -- notify the Pir creation --
   return notify(BUS_TOPICS[ENTITY_TYPE_PIR].ADDED_TOPIC, created, user);
 };
 
@@ -60,9 +60,9 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   try {
     await unregisterConnectorForIngestion(context, pirId);
   } catch (e) {
-    logApp.error('[OPENCTI] Error while unregistering PIR connector', { cause: e });
+    logApp.error('[OPENCTI] Error while unregistering Pir connector', { cause: e });
   }
-  // delete the PIR
+  // delete the Pir
   return deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
 };
 
@@ -72,7 +72,7 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
 };
 
 /**
-   * Called when an event of create new relationship matches a PIR criteria.
+   * Called when an event of create new relationship matches a Pir criteria.
    * If the source of the relationship is already flagged update its dependencies,
    * otherwise create a new meta relationship between the source and the PIR.
    *
@@ -87,7 +87,7 @@ export const addPirDependency = async (
   pirId: string,
   input: PirDependencyAddInput,
 ) => {
-  const pir = await storeLoadById<BasicStoreEntityPIR>(context, user, pirId, ENTITY_TYPE_PIR);
+  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   if (!pir) {
     throw FunctionalError('No PIR found');
   }
@@ -132,7 +132,7 @@ export const deletePirDependency = async (
   pirId: string,
   input: PirDependencyDeleteInput,
 ) => {
-  const pir = await storeLoadById<BasicStoreEntityPIR>(context, user, pirId, ENTITY_TYPE_PIR);
+  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   if (!pir) {
     throw FunctionalError('No PIR found');
   }

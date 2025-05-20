@@ -90,6 +90,7 @@ export const updateConnectorWithConnectorInfo = async (
 };
 
 export const pingConnector = async (context: AuthContext, user: AuthUser, id: string, state: string, connectorInfo: ConnectorInfo) => {
+  console.log('id', id);
   const connectorEntity = await storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR) as unknown as BasicStoreEntityConnector;
   if (!connectorEntity) {
     throw FunctionalError('No connector found with the specified ID', { id });
