@@ -35,8 +35,9 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
  * its dependencies (matching criteria).
  *
  * @param context To be able to make the calls.
+ * @param user User calling the request.
  * @param sourceId ID of the source entity matching the Pir.
- * @param pir The Pir matched by the entity.
+ * @param pirId The if of the Pir matched by the entity.
  * @param pirDependencies The new dependencies.
  * @param operation The edit operation (add, replace, ...).
  */
@@ -66,8 +67,9 @@ export const updatePirDependencies = async (
  * between the source and the PIR.
  *
  * @param context To be able to create the relationship.
+ * @param user User calling the request.
  * @param sourceId ID of the source of the rel.
- * @param pir The PIR.
+ * @param pirId The ID of the PIR.
  * @param pirDependencies Criteria matched by the relationship.
  */
 export const createPirRel = async (

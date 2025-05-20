@@ -123,8 +123,9 @@ export const addPirDependency = async (
  * Called when an event of delete a relationship matches a PIR criteria.
  *
  * @param context To be able to call engine.
- * @param relationship The caught relationship matching the PIR.
- * @param pir The PIR matched by the relationship.
+ * @param user User making the request.
+ * @param pirId The ID of the PIR matched by the relationship.
+ * @param input Relationship id and source id.
  */
 export const deletePirDependency = async (
   context: AuthContext,
