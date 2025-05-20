@@ -759,9 +759,10 @@ class DataTableToolBar extends Component {
       numberOfSelectedElements,
       handleClearSelectedElements,
       container,
-      taskScope: scope,
+      taskScope,
       t,
     } = this.props;
+    const scope = taskScope ?? 'KNOWLEDGE';
     if (numberOfSelectedElements === 0) return;
     const jsonFilters = serializeFilterGroupForBackend(
       removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
