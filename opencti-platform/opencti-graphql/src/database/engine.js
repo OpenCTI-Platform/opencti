@@ -35,7 +35,7 @@ import {
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_INTERNAL_RELATIONSHIPS,
-  READ_INDEX_PIR_RELS,
+  READ_INDEX_PIR_RELATIONSHIPS,
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLES,
@@ -1575,7 +1575,7 @@ export const computeQueryIndices = (indices, typeOrTypes, withInferences = true)
             return withInferencesEntities([READ_INDEX_INTERNAL_OBJECTS], withInferences);
           }
           if (findType === RELATION_IN_PIR) {
-            return [READ_INDEX_PIR_RELS];
+            return [READ_INDEX_PIR_RELATIONSHIPS];
           }
           if (isStixMetaObject(findType)) {
             return withInferencesEntities([READ_INDEX_STIX_META_OBJECTS], withInferences);
