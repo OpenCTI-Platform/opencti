@@ -615,7 +615,7 @@ const PlaybookAddComponentsContent = ({
                       setFieldValue('caseTemplates', []);
                     }
                     return (
-                      <Box key={k} sx={{ marginTop: "20px"}}>
+                      <Box key={k} sx={{ marginTop: '20px' }}>
                         <CaseTemplateField label='Case templates' isDisabled={!isCaseContainer} />
                       </Box>
                     );
