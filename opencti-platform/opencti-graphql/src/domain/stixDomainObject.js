@@ -14,7 +14,7 @@ import {
 import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
-import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
