@@ -98,10 +98,10 @@ const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
       const targetId = (eventData as StixRelation).target_ref;
       const extensions = (eventData as StixRelation).extensions[STIX_EXT_OCTI];
       if ((extensions.source_ref_pir_refs ?? []).length > 0) {
-        console.log('[POC PIR] Event for RELATIONSHIP in PIR history', { event, pirIds: extensions.source_ref_pir_refs, sourceId });
+        console.log('[POC Pir] Event for RELATIONSHIP in Pir history', { event, pirIds: extensions.source_ref_pir_refs, sourceId });
         return extensions.source_ref_pir_refs;
       } if ((extensions.target_ref_pir_refs ?? []).length > 0) {
-        console.log('[POC PIR] Event for RELATIONSHIP in PIR history', { event, pirIds: extensions.target_ref_pir_refs, targetId });
+        console.log('[POC Pir] Event for RELATIONSHIP in Pir history', { event, pirIds: extensions.target_ref_pir_refs, targetId });
         return extensions.target_ref_pir_refs;
       }
     }
@@ -111,19 +111,19 @@ const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
     // 2. detect 'contains' rel
     const pirIds = updateEvent.context.related_restrictions?.pir_ids ?? [];
     if (pirIds.length > 0) {
-      console.log('[POC PIR] Event for CONTAINS in PIR history', { event, pirIds });
+      console.log('[POC Pir] Event for CONTAINS in Pir history', { event, pirIds });
       return pirIds;
     }
     // 3. detect in-pir rels
     if (event.data.message.includes(inPir.label)) {
       if (event.data.message.includes('adds')) {
         const pirPatch = updateEvent.context.patch[0] as AddOperation<string[]>;
-        console.log('[POC PIR] Event for create `In PIR` meta rel', { event, pirPatch });
+        console.log('[POC Pir] Event for create `In Pir` meta rel', { event, pirPatch });
         return pirPatch.value;
       }
       if (event.data.message.includes('removes')) {
         const pirPatch = updateEvent.context.reverse_patch[0] as AddOperation<string[]>;
-        console.log('[POC PIR] Event for remove `In PIR` meta rel', { event, pirPatch });
+        console.log('[POC Pir] Event for remove `In Pir` meta rel', { event, pirPatch });
         return pirPatch.value;
       }
     }
@@ -197,7 +197,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
-    if (isFeatureEnabled('PIR')) {
+    if (isFeatureEnabled('Pir')) {
       contextData.pir_ids = generatePirIdsFromHistoryEvent(event);
     }
     return {

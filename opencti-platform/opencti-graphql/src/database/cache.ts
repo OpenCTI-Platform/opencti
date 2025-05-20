@@ -15,7 +15,7 @@ import { wait } from './utils';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
-  // Resolved Filters in cache must be reset depending on connector/stream/triggers/playbooks/PIR modifications
+  // Resolved Filters in cache must be reset depending on connector/stream/triggers/playbooks/Pir modifications
   [ENTITY_TYPE_STREAM_COLLECTION]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_TRIGGER]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_PLAYBOOK]: [ENTITY_TYPE_RESOLVED_FILTERS],

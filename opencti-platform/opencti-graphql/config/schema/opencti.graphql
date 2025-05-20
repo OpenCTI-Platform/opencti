@@ -12116,7 +12116,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | CsvMapper
   | Status
   | PublicDashboard
-  | PIR
+  | Pir
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -12201,7 +12201,7 @@ union StixObjectOrStixRelationship =
   | Workspace
   | CsvMapper
   | PublicDashboard
-  | PIR
+  | Pir
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects

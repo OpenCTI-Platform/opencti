@@ -98,7 +98,7 @@ const sourcesFlaggedListQuery = graphql`
 `;
 
 const knowledgeFragment = graphql`
-  fragment PirKnowledgeFragment on PIR {
+  fragment PirKnowledgeFragment on Pir {
     id
   }
 `;
@@ -109,7 +109,7 @@ interface PirKnowledgeProps {
 
 const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   const pir = useFragment(knowledgeFragment, data);
-  const LOCAL_STORAGE_KEY = `PIRSourcesFlaggedList-${pir.id}`;
+  const LOCAL_STORAGE_KEY = `PirSourcesFlaggedList-${pir.id}`;
 
   const initialValues = {
     searchTerm: '',

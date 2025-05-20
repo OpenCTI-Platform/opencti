@@ -1,4 +1,4 @@
-import { type BasicStoreEntityPIR, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type ParsedPIR, type PirDependency } from './pir-types';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type ParsedPir, type PirDependency } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
@@ -8,10 +8,10 @@ import { createRelation, patchAttribute } from '../../database/middleware';
 /**
  * Helper function to parse filters that are saved as string in elastic.
  *
- * @param pir The PIR to parse.
- * @returns PIR with parsed filters.
+ * @param pir The Pir to parse.
+ * @returns Pir with parsed filters.
  */
-export const parsePir = (pir: BasicStoreEntityPIR): ParsedPIR => {
+export const parsePir = (pir: BasicStoreEntityPir): ParsedPir => {
   return {
     ...pir,
     pirFilters: JSON.parse(pir.pirFilters),
@@ -23,7 +23,7 @@ export const parsePir = (pir: BasicStoreEntityPIR): ParsedPIR => {
 };
 
 export const computePirScore = async (context: AuthContext, user: AuthUser, pirId: string, dependencies: PirDependency[]) => {
-  const pir = await storeLoadById<BasicStoreEntityPIR>(context, user, pirId, ENTITY_TYPE_PIR);
+  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   const maxScore = pir.pirCriteria.reduce((acc, val) => acc + val.weight, 0);
   const depScore = dependencies.reduce((acc, val) => acc + val.criterion.weight, 0);
   if (maxScore <= 0) return 0;
@@ -31,12 +31,12 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
 };
 
 /**
- * Find a meta relationship "in-pir" between an entity and a PIR and update
+ * Find a meta relationship "in-pir" between an entity and a Pir and update
  * its dependencies (matching criteria).
  *
  * @param context To be able to make the calls.
- * @param sourceId ID of the source entity matching the PIR.
- * @param pir The PIR matched by the entity.
+ * @param sourceId ID of the source entity matching the Pir.
+ * @param pir The Pir matched by the entity.
  * @param pirDependencies The new dependencies.
  * @param operation The edit operation (add, replace, ...).
  */
@@ -52,7 +52,7 @@ export const updatePirDependencies = async (
   if (pirMetaRels.edges.length !== 1) {
     // If < 1 then the meta relationship does not exist.
     // If > 1, well this case should not be possible at all.
-    throw FunctionalError('Find more than one relation between an entity and a PIR', { sourceId, pirId, pirMetaRels });
+    throw FunctionalError('Find more than one relation between an entity and a Pir', { sourceId, pirId, pirMetaRels });
   }
   const pirMetaRel = pirMetaRels.edges[0].node;
   // region compute score

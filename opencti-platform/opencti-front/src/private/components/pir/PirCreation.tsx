@@ -10,7 +10,7 @@ const PirCreation = () => {
   return (
     <>
       <CreateEntityControlledDial
-        entityType='PIR'
+        entityType='Pir'
         onOpen={() => setDialogOpen(true)}
       />
 

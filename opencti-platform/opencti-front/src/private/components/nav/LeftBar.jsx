@@ -579,7 +579,7 @@ const LeftBar = () => {
           )}
           <Security needs={[KNOWLEDGE]}>
             {!draftContext && (
-              <StyledTooltip title={!navOpen && t_i18n('PIR')} placement="right">
+              <StyledTooltip title={!navOpen && t_i18n('Pir')} placement="right">
                 <MenuItem
                   component={Link}
                   to="/dashboard/pirs"
@@ -593,7 +593,7 @@ const LeftBar = () => {
                   {navOpen && (
                     <ListItemText
                       classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('PIR')}
+                      primary={t_i18n('Pir')}
                     />
                   )}
                 </MenuItem>

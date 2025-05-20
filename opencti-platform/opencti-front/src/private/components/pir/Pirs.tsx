@@ -19,7 +19,7 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 const pirFragment = graphql`
-  fragment Pirs_PirFragment on PIR {
+  fragment Pirs_PirFragment on Pir {
     id
     name
     created_at
@@ -43,7 +43,7 @@ const pirsFragment = graphql`
       search: { type: "String" }
       count: { type: "Int", defaultValue: 25 }
       cursor: { type: "ID" }
-      orderBy: { type: "PIROrdering", defaultValue: name }
+      orderBy: { type: "PirOrdering", defaultValue: name }
       orderMode: { type: "OrderingMode", defaultValue: asc }
       filters: { type: "FilterGroup" }
   )
@@ -76,7 +76,7 @@ const pirsListQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: PIROrdering
+    $orderBy: PirOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
   ) {
@@ -92,13 +92,13 @@ const pirsListQuery = graphql`
   }
 `;
 
-const LOCAL_STORAGE_KEY = 'PIRList';
+const LOCAL_STORAGE_KEY = 'PirList';
 
 const Pirs = () => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('PIR'));
+  setTitle(t_i18n('Pir'));
 
   const initialValues = {
     searchTerm: '',
@@ -114,7 +114,7 @@ const Pirs = () => {
   );
 
   const contextFilters = useBuildEntityTypeBasedFilterContext(
-    'PIR',
+    'Pir',
     viewStorage.filters,
   );
   const queryPaginationOptions = {
@@ -172,7 +172,7 @@ const Pirs = () => {
 
   return (
     <>
-      <Breadcrumbs elements={[{ label: t_i18n('PIR'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Pir'), current: true }]} />
       {queryRef && (
         <DataTable
           disableSelectAll
@@ -190,8 +190,8 @@ const Pirs = () => {
             setNumberOfElements: helpers.handleSetNumberOfElements,
           }}
           lineFragment={pirFragment}
-          entityTypes={['PIR']}
-          searchContextFinal={{ entityTypes: ['PIR'] }}
+          entityTypes={['Pir']}
+          searchContextFinal={{ entityTypes: ['Pir'] }}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <PirCreation />
