@@ -31,6 +31,7 @@ export const ingestionRssMutationFieldPatch = graphql`
 const ingestionRssValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
+  scheduling_period: Yup.string().required(t('This field is required')),
   uri: Yup.string().required(t('This field is required')),
   object_marking_refs: Yup.array().nullable(),
   report_types: Yup.array().nullable(),
@@ -124,7 +125,7 @@ const IngestionRssEditionContainer = ({
               style={fieldSpacingContainerStyle}
               onSubmit={handleSubmitField}
             />
-            <IngestionSchedulingField/>
+            <IngestionSchedulingField handleSubmitField={handleSubmitField}/>
             <Field
               component={TextField}
               variant="standard"
@@ -198,6 +199,7 @@ const IngestionRssEditionFragment = createFragmentContainer(
       fragment IngestionRssEdition_ingestionRss on IngestionRss {
         id
         name
+        description
         uri
         scheduling_period
         report_types

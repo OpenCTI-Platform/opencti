@@ -2,17 +2,21 @@ import { Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import React from 'react';
 import SelectField from '../../../components/fields/SelectField';
-import { fieldSpacingContainerStyle } from '../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
 import { useFormatter } from '../../../components/i18n';
 
-const IngestionSchedulingField = () => {
+interface IngestionSchedulingProps {
+  handleSubmitField?: (name: string, value: FieldOption[]) => void | null;
+}
+
+const IngestionSchedulingField = ({ handleSubmitField }: IngestionSchedulingProps) => {
   const { t_i18n } = useFormatter();
-  return <Field
-    component={SelectField}
+  return <Field component={SelectField}
     variant="standard"
     name="scheduling_period"
     label={t_i18n('Schedule period')}
     fullWidth={true}
+    onChange={handleSubmitField}
     containerstyle={fieldSpacingContainerStyle}
          >
     <MenuItem value="auto">{t_i18n('Platform default')} ({t_i18n('around 30 secs')})</MenuItem>

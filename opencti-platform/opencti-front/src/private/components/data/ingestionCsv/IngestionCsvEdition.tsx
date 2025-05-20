@@ -141,6 +141,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
   const basicShape = {
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
+    scheduling_period: Yup.string().required(t_i18n('This field is required')),
     uri: Yup.string().required(t_i18n('This field is required')),
     authentication_type: Yup.string().required(t_i18n('This field is required')),
     authentication_value: Yup.string().nullable(),
@@ -312,7 +313,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
             style={fieldSpacingContainerStyle}
             onSubmit={handleSubmitField}
           />
-          <IngestionSchedulingField/>
+          <IngestionSchedulingField handleSubmitField={handleSubmitField}/>
           <Field
             component={TextField}
             variant="standard"
