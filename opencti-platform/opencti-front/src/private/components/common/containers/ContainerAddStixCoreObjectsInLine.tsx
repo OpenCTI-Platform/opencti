@@ -3,6 +3,8 @@ import React, { FunctionComponent, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Add } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
+import useApiMutation from 'src/utils/hooks/useApiMutation';
+import { insertNode } from 'src/utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../drawer/Drawer';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
@@ -12,7 +14,7 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { removeEmptyFields } from '../../../../utils/utils';
 import { ContainerAddStixCoreObjectsLinesQuery, ContainerAddStixCoreObjectsLinesQuery$variables } from './__generated__/ContainerAddStixCoreObjectsLinesQuery.graphql';
-import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
+import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery, containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
 import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
 import { ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
@@ -75,6 +77,7 @@ interface ContainerAddStixCreObjectsInLineLoaderProps {
   helpers: PaginationLocalStorage['helpers']
   containerRef: HTMLInputElement
   enableReferences?: boolean
+  lastCreatedEntityId?: string
 }
 
 const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStixCreObjectsInLineLoaderProps> = ({
@@ -89,6 +92,8 @@ const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStix
   helpers,
   containerRef,
   enableReferences,
+  lastCreatedEntityId,
+  clearLastCreatedEntityId,
 }) => {
   const data = usePreloadedQuery(containerAddStixCoreObjectsLinesQuery, queryRef);
   return (
@@ -96,12 +101,14 @@ const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStix
       data={data}
       containerId={containerId}
       paginationOptions={linesPaginationOptions}
+      lastCreatedEntityId={lastCreatedEntityId}
       dataColumns={buildColumns()}
       initialLoading={data === null}
       knowledgeGraph={knowledgeGraph}
       containerStixCoreObjects={selectedElements}
       onAdd={handleSelect}
       onDelete={handleDeselect}
+      clearLastCreatedEntityId={clearLastCreatedEntityId}
       setNumberOfElements={helpers.handleSetNumberOfElements}
       containerRef={{ current: containerRef }}
       enableReferences={enableReferences}
@@ -170,6 +177,8 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   } = viewStorage;
   const [containerRef, setRef] = useState<HTMLInputElement>();
   const [selectedElements, setSelectedElements] = useState<scoEdge[]>(containerStixCoreObjects as scoEdge[]);
+  const [lastCreatedEntityId, setLastCreatedEntityId] = useState<string>();
+
   const handleSelect = (node: { id: string }) => {
     setSelectedElements([
       ...selectedElements,
@@ -211,6 +220,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
       },
     };
   };
+
   const { count: _, ...paginationOptionsNoCount } = paginationOptions;
   const searchPaginationOptions = removeEmptyFields({
     ...paginationOptionsNoCount,
@@ -218,76 +228,116 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   });
   const queryRef = useQueryLoading<ContainerAddStixCoreObjectsLinesQuery>(containerAddStixCoreObjectsLinesQuery, { count: 100, ...searchPaginationOptions });
 
+  const [commit] = useApiMutation(
+    containerAddStixCoreObjectsLinesRelationAddMutation,
+    undefined,
+  );
+
+  const onRelationshipCreated = (id: string) => {
+    const input = {
+      toId: id,
+      relationship_type: 'object',
+    };
+    commit({
+      variables: {
+        id: containerId,
+        input,
+      },
+      updater: (store) => {
+        const options = { ...linesPaginationOptions };
+        delete options.id;
+        delete options.count;
+        insertNode(
+          store,
+          'Pagination_objects',
+          options,
+          'containerEdit',
+          containerId,
+          'relationAdd',
+          { input },
+          'to',
+        );
+      },
+      onCompleted: () => {
+        setLastCreatedEntityId(id);
+      },
+    });
+  };
+
   const Header = () => {
     const [openCreateEntity, setOpenCreateEntity] = useState<boolean>(false);
     const [openCreateObservable, setOpenCreateObservable] = useState<boolean>(false);
-    return (<>
-      <div
-        style={{
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Typography variant='subtitle2'>
-          {showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
-        </Typography>
-        <div style={{ marginRight: '10px' }}>
-          {showSDOCreation && (
-            <Button
-              style={{ fontSize: 'small' }}
-              variant='contained'
-              disableElevation
-              size='small'
-              aria-label={t_i18n('Create an entity')}
-              onClick={() => setOpenCreateEntity(true)}
-            >
-              {t_i18n('Create an entity')}
-            </Button>
-          )}
-          {showSCOCreation && (
-            <Button
-              style={{ fontSize: 'small', marginLeft: '3px' }}
-              variant='contained'
-              disableElevation
-              size='small'
-              aria-label={t_i18n('Create an observable')}
-              onClick={() => setOpenCreateObservable(true)}
-            >
-              {t_i18n('Create an observable')}
-            </Button>
-          )}
+
+    return (
+      <>
+        <div
+          style={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Typography variant='subtitle2'>
+            {showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
+          </Typography>
+          <div style={{ marginRight: '10px' }}>
+            {showSDOCreation && (
+              <Button
+                style={{ fontSize: 'small' }}
+                variant='contained'
+                disableElevation
+                size='small'
+                aria-label={t_i18n('Create an entity')}
+                onClick={() => setOpenCreateEntity(true)}
+              >
+                {t_i18n('Create an entity')}
+              </Button>
+            )}
+            {showSCOCreation && (
+              <Button
+                style={{ fontSize: 'small', marginLeft: '3px' }}
+                variant='contained'
+                disableElevation
+                size='small'
+                aria-label={t_i18n('Create an observable')}
+                onClick={() => setOpenCreateObservable(true)}
+              >
+                {t_i18n('Create an observable')}
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-      <StixDomainObjectCreation
-        display={true}
-        inputValue={''}
-        speeddial={true}
-        open={openCreateEntity}
-        handleClose={() => setOpenCreateEntity(false)}
-        creationCallback={undefined}
-        onCompleted={undefined}
-        isFromBulkRelation={undefined}
-        confidence={confidence}
-        defaultCreatedBy={defaultCreatedBy}
-        defaultMarkingDefinitions={defaultMarkingDefinitions}
-        stixDomainObjectTypes={targetStixCoreObjectTypes}
-        paginationKey={'Pagination_stixCoreObjects'}
-        paginationOptions={searchPaginationOptions}
-      />
-      <StixCyberObservableCreation
-        display={true}
-        contextual={true}
-        inputValue={''}
-        paginationKey={'Pagination_stixCoreObjects'}
-        paginationOptions={searchPaginationOptions}
-        speeddial={true}
-        open={openCreateObservable}
-        handleClose={() => setOpenCreateObservable(false)}
-      />
-    </>);
+        <StixDomainObjectCreation
+          display={true}
+          inputValue={''}
+          speeddial={true}
+          open={openCreateEntity}
+          handleClose={() => setOpenCreateEntity(false)}
+          creationCallback={undefined}
+          onCompleted={undefined}
+          onCreated={onRelationshipCreated}
+          isFromBulkRelation={undefined}
+          confidence={confidence}
+          defaultCreatedBy={defaultCreatedBy}
+          defaultMarkingDefinitions={defaultMarkingDefinitions}
+          stixDomainObjectTypes={targetStixCoreObjectTypes}
+          paginationKey={'Pagination_stixCoreObjects'}
+          paginationOptions={searchPaginationOptions}
+        />
+        <StixCyberObservableCreation
+          display={true}
+          contextual={true}
+          inputValue={''}
+          paginationKey={'Pagination_stixCoreObjects'}
+          paginationOptions={searchPaginationOptions}
+          speeddial={true}
+          open={openCreateObservable}
+          handleClose={() => setOpenCreateObservable(false)}
+        />
+      </>
+    );
   };
 
   const Dial = showSDOCreation
@@ -326,6 +376,8 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         {(containerRef && queryRef) && (
           <ContainerAddStixCreObjectsInLineLoader
             queryRef={queryRef}
+            lastCreatedEntityId={lastCreatedEntityId}
+            clearLastCreatedEntityId={setLastCreatedEntityId}
             containerId={containerId}
             buildColumns={buildColumns}
             linesPaginationOptions={linesPaginationOptions}
