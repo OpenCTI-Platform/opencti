@@ -759,7 +759,7 @@ class DataTableToolBar extends Component {
       numberOfSelectedElements,
       handleClearSelectedElements,
       container,
-      taskScope: scope = 'KNOWLEDGE',
+      taskScope: scope,
       t,
     } = this.props;
     if (numberOfSelectedElements === 0) return;
