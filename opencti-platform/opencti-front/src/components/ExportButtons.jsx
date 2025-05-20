@@ -90,7 +90,8 @@ class ExportButtons extends Component {
             : null,
           pixelRatio,
           this.adjust,
-        ).then(() => {}).catch(() => MESSAGING$.notifyError(t('Dashboard cannot be exported to image')))
+        ).then(() => {})
+          .catch(() => MESSAGING$.notifyError(t('Dashboard cannot be exported to image')))
           .finally(() => {
             buttons.setAttribute('style', 'display: block');
             commitLocalUpdate((store) => {

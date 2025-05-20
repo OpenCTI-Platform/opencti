@@ -413,7 +413,6 @@ export const horizontalBarsChartOptions = (
         }
       },
       mouseMove: (event, chartContext, config) => {
-        console.log('On mouse move - horizontalBarsChartOptions');
         const { dataPointIndex, seriesIndex } = config;
         if (redirectionUtils
           && (
