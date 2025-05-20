@@ -84,7 +84,6 @@ const MarkingDefinitionPopover = ({
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"
-        size="large"
         disabled={disabled}
         color="primary"
       >

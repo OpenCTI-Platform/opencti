@@ -99,7 +99,6 @@ class KillChainPhasePopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          size="large"
           color="primary"
         >
           <MoreVert />
