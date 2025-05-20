@@ -39,7 +39,5 @@ esbuild.build({
     minifySyntax: true,
     keepNames: false,
     sourcemap: true,
-    sourceRoot: 'src',
-    sourcesContent: false,
     outdir: 'build',
 });

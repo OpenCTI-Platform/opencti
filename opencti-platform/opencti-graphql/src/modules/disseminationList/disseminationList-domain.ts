@@ -112,7 +112,7 @@ export const sendDisseminationEmail = async (
   }
 
   const sendMailArgs: SendMailArgs = {
-    from: settings.platform_email,
+    from: `${settings.platform_title} <${settings.platform_email}>`,
     to: toEmail,
     bcc: [...opts.emails, user.user_email],
     subject: opts.object,

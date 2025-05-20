@@ -4,8 +4,8 @@ import { compose, pathOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { graphql, createRefetchContainer } from 'react-relay';
 import Paper from '@mui/material/Paper';
+import StixCoreObjectHistoryLine from '../../common/stix_core_objects/StixCoreObjectHistoryLine';
 import inject18n from '../../../../components/i18n';
-import StixSightingRelationshipHistoryLine from './StixSightingRelationshipHistoryLine';
 
 const styles = (theme) => ({
   paperHistory: {
@@ -25,7 +25,7 @@ class StixSightingRelationshipHistoryLinesComponent extends Component {
           logs.map((logEdge) => {
             const log = logEdge.node;
             return (
-              <StixSightingRelationshipHistoryLine
+              <StixCoreObjectHistoryLine
                 key={log.id}
                 node={log}
                 isRelation={isRelationLog}
@@ -87,7 +87,7 @@ const StixSightingRelationshipHistoryLines = createRefetchContainer(
           edges {
             node {
               id
-              ...StixSightingRelationshipHistoryLine_node
+              ...StixCoreObjectHistoryLine_node
             }
           }
         }

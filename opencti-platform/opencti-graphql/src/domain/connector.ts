@@ -36,6 +36,7 @@ import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon } from '../types/store';
 import type { Connector } from '../connector/internalConnector';
+import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -416,6 +417,13 @@ export const askJobImport = async (
     controlUserConfidenceAgainstElement(user, entity);
   }
   const connectorsForFile = await uploadJobImport(context, user, file, entityId, opts);
+  if (file.id.startsWith('import/pending')) {
+    if (args.forceValidation && args.validationMode === 'draft') {
+      await addWorkbenchDraftConvertionCount();
+    } else if (args.bypassValidation) {
+      await addWorkbenchValidationCount();
+    }
+  }
   const entityName = entityId ? extractEntityRepresentativeName(entity) : 'global';
   const entityType = entityId ? entity.entity_type : 'global';
   const baseData: UserImportActionContextData = {

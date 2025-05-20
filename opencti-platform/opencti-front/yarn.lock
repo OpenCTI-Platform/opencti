@@ -7738,12 +7738,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.14.1":
-  version: 22.14.1
-  resolution: "@types/node@npm:22.14.1"
+"@types/node@npm:22.15.19":
+  version: 22.15.19
+  resolution: "@types/node@npm:22.15.19"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10/561b1ad98ef5176d6da856ffbbe494f16655149f6a7d561de0423c8784910c81267d7d6459f59d68a97b3cbae9b5996b3b5dfe64f4de3de2239d295dcf4a4dcc
+  checksum: 10/02311c2b5dbf2e9e2c17497dc27858bcefbe12a81af0d9b81f865613d8d014726e0eb6cbebfbdb84a327c1b9f9da1347a65a7699ac58c8854fb4daf447031149
   languageName: node
   linkType: hard
 
@@ -13749,10 +13749,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:16.10.0":
-  version: 16.10.0
-  resolution: "graphql@npm:16.10.0"
-  checksum: 10/d42cf81ddcf3a61dfb213217576bf33c326f15b02c4cee369b373dc74100cbdcdc4479b3b797e79b654dabd8fddf50ef65ff75420e9ce5596c02e21f24c9126a
+"graphql@npm:16.11.0":
+  version: 16.11.0
+  resolution: "graphql@npm:16.11.0"
+  checksum: 10/e3e1633d0b464bbb3fa41283fae938bd3bac801c350555b3f1a129d99fb3cfe157fa69c1389229dba902731942eb08bdea4b29f1271965feee8779576b26ef01
   languageName: node
   linkType: hard
 
@@ -16045,12 +16045,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:15.0.8":
-  version: 15.0.8
-  resolution: "marked@npm:15.0.8"
+"marked@npm:15.0.11":
+  version: 15.0.11
+  resolution: "marked@npm:15.0.11"
   bin:
     marked: bin/marked.js
-  checksum: 10/5510391949661699270f5b8e044c9c69fe1318205c0cd74431f7f6ea31a20087f5fe9b12e55d3d470caa6784d1b66bde7dd3d137177337bb680de133b9a3c0c2
+  checksum: 10/939e75f3e989ef4d72d6da9c7e80e43d49ffdc7af8ae2a38cc8c73f20a629d9659a0acda1d0cb5a5f90876cbfb1520d029f98790a934b46592dfa178fbd2838c
   languageName: node
   linkType: hard
 
@@ -17519,7 +17519,7 @@ __metadata:
     "@testing-library/user-event": "npm:14.6.1"
     "@types/d3-scale": "npm:4.0.9"
     "@types/html-to-pdfmake": "npm:2.4.4"
-    "@types/node": "npm:22.14.1"
+    "@types/node": "npm:22.15.19"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.30.2"
     "@types/react": "npm:18.3.20"
@@ -17571,7 +17571,7 @@ __metadata:
     formik-mui-lab: "npm:1.0.0"
     fs-extra: "npm:11.3.0"
     graphiql: "npm:3.8.3"
-    graphql: "npm:16.10.0"
+    graphql: "npm:16.11.0"
     graphql-ws: "npm:5.16.2"
     html-react-parser: "npm:5.2.3"
     html-to-image: "npm:1.11.13"
@@ -17586,7 +17586,7 @@ __metadata:
     leaflet: "npm:1.9.4"
     lodash: "npm:4.17.21"
     markdown-to-jsx: "npm:7.7.6"
-    marked: "npm:15.0.8"
+    marked: "npm:15.0.11"
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.5.48"
@@ -17635,7 +17635,7 @@ __metadata:
     typescript: "npm:5.8.3"
     use-analytics: "npm:1.1.0"
     uuid: "npm:11.1.0"
-    vite: "npm:6.3.3"
+    vite: "npm:6.3.4"
     vite-plugin-relay: "npm:2.1.0"
     vite-plugin-static-copy: "npm:2.3.1"
     vitest: "npm:2.0.5"
@@ -22070,9 +22070,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:6.3.3":
-  version: 6.3.3
-  resolution: "vite@npm:6.3.3"
+"vite@npm:6.3.4":
+  version: 6.3.4
+  resolution: "vite@npm:6.3.4"
   dependencies:
     esbuild: "npm:^0.25.0"
     fdir: "npm:^6.4.4"
@@ -22121,7 +22121,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10/442e518d9da847db80bd19a9792d1d9a106a31d18f74bfd06574776932dd0907f7205b99e34d455ba505a7dd9e57a807354633b90acd46a11db849a15ae26ad4
+  checksum: 10/347579b6571e591c1e4f54262e631f02e952e548171af09042aeffb40adfa5c9b43cf05cf115f0961cc553f6b7173fb9c2ee997a688007c01b6e13779d9a2bd4
   languageName: node
   linkType: hard
 

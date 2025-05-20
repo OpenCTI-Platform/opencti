@@ -1,7 +1,5 @@
 import './instrumentation';
 
-import 'source-map-support/register';
-import blocked from 'blocked-at';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { Resource } from '@opentelemetry/resources';
@@ -17,7 +15,7 @@ import './config/tracing';
 // endregion
 import { SEMRESATTRS_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 import { platformStart } from './boot';
-import { ENABLED_EVENT_LOOP_MONITORING, ENABLED_TRACING, logApp } from './config/conf';
+import { ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
 
 // -- Apply telemetry
@@ -42,18 +40,6 @@ if (ENABLED_TRACING) {
   }
   // Registration
   provider.register();
-}
-// ------- Event loop monitoring
-if (ENABLED_EVENT_LOOP_MONITORING) {
-  const threshold = nconf.get('app:event_loop_logs:max_time') ?? 1000; // No more than 1 sec by default
-  blocked((time, stack) => {
-    // For now, we only check for blocking outside graphql executeFields resolvers
-    // TODO Remove after official release of graphQL 17 and resolvers adaptations
-    const stackValue = stack.join();
-    if (stackValue.indexOf('executeFields') === -1) {
-      logApp.warn('Event loop blocking warning', { time, trace: stackValue });
-    }
-  }, { threshold });
 }
 
 // -- Start the platform

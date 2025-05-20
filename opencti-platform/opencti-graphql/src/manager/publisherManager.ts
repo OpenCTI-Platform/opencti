@@ -100,7 +100,7 @@ export const internalProcessNotification = async (
       const { title, template, url_suffix: urlSuffix } = JSON.parse(configuration ?? '{}') as NOTIFIER_CONNECTOR_EMAIL_INTERFACE;
       const generatedTitle = ejs.render(title, templateData);
       const generatedEmail = ejs.render(template, { ...templateData, url_suffix: urlSuffix });
-      const mail = { from: settings.platform_email, to: user.user_email, subject: generatedTitle, html: generatedEmail };
+      const mail = { from: `${settings.platform_title} <${settings.platform_email}>`, to: user.user_email, subject: generatedTitle, html: generatedEmail };
       await sendMail(mail).catch((err) => {
         logApp.error('[OPENCTI-MODULE] Publisher manager send email error', { cause: err, manager: 'PUBLISHER_MANAGER' });
         return { error: err };

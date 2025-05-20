@@ -205,7 +205,7 @@ FilterIconButtonContainerProps
     if (helpers) {
       setFilterChipsParams({
         filterId,
-        anchorEl: event.currentTarget,
+        anchorEl: event.currentTarget.parentElement ?? event.currentTarget,
       });
     }
   };

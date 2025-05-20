@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="4 - Frontend stack analysis" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/opencti-platform/opencti-graphql/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="frontend:stack:analysis" />
+    </scripts>
+    <arguments value="front" />
+    <node-interpreter value="project" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</component>

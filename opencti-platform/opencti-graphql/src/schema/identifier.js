@@ -19,7 +19,7 @@ import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { now } from '../utils/format';
 import { isBasicRelationship } from './stixRelationship';
-import { convertTypeToStixType } from '../database/stix-2-1-converter';
+import { cleanObject, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { INPUT_DST, INPUT_SRC, isStixRefRelationship } from './stixRefRelationship';
 
 // region hashes
@@ -424,10 +424,12 @@ const isStandardIdChanged = (previous, updated, operation) => {
     return false;
   }
   // If same way, test if only adding is part of operation
-  const { way: previousWay } = generateDataUUID(previous.entity_type, previous);
-  const dataPrevious = R.fromPairs(Object.entries(previous).filter(([k]) => previousWay.map((w) => w.src).includes(k)));
-  const { way: currentWay } = generateDataUUID(updated.entity_type, updated);
-  const dataUpdated = R.fromPairs(Object.entries(updated).filter(([k]) => currentWay.map((w) => w.src).includes(k)));
+  const cleanPrevious = cleanObject(previous);
+  const { way: previousWay } = generateDataUUID(previous.entity_type, cleanPrevious);
+  const dataPrevious = R.fromPairs(Object.entries(cleanPrevious).filter(([k]) => previousWay.map((w) => w.src).includes(k)));
+  const cleanUpdated = cleanObject(updated);
+  const { way: currentWay } = generateDataUUID(updated.entity_type, cleanUpdated);
+  const dataUpdated = R.fromPairs(Object.entries(cleanUpdated).filter(([k]) => currentWay.map((w) => w.src).includes(k)));
   const patch = jsonpatch.compare(dataPrevious, dataUpdated);
   const numberOfOperations = patch.length;
   // If no operations, standard id will not change

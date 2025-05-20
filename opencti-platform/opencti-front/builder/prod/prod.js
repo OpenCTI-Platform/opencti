@@ -23,14 +23,12 @@ esbuild
       ".ttf": "dataurl",
       ".eot": "dataurl",
     },
-    assetNames: "[dir]/[name]-[hash]",
-    entryNames: "static/[ext]/[name]-[hash]",
+    assetNames: keep ? "[dir]/[name]" : "[dir]/[name]-[hash]",
+    entryNames: keep ? "static/[ext]/[name]" : "static/[ext]/[name]-[hash]",
     target: ["chrome58"],
     minify: true,
-    keepNames: false,
-    sourcemap: false,
-    sourceRoot: "src",
-    sourcesContent: false,
+    keepNames: true,
+    sourcemap: keep,
     outdir: "builder/prod/build",
   })
   .then(() => {

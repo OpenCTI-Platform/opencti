@@ -49,10 +49,9 @@ esbuild.context({
   },
   assetNames: "[dir]/[name]-[hash]",
   target: ["chrome58"],
-  minify: false,
+  minify: true,
   keepNames: true,
-  sourcemap: "inline",
-  sourceRoot: "src",
+  sourcemap: true,
   outdir: "builder/dev/build",
 }).then(async (builder) => {
   await builder.rebuild();
