@@ -8,7 +8,7 @@ input VerifyOtpInput {
 }
 
 input VerifyMfaInput {
-  mfaOtp: String!
+  code: String!
   transactionId: String!
 }
 

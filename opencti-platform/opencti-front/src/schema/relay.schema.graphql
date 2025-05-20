@@ -9091,7 +9091,6 @@ type Mutation {
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
-  askSendToken(email: String!): Boolean
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
@@ -12848,7 +12847,7 @@ input VerifyOtpInput {
 }
 
 input VerifyMfaInput {
-  mfaOtp: String!
+  code: String!
   transactionId: String!
 }
 

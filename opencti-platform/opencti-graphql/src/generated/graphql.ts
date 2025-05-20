@@ -30125,7 +30125,7 @@ export enum ValidationMode {
 }
 
 export type VerifyMfaInput = {
-  mfaOtp: Scalars['String']['input'];
+  code: Scalars['String']['input'];
   transactionId: Scalars['String']['input'];
 };
 

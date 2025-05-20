@@ -137,7 +137,7 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
   if (!mfa_activated || !mfa_secret) {
     throw AuthenticationFailure();
   }
-  const isValidated = authenticator.check(input.mfaOtp, mfa_secret);
+  const isValidated = authenticator.check(input.code, mfa_secret);
   if (!isValidated) {
     throw AuthenticationFailure();
   } else {
