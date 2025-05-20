@@ -544,6 +544,7 @@ const PlaybookAddComponentsContent = ({
     const selectedComponent = playbookComponents
       .filter((n) => n.id === componentId)
       .at(0);
+      console.log("selectedComponent : ", selectedComponent);
     const configurationSchema = JSON.parse(
       selectedComponent.configuration_schema ?? '{}',
     );
@@ -610,9 +611,15 @@ const PlaybookAddComponentsContent = ({
                     );
                   }
                   if (k === 'caseTemplates') {
+                    const isCaseContainer = values?.container_type && ['Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(values?.container_type);
+                    if (values?.caseTemplates && values?.caseTemplates.length > 0 && !isCaseContainer) {
+                      setFieldValue("caseTemplates", []);
+                    }
                     return (
-                      <CaseTemplateField label="Case templates" />
-                    )
+                      <Box sx={{ marginTop: "20px"}}>
+                        <CaseTemplateField key={k} label="Case templates" isDisabled={!isCaseContainer} />
+                      </Box>
+                    );
                   }
                   if (k === 'filters') {
                     return (
