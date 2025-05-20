@@ -38,7 +38,7 @@ import { RELATION_BASED_ON, RELATION_HAS } from '../schema/stixCoreRelationship'
 import { ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { checkScoreValue, now, observableValue } from '../utils/format';
+import { isValidScore, now, observableValue } from '../utils/format';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
@@ -190,9 +190,7 @@ export const addStixCyberObservable = async (context, user, input) => {
   if (!input[graphQLType]) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
-  if (x_opencti_score < 0 || x_opencti_score > 100) {
-    throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
-  }
+  isValidScore(x_opencti_score);
   const lowerCaseTypes = ['Domain-Name', 'Email-Addr'];
   if (lowerCaseTypes.includes(type) && input[graphQLType].value) {
     // eslint-disable-next-line no-param-reassign
@@ -284,7 +282,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
   }
   if (input[0].key === 'x_opencti_score') {
     const newScore = parseFloat(input[0].value[0]);
-    checkScoreValue(newScore);
+    isValidScore(newScore);
   }
   const { element: stixCyberObservable } = await updateAttribute(
     context,
@@ -300,7 +298,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
   });
   if (input[0].key === 'x_opencti_score') {
     const newScore = parseFloat(input[0].value[0]);
-    checkScoreValue(newScore);
+    isValidScore(newScore);
     const indicators = await listAllFromEntitiesThroughRelations(
       context,
       user,
