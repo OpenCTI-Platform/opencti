@@ -7,6 +7,7 @@ const ignoredClasses = [
   'MuiDrawer-docked',
   'MuiIconButton-root',
   'MuiInputBase-root',
+  'apexcharts-legend-series',
 ];
 
 export const exportImage = (
@@ -60,15 +61,11 @@ export const exportPdf = (
   pixelRatio = 1,
   adjust = null,
 ) => {
-  console.log('ANGIE - exportPdf in image start');
   const container = document.getElementById(domElementId);
   const { offsetWidth, offsetHeight } = container;
   const imageWidth = offsetWidth * pixelRatio;
   const imageHeight = offsetHeight * pixelRatio;
-  console.log('ANGIE - exportPdf in image params', { offsetWidth, offsetHeight, imageWidth, imageHeight, backgroundColor, name, adjust, container, pixelRatio });
   return new Promise((resolve, reject) => {
-    console.log(`ANGIE - exportPdf in image htmlToImage start container:${container.className}`);
-    console.log('ANGIE - exportPdf in image params 2', { offsetWidth, offsetHeight, imageWidth, imageHeight, backgroundColor, name, adjust, container, pixelRatio });
     htmlToImage
       .toPng(container, {
         useCORS: true,
@@ -87,7 +84,6 @@ export const exportPdf = (
           return true;
         },
       })
-      .then((truc) => { console.log('ANGIE truc:', truc); return truc; })
       .then((image) => {
         const docDefinition = {
           pageSize: {
@@ -116,11 +112,9 @@ export const exportPdf = (
             },
           ],
         };
-        console.log('ANGIE - exportPdf before createPdf');
         const pdf = pdfMake.createPdf(docDefinition);
         pdf.download(`${name}.pdf`);
         if (adjust) {
-          console.log('ANGIE - exportPdf adjust');
           container.setAttribute(
             'style',
             `width:${offsetWidth}px; height:${offsetHeight}px;`,
@@ -129,7 +123,6 @@ export const exportPdf = (
         resolve();
       })
       .catch((reason) => {
-        console.log('ANGIE error in exportPdf in image', JSON.stringify(reason));
         reject(reason);
       });
   });
