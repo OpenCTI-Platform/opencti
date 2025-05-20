@@ -20,6 +20,7 @@ import {
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from '../schema/stixCyberObservable';
+import { ValidationError } from '../config/errors';
 
 const DEFAULT_TRUNCATE_LIMIT = 64;
 
@@ -205,6 +206,12 @@ export const observableValue = (stixCyberObservable) => {
       return stixCyberObservable.persona_name || 'Unknown';
     default:
       return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';
+  }
+};
+
+export const checkScoreValue = (newScore) => {
+  if (newScore < 0 || newScore > 100 || !Number.isInteger(newScore)) {
+    throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
   }
 };
 

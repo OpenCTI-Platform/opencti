@@ -38,7 +38,7 @@ import { RELATION_BASED_ON, RELATION_HAS } from '../schema/stixCoreRelationship'
 import { ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { now, observableValue } from '../utils/format';
+import { checkScoreValue, now, observableValue } from '../utils/format';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
@@ -284,9 +284,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
   }
   if (input[0].key === 'x_opencti_score') {
     const newScore = parseFloat(input[0].value[0]);
-    if (newScore < 0 || newScore > 100 || !Number.isInteger(newScore)) {
-      throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
-    }
+    checkScoreValue(newScore);
   }
   const { element: stixCyberObservable } = await updateAttribute(
     context,
@@ -302,9 +300,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
   });
   if (input[0].key === 'x_opencti_score') {
     const newScore = parseFloat(input[0].value[0]);
-    if (newScore < 0 || newScore > 100 || !Number.isInteger(newScore)) {
-      throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
-    }
+    checkScoreValue(newScore);
     const indicators = await listAllFromEntitiesThroughRelations(
       context,
       user,

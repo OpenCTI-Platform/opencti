@@ -29,7 +29,7 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRe
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
-import { now, utcDate } from '../utils/format';
+import { checkScoreValue, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -205,8 +205,8 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
     const newScore = scoreEditInput.value[0];
-    if (newScore !== null && newScore !== undefined && (newScore && (newScore < 0 || newScore > 100 || !Number.isInteger(newScore)))) {
-      throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
+    if (newScore !== null && newScore !== undefined && newScore) {
+      checkScoreValue(newScore);
     }
   }
   // Validate specific relations, created by and markings

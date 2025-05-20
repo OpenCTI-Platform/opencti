@@ -51,7 +51,7 @@ import {
 } from '../decayRule/decayRule-domain';
 import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
-import { prepareDate, utcDate } from '../../utils/format';
+import { checkScoreValue, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 
@@ -355,9 +355,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
     const newScore = scoreEditInput.value[0];
-    if (newScore < 0 || newScore > 100 || !Number.isInteger(newScore)) {
-      throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
-    }
+    checkScoreValue(newScore);
     if (indicator.decay_applied_rule && !scoreEditInput.value.includes(indicator.decay_base_score)) {
       const updateDate = utcDate();
       finalInput.push({ key: 'decay_base_score', value: [newScore] });
