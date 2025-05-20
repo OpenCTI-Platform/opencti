@@ -37,7 +37,6 @@ const ProcessingMenu = () => {
   const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isMapperUpdater = useGranted([CSVMAPPERS]);
-  const isJsonMapperEnable = isFeatureEnable('JSON_MAPPER');
   return (
     <Drawer
       variant="permanent"
@@ -84,7 +83,7 @@ const ProcessingMenu = () => {
             <ListItemText primary={t_i18n('CSV Mappers')} />
           </MenuItem>
         )}
-        {isMapperUpdater && isJsonMapperEnable && (
+        {isMapperUpdater && (
           <MenuItem
             component={Link}
             to={'/dashboard/data/processing/json_mapper'}
