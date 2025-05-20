@@ -22,7 +22,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from '../modules/indicator/indicator-domain';
-import { FunctionalError, ValidationError } from '../config/errors';
+import { FunctionalError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';
 import {
