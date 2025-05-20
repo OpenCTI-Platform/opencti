@@ -3068,8 +3068,6 @@ const elQueryBodyBuilder = async (context, user, options) => {
         ordering = R.append(sortingForCriteria, ordering);
       }
     }
-    // Add standard_id if not specify to ensure ordering uniqueness
-    ordering.push({ _doc: 'asc' });
     // Build runtime mappings
     const runtime = RUNTIME_ATTRIBUTES[orderBy];
     if (isNotEmptyField(runtime)) {
@@ -3080,9 +3078,9 @@ const elQueryBodyBuilder = async (context, user, options) => {
         script: { source, params },
       };
     }
-  } else { // If not ordering criteria, order by _doc
-    ordering.push({ _doc: 'asc' });
   }
+  // Add _doc as default order
+  ordering.push({ _doc: 'asc' });
   // Handle draft
   const draftMust = buildDraftFilter(context, user, options);
   // Build query
