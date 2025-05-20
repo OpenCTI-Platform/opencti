@@ -18,6 +18,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { ListItemButton } from '@mui/material';
+import CaseTemplateField from '../../common/form/CaseTemplateField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
@@ -52,7 +53,6 @@ import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TimePickerField from '../../../../components/TimePickerField';
 import { parse } from '../../../../utils/Time';
-import CaseTemplateField from "@components/common/form/CaseTemplateField";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -544,7 +544,6 @@ const PlaybookAddComponentsContent = ({
     const selectedComponent = playbookComponents
       .filter((n) => n.id === componentId)
       .at(0);
-      console.log("selectedComponent : ", selectedComponent);
     const configurationSchema = JSON.parse(
       selectedComponent.configuration_schema ?? '{}',
     );
@@ -613,11 +612,11 @@ const PlaybookAddComponentsContent = ({
                   if (k === 'caseTemplates') {
                     const isCaseContainer = values?.container_type && ['Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(values?.container_type);
                     if (values?.caseTemplates && values?.caseTemplates.length > 0 && !isCaseContainer) {
-                      setFieldValue("caseTemplates", []);
+                      setFieldValue('caseTemplates', []);
                     }
                     return (
                       <Box key={k} sx={{ marginTop: "20px"}}>
-                        <CaseTemplateField label="Case templates" isDisabled={!isCaseContainer} />
+                        <CaseTemplateField label='Case templates' isDisabled={!isCaseContainer} />
                       </Box>
                     );
                   }
