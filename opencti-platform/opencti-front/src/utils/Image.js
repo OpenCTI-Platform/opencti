@@ -20,7 +20,7 @@ export const exportImage = (
   adjust = null,
 ) => {
   const container = document.getElementById(domElementId);
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     htmlToImage
       .toBlob(container, {
         useCORS: true,
@@ -50,6 +50,8 @@ export const exportImage = (
           adjust(true);
         }
         resolve();
+      }).catch((reason) => {
+        reject(reason);
       });
   });
 };
@@ -68,11 +70,13 @@ export const exportPdf = (
   return new Promise((resolve, reject) => {
     htmlToImage
       .toPng(container, {
+        cacheBust: true,
         useCORS: true,
         allowTaint: true,
         pixelRatio,
         backgroundColor,
         style: { margin: 0 },
+        imagePlaceholder: '', // ignore image fetch failure, and display empty area
         filter: (domNode) => {
           if (domNode.className) {
             for (const ignoredClass of ignoredClasses) {
@@ -82,6 +86,9 @@ export const exportPdf = (
             }
           }
           return true;
+        },
+        onImageErrorHandler: (err) => {
+          console.log('ERROR in image handler:', JSON.stringify(err));
         },
       })
       .then((image) => {
