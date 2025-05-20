@@ -7,6 +7,7 @@ const ignoredClasses = [
   'MuiDrawer-docked',
   'MuiIconButton-root',
   'MuiInputBase-root',
+  // For some reason apex legend crash pdf and png export.
   'apexcharts-legend-series',
 ];
 
@@ -39,6 +40,9 @@ export const exportImage = (
           }
           return true;
         },
+        onImageErrorHandler: () => {
+          // We do nothing, it's just to avoid crashing export in case of image error.
+        },
       })
       .then((blob) => {
         fileDownload(blob, `${name}.png`, 'image/png');
@@ -70,7 +74,6 @@ export const exportPdf = (
   return new Promise((resolve, reject) => {
     htmlToImage
       .toPng(container, {
-        cacheBust: true,
         useCORS: true,
         allowTaint: true,
         pixelRatio,
@@ -87,8 +90,8 @@ export const exportPdf = (
           }
           return true;
         },
-        onImageErrorHandler: (err) => {
-          console.log('ERROR in image handler:', JSON.stringify(err));
+        onImageErrorHandler: () => {
+          // We do nothing, it's just to avoid crashing export in case of image error.
         },
       })
       .then((image) => {
