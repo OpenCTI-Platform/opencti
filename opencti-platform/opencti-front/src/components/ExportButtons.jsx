@@ -104,7 +104,6 @@ class ExportButtons extends Component {
   }
 
   handleOpenPdf(event) {
-    console.log('ANGIE - handleOpenPdf');
     this.setState({ anchorElPdf: event.currentTarget });
   }
 
