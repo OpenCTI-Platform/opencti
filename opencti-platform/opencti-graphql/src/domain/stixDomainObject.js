@@ -205,8 +205,8 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
     const newScore = scoreEditInput.value[0];
-    if (newScore !== null && newScore !== undefined && (newScore && (newScore < 0 || newScore > 100))) {
-      throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
+    if (newScore !== null && newScore !== undefined && (newScore && (newScore < 0 || newScore > 100 || !Number.isInteger(newScore)))) {
+      throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
     }
   }
   // Validate specific relations, created by and markings

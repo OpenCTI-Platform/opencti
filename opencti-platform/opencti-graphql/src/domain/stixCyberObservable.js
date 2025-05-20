@@ -282,6 +282,12 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     }
     throw FunctionalError('Cannot update payload_bin when url is present.');
   }
+  if (input[0].key === 'x_opencti_score') {
+    const newScore = parseFloat(input[0].value[0]);
+    if (newScore < 0 || newScore > 100 || !Number.isInteger(newScore)) {
+      throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
+    }
+  }
   const { element: stixCyberObservable } = await updateAttribute(
     context,
     user,
@@ -295,9 +301,9 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     if (isNumericAttribute(key) && value === '') delete stixCyberObservable[key];
   });
   if (input[0].key === 'x_opencti_score') {
-    const newScore = parseInt(input[0].value[0], 10);
-    if (newScore < 0 || newScore > 100) {
-      throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
+    const newScore = parseFloat(input[0].value[0]);
+    if (newScore < 0 || newScore > 100 || !Number.isInteger(newScore)) {
+      throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
     }
     const indicators = await listAllFromEntitiesThroughRelations(
       context,

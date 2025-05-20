@@ -355,8 +355,8 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
     const newScore = scoreEditInput.value[0];
-    if (newScore < 0 || newScore > 100) {
-      throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
+    if (newScore < 0 || newScore > 100 || !Number.isInteger(newScore)) {
+      throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
     }
     if (indicator.decay_applied_rule && !scoreEditInput.value.includes(indicator.decay_base_score)) {
       const updateDate = utcDate();
