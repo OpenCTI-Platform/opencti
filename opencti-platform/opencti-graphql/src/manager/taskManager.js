@@ -48,7 +48,7 @@ import {
   INPUT_OBJECTS,
   RULE_PREFIX
 } from '../schema/general';
-import { BYPASS, executionContext, getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, getUserAccessRight, isUserInPlatformOrganization, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
 import { buildEntityFilters, internalFindByIds, listAllRelations } from '../database/middleware-loader';
 import { getActivatedRules, getRule } from '../domain/rules';
@@ -80,7 +80,7 @@ import { processDeleteOperation, restoreDelete } from '../modules/deleteOperatio
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { stixDomainObjectAddRelation } from '../domain/stixDomainObject';
 import { BackgroundTaskScope } from '../generated/graphql';
-import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
+import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { deleteFile } from '../database/file-storage';
 import { checkUserIsAdminOnDashboard } from '../modules/publicDashboard/publicDashboard-utils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
@@ -90,6 +90,7 @@ import { deleteDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-d
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from '../domain/stixObjectOrStixRelationship';
+import { getEntityFromCache } from '../database/cache';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -642,14 +643,16 @@ export const taskHandler = async () => {
       return;
     }
     // endregion
-    const draftID = task.draft_context ?? '';
-    const fullContext = { ...context, draft_context: draftID };
     const startPatch = { last_execution_date: now() };
     await updateTask(context, task.id, startPatch);
     // Fetch the user responsible for the task
     const rawUser = await resolveUserByIdFromCache(context, task.initiator_id);
     const user = { ...rawUser, origin: { user_id: rawUser.id, referer: 'background_task' } };
     logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
+    const draftID = task.draft_context ?? '';
+    const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
+    const fullContext = { ...context, draft_context: draftID, user_inside_platform_organization };
     let jobToExecute;
     if (isQueryTask) {
       jobToExecute = await computeQueryTaskElements(fullContext, user, task);
