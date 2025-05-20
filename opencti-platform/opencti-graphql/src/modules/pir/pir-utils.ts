@@ -1,4 +1,4 @@
-import { type BasicStoreEntityPIR, ENTITY_TYPE_PIR, type ParsedPIR, type PirDependency } from './pir-types';
+import { type BasicStoreEntityPIR, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type ParsedPIR, type PirDependency } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
@@ -48,7 +48,7 @@ export const updatePirDependencies = async (
   pirDependencies: PirDependency[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
-  const pirMetaRels = await listRelationsPaginated(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
+  const pirMetaRels = await listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
   if (pirMetaRels.edges.length !== 1) {
     // If < 1 then the meta relationship does not exist.
     // If > 1, well this case should not be possible at all.

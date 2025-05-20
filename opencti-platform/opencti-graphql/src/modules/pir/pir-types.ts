@@ -1,4 +1,4 @@
-import type { BasicStoreEntity, StoreEntity } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { StixInternal } from '../../types/stix-2-1-common';
 import type { FilterGroup } from '../../generated/graphql';
 
@@ -46,4 +46,8 @@ export interface ParsedPIR {
 export interface PirDependency {
   relationship_id: string,
   criterion: PIRCriterion,
+}
+
+export interface BasicStoreRelationPir extends BasicStoreRelation {
+  pir_dependencies: PirDependency[],
 }
