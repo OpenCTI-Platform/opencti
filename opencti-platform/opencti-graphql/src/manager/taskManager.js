@@ -48,7 +48,7 @@ import {
   INPUT_OBJECTS,
   RULE_PREFIX
 } from '../schema/general';
-import { BYPASS, executionContext, getUserAccessRight, isBypassUser, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, getUserAccessRight, isUserInPlatformOrganization, MEMBER_ACCESS_RIGHT_ADMIN, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildInternalEvent, rulesApplyHandler, rulesCleanHandler } from './ruleManager';
 import { buildEntityFilters, internalFindByIds, listAllRelations } from '../database/middleware-loader';
 import { getActivatedRules, getRule } from '../domain/rules';
@@ -651,13 +651,7 @@ export const taskHandler = async () => {
     logApp.debug(`[OPENCTI-MODULE][TASK-MANAGER] Executing job using userId:${rawUser.id}, for task ${task.internal_id}`);
     const draftID = task.draft_context ?? '';
     const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    let user_inside_platform_organization = false;
-    if (isBypassUser(user)) {
-      user_inside_platform_organization = true;
-    } else {
-      const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
-      user_inside_platform_organization = settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
-    }
+    const user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
     const fullContext = { ...context, draft_context: draftID, user_inside_platform_organization };
     let jobToExecute;
     if (isQueryTask) {
