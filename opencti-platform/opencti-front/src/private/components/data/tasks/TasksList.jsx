@@ -263,7 +263,7 @@ const TasksList = ({ data }) => {
             progressValue = 100;
           } else if (task.work.status === 'wait') {
             progressValue = 0;
-          } else if (taskWorkExpectedNumber){
+          } else if (taskWorkExpectedNumber) {
             progressValue = Math.round((100 * (taskWorkProcessedNumber)) / (taskWorkExpectedNumber));
           } else {
             progressValue = 0;
