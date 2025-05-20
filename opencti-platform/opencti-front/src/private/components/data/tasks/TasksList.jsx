@@ -254,18 +254,24 @@ const TasksList = ({ data }) => {
           listIds = truncate(R.join(', ', task.task_ids), 60);
         }
         const lastTaskExecutionDate = task.work ? task.work.completed_time : task.last_execution_date;
+        const taskWorkProcessedNumber = task.work?.tracking?.import_processed_number ?? 0;
+        const taskWorkExpectedNumber = task.work?.tracking?.import_expected_number ?? null;
+        const progressNumberDisplay = taskWorkExpectedNumber ? ` ${taskWorkProcessedNumber}/${taskWorkExpectedNumber}` : '';
         let progressValue = 0;
         if (task.work) {
           if (task.work.status === 'complete') {
             progressValue = 100;
           } else if (task.work.status === 'wait') {
             progressValue = 0;
+          } else if (taskWorkExpectedNumber){
+            progressValue = Math.round((100 * (taskWorkProcessedNumber)) / (taskWorkExpectedNumber));
           } else {
-            progressValue = Math.round((100 * (task.work.tracking?.import_processed_number ?? 0)) / (task.work.tracking?.import_expected_number ?? 100));
+            progressValue = 0;
           }
         } else {
           progressValue = 100;
         }
+
         return (
           <Paper
             key={task.id}
@@ -412,7 +418,7 @@ const TasksList = ({ data }) => {
                   </Grid>
                   <Grid item xs={10}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Progress')}
+                      {t_i18n('Progress')}{progressNumberDisplay}
                     </Typography>
                     <LinearProgress
                       classes={{ root: classes.progress }}
