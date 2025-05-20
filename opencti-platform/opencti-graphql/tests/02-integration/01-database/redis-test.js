@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
 import {
@@ -8,7 +8,9 @@ import {
   getRedisVersion,
   lockResource,
   redisClearTelemetry,
+  redisGetForgotPasswordOtp,
   redisGetTelemetry,
+  redisSetForgotPasswordOtp,
   redisSetTelemetryAdd,
   setEditContext
 } from '../../../src/database/redis';
@@ -33,6 +35,38 @@ describe('Redis basic and utils', () => {
 
     await redisClearTelemetry();
     expect(await redisGetTelemetry('fakeGaugeforUnitTest')).toBe(0);
+  });
+
+  it('should store and overwrite forgot_password_otp)', async () => {
+    const id = uuid();
+    const email = 'user@test.com';
+    const firstOtp = 'first-otp';
+    const secondOtp = 'second-otp';
+
+    await redisSetForgotPasswordOtp(id, { hashedOtp: firstOtp, email });
+    const storedFirst = await redisGetForgotPasswordOtp(id);
+    expect(storedFirst.hashedOtp).toBe(firstOtp);
+
+    await redisSetForgotPasswordOtp(id, { hashedOtp: secondOtp, email });
+    const storedSecond = await redisGetForgotPasswordOtp(id);
+    expect(storedSecond.hashedOtp).toBe(secondOtp);
+  });
+
+  it('should expire forgot_password_otp after TTL', async () => {
+    const id = uuid();
+    const email = 'user@test.com';
+    const otp = 'otp-with-ttl';
+    const testTTL = 2;
+
+    await redisSetForgotPasswordOtp(id, { hashedOtp: otp, email }, testTTL);
+    const stored = await redisGetForgotPasswordOtp(id);
+    expect(stored.hashedOtp).toBe(otp);
+
+    await new Promise((resolve) => {
+      setTimeout(() => resolve(), (testTTL + 1) * 1000);
+    });
+    const expired = await redisGetForgotPasswordOtp(id);
+    expect(expired.hashedOtp).toBeUndefined();
   });
 });
 

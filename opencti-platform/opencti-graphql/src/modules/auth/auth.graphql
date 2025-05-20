@@ -1,0 +1,31 @@
+input AskSendOtpInput {
+  email: String!
+}
+
+input VerifyOtpInput {
+  otp : String!
+  transactionId : String!
+}
+
+input VerifyMfaInput {
+  code: String!
+  transactionId: String!
+}
+
+input ChangePasswordInput {
+  transactionId: String!
+  otp: String!
+  newPassword: String!
+}
+
+type VerifyOtp {
+  mfa_activated: Boolean!
+}
+
+## Mutations
+type Mutation {
+  askSendOtp(input: AskSendOtpInput!): String @public @rateLimit(limit: 1, duration: 1)
+  verifyOtp(input: VerifyOtpInput!): VerifyOtp @public @rateLimit(limit: 1, duration: 1)
+  verifyMfa(input: VerifyMfaInput!): Boolean @public @rateLimit(limit: 1, duration: 1)
+  changePassword(input: ChangePasswordInput!): Boolean @public @rateLimit(limit: 1, duration: 1)
+}

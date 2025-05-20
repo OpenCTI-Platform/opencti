@@ -9091,6 +9091,10 @@ type Mutation {
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
+  askSendOtp(input: AskSendOtpInput!): String
+  verifyOtp(input: VerifyOtpInput!): VerifyOtp
+  verifyMfa(input: VerifyMfaInput!): Boolean
+  changePassword(input: ChangePasswordInput!): Boolean
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12831,4 +12835,28 @@ type FintelDesignConnection {
 
 enum FintelDesignOrdering {
   name
+}
+
+input AskSendOtpInput {
+  email: String!
+}
+
+input VerifyOtpInput {
+  otp: String!
+  transactionId: String!
+}
+
+input VerifyMfaInput {
+  code: String!
+  transactionId: String!
+}
+
+input ChangePasswordInput {
+  transactionId: String!
+  otp: String!
+  newPassword: String!
+}
+
+type VerifyOtp {
+  mfa_activated: Boolean!
 }

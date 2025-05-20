@@ -949,6 +949,42 @@ export const redisSetExclusionListCache = async (cache: ExclusionListCacheItem[]
 
 // endregion - exclusion list cache handling
 
+// region - forgot password handling
+
+export const OTP_TTL = conf.get('app:forgot_password:otp_ttl_second') || 600;
+
+export const redisSetForgotPasswordOtp = async (
+  transactionId: string,
+  data: { email: string; hashedOtp: string; mfa_activated: boolean; mfa_validated: boolean; userId: string },
+  ttl: number = OTP_TTL
+) => {
+  const forgotPasswordOtpKeyName = `forgot_password_otp_${transactionId}`;
+  const pointerKey = `forgot_password_transactionId_${data.email}`;
+  await getClientBase().setex(forgotPasswordOtpKeyName, ttl, JSON.stringify(data));
+  await getClientBase().setex(pointerKey, ttl, transactionId);
+};
+export const redisGetForgotPasswordOtp = async (id: string) => {
+  const keyName = `forgot_password_otp_${id}`;
+  const str = await getClientBase().get(keyName) ?? '{}';
+  const values: { hashedOtp: string, email: string, mfa_activated: boolean, mfa_validated: boolean, userId: string } = JSON.parse(str);
+  const ttl = await getClientBase().ttl(keyName);
+  return { ...values, ttl };
+};
+export const redisGetForgotPasswordOtpPointer = async (email: string) => {
+  const pointerKey = `forgot_password_transactionId_${email}`;
+  const id = await getClientBase().get(pointerKey);
+  const ttl = await getClientBase().ttl(pointerKey);
+  return { id, ttl };
+};
+export const redisDelForgotPassword = async (id: string, email: string) => {
+  const otpKeyName = `forgot_password_otp_${id}`;
+  const pointerKeyName = `forgot_password_transactionId_${email}`;
+  await getClientBase().del(otpKeyName);
+  await getClientBase().del(pointerKeyName);
+};
+
+// endregion - forgot password handling
+
 // region - telemetry gauges
 const TELEMETRY_EVENT_KEY = 'telemetry_events';
 /**
