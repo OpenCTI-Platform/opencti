@@ -57,7 +57,7 @@ class ExportButtons extends Component {
   exportImage(domElementId, name, theme, background) {
     this.setState({ exporting: true });
     this.handleCloseImage();
-    const { theme: currentTheme, pixelRatio = 1 } = this.props;
+    const { theme: currentTheme, pixelRatio = 1, t } = this.props;
     let timeout = 4000;
     if (theme !== currentTheme.palette.mode) {
       timeout = 6000;
@@ -90,15 +90,16 @@ class ExportButtons extends Component {
             : null,
           pixelRatio,
           this.adjust,
-        ).then(() => {
-          buttons.setAttribute('style', 'display: block');
-          commitLocalUpdate((store) => {
-            const me = store.getRoot().getLinkedRecord('me');
-            me.setValue(false, 'exporting');
-            me.setValue(currentTheme.palette.mode, 'theme');
+        ).then(() => {}).catch(() => MESSAGING$.notifyError(t('Dashboard cannot be exported to image')))
+          .finally(() => {
+            buttons.setAttribute('style', 'display: block');
+            commitLocalUpdate((store) => {
+              const me = store.getRoot().getLinkedRecord('me');
+              me.setValue(false, 'exporting');
+              me.setValue(currentTheme.palette.mode, 'theme');
+            });
+            this.setState({ exporting: false });
           });
-          this.setState({ exporting: false });
-        });
       }, timeout / 2);
     }, timeout);
   }
@@ -138,9 +139,7 @@ class ExportButtons extends Component {
           : null,
         pixelRatio,
         this.adjust,
-      ).then(() => {
-        buttons.setAttribute('style', 'display: block');
-      }).catch(() => MESSAGING$.notifyError(t('Dashboard cannot be exported')))
+      ).then(() => {}).catch(() => MESSAGING$.notifyError(t('Dashboard cannot be exported to pdf')))
         .finally(() => {
           commitLocalUpdate((store) => {
             const me = store.getRoot().getLinkedRecord('me');
@@ -148,6 +147,7 @@ class ExportButtons extends Component {
             me.setValue(currentTheme.palette.mode, 'theme');
           });
           this.setState({ exporting: false });
+          buttons.setAttribute('style', 'display: block');
         });
     }, timeout);
   }
