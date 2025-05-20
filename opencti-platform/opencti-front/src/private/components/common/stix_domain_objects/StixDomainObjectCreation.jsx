@@ -823,6 +823,7 @@ const StixDomainObjectCreation = ({
   handleClose,
   paginationKey,
   paginationOptions,
+  onCreated,
   onCompleted,
   isFromBulkRelation,
 }) => {
@@ -850,6 +851,7 @@ const StixDomainObjectCreation = ({
     } else {
       const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
       const container = store.getRoot();
+
       sharedUpdater(
         store,
         container.getDataID(),
@@ -858,6 +860,7 @@ const StixDomainObjectCreation = ({
         newEdge,
       );
       if (onCompleted) onCompleted();
+      if (onCreated) onCreated(newEdge.getDataID());
     }
   };
 
