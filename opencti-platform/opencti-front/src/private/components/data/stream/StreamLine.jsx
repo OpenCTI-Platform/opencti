@@ -77,7 +77,6 @@ class StreamLineLineComponent extends Component {
     const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
       <ListItem
-        classes={{ root: classes.item }}
         divider={true}
         disablePadding
         secondaryAction={
@@ -90,6 +89,7 @@ class StreamLineLineComponent extends Component {
         }
       >
         <ListItemButton
+          classes={{ root: classes.item }}
           component="a"
           href={`/stream/${node.id}`}
           target={'_blank'}
