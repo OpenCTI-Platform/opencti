@@ -239,7 +239,7 @@ class AttackPattern:
     @staticmethod
     def generate_id(name, x_mitre_id=None):
         if x_mitre_id is not None:
-            data = {"x_mitre_id": x_mitre_id}
+            data = {"x_mitre_id": x_mitre_id.strip()}
         else:
             data = {"name": name.lower().strip()}
         data = canonicalize(data, utf8=False)
