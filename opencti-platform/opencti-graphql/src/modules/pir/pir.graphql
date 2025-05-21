@@ -5,7 +5,7 @@ type PirCriterion {
 
 # Used in StixRefRelationship
 type PirExplanation {
-    relationship_id: ID! # TODO PIR turns into array for the future ??
+    dependency_ids: [ID!]!
     criterion: PirCriterion!
 }
 
@@ -62,7 +62,7 @@ input PirCriterionInput {
 
 # Used in StixRefRelationshipAddInput
 input PirExplanationInput {
-    relationship_id: ID!
+    dependency_ids: [ID!]!
     criterion: PirCriterionInput!
 }
 
