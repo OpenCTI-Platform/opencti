@@ -507,6 +507,7 @@ StixDomainObjectThreatKnowledgeProps
       <div className="clearfix" />
       {viewType !== 'diamond' && (
         <FilterIconButton
+          styleNumber={2}
           helpers={helpers}
           filters={filters}
           handleRemoveFilter={helpers.handleRemoveFilter}

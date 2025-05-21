@@ -92,7 +92,7 @@ steps:
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
 
   - name: frontend-e2e-tests
-    image: node:22.14.0
+    image: node:22.15.1
     volumes:
     - name: cache-node-frontend-e2e
       path: /drone/src/opencti-platform/opencti-front/node_modules
@@ -113,7 +113,7 @@ steps:
       - frontend-tests
 
   - name: upload-build-artefact
-    image: node:22.14.0
+    image: node:22.15.1
     failure: ignore
     when:
       status:
@@ -145,7 +145,7 @@ steps:
       - api-tests
 
   - name: frontend-verify-translation
-    image: node:22.14.0
+    image: node:22.15.1
     commands:
       - cd opencti-platform/opencti-front
       - node script/verify-translation.js
@@ -203,7 +203,7 @@ services:
   - name: redis
     image: redis:7.4.3
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.1
     environment:
       discovery.type: single-node
       xpack.security.enabled: false

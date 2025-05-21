@@ -1,12 +1,12 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
-import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../components/i18n';
 import type { Theme } from '../../components/Theme';
 import OtpInputField, { OTP_CODE_SIZE } from './OtpInputField';
 import useApiMutation from '../../utils/hooks/useApiMutation';
+import { APP_BASE_PATH } from '../../relay/environment';
 
 interface OTPFormProps {
   variant?: 'login' | 'resetPassword',
@@ -17,12 +17,6 @@ interface OTPFormProps {
 const otpMutation = graphql`
   mutation OTPFormMutation($input: UserOTPLoginInput) {
     otpLogin(input: $input)
-  }
-`;
-
-const logoutMutation = graphql`
-  mutation OTPFormLogoutMutation {
-    logout
   }
 `;
 
@@ -39,14 +33,7 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', transacti
   const [error, setError] = useState('');
   const [inputDisable, setInputDisable] = useState(false);
   const handleChange = (data: string) => setCode(data);
-  const [commitLogoutMutation] = useApiMutation(logoutMutation);
   const [commitOtpMutation] = useApiMutation(variant === 'login' ? otpMutation : ResetPasswordMfaMutation);
-  const handleLogout = () => {
-    commitLogoutMutation({
-      variables: {},
-      onCompleted: () => window.location.reload(),
-    });
-  };
   if (code.length === OTP_CODE_SIZE && !inputDisable) {
     setInputDisable(true);
     commitOtpMutation({
@@ -90,14 +77,12 @@ const OTPForm: FunctionComponent<OTPFormProps> = ({ variant = 'login', transacti
         isDisabled={inputDisable}
       />
       {variant === 'login' && (
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          onClick={handleLogout}
+        <a
+          href={`${APP_BASE_PATH}/logout`}
+          rel="noreferrer"
         >
-          {t_i18n('Cancel')}
-        </Button>
+          {t_i18n('Back to login')}
+        </a>
       )}
     </div>
   );

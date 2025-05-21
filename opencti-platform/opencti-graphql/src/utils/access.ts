@@ -704,3 +704,11 @@ export const validateMarking = async (context: AuthContext, user: AuthUser, mark
     throw FunctionalError('User trying to create the data has missing markings', { id: markingId, user_markings: userMarkingIds });
   }
 };
+
+export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStoreSettings) => {
+  if (isBypassUser(user)) {
+    return true;
+  }
+  const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
+  return settings.platform_organization ? userOrganizationIds.includes(settings.platform_organization) : true;
+};

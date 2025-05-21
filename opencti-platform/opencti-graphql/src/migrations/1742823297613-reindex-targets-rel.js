@@ -1,12 +1,16 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { logMigration } from '../config/conf';
+import conf, { logMigration } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
-import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
+import { elBulk, elList } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { RELATION_TARGETS } from '../schema/stixCoreRelationship';
 import { listAllRelations } from '../database/middleware-loader';
+
+export const MIGRATION_MAX_BULK_OPERATIONS = conf.get('migrations:reindex_targets_rel:max_bulk_operations') || 1000;
+export const MIGRATION_BULK_TIMEOUT = conf.get('migrations:reindex_targets_rel:bulk_timeout') || '30m';
+export const MIGRATION_MAX_CONCURRENCY = conf.get('migrations:reindex_targets_rel:max_concurrency') || 2;
 
 export const up = async (next) => {
   const context = executionContext('migration');
@@ -39,13 +43,13 @@ export const up = async (next) => {
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
   // Apply operations.
   let currentProcessing = 0;
-  const groupsOfOperations = R.splitEvery(MAX_BULK_OPERATIONS, bulkOperationsTargets);
+  const groupsOfOperations = R.splitEvery(MIGRATION_MAX_BULK_OPERATIONS, bulkOperationsTargets);
   const concurrentUpdate = async (bulk) => {
-    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
     logMigration.info(`[OPENCTI] Re-indexing targets for region / countries / sectors ${currentProcessing} / ${bulkOperationsTargets.length}`);
+    await elBulk({ refresh: true, timeout: MIGRATION_BULK_TIMEOUT, body: bulk });
   };
-  await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
+  await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: MIGRATION_MAX_CONCURRENCY });
   logMigration.info(`[MIGRATION] Re-indexed targets for region / countries / sectors in ${new Date() - startTargets} ms`);
   next();
 };

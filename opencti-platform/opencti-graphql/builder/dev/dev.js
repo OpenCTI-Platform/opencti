@@ -36,8 +36,10 @@ esbuild.build({
     loader: { '.js': 'jsx' },
     platform: 'node',
     target: ['node14'],
-    minify: false,
+    minifyWhitespace: true,
+    minifyIdentifiers: false,
+    minifySyntax: true,
     keepNames: false,
-    sourcemap: 'inline',
+    sourcemap: true,
     outdir: 'build',
 });

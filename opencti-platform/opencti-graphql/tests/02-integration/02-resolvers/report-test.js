@@ -337,6 +337,25 @@ describe('Report resolver standard behavior', () => {
     });
     expect(queryResult.data.reportEdit.fieldPatch.name).toEqual('Report - test');
   });
+  it('should update report with invalid published date fail', async () => {
+    const UPDATE_QUERY = gql`
+      mutation ReportEdit($id: ID!, $input: [EditInput]!) {
+        reportEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            name
+            description
+            published
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: reportInternalId, input: { key: 'published', value: ['2025-02-01'] } },
+    });
+    expect(queryResult.errors).toBeDefined();
+  });
   it('should context patch report', async () => {
     const CONTEXT_PATCH_QUERY = gql`
       mutation ReportEdit($id: ID!, $input: EditContext) {

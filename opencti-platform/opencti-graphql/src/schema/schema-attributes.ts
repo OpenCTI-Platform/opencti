@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { GraphQLDateTime } from 'graphql-scalars';
 import { RULE_PREFIX } from './general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
@@ -20,7 +21,7 @@ export const depsKeysRegister = {
 // -- Utilities to manipulate AttributeDefinitions --
 
 const isMandatoryAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
-
+const isDateAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.type === 'date';
 const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition) : schemaDef is ComplexAttributeWithMappings => { // handy typeguard
   return schemaDef.type === 'object' && schemaDef.format !== 'flat';
 };
@@ -300,6 +301,13 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
   const isMandatory = isMandatoryAttributeDefinition(schemaDef);
   if (isMandatory && R.isNil(input)) {
     throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this mandatory field cannot be nil`);
+  }
+  if (isDateAttributeDefinition(schemaDef) && !R.isNil(input)) {
+    try {
+      GraphQLDateTime.parseValue(input);
+    } catch {
+      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this date field is not in a valid format`);
+    }
   }
 
   if (isNonFlatObjectAttributeDefinition(schemaDef)) {

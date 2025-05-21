@@ -264,8 +264,8 @@ class StixCyberObservableEntities extends Component {
                     {this.SortHeader('name', 'Name', false)}
                     {this.SortHeader('createdBy', 'Author', false)}
                     {this.SortHeader('creator', 'Creator', false)}
-                    {this.SortHeader('start_time', 'First obs.', true)}
-                    {this.SortHeader('stop_time', 'Last obs.', true)}
+                    {this.SortHeader('start_time', 'Start time', true)}
+                    {this.SortHeader('stop_time', 'Stop time', true)}
                     {this.SortHeader('confidence', 'Confidence level', true)}
                   </div>
                 }

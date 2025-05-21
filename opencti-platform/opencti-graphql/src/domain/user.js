@@ -1347,7 +1347,8 @@ export const buildCompleteUsers = async (context, clients) => {
       capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
     }
     const isByPass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
-    const organizations = (user?.organizationIds ?? []).map((organizationId) => resolvedObject[organizationId]);
+    const organizations = (user?.organizationIds ?? []).map((organizationId) => resolvedObject[organizationId])
+      .filter((e) => isNotEmptyField(e));
     const defaultHiddenTypesGroups = getDefaultHiddenTypes(groups);
     const defaultHiddenTypesOrgs = getDefaultHiddenTypes(organizations);
     const default_hidden_types = uniq(defaultHiddenTypesGroups.concat(defaultHiddenTypesOrgs));

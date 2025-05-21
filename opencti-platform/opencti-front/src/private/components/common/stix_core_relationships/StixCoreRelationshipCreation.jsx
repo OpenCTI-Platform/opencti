@@ -488,9 +488,9 @@ class StixCoreRelationshipCreation extends Component {
                   >
                     {t(`relationship_${relation.node.relationship_type}`)}
                     <br />
-                    {t('First obs.')} {fsd(relation.node.start_time)}
+                    {t('Start time')} {fsd(relation.node.start_time)}
                     <br />
-                    {t('Last obs.')} {fsd(relation.node.stop_time)}
+                    {t('Stop time')} {fsd(relation.node.stop_time)}
                   </div>
                 </Tooltip>
               </div>

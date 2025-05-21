@@ -1,4 +1,4 @@
-import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
+import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
@@ -28,13 +28,7 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
       if (executeContext.user_with_session) {
         executeContext.user_otp_validated = req.session?.user.otp_validated ?? false;
       }
-      if (isBypassUser(executeContext.user)) {
-        executeContext.user_inside_platform_organization = true;
-      } else {
-        const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);
-        executeContext.user_inside_platform_organization = settings.platform_organization
-          ? userOrganizationIds.includes(settings.platform_organization) : true;
-      }
+      executeContext.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
     }
   } catch (error) {
     logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });

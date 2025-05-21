@@ -1894,7 +1894,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
           updatedInputs.push({
             operation: input.operation,
             key: input.key,
-            value: R.symmetricDifference(previous ?? [], input.value ?? []),
+            value: R.symmetricDifference(previous ?? [], ins.value ?? []),
             previous,
           });
         } else {

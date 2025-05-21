@@ -440,25 +440,33 @@ const createApp = async (app) => {
   });
 
   // -- Healthcheck
+  const healthCheckTimeout = async (promise, message) => {
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(message)), 15000); // 15 seconds timeout
+    });
+    return Promise.race([promise, timeoutPromise]);
+  };
   app.get(`${basePath}/health`, async (req, res) => {
     try {
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-      res.setTimeout(5000, () => {
-        res.status(503).send({ status: 'error', error: 'request timeout' });
-      });
       const configAccessKey = nconf.get('app:health_access_key');
       if (configAccessKey === DEFAULT_INVALID_CONF_VALUE || isEmptyField(configAccessKey)) {
         res.status(401).send({ status: 'unauthorized' });
       } else {
         const { health_access_key: access_key } = req.query;
         if (configAccessKey === 'public' || configAccessKey === access_key) {
-          await Promise.all([isEngineAlive(), isStorageAlive(), rabbitMQIsAlive(), redisIsAlive()]);
+          const engineAlive = healthCheckTimeout(isEngineAlive(), 'Timeout checking elastic/opensearch health');
+          const storageAlive = healthCheckTimeout(isStorageAlive(), 'Timeout checking storage health');
+          const rabbitMQAlive = healthCheckTimeout(rabbitMQIsAlive(), 'Timeout checking rabbitmq health');
+          const redisAlive = healthCheckTimeout(redisIsAlive(), 'Timeout checking redis health');
+          await Promise.all([engineAlive, storageAlive, rabbitMQAlive, redisAlive]);
           res.status(200).send({ status: 'success' });
         } else {
           res.status(401).send({ status: 'unauthorized' });
         }
       }
     } catch (e) {
+      logApp.error('Error in health check', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
