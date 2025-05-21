@@ -485,7 +485,7 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
         }
         // Add the container at the end
         const container = buildBundleElement(element, actionType, operations);
-        container.sharing_direct_container = true;
+        container.extensions[STIX_EXT_OCTI].sharing_direct_container = true;
         containerObjects.push(container);
         // Send actions to queue
         await sendResultToQueue(context, user, task, containerObjects, { forceNoSplit: true });
