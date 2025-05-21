@@ -15,12 +15,13 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
-import ColorPickerField from '../../../../components/ColorPickerField';
+import { resolveLink } from '../../../../utils/Entity';
 import type { Theme } from '../../../../components/Theme';
 
 const fintelDesignCreationMutation = graphql`
   mutation FintelDesignCreationAddMutation($input: FintelDesignAddInput!) {
     fintelDesignAdd(input: $input) {
+      id
       ...FintelDesignsLine_node
     }
   }
@@ -38,14 +39,14 @@ const CreateFintelDesignControlledDial = (
 interface FintelDesignCreationFormData {
   name: string;
   description: string;
-  url: string;
-  gradiantFromColor: string;
-  gradiantToColor: string;
-  textColor: string;
 }
 
 interface FintelDesignCreationFormProps {
-  updater: (store: RecordSourceSelectorProxy, rootField: string) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: { id: string; name: string } | null | undefined
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
 }
@@ -65,23 +66,20 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
     const input = {
       name: values.name,
       description: values.description,
-      url: values.url,
-      gradiantFromColor: values.gradiantFromColor,
-      gradiantToColor: values.gradiantToColor,
-      textColor: values.textColor,
     };
     commit({
       variables: {
         input,
       },
-      updater: (store) => {
-        if (updater) {
-          updater(store, 'fintelDesignAdd');
+      updater: (store, response) => {
+        if (updater && response) {
+          updater(store, 'fintelDesignAdd', response.fintelDesignAdd);
         }
       },
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
+        navigate(`${resolveLink('FintelDesign')}/${response.fintelDesignAdd?.id}`);
         if (onCompleted) {
           onCompleted();
         }
@@ -96,19 +94,11 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
   const fintelDesignCreationValidator = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
-    url: Yup.string().nullable(),
-    gradiantFromColor: Yup.string().nullable(),
-    gradiantToColor: Yup.string().nullable(),
-    textColor: Yup.string().nullable(),
   });
 
   const initialValues: FintelDesignCreationFormData = {
     name: '',
     description: '',
-    url: '',
-    gradiantFromColor: '',
-    gradiantToColor: '',
-    textColor: '',
   };
 
   return (
@@ -136,51 +126,6 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
             fullWidth={true}
             multiline={true}
             rows={2}
-            style={{ marginTop: 20 }}
-          />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="url"
-            label={t_i18n('Logo URL')}
-            placeholder={t_i18n('Default')}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
-          />
-          <Field
-            component={ColorPickerField}
-            name="gradiantFromColor"
-            label={t_i18n('Background primary color')}
-            placeholder={t_i18n('Default')}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            fullWidth
-            style={{ marginTop: 20 }}
-          />
-          <Field
-            component={ColorPickerField}
-            name="gradiantToColor"
-            label={t_i18n('Background secondary color')}
-            placeholder={t_i18n('Default')}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            fullWidth
-            style={{ marginTop: 20 }}
-          />
-          <Field
-            component={ColorPickerField}
-            name="textColor"
-            label={t_i18n('Text color')}
-            placeholder={t_i18n('Default')}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            fullWidth
             style={{ marginTop: 20 }}
           />
           <Field
@@ -261,14 +206,12 @@ const FintelDesignCreation: FunctionComponent<FintelDesignCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy, rootField: string) => {
-    insertNode(
-      store,
-      'Pagination_fintelDesigns',
-      paginationOptions,
-      rootField,
-    );
-  };
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_fintelDesigns',
+    paginationOptions,
+    'fintelDesignAdd',
+  );
 
   return (
     <Drawer

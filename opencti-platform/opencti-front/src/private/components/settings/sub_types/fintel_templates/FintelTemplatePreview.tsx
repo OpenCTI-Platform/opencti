@@ -3,11 +3,10 @@ import { Paper } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';
-import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import { useFintelTemplateContext } from './FintelTemplateContext';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
-import FintelTemplatePreviewForm, {FintelDesign, FintelTemplatePreviewFormInputs } from './FintelTemplatePreviewForm';
+import FintelTemplatePreviewForm, { FintelDesign, FintelTemplatePreviewFormInputs } from './FintelTemplatePreviewForm';
 import useFileFromTemplate from '../../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { htmlToPdfReport } from '../../../../../utils/htmlToPdf/htmlToPdf';
 import PdfViewer from '../../../../../components/PdfViewer';
@@ -88,7 +87,7 @@ const FintelTemplatePreview = ({
       instance_filters: null,
     };
     const htmlTemplate = await buildFileFromTemplate(scoId, maxMarkings, undefined, template);
-    const PDF = await htmlToPdfReport(scoName, htmlTemplate, 'Preview', fileMarkings, fintelDesign as unknown as FintelDesign_fintelDesign$data);
+    const PDF = await htmlToPdfReport(scoName, htmlTemplate, 'Preview', fileMarkings, fintelDesign);
     PDF.getBlob((blob) => {
       const file = new File([blob], 'Preview.pdf', { type: blob.type });
       setPdf(file);
@@ -101,7 +100,7 @@ const FintelTemplatePreview = ({
     buildPreview(
       entity.value,
       entity.label,
-      fintelDesign,
+      fintelDesign.value,
       (contentMaxMarkings ?? []).map((m) => m.value),
       (fileMarkings ?? []).map((m) => m.label),
     );
