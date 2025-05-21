@@ -4,8 +4,8 @@ type PirCriterion {
 }
 
 # Used in StixRefRelationship
-type PirDependency {
-    relationship_id: ID!
+type PirDependency { # TODO PIR Explanations
+    relationship_id: ID! # TODO PIR turns into array for the future ??
     criterion: PirCriterion!
 }
 
@@ -19,8 +19,8 @@ type Pir implements InternalObject & BasicObject {
     creators: [Creator!]
     # Pir
     name: String!
-    pirCriteria: [PirCriterion!]!
-    pirFilters: String!
+    pirCriteria: [PirCriterion!]! # TODO PIR pir_criteria
+    pirFilters: String! # TODO PIR pir_filters
 }
 
 # Ordering
@@ -57,7 +57,7 @@ type Query {
 # Mutations inputs
 input PirCriterionInput {
     weight: Int!
-    filters: String!
+    filters: String! # TODO PIR Filtergroup
 }
 
 # Used in StixRefRelationshipAddInput
@@ -69,7 +69,7 @@ input PirDependencyInput {
 input PirAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     pirCriteria: [PirCriterionInput!]!
-    pirFilters: String!
+    pirFilters: String! # TODO PIR FilterGroup
 }
 
 input PirDependencyAddInput {
@@ -87,6 +87,6 @@ input PirDependencyDeleteInput {
 type Mutation {
     pirAdd(input: PirAddInput!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
     pirDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    pirAddDependency(id: ID!, input: PirDependencyAddInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
+    pirAddDependency(id: ID!, input: PirDependencyAddInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE]) # TODO PIR rename: pirFlagElement
     pirDeleteDependency(id: ID!, input: PirDependencyDeleteInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
 }
