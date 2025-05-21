@@ -747,6 +747,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "dst_port" in observable_data
                         else None
                     ),
+                    "networkSrc": (
+                        observable_data["src_ref"]
+                        if "src_ref" in observable_data
+                        else None
+                    ),
+                    "networkDst": (
+                        observable_data["dst_ref"]
+                        if "dst_ref" in observable_data
+                        else None
+                    ),
                     "protocols": (
                         observable_data["protocols"]
                         if "protocols" in observable_data
