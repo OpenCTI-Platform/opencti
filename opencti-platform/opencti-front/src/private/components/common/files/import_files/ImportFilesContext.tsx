@@ -5,7 +5,6 @@ import { ImportFilesContextQuery } from '@components/common/files/import_files/_
 import { ImportFilesContextGuessMimeTypeQuery$data } from '@components/common/files/import_files/__generated__/ImportFilesContextGuessMimeTypeQuery.graphql';
 import useGranted from '../../../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { fetchQuery } from '../../../../../relay/environment';
 
@@ -205,7 +204,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   }, []);
 
   return queryRef && (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.container}/>}>
+    <React.Suspense>
       <ImportFilesContext.Provider
         value={{
           canSelectImportMode,
