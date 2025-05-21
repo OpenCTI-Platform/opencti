@@ -20,8 +20,8 @@ const stixRefRelationshipsAttributes: AttributeDefinition[] = [
     featureFlag: 'Pir',
   },
   {
-    name: 'pir_dependencies',
-    label: 'PIR dependencies',
+    name: 'pir_explanations',
+    label: 'PIR explanations',
     type: 'object',
     format: 'flat',
     mandatoryType: 'no',

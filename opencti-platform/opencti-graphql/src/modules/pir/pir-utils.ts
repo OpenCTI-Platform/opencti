@@ -1,9 +1,10 @@
-import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type ParsedPir, type PirDependency } from './pir-types';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type ParsedPir, type PirExplanation } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
 import { FunctionalError } from '../../config/errors';
 import { createRelation, patchAttribute } from '../../database/middleware';
+import type { PirAddInput } from '../../generated/graphql';
 
 /**
  * Helper function to parse filters that are saved as string in elastic.
@@ -14,17 +15,34 @@ import { createRelation, patchAttribute } from '../../database/middleware';
 export const parsePir = (pir: BasicStoreEntityPir): ParsedPir => {
   return {
     ...pir,
-    pirFilters: JSON.parse(pir.pirFilters),
-    pirCriteria: pir.pirCriteria.map((c) => ({
+    pir_filters: JSON.parse(pir.pir_filters),
+    pir_criteria: pir.pir_criteria.map((c) => ({
       ...c,
       filters: JSON.parse(c.filters),
     })),
   };
 };
 
-export const computePirScore = async (context: AuthContext, user: AuthUser, pirId: string, dependencies: PirDependency[]) => {
+/**
+ * Helper function to parse filters that are saved as string in elastic.
+ *
+ * @param pir The Pir to parse.
+ * @returns Pir with parsed filters.
+ */
+export const serializePir = (pir: PirAddInput) => {
+  return {
+    ...pir,
+    pir_filters: JSON.stringify(pir.pir_filters),
+    pir_criteria: pir.pir_criteria.map((c) => ({
+      ...c,
+      filters: JSON.stringify(c.filters),
+    })),
+  };
+};
+
+export const computePirScore = async (context: AuthContext, user: AuthUser, pirId: string, dependencies: PirExplanation[]) => {
   const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
-  const maxScore = pir.pirCriteria.reduce((acc, val) => acc + val.weight, 0);
+  const maxScore = pir.pir_criteria.reduce((acc, val) => acc + val.weight, 0);
   const depScore = dependencies.reduce((acc, val) => acc + val.criterion.weight, 0);
   if (maxScore <= 0) return 0;
   return Math.round((depScore / maxScore) * 100);
@@ -46,7 +64,7 @@ export const updatePirDependencies = async (
   user: AuthUser,
   sourceId: string,
   pirId: string,
-  pirDependencies: PirDependency[],
+  pirDependencies: PirExplanation[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
   const pirMetaRels = await listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
@@ -57,9 +75,9 @@ export const updatePirDependencies = async (
   }
   const pirMetaRel = pirMetaRels.edges[0].node;
   // region compute score
-  const deps = operation === 'add' ? [...pirMetaRel.pir_dependencies, ...pirDependencies] : pirDependencies;
+  const deps = operation === 'add' ? [...pirMetaRel.pir_explanations, ...pirDependencies] : pirDependencies;
   const pir_score = await computePirScore(context, user, pirId, deps);
-  await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_dependencies: deps, pir_score });
+  await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: deps, pir_score });
 };
 
 /**
@@ -77,13 +95,13 @@ export const createPirRel = async (
   user: AuthUser,
   sourceId: string,
   pirId: string,
-  pirDependencies: PirDependency[],
+  pirDependencies: PirExplanation[],
 ) => {
   const addRefInput = {
     relationship_type: RELATION_IN_PIR,
     fromId: sourceId,
     toId: pirId,
-    pir_dependencies: pirDependencies,
+    pir_explanations: pirDependencies,
     pir_score: await computePirScore(context, user, pirId, pirDependencies),
   };
   await createRelation(context, user, addRefInput);

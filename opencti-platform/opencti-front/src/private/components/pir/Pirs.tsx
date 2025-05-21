@@ -29,8 +29,8 @@ const pirFragment = graphql`
       id
       name
     }
-    pirFilters
-    pirCriteria {
+    pir_filters
+    pir_criteria {
       weight
       filters
     }
@@ -135,11 +135,11 @@ const Pirs = () => {
       id: 'filters',
       label: 'Filters',
       percentWidth: 20,
-      render: ({ pirFilters }: Pirs_PirFragment$data) => (
+      render: ({ pir_filters }: Pirs_PirFragment$data) => (
         <div style={{ marginLeft: theme.spacing(-0.5) }}>
           <FilterIconButton
-            key={pirFilters}
-            filters={JSON.parse(pirFilters)}
+            key={pir_filters}
+            filters={JSON.parse(pir_filters)}
             entityTypes={['Stix-Core-Object']}
             styleNumber={3}
           />
@@ -150,9 +150,9 @@ const Pirs = () => {
       id: 'criteria',
       label: 'Criteria',
       percentWidth: 35,
-      render: ({ pirCriteria }: Pirs_PirFragment$data) => (
+      render: ({ pir_criteria }: Pirs_PirFragment$data) => (
         <div style={{ marginLeft: theme.spacing(-0.5), display: 'flex' }}>
-          {pirCriteria.map((c) => (
+          {pir_criteria.map((c) => (
             <FilterIconButton
               key={c.filters}
               filters={JSON.parse(c.filters)}

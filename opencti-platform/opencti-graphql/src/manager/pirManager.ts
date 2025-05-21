@@ -28,7 +28,7 @@ const PIR_MANAGER_INTERVAL = 6000; // TODO PIR: use config instead
 const PIR_MANAGER_LOCK_KEY = 'pir_manager_lock'; // TODO PIR: use config instead
 const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
 
-const addPirDependencyToQueue = async (
+const pirFlagElementToQueue = async (
   context: AuthContext,
   pir: BasicStoreEntityPir,
   relationshipId: string,
@@ -44,13 +44,9 @@ const addPirDependencyToQueue = async (
   );
   const stixPir = convertEntityPirToStix(pir as StoreEntityPir);
   stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'add_pir_dependency';
-  const formattedMatchingCriteria = matchingCriteria.map((c) => ({
-    ...c,
-    filters: JSON.stringify(c.filters),
-  }));
   const pirBundle = {
     ...stixPir,
-    input: { relationshipId, sourceId, matchingCriteria: formattedMatchingCriteria },
+    input: { relationshipId, sourceId, matchingCriteria },
   };
   const stixPirBundle = buildStixBundle([pirBundle]);
   const jsonBundle = JSON.stringify(stixPirBundle);
@@ -65,7 +61,7 @@ const addPirDependencyToQueue = async (
   await pushToWorkerForConnector(connectorId, message);
 };
 
-const removePirDependencyFromQueue = async (
+const pirUnflagElementFromQueue = async (
   context: AuthContext,
   pir: BasicStoreEntityPir,
   relationshipId: string,
@@ -109,12 +105,12 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
     await BluePromise.map(eventsContent, async (event) => {
       const { data } = event;
       // Check Pir filters (filters that do not count as criteria).
-      const eventMatchesPirFilters = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, parsedPir.pirFilters);
+      const eventMatchesPirFilters = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, parsedPir.pir_filters);
       if (eventMatchesPirFilters) {
         // Check Pir criteria one by one (because we need to know which one matches or not).
-        const matchingCriteria: typeof parsedPir.pirCriteria = [];
+        const matchingCriteria: typeof parsedPir.pir_criteria = [];
         // eslint-disable-next-line no-restricted-syntax
-        for (const pirCriterion of parsedPir.pirCriteria) {
+        for (const pirCriterion of parsedPir.pir_criteria) {
           const isMatch = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pirCriterion.filters);
           if (isMatch) {
             matchingCriteria.push(pirCriterion);
@@ -128,11 +124,11 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
           if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
           switch (event.type) {
             case 'create':
-              // send addPirDependency to queue
-              await addPirDependencyToQueue(context, pir, relationshipId, sourceId, matchingCriteria);
+              // send pirFlagElement to queue
+              await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria);
               break;
             case 'delete':
-              await removePirDependencyFromQueue(context, pir, relationshipId, sourceId);
+              await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
               break;
             default: // Nothing to do. // TODO PIR update logic
           }

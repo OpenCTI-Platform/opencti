@@ -1,5 +1,15 @@
 import * as R from 'ramda';
-import { type AttributeDefinition, authorizedMembers, createdAt, creators, draftContext, errors, id, updatedAt } from '../../schema/attribute-definition';
+import {
+  type AttributeDefinition,
+  authorizedMembers,
+  createdAt,
+  creators,
+  draftContext,
+  errors,
+  id,
+  lastEventId,
+  updatedAt
+} from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_TYPE_ACTIVITY,
@@ -358,7 +368,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'active', label: 'Status', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true }
   ],
   [ENTITY_TYPE_RULE_MANAGER]: [
-    { name: 'lastEventId', label: 'Last event id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    lastEventId,
     errors
   ],
   [ENTITY_TYPE_CAPABILITY]: [

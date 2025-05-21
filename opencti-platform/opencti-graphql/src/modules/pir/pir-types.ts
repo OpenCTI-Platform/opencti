@@ -11,15 +11,15 @@ export interface PirCriterion {
 
 export interface BasicStoreEntityPir extends BasicStoreEntity {
   name: string
-  pirCriteria: PirCriterion[]
-  pirFilters: string
+  pir_criteria: PirCriterion[]
+  pir_filters: string
   lastEventId: string
 }
 
 export interface StoreEntityPir extends StoreEntity {
   name: string
-  pirCriteria: PirCriterion[]
-  pirFilters: string
+  pir_criteria: PirCriterion[]
+  pir_filters: string
   lastEventId: string
 }
 
@@ -37,17 +37,17 @@ export interface ParsedPir {
   name: string
   // Criteria are filters with a weight,
   // they are used to compute matching score.
-  pirCriteria: ParsedPirCriterion[]
+  pir_criteria: ParsedPirCriterion[]
   // Filters do not count when computing score, their role
   // is to exclude some data (low confidence for example).
-  pirFilters: FilterGroup
+  pir_filters: FilterGroup
 }
 
-export interface PirDependency {
+export interface PirExplanation {
   relationship_id: string,
   criterion: PirCriterion,
 }
 
 export interface BasicStoreRelationPir extends BasicStoreRelation {
-  pir_dependencies: PirDependency[],
+  pir_explanations: PirExplanation[],
 }

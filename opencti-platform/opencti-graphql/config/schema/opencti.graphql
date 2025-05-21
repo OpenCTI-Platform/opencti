@@ -12658,7 +12658,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
-  pir_dependencies: [PirDependency!]
+  pir_explanations: [PirExplanation!]
   pir_score: Int
   # Technical
   creators: [Creator!]
@@ -12689,7 +12689,7 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
-  pir_dependencies: [PirDependencyInput!]
+  pir_explanations: [PirExplanationInput!]
 }
 input StixRefRelationshipsAddInput {
   relationship_type: String!
