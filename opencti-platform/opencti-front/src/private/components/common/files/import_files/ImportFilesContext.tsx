@@ -8,6 +8,7 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import useDraftContext from '../../../../../utils/hooks/useDraftContext';
 import { fetchQuery } from '../../../../../relay/environment';
+import { FiligranLoader } from 'filigran-icon';
 
 export const importFilesQuery = graphql`
   query ImportFilesContextQuery($id: String!) {
@@ -205,7 +206,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   }, []);
 
   return queryRef && (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.container}/>}>
+    <React.Suspense>
       <ImportFilesContext.Provider
         value={{
           canSelectImportMode,
