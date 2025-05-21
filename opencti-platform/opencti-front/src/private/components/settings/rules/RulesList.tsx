@@ -43,29 +43,29 @@ const fragmentData = graphql`
         }
       }
     }
-      backgroundTasks(
-        orderBy: created_at
-        orderMode: desc
-        filters: {
-          mode: and,
-          filters: [{ key: "type", values: ["RULE"] }]
-          filterGroups: []
-        }
-      ) {
-        edges {
-          node {
-            id
-            created_at
-            task_expected_number
-            task_processed_number
-            completed
-            ... on RuleTask {
-              rule
-              enable
-            }
+    backgroundTasks(
+      orderBy: created_at
+      orderMode: desc
+      filters: {
+        mode: and,
+        filters: [{ key: "type", values: ["RULE"] }]
+        filterGroups: []
+      }
+    ) {
+      edges {
+        node {
+          id
+          created_at
+          task_expected_number
+          task_processed_number
+          completed
+          ... on RuleTask {
+            rule
+            enable
           }
         }
       }
+    }
   }
 `;
 
@@ -87,7 +87,7 @@ const RulesList = ({ data }: RulesListProps) => {
       || p?.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || p?.category?.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
     return (rules ?? []).flatMap((r) => (!r || !filterByKeyword(r) ? [] : r));
-  }, [rules]);
+  }, [rules, viewStorage]);
 
   const categories = useMemo(() => {
     const setOfCategories = new Set(filteredRules.flatMap((r) => r.category ?? []));

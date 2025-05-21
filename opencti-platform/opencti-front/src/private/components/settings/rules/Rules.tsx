@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import CustomizationMenu from '@components/settings/CustomizationMenu';
@@ -8,7 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { RULE_ENGINE } from '../../../../utils/platformModulesHelper';
-import { dayAgo, yearsAgo } from '../../../../utils/Time';
+import { dayAgo, FIVE_SECONDS, yearsAgo } from '../../../../utils/Time';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import RulesList from './RulesList';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -50,15 +50,16 @@ const Rules = () => {
     { label: t_i18n('Rules engine'), current: true },
   ];
 
+  const queryVariables = useRef({ startDate: yearsAgo(1), endDate: dayAgo() });
   const [rulesQueryRef, loadQuery] = useQueryLoader<RulesQuery>(rulesQuery);
   useInterval(
     () => {
       loadQuery(
-        { startDate: yearsAgo(1), endDate: dayAgo() },
+        queryVariables.current,
         { fetchPolicy: 'store-and-network' },
       );
     },
-    5000,
+    FIVE_SECONDS,
   );
 
   return (
