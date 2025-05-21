@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
 import { AssociatedEntityOption } from '@components/common/form/AssociatedEntityField';
@@ -491,17 +491,8 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
 };
 
 const ImportFilesDialog = ({ open, entityId, handleClose }: ImportFilesDialogProps) => {
-  const [dialogKey, setDialogKey] = useState(0);
-
-  useEffect(() => {
-    // Resets all dialog state on close by forcing a complete component remount via key change
-    if (!open) {
-      setDialogKey((prev) => prev + 1);
-    }
-  }, [open]);
-
   return (
-    <ImportFilesProvider key={`import-files-${dialogKey}`} initialValue={{ entityId }}>
+    <ImportFilesProvider initialValue={{ entityId }}>
       <ImportFiles open={open} handleClose={handleClose}></ImportFiles>
     </ImportFilesProvider>
   );
