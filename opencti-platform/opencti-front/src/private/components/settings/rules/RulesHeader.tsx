@@ -123,9 +123,9 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
         keyword={viewStorage.searchTerm ?? ''}
         style={{ marginBottom: theme.spacing(3) }}
       />
-      <Grid container={true} spacing={3}>
+      <Grid container spacing={3}>
         <Grid size={{ xs: 6 }}>
-          <Grid container={true} spacing={3}>
+          <Grid container spacing={3}>
             <Grid size={{ xs: 6 }}>
               <RulesHeaderGridCard
                 title={t_i18n('Total inferred entities')}

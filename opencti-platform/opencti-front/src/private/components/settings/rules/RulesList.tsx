@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import RulesListItem from '@components/settings/rules/RulesListItem';
 import { useTheme } from '@mui/material/styles';
+import RulesStatusChangeDialog, { RulesStatusChangeDialogProps } from '@components/settings/rules/RulesStatusChangeDialog';
 import { RulesList_data$data, RulesList_data$key } from './__generated__/RulesList_data.graphql';
 import { RULES_LOCAL_STORAGE_KEY } from './rules-utils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -79,6 +80,9 @@ const RulesList = ({ data }: RulesListProps) => {
   const { viewStorage } = usePaginationLocalStorage(RULES_LOCAL_STORAGE_KEY, {});
   const keyword = viewStorage.searchTerm ?? '';
 
+  const [selectedRule, setSelectedRule] = useState<string>();
+  const [pendingMutation, setPendingMutation] = useState<RulesStatusChangeDialogProps['status']>();
+
   const { rules, backgroundTasks } = useFragment(fragmentData, data);
 
   const filteredRules = useMemo(() => {
@@ -107,10 +111,23 @@ const RulesList = ({ data }: RulesListProps) => {
             {t_i18n(category)}
           </Typography>
           {getRulesByCategory(category).map((catRule) => (
-            <RulesListItem key={catRule.id} rule={catRule} task={getTasksByRuleId(catRule.id)[0]} />
+            <RulesListItem
+              key={catRule.id}
+              rule={catRule}
+              task={getTasksByRuleId(catRule.id)[0]}
+              toggle={() => {
+                setSelectedRule(catRule.id);
+                setPendingMutation(catRule.activated ? 'disable' : 'enable');
+              }}
+            />
           ))}
         </div>
       ))}
+      <RulesStatusChangeDialog
+        ruleId={selectedRule}
+        status={pendingMutation}
+        changeStatus={setPendingMutation}
+      />
     </div>
   );
 };

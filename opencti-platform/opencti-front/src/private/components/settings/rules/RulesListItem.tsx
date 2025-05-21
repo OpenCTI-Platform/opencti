@@ -1,4 +1,4 @@
-import React, { CSSProperties, useState } from 'react';
+import React, { CSSProperties } from 'react';
 import { Grid2 as Grid } from '@mui/material';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
 import Typography from '@mui/material/Typography';
@@ -18,21 +18,14 @@ import Tag from './RulesListItemTag';
 interface RulesListItemProps {
   rule: NonNullable<Rule>
   task: Task
+  toggle: () => void
 }
 
-const RulesListItem = ({ rule, task }: RulesListItemProps) => {
+const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { platformModuleHelpers } = useAuth();
   const isEngineEnabled = platformModuleHelpers.isRuleEngineEnable();
-
-  const [displayDisable, setDisplayDisable] = useState(false);
-  const [displayEnable, setDisplayEnable] = useState(false);
-
-  const toggleRule = () => {
-    if (rule.activated) setDisplayDisable(true);
-    else setDisplayEnable(true);
-  };
 
   const ruleStatus = isEngineEnabled && rule.activated ? t_i18n('Enabled') : t_i18n('Disabled');
 
@@ -92,7 +85,7 @@ const RulesListItem = ({ rule, task }: RulesListItemProps) => {
                           color="secondary"
                           disabled={!isEngineEnabled || disabled}
                           checked={isEngineEnabled && rule.activated}
-                          onChange={toggleRule}
+                          onChange={toggle}
                         />
                       )}
                     />
