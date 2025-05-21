@@ -134,7 +134,7 @@ describe('Indicator resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: INDICATOR_TO_CREATE,
     });
-    expect(indicator.errors?.[0]?.message).toEqual('The score should be between 0 and 100');
+    expect(indicator.errors?.[0]?.message).toEqual('The score should be an integer between 0 and 100');
   });
   it('should indicator created', async () => {
     // Create the indicator
