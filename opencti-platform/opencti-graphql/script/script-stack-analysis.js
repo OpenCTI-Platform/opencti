@@ -20,13 +20,15 @@ const stackData = isExecTypeBack ? process.env.BACKEND_LOG : process.env.fronten
 const sourceMapFile = readFileSync(isExecTypeBack ? BACKEND_MAP : FRONT_MAP, 'utf8');
 const sourceMapContent = JSON.parse(sourceMapFile);
 
+const specificErrorKeys = ['componentStack', 'codeStack'];
+const specificStartErrorMessages = ['Error', 'GraphQLError'];
 const getAllLogStacks = (obj, results = []) => {
   if (typeof obj === 'object' && obj !== null) {
     // eslint-disable-next-line no-restricted-syntax
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const value = obj[key];
-        if (typeof value === 'string' && (key === 'componentStack' || value.startsWith('Error'))) {
+        if (typeof value === 'string' && (specificErrorKeys.includes(key) || specificStartErrorMessages.some((m) => value.startsWith(m)))) {
           results.push(value);
         } else if (typeof value === 'object') {
           getAllLogStacks(value, results);
@@ -51,7 +53,6 @@ const parseStackTrace = async (stackTrace, sourceMap) => {
           line: parseInt(lineNumber, 10),
           column: parseInt(columnNumber, 10)
         });
-
         if (originalPosition.source) {
           return `at ${functionName} (${originalPosition.source}:${originalPosition.line}:${originalPosition.column})`;
         }
@@ -62,7 +63,6 @@ const parseStackTrace = async (stackTrace, sourceMap) => {
           line: parseInt(lineNumber, 10),
           column: parseInt(columnNumber, 10)
         });
-
         if (originalPosition.source) {
           return `at ${originalPosition.source}:${originalPosition.line}:${originalPosition.column}`;
         }
