@@ -110,15 +110,10 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
         >
           {fintelDesign.name}
         </Typography>
-        <div style={{
-          float: 'left',
-          marginTop: -6,
-        }}
-        >
+        <div style={{ marginTop: -6 }}>
           <FintelDesignPopover data={fintelDesign}/>
         </div>
       </div>
-      <div className="clearfix"/>
       <PageContainer withRightMenu>
         <CustomizationMenu />
         <Breadcrumbs
