@@ -67,6 +67,7 @@ class IndicatorEntityLineComponent extends Component {
     return (
       <ListItem
         divider={true}
+        disablePadding
         secondaryAction={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCoreRelationshipPopover
