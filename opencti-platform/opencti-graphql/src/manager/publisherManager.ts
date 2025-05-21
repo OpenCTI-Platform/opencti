@@ -227,25 +227,16 @@ const processBufferedEvents = async (
   triggerMap: Map<string, BasicStoreEntityTrigger>,
   events: KnowledgeNotificationEvent[]
 ) => {
-  const usersFromCache = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const usersFromCache = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const notifDataPerUser: Record<string, { user: NotificationUser, data: NotificationData }[]> = {};
   // We process all events to transform them into notification data per user
   for (let i = 0; i < events.length; i += 1) {
     const event = events[i];
-    const { targets, data: instance, origin: { user_id } } = event;
-    const streamUser = usersFromCache.get(user_id as string) as AuthUser;
+    const { targets, data: instance, origin } = event;
     // For each event, transform it into NotificationData for all targets
     for (let index = 0; index < targets.length; index += 1) {
       const { user, type, message } = targets[index];
-      let notificationMessage = message;
-      if (streamUser && (event as KnowledgeNotificationEvent).streamMessage) {
-        const { streamMessage } = event as KnowledgeNotificationEvent;
-        const streamBuiltMessage = `\`${streamUser.name}\` ${streamMessage}`;
-        if (streamBuiltMessage !== notificationMessage) {
-          notificationMessage = `${message} - ${streamBuiltMessage}`;
-        }
-      }
-
+      const notificationMessage = createFullNotificationMessage(message, usersFromCache, event.streamMessage, origin);
       const currentData = { notification_id: event.notification_id, instance, type, message: notificationMessage };
       const currentNotifDataForUser = notifDataPerUser[user.user_id];
       if (currentNotifDataForUser) {
