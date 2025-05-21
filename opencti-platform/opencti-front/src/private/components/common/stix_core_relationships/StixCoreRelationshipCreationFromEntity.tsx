@@ -842,6 +842,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               speeddial={undefined}
               handleClose={undefined}
               onCompleted={undefined}
+              onCreated={undefined}
             />
           )}
           {targetEntities.length === 0 && isOnlySCOs && (
@@ -893,6 +894,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 speeddial={true}
                 open={openCreateEntity}
                 handleClose={handleCloseCreateEntity}
+                onCreated={undefined}
                 onCompleted={undefined}
                 creationCallback={undefined}
                 confidence={undefined}

@@ -257,6 +257,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           creationCallback={undefined}
           confidence={undefined}
           defaultCreatedBy={undefined}
+          onCreated={undefined}
           isFromBulkRelation={undefined}
           defaultMarkingDefinitions={undefined}
         />

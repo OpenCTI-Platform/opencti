@@ -194,6 +194,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
           }}
           confidence={undefined}
           defaultCreatedBy={undefined}
+          onCreated={undefined}
           defaultMarkingDefinitions={undefined}
           onCompleted={undefined}
           paginationKey={undefined}
