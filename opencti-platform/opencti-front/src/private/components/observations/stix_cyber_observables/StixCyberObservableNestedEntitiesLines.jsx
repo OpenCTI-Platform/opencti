@@ -86,6 +86,7 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                 <ListItem
                   key={stixCoreObject.id}
                   divider={true}
+                  disablePadding
                   secondaryAction={
                     <StixNestedRefRelationshipPopover
                       stixNestedRefRelationshipId={stixNestedRefRelationship.id}
