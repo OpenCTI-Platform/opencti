@@ -65,6 +65,7 @@ const localStorageToPaginationOptions = (
   delete localOptions.zoom;
   delete localOptions.latestAddFilterId;
   delete localOptions.pageSize;
+  delete localOptions.savedFilters;
   // Rebuild some pagination options
   const basePagination: PaginationOptions = { ...localOptions };
   if (searchTerm) {
