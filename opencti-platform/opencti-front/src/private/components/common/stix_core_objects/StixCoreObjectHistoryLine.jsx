@@ -216,7 +216,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventScope === 'update' && (eventMesage.includes('adds'))) {
+      if (eventScope === 'update') {
         return (
           <Avatar
             sx={{
