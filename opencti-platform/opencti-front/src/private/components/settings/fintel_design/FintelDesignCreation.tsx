@@ -8,6 +8,7 @@ import * as Yup from 'yup';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material';
+import { FintelDesignCreationAddMutation } from '@components/settings/fintel_design/__generated__/FintelDesignCreationAddMutation.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
@@ -22,6 +23,8 @@ const fintelDesignCreationMutation = graphql`
   mutation FintelDesignCreationAddMutation($input: FintelDesignAddInput!) {
     fintelDesignAdd(input: $input) {
       id
+      name
+      description
       ...FintelDesignsLine_node
     }
   }
@@ -58,7 +61,7 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [commit] = useApiMutation(fintelDesignCreationMutation);
+  const [commit] = useApiMutation<FintelDesignCreationAddMutation>(fintelDesignCreationMutation);
   const onSubmit: FormikConfig<FintelDesignCreationFormData>['onSubmit'] = (
     values,
     { setSubmitting, resetForm, setErrors },
