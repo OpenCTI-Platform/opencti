@@ -1,4 +1,3 @@
-import type { Moment } from 'moment/moment';
 import { type BasicStoreEntityIngestionTaxii, ENTITY_TYPE_INGESTION_TAXII } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
@@ -51,7 +50,7 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
 export interface TaxiiIngestionPatch {
   current_state_cursor?: string | undefined,
   last_execution_date?: string,
-  added_after_start?: Moment,
+  added_after_start?: string,
 }
 
 export const patchTaxiiIngestion = async (context: AuthContext, user: AuthUser, id: string, patch: TaxiiIngestionPatch) => {

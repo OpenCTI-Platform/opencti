@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { patchCsvIngestion } from '../../../src/modules/ingestion/ingestion-csv-domain';
-import { utcDate } from '../../../src/utils/format';
+import { now } from '../../../src/utils/format';
 import { SYSTEM_USER } from '../../../src/utils/access';
 
 describe('CSV ingestion resolver standard behavior', () => {
@@ -156,7 +156,7 @@ describe('CSV ingestion resolver standard behavior', () => {
 
   it('should reset state of CSV feeds ingester', async () => {
     // shortcut to set a hash that is defined
-    const patch = { current_state_hash: 'bbbbbbbbbbbbbbbbbb', added_after_start: utcDate() };
+    const patch = { current_state_hash: 'bbbbbbbbbbbbbbbbbb', added_after_start: now() };
     const result = await patchCsvIngestion(testContext, SYSTEM_USER, singleColumnCsvFeedIngesterId, patch);
     expect(result.current_state_hash).toBe('bbbbbbbbbbbbbbbbbb');
 
