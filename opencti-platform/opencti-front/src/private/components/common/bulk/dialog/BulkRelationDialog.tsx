@@ -469,6 +469,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
         confidence={undefined}
         defaultCreatedBy={undefined}
         creationCallback={undefined}
+        onCreated={undefined}
         defaultMarkingDefinitions={undefined}
         isFromBulkRelation
       />

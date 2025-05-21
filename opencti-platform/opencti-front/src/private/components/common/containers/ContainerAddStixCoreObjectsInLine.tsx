@@ -78,6 +78,7 @@ interface ContainerAddStixCreObjectsInLineLoaderProps {
   containerRef: HTMLInputElement
   enableReferences?: boolean
   lastCreatedEntityId?: string
+  clearLastCreatedEntityId: (id?: string) => void;
 }
 
 const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStixCreObjectsInLineLoaderProps> = ({
@@ -245,8 +246,6 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
       },
       updater: (store) => {
         const options = { ...linesPaginationOptions };
-        delete options.id;
-        delete options.count;
         insertNode(
           store,
           'Pagination_objects',
