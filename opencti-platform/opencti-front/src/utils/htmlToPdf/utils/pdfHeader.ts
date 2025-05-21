@@ -14,7 +14,7 @@ const pdfHeader = (linearGradiant: string[] | undefined) => {
           linearGradient: linearGradiant,
         }],
     }];
-  }
+  };
   return header;
 };
 
