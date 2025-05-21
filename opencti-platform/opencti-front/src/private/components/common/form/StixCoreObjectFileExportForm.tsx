@@ -24,6 +24,7 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
+import { FintelDesignFieldOption } from '@components/settings/sub_types/fintel_templates/FintelTemplatePreviewForm';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
@@ -32,6 +33,7 @@ import TextField from '../../../../components/TextField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAI from '../../../../utils/hooks/useAI';
 import { now } from '../../../../utils/Time';
+import FintelDesignField from './FintelDesignField';
 
 export type FileOption = Pick<FieldOption, 'label' | 'value'> & {
   fileMarkings: {
@@ -53,6 +55,7 @@ export interface StixCoreObjectFileExportFormInputs {
   exportFileName: string | null;
   contentMaxMarkings: FieldOption[];
   fileMarkings: FieldOption[];
+  fintelDesign: FintelDesignFieldOption | null;
 }
 
 export interface StixCoreObjectFileExportFormProps {
@@ -67,6 +70,7 @@ export interface StixCoreObjectFileExportFormProps {
     format: string
     template?: string
     fileToExport?: string
+    fintelDesign?: FintelDesignFieldOption,
   }
   scoName?: string
   handleOpenAskAi: () => void
@@ -126,6 +130,7 @@ const StixCoreObjectFileExportForm = ({
       is: (val: ConnectorOption | null) => val?.value === BUILT_IN_FROM_TEMPLATE.value,
       then: (schema) => schema.required(t_i18n('This field is required')),
     }),
+    fintelDesigns: Yup.object().nullable(),
     fileToExport: Yup.object().nullable().when('connector', {
       is: (val: ConnectorOption | null) => val?.value === BUILT_IN_HTML_TO_PDF.value,
       then: (schema) => schema.required(t_i18n('This field is required')),
@@ -155,6 +160,7 @@ const StixCoreObjectFileExportForm = ({
     fileToExport: defaultFileToExport ?? null,
     exportFileName: null,
     contentMaxMarkings: [],
+    fintelDesign: null,
     fileMarkings: defaultFileToExport?.fileMarkings.map(({ id, name }) => ({ label: name, value: id })) ?? [],
   };
   const isConnectorValid = (option: ConnectorOption, selectedFormat: string) => {
@@ -389,6 +395,14 @@ const StixCoreObjectFileExportForm = ({
                       }}
                       optionLength={80}
                     />
+                    )}
+                    {values.connector.value === BUILT_IN_FROM_TEMPLATE.value && (
+                      <FintelDesignField
+                        name="fintelDesign"
+                        label={t_i18n('Fintel Design')}
+                        style={fieldSpacingContainerStyle}
+                        onChange={setFieldValue}
+                      />
                     )}
                     {!isBuiltInConnector(values.connector.value) && (
                     <Field
