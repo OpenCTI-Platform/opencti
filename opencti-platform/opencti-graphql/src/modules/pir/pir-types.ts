@@ -44,7 +44,7 @@ export interface ParsedPir {
 }
 
 export interface PirExplanation {
-  relationship_id: string,
+  dependency_ids: string[],
   criterion: PirCriterion,
 }
 

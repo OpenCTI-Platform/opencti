@@ -100,7 +100,7 @@ export const pirFlagElement = async (
     console.log('[POC PIR] Event create matching', { source, relationshipId, matchingCriteria });
 
     const pirDependencies = matchingCriteria.map((criterion) => ({
-      relationship_id: relationshipId,
+      dependency_ids: [relationshipId],
       criterion: {
         ...criterion,
         filters: JSON.stringify(criterion.filters)
@@ -144,7 +144,7 @@ export const pirUnflagElement = async (
   // eslint-disable-next-line no-restricted-syntax
   for (const rel of rels.edges) {
     const relDependencies = (rel as any).node.pir_explanations as PirExplanation[];
-    const newRelDependencies = relDependencies.filter((dep) => dep.relationship_id !== relationshipId);
+    const newRelDependencies = relDependencies.filter((dep) => !dep.dependency_ids.includes(relationshipId));
     if (newRelDependencies.length === 0) {
       // delete the rel between source and PIR
       await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
