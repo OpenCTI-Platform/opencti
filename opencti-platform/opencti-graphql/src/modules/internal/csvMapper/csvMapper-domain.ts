@@ -5,14 +5,7 @@ import { type BasicStoreEntityCsvMapper, type CsvMapperRepresentation, ENTITY_TY
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../../parser/csv-bundler';
-import {
-  convertRepresentationsIds,
-  type CsvMapperSchemaAttribute,
-  type CsvMapperSchemaAttributes,
-  parseCsvMapper,
-  parseCsvMapperWithDefaultValues,
-  validateCsvMapper
-} from './csvMapper-utils';
+import { type CsvMapperSchemaAttribute, type CsvMapperSchemaAttributes, parseCsvMapper, parseCsvMapperWithDefaultValues, validateCsvMapper } from './csvMapper-utils';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 import { INTERNAL_ATTRIBUTES, INTERNAL_REFS } from '../../../domain/attribute-utils';
@@ -30,6 +23,7 @@ import type { FileUploadData } from '../../../database/file-storage-helper';
 import pjson from '../../../../package.json';
 import { extractContentFrom } from '../../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../../utils/version';
+import { convertRepresentationsIds } from '../mapper-utils';
 
 // -- UTILS --
 

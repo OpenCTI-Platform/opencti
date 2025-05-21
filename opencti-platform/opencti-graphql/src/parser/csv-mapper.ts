@@ -11,7 +11,7 @@ import { extractValueFromCsv } from './csv-helper';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import type { AttributeColumn, CsvMapperParsed, CsvMapperRepresentation, CsvMapperRepresentationAttribute } from '../modules/internal/csvMapper/csvMapper-types';
 import { CsvMapperRepresentationType } from '../modules/internal/csvMapper/csvMapper-types';
-import { getHashesNames, isValidRepresentationType } from '../modules/internal/csvMapper/csvMapper-utils';
+import { getHashesNames, isCsvValidRepresentationType } from '../modules/internal/csvMapper/csvMapper-utils';
 import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import { UnsupportedError } from '../config/errors';
@@ -93,7 +93,7 @@ export const computeDefaultValue = (
 
 const isValidTarget = (record: string[], representation: CsvMapperRepresentation) => {
   // Target type
-  isValidRepresentationType(representation);
+  isCsvValidRepresentationType(representation);
   // Column based
   const columnBased = representation.target.column_based;
   if (columnBased && columnBased.column_reference) {

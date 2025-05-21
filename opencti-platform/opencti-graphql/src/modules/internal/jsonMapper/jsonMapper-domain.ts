@@ -22,15 +22,15 @@ import { extractContentFrom } from '../../../utils/fileToContent';
 import { createEntity } from '../../../database/middleware';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { checkConfigurationImport } from '../../workspace/workspace-domain';
-import { convertRepresentationsIds, validateJsonMapper } from '../csvMapper/csvMapper-utils';
 import pjson from '../../../../package.json';
 import { type BasicStoreEntityIngestionJson, ENTITY_TYPE_INGESTION_JSON } from '../../ingestion/ingestion-types';
 import { FunctionalError } from '../../../config/errors';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
-import { parseJsonMapper, parseJsonMapperWithDefaultValues } from './jsonMapper-utils';
+import { parseJsonMapper, parseJsonMapperWithDefaultValues, validateJsonMapper } from './jsonMapper-utils';
 import type { FileUploadData } from '../../../database/file-storage-helper';
 import { streamConverter } from '../../../database/file-storage';
 import jsonMappingExecution from '../../../parser/json-mapper';
+import { convertRepresentationsIds } from '../mapper-utils';
 
 export const findById = async (context: AuthContext, user: AuthUser, jsonMapperId: string) => {
   return storeLoadById<BasicStoreEntityJsonMapper>(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER);
