@@ -285,7 +285,7 @@ const processBufferedEvents = async (
   }
 };
 
-const handleEntityNotificationBuffer = async () => {
+const handleEntityNotificationBuffer = async (forceSend = false) => {
   const dateNow = Date.now();
   const context = executionContext('publisher_manager');
   const bufferKeys = Object.keys(liveNotificationBufferPerEntity);
@@ -295,8 +295,8 @@ const handleEntityNotificationBuffer = async () => {
     const value = liveNotificationBufferPerEntity[key];
     if (value) {
       const isBufferingTimeElapsed = (dateNow - value.timestamp) > PUBLISHER_BUFFERING_SECONDS * 1000;
-      // If buffer is older than configured buffering time length, it needs to be sent
-      if (isBufferingTimeElapsed) {
+      // If buffer is older than configured buffering time length OR we want to forceSend, it needs to be sent
+      if (forceSend || isBufferingTimeElapsed) {
         const bufferEvents = value.events.map((e) => e.data);
         // We remove current buffer from buffers map before processing buffer events, otherwise some new events coming in might be lost
         // This way, if new events are coming in from the stream, they will initiate a new buffer that will be handled later
@@ -389,7 +389,7 @@ const initPublisherManager = () => {
     } finally {
       if (streamProcessor) await streamProcessor.shutdown();
       if (PUBLISHER_ENABLE_BUFFERING) {
-        await handleEntityNotificationBuffer();
+        await handleEntityNotificationBuffer(true);
       }
       if (lock) await lock.unlock();
     }
