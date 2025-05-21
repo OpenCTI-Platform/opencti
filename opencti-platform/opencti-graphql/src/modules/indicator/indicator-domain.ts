@@ -261,9 +261,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const { formattedPattern } = await validateIndicatorPattern(context, user, indicator.pattern_type, indicator.pattern);
 
   const indicatorBaseScore = indicator.x_opencti_score ?? 50;
-  if (indicatorBaseScore < 0 || indicatorBaseScore > 100) {
-    throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
-  }
+  isValidScore(indicatorBaseScore);
 
   const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)

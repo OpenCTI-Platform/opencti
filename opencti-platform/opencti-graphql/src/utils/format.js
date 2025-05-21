@@ -210,8 +210,10 @@ export const observableValue = (stixCyberObservable) => {
 };
 
 export const isValidScore = (newScore) => {
-  if (newScore < 0 || newScore > 100 || !Number.isInteger(newScore)) {
-    throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
+  if (newScore) {
+    if (newScore < 0 || newScore > 100 || !Number.isInteger(newScore)) {
+      throw ValidationError('The score should be an integer between 0 and 100', 'x_opencti_score');
+    }
   }
   return true;
 };
