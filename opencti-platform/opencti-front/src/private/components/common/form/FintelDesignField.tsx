@@ -1,17 +1,13 @@
-import { graphql } from 'react-relay';
-import React, { FunctionComponent, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import React, { FunctionComponent } from 'react';
 import { Field } from 'formik';
-import { FintelDesignFieldQuery$data } from '@components/common/form/__generated__/FintelDesignFieldQuery.graphql';
+import { FintelDesignFieldQuery } from '@components/common/form/__generated__/FintelDesignFieldQuery.graphql';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
-import { fetchQuery } from '../../../../relay/environment';
-
-type FintelDesignFieldOption = {
-  label: string,
-  value: string,
-};
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 const fintelDesignFieldQuery = graphql`
   query FintelDesignFieldQuery(
@@ -28,10 +24,9 @@ const fintelDesignFieldQuery = graphql`
         node {
           id
           name
-          description
           url
-          gradiantFromColor
           gradiantToColor
+          gradiantFromColor
           textColor
         }
       }
@@ -46,35 +41,22 @@ interface FintelDesignFieldComponentProps {
   helpertext?: string;
   onChange: (name: string, value: FieldOption[]) => void;
   required?: boolean
+  queryRef: PreloadedQuery<FintelDesignFieldQuery>
 }
 
-const FintelDesignField: FunctionComponent<FintelDesignFieldComponentProps> = ({
+const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentProps> = ({
   label,
   name,
   style,
   helpertext,
   onChange,
   required = false,
+  queryRef,
 }) => {
   const { t_i18n } = useFormatter();
 
-  const [fintelDesign, setFintelDesign] = useState<FintelDesignFieldOption[]>([]);
-
-  const searchFintelDesigns = () => {
-    fetchQuery(fintelDesignFieldQuery, { orderBy: 'name', orderMode: 'asc' })
-      .toPromise()
-      .then((data) => {
-        const fintelDesignData = (data as FintelDesignFieldQuery$data).fintelDesigns?.edges ?? [];
-        const fintel = fintelDesignData.map((n) => {
-          const fintelLabel = n?.node?.name ?? '';
-          return {
-            label: fintelLabel,
-            value: n?.node?.id ?? '',
-          };
-        });
-        setFintelDesign(fintel);
-      });
-  };
+  const data = usePreloadedQuery(fintelDesignFieldQuery, queryRef);
+  const fintelDesigns = data.fintelDesigns?.edges?.map(({ node }) => ({ value: node, label: node?.name }));
 
   return (
     <div style={{ width: '100%' }}>
@@ -87,14 +69,12 @@ const FintelDesignField: FunctionComponent<FintelDesignFieldComponentProps> = ({
           variant: 'standard',
           label: label ?? t_i18n('Fintel Designs'),
           helperText: helpertext,
-          onFocus: searchFintelDesigns,
         }}
         required={required}
         onChange={typeof onChange === 'function' ? onChange : null}
         style={fieldSpacingContainerStyle ?? style}
         noOptionsText={t_i18n('No available options')}
-        options={fintelDesign}
-        onInputChange={searchFintelDesigns}
+        options={fintelDesigns}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
           option: { label: string },
@@ -107,6 +87,20 @@ const FintelDesignField: FunctionComponent<FintelDesignFieldComponentProps> = ({
         classes={{ clearIndicator: { display: 'none' } }}
       />
     </div>
+  );
+};
+
+type FintelDesignFieldProps = Omit<FintelDesignFieldComponentProps, 'queryRef'>;
+
+const FintelDesignField = ({ ...props }: FintelDesignFieldProps) => {
+  const queryRef = useQueryLoading<FintelDesignFieldQuery>(fintelDesignFieldQuery);
+
+  return queryRef ? (
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <FintelDesignFieldComponent {...props} queryRef={queryRef} />
+    </React.Suspense>
+  ) : (
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

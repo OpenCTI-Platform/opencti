@@ -13,19 +13,20 @@ import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { isEmptyObject } from '../../../../../utils/object';
 
 export interface FintelDesign {
-  id: string,
-  name: string,
-  url: string,
-  description: string,
-  gradiantFromColor: string,
-  gradiantToColor: string,
-  textColor: string,
-  ' $fragmentType': 'FintelDesign_fintelDesign';
+  url: string | null | undefined,
+  gradiantFromColor: string | null | undefined,
+  gradiantToColor: string | null | undefined,
+  textColor: string | null | undefined,
 }
+
+export type FintelDesignFieldOption = {
+  label: string;
+  value: FintelDesign
+};
 
 export interface FintelTemplatePreviewFormInputs {
   entity: EntityOption | null;
-  fintelDesign: FintelDesign | null;
+  fintelDesign: FintelDesignFieldOption | null;
   contentMaxMarkings: FieldOption[];
   fileMarkings: FieldOption[];
 }

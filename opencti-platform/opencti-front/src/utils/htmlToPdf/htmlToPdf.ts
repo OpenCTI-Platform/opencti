@@ -3,7 +3,7 @@ import { compiler } from 'markdown-to-jsx';
 import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
-import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
+import { FintelDesign } from '@components/settings/sub_types/fintel_templates/FintelTemplatePreviewForm';
 import { fileUri } from '../../relay/environment';
 import { capitalizeWords } from '../String';
 import logoWhite from '../../static/images/logo_text_white.png';
@@ -19,7 +19,6 @@ import pdfHeader from './utils/pdfHeader';
 import pdfFooter from './utils/pdfFooter';
 import { DARK, GREY, WHITE } from './utils/constants';
 import { dateFormat } from '../Time';
-import {FintelDesign} from "@components/settings/sub_types/fintel_templates/FintelTemplatePreviewForm";
 
 /**
  * NOT MEANT FOR EXPORT
@@ -79,7 +78,7 @@ export const htmlToPdfReport = async (
   content: string,
   templateName: string,
   markingNames: string[],
-  fintelDesign: FintelDesign_fintelDesign$data,
+  fintelDesign?: FintelDesign | null | undefined,
 ) => {
   const formattedTemplateName = capitalizeWords(templateName);
   let logoBase64;
@@ -108,8 +107,8 @@ export const htmlToPdfReport = async (
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
   const linearGradiant = [
-    fintelDesign.gradiantFromColor || '#00020C',
-    fintelDesign.gradiantToColor || '#001BDA',
+    fintelDesign?.gradiantFromColor || '#00020C',
+    fintelDesign?.gradiantToColor || '#001BDA',
   ];
   const textColor = fintelDesign?.textColor || WHITE;
 
@@ -132,6 +131,8 @@ export const htmlToPdfReport = async (
         columns: [
           {
             image: logoBase64,
+            width: 133,
+            height: 29,
           },
           {
             text: dateFormat(new Date()) ?? '',
@@ -168,6 +169,8 @@ export const htmlToPdfReport = async (
       },
       {
         image: logoBase64,
+        width: 133,
+        height: 29,
         alignment: 'center',
         margin: [0, 380, 0, 0],
       },
