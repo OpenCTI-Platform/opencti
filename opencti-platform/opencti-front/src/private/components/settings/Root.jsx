@@ -29,8 +29,7 @@ const Policies = lazy(() => import('./Policies'));
 const Retention = lazy(() => import('./Retention'));
 const Roles = lazy(() => import('./Roles'));
 const RootRole = lazy(() => import('./roles/Root'));
-const Rules = lazy(() => import('./Rules'));
-const Rules2 = lazy(() => import('./rules/Rules'));
+const Rules = lazy(() => import('./rules/Rules'));
 const Sessions = lazy(() => import('./Sessions'));
 const Settings = lazy(() => import('./Settings'));
 const SettingsOrganizations = lazy(() => import('./SettingsOrganizations'));
@@ -324,14 +323,6 @@ const Root = () => {
             element={
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
                 <Rules />
-              </Security>
-            }
-          />
-          <Route
-            path="/customization/rules2"
-            element={
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <Rules2 />
               </Security>
             }
           />
