@@ -1,8 +1,8 @@
 import { now } from 'moment';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, internalLoadById, listEntitiesPaginated, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirDependency } from './pir-types';
-import { type EditInput, EditOperation, type PirAddInput, type PirDependencyAddInput, type PirDependencyDeleteInput } from '../../generated/graphql';
+import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
+import { type EditInput, EditOperation, type PirAddInput, type PirFlagElementInput, type PirUnflagElementInput } from '../../generated/graphql';
 import { createEntity, deleteRelationsByFromAndTo, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
@@ -11,7 +11,7 @@ import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon } from '../../types/store';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
-import { createPirRel, updatePirDependencies } from './pir-utils';
+import { createPirRel, serializePir, updatePirDependencies } from './pir-utils';
 import { FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
 
@@ -30,7 +30,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
   // -- create Pir --
   const rescanStartDate = now() - TEST_PIR_RESCAN_PERIOD; // rescan start date in seconds
   const finalInput = {
-    ...input,
+    ...serializePir(input),
     lastEventId: `${rescanStartDate}-0`,
   };
   const created: BasicStoreEntityPir = await createEntity(
@@ -81,11 +81,11 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
    * @param pirId The ID of the PIR matched by the relationship.
    * @param input The data needed to create the dependency.
    */
-export const addPirDependency = async (
+export const pirFlagElement = async (
   context: AuthContext,
   user: AuthUser,
   pirId: string,
-  input: PirDependencyAddInput,
+  input: PirFlagElementInput,
 ) => {
   const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   if (!pir) {
@@ -127,11 +127,11 @@ export const addPirDependency = async (
  * @param pirId The ID of the PIR matched by the relationship.
  * @param input Relationship id and source id.
  */
-export const deletePirDependency = async (
+export const pirUnflagElement = async (
   context: AuthContext,
   user: AuthUser,
   pirId: string,
-  input: PirDependencyDeleteInput,
+  input: PirUnflagElementInput,
 ) => {
   const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   if (!pir) {
@@ -143,11 +143,11 @@ export const deletePirDependency = async (
   const rels = await listRelationsPaginated(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id }); // TODO PIR don't use pagination
   // eslint-disable-next-line no-restricted-syntax
   for (const rel of rels.edges) {
-    const relDependencies = (rel as any).node.pir_dependencies as PirDependency[];
+    const relDependencies = (rel as any).node.pir_explanations as PirExplanation[];
     const newRelDependencies = relDependencies.filter((dep) => dep.relationship_id !== relationshipId);
     if (newRelDependencies.length === 0) {
       // delete the rel between source and PIR
-      await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP); // TODO PIR not working
+      await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
       console.log('[POC PIR] PIR rel deleted');
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies

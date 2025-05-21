@@ -100,8 +100,8 @@ const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
       .flat();
     filteringIds.push(...playbookFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {
-    const pirFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityPir).pirFilters));
-    const pirCriteriaIds = (instance as BasicStoreEntityPir).pirCriteria
+    const pirFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityPir).pir_filters));
+    const pirCriteriaIds = (instance as BasicStoreEntityPir).pir_criteria
       .map((c) => extractFilterGroupValuesToResolveForCache(JSON.parse(c.filters)))
       .flat();
     filteringIds.push(...pirFilterIds, ...pirCriteriaIds);
