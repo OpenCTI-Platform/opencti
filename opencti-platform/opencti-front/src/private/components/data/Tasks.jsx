@@ -1,5 +1,4 @@
 import React from 'react';
-import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import { useFormatter } from '../../../components/i18n';
@@ -27,27 +26,11 @@ const Tasks = () => {
   setTitle(t_i18n('Tasks | Processing | Data'));
   const classes = useStyles();
   const { platformModuleHelpers } = useAuth();
-  const optionsInProgress = {
-    count: 50,
+  const optionsInTasks = {
+    count: 100,
     orderBy: 'created_at',
     orderMode: 'asc',
     includeAuthorities: true,
-    filters: {
-      mode: 'and',
-      filters: [{ key: 'completed', values: ['false'] }],
-      filterGroups: [],
-    },
-  };
-  const optionsFinished = {
-    count: 50,
-    orderBy: 'created_at',
-    orderMode: 'desc',
-    includeAuthorities: true,
-    filters: {
-      mode: 'and',
-      filters: [{ key: 'completed', values: ['true'] }],
-      filterGroups: [],
-    },
   };
   if (!platformModuleHelpers.isTasksManagerEnable()) {
     return (
@@ -65,28 +48,12 @@ const Tasks = () => {
     >
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('Tasks'), current: true }]} />
       <ProcessingMenu />
-      <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('In progress tasks')}
-      </Typography>
       <QueryRenderer
         query={tasksListQuery}
-        variables={optionsInProgress}
+        variables={optionsInTasks}
         render={({ props }) => {
           if (props) {
-            return <TasksList data={props} options={optionsInProgress} />;
-          }
-          return <Loader variant="inElement" />;
-        }}
-      />
-      <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
-        {t_i18n('Completed tasks')}
-      </Typography>
-      <QueryRenderer
-        query={tasksListQuery}
-        variables={optionsFinished}
-        render={({ props }) => {
-          if (props) {
-            return <TasksList data={props} options={optionsFinished} />;
+            return <TasksList data={props} options={optionsInTasks} />;
           }
           return <Loader variant="inElement" />;
         }}

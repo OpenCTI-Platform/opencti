@@ -255,8 +255,12 @@ const TasksList = ({ data }) => {
         }
         const lastTaskExecutionDate = task.work ? task.work.completed_time : task.last_execution_date;
         const taskWorkProcessedNumber = task.work?.tracking?.import_processed_number ?? 0;
-        const taskWorkExpectedNumber = task.work?.tracking?.import_expected_number ?? null;
-        const progressNumberDisplay = taskWorkExpectedNumber ? ` ${taskWorkProcessedNumber}/${taskWorkExpectedNumber}` : '';
+        const taskWorkExpectedNumber = task.work?.tracking?.import_expected_number ?? 0;
+        const progressNumberDisplay = task.work ? ` ${taskWorkProcessedNumber}/${taskWorkExpectedNumber}` : '';
+        const provisioningNumberDisplay = task.work && (task.work.status === 'wait' || task.work.status === 'progress')
+          ? ` (Provisioning: ${task.task_processed_number}/${task.task_processed_number})`
+          : '';
+        const progressFullText = `${t_i18n('Progress')}${progressNumberDisplay}${provisioningNumberDisplay}`;
         let progressValue = 0;
         if (task.work) {
           if (task.work.status === 'complete') {
@@ -271,7 +275,7 @@ const TasksList = ({ data }) => {
         } else {
           progressValue = 100;
         }
-
+        const taskErrors = [...task.errors, ...(task.work?.errors ?? [])];
         return (
           <Paper
             key={task.id}
@@ -418,7 +422,7 @@ const TasksList = ({ data }) => {
                   </Grid>
                   <Grid item xs={10}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Progress')}{progressNumberDisplay}
+                      {progressFullText}
                     </Typography>
                     <LinearProgress
                       classes={{ root: classes.progress }}
@@ -431,13 +435,13 @@ const TasksList = ({ data }) => {
               </Grid>
               <Button
                 style={{ position: 'absolute', right: 10, top: 10 }}
-                variant={task.errors.length > 0 ? 'contained' : 'outlined'}
+                variant={taskErrors.length > 0 ? 'contained' : 'outlined'}
                 color={'error'}
-                disabled={task.errors.length === 0}
-                onClick={() => handleOpenErrors(task.errors)}
+                disabled={taskErrors.length === 0}
+                onClick={() => handleOpenErrors(taskErrors)}
                 size="small"
               >
-                {task.errors.length} {t_i18n('errors')}
+                {taskErrors.length} {t_i18n('errors')}
               </Button>
               {task.scope // if task.scope exists = it is list task or a query task
                 ? <Button
