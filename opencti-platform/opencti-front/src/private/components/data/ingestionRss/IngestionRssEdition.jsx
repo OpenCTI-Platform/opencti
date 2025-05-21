@@ -4,6 +4,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import IngestionSchedulingField from '../IngestionSchedulingField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -30,6 +31,7 @@ export const ingestionRssMutationFieldPatch = graphql`
 const ingestionRssValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
+  scheduling_period: Yup.string().required(t('This field is required')),
   uri: Yup.string().required(t('This field is required')),
   object_marking_refs: Yup.array().nullable(),
   report_types: Yup.array().nullable(),
@@ -84,6 +86,7 @@ const IngestionRssEditionContainer = ({
     R.pick([
       'name',
       'description',
+      'scheduling_period',
       'uri',
       'user_id',
       'created_by_ref',
@@ -122,6 +125,7 @@ const IngestionRssEditionContainer = ({
               style={fieldSpacingContainerStyle}
               onSubmit={handleSubmitField}
             />
+            <IngestionSchedulingField handleSubmitField={handleSubmitField}/>
             <Field
               component={TextField}
               variant="standard"
@@ -195,7 +199,9 @@ const IngestionRssEditionFragment = createFragmentContainer(
       fragment IngestionRssEdition_ingestionRss on IngestionRss {
         id
         name
+        description
         uri
+        scheduling_period
         report_types
         ingestion_running
         current_state_date

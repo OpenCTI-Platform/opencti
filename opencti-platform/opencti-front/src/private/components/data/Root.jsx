@@ -17,9 +17,11 @@ import useGranted, {
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
+const JsonMappers = lazy(() => import('./JsonMappers'));
 const Security = lazy(() => import('../../../utils/Security'));
 const Connectors = lazy(() => import('./Connectors'));
 const IngestionCsv = lazy(() => import('./IngestionCsv'));
+const IngestionJson = lazy(() => import('./IngestionJson'));
 const Entities = lazy(() => import('./Entities'));
 const Relationships = lazy(() => import('./Relationships'));
 const Tasks = lazy(() => import('./Tasks'));
@@ -120,6 +122,10 @@ const Root = () => {
           element={boundaryWrapper(IngestionCsv)}
         />
         <Route
+          path="/ingestion/json"
+          element={boundaryWrapper(IngestionJson)}
+        />
+        <Route
           path="/ingestion/connectors"
           element={boundaryWrapper(Connectors)}
         />
@@ -183,6 +189,17 @@ const Root = () => {
               <CsvMappers/>
             </Security>
           }
+        />
+        <Route
+          path="/processing/json_mapper"
+          element={
+            <Security
+              needs={[CSVMAPPERS]}
+              placeholder={<Navigate to="/dashboard" />}
+            >
+              <JsonMappers/>
+            </Security>
+            }
         />
         <Route
           path="/processing/tasks"

@@ -1,0 +1,124 @@
+enum JsonMapperRepresentationType {
+    entity
+    relationship
+}
+
+type AttributePath {
+    path: String!
+    independent: Boolean
+    configuration: AttributeColumnConfiguration
+}
+
+type ComplexVariable {
+    path: String!
+    variable: String!
+    independent: Boolean
+}
+
+type ComplexPath {
+    formula: String!
+    variables: [ComplexVariable!]
+    configuration: AttributeColumnConfiguration
+}
+
+type JsonMapperRepresentationAttribute {
+    key: String!
+    mode: String!
+    attr_path: AttributePath
+    complex_path: ComplexPath
+    based_on: AttributeBasedOn
+    default_values: [DefaultValue!]
+}
+
+type JsonMapperRepresentationTarget {
+    entity_type: String!
+    path: String!
+}
+
+type JsonMapperRepresentation {
+    id: ID!
+    type: JsonMapperRepresentationType!
+    target: JsonMapperRepresentationTarget!
+    identifier: String
+    attributes: [JsonMapperRepresentationAttribute!]!
+    from: String
+    to: String
+}
+
+interface JsonAttributeColumnConfiguration {
+    separator: String
+    pattern_date: String
+    timezone: String
+}
+
+type JsonComplexPathVariable {
+    path: String
+    variable: String
+    independent: Boolean
+}
+
+type JsonComplexPathConfiguration {
+    complex: JsonComplexPathConfiguration
+    formula: String
+}
+
+type JsonComplexPath {
+    complex: JsonComplexPathConfiguration
+    configuration: JsonAttributeColumnConfiguration
+}
+
+type JsonMapperVariable {
+    name: String!
+    path: JsonComplexPath
+}
+
+type JsonMapper implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String! @auth
+    standard_id: String! @auth
+    parent_types: [String!]! @auth
+    # JsonMapper
+    name: String! @auth
+    variables: [JsonMapperVariable!] @auth
+    representations: [JsonMapperRepresentation!]! @auth
+    errors: String
+    toConfigurationExport: String!
+}
+
+type JsonMapperTestResult {
+    objects: String!
+    nbRelationships: Int!
+    nbEntities: Int!
+    state: String!
+}
+
+type JsonMapperAddInputFromImport {
+    name: String!
+    representations: [JsonMapperRepresentation!]!
+}
+
+input JsonMapperAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    representations: String!
+}
+
+# Queries
+type Query {
+    jsonMapper(id: ID!): JsonMapper @auth(for: [CSVMAPPERS])
+    jsonMappers(
+        first: Int
+        after: ID
+        orderBy: JsonMapperOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): JsonMapperConnection @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
+}
+
+type Mutation {
+    jsonMapperAdd(input: JsonMapperAddInput!): JsonMapper @auth(for: [CSVMAPPERS])
+    jsonMapperTest(configuration: String!, file: Upload!): JsonMapperTestResult @auth(for: [CSVMAPPERS])
+    jsonMapperDelete(id: ID!): ID @auth(for: [CSVMAPPERS])
+    jsonMapperImport(file: Upload!): String! @auth(for: [CSVMAPPERS])
+    jsonMapperFieldPatch(id: ID!, input: [EditInput!]!): JsonMapper @auth(for: [CSVMAPPERS])
+}

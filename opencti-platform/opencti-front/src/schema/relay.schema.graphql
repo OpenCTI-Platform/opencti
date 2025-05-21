@@ -8189,6 +8189,8 @@ type Query {
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
+  ingestionJson(id: String!): IngestionJson
+  ingestionJsons(first: Int, after: ID, orderBy: IngestionJsonOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionJsonConnection
   indicator(id: String!): Indicator
   indicators(first: Int, after: ID, orderBy: IndicatorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): IndicatorConnection
   indicatorsTimeSeries(objectId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: FilterGroup): [TimeSeries]
@@ -8202,6 +8204,8 @@ type Query {
   csvMappers(first: Int, after: ID, orderBy: CsvMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): CsvMapperConnection
   csvMapperSchemaAttributes: [CsvMapperSchemaAttributes!]!
   csvMapperAddInputFromImport(file: Upload!): CsvMapperAddInputFromImport!
+  jsonMapper(id: ID!): JsonMapper
+  jsonMappers(first: Int, after: ID, orderBy: JsonMapperOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): JsonMapperConnection
   publicDashboard(id: String!): PublicDashboard
   publicDashboards(first: Int, after: ID, orderBy: PublicDashboardsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PublicDashboardConnection
   publicDashboardByUriKey(uri_key: String!): PublicDashboard
@@ -9017,6 +9021,12 @@ type Mutation {
   ingestionCsvResetState(id: ID!): IngestionCsv
   ingestionCsvDelete(id: ID!): ID
   ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
+  ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult
+  ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson
+  ingestionJsonResetState(id: ID!): IngestionJson
+  ingestionJsonDelete(id: ID!): ID
+  ingestionJsonFieldPatch(id: ID!, input: [EditInput!]!): IngestionJson
+  ingestionJsonEdit(id: ID!, input: IngestionJsonAddInput!): IngestionJson
   indicatorAdd(input: IndicatorAddInput!): Indicator
   indicatorDelete(id: ID!): ID
   indicatorFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Indicator
@@ -9041,6 +9051,11 @@ type Mutation {
   csvMapperTest(configuration: String!, file: Upload!): CsvMapperTestResult
   csvMapperDelete(id: ID!): ID
   csvMapperFieldPatch(id: ID!, input: [EditInput!]!): CsvMapper
+  jsonMapperAdd(input: JsonMapperAddInput!): JsonMapper
+  jsonMapperTest(configuration: String!, file: Upload!): JsonMapperTestResult
+  jsonMapperDelete(id: ID!): ID
+  jsonMapperImport(file: Upload!): String!
+  jsonMapperFieldPatch(id: ID!, input: [EditInput!]!): JsonMapper
   publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
   publicDashboardDelete(id: ID!): ID
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard
@@ -11581,6 +11596,7 @@ type IngestionRss implements InternalObject & BasicObject {
   updated_at: DateTime
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
   user: Creator
   defaultCreatedBy: Identity
@@ -11612,6 +11628,7 @@ type IngestionRssEdge {
 input IngestionRssAddInput {
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
   current_state_date: DateTime
   ingestion_running: Boolean
@@ -11740,6 +11757,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   updated_at: DateTime
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
   csvMapper: CsvMapper!
   authentication_type: IngestionAuthType!
@@ -11775,11 +11793,111 @@ type IngestionCsvEdge {
 input IngestionCsvAddInput {
   name: String!
   description: String
+  scheduling_period: String
   authentication_type: IngestionAuthType!
   authentication_value: String
   current_state_date: DateTime
   uri: String!
   csv_mapper_id: String!
+  ingestion_running: Boolean
+  user_id: String!
+  markings: [String!]
+}
+
+type IngestionHeader {
+  name: String!
+  value: String!
+}
+
+type IngestionQueryAttribute {
+  type: String
+  from: String
+  to: String
+  data_operation: String
+  state_operation: String
+  default: String
+  exposed: String
+}
+
+type IngestionJson implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  connector_id: String!
+  standard_id: String!
+  parent_types: [String]!
+  created_at: DateTime
+  updated_at: DateTime
+  name: String!
+  description: String
+  scheduling_period: String
+  uri: String!
+  verb: String!
+  body: String
+  pagination_with_sub_page: Boolean
+  pagination_with_sub_page_attribute_path: String
+  pagination_with_sub_page_query_verb: String
+  headers: [IngestionHeader!]
+  query_attributes: [IngestionQueryAttribute!]
+  jsonMapper: JsonMapper!
+  authentication_type: IngestionAuthType!
+  authentication_value: String
+  user_id: String!
+  user: Creator
+  ingestion_running: Boolean
+  last_execution_date: DateTime
+  markings: [String!]
+}
+
+enum IngestionJsonOrdering {
+  name
+  created_at
+  updated_at
+  uri
+  mapper
+  _score
+}
+
+type IngestionJsonConnection {
+  pageInfo: PageInfo!
+  edges: [IngestionJsonEdge!]!
+}
+
+type IngestionJsonEdge {
+  cursor: String!
+  node: IngestionJson!
+}
+
+input HeaderInput {
+  name: String!
+  value: String!
+}
+
+input QueryAttribute {
+  type: String
+  from: String
+  to: String
+  data_operation: String
+  state_operation: String
+  default: String
+  exposed: String
+}
+
+input IngestionJsonAddInput {
+  name: String!
+  description: String
+  scheduling_period: String
+  authentication_type: IngestionAuthType!
+  authentication_value: String
+  current_state_date: DateTime
+  uri: String!
+  verb: String!
+  body: String
+  pagination_with_sub_page: Boolean
+  pagination_with_sub_page_attribute_path: String
+  pagination_with_sub_page_query_verb: String
+  headers: [HeaderInput!]
+  query_attributes: [QueryAttribute!]
+  json_mapper_id: String!
   ingestion_running: Boolean
   user_id: String!
   markings: [String!]
@@ -12150,6 +12268,7 @@ type AttributeColumn {
 }
 
 type AttributeBasedOn {
+  identifier: String
   representations: [String]
 }
 
@@ -12257,6 +12376,21 @@ type CsvMapperSchemaAttributes {
   attributes: [CsvMapperSchemaAttribute!]!
 }
 
+enum JsonMapperOrdering {
+  name
+  _score
+}
+
+type JsonMapperConnection {
+  pageInfo: PageInfo!
+  edges: [JsonMapperEdge!]!
+}
+
+type JsonMapperEdge {
+  cursor: String!
+  node: JsonMapper!
+}
+
 input AttributeColumnConfigurationInput {
   separator: String
   pattern_date: String
@@ -12311,6 +12445,109 @@ input CsvMapperAddInput {
   separator: String!
   representations: String!
   skipLineChar: String
+}
+
+enum JsonMapperRepresentationType {
+  entity
+  relationship
+}
+
+type AttributePath {
+  path: String!
+  independent: Boolean
+  configuration: AttributeColumnConfiguration
+}
+
+type ComplexVariable {
+  path: String!
+  variable: String!
+  independent: Boolean
+}
+
+type ComplexPath {
+  formula: String!
+  variables: [ComplexVariable!]
+  configuration: AttributeColumnConfiguration
+}
+
+type JsonMapperRepresentationAttribute {
+  key: String!
+  mode: String!
+  attr_path: AttributePath
+  complex_path: ComplexPath
+  based_on: AttributeBasedOn
+  default_values: [DefaultValue!]
+}
+
+type JsonMapperRepresentationTarget {
+  entity_type: String!
+  path: String!
+}
+
+type JsonMapperRepresentation {
+  id: ID!
+  type: JsonMapperRepresentationType!
+  target: JsonMapperRepresentationTarget!
+  identifier: String
+  attributes: [JsonMapperRepresentationAttribute!]!
+  from: String
+  to: String
+}
+
+interface JsonAttributeColumnConfiguration {
+  separator: String
+  pattern_date: String
+  timezone: String
+}
+
+type JsonComplexPathVariable {
+  path: String
+  variable: String
+  independent: Boolean
+}
+
+type JsonComplexPathConfiguration {
+  complex: JsonComplexPathConfiguration
+  formula: String
+}
+
+type JsonComplexPath {
+  complex: JsonComplexPathConfiguration
+  configuration: JsonAttributeColumnConfiguration
+}
+
+type JsonMapperVariable {
+  name: String!
+  path: JsonComplexPath
+}
+
+type JsonMapper implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  name: String!
+  variables: [JsonMapperVariable!]
+  representations: [JsonMapperRepresentation!]!
+  errors: String
+  toConfigurationExport: String!
+}
+
+type JsonMapperTestResult {
+  objects: String!
+  nbRelationships: Int!
+  nbEntities: Int!
+  state: String!
+}
+
+type JsonMapperAddInputFromImport {
+  name: String!
+  representations: [JsonMapperRepresentation!]!
+}
+
+input JsonMapperAddInput {
+  name: String!
+  representations: String!
 }
 
 type PublicDashboard implements InternalObject & BasicObject {

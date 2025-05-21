@@ -5,7 +5,7 @@ export const up = async (next) => {
   const context = executionContext('migration');
   await addCapability(context, SYSTEM_USER, {
     name: 'TAXIIAPI_SETCSVMAPPERS',
-    description: 'Manage CSV mappers',
+    description: 'Manage data mappers',
     attribute_order: 2520
   });
   next();

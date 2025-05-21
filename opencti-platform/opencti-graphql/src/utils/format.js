@@ -35,8 +35,26 @@ export const UNTIL_END_STR = '5138-11-16T09:46:40.000Z';
 
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
 
+const isValidDuration = (duration) => {
+  const durationObj = moment.duration(duration);
+  return durationObj !== null && !Number.isNaN(durationObj.asMilliseconds());
+};
+
 export const utcDate = (date) => (date ? moment(date).utc() : moment().utc());
 export const utcEpochTime = (date = null) => utcDate(date).toDate().getTime();
+export const isDateInRange = (startDate, duration, specificDate) => {
+  if (!isValidDuration(duration)) {
+    return true;
+  }
+  const start = moment(startDate);
+  if (!start.isValid()) {
+    return true;
+  }
+  const durationObj = moment.duration(duration);
+  const end = moment(start).add(durationObj);
+  const specific = moment(specificDate);
+  return specific.isBetween(start, end, null, '[]');
+};
 export const streamEventId = (date = null, index = 0) => `${utcEpochTime(date)}-${index}`;
 export const now = () => utcDate().toISOString();
 export const nowTime = () => timeFormat(now());
