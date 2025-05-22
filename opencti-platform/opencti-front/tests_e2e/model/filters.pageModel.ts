@@ -15,6 +15,6 @@ export default class FiltersPageModel {
   }
   async removeLastFilter() {
     await expect(this.page.getByTestId('CancelIcon').last()).toBeVisible();
-    await this.page.getByTestId('CancelIcon').last().click({ force: true});
+    await this.page.getByTestId('CancelIcon').last().click({ force: true });
   }
 }
