@@ -7499,9 +7499,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard
 
@@ -7856,7 +7856,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
-  pir_dependencies: [PirDependency!]
+  pir_explanations: [PirExplanation!]
   pir_score: Int
   creators: [Creator!]
   editContext: [EditUserContext!]
@@ -7885,7 +7885,7 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
-  pir_dependencies: [PirDependencyInput!]
+  pir_explanations: [PirExplanationInput!]
 }
 
 input StixRefRelationshipsAddInput {
@@ -8241,10 +8241,9 @@ type Query {
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
   savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
+  pir(id: ID!): Pir
+  pirs(first: Int, after: ID, orderBy: PirOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PirConnection
   fintelDesign(id: String!): FintelDesign
-  fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
-  pirs(first: Int, after: ID, orderBy: PIROrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PIRConnection
-  fintelDesign(id: ID!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
 }
 
@@ -9111,6 +9110,10 @@ type Mutation {
   savedFilterFieldPatch(id: ID!, input: [EditInput!]): SavedFilter
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
+  pirAdd(input: PirAddInput!): Pir
+  pirDelete(id: ID!): ID
+  pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
+  pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
@@ -9118,13 +9121,6 @@ type Mutation {
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
   changePassword(input: ChangePasswordInput!): Boolean
-  pirAdd(input: PIRAddInput!): PIR
-  pirDelete(id: ID!): ID
-  pirAddDependency(id: ID!, input: PIRDependencyAddInput!): ID
-  pirDeleteDependency(id: ID!, input: PIRDependencyDeleteInput!): ID
-  fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
-  fintelDesignDelete(id: ID!): ID
-  fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -13074,88 +13070,69 @@ input RequestAccessConfigureInput {
   approval_admin: [ID]
 }
 
-type PIRCriterion {
+type PirCriterion {
   filters: String!
   weight: Int!
 }
 
-type PirDependency {
-  relationship_id: ID!
-  criterion: PIRCriterion!
+type PirExplanation {
+  dependency_ids: [ID!]!
+  criterion: PirCriterion!
 }
 
-type PIR implements InternalObject & BasicObject {
+type Pir implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  creators: [Creator!]
   name: String!
-  pirCriteria: [PIRCriterion!]!
-  pirFilters: String!
+  pir_criteria: [PirCriterion!]!
+  pir_filters: String!
 }
 
-enum PIROrdering {
+enum PirOrdering {
   name
   created_at
+  updated_at
+  creator
 }
 
-input AskSendOtpInput {
-  email: String!
-}
-
-input VerifyOtpInput {
-  otp: String!
-  transactionId: String!
-}
-
-input VerifyMfaInput {
-  code: String!
-  transactionId: String!
-}
-
-input ChangePasswordInput {
-  transactionId: String!
-  otp: String!
-  newPassword: String!
-}
-
-type VerifyOtp {
-  mfa_activated: Boolean!
-}
-
-type PIRConnection {
+type PirConnection {
   pageInfo: PageInfo!
-  edges: [PIREdge!]!
+  edges: [PirEdge!]!
 }
 
-type PIREdge {
+type PirEdge {
   cursor: String!
-  node: PIR!
+  node: Pir!
 }
 
-input PIRCriterionInput {
+input PirCriterionInput {
   weight: Int!
-  filters: String!
+  filters: FilterGroup!
 }
 
-input PirDependencyInput {
-  relationship_id: ID!
-  criterion: PIRCriterionInput!
+input PirExplanationInput {
+  dependency_ids: [ID!]!
+  criterion: PirCriterionInput!
 }
 
-input PIRAddInput {
+input PirAddInput {
   name: String!
-  pirCriteria: [PIRCriterionInput!]!
-  pirFilters: String!
+  pir_criteria: [PirCriterionInput!]!
+  pir_filters: FilterGroup!
 }
 
-input PIRDependencyAddInput {
+input PirFlagElementInput {
   relationshipId: ID!
   sourceId: ID!
-  matchingCriteria: [PIRCriterionInput!]!
+  matchingCriteria: [PirCriterionInput!]!
 }
 
-input PIRDependencyDeleteInput {
+input PirUnflagElementInput {
   relationshipId: ID!
   sourceId: ID!
 }
@@ -13194,4 +13171,29 @@ type FintelDesignConnection {
 
 enum FintelDesignOrdering {
   name
+  created_at
+}
+
+input AskSendOtpInput {
+  email: String!
+}
+
+input VerifyOtpInput {
+  otp: String!
+  transactionId: String!
+}
+
+input VerifyMfaInput {
+  code: String!
+  transactionId: String!
+}
+
+input ChangePasswordInput {
+  transactionId: String!
+  otp: String!
+  newPassword: String!
+}
+
+type VerifyOtp {
+  mfa_activated: Boolean!
 }
