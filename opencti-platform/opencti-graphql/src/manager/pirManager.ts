@@ -7,7 +7,7 @@ import { STIX_TYPE_RELATION } from '../schema/general';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
-import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
+import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
 import { parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { createRedisClient, fetchStreamEventsRange } from '../database/redis';
@@ -93,6 +93,32 @@ const pirUnflagElementFromQueue = async (
   await pushToWorkerForConnector(connectorId, message);
 };
 
+/**
+ * Find the criteria of the PIR that the event matches.
+ * Empty array if the event does not match the PIR.
+ *
+ * @param context To call internal stuff.
+ * @param event The event to check.
+ * @param pir The PIR to check.
+ * @returns Array of matching criteria, if any.
+ */
+export const checkEventOnPir = async (context: AuthContext, event: SseEvent<any>, pir: ParsedPir) => {
+  const { data } = event;
+  const { pir_criteria, pir_filters } = pir;
+  // 1. Check Pir filters (filters that do not count as criteria).
+  const eventMatchesPirFilters = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pir_filters);
+  // 2. Check Pir criteria one by one (because we need to know which one matches or not).
+  const matchingCriteria: typeof pir_criteria = [];
+  if (eventMatchesPirFilters) {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const pirCriterion of pir_criteria) {
+      const isMatch = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pirCriterion.filters);
+      if (isMatch) matchingCriteria.push(pirCriterion);
+    }
+  }
+  return matchingCriteria;
+};
+
 const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir) => {
   const parsedPir = parsePir(pir);
 
@@ -104,34 +130,22 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
     // Check every event received to see if it matches the Pir.
     await BluePromise.map(eventsContent, async (event) => {
       const { data } = event;
-      // Check Pir filters (filters that do not count as criteria).
-      const eventMatchesPirFilters = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, parsedPir.pir_filters);
-      if (eventMatchesPirFilters) {
-        // Check Pir criteria one by one (because we need to know which one matches or not).
-        const matchingCriteria: typeof parsedPir.pir_criteria = [];
-        // eslint-disable-next-line no-restricted-syntax
-        for (const pirCriterion of parsedPir.pir_criteria) {
-          const isMatch = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pirCriterion.filters);
-          if (isMatch) {
-            matchingCriteria.push(pirCriterion);
-          }
-        }
-        // If the event matches Pir, do the right thing depending on the type of event.
-        if (matchingCriteria.length > 0) {
-          const sourceId: string = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
-          if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
-          const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
-          if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
-          switch (event.type) {
-            case 'create':
-              // send pirFlagElement to queue
-              await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria);
-              break;
-            case 'delete':
-              await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
-              break;
-            default: // Nothing to do. // TODO PIR update logic
-          }
+      const matchingCriteria = await checkEventOnPir(context, event, parsedPir);
+      // If the event matches Pir, do the right thing depending on the type of event.
+      if (matchingCriteria.length > 0) {
+        const sourceId: string = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
+        if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
+        const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
+        if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
+        switch (event.type) {
+          case 'create':
+            // send pirFlagElement to queue
+            await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria);
+            break;
+          case 'delete':
+            await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
+            break;
+          default: // Nothing to do. // TODO PIR update logic
         }
       }
     }, { concurrency: 5 });
