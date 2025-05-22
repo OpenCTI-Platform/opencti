@@ -121,7 +121,7 @@ describe('PIR resolver standard behavior', () => {
         pirDelete(id: $id)
       }
     `;
-    // Delete the report
+    // Delete the pir
     await queryAsAdmin({
       query: DELETE_QUERY,
       variables: { id: pirInternalId },
