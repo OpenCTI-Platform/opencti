@@ -138,9 +138,6 @@ export const buildViewParamsFromUrlAndStorage = (
   if (finalParams.currentModeOnlyActive) {
     finalParams.currentModeOnlyActive = finalParams.currentModeOnlyActive.toString() === 'true';
   }
-  if (finalParams.currentColorsReversed) {
-    finalParams.currentColorsReversed = finalParams.currentColorsReversed.toString() === 'true';
-  }
   if (finalParams.selectRectangleModeFree) {
     finalParams.selectRectangleModeFree = finalParams.selectRectangleModeFree.toString() === 'true';
   }

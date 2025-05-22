@@ -3,31 +3,37 @@ import { TargetEntity } from '@components/common/stix_core_relationships/StixCor
 import {
   StixDomainObjectAttackPatternsKillChainContainer_data$data,
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
-import { QueryRenderer } from '../../../../relay/environment';
+import { graphql } from 'react-relay';
 import Loader from '../../../../components/Loader';
-import AttackPatternsMatrixColumns, { attackPatternsMatrixColumnsQuery } from './AttackPatternsMatrixColumns';
-import { AttackPatternsMatrixColumnsQuery } from './__generated__/AttackPatternsMatrixColumnsQuery.graphql';
+import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
 
-interface AttackPatternsMatrixProps {
+export interface AttackPatternsMatrixProps {
   marginRight?: boolean;
   attackPatterns: NonNullable<NonNullable<StixDomainObjectAttackPatternsKillChainContainer_data$data>['attackPatterns']>['edges'][0]['node'][];
   searchTerm?: string;
-  handleToggleColorsReversed: () => void;
-  currentColorsReversed: boolean;
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain?: string;
   noBottomBar?: boolean;
 }
+
+export const attackPatternsMatrixQuery = graphql`
+  query AttackPatternsMatrixQuery {
+    ...AttackPatternsMatrixColumns_data
+  }
+`;
+
 const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   attackPatterns,
   marginRight,
   searchTerm,
-  handleToggleColorsReversed,
-  currentColorsReversed,
   handleAdd,
   selectedKillChain,
   noBottomBar,
 }) => {
+  const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
+
   return (
     <div style={{
       width: '100%',
@@ -36,27 +42,19 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
       padding: 0,
     }}
     >
-      <QueryRenderer
-        query={attackPatternsMatrixColumnsQuery}
-        render={({ props }: { props: AttackPatternsMatrixColumnsQuery | null }) => {
-          if (props) {
-            return (
-              <AttackPatternsMatrixColumns
-                data={props}
-                attackPatterns={attackPatterns}
-                marginRight={marginRight}
-                searchTerm={searchTerm ?? ''}
-                handleToggleColorsReversed={handleToggleColorsReversed}
-                currentColorsReversed={currentColorsReversed}
-                handleAdd={handleAdd}
-                selectedKillChain={selectedKillChain}
-                noBottomBar={noBottomBar}
-              />
-            );
-          }
-          return <Loader />;
-        }}
-      />
+      {queryRef && (
+        <React.Suspense fallback={<Loader/>}>
+          <AttackPatternsMatrixColumns
+            queryRef={queryRef}
+            attackPatterns={attackPatterns}
+            marginRight={marginRight}
+            searchTerm={searchTerm ?? ''}
+            handleAdd={handleAdd}
+            selectedKillChain={selectedKillChain}
+            noBottomBar={noBottomBar}
+          />
+        </React.Suspense>
+      )}
     </div>
   );
 };
