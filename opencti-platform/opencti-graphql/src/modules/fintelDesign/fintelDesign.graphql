@@ -35,10 +35,11 @@ type FintelDesignConnection {
 
 enum FintelDesignOrdering {
   name
+  created_at
 }
 
 type Query {
-  fintelDesign(id: ID!): FintelDesign @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
+  fintelDesign(id: String!): FintelDesign @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   fintelDesigns(
     first: Int
     after: ID

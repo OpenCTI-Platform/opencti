@@ -35,7 +35,7 @@ const LIST_QUERY = gql`
 `;
 
 const READ_QUERY = gql`
-  query fintelDesign($id: ID!) {
+  query fintelDesign($id: String!) {
     fintelDesign(id: $id) {
       id
       standard_id
