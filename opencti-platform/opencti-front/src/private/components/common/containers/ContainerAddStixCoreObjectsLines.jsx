@@ -106,6 +106,19 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    const { lastCreatedEntityId, data: { stixCoreObjects: { edges } } } = this.props;
+    if (lastCreatedEntityId && !this.state.addedStixCoreObjects[lastCreatedEntityId]) {
+      const { node } = edges.find((item) => item.node.id === lastCreatedEntityId);
+      this.setState({
+        addedStixCoreObjects: {
+          ...this.state.addedStixCoreObjects,
+          [lastCreatedEntityId]: node,
+        },
+      });
+      this.props.onAdd(node);
+      this.props.clearLastCreatedEntityId();
+    }
+
     setNumberOfElements(
       prevProps,
       this.props,
