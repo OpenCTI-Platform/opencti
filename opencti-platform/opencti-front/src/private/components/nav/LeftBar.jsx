@@ -218,6 +218,7 @@ const LeftBar = () => {
     settings: { platform_whitemark },
   } = useAuth();
   const navigate = useNavigate();
+  const { isFeatureEnable } = useHelper();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
@@ -578,7 +579,7 @@ const LeftBar = () => {
             </StyledTooltip>
           )}
           <Security needs={[KNOWLEDGE]}>
-            {!draftContext && (
+            {!draftContext && isFeatureEnable('Pir') && (
               <StyledTooltip title={!navOpen && t_i18n('Pir')} placement="right">
                 <MenuItem
                   component={Link}
