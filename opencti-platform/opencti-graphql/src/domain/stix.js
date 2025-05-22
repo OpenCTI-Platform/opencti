@@ -16,7 +16,7 @@ import { extractEntityRepresentativeName } from '../database/entity-representati
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { createQueryTask } from './backgroundTask';
-import { internalLoadById, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { checkAndConvertFilters } from '../utils/filtering/filtering-utils';
 import { specialTypesExtensions } from '../database/file-storage';
@@ -26,6 +26,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { checkUserCanShareMarkings } from './user';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { getDraftContext } from '../utils/draftContext';
+import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE } from './backgroundTask-common';
 
 export const stixDelete = async (context, user, id, opts = {}) => {
   const element = await internalLoadById(context, user, id);
@@ -258,10 +259,14 @@ export const generateFiltersForSharingTask = (containerId) => {
 const createSharingTask = async (context, type, containerId, organizationId) => {
   const filters = generateFiltersForSharingTask(containerId);
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
+  const organizations = await internalFindByIds(context, context.user, organizationIds, { baseData: true, baseFields: ['name'] });
+  const organizationNames = organizations.map((o) => o.name).join('|');
+  const sharingDescription = `${type} organization ${organizationNames}`;
   // orderMode is on created_at, see buildQueryFilters in backgroundTask
   // need to be desc for share/unshare to have events in the right order in stream (entity send before relations)
   // containerId required to send an event after all container content is shared.
   const input = {
+    description: sharingDescription,
     filters: JSON.stringify(filters),
     actions: [{ type, context: { values: organizationIds }, containerId }],
     scope: 'KNOWLEDGE',
@@ -278,7 +283,7 @@ export const addOrganizationRestriction = async (context, user, fromId, organiza
   const from = await internalLoadById(context, user, fromId);
   // If container, create a sharing task
   if (isStixDomainObjectShareableContainer(from.entity_type) && !directContainerSharing) {
-    await createSharingTask(context, 'SHARE', from.internal_id, organizationIds);
+    await createSharingTask(context, ACTION_TYPE_SHARE, from.internal_id, organizationIds);
     return from;
   }
   // If standard, just share directly
@@ -296,7 +301,7 @@ export const removeOrganizationRestriction = async (context, user, fromId, organ
   const from = await internalLoadById(context, user, fromId);
   // If container, create a sharing task
   if (isStixDomainObjectShareableContainer(from.entity_type) && !directContainerSharing) {
-    await createSharingTask(context, 'UNSHARE', from.internal_id, organizationIds);
+    await createSharingTask(context, ACTION_TYPE_UNSHARE, from.internal_id, organizationIds);
     return from;
   }
   // If standard, just share directly

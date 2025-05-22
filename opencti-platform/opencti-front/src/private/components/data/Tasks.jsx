@@ -29,7 +29,7 @@ const Tasks = () => {
   const optionsInTasks = {
     count: 100,
     orderBy: 'created_at',
-    orderMode: 'asc',
+    orderMode: 'desc',
     includeAuthorities: true,
   };
   if (!platformModuleHelpers.isTasksManagerEnable()) {

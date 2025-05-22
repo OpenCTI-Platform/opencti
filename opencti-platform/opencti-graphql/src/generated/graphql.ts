@@ -1290,6 +1290,7 @@ export type BackgroundTask = {
   actions?: Maybe<Array<Maybe<BackgroundTaskAction>>>;
   completed?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   errors?: Maybe<Array<Maybe<BackgroundTaskError>>>;
   id: Scalars['ID']['output'];
   initiator?: Maybe<Creator>;
@@ -12372,6 +12373,7 @@ export type ListTask = BackgroundTask & {
   authorized_members?: Maybe<Array<MemberAccess>>;
   completed?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   errors?: Maybe<Array<Maybe<BackgroundTaskError>>>;
   id: Scalars['ID']['output'];
   initiator?: Maybe<Creator>;
@@ -12386,6 +12388,7 @@ export type ListTask = BackgroundTask & {
 
 export type ListTaskAddInput = {
   actions: Array<InputMaybe<BackgroundTaskActionInput>>;
+  description?: InputMaybe<Scalars['String']['input']>;
   ids?: InputMaybe<Array<Scalars['ID']['input']>>;
   scope: BackgroundTaskScope;
 };
@@ -20527,7 +20530,7 @@ export type Query = {
   statusTemplatesByStatusScope?: Maybe<Array<Maybe<StatusTemplate>>>;
   statuses?: Maybe<StatusConnection>;
   stix?: Maybe<Scalars['String']['output']>;
-  stixCoreBackgroundActiveOperations?: Maybe<Array<Maybe<BackgroundTask>>>;
+  stixCoreBackgroundActiveOperations?: Maybe<Array<BackgroundTask>>;
   stixCoreObject?: Maybe<StixCoreObject>;
   stixCoreObjectAnalysis?: Maybe<Analysis>;
   stixCoreObjectAskAiActivity?: Maybe<AiActivity>;
@@ -23434,6 +23437,7 @@ export type QueryTask = BackgroundTask & {
   authorized_members?: Maybe<Array<MemberAccess>>;
   completed?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   errors?: Maybe<Array<Maybe<BackgroundTaskError>>>;
   id: Scalars['ID']['output'];
   initiator?: Maybe<Creator>;
@@ -23449,6 +23453,7 @@ export type QueryTask = BackgroundTask & {
 
 export type QueryTaskAddInput = {
   actions: Array<InputMaybe<BackgroundTaskActionInput>>;
+  description?: InputMaybe<Scalars['String']['input']>;
   excluded_ids?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   filters?: InputMaybe<Scalars['String']['input']>;
   scope: BackgroundTaskScope;
@@ -24377,6 +24382,7 @@ export type RuleTask = BackgroundTask & {
   actions?: Maybe<Array<Maybe<BackgroundTaskAction>>>;
   completed?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   enable?: Maybe<Scalars['Boolean']['output']>;
   errors?: Maybe<Array<Maybe<BackgroundTaskError>>>;
   id: Scalars['ID']['output'];
@@ -34667,6 +34673,7 @@ export type BackgroundTaskResolvers<ContextType = any, ParentType extends Resolv
   actions?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskAction']>>>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskError']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initiator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -38495,6 +38502,7 @@ export type ListTaskResolvers<ContextType = any, ParentType extends ResolversPar
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskError']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initiator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -40976,7 +40984,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   statusTemplatesByStatusScope?: Resolver<Maybe<Array<Maybe<ResolversTypes['StatusTemplate']>>>, ParentType, ContextType, Partial<QueryStatusTemplatesByStatusScopeArgs>>;
   statuses?: Resolver<Maybe<ResolversTypes['StatusConnection']>, ParentType, ContextType, Partial<QueryStatusesArgs>>;
   stix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixArgs, 'id'>>;
-  stixCoreBackgroundActiveOperations?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTask']>>>, ParentType, ContextType, RequireFields<QueryStixCoreBackgroundActiveOperationsArgs, 'id'>>;
+  stixCoreBackgroundActiveOperations?: Resolver<Maybe<Array<ResolversTypes['BackgroundTask']>>, ParentType, ContextType, RequireFields<QueryStixCoreBackgroundActiveOperationsArgs, 'id'>>;
   stixCoreObject?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectArgs, 'id'>>;
   stixCoreObjectAnalysis?: Resolver<Maybe<ResolversTypes['Analysis']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAnalysisArgs, 'contentSource' | 'contentType' | 'id'>>;
   stixCoreObjectAskAiActivity?: Resolver<Maybe<ResolversTypes['AiActivity']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAskAiActivityArgs, 'id'>>;
@@ -41086,6 +41094,7 @@ export type QueryTaskResolvers<ContextType = any, ParentType extends ResolversPa
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskError']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initiator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -41476,6 +41485,7 @@ export type RuleTaskResolvers<ContextType = any, ParentType extends ResolversPar
   actions?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskAction']>>>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskError']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

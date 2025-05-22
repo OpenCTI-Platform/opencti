@@ -8,6 +8,7 @@ import { ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { makeStyles, useTheme } from '@mui/styles';
+import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
 import StixCoreObjectsSuggestions from '../stix_core_objects/StixCoreObjectsSuggestions';
@@ -621,6 +622,7 @@ const ContainerHeader = (props) => {
         )}
         <div>
           <div className={classes.actionButtons}>
+            <StixCoreObjectBackgroundTasks id={container.id} actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']} />
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
