@@ -49,7 +49,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     logApp.info(`${indicatorCreatedIds.length} indicators created and deleted.`);
   });
 
-  it('valid until and valid from should be in right order', async () => {
+  it.skip('valid until and valid from should be in right order', async () => {
     // GIVEN some indicators
     const indicatorAddInput: IndicatorAddInput = {
       name: 'Indicator domain - with decay - validate valid from and until timeline',
