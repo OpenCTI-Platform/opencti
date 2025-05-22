@@ -119,6 +119,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
               <ListItem
                 key={node.id}
                 divider={true}
+                disablePadding
                 secondaryAction={node.is_inferred ? (
                   <Tooltip
                     title={
