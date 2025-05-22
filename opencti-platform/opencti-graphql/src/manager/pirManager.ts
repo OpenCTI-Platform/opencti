@@ -18,15 +18,15 @@ import { createWork } from '../domain/work';
 import { ConnectorType } from '../generated/graphql';
 import convertEntityPirToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
-import { isFeatureEnabled } from '../config/conf';
+import conf, { booleanConf, isFeatureEnabled } from '../config/conf';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'Pir Manager';
 const PIR_MANAGER_CONTEXT = 'pir_manager';
 
-const PIR_MANAGER_INTERVAL = 6000; // TODO PIR: use config instead
-const PIR_MANAGER_LOCK_KEY = 'pir_manager_lock'; // TODO PIR: use config instead
-const PIR_MANAGER_ENABLED = true; // TODO PIR: use config instead
+const PIR_MANAGER_INTERVAL = conf.get('pir_manager:interval') ?? 10000;
+const PIR_MANAGER_LOCK_KEY = conf.get('pir_manager:lock_key');
+const PIR_MANAGER_ENABLED = booleanConf('pir_manager:enabled', false);
 
 const pirFlagElementToQueue = async (
   context: AuthContext,
@@ -158,12 +158,11 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
 const pirManagerHandler = async () => {
   const redisClient = await createRedisClient(PIR_MANAGER_LABEL, false);
   const context = executionContext(PIR_MANAGER_CONTEXT);
-  const allPir = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR); // TODO PIR cache ?
+  const allPir = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
 
   // Loop through all Pir one by one.
   await BluePromise.map(allPir, async (pir) => {
     // Fetch stream events since last event id caught by the Pir.
-    console.log(`Pir ${pir.name}: from ${pir.lastEventId ?? '$'}`);
     const { lastEventId } = await fetchStreamEventsRange(
       redisClient,
       pir.lastEventId,
@@ -184,10 +183,10 @@ const PIR_MANAGER_DEFINITION: ManagerDefinition = {
   executionContext: PIR_MANAGER_CONTEXT,
   enabledByConfig: PIR_MANAGER_ENABLED,
   enabled(): boolean {
-    return this.enabledByConfig;
+    return this.enabledByConfig && PIR_MANAGER_LOCK_KEY;
   },
   enabledToStart(): boolean {
-    return this.enabledByConfig;
+    return this.enabledByConfig && PIR_MANAGER_LOCK_KEY;
   },
   cronSchedulerHandler: {
     handler: pirManagerHandler,
