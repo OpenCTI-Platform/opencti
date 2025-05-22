@@ -5,7 +5,6 @@ import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { createEntity, deleteElementById } from '../../database/middleware';
 import { AlreadyDeletedError } from '../../config/errors';
-import { verifyCanDeleteIndividual } from '../../database/data-consistency';
 import type { SecurityPlatformAddInput } from '../../generated/graphql';
 
 // region CRUD
@@ -29,7 +28,6 @@ export const securityPlatformDelete = async (context: AuthContext, user: AuthUse
   if (!securityPlatform) {
     throw AlreadyDeletedError({ securityPlatformId });
   }
-  await verifyCanDeleteIndividual(context, user, securityPlatform);
   await deleteElementById(context, user, securityPlatformId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, securityPlatformId, user);
   return securityPlatformId;
