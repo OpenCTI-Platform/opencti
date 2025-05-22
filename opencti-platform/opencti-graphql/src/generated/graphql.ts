@@ -1618,6 +1618,18 @@ export type BasicRelationship = {
   updated_at: Scalars['DateTime']['output'];
 };
 
+export type CsvFeedAddInputFromImport = {
+  __typename?: 'CSVFeedAddInputFromImport';
+  authentication_type: Scalars['String']['output'];
+  authentication_value: Scalars['String']['output'];
+  csvMapper: CsvMapperAddInputFromImport;
+  csv_mapper_type?: Maybe<IngestionCsvMapperType>;
+  description: Scalars['String']['output'];
+  markings: Array<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  uri: Scalars['String']['output'];
+};
+
 export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Campaign';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -11204,6 +11216,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   authentication_value?: Maybe<Scalars['String']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   csvMapper: CsvMapper;
+  csv_mapper_type?: Maybe<IngestionCsvMapperType>;
   current_state_date?: Maybe<Scalars['DateTime']['output']>;
   current_state_hash?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
@@ -11225,7 +11238,9 @@ export type IngestionCsv = BasicObject & InternalObject & {
 export type IngestionCsvAddInput = {
   authentication_type: IngestionAuthType;
   authentication_value?: InputMaybe<Scalars['String']['input']>;
-  csv_mapper_id: Scalars['String']['input'];
+  csv_mapper?: InputMaybe<Scalars['String']['input']>;
+  csv_mapper_id?: InputMaybe<Scalars['String']['input']>;
+  csv_mapper_type?: InputMaybe<IngestionCsvMapperType>;
   current_state_date?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   ingestion_running?: InputMaybe<Scalars['Boolean']['input']>;
@@ -11247,6 +11262,11 @@ export type IngestionCsvEdge = {
   cursor: Scalars['String']['output'];
   node: IngestionCsv;
 };
+
+export enum IngestionCsvMapperType {
+  Id = 'id',
+  Inline = 'inline'
+}
 
 export enum IngestionCsvOrdering {
   Score = '_score',
@@ -20131,6 +20151,7 @@ export type Query = {
   courseOfAction?: Maybe<CourseOfAction>;
   coursesOfAction?: Maybe<CourseOfActionConnection>;
   creators?: Maybe<CreatorConnection>;
+  csvFeedAddInputFromImport: CsvFeedAddInputFromImport;
   csvMapper?: Maybe<CsvMapper>;
   csvMapperAddInputFromImport: CsvMapperAddInputFromImport;
   csvMapperSchemaAttributes: Array<CsvMapperSchemaAttributes>;
@@ -20809,6 +20830,11 @@ export type QueryCoursesOfActionArgs = {
 
 export type QueryCreatorsArgs = {
   entityTypes?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+
+export type QueryCsvFeedAddInputFromImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -31979,6 +32005,7 @@ export type ResolversTypes = ResolversObject<{
   BasicObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['BasicObject']>;
   BasicRelationship: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['BasicRelationship']>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
+  CSVFeedAddInputFromImport: ResolverTypeWrapper<CsvFeedAddInputFromImport>;
   Campaign: ResolverTypeWrapper<Omit<Campaign, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   CampaignAddInput: CampaignAddInput;
   CampaignConnection: ResolverTypeWrapper<Omit<CampaignConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['CampaignEdge']>>> }>;
@@ -32295,6 +32322,7 @@ export type ResolversTypes = ResolversObject<{
   IngestionCsvAddInput: IngestionCsvAddInput;
   IngestionCsvConnection: ResolverTypeWrapper<Omit<IngestionCsvConnection, 'edges'> & { edges: Array<ResolversTypes['IngestionCsvEdge']> }>;
   IngestionCsvEdge: ResolverTypeWrapper<Omit<IngestionCsvEdge, 'node'> & { node: ResolversTypes['IngestionCsv'] }>;
+  IngestionCsvMapperType: IngestionCsvMapperType;
   IngestionCsvOrdering: IngestionCsvOrdering;
   IngestionHeader: ResolverTypeWrapper<IngestionHeader>;
   IngestionJson: ResolverTypeWrapper<BasicStoreEntityIngestionJson>;
@@ -32907,6 +32935,7 @@ export type ResolversParentTypes = ResolversObject<{
   BasicObject: ResolversInterfaceTypes<ResolversParentTypes>['BasicObject'];
   BasicRelationship: ResolversInterfaceTypes<ResolversParentTypes>['BasicRelationship'];
   Boolean: Scalars['Boolean']['output'];
+  CSVFeedAddInputFromImport: CsvFeedAddInputFromImport;
   Campaign: Omit<Campaign, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   CampaignAddInput: CampaignAddInput;
   CampaignConnection: Omit<CampaignConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['CampaignEdge']>>> };
@@ -34231,6 +34260,18 @@ export type BasicRelationshipResolvers<ContextType = any, ParentType extends Res
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
+export type CsvFeedAddInputFromImportResolvers<ContextType = any, ParentType extends ResolversParentTypes['CSVFeedAddInputFromImport'] = ResolversParentTypes['CSVFeedAddInputFromImport']> = ResolversObject<{
+  authentication_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  authentication_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  csvMapper?: Resolver<ResolversTypes['CsvMapperAddInputFromImport'], ParentType, ContextType>;
+  csv_mapper_type?: Resolver<Maybe<ResolversTypes['IngestionCsvMapperType']>, ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  markings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CampaignResolvers<ContextType = any, ParentType extends ResolversParentTypes['Campaign'] = ResolversParentTypes['Campaign']> = ResolversObject<{
@@ -37377,6 +37418,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   authentication_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   csvMapper?: Resolver<ResolversTypes['CsvMapper'], ParentType, ContextType>;
+  csv_mapper_type?: Resolver<Maybe<ResolversTypes['IngestionCsvMapperType']>, ParentType, ContextType>;
   current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   current_state_hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -40166,6 +40208,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   courseOfAction?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, Partial<QueryCourseOfActionArgs>>;
   coursesOfAction?: Resolver<Maybe<ResolversTypes['CourseOfActionConnection']>, ParentType, ContextType, Partial<QueryCoursesOfActionArgs>>;
   creators?: Resolver<Maybe<ResolversTypes['CreatorConnection']>, ParentType, ContextType, Partial<QueryCreatorsArgs>>;
+  csvFeedAddInputFromImport?: Resolver<ResolversTypes['CSVFeedAddInputFromImport'], ParentType, ContextType, RequireFields<QueryCsvFeedAddInputFromImportArgs, 'file'>>;
   csvMapper?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<QueryCsvMapperArgs, 'id'>>;
   csvMapperAddInputFromImport?: Resolver<ResolversTypes['CsvMapperAddInputFromImport'], ParentType, ContextType, RequireFields<QueryCsvMapperAddInputFromImportArgs, 'file'>>;
   csvMapperSchemaAttributes?: Resolver<Array<ResolversTypes['CsvMapperSchemaAttributes']>, ParentType, ContextType>;
@@ -43499,6 +43542,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   BankAccount?: BankAccountResolvers<ContextType>;
   BasicObject?: BasicObjectResolvers<ContextType>;
   BasicRelationship?: BasicRelationshipResolvers<ContextType>;
+  CSVFeedAddInputFromImport?: CsvFeedAddInputFromImportResolvers<ContextType>;
   Campaign?: CampaignResolvers<ContextType>;
   CampaignConnection?: CampaignConnectionResolvers<ContextType>;
   CampaignEdge?: CampaignEdgeResolvers<ContextType>;

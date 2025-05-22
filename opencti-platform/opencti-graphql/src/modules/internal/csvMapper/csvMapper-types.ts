@@ -98,3 +98,11 @@ export interface StixCsvMapper extends StixObject {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   }
 }
+
+export interface CsvMapperConfiguration {
+  name: string
+  has_header: boolean
+  separator: string
+  skipLineChar: string
+  representations: CsvMapperRepresentation[]
+}

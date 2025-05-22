@@ -1,7 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { editorQuery, queryAsAdmin, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess, queryAsUser } from '../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsAdminWithSuccess, queryAsUser } from '../../utils/testQueryHelper';
 import { logApp } from '../../../src/config/conf';
 
 describe('CSV Feed resolver standard behavior', () => {
@@ -177,5 +177,32 @@ describe('CSV Feed resolver standard behavior', () => {
       variables: { id: internalFeedId }
     });
     logApp.info('deleteFeedResponse:', deleteFeedResponse);
+  });
+
+  const TEST_MUTATION = gql`
+    query CsvFeedAddInputFromImport($file: Upload!) {
+      csvFeedAddInputFromImport(file: $file){
+        authentication_type
+        name
+        csvMapper {
+          name
+        }
+      }
+    }
+  `;
+
+  it('should test a json file against import', async () => {
+    const upload = await createUploadFromTestDataFile('csvFeed/test-csv-feed.json', 'test-csv-feed.json', 'application/json');
+
+    const queryResult = await queryAsAdmin({
+      query: TEST_MUTATION,
+      variables: {
+        file: upload,
+      },
+    });
+    expect(queryResult.data?.csvFeedAddInputFromImport).toBeDefined();
+    expect(queryResult.data?.csvFeedAddInputFromImport.csvMapper).toBeDefined();
+    expect(queryResult.data?.csvFeedAddInputFromImport.csvMapper.name).toBe('Inline CSV Feed');
+    expect(queryResult.data?.csvFeedAddInputFromImport.name).toBe('Test name');
   });
 });

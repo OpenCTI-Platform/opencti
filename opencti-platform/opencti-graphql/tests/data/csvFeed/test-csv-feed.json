@@ -1,0 +1,113 @@
+{
+  "openCTI_version": "6.6.6",
+  "type": "csvFeeds",
+  "configuration": {
+    "id": "debf1d1e-de97-4dd8-abb6-1b22e19468f6",
+    "name": "Test name",
+    "description": "test description",
+    "uri": "https://myfeed.com/feeds/c8648637-205e-413d-aea8-f6ec9501c0ac",
+    "authentication_type": "none",
+    "markings": [],
+    "authentication_value": "",
+    "csv_mapper_type": "inline",
+    "csv_mapper": {
+      "openCTI_version": "6.6.6",
+      "type": "csvMapper",
+      "configuration": {
+        "id":"debf1d1e-de97-4dd8-abb6-1b22e19468f6",
+        "name": "Inline CSV Feed",
+        "has_header": false,
+        "separator": ";",
+        "representations": [
+          {
+            "id": "1a3738ce-a0b2-40fb-a7fc-556e9ab97f43",
+            "type": "entity",
+            "target": {
+              "entity_type": "Url",
+              "column_based": null
+            },
+            "attributes": [
+              {
+                "key": "x_opencti_description",
+                "column": {
+                  "column_name": "A",
+                  "configuration": null
+                },
+                "default_values": null,
+                "based_on": null
+              },
+              {
+                "key": "value",
+                "column": {
+                  "column_name": "A",
+                  "configuration": null
+                },
+                "default_values": null,
+                "based_on": null
+              }
+            ]
+          },
+          {
+            "id": "eb53977e-1bf0-4c9b-8d0a-07e3b298d02b",
+            "type": "entity",
+            "target": {
+              "entity_type": "Credential",
+              "column_based": null
+            },
+            "attributes": [
+              {
+                "key": "value",
+                "column": {
+                  "column_name": "B",
+                  "configuration": null
+                },
+                "default_values": null,
+                "based_on": null
+              },
+              {
+                "key": "x_opencti_description",
+                "column": {
+                  "column_name": "B",
+                  "configuration": null
+                },
+                "default_values": null,
+                "based_on": null
+              }
+            ]
+          },
+          {
+            "id": "f2e9f1ec-f988-40e3-bb8e-aae2a93257c8",
+            "type": "relationship",
+            "target": {
+              "entity_type": "related-to",
+              "column_based": null
+            },
+            "attributes": [
+              {
+                "key": "from",
+                "column": null,
+                "default_values": null,
+                "based_on": {
+                  "representations": [
+                    "eb53977e-1bf0-4c9b-8d0a-07e3b298d02b"
+                  ]
+                }
+              },
+              {
+                "key": "to",
+                "column": null,
+                "default_values": null,
+                "based_on": {
+                  "representations": [
+                    "1a3738ce-a0b2-40fb-a7fc-556e9ab97f43"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "skipLineChar": ""
+      }
+    }
+  }
+}

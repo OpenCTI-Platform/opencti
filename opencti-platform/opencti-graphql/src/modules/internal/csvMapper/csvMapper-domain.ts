@@ -1,7 +1,7 @@
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
-import { type BasicStoreEntityCsvMapper, type CsvMapperRepresentation, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
+import { type BasicStoreEntityCsvMapper, type CsvMapperConfiguration, type CsvMapperRepresentation, ENTITY_TYPE_CSV_MAPPER, type StoreEntityCsvMapper } from './csvMapper-types';
 import { type CsvMapperAddInput, type EditInput, FilterMode, type QueryCsvMappersArgs } from '../../../generated/graphql';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 import { type CsvBundlerTestOpts, getCsvTestObjects, removeHeaderFromFullFile } from '../../../parser/csv-bundler';
@@ -86,7 +86,7 @@ export const deleteCsvMapper = async (context: AuthContext, user: AuthUser, csvM
   const ingesters = await listAllEntities<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
   // prevent deletion if an ingester uses the mapper
   if (ingesters.length > 0) {
-    throw FunctionalError('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv ingester(s)', { id: csvMapperId });
+    throw FunctionalError('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv feed(s)', { id: csvMapperId });
   }
 
   return deleteInternalObject(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
@@ -122,6 +122,21 @@ export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvM
 
 const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
 
+export const transformCsvMapperConfig = async (configuration: CsvMapperConfiguration, context: AuthContext, user: AuthUser) => {
+  const { representations } = configuration;
+  await convertRepresentationsIds(context, user, representations, 'stix');
+  const csvMapper = {
+    ...configuration,
+    representations: JSON.stringify(representations),
+  } as BasicStoreEntityCsvMapper;
+  const parsedRepresentations = await getParsedRepresentations(context, user, csvMapper);
+
+  return {
+    ...configuration,
+    representations: parsedRepresentations,
+  };
+};
+
 export const csvMapperAddInputFromImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
 
@@ -134,19 +149,7 @@ export const csvMapperAddInputFromImport = async (context: AuthContext, user: Au
   }
 
   // convert default values ids in representations
-  const representations = parsedData.configuration.representations as CsvMapperRepresentation[];
-  await convertRepresentationsIds(context, user, representations, 'stix');
-  const csvMapper = {
-    ...parsedData.configuration,
-    representations: JSON.stringify(representations),
-  };
-  const parsedRepresentations = await getParsedRepresentations(context, user, csvMapper);
-
-  const csvMapperAddInput = {
-    ...parsedData.configuration,
-    representations: parsedRepresentations,
-  };
-  return csvMapperAddInput;
+  return transformCsvMapperConfig(parsedData.configuration, context, user);
 };
 
 // -- Schema

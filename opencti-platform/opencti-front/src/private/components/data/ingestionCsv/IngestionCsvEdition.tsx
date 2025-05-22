@@ -12,7 +12,7 @@ import CommitMessage from '@components/common/form/CommitMessage';
 import { IngestionCsvEditionFragment_ingestionCsv$key } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionFragment_ingestionCsv.graphql';
 import CsvMapperField, { CsvMapperFieldOption, csvMapperQuery } from '@components/common/form/CsvMapperField';
 import Button from '@mui/material/Button';
-import IngestionCsvMapperTestDialog from '@components/data/ingestionCsv/IngestionCsvMapperTestDialog';
+import IngestionCsvFeedTestDialog from '@components/data/ingestionCsv/IngestionCsvFeedTestDialog';
 import makeStyles from '@mui/styles/makeStyles';
 import { CsvMapperFieldSearchQuery } from '@components/common/form/__generated__/CsvMapperFieldSearchQuery.graphql';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
@@ -51,7 +51,7 @@ export const ingestionCsvEditionPatch = graphql`
     ingestionCsvFieldPatch(id: $id, input: $input) {
       ...IngestionCsvEditionFragment_ingestionCsv
     }
-  } 
+  }
 `;
 
 export const ingestionCsvEditionFragment = graphql`
@@ -64,14 +64,39 @@ export const ingestionCsvEditionFragment = graphql`
     authentication_type
     authentication_value
     ingestion_running
+    csv_mapper_type
     csvMapper {
       id
       name
+      has_header
+      separator
+      skipLineChar
       representations {
+        id
+        type
+        target {
+          entity_type
+          column_based {
+            column_reference
+            operator
+            value
+          }
+        }
         attributes {
           key
+          column {
+            column_name
+            configuration {
+              separator
+              pattern_date
+            }
+          }
           default_values {
+            id
             name
+          }
+          based_on {
+            representations
           }
         }
       }
@@ -251,6 +276,8 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
     key: ingestionCsvData.authentication_type === CERT_AUTH ? extractKey(ingestionCsvData.authentication_value) : undefined,
     ca: ingestionCsvData.authentication_type === CERT_AUTH ? extractCA(ingestionCsvData.authentication_value) : undefined,
     ingestion_running: ingestionCsvData.ingestion_running,
+    csv_mapper_type: ingestionCsvData.csv_mapper_type,
+    csv_mapper: ingestionCsvData.csv_mapper_type === 'inline' ? JSON.stringify(ingestionCsvData.csvMapper) : null,
     csv_mapper_id: convertMapper(ingestionCsvData, 'csvMapper'),
     user_id: convertUser(ingestionCsvData, 'user'),
     references: undefined,
@@ -477,7 +504,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               {t_i18n('Verify')}
             </Button>
           </div>
-          <IngestionCsvMapperTestDialog
+          <IngestionCsvFeedTestDialog
             open={open}
             onClose={() => setOpen(false)}
             values={values}
