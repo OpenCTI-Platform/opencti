@@ -59,14 +59,17 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
     const hashedOtp = bcrypt.hashSync(resetOtp);
     await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, mfa_activated: mfa_activated ?? false, mfa_validated: false, userId: id });
     // Create and send the email
-    const body = `Hi ${name},</br></br>`
-        + 'A request has been made to reset your OpenCTI password.</br></br>'
-        + 'Enter the following password recovery code:</br></br>'
-        + `<b>${resetOtp}</b>`;
+    const body = `<p>Hi ${name},</p>`
+      + '<p>We have received a request to reset the password for your account associated with this email address. To proceed with resetting your password, please use the verification code provided below:</p>'
+      + `<p><b>${resetOtp}</b></p>`
+      + '<p>Please enter this code on the password reset page to create a new password for your account.</p>'
+      + '<p>If you did not request this password reset, it is possible that someone else is trying to access your account. Do not forward or give this code to anyone.</p>'
+      + '<p>For any assistance or if you have concerns, do not hesitate to contact the system administrator.</p>'
+      + '<p>Sincerely,</p>';
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: user_email,
-      subject: `${resetOtp} is your recovery code of your OpenCTI account`,
+      subject: 'Your OpenCTI account - Password recovery code',
       html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
     };
     await sendMail(sendMailArgs);
@@ -169,15 +172,14 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
     ]);
     await killUserSessions(authUser.id);
     await redisDelForgotPassword(input.transactionId, email);
-    const body = `Hi ${authUser.name},</br></br>`
-      + 'We wanted to let you know that your account password was successfully changed.</br></br>'
-      + 'If you initiated this change, no further action is required. However, if you did not authorize this change, please reset your password immediately and contact the system administrator so that we may investigate and take appropriate measures to secure your account.</br></br>'
-      + 'Sincerely,</br></br>'
-      + 'Filigran</br></br>';
+    const body = `<p>Hi ${authUser.name},</p>`
+      + '<p>We wanted to let you know that your account password was successfully changed.</p>'
+      + '<p>If you initiated this change, no further action is required. However, if you did not request this change, please reset your password immediately and contact the system administrator.</p>'
+      + '<p>Sincerely,</p>';
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: email,
-      subject: 'The password of your OpenCTI account has been changed',
+      subject: 'Your OpenCTI account - Password updated',
       html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
     };
     await sendMail(sendMailArgs);
