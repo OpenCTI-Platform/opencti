@@ -17624,7 +17624,7 @@ __metadata:
     react-wordcloud: "npm:1.2.7"
     reactflow: "npm:11.11.4"
     recharts: "npm:2.15.3"
-    relay-compiler: "npm:17.0.0"
+    relay-compiler: "npm:19.0.0"
     relay-runtime: "npm:17.0.0"
     relay-test-utils: "npm:17.0.0"
     remark-flexible-markers: "npm:1.2.1"
@@ -19344,12 +19344,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"relay-compiler@npm:17.0.0":
-  version: 17.0.0
-  resolution: "relay-compiler@npm:17.0.0"
+"relay-compiler@npm:19.0.0":
+  version: 19.0.0
+  resolution: "relay-compiler@npm:19.0.0"
   bin:
     relay-compiler: cli.js
-  checksum: 10/1cb4531205f1a26a7b27bfec104cf685c12d92d46b322191ab086ec817fce4a3ae42e520630444a72840d8e5d1a1e00779fd6387c82c542fbf11cc0b884623f4
+  checksum: 10/a48a7e4d7245a402b6df4a427a33f2d2c46d7f692c497b03b0fcc540086ad3fd7823be3712f0b23a386649609000191dfa3f8697d35a52949d9976acde639a8b
   languageName: node
   linkType: hard
 
