@@ -43,7 +43,7 @@ const pirFlagElementToQueue = async (
     `Add dependency ${matchingCriteria} for ${sourceId} in pir ${pir.name}`
   );
   const stixPir = convertEntityPirToStix(pir as StoreEntityPir);
-  stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'add_pir_dependency';
+  stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'pir_flag_element';
   const pirBundle = {
     ...stixPir,
     input: { relationshipId, sourceId, matchingCriteria },
@@ -75,7 +75,7 @@ const pirUnflagElementFromQueue = async (
     `Remove dependency ${relationshipId} for ${sourceId} in pir ${pir.name}`
   );
   const stixPir = convertEntityPirToStix(pir as StoreEntityPir);
-  stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'delete_pir_dependency';
+  stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'pir_unflag_element';
   const pirBundle = {
     ...stixPir,
     input: { relationshipId, sourceId },
