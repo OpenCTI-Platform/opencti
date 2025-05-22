@@ -1053,6 +1053,7 @@ type BackgroundTaskAction {
 interface BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1067,6 +1068,7 @@ interface BackgroundTask {
 type RuleTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1084,6 +1086,7 @@ type RuleTask implements BackgroundTask {
 type ListTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1104,6 +1107,7 @@ type ListTask implements BackgroundTask {
 type QueryTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1149,11 +1153,13 @@ input BackgroundTaskActionInput {
 }
 input ListTaskAddInput {
   ids: [ID!]
+  description: String
   actions: [BackgroundTaskActionInput]!
   scope: BackgroundTaskScope!
 }
 input QueryTaskAddInput {
   filters: String
+  description: String
   search: String
   excluded_ids: [ID]
   actions: [BackgroundTaskActionInput]!
@@ -13111,7 +13117,7 @@ type Query {
   stixCoreObjectAskAiActivity(id: ID!, language: String, forceRefresh: Boolean): AiActivity @auth(for: [KNOWLEDGE])
   stixCoreObjectAskAiForecast(id: ID!, language: String, forceRefresh: Boolean): AiForecast @auth(for: [KNOWLEDGE])
   stixCoreObjectAskAiHistory(id: ID!, language: String, forceRefresh: Boolean): AiHistory @auth(for: [KNOWLEDGE])
-  stixCoreBackgroundActiveOperations(id: ID!): [BackgroundTask] @auth(for: [KNOWLEDGE])
+  stixCoreBackgroundActiveOperations(id: ID!): [BackgroundTask!] @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
     after: ID
