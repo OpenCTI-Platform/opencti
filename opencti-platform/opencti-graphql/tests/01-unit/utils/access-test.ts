@@ -9,12 +9,14 @@ import {
   getUserAccessRight,
   isMarkingAllowed,
   isOrganizationAllowed,
+  isUserCanAccessStreamUpdateEvent,
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
   MEMBER_ACCESS_RIGHT_ADMIN,
   MEMBER_ACCESS_RIGHT_EDIT,
-  MEMBER_ACCESS_RIGHT_VIEW
+  MEMBER_ACCESS_RIGHT_VIEW,
+  SYSTEM_USER
 } from '../../../src/utils/access';
-import type { BasicStoreCommon } from '../../../src/types/store';
+import type { BasicStoreCommon, StoreMarkingDefinition } from '../../../src/types/store';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import type { AuthUser } from '../../../src/types/user';
 import type { BasicStoreSettings } from '../../../src/types/settings';
@@ -23,6 +25,7 @@ import { RELATION_GRANTED_TO } from '../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import type { StixObject, StixOpenctiExtension } from '../../../src/types/stix-2-1-common';
 import type { Group } from '../../../src/types/group';
+import type { UpdateEvent } from '../../../src/types/event';
 
 const inPlatformContext = { ...testContext, user_inside_platform_organization: true };
 
@@ -234,6 +237,61 @@ describe('User access entity testing', async () => {
   it('User not in authorized members should not access stored element', () => {
     const hasAccess = checkUserFilterStoreElements(testContext, user_is_not_allowed as AuthUser, element as BasicStoreCommon, [], true);
     expect(hasAccess).toEqual(false);
+  });
+});
+
+describe('User stream update event testing', async () => {
+  it('user with marking allowed/not_allowed should/should_not access event with markings restrictions', async () => {
+    const user_is_allowed: Partial<AuthUser> = {
+      id: '55ec0c6a-13ce-5e39-b486-354fe4a7084f',
+      allowed_marking: [{
+        internal_id: 'f2aedb16-b107-49d3-adc5-edc945514360',
+      } as StoreMarkingDefinition],
+      roles: [ADMINISTRATOR_ROLE],
+    };
+
+    const user_is_not_allowed: Partial<AuthUser> = {
+      id: '48ec0c6a-13ce-5e39-b486-354fe4a7084f',
+      allowed_marking: [],
+      roles: [ADMINISTRATOR_ROLE],
+    };
+
+    const updateEvent: Partial<UpdateEvent> = {
+      type: 'update',
+      scope: 'external',
+      message: 'adds `A new campaign` in `Contains`',
+      context: {
+        patch: [{ op: 'add', path: '/object_refs/4', value: 'campaign--bce98eb5-25a9-5ba7-b4a0-b160a79d0de7' }],
+        reverse_patch: [{ op: 'remove', path: '/objects_refs/4' }],
+        related_restrictions: { markings: ['f2aedb16-b107-49d3-adc5-edc945514360'] },
+      }
+    };
+    const hasAccess_userAllowed = await isUserCanAccessStreamUpdateEvent(user_is_allowed as AuthUser, updateEvent as UpdateEvent);
+    expect(hasAccess_userAllowed).toEqual(true);
+    const hasAccess_userNotAllowed = await isUserCanAccessStreamUpdateEvent(user_is_not_allowed as AuthUser, updateEvent as UpdateEvent);
+    expect(hasAccess_userNotAllowed).toEqual(false);
+    const hasAccess_userWithByPass = await isUserCanAccessStreamUpdateEvent(SYSTEM_USER, updateEvent as UpdateEvent);
+    expect(hasAccess_userWithByPass).toEqual(true);
+  });
+  it('user should access event with no markings restrictions', async () => {
+    const user: Partial<AuthUser> = {
+      id: '48ec0c6a-13ce-5e39-b486-354fe4a7084f',
+      allowed_marking: [],
+      roles: [ADMINISTRATOR_ROLE],
+    };
+
+    const updateEvent: Partial<UpdateEvent> = {
+      type: 'update',
+      scope: 'external',
+      message: 'adds `A new campaign` in `Contains`',
+      context: {
+        patch: [{ op: 'add', path: '/object_refs/4', value: 'campaign--bce98eb5-25a9-5ba7-b4a0-b160a79d0de7' }],
+        reverse_patch: [{ op: 'remove', path: '/objects_refs/4' }],
+        related_restrictions: { markings: [] },
+      }
+    };
+    const hasAccess = await isUserCanAccessStreamUpdateEvent(user as AuthUser, updateEvent as UpdateEvent);
+    expect(hasAccess).toEqual(true);
   });
 });
 

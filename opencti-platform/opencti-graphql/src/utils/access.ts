@@ -630,7 +630,7 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
 };
 
 const checkUserCanAccessMarkings = async (user: AuthUser, markingIds: string[]) => {
-  if (isBypassUser(user)) {
+  if (markingIds.length === 0 || isBypassUser(user)) {
     return true;
   }
   const userMarkingIds = (user.allowed_marking || []).map((m) => m.internal_id);
@@ -645,7 +645,11 @@ export const isUserCanAccessStreamUpdateEvent = async (user: AuthUser, updateEve
   if (!relatedRestrictions) {
     return true;
   }
-  return checkUserCanAccessMarkings(user, relatedRestrictions.markings ?? []);
+  const markingsRestrictions = relatedRestrictions.markings ?? [];
+  if (markingsRestrictions.length > 0) {
+    return checkUserCanAccessMarkings(user, markingsRestrictions);
+  }
+  return true;
 };
 // end region
 
