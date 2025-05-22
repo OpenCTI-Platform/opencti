@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
 
-// https://www.geeksforgeeks.org/reactjs-useinterval-custom-hook/
 // Custom useInterval hook.
 const useInterval = (callback: () => void, delay: number, immediate = true) => {
-  const savedCallback = useRef<() => void>();
+  const savedCallback = useRef<() => void>(undefined);
 
   // Remember the latest callback.
   useEffect(() => {
