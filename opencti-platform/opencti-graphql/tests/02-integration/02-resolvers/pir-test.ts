@@ -46,7 +46,7 @@ const READ_QUERY = gql`
   }
 `;
 
-describe('Report resolver standard behavior', () => {
+describe('PIR resolver standard behavior', () => {
   let pirInternalId: string = '';
   it('should pir created', async () => {
     const CREATE_QUERY = gql`
