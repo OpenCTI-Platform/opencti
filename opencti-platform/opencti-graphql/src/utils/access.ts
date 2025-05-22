@@ -629,25 +629,23 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
   return checkUserCanAccessStixElement(context, user, instance, hasPlatformOrg);
 };
 
-const checkUserCanAccessMarkings = async (context: AuthContext, user: AuthUser, markingIds: string[]) => {
+const checkUserCanAccessMarkings = async (user: AuthUser, markingIds: string[]) => {
   if (isBypassUser(user)) {
     return true;
   }
-  const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const userMarking = (user.allowed_marking || []).map((m) => markings.get(m.internal_id)).filter((m) => isNotEmptyField(m));
-  const userMarkingIds = userMarking.map((marking) => extractIdsFromStoreObject(marking)).flat();
+  const userMarkingIds = (user.allowed_marking || []).map((m) => m.internal_id);
   if (markingIds.every((m) => userMarkingIds.includes(m))) {
     return true;
   }
   return false;
 };
 
-export const isUserCanAccessStreamUpdateEvent = async (context: AuthContext, user: AuthUser, updateEvent: UpdateEvent) => {
+export const isUserCanAccessStreamUpdateEvent = async (user: AuthUser, updateEvent: UpdateEvent) => {
   const relatedRestrictions = updateEvent.context.related_restrictions;
   if (!relatedRestrictions) {
     return true;
   }
-  return checkUserCanAccessMarkings(context, user, relatedRestrictions.markings ?? []);
+  return checkUserCanAccessMarkings(user, relatedRestrictions.markings ?? []);
 };
 // end region
 

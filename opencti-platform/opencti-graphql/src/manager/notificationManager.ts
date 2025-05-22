@@ -486,7 +486,7 @@ export const buildTargetEvents = async (
       const notificationUser = convertToNotificationUser(user, notifiers);
       // TODO: replace with new matcher, but handle side events
       // Check if the user has access to the stream event (stream event data related_restrictions)
-      const userHasAccessToUpdateEvent = await isUserCanAccessStreamUpdateEvent(context, user, streamEvent.data);
+      const userHasAccessToUpdateEvent = await isUserCanAccessStreamUpdateEvent(user, streamEvent.data);
       if (userHasAccessToUpdateEvent) {
         // Check if the event matched/matches the trigger filters and the user rights
         const isPreviousMatch = await isStixMatchFilterGroup(userContext, user, previous, finalFilters);
