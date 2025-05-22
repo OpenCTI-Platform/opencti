@@ -768,7 +768,7 @@ jobs:
           chmod 700 ~/.ssh
           ssh-keyscan -H 51.44.124.32 >> ~/.ssh/known_hosts
           cat ~/.ssh/known_hosts
-          ssh admin@51.44.124.32 "kubectl -n customer-prerelease rollout restart deployment -l app=opencti"
+          ssh admin@13.38.189.26 "kubectl -n customer-prerelease rollout restart deployment -l app=opencti"
 
   deploy_dev:
     docker:
