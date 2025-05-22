@@ -2,6 +2,7 @@ import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { FilterMode, FilterOperator } from '../../../src/generated/graphql';
+import { RELATION_IN_PIR } from '../../../src/schema/stixRefRelationship';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -25,6 +26,43 @@ const LIST_QUERY = gql`
             weight
             filters
           }
+        }
+      }
+    }
+  }
+`;
+
+const LIST_RELS_QUERY = gql`
+  query stixRefRelationships(
+    $filters: FilterGroup
+    $relationship_type: [String]
+  ) {
+    stixRefRelationships(
+      filters: $filters
+      relationship_type: $relationship_type
+    ) {
+      edges {
+        node {
+          id
+          relationship_type
+          from {
+            ... on StixObject {
+              x_opencti_stix_ids
+            }
+          }
+          to {
+            ... on InternalObject{
+              id
+            }
+          }
+          pir_explanations {
+            dependency_ids
+            criterion {
+              filters
+              weight
+            }
+          }
+          pir_score
         }
       }
     }
@@ -114,6 +152,40 @@ describe('PIR resolver standard behavior', () => {
   it('should list pirs', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data?.pirs.edges.length).toEqual(1);
+  });
+  it('should flag an element and create a pir meta rel', async () => {
+    const FLAG_QUERY = gql`
+      mutation pirFlagElement($id: ID!, $input: PirFlagElementInput!) {
+        pirFlagElement(id: $id, input: $input)
+      }
+    `;
+    const relationshipId = 'relationship--642f6fca-6c5a-495c-9419-9ee0a4a599ee';
+    const sourceId = 'malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263';
+    const matchingCriteria = {
+      filters: {
+        mode: FilterMode.And,
+        filterGroups: [],
+        filters: [
+          { key: ['toId'], values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] }
+        ]
+      },
+      weight: 2,
+    };
+    await queryAsAdmin({
+      query: FLAG_QUERY,
+      variables: { id: pirInternalId, input: { relationshipId, sourceId, matchingCriteria } },
+    });
+    // Verify the ref has been created
+    const queryResult = await queryAsAdmin({
+      query: LIST_RELS_QUERY,
+      variables: { relationship_type: [RELATION_IN_PIR] },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(1);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.x_opencti_stix_ids[0]).toEqual(sourceId);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(67);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations[0].dependency_ids[0]).toEqual(relationshipId);
   });
   it('should pir deleted', async () => {
     const DELETE_QUERY = gql`
