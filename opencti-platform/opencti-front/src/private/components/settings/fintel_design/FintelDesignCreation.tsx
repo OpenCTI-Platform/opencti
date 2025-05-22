@@ -9,6 +9,7 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material';
 import { FintelDesignCreationAddMutation } from '@components/settings/fintel_design/__generated__/FintelDesignCreationAddMutation.graphql';
+import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
@@ -61,6 +62,7 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const navigate = useNavigate();
   const [commit] = useApiMutation<FintelDesignCreationAddMutation>(fintelDesignCreationMutation);
   const onSubmit: FormikConfig<FintelDesignCreationFormData>['onSubmit'] = (
     values,
@@ -141,39 +143,6 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
               shrink: true,
             }}
             fullWidth={true}
-            style={{ marginTop: 20 }}
-          />
-          <Field
-            component={ColorPickerField}
-            name="gradiantFromColor"
-            label={t_i18n('Background primary color')}
-            placeholder={t_i18n('Default')}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            fullWidth
-            style={{ marginTop: 20 }}
-          />
-          <Field
-            component={ColorPickerField}
-            name="gradiantToColor"
-            label={t_i18n('Background secondary color')}
-            placeholder={t_i18n('Default')}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            fullWidth
-            style={{ marginTop: 20 }}
-          />
-          <Field
-            component={ColorPickerField}
-            name="textColor"
-            label={t_i18n('Text color')}
-            placeholder={t_i18n('Default')}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            fullWidth
             style={{ marginTop: 20 }}
           />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
