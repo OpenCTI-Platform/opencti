@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext, USER_DISINFORMATION_ANALYST, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { patchCsvIngestion } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { now } from '../../../src/utils/format';
 import { SYSTEM_USER } from '../../../src/utils/access';
@@ -296,4 +296,47 @@ describe('CSV ingestion resolver standard behavior', () => {
       'CSVMAPPERS should be required to list csv mapper.'
     );
   });
+
+  it('should test a json file against import', async () => {
+    const upload = await createUploadFromTestDataFile('csvFeed/test-csv-feed.json', 'test-csv-feed.json', 'application/json');
+    const TEST_MUTATION = gql`
+      query CsvFeedAddInputFromImport($file: Upload!) {
+        csvFeedAddInputFromImport(file: $file){
+          authentication_type
+          name
+          csvMapper {
+            name
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: TEST_MUTATION,
+      variables: {
+        file: upload,
+      },
+    });
+    expect(queryResult.data?.csvFeedAddInputFromImport).toBeDefined();
+    expect(queryResult.data?.csvFeedAddInputFromImport.csvMapper).toBeDefined();
+    expect(queryResult.data?.csvFeedAddInputFromImport.csvMapper.name).toBe('Inline CSV Feed');
+    expect(queryResult.data?.csvFeedAddInputFromImport.name).toBe('Test name');
+  });
+
+  // it('should generate correct export configuration', async () => {
+  //   const QUERY_CSV_FEED = gql(`
+  //     query QueryCSVFeed($id: String!) {
+  //       ingestionCsv(id: $id) {
+  //         id
+  //         name
+  //         toConfigurationExport
+  //       }
+  //     }
+  //   `);
+  //   const { data } = await queryAsAdmin({
+  //     query: QUERY_CSV_FEED,
+  //     variables: { id: singleColumnCsvFeedIngesterId }
+  //   });
+  //   console.log(data);
+  //   expect(!!data).toBe(true);
+  // });
 });
