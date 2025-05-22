@@ -233,6 +233,7 @@ const StixDomainObjectHeader = (props) => {
     stixDomainObject,
     isOpenctiAlias,
     EditComponent,
+    RelateComponent,
     viewAs,
     onViewAs,
     disableSharing,
@@ -585,6 +586,7 @@ const StixDomainObjectHeader = (props) => {
               <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixDomainObject.id} />
             )}
             {EditComponent}
+            {RelateComponent}
           </div>
         </div>
       </div>
