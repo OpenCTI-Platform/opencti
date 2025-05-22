@@ -32,7 +32,7 @@ const LIST_QUERY = gql`
 `;
 
 const READ_QUERY = gql`
-  query pir($id: String!) {
+  query pir($id: ID!) {
     pir(id: $id) {
       id
       standard_id
@@ -100,7 +100,7 @@ describe('Report resolver standard behavior', () => {
     expect(pir).not.toBeNull();
     expect(pir.data?.pirAdd).not.toBeNull();
     expect(pir.data?.pirAdd.name).toEqual('MyPir');
-    pirInternalId = pir.data?.reportAdd.id;
+    pirInternalId = pir.data?.pirAdd.id;
   });
   it('should pir loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: pirInternalId } });
@@ -109,7 +109,7 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult.data?.pir.id).toEqual(pirInternalId);
     expect(queryResult.data?.pir.pir_criteria.length).toEqual(2);
     expect(queryResult.data?.pir.pir_criteria[0].weight).toEqual(2);
-    expect(JSON.parse(queryResult.data?.pir.pir_criteria[0].filters).filters[0].key).toEqual('toId');
+    expect(JSON.parse(queryResult.data?.pir.pir_criteria[0].filters).filters[0].key[0]).toEqual('toId');
   });
   it('should list pirs', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
