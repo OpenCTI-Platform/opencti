@@ -53,7 +53,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     // GIVEN some indicators
     const indicatorAddInput: IndicatorAddInput = {
       name: 'Indicator domain - with decay - validate valid from and until timeline',
-      pattern: '[file:hashes.\'SHA-256\' = \'4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877\']',
+      pattern: '[domain-name:value = \'madgicxads.world\']',
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 87,
     };
@@ -61,7 +61,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
 
     const indicatorNoDecayInput = {
       name: 'Indicator domain - no decay - validate valid from and until timeline',
-      pattern: '[file:hashes.\'SHA-256\' = \'aaa27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f666\']',
+      pattern: '[domain-name:value = \'workfront-plus.com\']',
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 85,
       valid_from: inPast90Days,
