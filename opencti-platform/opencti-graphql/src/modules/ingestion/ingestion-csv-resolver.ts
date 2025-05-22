@@ -5,6 +5,7 @@ import {
   addIngestionCsv,
   csvFeedAddInputFromImport,
   csvFeedGetCsvMapper,
+  csvFeedMapperExport,
   deleteIngestionCsv,
   findAllPaginated,
   findById,
@@ -24,6 +25,7 @@ const ingestionCsvResolvers: Resolvers = {
   IngestionCsv: {
     user: (ingestionCsv, _, context) => creatorLoader.load(ingestionCsv.user_id, context, context.user),
     csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, ingestionCsv),
+    toConfigurationExport: (ingestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv)
   },
   Mutation: {
     ingestionCsvTester: (_, { input }, context) => {

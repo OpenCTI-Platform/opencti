@@ -11229,6 +11229,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   scheduling_period?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
+  toConfigurationExport: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
   user?: Maybe<Creator>;
@@ -37431,6 +37432,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
