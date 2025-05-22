@@ -133,18 +133,6 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
             rows={2}
             style={{ marginTop: 20 }}
           />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="url"
-            label={t_i18n('Logo URL')}
-            placeholder={t_i18n('Default')}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
-          />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
               variant="contained"
