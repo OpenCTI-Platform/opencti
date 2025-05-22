@@ -13,6 +13,7 @@ import { truncate } from '../../../../utils/String';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
+import { hexToRGB } from '../../../../utils/Colors';
 
 type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
 
@@ -28,19 +29,26 @@ interface AttackPatternsMatrixColumnsProps extends AttackPatternsMatrixProps {
   queryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
 }
 
+const LAYOUT_SIZE = {
+  BASE_HEIGHT: 310,
+  BASE_WIDTH: 110, // Base width when nav is closed
+  NAV_WIDTH: 125, // Left nav width
+  MARGIN_RIGHT_WIDTH: 195, // Right nav width
+};
+
 const colors = (defaultColor = '#ffffff') => [
-  [defaultColor, 'transparent', 'rgba(255,255,255,0.1)'],
-  ['#ffffff', 'rgba(255,255,255,0.2)'],
-  ['#fff59d', 'rgba(255,245,157,0.2)'],
-  ['#ffe082', 'rgba(255,224,130,0.2)'],
-  ['#ffb300', 'rgba(255,179,0,0.2)'],
-  ['#ffb74d', 'rgba(255,183,77,0.2)'],
-  ['#fb8c00', 'rgba(251,140,0,0.2)'],
-  ['#d95f00', 'rgba(217,95,0,0.2)'],
-  ['#e64a19', 'rgba(230,74,25,0.2)'],
-  ['#f44336', 'rgba(244,67,54,0.2)'],
-  ['#d32f2f', 'rgba(211,47,47,0.2)'],
-  ['#b71c1c', 'rgba(183,28,28,0.2)'],
+  [defaultColor, 'transparent', hexToRGB('#ffffff', 0.1)],
+  ['#ffffff', hexToRGB('#ffffff', 0.2)],
+  ['#fff59d', hexToRGB('#fff59d', 0.2)],
+  ['#ffe082', hexToRGB('#ffe082', 0.2)],
+  ['#ffb300', hexToRGB('#ffb300', 0.2)],
+  ['#ffb74d', hexToRGB('#ffb74d', 0.2)],
+  ['#fb8c00', hexToRGB('#fb8c00', 0.2)],
+  ['#d95f00', hexToRGB('#d95f00', 0.2)],
+  ['#e64a19', hexToRGB('#e64a19', 0.2)],
+  ['#f44336', hexToRGB('#f44336', 0.2)],
+  ['#d32f2f', hexToRGB('#d32f2f', 0.2)],
+  ['#b71c1c', hexToRGB('#b71c1c', 0.2)],
 ];
 
 export const attackPatternsMatrixColumnsFragment = graphql`
@@ -175,26 +183,23 @@ const AttackPatternsMatrixColumns = ({
     })), [attackPatternsMatrix, currentKillChain, searchTerm, modeOnlyActive, attackPatterns]);
 
   const matrixWidth = useMemo(() => {
-    if (marginRight) {
-      return navOpen ? 'calc(100vw - 430px)' : 'calc(100vw - 305px)';
-    }
-    return navOpen ? 'calc(100vw - 235px)' : 'calc(100vw - 110px)';
+    const baseOffset = LAYOUT_SIZE.BASE_WIDTH + (navOpen ? LAYOUT_SIZE.NAV_WIDTH : 0);
+    const rightOffset = marginRight ? LAYOUT_SIZE.MARGIN_RIGHT_WIDTH : 0;
+    return baseOffset + rightOffset;
   }, [marginRight, navOpen]);
 
   return (
     <UserContext.Consumer>
       {({ bannerSettings }) => {
-        const matrixHeight = 310 + (bannerSettings?.bannerHeightNumber || 0) * 2;
+        const matrixHeight = LAYOUT_SIZE.BASE_HEIGHT + (bannerSettings?.bannerHeightNumber || 0) * 2;
 
         return (
           <Box
             sx={{
-              width: matrixWidth,
-              minWidth: matrixWidth,
-              maxWidth: matrixWidth,
+              display: 'flex',
+              flexDirection: 'column',
+              width: `calc(100vw - ${matrixWidth}px)`,
               height: `calc(100vh - ${matrixHeight}px)`,
-              minHeight: `calc(100vh - ${matrixHeight}px)`,
-              maxHeight: `calc(100vh - ${matrixHeight}px)`,
               overflowX: 'auto',
               whiteSpace: 'nowrap',
               paddingBottom: 2,
