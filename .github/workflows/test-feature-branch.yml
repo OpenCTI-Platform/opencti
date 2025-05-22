@@ -131,5 +131,10 @@ jobs:
           template-id: "${{ env.AWX_TPL_ID }}"
           additional-vars: |
             { "octi_version": "${{steps.meta.outputs.version}}", "octi_config": ${{ inputs.octi_config }}, "redis_cluster": ${{ inputs.redis_cluster }} }
+      - name: Forge URL to match playbook limitations
+        id: urlforge
+        run: |
+          url=$(echo "${{steps.meta.outputs.version}}" | cut -c 1-15 | sed 's/-*$//')
+          echo "url=$url" >> $GITHUB_OUTPUT
       - name: display URL
-        run: echo "https://${{steps.meta.outputs.version}}.octi.dev.filigran.io"
+        run: echo "https://feat-${{steps.urlforge.outputs.url}}.octi.staging.filigran.io"
