@@ -267,6 +267,7 @@ export const createDefaultTask = async (context, user, input, taskType, taskExpe
     internal_id: taskId,
     standard_id: generateStandardId(ENTITY_TYPE_BACKGROUND_TASK, input),
     entity_type: ENTITY_TYPE_BACKGROUND_TASK,
+    description: input.description ?? '',
     initiator_id: user.internal_id,
     created_at: now(),
     completed: false,

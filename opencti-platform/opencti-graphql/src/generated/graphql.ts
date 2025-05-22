@@ -1288,6 +1288,7 @@ export type BackgroundTask = {
   actions?: Maybe<Array<Maybe<BackgroundTaskAction>>>;
   completed?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   errors?: Maybe<Array<Maybe<BackgroundTaskError>>>;
   id: Scalars['ID']['output'];
   initiator?: Maybe<Creator>;
@@ -12368,6 +12369,7 @@ export type ListTask = BackgroundTask & {
   authorized_members?: Maybe<Array<MemberAccess>>;
   completed?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   errors?: Maybe<Array<Maybe<BackgroundTaskError>>>;
   id: Scalars['ID']['output'];
   initiator?: Maybe<Creator>;
@@ -23248,6 +23250,7 @@ export type QueryTask = BackgroundTask & {
   authorized_members?: Maybe<Array<MemberAccess>>;
   completed?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   errors?: Maybe<Array<Maybe<BackgroundTaskError>>>;
   id: Scalars['ID']['output'];
   initiator?: Maybe<Creator>;
@@ -24191,6 +24194,7 @@ export type RuleTask = BackgroundTask & {
   actions?: Maybe<Array<Maybe<BackgroundTaskAction>>>;
   completed?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   enable?: Maybe<Scalars['Boolean']['output']>;
   errors?: Maybe<Array<Maybe<BackgroundTaskError>>>;
   id: Scalars['ID']['output'];
@@ -34205,6 +34209,7 @@ export type BackgroundTaskResolvers<ContextType = any, ParentType extends Resolv
   actions?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskAction']>>>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskError']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initiator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -38032,6 +38037,7 @@ export type ListTaskResolvers<ContextType = any, ParentType extends ResolversPar
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskError']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initiator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -40570,6 +40576,7 @@ export type QueryTaskResolvers<ContextType = any, ParentType extends ResolversPa
   authorized_members?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskError']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initiator?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -40960,6 +40967,7 @@ export type RuleTaskResolvers<ContextType = any, ParentType extends ResolversPar
   actions?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskAction']>>>, ParentType, ContextType>;
   completed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskError']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

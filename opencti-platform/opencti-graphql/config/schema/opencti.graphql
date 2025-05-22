@@ -1053,6 +1053,7 @@ type BackgroundTaskAction {
 interface BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1067,6 +1068,7 @@ interface BackgroundTask {
 type RuleTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1084,6 +1086,7 @@ type RuleTask implements BackgroundTask {
 type ListTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1104,6 +1107,7 @@ type ListTask implements BackgroundTask {
 type QueryTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime

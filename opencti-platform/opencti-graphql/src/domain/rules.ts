@@ -89,8 +89,9 @@ export const setRuleActivation = async (context: AuthContext, user: AuthUser, ru
   await notify(BUS_TOPICS[ENTITY_TYPE_RULE].EDIT_TOPIC, rule, user);
   // Refresh the activated rules
   const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');
+  const ruleTaskDescription = `rule ${rule.name} ${active ? 'activation' : 'deactivation'}`;
   if (isRuleEngineActivated) {
-    await createRuleTask(context, user, resolvedRule, { rule: ruleId, enable: active });
+    await createRuleTask(context, user, resolvedRule, { rule: ruleId, enable: active, description: ruleTaskDescription });
   }
   await publishUserAction({
     user,
