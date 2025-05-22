@@ -381,11 +381,13 @@ const TasksList = ({ data }) => {
                           task.actions,
                         )}
                   </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {`${t_i18n('Description')} ${task.description}`}
-                    </Typography>
-                  </Grid>
+                  {task.description && (
+                    <Grid item xs={12}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {`${t_i18n('Description')}: ${task.description}`}
+                      </Typography>
+                    </Grid>
+                  )}
                 </Grid>
               </Grid>
               <Grid item xs={7}>

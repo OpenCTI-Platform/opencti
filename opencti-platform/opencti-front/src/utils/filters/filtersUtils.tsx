@@ -774,13 +774,14 @@ const notCleanableFilterKeys = ['entity_type', 'authorized_members.id'];
 
 export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(notCleanableFilterKeys);
+  console.log(availableFilterKeys);
   if (!filters) {
     return undefined;
   }
   return {
     mode: filters.mode,
     filters: filters.filters
-      .filter((f) => availableFilterKeys.includes(f.key))
+      .filter((f) => availableFilterKeys.includes(f.key) || f.key === 'ids')
       .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
