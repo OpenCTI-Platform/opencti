@@ -66,15 +66,7 @@ const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, r
   }
   return params;
 };
-const buildQueryParams = (queryParamsAttributes: Array<DataParam> | undefined, variables: Record<string, any>) => {
-  const params: Record<string, string | number> = {};
-  const paramAttributes = (queryParamsAttributes ?? []).filter((query) => query.exposed === 'query_param');
-  for (let attrIndex = 0; attrIndex < paramAttributes.length; attrIndex += 1) {
-    const queryParamsAttribute = paramAttributes[attrIndex];
-    params[queryParamsAttribute.to] = variables[queryParamsAttribute.to];
-  }
-  return params;
-};
+
 const replaceVariables = (body: string, variables: Record<string, object>) => {
   const regex = /\$\w+/g;
   return body.replace(regex, (match) => {
@@ -87,6 +79,17 @@ const replaceVariables = (body: string, variables: Record<string, object>) => {
     return match;
   });
 };
+
+const filterVariablesForAttributes = (attributes: Array<DataParam>, variables: Record<string, object>, exposed: 'body' | 'query_param' | 'header') => {
+  const params: Record<string, object> = {};
+  const paramAttributes = attributes.filter((query) => query.exposed === exposed);
+  for (let attrIndex = 0; attrIndex < paramAttributes.length; attrIndex += 1) {
+    const queryParamsAttribute = paramAttributes[attrIndex];
+    params[queryParamsAttribute.to] = variables[queryParamsAttribute.to];
+  }
+  return params;
+};
+
 export const executeJsonQuery = async (context: AuthContext, ingestion: BasicStoreEntityIngestionJson, opts: JsonQueryFetchOpts = {}) => {
   const { maxResults = 0 } = opts;
   let certificates;
@@ -97,6 +100,10 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
     const h = headerOptions[index];
     headers[h.name] = h.value;
   }
+  // Prepare headers
+  const variables = isEmptyField(ingestion.ingestion_json_state) ? buildQueryObject(ingestion.query_attributes, {}) : ingestion.ingestion_json_state;
+  const headerVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'header');
+  Object.entries(headerVariables).forEach(([k, v]) => { headers[k] = String(v); });
   if (ingestion.authentication_type === IngestionAuthType.Basic) {
     const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
     headers.Authorization = `Basic ${auth}`;
@@ -113,16 +120,18 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   }
   const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: false, responseType: 'json', certificates };
   const httpClient = getHttpClient(httpClientOptions);
+  // Prepare query params
+  const queryVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'query_param');
+  const parsedUri = replaceVariables(ingestion.uri, queryVariables);
+  // Prepare body
+  const bodyVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'body');
+  const parsedBody = replaceVariables(ingestion.body, bodyVariables);
   // Execute the http query
-  const variables = isEmptyField(ingestion.ingestion_json_state) ? buildQueryObject(ingestion.query_attributes, {}) : ingestion.ingestion_json_state;
-  const params = buildQueryParams(ingestion.query_attributes, variables);
-  const parsedBody = replaceVariables(ingestion.body, variables);
-  logApp.info(`> Main query: ${ingestion.uri}`, { body: parsedBody });
+  logApp.info(`> Main query: ${parsedUri}`, { body: parsedBody });
   const { data: requestData, headers: responseHeaders } = await httpClient.call({
     method: ingestion.verb,
-    url: ingestion.uri,
-    data: parsedBody,
-    params
+    url: parsedUri,
+    data: parsedBody
   });
   const jsonMapper = await findJsonMapperById(context, SYSTEM_USER, ingestion.json_mapper_id);
   const jsonMapperParsed: JsonMapperParsed = {
@@ -143,8 +152,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       const { data: paginationData } = await httpClient.call({
         method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb,
         url,
-        data: ingestion.body,
-        params
+        data: ingestion.body
       });
       const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
       nextExecutionState = { ...nextExecutionState, ...paginationVariables };
