@@ -84,7 +84,6 @@ class TaxiiLineLineComponent extends Component {
     const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
       <ListItem
-        classes={{ root: classes.item }}
         divider={true}
         disablePadding
         secondaryAction={
@@ -97,6 +96,7 @@ class TaxiiLineLineComponent extends Component {
         }
       >
         <ListItemButton
+          classes={{ root: classes.item }}
           component="a"
           href={`/taxii2/root/collections/${node.id}/objects`}
           target={'_blank'}

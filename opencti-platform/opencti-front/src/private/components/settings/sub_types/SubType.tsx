@@ -132,7 +132,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
         <Grid item xs={12}>
           <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Worflow')}
+            {t_i18n('Workflow')}
           </Typography>
           <Paper
             style={paperStyle}

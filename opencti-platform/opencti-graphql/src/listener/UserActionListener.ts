@@ -183,7 +183,7 @@ export const publishUserAction = async (userAction: UserAction) => {
   return Promise.all(actionPromises);
 };
 
-export const completeContextDataForEntity = <T extends BasicStoreCommon, C extends ElementContextData>(inputContextData: C, data: T) => {
+export const completeContextDataForEntity = <T extends BasicStoreCommon | null, C extends ElementContextData>(inputContextData: C, data: T) => {
   const contextData = { ...inputContextData };
   if (data) {
     if (data.creator_id) {
@@ -208,10 +208,16 @@ export const completeContextDataForEntity = <T extends BasicStoreCommon, C exten
   return contextData;
 };
 
-export const buildContextDataForFile = (entity: BasicStoreObject, path: string, filename: string, file_markings: string[] = [], input: unknown = {}) => {
+export const buildContextDataForFile = (
+  entity: BasicStoreObject | null,
+  path: string,
+  filename: string,
+  file_markings: string[] = [],
+  input: unknown = {},
+) => {
   const baseData: UserFileActionContextData = {
     path,
-    id: entity?.internal_id,
+    id: entity?.internal_id ?? '',
     entity_name: entity ? extractEntityRepresentativeName(entity) : 'global',
     entity_type: entity?.entity_type ?? 'global',
     file_name: filename,

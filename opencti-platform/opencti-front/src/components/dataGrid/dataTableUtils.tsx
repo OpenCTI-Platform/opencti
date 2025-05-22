@@ -312,6 +312,37 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: (data) => <ItemEntityType showIcon entityType={data.entity_type} inList />,
   },
+  entity_types: {
+    id: 'entity_types',
+    label: 'Used in',
+    percentWidth: 20,
+    isSortable: false,
+    render: (data, { t_i18n }) => (
+      <>
+        {data.category.entity_types?.map((type: string) => (
+          <Tooltip key={`entity_${type}`} title={t_i18n(`entity_${type}`)}>
+            <div style={{
+              float: 'left',
+              marginRight: 7,
+              overflow: 'hidden',
+              whiteSpace: 'nowrap' }}
+            >
+              <Chip
+                key={type}
+                style={{
+                  fontSize: 12,
+                  height: 20,
+                }}
+                variant="outlined"
+                label={t_i18n(`entity_${type}`)}
+                color="primary"
+              />
+            </div>
+          </Tooltip>
+        ))}
+      </>
+    ),
+  },
   event_types: {
     id: 'event_types',
     label: 'Types',
@@ -694,6 +725,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       >
         <>{operatingSystem?.name ?? '-'}</>
       </Tooltip>),
+  },
+  order: {
+    id: 'order',
+    label: 'Order',
+    percentWidth: 10,
+    isSortable: true,
+    render: ({ order }, { n }) => defaultRender(n(order)),
   },
   owner: {
     id: 'owner',
