@@ -44,6 +44,7 @@ import {
   computeScoreFromExpectedTime,
   computeScoreList,
   computeTimeFromExpectedScore,
+  dayToMs,
   type DecayChartData,
   type DecayHistory,
   type DecayLiveDetails,
@@ -51,9 +52,14 @@ import {
 } from '../decayRule/decayRule-domain';
 import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
-import { prepareDate, utcDate } from '../../utils/format';
+import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
+import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
+
+export const INDICATOR_DEFAULT_SCORE: number = 50;
+export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
+export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -340,6 +346,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
  * Return keys for 'decay_history', 'decay_next_reaction_date', 'valid_until'
  * @param fromScore
  * @param indicatorBeforeUpdate
+ * @param skipValidUntil
  */
 export const restartDecayComputationOnEdit = (fromScore: number, indicatorBeforeUpdate: BasicStoreEntityIndicator, skipValidUntil = false): EditInput[] => {
   const indicatorDecayRule = indicatorBeforeUpdate.decay_applied_rule;

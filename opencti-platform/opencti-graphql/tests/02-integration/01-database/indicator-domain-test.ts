@@ -53,7 +53,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     // GIVEN some indicators
     const indicatorAddInput: IndicatorAddInput = {
       name: 'Indicator domain - with decay - validate valid from and until timeline',
-      pattern: '[file:hashes.\'SHA-256\' = \'4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877\']',
+      pattern: '[domain-name:value = \'madgicxads.world\']',
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 87,
     };
@@ -61,31 +61,34 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
 
     const indicatorNoDecayInput = {
       name: 'Indicator domain - no decay - validate valid from and until timeline',
-      pattern: '[file:hashes.\'SHA-256\' = \'aaa27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f666\']',
+      pattern: '[domain-name:value = \'workfront-plus.com\']',
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 85,
       valid_from: inPast90Days,
       valid_until: tomorrow
     };
+
     const indicatorWithoutDecay = await createIndicator(indicatorNoDecayInput, false);
 
     // WHEN indicators are updated with wrong dates
     const futureValidFrom = new Date(new Date(indicatorWithDecay.valid_until).getTime() + dayToMs(1));
     const input: EditInput[] = [{ key: VALID_FROM, value: [futureValidFrom.toUTCString()] }];
     await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, input)).rejects.toThrowError('The valid until date must be greater than the valid from date');
-    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, input)).rejects.toThrowError('The valid until date must be greater than the valid from date');
+    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, input))
+      .rejects.toThrowError('The valid until date must be greater than the valid from date');
 
     const pastValidUntil = new Date(new Date(indicatorWithDecay.valid_from).getTime() - dayToMs(1));
     const input2: EditInput[] = [{ key: VALID_UNTIL, value: [pastValidUntil.toUTCString()] }];
     await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, input2)).rejects.toThrowError('The valid until date must be greater than the valid from date');
-    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, input)).rejects.toThrowError('The valid until date must be greater than the valid from date');
+    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, input))
+      .rejects.toThrowError('The valid until date must be greater than the valid from date');
   });
 
-  it.skip('On update, input score should be between 0 and 100', async () => {
+  it('On update, input score should be between 0 and 100', async () => {
     // GIVEN some indicators
     const indicatorAddInput: IndicatorAddInput = {
       name: 'Indicator domain test - with decay - validate score input',
-      pattern: '[file:hashes.\'SHA-256\' = \'bbbb27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877\']',
+      pattern: '[domain-name:value = \'pirouette-cacahouette.fr\']',
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 87,
     };
@@ -93,7 +96,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
 
     const indicatorNoDecayInput = {
       name: 'Indicator domain test - no decay - validate score input',
-      pattern: '[file:hashes.\'SHA-256\' = \'cccc7393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f666\']',
+      pattern: '[domain-name:value = \'peekaboo.com\']',
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 85,
       valid_from: inPast90Days,
@@ -103,15 +106,15 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
 
     // WHEN indicators are updated with wrong score values
     const inputBelow: EditInput[] = [{ key: X_SCORE, value: [-12] }];
-    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputBelow)).rejects.toThrowError('The score should be between 0 and 100');
-    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputBelow)).rejects.toThrowError('The score should be between 0 and 100');
+    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputBelow)).rejects.toThrowError('The score should be an integer between 0 and 100');
+    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputBelow)).rejects.toThrowError('The score should be an integer between 0 and 100');
 
     const inputAbove: EditInput[] = [{ key: X_SCORE, value: [305] }];
-    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputAbove)).rejects.toThrowError('The score should be between 0 and 100');
-    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputAbove)).rejects.toThrowError('The score should be between 0 and 100');
+    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithDecay.id, inputAbove)).rejects.toThrowError('The score should be an integer between 0 and 100');
+    await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputAbove)).rejects.toThrowError('The score should be an integer between 0 and 100');
   });
 
-  it.skip('decay enabled - revoke=true compute new score and new valid until', async () => {
+  it('decay enabled - revoke=true compute new score and new valid until', async () => {
     // GIVEN some indicators
     const indicatorAddInput: IndicatorAddInput = {
       name: 'Indicator domain - decay enabled - revoke=true compute new score and new valid until',
@@ -143,11 +146,11 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     ).toBe(indicatorWithDecay.decay_applied_rule.decay_revoke_score);
   });
 
-  it.skip('decay enabled - revoke=false compute new score and new valid until', async () => {
+  it('decay enabled - revoke=false compute new score and new valid until', async () => {
     // GIVEN a revoked indicator
     const indicatorAddInput: IndicatorAddInput = {
       name: 'Indicator domain test with decay - already revoked',
-      pattern: '[file:hashes.\'SHA-256\' = \'eeee27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877\']',
+      pattern: '[domain-name:value = \'yeeso.fr\']',
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 95,
     };
@@ -181,7 +184,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     ).toBe(indicatorWithDecay.decay_base_score);
   });
 
-  it.skip('no decay - revoke=true compute new score and new valid until', async () => {
+  it('no decay - revoke=true compute new score and new valid until', async () => {
     // GIVEN some indicators
     const indicatorNoDecayInput = {
       name: 'Indicator domain test without decay - revoke=true',
@@ -202,11 +205,11 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     expect(new Date(indicatorUpdatedRevoked.valid_until).getTime()).toBeLessThan(new Date().getTime());
   });
 
-  it.skip('no decay - revoke=false compute new score and new valid until', async () => {
+  it('no decay - revoke=false compute new score and new valid until', async () => {
     // GIVEN an indicator that is created and then revoked.
     const indicatorNoDecayInput = {
       name: 'Indicator domain test without decay',
-      pattern: '[file:hashes.\'SHA-256\' = \'gggg7393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f666\']',
+      pattern: '[domain-name:value = \'plouf.io\']',
       pattern_type: STIX_PATTERN_TYPE,
       x_opencti_score: 85,
       valid_from: inPast90Days,
