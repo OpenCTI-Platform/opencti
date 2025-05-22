@@ -5,6 +5,7 @@ import { createUploadFromTestDataFile, queryAsAdminWithSuccess, queryAsUserIsExp
 import { patchCsvIngestion } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { now } from '../../../src/utils/format';
 import { SYSTEM_USER } from '../../../src/utils/access';
+import pjson from '../../../package.json';
 
 describe('CSV ingestion resolver standard behavior', () => {
   let singleColumnCsvMapperId = '';
@@ -223,6 +224,33 @@ describe('CSV ingestion resolver standard behavior', () => {
     expect(errors?.[0].message).toBe('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv feed(s)');
   });
 
+  it('should generate correct export configuration', async () => {
+    const QUERY_CSV_FEED = gql(`
+      query QueryCSVFeed($id: String!) {
+        ingestionCsv(id: $id) {
+          id
+          name
+          toConfigurationExport
+        }
+      }
+    `);
+    const { data } = await queryAsAdmin({
+      query: QUERY_CSV_FEED,
+      variables: { id: singleColumnCsvFeedIngesterId }
+    });
+    expect(data?.ingestionCsv.id).toBe(singleColumnCsvFeedIngesterId);
+    expect(data?.ingestionCsv.name).toBe('Single column CSV feed ingester');
+    const csvFeedIngestion = JSON.parse(data?.ingestionCsv.toConfigurationExport);
+    expect(csvFeedIngestion.type).toBe('csvFeeds');
+    expect(csvFeedIngestion.openCTI_version).toBe(pjson.version);
+    expect(csvFeedIngestion.configuration).toBeDefined();
+    expect(csvFeedIngestion.configuration.name).toBe('Single column CSV feed ingester');
+    expect(csvFeedIngestion.configuration.uri).toBe('https://lists.blocklist.de/lists/all.txt');
+    expect(csvFeedIngestion.configuration.csv_mapper_type).toBe('inline');
+    expect(csvFeedIngestion.configuration.authentication_type).toBe('none');
+    expect(csvFeedIngestion.configuration.csv_mapper.configuration).toBeDefined();
+  });
+
   it('should delete the CSV feeds ingester', async () => {
     const CSV_FEED_INGESTER_TO_DELETE = {
       id: singleColumnCsvFeedIngesterId,
@@ -321,22 +349,4 @@ describe('CSV ingestion resolver standard behavior', () => {
     expect(queryResult.data?.csvFeedAddInputFromImport.csvMapper.name).toBe('Inline CSV Feed');
     expect(queryResult.data?.csvFeedAddInputFromImport.name).toBe('Test name');
   });
-
-  // it('should generate correct export configuration', async () => {
-  //   const QUERY_CSV_FEED = gql(`
-  //     query QueryCSVFeed($id: String!) {
-  //       ingestionCsv(id: $id) {
-  //         id
-  //         name
-  //         toConfigurationExport
-  //       }
-  //     }
-  //   `);
-  //   const { data } = await queryAsAdmin({
-  //     query: QUERY_CSV_FEED,
-  //     variables: { id: singleColumnCsvFeedIngesterId }
-  //   });
-  //   console.log(data);
-  //   expect(!!data).toBe(true);
-  // });
 });
