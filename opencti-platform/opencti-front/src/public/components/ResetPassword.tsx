@@ -19,6 +19,8 @@ import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswo
 
 interface ResetProps {
   onCancel: () => void;
+  email: string;
+  setEmail: (value: string) => void;
 }
 
 export const AskSendOtpMutation = graphql`
@@ -79,12 +81,11 @@ enum Step {
 }
 const FLASH_COOKIE = 'opencti_flash';
 
-const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
+const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmail }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [step, setStep] = useState(Step.ASK_RESET);
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
-  const [email, setEmail] = useState('');
   const [transactionId, setTransactionId] = useState('');
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState(false);
@@ -209,7 +210,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
     <>
       {step === Step.ASK_RESET && (
         <Formik
-          initialValues={{ email: '' }}
+          initialValues={{ email: email }}
           initialTouched={{ email: !R.isEmpty(flashError) }}
           initialErrors={{ email: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
           validationSchema={resetValidation(t_i18n)}
@@ -222,6 +223,9 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel }) => {
                 name="email"
                 label={t_i18n('Email address')}
                 fullWidth={true}
+                onBlur={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  setEmail(e.currentTarget.value);
+                }}
               />
               <Button
                 type="submit"
