@@ -7,7 +7,6 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import Paper from '@mui/material/Paper';
-import { useParams } from 'react-router-dom';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import CustomizationMenu from '@components/settings/CustomizationMenu';
 import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
@@ -16,7 +15,6 @@ import type { Theme } from '../../../../components/Theme';
 import PageContainer from '../../../../components/PageContainer';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { FintelDesignQuery } from './__generated__/FintelDesignQuery.graphql';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPdf';
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
@@ -25,45 +23,6 @@ import PdfViewer from '../../../../components/PdfViewer';
 const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
     fintelDesign(id: $id) {
-      ...FintelDesign_fintelDesign
-      ...FintelDesignsLine_node
-    }
-  }
-`;
-
-const fintelDesignFieldPatchMutation = graphql`
-  mutation FintelDesignFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
-    fintelDesignFieldPatch(id: $id, input: $input) {
-      id
-      name
-      description
-      url
-      gradiantFromColor
-      gradiantToColor
-      textColor
-    }
-  }
-`;
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
-import PageContainer from '../../../../components/PageContainer';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { FintelDesignQuery } from './__generated__/FintelDesignQuery.graphql';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import TextField from '../../../../components/TextField';
-import ColorPickerField from '../../../../components/ColorPickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import MarkdownField from '../../../../components/fields/MarkdownField';
-
-const fintelDesignQuery = graphql`
-  query FintelDesignQuery($id: String!) {
-    fintelDesign(id: $id) {
-      id
-      name
       ...FintelDesign_fintelDesign
       ...FintelDesignsLine_node
     }
@@ -111,28 +70,19 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
 
   const [formValues, setFormValues] = useState<FintelDesignFormValues>();
 
-  const initialValues = {
-    name: fintelDesign.name,
-    description: fintelDesign.description,
-    url: fintelDesign.url,
-    gradiantFromColor: fintelDesign.gradiantFromColor,
-    gradiantToColor: fintelDesign.gradiantToColor,
-    textColor: fintelDesign.textColor,
-  };
-
-  const fintelDesignValidation = Yup.object().shape({
-    url: Yup.string().nullable(),
-    gradiantFromColor: Yup.string().nullable(),
-    gradiantToColor: Yup.string().nullable(),
-    textColor: Yup.string().nullable(),
-  });
-
-  const handleFieldChange = (name: string, value: string) => {
-    commitFieldPatch({
-      variables: {
-        id: fintelDesign.id,
-        input: [{ key: name, value: (value) ?? '' }],
-      },
+  const buildPreview = async () => {
+    const template = {
+      template_content: '',
+      name: 'Preview',
+      id: 'preview',
+      fintel_template_widgets: [],
+      instance_filters: null,
+    };
+    const htmlTemplate = await buildFileFromTemplate('', [], undefined, template);
+    const PDF = await htmlToPdfReport('', htmlTemplate, 'Preview', [], fintelDesign);
+    PDF.getBlob((blob) => {
+      const file = new File([blob], 'Preview.pdf', { type: blob.type });
+      setPdf(file);
     });
   };
   useEffect(() => {

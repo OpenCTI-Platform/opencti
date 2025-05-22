@@ -165,9 +165,6 @@ const FintelDesigns = () => {
         <AlertInfo
           content={t_i18n('If no design configuration is detected, the default settings will be applied')}
         />
-        <AlertInfo
-          content={t_i18n('If no design configuration is detected, the default settings will be applied')}
-        />
         {queryRef && (
         <DataTable
           dataColumns={dataColumns}

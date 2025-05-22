@@ -1,5 +1,4 @@
 import { graphql } from 'react-relay';
-import { FintelDesignsLinesPaginationQuery$variables } from '@components/settings/fintel_design/__generated__/FintelDesignsLinesPaginationQuery.graphql';
 import React, { FunctionComponent, useState } from 'react';
 import MoreVert from '@mui/icons-material/MoreVert';
 import IconButton from '@mui/material/IconButton';
@@ -10,7 +9,6 @@ import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_desi
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import { deleteNode } from '../../../../utils/store';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
 const fintelDesignPopoverDeletionMutation = graphql`
@@ -25,7 +23,6 @@ interface FintelDesignPopoverProps {
 
 const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
   data,
-  paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -47,9 +44,6 @@ const FintelDesignPopover: FunctionComponent<FintelDesignPopoverProps> = ({
     commitDelete({
       variables: {
         id: data.id,
-      },
-      updater: (store) => {
-        deleteNode(store, 'Pagination_fintelDesigns', paginationOptions, data.id);
       },
       onCompleted: () => {
         setDeleting(false);
