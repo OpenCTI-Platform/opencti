@@ -29,6 +29,10 @@ To define authorized members, you need to click on the '**Manage Access Restrict
 
 ![authorized-members-pop-up.png](assets%2Fauthorized-members-pop-up.png)
 
+If you grant access to users belonging to an Organization, it is possible since version 6.6 of OpenCTI to restrict access even more specifically to users belonging to one or more groups, in order to provide more granularity in access control.
+
+![authorized-members-group-intersection.png](assets%2Fauthorized-members-group-intersection.png)
+
 For the containers **Report**, **Grouping**, and **Incident Response**, as well as **Case RFT** and **Case RFI**, it is possible to define authorized members directly when creating the entity.
 
 ![authorized-members-creation-form.png](assets%2Fauthorized-members-creation-form.png)
