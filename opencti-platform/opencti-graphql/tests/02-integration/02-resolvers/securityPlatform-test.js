@@ -139,8 +139,8 @@ describe('SecurityPlatform resolver tests', () => {
   });
   it.skip('should delete relation in security platform', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-        organizationRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+      mutation OrganizationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
+        securityPlatformRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
           id
           objectMarking {
             id
