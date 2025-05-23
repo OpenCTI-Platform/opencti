@@ -312,22 +312,44 @@ const WidgetCreationParameters = () => {
 
                 {(getCurrentCategory(type) === 'distribution'
                   || getCurrentCategory(type) === 'list') && (
-                  <TextField
-                    label={t_i18n('Number of results')}
-                    fullWidth={true}
-                    type="number"
-                    error={isNumberError}
-                    helperText={t_i18n('The number of results should be lower than 100')}
-                    value={dataSelection[i].number ?? 10}
-                    onChange={(event) => handleChangeDataValidationParameter(
-                      i,
-                      'number',
-                      event.target.value,
-                      true,
-                    )
-                    }
-                    style={{ marginTop: 20 }}
-                  />
+                    <>
+                      <TextField
+                        label={t_i18n('Number of results')}
+                        fullWidth={true}
+                        type="number"
+                        error={isNumberError}
+                        helperText={t_i18n('The number of results should be lower than 100')}
+                        value={dataSelection[i].number ?? 10}
+                        onChange={(event) => handleChangeDataValidationParameter(
+                          i,
+                          'number',
+                          event.target.value,
+                          true,
+                        )
+                        }
+                        style={{ marginTop: 20 }}
+                      />
+
+                      <FormControl fullWidth style={{ marginTop: 20 }}>
+                        <InputLabel id={`display-mode-label-${i}`}>
+                          {t_i18n('Display mode')}
+                        </InputLabel>
+                        <Select
+                          labelId={`display-mode-label-${i}`}
+                          value={dataSelection[i].display_mode ?? 'list'}
+                          onChange={(event) => handleChangeDataValidationParameter(
+                            i,
+                            'display_mode',
+                            event.target.value,
+                            false,
+                          )
+                          }
+                        >
+                          <MenuItem value="list">{t_i18n('Distribution list')}</MenuItem>
+                          <MenuItem value="count">{t_i18n('Distinct count only')}</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </>
                 )}
 
                 {getCurrentCategory(type) === 'list' && dataSelection[i].perspective === 'entities' && (
@@ -628,7 +650,7 @@ const WidgetCreationParameters = () => {
                                   </Select>
                                 );
                               }
-                              return <div/>;
+                              return <div />;
                             }}
                           />
                         </FormControl>

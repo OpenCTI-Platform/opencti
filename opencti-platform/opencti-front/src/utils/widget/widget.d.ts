@@ -28,6 +28,7 @@ export interface WidgetDataSelection {
   columns?: readonly WidgetColumn[] | null
   sort_by?: string | null
   sort_mode?: string | null
+  display_mode?: string | null
 }
 
 interface WidgetParameters {

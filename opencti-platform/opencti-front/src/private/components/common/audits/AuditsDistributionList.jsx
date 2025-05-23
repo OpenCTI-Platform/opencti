@@ -156,7 +156,21 @@ const AuditsDistributionList = ({
                 type,
               };
             });
-            return <WidgetDistributionList data={data} hasSettingAccess={hasSetAccess} />;
+
+            const displayMode = selection.display_mode ?? 'list';
+            if (displayMode === 'count') {
+              const uniqueCount = data.length;
+              return (
+                <div style={{ textAlign: 'center', fontSize: 24, padding: 8 }}>
+                  <string>{uniqueCount}</string>
+                </div>
+              );
+            }
+            return (
+              <>
+                <WidgetDistributionList data={data} hasSettingAccess={hasSetAccess} />
+              </>
+            );
           }
           if (props) {
             return <WidgetNoData />;
