@@ -105,7 +105,7 @@ const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
   if (event.event === 'update' && (event.data as UpdateEvent).context.patch) {
     const updateEvent: UpdateEvent = event.data as UpdateEvent;
     // 2. detect 'contains' rel
-    const pirIds = updateEvent.context.related_restrictions?.pir_ids ?? [];
+    const pirIds = updateEvent.context?.pir_ids ?? [];
     if (pirIds.length > 0) {
       return pirIds;
     }

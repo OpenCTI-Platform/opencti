@@ -559,6 +559,7 @@ export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObjec
       patch,
       reverse_patch: previousPatch,
       related_restrictions: opts.related_restrictions,
+      pir_ids: opts.pir_ids
     }
   };
 };

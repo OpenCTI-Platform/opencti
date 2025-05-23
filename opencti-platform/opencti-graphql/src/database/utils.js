@@ -340,6 +340,19 @@ export const extractIdsFromStoreObject = (instance) => {
   return ids;
 };
 
+export const extractObjectsPirsFromInputs = (inputs, entityType) => {
+  const pir_ids = [];
+  if (isStixDomainObjectContainer(entityType)) {
+    inputs.forEach((input) => {
+      if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
+        const pirIds = input.value.flatMap((value) => value[RELATION_IN_PIR] ?? []);
+        pir_ids.push(...pirIds);
+      }
+    });
+  }
+  return { pir_ids, };
+};
+
 export const extractObjectsRestrictionsFromInputs = (inputs, entityType) => {
   const markings = [];
   const pir_ids = [];
