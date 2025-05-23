@@ -137,13 +137,14 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
 # Ordering
 enum SecurityPlatformOrdering {
   name
+  confidence
   created
   created_at
   modified
   updated_at
   security_platform_type
   description
-  label
+  _score
 }
 
 # Relay connections
