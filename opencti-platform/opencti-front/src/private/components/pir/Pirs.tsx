@@ -98,7 +98,7 @@ const Pirs = () => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Pir'));
+  setTitle(t_i18n('PIR'));
 
   const initialValues = {
     searchTerm: '',
@@ -172,7 +172,7 @@ const Pirs = () => {
 
   return (
     <>
-      <Breadcrumbs elements={[{ label: t_i18n('Pir'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('PIR'), current: true }]} />
       {queryRef && (
         <DataTable
           disableSelectAll

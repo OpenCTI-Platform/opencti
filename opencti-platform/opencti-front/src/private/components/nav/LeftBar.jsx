@@ -580,7 +580,7 @@ const LeftBar = () => {
           )}
           <Security needs={[KNOWLEDGE]}>
             {!draftContext && isFeatureEnable('Pir') && (
-              <StyledTooltip title={!navOpen && t_i18n('Pir')} placement="right">
+              <StyledTooltip title={!navOpen && t_i18n('PIR')} placement="right">
                 <MenuItem
                   component={Link}
                   to="/dashboard/pirs"
@@ -594,7 +594,7 @@ const LeftBar = () => {
                   {navOpen && (
                     <ListItemText
                       classes={{ primary: classes.menuItemText }}
-                      primary={t_i18n('Pir')}
+                      primary={t_i18n('PIR')}
                     />
                   )}
                 </MenuItem>
