@@ -28,7 +28,7 @@ const PirTabs = ({ children }: PirTabsProps) => {
         <Tabs value={index} onChange={(_, i) => setIndex(i)}>
           <Tab label={t_i18n('Overview')} />
           <Tab label={t_i18n('Knowledge')} />
-          <Tab label={t_i18n('TTPS')} />
+          <Tab label={t_i18n('TTPs')} />
           <Tab label={t_i18n('Analyses')} />
         </Tabs>
       </Box>
