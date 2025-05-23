@@ -18,56 +18,7 @@ const stixCoreObjectBackgroundTaskQuery = graphql`
     query stixCoreObjectBackgroundTaskQuery($id: ID!) {
         stixCoreBackgroundActiveOperations(id: $id) {
           id
-          initiator {
-            id
-            name
-            representative {
-              main
-            }
-          }
-          type
-          actions {
-            type
-            context {
-              field
-              type
-              values
-            }
-          }
-          created_at
-          last_execution_date
-          completed
-          task_expected_number
-          task_processed_number
-            actions {
-                type
-            }
-          work {
-            id
-            connector {
-              name
-            }
-            user {
-              name
-            }
-            completed_time
-            received_time
-            tracking {
-              import_expected_number
-              import_processed_number
-            }
-            messages {
-              timestamp
-              message
-            }
-            errors {
-              timestamp
-              message
-            }
-            status
-            timestamp
-            draft_context
-          }
+          description
         }
     }
 `;
@@ -82,6 +33,7 @@ const StixCoreObjectBackgroundTaskComponent = ({ entityId, queryRef, refetch }) 
   const { stixCoreBackgroundActiveOperations } = usePreloadedQuery(stixCoreObjectBackgroundTaskQuery, queryRef);
   const currenActiveTasksCount = stixCoreBackgroundActiveOperations.length;
   const hasCurrentActiveTask = currenActiveTasksCount > 0;
+  const tooltip = stixCoreBackgroundActiveOperations.map((task) => task.description).join(';');
 
   useEffect(() => {
     // Refresh
@@ -121,6 +73,23 @@ const StixCoreObjectBackgroundTaskComponent = ({ entityId, queryRef, refetch }) 
       render: ({ completed }, h) => defaultRender(completed ? h.t_i18n('Yes') : h.t_i18n('No')),
     },
   };
+  return (
+    <>
+      {hasCurrentActiveTask && (
+      <Tooltip title={tooltip}>
+        <Badge
+          badgeContent={currenActiveTasksCount}
+          color="warning"
+        >
+          <CircularProgress
+            variant={'indeterminate'}
+            size={25}
+            style={{ cursor: 'pointer' }}
+          />
+        </Badge>
+      </Tooltip>)}
+    </>
+  );
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       {!hasCurrentActiveTask && (

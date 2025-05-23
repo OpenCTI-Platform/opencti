@@ -177,7 +177,6 @@ const RootReport = () => {
                     </Tabs>
                     {!isKnowledgeOrContent && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                        <StixCoreObjectBackgroundTask id={report.id} />
                         <AIInsights id={report.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
                         <StixCoreObjectSimulationResultContainer id={report.id} type="container"/>
                       </div>
