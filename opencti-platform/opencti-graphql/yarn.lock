@@ -3143,23 +3143,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:0.3.49":
-  version: 0.3.49
-  resolution: "@langchain/core@npm:0.3.49"
+"@langchain/core@npm:0.3.57":
+  version: 0.3.57
+  resolution: "@langchain/core@npm:0.3.57"
   dependencies:
     "@cfworker/json-schema": "npm:^4.0.2"
     ansi-styles: "npm:^5.0.0"
     camelcase: "npm:6"
     decamelize: "npm:1.2.0"
     js-tiktoken: "npm:^1.0.12"
-    langsmith: "npm:^0.3.16"
+    langsmith: "npm:^0.3.29"
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     p-retry: "npm:4"
     uuid: "npm:^10.0.0"
     zod: "npm:^3.22.4"
     zod-to-json-schema: "npm:^3.22.3"
-  checksum: 10/4dcbf1c8efd4962aee7b7e3fc06ec01b08cfa006d5a945042a809e3505b1648c5e837684b232c3d4e2b4341bd4f1aa5f1fffbc81f151d9fcf89df48082628a5a
+  checksum: 10/b5bdd088b3185a860f8f53b1996f164c11cf392817eb250272c971867cc7ae17ef749772b9e3acc678143eebf3e4c46ecaf6defd4dfc6ad2fb563ca63d27ebd5
   languageName: node
   linkType: hard
 
@@ -10485,9 +10485,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langsmith@npm:^0.3.16":
-  version: 0.3.21
-  resolution: "langsmith@npm:0.3.21"
+"langsmith@npm:^0.3.29":
+  version: 0.3.29
+  resolution: "langsmith@npm:0.3.29"
   dependencies:
     "@types/uuid": "npm:^10.0.0"
     chalk: "npm:^4.1.2"
@@ -10501,7 +10501,7 @@ __metadata:
   peerDependenciesMeta:
     openai:
       optional: true
-  checksum: 10/b36ab2d982d485ef393718fc20cda13be504eb98824f70f77494921e2301bfcb9e48ad16783e6f8e006bde3ccfc8c658f57cbaae7bf948195428f1aab437d569
+  checksum: 10/31af6071bdbcaa9bf12b1197b4b0a4900fe0e3a76d404e3fc55f624859bb671c48f194c47fb79d8e73d5e05345358779e0712ea04acdf169f38a790d7df794f8
   languageName: node
   linkType: hard
 
@@ -11742,7 +11742,7 @@ __metadata:
     "@graphql-tools/schema": "npm:10.0.23"
     "@graphql-tools/utils": "npm:10.8.6"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:0.3.49"
+    "@langchain/core": "npm:0.3.57"
     "@langchain/mistralai": "npm:^0.2.0"
     "@langchain/openai": "npm:0.5.5"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
