@@ -183,10 +183,10 @@ const PIR_MANAGER_DEFINITION: ManagerDefinition = {
   executionContext: PIR_MANAGER_CONTEXT,
   enabledByConfig: PIR_MANAGER_ENABLED,
   enabled(): boolean {
-    return this.enabledByConfig && PIR_MANAGER_LOCK_KEY;
+    return this.enabledByConfig && !!PIR_MANAGER_LOCK_KEY;
   },
   enabledToStart(): boolean {
-    return this.enabledByConfig && PIR_MANAGER_LOCK_KEY;
+    return this.enabledByConfig && !!PIR_MANAGER_LOCK_KEY;
   },
   cronSchedulerHandler: {
     handler: pirManagerHandler,
