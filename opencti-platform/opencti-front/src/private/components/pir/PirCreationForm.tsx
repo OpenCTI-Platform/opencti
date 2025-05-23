@@ -40,7 +40,7 @@ const PirCreationForm = ({ onCancel }: PirCreationFormProps) => {
   return (
     <Formik<PirCreationFormData>
       initialValues={initialValues}
-      onSubmit={console.log}
+      onSubmit={() => {}}
     >
       {({ values, errors, isValid, submitForm }) => {
         const step0Valid = !!values.type;
