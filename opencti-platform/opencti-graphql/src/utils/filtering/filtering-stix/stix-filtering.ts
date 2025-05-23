@@ -59,7 +59,7 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   // This check should thus not fail here, theoretically.
   if (filterGroup) validateFilterGroupForStixMatch(filterGroup);
 
-  // first check: user access right (according to markings, organization, etc.)
+  // first check: user access right to the element (according to markings, organization, etc.)
   const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stix);
   if (!isUserHasAccessToElement) {
     return false;
