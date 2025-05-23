@@ -255,7 +255,14 @@ export const stixCyberObservableDeleteRelation = async (context, user, stixCyber
 
 export const stixCyberObservableEditField = async (context, user, stixCyberObservableId, input, opts = {}) => {
   const originalStixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
-  if (isNotEmptyField(originalStixCyberObservable.payload_bin) && input[0].key === 'url') {
+  const scoreInput = input.find((i) => i.key === 'x_opencti_score');
+  const urlInput = input.find((i) => i.key === 'url');
+  const payloadBinInput = input.find((i) => i.key === 'payload_bin');
+  if (scoreInput) {
+    const newScore = parseFloat(scoreInput.value[0]);
+    isValidScore(newScore);
+  }
+  if (isNotEmptyField(originalStixCyberObservable.payload_bin) && urlInput) {
     if (isNotEmptyField(originalStixCyberObservable.url)) {
       await updateAttribute(
         context,
@@ -267,7 +274,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
       );
     }
     throw FunctionalError('Cannot update url when payload_bin is present.');
-  } else if (isNotEmptyField(originalStixCyberObservable.url) && input[0].key === 'payload_bin') {
+  } else if (isNotEmptyField(originalStixCyberObservable.url) && payloadBinInput) {
     if (isNotEmptyField(originalStixCyberObservable.payload_bin)) {
       await updateAttribute(
         context,
@@ -280,10 +287,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     }
     throw FunctionalError('Cannot update payload_bin when url is present.');
   }
-  if (input[0].key === 'x_opencti_score') {
-    const newScore = parseFloat(input[0].value[0]);
-    isValidScore(newScore);
-  }
+
   const { element: stixCyberObservable } = await updateAttribute(
     context,
     user,
@@ -296,9 +300,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
   Object.entries(stixCyberObservable).forEach(([key, value]) => {
     if (isNumericAttribute(key) && value === '') delete stixCyberObservable[key];
   });
-  if (input[0].key === 'x_opencti_score') {
-    const newScore = parseFloat(input[0].value[0]);
-    isValidScore(newScore);
+  if (scoreInput) {
     const indicators = await listAllFromEntitiesThroughRelations(
       context,
       user,
@@ -307,7 +309,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
       ENTITY_TYPE_INDICATOR
     );
     await Promise.all(
-      indicators.map((indicator) => updateAttribute(context, user, indicator.id, ENTITY_TYPE_INDICATOR, input, opts))
+      indicators.map((indicator) => updateAttribute(context, user, indicator.id, ENTITY_TYPE_INDICATOR, [scoreInput], opts))
     );
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
