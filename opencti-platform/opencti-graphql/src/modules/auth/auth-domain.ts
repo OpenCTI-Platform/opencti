@@ -80,7 +80,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       event_scope: 'forgot',
       event_access: 'administration',
       context_data: undefined,
-      message: `send an OTP to ${user_email}`,
+      message: `sends password reset code to ${user_email}`,
     });
   } catch (e) {
     // Prevent wrong email address, but return transactionId too if it fails
@@ -107,9 +107,9 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
       event_scope: 'forgot',
       event_access: 'administration',
       context_data: undefined,
-      message: `OTP checked is expired or not found for ${input.transactionId}`,
+      message: `Password reset code is expired or not found for ${input.transactionId}`,
     });
-    throw UnsupportedError('OTP expired or not found. Please request a new one.');
+    throw UnsupportedError('Password reset code expired or not found. Please request a new one.');
   }
   const isMatch = bcrypt.compareSync(input.otp, hashedOtp);
   if (!isMatch) {
@@ -119,9 +119,9 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
       event_scope: 'forgot',
       event_access: 'administration',
       context_data: undefined,
-      message: `OTP checked is invalid for ${email}`,
+      message: `Password reset code is invalid for ${email}`,
     });
-    throw UnsupportedError('Invalid OTP. Please check the code and try again.');
+    throw UnsupportedError('Invalid password reset code. Please check the code and try again.');
   }
   await publishUserAction({
     user: SYSTEM_USER,
@@ -129,7 +129,7 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
     event_scope: 'forgot',
     event_access: 'administration',
     context_data: undefined,
-    message: `OTP checked is valid for ${email}`,
+    message: `Password reset code is valid for ${email}`,
   });
   return { mfa_activated };
 };
@@ -161,9 +161,9 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
       event_scope: 'forgot',
       event_access: 'administration',
       context_data: undefined,
-      message: `OTP checked is invalid for ${email}`,
+      message: `Password reset code is invalid for ${email}`,
     });
-    throw UnsupportedError('Invalid OTP. Please check the code and try again.');
+    throw UnsupportedError('Invalid password reset code. Please check the code and try again.');
   }
   try {
     const authUser = await findById(context, ADMIN_USER, userId);
