@@ -86,6 +86,7 @@ const READ_QUERY = gql`
 
 describe('PIR resolver standard behavior', () => {
   let pirInternalId: string = '';
+  const flaggedElementId = 'malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263';
   it('should pir created', async () => {
     const CREATE_QUERY = gql`
       mutation PirAdd($input: PirAddInput!) {
@@ -159,8 +160,7 @@ describe('PIR resolver standard behavior', () => {
         pirFlagElement(id: $id, input: $input)
       }
     `;
-    const relationshipId = 'relationship--642f6fca-6c5a-495c-9419-9ee0a4a599ee';
-    const sourceId = 'malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263';
+    const relationshipId = 'relationship1';
     const matchingCriteria = {
       filters: {
         mode: FilterMode.And,
@@ -173,7 +173,7 @@ describe('PIR resolver standard behavior', () => {
     };
     await queryAsAdmin({
       query: FLAG_QUERY,
-      variables: { id: pirInternalId, input: { relationshipId, sourceId, matchingCriteria } },
+      variables: { id: pirInternalId, input: { relationshipId, sourceId: flaggedElementId, matchingCriteria } },
     });
     // Verify the ref has been created
     const queryResult = await queryAsAdmin({
@@ -182,10 +182,86 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(1);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.x_opencti_stix_ids[0]).toEqual(sourceId);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.x_opencti_stix_ids[0]).toEqual(flaggedElementId);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(67);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(1);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations[0].dependency_ids[0]).toEqual(relationshipId);
+  });
+  it('should update a pir meta rel by adding a new explanation', async () => {
+    const FLAG_QUERY = gql`
+      mutation pirFlagElement($id: ID!, $input: PirFlagElementInput!) {
+        pirFlagElement(id: $id, input: $input)
+      }
+    `;
+    const relationshipId = 'relationship2';
+    const matchingCriteria = {
+      filters: {
+        mode: FilterMode.And,
+        filterGroups: [],
+        filters: [
+          { key: ['toId'], values: ['d17360d5-0b58-4a21-bebc-84aa5a3f32b4'] }
+        ]
+      },
+      weight: 1,
+    };
+    const operation = await queryAsAdmin({
+      query: FLAG_QUERY,
+      variables: { id: pirInternalId, input: { relationshipId, sourceId: flaggedElementId, matchingCriteria } },
+    });
+    // Verify the ref has been updated
+    const queryResult = await queryAsAdmin({
+      query: LIST_RELS_QUERY,
+      variables: { relationship_type: [RELATION_IN_PIR] },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(1);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.x_opencti_stix_ids[0]).toEqual(flaggedElementId);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(100);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(2);
+  });
+  it('should update a pir meta rel by removing a dependency', async () => {
+    const UNFLAG_QUERY = gql`
+      mutation pirUnflagElement($id: ID!, $input: PirUnflagElementInput!) {
+        pirUnflagElement(id: $id, input: $input)
+      }
+    `;
+    const relationshipId = 'relationship2';
+    await queryAsAdmin({
+      query: UNFLAG_QUERY,
+      variables: { id: pirInternalId, input: { relationshipId, sourceId: flaggedElementId } },
+    });
+    // Verify the ref has been updated
+    const queryResult = await queryAsAdmin({
+      query: LIST_RELS_QUERY,
+      variables: { relationship_type: [RELATION_IN_PIR] },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(1);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.x_opencti_stix_ids[0]).toEqual(flaggedElementId);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(37);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(1);
+  });
+  it('should unflag an element', async () => {
+    const UNFLAG_QUERY = gql`
+      mutation pirUnflagElement($id: ID!, $input: PirUnflagElementInput!) {
+        pirUnflagElement(id: $id, input: $input)
+      }
+    `;
+    const relationshipId = 'relationship1';
+    await queryAsAdmin({
+      query: UNFLAG_QUERY,
+      variables: { id: pirInternalId, input: { relationshipId, sourceId: flaggedElementId } },
+    });
+    // Verify the ref has been deleted
+    const queryResult = await queryAsAdmin({
+      query: LIST_RELS_QUERY,
+      variables: { relationship_type: [RELATION_IN_PIR] },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(0);
   });
   it('should pir deleted', async () => {
     const DELETE_QUERY = gql`
