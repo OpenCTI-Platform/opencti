@@ -1,6 +1,5 @@
 import React from 'react';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
@@ -83,16 +82,14 @@ const RulesStatusChangeDialog = ({
       onClose={close}
     >
       <DialogContent>
-        <DialogContentText>
-          <Alert
-            severity="warning"
-            variant="outlined"
-            color="dangerZone"
-            style={{ borderColor: theme.palette.dangerZone.main }}
-          >
-            {status && labels[status].description}
-          </Alert>
-        </DialogContentText>
+        <Alert
+          severity="warning"
+          variant="outlined"
+          color="dangerZone"
+          style={{ borderColor: theme.palette.dangerZone.main }}
+        >
+          {status && labels[status].description}
+        </Alert>
       </DialogContent>
       <DialogActions>
         <Button onClick={close} disabled={processing}>
