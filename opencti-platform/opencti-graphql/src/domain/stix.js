@@ -5,7 +5,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { connectorsForExport } from './connector';
-import { findById as findMarkingDefinitionById } from './markingDefinition';
+import { findById as findMarkingDefinitionById, markingDefinitionDeleteAndUpdateGroups } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
 import { createWork, updateExpectationsNumber } from './work';
 import { pushToConnector, pushToWorkerForConnector } from '../database/rabbitmq';
@@ -44,7 +44,11 @@ export const stixDelete = async (context, user, id) => {
       // To handle delete synchronization events, we force the forceDelete flag to true, because we don't want delete events to create trash entries on synchronized platforms
       // THIS IS NOT IDEAL: we ideally would need to add the forceDelete flag to all delete related methods on the API,
       // and let the worker call this method with the flag set to true in case of synchronization
-      await deleteElementById(context, user, element.id, element.entity_type, { forceDelete: true });
+      if (element.entity_type === ENTITY_TYPE_MARKING_DEFINITION) {
+        await markingDefinitionDeleteAndUpdateGroups(context, user, element.id, { forceDelete: true });
+      } else {
+        await deleteElementById(context, user, element.id, element.entity_type, { forceDelete: true });
+      }
       return element.id;
     }
     throw UnsupportedError('This method can only delete Stix element');

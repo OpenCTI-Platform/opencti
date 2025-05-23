@@ -110,6 +110,10 @@ export const addAllowedMarkingDefinition = async (context, user, markingDefiniti
 };
 
 export const markingDefinitionDelete = async (context, user, markingDefinitionId) => {
+  return markingDefinitionDeleteAndUpdateGroups(context, user, markingDefinitionId, {});
+};
+
+export const markingDefinitionDeleteAndUpdateGroups = async (context, user, markingDefinitionId, opts) => {
   // remove the marking from the groups max shareable markings config if needed
   const groupsWithMarkingInShareableMarkings = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], {
     filters: {
@@ -129,7 +133,7 @@ export const markingDefinitionDelete = async (context, user, markingDefinitionId
     await Promise.all(editShareableMarkingsPromises);
   }
   // delete the marking
-  const element = await deleteElementById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+  const element = await deleteElementById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, opts);
   // users of group impacted must be refreshed
   await notifyMembersOfNewMarking(context, user, element);
   return markingDefinitionId;

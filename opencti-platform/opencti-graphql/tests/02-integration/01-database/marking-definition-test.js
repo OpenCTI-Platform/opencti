@@ -4,8 +4,8 @@ import { addAllowedMarkingDefinition, markingDefinitionDelete } from '../../../s
 import { cleanMarkings, handleMarkingOperations } from '../../../src/utils/markingDefinition-utils';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
-import { resetCacheForEntity } from "../../../src/database/cache";
-import { ENTITY_TYPE_MARKING_DEFINITION } from "../../../src/schema/stixMetaObject";
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 
 const markings = [
   {
