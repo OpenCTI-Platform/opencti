@@ -224,6 +224,7 @@ services:
     environment:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
+      APP__ENABLED_DEV_FEATURES: '["*"]'
       APP__CHILD_LOCKING_PROCESS__ENABLED: true
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
@@ -261,6 +262,7 @@ services:
     environment:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
+      APP__ENABLED_DEV_FEATURES: '["*"]'
       APP__CHILD_LOCKING_PROCESS__ENABLED: true
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
@@ -296,6 +298,7 @@ services:
     environment:
       APP__PORT: 4300
       APP__ADMIN__PASSWORD: admin
+      APP__ENABLED_DEV_FEATURES: '["*"]'
       APP__CHILD_LOCKING_PROCESS__ENABLED: true
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
@@ -353,6 +356,7 @@ services:
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
+      APP__ENABLED_DEV_FEATURES: '["*"]'
       APP__CHILD_LOCKING_PROCESS__ENABLED: true
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
