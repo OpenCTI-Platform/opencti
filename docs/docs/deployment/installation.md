@@ -47,7 +47,9 @@ sudo apt install docker-compose
 
 **:material-microsoft-windows:{ .middle } Windows and MacOS**
 
-Just download the appropriate [Docker for Desktop](https://www.docker.com/products/docker-desktop) version for your operating system.
+```bash
+winget install Docker.DockerDesktop Git.Git --accept-package-agreements --accept-source-agreements
+```
 
 ### Clone the repository
 
