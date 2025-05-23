@@ -31,4 +31,12 @@ export default class DashboardDetailsPage {
   getDuplicateButton() {
     return this.page.getByRole('button', { name: 'Duplicate' });
   }
+
+  getExportPDFButton() {
+    return this.page.getByRole('button', { name: 'Export to PDF' });
+  }
+
+  getExportPDFButtonThemeMenu(darkOrLight: string) {
+    return this.page.getByRole('menuitem', { name: darkOrLight });
+  }
 }

@@ -7,6 +7,8 @@ const ignoredClasses = [
   'MuiDrawer-docked',
   'MuiIconButton-root',
   'MuiInputBase-root',
+  // For some reason apex legend crash pdf and png export.
+  'apexcharts-legend-series',
 ];
 
 export const exportImage = (
@@ -19,7 +21,7 @@ export const exportImage = (
   adjust = null,
 ) => {
   const container = document.getElementById(domElementId);
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     htmlToImage
       .toBlob(container, {
         useCORS: true,
@@ -38,6 +40,9 @@ export const exportImage = (
           }
           return true;
         },
+        onImageErrorHandler: () => {
+          // We do nothing, it's just to avoid crashing export in case of image error.
+        },
       })
       .then((blob) => {
         fileDownload(blob, `${name}.png`, 'image/png');
@@ -49,6 +54,8 @@ export const exportImage = (
           adjust(true);
         }
         resolve();
+      }).catch((reason) => {
+        reject(reason);
       });
   });
 };
@@ -64,7 +71,7 @@ export const exportPdf = (
   const { offsetWidth, offsetHeight } = container;
   const imageWidth = offsetWidth * pixelRatio;
   const imageHeight = offsetHeight * pixelRatio;
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     htmlToImage
       .toPng(container, {
         useCORS: true,
@@ -72,6 +79,7 @@ export const exportPdf = (
         pixelRatio,
         backgroundColor,
         style: { margin: 0 },
+        imagePlaceholder: '', // ignore image fetch failure, and display empty area
         filter: (domNode) => {
           if (domNode.className) {
             for (const ignoredClass of ignoredClasses) {
@@ -81,6 +89,9 @@ export const exportPdf = (
             }
           }
           return true;
+        },
+        onImageErrorHandler: () => {
+          // We do nothing, it's just to avoid crashing export in case of image error.
         },
       })
       .then((image) => {
@@ -120,6 +131,9 @@ export const exportPdf = (
           );
         }
         resolve();
+      })
+      .catch((reason) => {
+        reject(reason);
       });
   });
 };
