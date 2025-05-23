@@ -254,6 +254,9 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     observableType = 'StixFile';
   }
   const isKnownObservable = observableType !== 'Unknown';
+  if (!isKnownObservable && indicator.pattern_type.toLowerCase() === 'yara') {
+    observableType = 'StixFile';
+  }
   if (isKnownObservable && !isStixCyberObservable(observableType)) {
     throw FunctionalError(`Observable type ${observableType} is not supported.`);
   }
