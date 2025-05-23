@@ -5,6 +5,9 @@ import { createdAt, creators, updatedAt } from '../../schema/attribute-definitio
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type StixSecurityPlatform, type StoreEntitySecurityPlatform } from './securityPlatform-types';
 import convertSecurityPlatformToStix from './securityPlatform-converter';
 import { isFeatureEnabled } from '../../config/conf';
+import { RELATION_SHOULD_COVER } from '../../schema/stixCoreRelationship';
+import { REL_NEW } from '../../database/stix';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 
 const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform, StixSecurityPlatform> = {
   type: {
@@ -33,7 +36,14 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
     { name: 'security_platform_type', label: 'Security platform type', type: 'string', format: 'vocabulary', vocabularyCategory: 'security_platform_type_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
   ],
-  relations: [],
+  relations: [
+    {
+      name: RELATION_SHOULD_COVER,
+      targets: [
+        { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
+      ]
+    }
+  ],
   representative: (stix: StixSecurityPlatform) => {
     return stix.name;
   },
