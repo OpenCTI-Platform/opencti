@@ -13,7 +13,8 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
   type: {
     id: 'security-platform',
     name: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM,
-    category: ENTITY_TYPE_IDENTITY
+    category: ENTITY_TYPE_IDENTITY,
+    aliased: false,
   },
   identifier: {
     definition: {
