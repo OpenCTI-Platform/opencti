@@ -20,6 +20,7 @@ interface CreateEventOpts extends EventOpts {
 interface UpdateEventOpts extends EventOpts {
   commit?: CommitContext | undefined;
   related_restrictions?: { markings: string[] };
+  pir_ids?: string[]
   allow_only_modified?: boolean
 }
 
@@ -54,7 +55,8 @@ interface UpdateEvent extends StreamDataEvent {
   context: {
     patch: Array<Operation>;
     reverse_patch: Array<Operation>;
-    related_restrictions?: { markings: string[], pir_ids?: string[] };
+    related_restrictions?: { markings: string[] };
+    pir_ids?: string[]
   };
 }
 
