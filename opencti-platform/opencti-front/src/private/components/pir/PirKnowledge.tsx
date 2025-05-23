@@ -187,7 +187,9 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
           entityTypes={['in-pir']}
           searchContextFinal={{ entityTypes: ['in-pir'] }}
           useComputeLink={(e: PirKnowledge_SourceFlaggedFragment$data) => {
-            if (!e.from) return '';
+            if (!e.from || !e.from.id || !e.from.entity_type) return '';
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             return computeLink(e.from);
           }}
         />

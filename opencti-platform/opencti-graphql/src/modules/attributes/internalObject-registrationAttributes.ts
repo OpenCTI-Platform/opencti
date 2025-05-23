@@ -1,15 +1,5 @@
 import * as R from 'ramda';
-import {
-  type AttributeDefinition,
-  authorizedMembers,
-  createdAt,
-  creators,
-  draftContext,
-  errors,
-  id,
-  lastEventId,
-  updatedAt
-} from '../../schema/attribute-definition';
+import { type AttributeDefinition, authorizedMembers, createdAt, creators, draftContext, errors, id, lastEventId, updatedAt } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_TYPE_ACTIVITY,

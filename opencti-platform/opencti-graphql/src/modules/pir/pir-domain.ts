@@ -97,8 +97,6 @@ export const pirFlagElement = async (
 
   if (source) { // if element still exist
     const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pir.id);
-    console.log('[POC PIR] Event create matching', { source, relationshipId, matchingCriteria });
-
     const pirDependencies = matchingCriteria.map((criterion) => ({
       dependency_ids: [relationshipId],
       criterion: {
@@ -107,13 +105,9 @@ export const pirFlagElement = async (
       },
     }));
     if (sourceFlagged) {
-      console.log('[POC PIR] Source already flagged');
       await updatePirDependencies(context, user, sourceId, pir.id, pirDependencies, EditOperation.Add);
-      console.log('[POC PIR] Meta Ref relation updated');
     } else {
-      console.log('[POC PIR] Source NOT flagged');
       await createPirRel(context, user, sourceId, pir.id, pirDependencies);
-      console.log('[POC PIR] Meta Ref relation created');
     }
   }
   return pir.id;
@@ -138,7 +132,6 @@ export const pirUnflagElement = async (
     throw FunctionalError('No PIR found');
   }
   const { relationshipId, sourceId } = input;
-  console.log('[POC PIR] Event delete matching', { relationshipId, pirId });
   // fetch rel between object and pir
   const rels = await listRelationsPaginated(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id }); // TODO PIR don't use pagination
   // eslint-disable-next-line no-restricted-syntax
@@ -148,11 +141,9 @@ export const pirUnflagElement = async (
     if (newRelDependencies.length === 0) {
       // delete the rel between source and PIR
       await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
-      console.log('[POC PIR] PIR rel deleted');
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
       await updatePirDependencies(context, user, sourceId, pir.id, newRelDependencies);
-      console.log('[POC PIR] PIR rel updated', { newRelDependencies });
     } // nothing to do
   }
   return pir.id;
