@@ -6,14 +6,7 @@ import { createStreamProcessor, fetchRangeNotifications, storeNotificationEvent,
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
-import {
-  executionContext,
-  INTERNAL_USERS,
-  isUserCanAccessStixElement,
-  isUserCanAccessStreamUpdateEvent,
-  isUserInPlatformOrganization,
-  SYSTEM_USER
-} from '../utils/access';
+import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStreamUpdateEvent, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
