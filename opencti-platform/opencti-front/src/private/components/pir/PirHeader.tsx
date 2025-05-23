@@ -20,7 +20,7 @@ const PirHeader = ({ data }: PirHeaderProps) => {
   const pir = useFragment(headerFragment, data);
 
   const breadcrumb = [
-    { label: t_i18n('Pir'), link: '/dashboard/pirs' },
+    { label: t_i18n('PIR'), link: '/dashboard/pirs' },
     { label: pir.name, current: true },
   ];
 
