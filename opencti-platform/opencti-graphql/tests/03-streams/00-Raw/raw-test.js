@@ -50,7 +50,7 @@ describe('Raw streams tests', () => {
       // 328 created at init + 1 request access + 2 created in tests + 5 vocabulary organizations types + 7 persona
       expect(createEventsByTypes.vocabulary.length).toBe(VOCABULARY_NUMBERS);
       expect(createEventsByTypes.vulnerability.length).toBe(7);
-      expect(createEvents.length).toBe(831);
+      expect(createEvents.length).toBe(833);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();
