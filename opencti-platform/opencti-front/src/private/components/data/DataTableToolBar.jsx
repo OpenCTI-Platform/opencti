@@ -818,6 +818,7 @@ class DataTableToolBar extends Component {
         mutation: toolBarListTaskAddMutation,
         variables: {
           input: {
+            description,
             ids: mergingElement
               ? [mergingElement.id]
               : Object.keys(selectedElements),
@@ -3005,7 +3006,8 @@ class DataTableToolBar extends Component {
                       const shareActions = [
                         { type: 'SHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
                       ];
-                      const sharingDescription = `SHARE organizations ${this.state.shareOrganizations.join('|')}`;
+                      const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
+                      const sharingDescription = `SHARE organizations ${orgaNames}`;
                       this.setState({ description: sharingDescription, actions: shareActions }, () => {
                         this.handleCloseShare();
                         this.handleOpenTask();
@@ -3070,7 +3072,8 @@ class DataTableToolBar extends Component {
                       const shareActions = [
                         { type: 'UNSHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
                       ];
-                      const sharingDescription = `UNSHARE organizations ${this.state.shareOrganizations.join('|')}`;
+                      const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
+                      const sharingDescription = `UNSHARE organizations ${orgaNames}`;
                       this.setState({ description: sharingDescription, actions: shareActions }, () => {
                         this.handleCloseUnshare();
                         this.handleOpenTask();

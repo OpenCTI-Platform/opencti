@@ -8,9 +8,7 @@ import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQue
 import { FilterGroup } from '../utils/filters/filtersHelpers-types';
 
 const TasksFilterValueContainer = ({ filters, entityTypes }: { filters: FilterGroup, entityTypes?: string[] }) => {
-  console.log(filters);
   const cleanUpFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes) as FilterGroup;
-  console.log(cleanUpFilters);
   const queryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
     { filters: cleanUpFilters as unknown as GqlFilterGroup },
