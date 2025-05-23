@@ -95,7 +95,7 @@ This strategy can be used to authenticate your user with your company SAML and i
         "entry_point": "https://auth.mydomain.com/auth/realms/mydomain/protocol/saml",
         "saml_callback_url": "http://localhost:4000/auth/saml/callback",
         // "private_key": "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwg...",
-        "cert": "MIICmzCCAYMCBgF2Qt3X1zANBgkqhkiG9w0BAQsFADARMQ8w...",
+        "cert": "-----BEGIN CERTIFICATE-----\nMIICmzCCAYMCBgF2Qt3X1zANBgkqhkiG9w0BAQsFADARMQ8w...\n-----END CERTIFICATE-----",
         "logout_remote": false
         "want_assertions_signed": true,
         "want_authn_response_signed": true,
@@ -106,7 +106,7 @@ This strategy can be used to authenticate your user with your company SAML and i
 
 For the SAML strategy to work:
 
-- The `cert` parameter is mandatory (PEM format) because it is used to validate the SAML response.
+- The `cert` parameter is mandatory (PEM format) because it is used to validate the SAML response. Depending on certificate format it may include the header, footer and newline (\n) characters.
 - The `private_key` (PEM format) is optional and is only required if you want to sign the SAML client request.
 
 !!! note "Certificates"
