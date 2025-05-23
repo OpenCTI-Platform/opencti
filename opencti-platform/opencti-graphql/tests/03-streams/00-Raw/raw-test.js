@@ -26,7 +26,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes['kill-chain-phase'].length).toBe(3);
       expect(createEventsByTypes['course-of-action'].length).toBe(3);
       expect(createEventsByTypes.label.length).toBe(15);
-      expect(createEventsByTypes.identity.length).toBe(38);
+      expect(createEventsByTypes.identity.length).toBe(39);
       expect(createEventsByTypes.location.length).toBe(16);
       expect(createEventsByTypes.relationship.length).toBe(138);
       expect(createEventsByTypes.sighting.length).toBe(4);
