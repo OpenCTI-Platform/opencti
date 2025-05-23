@@ -25,7 +25,6 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
-import StixCoreObjectBackgroundTask from "@components/common/stix_core_objects/stixCoreObjectBackgroundTask";
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -180,7 +179,6 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               />
             </Tooltip>
           ))}
-          <StixCoreObjectBackgroundTask id={elementId} />
           <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
             <ToggleButton
               value="shared"

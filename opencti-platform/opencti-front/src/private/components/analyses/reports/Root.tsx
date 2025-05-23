@@ -12,7 +12,6 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
-import StixCoreObjectBackgroundTask from '@components/common/stix_core_objects/stixCoreObjectBackgroundTask';
 import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
