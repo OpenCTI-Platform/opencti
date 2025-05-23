@@ -622,7 +622,7 @@ const ContainerHeader = (props) => {
         )}
         <div>
           <div className={classes.actionButtons}>
-            <StixCoreObjectBackgroundTasks id={container.id} />
+            <StixCoreObjectBackgroundTasks id={container.id} actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']} />
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}

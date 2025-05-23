@@ -9,12 +9,15 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { ONE_SECOND } from '../../../../utils/Time';
 
 const stixCoreObjectActiveBackgroundTasksQuery = graphql`
-    query StixCoreObjectActiveBackgroundTasksQuery($id: ID!) {
-        stixCoreBackgroundActiveOperations(id: $id) {
-            id
-            description
-        }
+  query StixCoreObjectActiveBackgroundTasksQuery($id: ID!) {
+    stixCoreBackgroundActiveOperations(id: $id) {
+      id
+      description
+      actions {
+        type
+      }
     }
+  }
 `;
 
 const interval$ = interval(ONE_SECOND);
@@ -22,13 +25,15 @@ const interval$ = interval(ONE_SECOND);
 interface StixCoreObjectBackgroundTaskComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectActiveBackgroundTasksQuery>;
   refetch: () => void;
+  actionsFilter: string[];
 }
 
-const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBackgroundTaskComponentProps> = ({ queryRef, refetch }) => {
+const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBackgroundTaskComponentProps> = ({ actionsFilter, queryRef, refetch }) => {
   const { stixCoreBackgroundActiveOperations } = usePreloadedQuery(stixCoreObjectActiveBackgroundTasksQuery, queryRef);
-  const currenActiveTasksCount = stixCoreBackgroundActiveOperations?.length ?? 0;
+  const filteredActiveTasks = stixCoreBackgroundActiveOperations?.filter((t) => t?.actions?.some((a) => actionsFilter.includes(a?.type ?? ''))) ?? [];
+  const currenActiveTasksCount = filteredActiveTasks?.length ?? 0;
   const hasCurrentActiveTask = currenActiveTasksCount > 0;
-  const tooltip = stixCoreBackgroundActiveOperations?.map((task) => task.description).join(';');
+  const tooltip = filteredActiveTasks.map((task) => task.description).join(';');
 
   useEffect(() => {
     // Refresh
@@ -61,9 +66,10 @@ const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBa
 
 type StixCoreObjectBackgroundTaskProps = {
   id: string,
+  actionsFilter: string[],
 };
 
-const StixCoreObjectBackgroundTasks: FunctionComponent<StixCoreObjectBackgroundTaskProps> = ({ id }) => {
+const StixCoreObjectBackgroundTasks: FunctionComponent<StixCoreObjectBackgroundTaskProps> = ({ id, actionsFilter }) => {
   const [queryRef, loadQuery] = useQueryLoader<StixCoreObjectActiveBackgroundTasksQuery>(stixCoreObjectActiveBackgroundTasksQuery);
 
   useEffect(() => {
@@ -77,7 +83,7 @@ const StixCoreObjectBackgroundTasks: FunctionComponent<StixCoreObjectBackgroundT
     <>
       {queryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <StixCoreObjectBackgroundTasksComponent queryRef={queryRef} refetch={refetch} />
+          <StixCoreObjectBackgroundTasksComponent actionsFilter={actionsFilter} queryRef={queryRef} refetch={refetch} />
         </Suspense>
       )}
     </>

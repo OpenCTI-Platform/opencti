@@ -346,6 +346,7 @@ class DataTableToolBar extends Component {
       actionsInputs: [{}],
       keptEntityId: null,
       mergingElement: null,
+      description: '',
       processing: false,
       markingDefinitions: [],
       labels: [],
@@ -398,6 +399,7 @@ class DataTableToolBar extends Component {
       keptEntityId: null,
       mergingElement: null,
       processing: false,
+      description: '',
     });
   }
 
@@ -749,7 +751,7 @@ class DataTableToolBar extends Component {
 
   submitTask(availableFilterKeys, isInDraft) {
     this.setState({ processing: true });
-    const { actions, mergingElement, promoteToContainer } = this.state;
+    const { description, actions, mergingElement, promoteToContainer } = this.state;
     const {
       filters,
       search,
@@ -787,6 +789,7 @@ class DataTableToolBar extends Component {
         mutation: toolBarQueryTaskAddMutation,
         variables: {
           input: {
+            description,
             filters: jsonFilters,
             search,
             actions: finalActions,
@@ -3002,7 +3005,8 @@ class DataTableToolBar extends Component {
                       const shareActions = [
                         { type: 'SHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
                       ];
-                      this.setState({ actions: shareActions }, () => {
+                      const sharingDescription = `SHARE organizations ${this.state.shareOrganizations.join('|')}`;
+                      this.setState({ description: sharingDescription, actions: shareActions }, () => {
                         this.handleCloseShare();
                         this.handleOpenTask();
                       });
@@ -3066,7 +3070,8 @@ class DataTableToolBar extends Component {
                       const shareActions = [
                         { type: 'UNSHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
                       ];
-                      this.setState({ actions: shareActions }, () => {
+                      const sharingDescription = `UNSHARE organizations ${this.state.shareOrganizations.join('|')}`;
+                      this.setState({ description: sharingDescription, actions: shareActions }, () => {
                         this.handleCloseUnshare();
                         this.handleOpenTask();
                       });

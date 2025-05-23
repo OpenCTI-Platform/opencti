@@ -12384,6 +12384,7 @@ export type ListTask = BackgroundTask & {
 
 export type ListTaskAddInput = {
   actions: Array<InputMaybe<BackgroundTaskActionInput>>;
+  description?: InputMaybe<Scalars['String']['input']>;
   ids?: InputMaybe<Array<Scalars['ID']['input']>>;
   scope: BackgroundTaskScope;
 };
@@ -23266,6 +23267,7 @@ export type QueryTask = BackgroundTask & {
 
 export type QueryTaskAddInput = {
   actions: Array<InputMaybe<BackgroundTaskActionInput>>;
+  description?: InputMaybe<Scalars['String']['input']>;
   excluded_ids?: InputMaybe<Array<InputMaybe<Scalars['ID']['input']>>>;
   filters?: InputMaybe<Scalars['String']['input']>;
   scope: BackgroundTaskScope;

@@ -1217,12 +1217,14 @@ input BackgroundTaskActionInput {
 
 input ListTaskAddInput {
   ids: [ID!]
+  description: String
   actions: [BackgroundTaskActionInput]!
   scope: BackgroundTaskScope!
 }
 
 input QueryTaskAddInput {
   filters: String
+  description: String
   search: String
   excluded_ids: [ID]
   actions: [BackgroundTaskActionInput]!
