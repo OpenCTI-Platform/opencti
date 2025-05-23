@@ -10,7 +10,7 @@ In order to [search in files](../usage/search.md#full-text-search-in-files-conte
 
 * Elasticsearch >= 8.4
 * Elasticsearch < 8.4 with [ingest-attachment plugin](https://www.elastic.co/guide/en/elasticsearch/plugins/8.3/ingest-attachment.html)
-* OpenSearch with [ingest-attachment plugin](https://opensearch.org/docs/2.9/install-and-configure/plugins/)
+* OpenSearch with [ingest-attachment plugin](https://opensearch.org/docs/latest/install-and-configure/additional-plugins/ingest-attachment-plugin/)
 
 ## File indexing configuration
 
