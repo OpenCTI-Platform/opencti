@@ -1,13 +1,10 @@
 import React from 'react';
 import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMenu';
 import useGranted, { INGESTION, MODULES } from '../../../utils/hooks/useGranted';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const IngestionMenu = () => {
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
-  const { isFeatureEnable } = useHelper();
-  const isJsonMapperEnable = isFeatureEnable('JSON_MAPPER');
   const settingsEntries: MenuEntry[] = [
     {
       path: '/dashboard/data/ingestion/sync',
@@ -29,14 +26,11 @@ const IngestionMenu = () => {
       path: '/dashboard/data/ingestion/csv',
       label: 'CSV Feeds',
     },
-  ];
-  if (isJsonMapperEnable) {
-    settingsEntries.push({
+    {
       path: '/dashboard/data/ingestion/json',
       label: 'JSON Feeds',
-      isEE: true,
-    });
-  }
+    },
+  ];
   const entries: MenuEntry[] = isGrantedIngestion ? [...settingsEntries] : [];
   if (isConnectorReader) {
     entries.unshift({
