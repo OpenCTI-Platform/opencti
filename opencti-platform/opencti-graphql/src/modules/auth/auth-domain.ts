@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid';
 import { findById, getUserByEmail, userEditField } from '../../domain/user';
 import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
 import { sendMail } from '../../database/smtp';
-import type { AuthContext, AuthUser } from '../../types/user';
+import type { AuthContext } from '../../types/user';
 import type { AskSendOtpInput, ChangePasswordInput, VerifyMfaInput, VerifyOtpInput } from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -19,10 +19,8 @@ import { killUserSessions } from '../../database/session';
 import { logApp } from '../../config/conf';
 import type { SendMailArgs } from '../../types/smtp';
 
-export const getLocalProviderUser = async (email: string): Promise<AuthUser> => {
+export const getLocalProviderUser = async (email: string) => {
   const user: any = await getUserByEmail(email);
-  if (!user) throw UnsupportedError('User not found');
-  if (user.external) throw UnsupportedError('External user');
   return user;
 };
 
@@ -35,30 +33,38 @@ export const generateOtp = () => {
 export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
   const resetOtp = generateOtp();
+  const hashedOtp = bcrypt.hashSync(resetOtp);
   const transactionId = uuid();
+
+  // Get user, and block if no user found or user is external
+  const user: any = await getUserByEmail(input.email);
+  if (!user || user.external) {
+    await publishUserAction({
+      user: SYSTEM_USER,
+      event_type: 'authentication',
+      event_scope: 'forgot',
+      event_access: 'administration',
+      context_data: undefined,
+      message: `Invalid email ${input.email} provided for password reset`,
+    });
+    return transactionId;
+  }
+  const { user_email, name, otp_activated: mfa_activated, id } = user;
+  const email = user_email.toLowerCase();
+
+  // Don't generate new redis key under 30-second delay
+  const previousKey = await redisGetForgotPasswordOtpPointer(input.email);
+  const isTooRecent = previousKey.ttl > (OTP_TTL - 30);
+  if (isTooRecent) return transactionId;
+
+  // Delete the previous OTP if it exists based on the pointer
+  if (previousKey.id) await redisDelForgotPassword(previousKey.id, email);
+
+  // Generate and store the new OTP; create a new pointer using the new UUID
+  await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, mfa_activated: mfa_activated ?? false, mfa_validated: false, userId: id });
+
+  // Send email
   try {
-    // Retrieve user information
-    const user = await getLocalProviderUser(input.email);
-    const {
-      user_email,
-      name,
-      otp_activated: mfa_activated,
-      id
-    } = user;
-    const email = user_email.toLowerCase();
-    // Check the 30-second delay key
-    const storedOtp = await redisGetForgotPasswordOtpPointer(input.email);
-    const isTooRecentStoredOtp = storedOtp.ttl > (OTP_TTL - 30);
-    if (isTooRecentStoredOtp) return transactionId;
-    // Delete the previous OTP if it exists based on the pointer
-    const previousPointer = await redisGetForgotPasswordOtpPointer(email);
-    if (previousPointer.id) {
-      await redisDelForgotPassword(previousPointer.id, email);
-    }
-    // Generate and store the new OTP; create a new pointer using the new UUID
-    const hashedOtp = bcrypt.hashSync(resetOtp);
-    await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, mfa_activated: mfa_activated ?? false, mfa_validated: false, userId: id });
-    // Create and send the email
     const body = `<p>Hi ${name},</p>`
       + '<p>We have received a request to reset the password for your account associated with this email address. To proceed with resetting your password, please use the verification code provided below:</p>'
       + `<p><b>${resetOtp}</b></p>`
@@ -83,18 +89,18 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       message: `sends password reset code to ${user_email}`,
     });
   } catch (e) {
-    // Prevent wrong email address, but return transactionId too if it fails
     logApp.error('Error occurred while sending password reset email:', { cause: e });
-    // Audit log in case of error during OTP sending
     await publishUserAction({
       user: SYSTEM_USER,
       event_type: 'authentication',
       event_scope: 'forgot',
       event_access: 'administration',
       context_data: undefined,
-      message: `failed to send OTP to ${input.email}`,
+      message: `Failed to send password reset code to ${input.email}`,
     });
   }
+
+  // In all cases, return the transaction ID
   return transactionId;
 };
 

@@ -210,7 +210,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
     <>
       {step === Step.ASK_RESET && (
         <Formik
-          initialValues={{ email: email }}
+          initialValues={{ email }}
           initialTouched={{ email: !R.isEmpty(flashError) }}
           initialErrors={{ email: !R.isEmpty(flashError) ? t_i18n(flashError) : '' }}
           validationSchema={resetValidation(t_i18n)}

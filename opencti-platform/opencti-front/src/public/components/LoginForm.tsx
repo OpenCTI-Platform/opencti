@@ -69,7 +69,7 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, e
   };
 
   const initialValues = {
-    email: email,
+    email,
     password: '',
   };
 
