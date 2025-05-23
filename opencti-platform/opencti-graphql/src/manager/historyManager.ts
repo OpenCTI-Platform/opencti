@@ -94,14 +94,10 @@ const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
   // 1. detect stix core relationships
   if (eventData.type === 'relationship') {
     if (isStixCoreRelationship((eventData as StixRelation).relationship_type)) {
-      const sourceId = (eventData as StixRelation).source_ref;
-      const targetId = (eventData as StixRelation).target_ref;
       const extensions = (eventData as StixRelation).extensions[STIX_EXT_OCTI];
       if ((extensions.source_ref_pir_refs ?? []).length > 0) {
-        console.log('[POC Pir] Event for RELATIONSHIP in Pir history', { event, pirIds: extensions.source_ref_pir_refs, sourceId });
         return extensions.source_ref_pir_refs;
       } if ((extensions.target_ref_pir_refs ?? []).length > 0) {
-        console.log('[POC Pir] Event for RELATIONSHIP in Pir history', { event, pirIds: extensions.target_ref_pir_refs, targetId });
         return extensions.target_ref_pir_refs;
       }
     }
@@ -111,19 +107,16 @@ const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
     // 2. detect 'contains' rel
     const pirIds = updateEvent.context.related_restrictions?.pir_ids ?? [];
     if (pirIds.length > 0) {
-      console.log('[POC Pir] Event for CONTAINS in Pir history', { event, pirIds });
       return pirIds;
     }
     // 3. detect in-pir rels
     if (event.data.message.includes(inPir.label)) {
       if (event.data.message.includes('adds')) {
         const pirPatch = updateEvent.context.patch[0] as AddOperation<string[]>;
-        console.log('[POC Pir] Event for create `In Pir` meta rel', { event, pirPatch });
         return pirPatch.value;
       }
       if (event.data.message.includes('removes')) {
         const pirPatch = updateEvent.context.reverse_patch[0] as AddOperation<string[]>;
-        console.log('[POC Pir] Event for remove `In Pir` meta rel', { event, pirPatch });
         return pirPatch.value;
       }
     }
