@@ -12,6 +12,7 @@ import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
+  RELATION_IN_PIR,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
@@ -287,6 +288,10 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   }
   if (isStixSightingRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
+  }
+  if (relationshipType === RELATION_IN_PIR) {
+    data.pir_score = input.pir_score;
+    data.pir_explanations = input.pir_explanations;
   }
   // 05. Prepare the final data
   const created = R.pipe(

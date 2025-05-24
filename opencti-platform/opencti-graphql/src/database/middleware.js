@@ -24,6 +24,7 @@ import {
   buildPagination,
   computeAverage,
   extractIdsFromStoreObject,
+  extractObjectsPirsFromInputs,
   extractObjectsRestrictionsFromInputs,
   fillTimeSeries,
   INDEX_INFERRED_RELATIONSHIPS,
@@ -2303,7 +2304,20 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
       const relatedRestrictions = extractObjectsRestrictionsFromInputs(updatedInputs, initial.entity_type);
-      const event = await storeUpdateEvent(context, user, initial, updatedInstance, message, { ...opts, commit, related_restrictions: relatedRestrictions });
+      const relatedPirs = extractObjectsPirsFromInputs(updatedInputs, initial.entity_type);
+      const event = await storeUpdateEvent(
+        context,
+        user,
+        initial,
+        updatedInstance,
+        message,
+        {
+          ...opts,
+          commit,
+          related_restrictions: relatedRestrictions,
+          pir_ids: relatedPirs
+        }
+      );
       return { element: updatedInstance, event, isCreation: false };
     }
     // Return updated element after waiting for it.

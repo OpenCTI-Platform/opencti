@@ -1819,6 +1819,7 @@ enum ConnectorType {
   INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
   STREAM
+  INTERNAL_INGESTION_PIR
 }
 
 input ConnectorWithConfig {
@@ -12115,6 +12116,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | CsvMapper
   | Status
   | PublicDashboard
+  | Pir
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -12199,6 +12201,7 @@ union StixObjectOrStixRelationship =
   | Workspace
   | CsvMapper
   | PublicDashboard
+  | Pir
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -12655,6 +12658,8 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
+  pir_explanations: [PirExplanation!]
+  pir_score: Int
   # Technical
   creators: [Creator!]
   editContext: [EditUserContext!]
@@ -12684,6 +12689,7 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+  pir_explanations: [PirExplanationInput!]
 }
 input StixRefRelationshipsAddInput {
   relationship_type: String!

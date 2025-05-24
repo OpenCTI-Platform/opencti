@@ -11,7 +11,7 @@ import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, PIR_MANAGER_USER, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
 import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
@@ -246,6 +246,22 @@ export const registerConnectorForIngestion = async (context: AuthContext, input:
     id: connectorIdFromIngestId(input.id),
     name: `[FEED - ${input.type}] ${input.name}`,
     type: ConnectorType.ExternalImport,
+    auto: true,
+    scope: ['application/stix+json;version=2.1'],
+    only_contextual: false,
+    playbook_compatible: false
+  }, {
+    built_in: true,
+    active: input.is_running,
+    connector_user_id: input.connector_user_id
+  });
+};
+export const registerConnectorForPir = async (context: AuthContext, input: any) => {
+  // Create the representing connector
+  await registerConnector(context, PIR_MANAGER_USER, {
+    id: connectorIdFromIngestId(input.id),
+    name: `[PIR] ${input.name}`,
+    type: ConnectorType.InternalIngestionPir,
     auto: true,
     scope: ['application/stix+json;version=2.1'],
     only_contextual: false,

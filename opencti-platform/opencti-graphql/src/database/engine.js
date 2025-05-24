@@ -35,6 +35,7 @@ import {
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_INTERNAL_RELATIONSHIPS,
+  READ_INDEX_PIR_RELATIONSHIPS,
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLES,
@@ -55,6 +56,7 @@ import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
   RELATION_GRANTED_TO,
+  RELATION_IN_PIR,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
@@ -1571,6 +1573,9 @@ export const computeQueryIndices = (indices, typeOrTypes, withInferences = true)
         if (isBasicObject(findType)) {
           if (isInternalObject(findType)) {
             return withInferencesEntities([READ_INDEX_INTERNAL_OBJECTS], withInferences);
+          }
+          if (findType === RELATION_IN_PIR) {
+            return [READ_INDEX_PIR_RELATIONSHIPS];
           }
           if (isStixMetaObject(findType)) {
             return withInferencesEntities([READ_INDEX_STIX_META_OBJECTS], withInferences);
