@@ -100,7 +100,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
-    expect(stixCyberObservable.errors[0].message).toEqual('The score should be between 0 and 100');
+    expect(stixCyberObservable.errors[0].message).toEqual('The score should be an integer between 0 and 100');
   });
   it('should stixCyberObservable created', async () => {
     // Create the stixCyberObservable
@@ -172,7 +172,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
         input: { key: 'x_opencti_score', value: '142' },
       },
     });
-    expect(queryResultAbove100.errors[0].message).toEqual('The score should be between 0 and 100');
+    expect(queryResultAbove100.errors[0].message).toEqual('The score should be an integer between 0 and 100');
     // Update below 0
     const queryResultBelow0 = await queryAsAdmin({
       query: UPDATE_QUERY,
@@ -181,7 +181,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
         input: { key: 'x_opencti_score', value: '-42' },
       },
     });
-    expect(queryResultBelow0.errors[0].message).toEqual('The score should be between 0 and 100');
+    expect(queryResultBelow0.errors[0].message).toEqual('The score should be an integer between 0 and 100');
   });
   it('should context patch stixCyberObservable', async () => {
     const CONTEXT_PATCH_QUERY = gql`

@@ -134,7 +134,7 @@ describe('Indicator resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: INDICATOR_TO_CREATE,
     });
-    expect(indicator.errors?.[0]?.message).toEqual('The score should be between 0 and 100');
+    expect(indicator.errors?.[0]?.message).toEqual('The score should be an integer between 0 and 100');
   });
   it('should indicator created', async () => {
     // Create the indicator
@@ -253,13 +253,13 @@ describe('Indicator resolver standard behavior', () => {
       variables: { id: firstIndicatorInternalId, input: { key: 'x_opencti_score', value: ['142'] } },
     });
     expect(queryResulAbove100.errors).toBeDefined();
-    expect(queryResulAbove100.errors[0].message).toBe('The score should be between 0 and 100');
+    expect(queryResulAbove100.errors[0].message).toBe('The score should be an integer between 0 and 100');
     const queryResultBelow0 = await adminQuery({
       query: UPDATE_QUERY,
       variables: { id: firstIndicatorInternalId, input: { key: 'x_opencti_score', value: ['-42'] } },
     });
     expect(queryResultBelow0.errors).toBeDefined();
-    expect(queryResultBelow0.errors[0].message).toBe('The score should be between 0 and 100');
+    expect(queryResultBelow0.errors[0].message).toBe('The score should be an integer between 0 and 100');
   });
   it('should not update indicator with incorrectly formatted pattern', async () => {
     const queryResult = await adminQuery({
