@@ -26,15 +26,16 @@ import Alert from '@mui/material/Alert';
 import UpdateIcon from '@mui/icons-material/Update';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Drawer from '../../common/drawer/Drawer';
 import DialogTitle from '@mui/material/DialogTitle';
+import Drawer from '../../common/drawer/Drawer';
 import ManagedConnectorEdition from './ManagedConnectorEdition';
 import DangerZoneBlock from '../../common/danger_zone/DangerZoneBlock';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
 import {
-  useGetConnectorAvailableFilterKeys, useGetConnectorFilterEntityTypes,
+  useGetConnectorAvailableFilterKeys,
+  useGetConnectorFilterEntityTypes,
   getConnectorOnlyContextualStatus,
   getConnectorTriggerStatus,
   useComputeConnectorStatus,
