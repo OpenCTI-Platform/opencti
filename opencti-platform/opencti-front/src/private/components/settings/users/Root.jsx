@@ -7,6 +7,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import makeStyles from '@mui/styles/makeStyles';
+import useHelper from '../../../../utils/hooks/useHelper';
 import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
 import { VIRTUAL_ORGANIZATION_ADMIN, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -17,6 +18,7 @@ import UserAnalytics from './UserAnalytics';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import UserEdition from './UserEdition';
+import UserHistoryTab from './UserHistoryTab';
 
 const userEditionQuery = graphql`
   query RootUserEditionQuery($id: String!) {
@@ -81,6 +83,7 @@ const userQuery = graphql`
           organizationsOrderMode: $organizationsOrderMode
         )
       ...UserAnalytics_user
+      ...UserHistoryTab_user
     }
   }
 `;
@@ -102,6 +105,8 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
     userEditionQuery,
     { id: userId },
   );
+  const { isFeatureEnable } = useHelper();
+  const isUserHistoryTab = isFeatureEnable('USER_HISTORY_TAB');
   return (
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {data ? (
@@ -139,6 +144,12 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
                 value={`/dashboard/settings/accesses/users/${data.id}/analytics`}
                 label={t_i18n('Analytics')}
               />
+              {isUserHistoryTab && <Tab
+                component={Link}
+                to={`/dashboard/settings/accesses/users/${data.id}/history`}
+                value={`/dashboard/settings/accesses/users/${data.id}/history`}
+                label={t_i18n('History')}
+                                   />}
             </Tabs>
           </Box>
           <Routes>
@@ -152,6 +163,12 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
               path="/analytics"
               element={ (
                 <UserAnalytics data={data} refetch={refetch} />
+              )}
+            />
+            <Route
+              path="/history"
+              element={(
+                <UserHistoryTab data={data} refetch={refetch} />
               )}
             />
           </Routes>
