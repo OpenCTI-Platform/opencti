@@ -34,7 +34,8 @@ import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
 import {
-  useGetConnectorAvailableFilterKeys, useGetConnectorFilterEntityTypes,
+  useGetConnectorAvailableFilterKeys,
+  useGetConnectorFilterEntityTypes,
   getConnectorOnlyContextualStatus,
   getConnectorTriggerStatus,
   useComputeConnectorStatus,
