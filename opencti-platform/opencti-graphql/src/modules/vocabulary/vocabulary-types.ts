@@ -27,6 +27,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
@@ -328,6 +329,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }]
   },
   // S
+  security_platform_type_ov: {
+    description: 'An enumeration of security platform type',
+    entity_types: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM],
+    fields: [{
+      key: 'security_platform_type',
+      required: false,
+      multiple: false,
+    }],
+  },
   service_status_ov: {
     description: 'An enumeration of Windows service statuses',
     entity_types: [ENTITY_PROCESS],

@@ -28,6 +28,7 @@ enum VocabularyCategory {
   report_types_ov
   request_for_information_types_ov
   request_for_takedown_types_ov
+  security_platform_type_ov
   service_status_ov
   service_type_ov
   start_type_ov

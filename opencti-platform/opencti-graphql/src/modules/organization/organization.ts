@@ -4,8 +4,9 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { iAliasedIds, xOpenctiAliases, xOpenctiReliability } from '../../schema/attribute-definition';
-import { RELATION_DERIVED_FROM, RELATION_LOCATED_AT, RELATION_PART_OF, RELATION_PUBLISHES, RELATION_USES } from '../../schema/stixCoreRelationship';
+import { RELATION_DERIVED_FROM, RELATION_LOCATED_AT, RELATION_PART_OF, RELATION_PUBLISHES, RELATION_SHOULD_COVER, RELATION_USES } from '../../schema/stixCoreRelationship';
 import {
+  ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_IDENTITY_SECTOR,
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
@@ -82,6 +83,12 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
       name: RELATION_DERIVED_FROM,
       targets: [
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_BUILT_IN },
+      ]
+    },
+    {
+      name: RELATION_SHOULD_COVER,
+      targets: [
+        { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
       ]
     }
   ],
