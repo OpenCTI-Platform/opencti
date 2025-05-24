@@ -8,8 +8,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Fab from '@mui/material/Fab';
-import { ArrowRightAlt, Edit, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import { ArrowRightAlt, EditOutlined, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
@@ -18,6 +17,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
 import { DraftChip } from '../draft/DraftChip';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
@@ -209,7 +209,7 @@ class StixCoreRelationshipContainer extends Component {
   }
 
   render() {
-    const { t, fldt, nsdt, classes, stixCoreRelationship, paddingRight } = this.props;
+    const { t, fldt, nsdt, classes, stixCoreRelationship } = this.props;
     const { expanded } = this.state;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
@@ -241,13 +241,31 @@ class StixCoreRelationshipContainer extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={true}>
+            <Typography variant="h4" gutterBottom={false} sx={{ float: 'left' }}>
               {t('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip/>)}
             </Typography>
+            {!stixCoreRelationship.is_inferred && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <IconButton
+                color="primary"
+                onClick={this.handleOpenEdition.bind(this)}
+                size="large"
+                sx={{ margin: '-15px 0px 0px -2px' }}
+              >
+                <EditOutlined fontSize="small" />
+              </IconButton>
+              <StixCoreRelationshipEdition
+                open={this.state.openEdit}
+                stixCoreRelationshipId={stixCoreRelationship.id}
+                handleClose={this.handleCloseEdition.bind(this)}
+                handleDelete={this.handleOpenDelete.bind(this)}
+              />
+            </Security>
+            )}
             <Paper
               classes={{ root: classes.paperWithoutPadding }}
               variant="outlined"
-              style={{ position: 'relative' }}
+              style={{ position: 'relative', marginTop: '-4px' }}
               className={'paper-for-grid'}
             >
               <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
@@ -575,28 +593,6 @@ class StixCoreRelationshipContainer extends Component {
             </div>
           )}
         </div>
-        {!stixCoreRelationship.is_inferred && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <Fab
-              onClick={this.handleOpenEdition.bind(this)}
-              color="primary"
-              aria-label="Edit"
-              className={
-                paddingRight
-                  ? classes.editButtonWithPadding
-                  : classes.editButton
-              }
-            >
-              <Edit />
-            </Fab>
-            <StixCoreRelationshipEdition
-              open={this.state.openEdit}
-              stixCoreRelationshipId={stixCoreRelationship.id}
-              handleClose={this.handleCloseEdition.bind(this)}
-              handleDelete={this.handleOpenDelete.bind(this)}
-            />
-          </Security>
-        )}
         <Dialog
           open={this.state.displayDelete}
           slotProps={{ paper: { elevation: 1 } }}

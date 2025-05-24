@@ -429,7 +429,7 @@ const IndicatorEditionOverviewComponent = ({
               />
             }
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 1, gap: '16px' }}>
             <IndicatorDeletion id={indicator.id} />
             {enableReferences && (
               <CommitMessage

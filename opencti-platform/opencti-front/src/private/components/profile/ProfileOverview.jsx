@@ -19,12 +19,13 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { useTheme } from '@mui/styles';
 import { ListItem, ListItemText, Switch } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
 import NotifierField from '../common/form/NotifierField';
 import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/fields/SelectField';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
-import { OPENCTI_ADMIN_UUID } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, OPENCTI_ADMIN_UUID } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 import { convertOrganizations } from '../../../utils/edition';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
@@ -37,6 +38,7 @@ import { maskString } from '../../../utils/String';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import ProfileLocalStorage from './ProfileLocalStorage';
 import useHelper from '../../../utils/hooks/useHelper';
+import DashboardSettings from '../DashboardSettings';
 
 const styles = () => ({
   container: {
@@ -221,6 +223,8 @@ const ProfileOverviewComponent = (props) => {
   const objectOrganization = convertOrganizations(me);
   const [display2FA, setDisplay2FA] = useState(false);
   const [showToken, setShowToken] = useState(false);
+  const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
+
   const fieldNames = [
     'name',
     'description',
@@ -486,6 +490,16 @@ const ProfileOverviewComponent = (props) => {
           )}
         </Formik>
       </Paper>
+      { hasKnowledgeAccess ? (
+        <Paper classes={{ root: classes.paper }} variant="outlined">
+          <Typography variant="h1" gutterBottom={true}>
+            {t('Dashboard settings')}
+          </Typography>
+          <Box py="20px">
+            <DashboardSettings />
+          </Box>
+        </Paper>
+      ) : null}
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Typography variant="h1" gutterBottom={true} style={{ float: 'left' }}>
           {t('Authentication')}

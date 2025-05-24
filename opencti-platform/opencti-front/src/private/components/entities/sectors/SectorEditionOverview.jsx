@@ -258,7 +258,7 @@ const SectorEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 1, gap: '16px' }}>
             <SectorDeletion
               id={sector.id}
             />
