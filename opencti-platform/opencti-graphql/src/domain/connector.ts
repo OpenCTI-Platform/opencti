@@ -312,9 +312,9 @@ const updateConnector = async (context: AuthContext, user: AuthUser, connectorId
   return notify(BUS_TOPICS[ENTITY_TYPE_CONNECTOR].EDIT_TOPIC, element, user);
 };
 
-export const connectorUpdateLogs = async (context: AuthContext, user: AuthUser, input: LogsConnectorStatusInput) => {
+export const connectorUpdateLogs = async (_context: AuthContext, _user: AuthUser, input: LogsConnectorStatusInput) => {
   await redisSetConnectorLogs(input.id, input.logs);
-  return internalLoadById(context, user, input.id, { type: ENTITY_TYPE_CONNECTOR });
+  return input.id;
 };
 
 export const updateConnectorRequestedStatus = async (context: AuthContext, user: AuthUser, input: RequestConnectorStatusInput) => {

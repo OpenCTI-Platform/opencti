@@ -8901,7 +8901,7 @@ type Mutation {
   deleteConnector(id: ID!): ID!
   updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): ManagedConnector
   updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): ManagedConnector
-  updateConnectorLogs(input: LogsConnectorStatusInput!): ManagedConnector
+  updateConnectorLogs(input: LogsConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!
