@@ -79,11 +79,11 @@ export const connectorManagers = async (context, user) => {
   return listAllEntities(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
 };
 
-export const connectorsForManager = async (context, user, managerId) => {
+export const connectorsForManagers = async (context, user) => {
   const args = {
     filters: {
       mode: 'and',
-      filters: [{ key: 'manager_id', values: [managerId] }],
+      filters: [{ key: 'catalog_id', values: ['EXISTS'] }],
       filterGroups: [],
     },
     noFiltersChecking: true,

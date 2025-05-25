@@ -8040,7 +8040,7 @@ type Query {
   connectors: [Connector!]!
   connectorManager(managerId: ID!): ConnectorManager!
   connectorManagers: [ConnectorManager!]!
-  connectorsForManager(managerId: ID!): [ManagedConnector!]
+  connectorsForManagers: [ManagedConnector!]
   connectorsForWorker: [Connector]
   connectorsForExport: [Connector]
   connectorsForImport: [Connector]

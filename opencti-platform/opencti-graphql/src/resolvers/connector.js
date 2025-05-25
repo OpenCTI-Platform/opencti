@@ -54,7 +54,7 @@ import {
   connectors,
   connectorsForAnalysis,
   connectorsForImport,
-  connectorsForManager,
+  connectorsForManagers,
   connectorsForNotification,
   connectorsForWorker
 } from '../database/repository';
@@ -70,7 +70,7 @@ const connectorResolvers = {
   Query: {
     connector: (_, { id }, context) => connector(context, context.user, id),
     connectors: (_, __, context) => connectors(context, context.user),
-    connectorsForManager: (_, { managerId }, context) => connectorsForManager(context, context.user, managerId),
+    connectorsForManagers: (_, { managerId }, context) => connectorsForManagers(context, context.user, managerId),
     connectorsForWorker: (_, __, context) => connectorsForWorker(context, context.user),
     connectorsForExport: (_, __, context) => connectorsForExport(context, context.user),
     connectorsForImport: (_, __, context) => connectorsForImport(context, context.user),
