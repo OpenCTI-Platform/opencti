@@ -15,6 +15,7 @@
         "CONNECTOR_SCOPE": "IPv4-Addr",
         "CONNECTOR_AUTO": true,
         "IPINFO_MAX_TLP": "TLP:AMBER",
+        "CONNECTOR_LOG_LEVEL": "info",
         "IPINFO_USE_ASN_NAME": false
       },
       "properties": {
@@ -34,6 +35,11 @@
         "IPINFO_MAX_TLP": {
           "description": "Max TLP",
           "type": "string"
+        },
+        "CONNECTOR_LOG_LEVEL": {
+          "description": "Log level",
+          "type": "string",
+          "enum": ["debug", "info", "warn", "error"]
         },
         "IPINFO_USE_ASN_NAME": {
           "description": "use ASN name",

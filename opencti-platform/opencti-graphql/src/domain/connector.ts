@@ -155,10 +155,6 @@ export const managedConnectorEdit = async (
   if (isEmptyField(conn)) {
     throw UnsupportedError('Connector not found');
   }
-  const manager: any = await storeLoadById(context, user, conn.manager_id, ENTITY_TYPE_CONNECTOR_MANAGER);
-  if (isEmptyField(manager)) {
-    throw UnsupportedError('Manager not found');
-  }
   const contractsMap = getSupportedContractsByImage();
   const targetContract: any = contractsMap.get(conn.manager_contract_image);
   if (isEmptyField(targetContract)) {
