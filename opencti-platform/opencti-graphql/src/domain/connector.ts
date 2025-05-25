@@ -1,7 +1,4 @@
 import { v5 as uuidv5 } from 'uuid';
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
-import * as R from 'ramda';
 import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
@@ -47,9 +44,7 @@ import { extractEntityRepresentativeName } from '../database/entity-representati
 import type { BasicStoreCommon } from '../types/store';
 import type { Connector } from '../connector/internalConnector';
 import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
-
-const ajv = new Ajv({ coerceTypes: true });
-addFormats(ajv, ['password']);
+import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -135,74 +130,14 @@ interface RegisterOptions {
 }
 
 export const registerConnectorsManager = async (context: AuthContext, user: AuthUser, input: RegisterConnectorsManagerInput) => {
-  // Validate the contract
-  const validatedContracts = new Map();
-  for (let i = 0; i < input.contracts.length; i += 1) {
-    const contract = input.contracts[i];
-    const jsonContract = JSON.parse(contract);
-    if (isEmptyField(jsonContract.container_image)) {
-      throw UnsupportedError('Contract must defined container_image field');
-    }
-    if (isEmptyField(jsonContract.container_type)) {
-      throw UnsupportedError('Contract must defined container_type field');
-    }
-    const jsonValidation = {
-      type: jsonContract.type,
-      properties: jsonContract.properties,
-      required: jsonContract.required,
-      additionalProperties: jsonContract.additionalProperties
-    };
-    try {
-      ajv.compile(jsonValidation);
-    } catch (err) {
-      throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
-    }
-    validatedContracts.set(jsonContract.container_image, JSON.stringify(jsonContract));
-  }
   const manager = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER);
-  const patch = {
-    name: input.name,
-    connector_manager_contracts: Array.from(validatedContracts.values()),
-    last_sync_execution: now()
-  };
+  const patch = { name: input.name, last_sync_execution: now() };
   if (manager) {
     const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR_MANAGER, patch);
     return element;
   }
   const managerToCreate = { internal_id: input.id, ...patch };
   return createEntity(context, user, managerToCreate, ENTITY_TYPE_CONNECTOR_MANAGER);
-};
-
-const computeConnectorTargetContract = (configurations: any, targetContract: any) => {
-  // Rework configuration for default an array support
-  const contractConfigurations = [];
-  const keys = Object.keys(targetContract.properties);
-  for (let i = 0; i < keys.length; i += 1) {
-    const propKey = keys[i];
-    const currentConfig: any = configurations.find((conf: any) => conf.key === propKey);
-    if (!currentConfig) {
-      contractConfigurations.push(({ key: propKey, value: targetContract.default[propKey] }));
-    } else if (targetContract.properties[propKey].type !== 'array') {
-      contractConfigurations.push(({ key: propKey, value: currentConfig.value[0] }));
-    } else {
-      contractConfigurations.push(currentConfig);
-    }
-  }
-  // Build the json contract
-  const contractObject: any = R.mergeAll(contractConfigurations.map((conf: any) => ({ [conf.key]: conf.value })));
-  // Validate the contract
-  const jsonValidation = {
-    type: targetContract.type,
-    properties: targetContract.properties,
-    required: targetContract.required,
-    additionalProperties: targetContract.additionalProperties
-  };
-  const validate = ajv.compile(jsonValidation);
-  const validContractObject = validate(contractObject);
-  if (!validContractObject) {
-    throw UnsupportedError('Invalid contract definition');
-  }
-  return contractConfigurations;
 };
 
 export const updateConnectorManagerStatus = async (context: AuthContext, user:AuthUser, input: UpdateConnectorManagerStatusInput) => {
@@ -224,10 +159,7 @@ export const managedConnectorEdit = async (
   if (isEmptyField(manager)) {
     throw UnsupportedError('Manager not found');
   }
-  const contractsMap = new Map(manager.connector_manager_contracts.map((rawContract: any) => {
-    const contrat = JSON.parse(rawContract);
-    return [contrat.container_image, contrat];
-  }));
+  const contractsMap = getSupportedContractsByImage();
   const targetContract: any = contractsMap.get(conn.manager_contract_image);
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
@@ -248,18 +180,11 @@ export const managedConnectorAdd = async (
   user:AuthUser,
   input: AddManagedConnectorInput
 ) => {
-  const manager: any = await storeLoadById(context, user, input.manager_id, ENTITY_TYPE_CONNECTOR_MANAGER);
-  if (isEmptyField(manager)) {
-    throw UnsupportedError('Manager not found');
-  }
   const connectorUser: any = await storeLoadById(context, user, input.connector_user_id, ENTITY_TYPE_USER);
   if (isEmptyField(connectorUser)) {
     throw UnsupportedError('Connector user not found');
   }
-  const contractsMap = new Map(manager.connector_manager_contracts.map((rawContract: any) => {
-    const contrat = JSON.parse(rawContract);
-    return [contrat.container_image, contrat];
-  }));
+  const contractsMap = getSupportedContractsByImage();
   const targetContract: any = contractsMap.get(input.manager_contract_image);
   if (isEmptyField(targetContract)) {
     throw UnsupportedError('Target contract not found');
@@ -268,7 +193,7 @@ export const managedConnectorAdd = async (
   const connectorToCreate: any = {
     name: input.name,
     connector_type: targetContract.container_type,
-    manager_id: input.manager_id,
+    catalog_id: input.catalog_id,
     connector_user_id: input.connector_user_id,
     manager_contract_image: input.manager_contract_image,
     manager_contract_configuration: contractConfigurations,

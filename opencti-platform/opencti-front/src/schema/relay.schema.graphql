@@ -1981,8 +1981,8 @@ input EditManagedConnectorInput {
 
 input AddManagedConnectorInput {
   name: String!
-  manager_id: ID!
   connector_user_id: ID!
+  catalog_id: ID!
   manager_contract_image: String!
   manager_contract_configuration: [ContractConfigInput!]!
 }
@@ -1990,7 +1990,6 @@ input AddManagedConnectorInput {
 input RegisterConnectorsManagerInput {
   id: ID!
   name: String!
-  contracts: [String!]!
 }
 
 input UpdateConnectorManagerStatusInput {
@@ -2112,10 +2111,10 @@ type Connector implements BasicObject & InternalObject {
   config: ConnectorConfig
   works(status: String): [Work]
   is_managed: Boolean
-  manager: ConnectorManager
   manager_current_status: String
   manager_requested_status: String
   manager_contract_image: String
+  manager_contract_definition: String
   manager_contract_configuration: [ManagerContractConfiguration!]
   manager_connector_logs: [String!]
   manager_contract_hash: String
@@ -2147,7 +2146,6 @@ type ConnectorManager implements BasicObject & InternalObject {
   entity_type: String!
   parent_types: [String]!
   name: String!
-  connector_manager_contracts: [String!]!
   last_sync_execution: DateTime
   about_version: String!
   active: Boolean!
@@ -8220,6 +8218,8 @@ type Query {
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
   channel(id: String!): Channel
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
+  catalog(id: String!): Catalog
+  catalogs: [Catalog!]!
   language(id: String!): Language
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LanguageConnection
   event(id: String!): Event
@@ -9347,6 +9347,31 @@ input ChannelAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
+}
+
+type Catalog implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  name: String!
+  description: String!
+  contracts: [String!]!
+}
+
+enum CatalogsOrdering {
+  name
+  _score
+}
+
+type CatalogConnection {
+  pageInfo: PageInfo!
+  edges: [CatalogEdge!]!
+}
+
+type CatalogEdge {
+  cursor: String!
+  node: Catalog!
 }
 
 type Language implements BasicObject & StixCoreObject & StixDomainObject & StixObject {

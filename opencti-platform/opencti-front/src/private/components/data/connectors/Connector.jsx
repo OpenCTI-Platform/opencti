@@ -412,7 +412,8 @@ const ConnectorComponent = ({ connector, relay }) => {
           </Security>
         </div>
       </div>
-      {editionOpen && (<ManagedConnectorEdition manager={connector.manager} connector={connector} onClose={() => setEditionOpen(false)} />)}
+      {editionOpen
+          && (<ManagedConnectorEdition catalog={connector.manager} connector={connector} onClose={() => setEditionOpen(false)} />)}
       <Grid
         container={true}
         spacing={3}
@@ -934,14 +935,11 @@ const Connector = createRefetchContainer(
         connector_state
         connector_user_id
         is_managed
-        manager{
-          id
-          connector_manager_contracts
-        }
         manager_contract_configuration {
           key
           value
         }
+        manager_contract_definition
         manager_current_status
         manager_requested_status
         manager_contract_image

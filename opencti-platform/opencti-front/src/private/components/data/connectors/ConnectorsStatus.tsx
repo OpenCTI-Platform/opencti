@@ -22,7 +22,7 @@ import { ListItemButton } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
-import ManagedConnectors from '@components/data/connectors/ManagedConnectors';
+import Catalogs from '@components/data/connectors/Catalogs';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -126,7 +126,12 @@ const connectorsStatusFragment = graphql`
       name
       active
       last_sync_execution
-      connector_manager_contracts
+    }
+    catalogs {
+      id
+      name
+      description
+      contracts
     }
     connectors {
       id
@@ -137,14 +142,11 @@ const connectorsStatusFragment = graphql`
       connector_type
       connector_scope
       is_managed
-      manager {
-        id
-        connector_manager_contracts
-      }
       manager_current_status
       manager_requested_status
       manager_contract_image
-      manager_contract_configuration{
+      manager_contract_definition
+      manager_contract_configuration {
         key
         value
       }
@@ -267,7 +269,8 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
   };
 
   const queues = data.rabbitMQMetrics?.queues ?? [];
-  const connectorManagers = data.connectorManagers ?? [];
+  const catalogs = data.catalogs ?? [];
+  const managers = data.connectorManagers ?? [];
   const connectorsWithMessages = data.connectors?.map((connector) => {
     const queueName = connector.connector_type === 'INTERNAL_ENRICHMENT'
       ? `listen_${connector.id}`
@@ -347,7 +350,7 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
           </Button>
         </DialogActions>
       </Dialog>
-      <ManagedConnectors connectorManagers={connectorManagers} />
+      <Catalogs catalogs={catalogs} managers={managers} />
       <div>
         <Typography
           variant="h4"

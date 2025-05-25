@@ -46,17 +46,14 @@ interface ManagedConnectorValues {
   contractValues: Record<string, string | boolean>
 }
 
-const ManagedConnectorCreation = ({
-  manager,
-  onClose,
-}: {
-  manager: ConnectorsStatus_data$data['connectorManagers'][0]
+const ManagedConnectorCreation = ({ catalog, onClose }: {
+  catalog: ConnectorsStatus_data$data['catalogs'][0]
   onClose: () => void
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const contracts = manager.connector_manager_contracts.map((contract) => JSON.parse(contract));
+  const contracts = catalog.contracts.map((contract) => JSON.parse(contract));
   const contractNames = contracts.map((contract) => contract.title);
 
   const [commitRegister] = useApiMutation(registerManagedConnectorMutation);
@@ -70,7 +67,7 @@ const ManagedConnectorCreation = ({
     const contract = contracts[values.contract];
     const input = {
       name: values.name,
-      manager_id: manager.id,
+      catalog_id: catalog.id,
       connector_user_id: values.creator?.value,
       manager_contract_image: contract.container_image,
       manager_contract_configuration: Object.entries(values.contractValues).map(([key, value]) => ({ key, value: value.toString() })),
@@ -92,7 +89,7 @@ const ManagedConnectorCreation = ({
   return (
     <Drawer
       title={t_i18n('Create a connector')}
-      open={!!manager}
+      open={!!catalog}
       onClose={onClose}
     >
       <Formik<ManagedConnectorValues>

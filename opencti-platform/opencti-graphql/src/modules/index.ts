@@ -89,6 +89,7 @@ import './courseOfAction/courseOfAction';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
+import './catalog/catalog-graphql';
 import './language/language-graphql';
 import './event/event-graphql';
 import './grouping/grouping-graphql';

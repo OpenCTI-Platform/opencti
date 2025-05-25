@@ -15,23 +15,20 @@ import { emptyFilled } from '../../../../utils/String';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { useComputeConnectorStatus } from '../../../../utils/Connector';
 import AlertInfo from '../../../../components/AlertInfo';
 
 type ManagedConnectorsProps = {
-  connectorManagers: ConnectorsStatus_data$data['connectorManagers'],
+  catalogs: ConnectorsStatus_data$data['catalogs'],
+  managers: ConnectorsStatus_data$data['connectorManagers'],
 };
 
-const ManagedConnectors: React.FC<ManagedConnectorsProps> = ({
-  connectorManagers,
-}) => {
-  const { t_i18n, nsdt } = useFormatter();
+const Catalogs: React.FC<ManagedConnectorsProps> = ({ catalogs, managers }) => {
+  const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { isFeatureEnable } = useHelper();
   const isComposerEnable = isFeatureEnable('COMPOSER');
-
-  const [manager, setManager] = useState<ConnectorsStatus_data$data['connectorManagers'][0]>();
-  const computeConnectorStatus = useComputeConnectorStatus();
+  const activate_manager = managers.length > 0;
+  const [catalog, setCatalog] = useState<ConnectorsStatus_data$data['catalogs'][0]>();
 
   if (!isComposerEnable) {
     return null;
@@ -45,8 +42,8 @@ const ManagedConnectors: React.FC<ManagedConnectorsProps> = ({
           style={{ float: 'left', marginBottom: 15 }}
         >
           <>
-            {t_i18n('Registered manager')}
-            <EEChip feature="Registered manager" />
+            {t_i18n('Connector catalogs')}
+            <EEChip feature="Connector catalogs" /> ({managers.length} active manager)
           </>
         </Typography>
         <div className="clearfix" />
@@ -60,21 +57,20 @@ const ManagedConnectors: React.FC<ManagedConnectorsProps> = ({
           </Alert>
         ) : (
           <Grid spacing={3} container>
-            {connectorManagers.length === 0 && (
+            {!activate_manager && (
               <Grid size={12}>
                 <AlertInfo
                   content={t_i18n('You currently do not have any connector manager registered into your platform.')}
                 />
               </Grid>
             )}
-            {connectorManagers.map((m, id) => (
+            {catalogs.map((m, id) => (
               <Grid size={3} key={`${m.name}-${id}`}>
                 <Card variant="outlined">
-                  <CardActionArea onClick={() => setManager(m)}>
+                  <CardActionArea onClick={() => setCatalog(m)}>
                     <CardHeader
                       title={m.name}
                       avatar={<HubOutlined />}
-                      subheader={computeConnectorStatus(m).render}
                       action={
                         <IconButton
                           size="small"
@@ -87,17 +83,11 @@ const ManagedConnectors: React.FC<ManagedConnectorsProps> = ({
                     <CardContent>
                       <Grid container spacing={1}>
                         <Grid size={6}>
-                          <Typography variant="h4" style={{ margin: 0 }}>{t_i18n('Modification date')}</Typography>
-                        </Grid>
-                        <Grid size={6}>
-                          {nsdt(m.last_sync_execution)}
-                        </Grid>
-                        <Grid size={6}>
                           <Typography variant="h4" style={{ margin: 0 }}>{t_i18n('Contracts')}</Typography>
                         </Grid>
                         <Grid size={6}>
                           <Typography variant="body2">
-                            {emptyFilled(m.connector_manager_contracts.length)}
+                            {emptyFilled(m.contracts.length)}
                           </Typography>
                         </Grid>
                       </Grid>
@@ -109,14 +99,11 @@ const ManagedConnectors: React.FC<ManagedConnectorsProps> = ({
           </Grid>
         )}
       </div>
-      {manager && (
-        <ManagedConnectorCreation
-          manager={manager}
-          onClose={() => setManager(undefined)}
-        />
+      {activate_manager && catalog && (
+        <ManagedConnectorCreation catalog={catalog} onClose={() => setCatalog(undefined)} />
       )}
     </>
   );
 };
 
-export default ManagedConnectors;
+export default Catalogs;

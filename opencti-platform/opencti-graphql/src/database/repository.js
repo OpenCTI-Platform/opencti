@@ -12,11 +12,12 @@ import { PLATFORM_VERSION } from '../config/conf';
 import { shortHash } from '../schema/schemaUtils';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
+import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 
 export const completeConnector = (connector) => {
   if (connector) {
     const completed = { ...connector };
-    completed.is_managed = isNotEmptyField(connector.manager_id);
+    completed.is_managed = isNotEmptyField(connector.catalog_id);
     completed.connector_scope = connector.connector_scope ? connector.connector_scope.split(',') : [];
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);
     completed.active = connector.built_in ? (connector.active ?? true) : (sinceNowInMinutes(connector.updated_at) < 5);
@@ -37,7 +38,13 @@ export const connector = async (context, user, id) => {
   return element;
 };
 
-export const computeManagerConnectorConfiguration = async (context, user, cn) => {
+export const computeManagerConnectorContract = async (_context, _user, cn) => {
+  const contracts = getSupportedContractsByImage();
+  const contract = contracts.get(cn.manager_contract_image);
+  return contract ? JSON.stringify(contract) : contract;
+};
+
+export const computeManagerConnectorConfiguration = async (context, _user, cn) => {
   const config = [...cn.manager_contract_configuration ?? []];
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   config.push({ key: 'CONNECTOR_ID', value: cn.internal_id });

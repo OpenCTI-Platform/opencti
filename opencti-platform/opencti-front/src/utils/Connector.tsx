@@ -76,8 +76,8 @@ export const useComputeConnectorStatus = () => {
     manager_requested_status,
     active,
   }: Partial<ConnectorsStatus_data$data['connectors'][0]>) => {
-    if (manager_current_status && manager_requested_status) {
-      if (manager_current_status.slice(0, 5) !== manager_requested_status.slice(0, 5)) {
+    if (manager_requested_status) {
+      if ((manager_current_status ?? '').slice(0, 5) !== manager_requested_status.slice(0, 5)) {
         return {
           processing: ['starting', 'stopping'].includes(manager_requested_status),
           render: (

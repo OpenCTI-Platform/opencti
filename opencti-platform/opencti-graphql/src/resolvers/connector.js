@@ -44,6 +44,7 @@ import {
 import { batchCreator } from '../domain/user';
 import { now, sinceNowInMinutes } from '../utils/format';
 import {
+  computeManagerConnectorContract,
   computeManagerConnectorConfiguration,
   computeManagerConnectorImage,
   computeManagerContractHash,
@@ -89,9 +90,9 @@ const connectorResolvers = {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
     connector_queue_details: (cn) => queueDetails(cn.id),
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
-    manager: ({ manager_id }, _, context) => connectorManager(context, context.user, manager_id),
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
+    manager_contract_definition: (cn, _, context) => computeManagerConnectorContract(context, context.user, cn),
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
   },

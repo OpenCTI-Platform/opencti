@@ -48,19 +48,15 @@ interface ManagedConnectorValues {
 }
 
 const ManagedConnectorEdition = ({
-  manager,
   connector,
   onClose,
 }: {
-  manager: ConnectorsStatus_data$data['connectorManagers'][0]
   connector: ConnectorsStatus_data$data['connectors'][0]
   onClose: () => void
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-
-  const contracts = manager.connector_manager_contracts.map((contract) => JSON.parse(contract));
-  const contract = contracts.find(({ container_image }) => connector.manager_contract_image?.startsWith(container_image));
+  const contract = JSON.parse(connector.manager_contract_definition ?? '{}');
   const contractValues: Record<string, string | boolean> = {};
   Object.keys(contract.properties).forEach((key) => {
     const { value } = connector.manager_contract_configuration?.find((a) => a.key === key) ?? {};
@@ -103,7 +99,7 @@ const ManagedConnectorEdition = ({
   return (
     <Drawer
       title={t_i18n('Update a connector')}
-      open={!!manager}
+      open={!!contract}
       onClose={onClose}
     >
       <Formik<ManagedConnectorValues>
