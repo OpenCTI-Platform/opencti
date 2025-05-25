@@ -70,7 +70,7 @@ const connectorResolvers = {
   Query: {
     connector: (_, { id }, context) => connector(context, context.user, id),
     connectors: (_, __, context) => connectors(context, context.user),
-    connectorsForManagers: (_, { managerId }, context) => connectorsForManagers(context, context.user, managerId),
+    connectorsForManagers: (_, __, context) => connectorsForManagers(context, context.user),
     connectorsForWorker: (_, __, context) => connectorsForWorker(context, context.user),
     connectorsForExport: (_, __, context) => connectorsForExport(context, context.user),
     connectorsForImport: (_, __, context) => connectorsForImport(context, context.user),

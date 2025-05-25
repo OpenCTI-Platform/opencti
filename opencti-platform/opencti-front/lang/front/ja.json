@@ -441,6 +441,7 @@
   "connectedToId": "関連エンティティ",
   "Connection successfully verified": "接続が正常に検証されました",
   "Connector": "コネクタ",
+  "Connector catalogs": "コネクタカタログ",
   "Connector configuration": "コネクタ構成",
   "Connectors": "コネクタ",
   "Connectors & workers": "コネクタとワーカー",

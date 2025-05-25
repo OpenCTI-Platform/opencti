@@ -441,6 +441,7 @@
   "connectedToId": "Entité liée",
   "Connection successfully verified": "La connexion a été vérifiée avec succès",
   "Connector": "Connecteur",
+  "Connector catalogs": "Catalogues de connecteurs",
   "Connector configuration": "Configuration du connecteur",
   "Connectors": "Connecteurs",
   "Connectors & workers": "Connecteurs et workers",

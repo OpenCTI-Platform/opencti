@@ -441,6 +441,7 @@
   "connectedToId": "관련 엔터티",
   "Connection successfully verified": "연결이 성공적으로 확인되었습니다",
   "Connector": "커넥터",
+  "Connector catalogs": "커넥터 카탈로그",
   "Connector configuration": "커넥터 구성",
   "Connectors": "커넥터",
   "Connectors & workers": "커넥터 및 작업자",

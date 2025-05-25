@@ -441,6 +441,7 @@
   "connectedToId": "相关实体",
   "Connection successfully verified": "已成功验证连接",
   "Connector": "连接器",
+  "Connector catalogs": "连接器目录",
   "Connector configuration": "连接器配置",
   "Connectors": "连接器",
   "Connectors & workers": "连接器和工作器",
