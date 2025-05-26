@@ -18,6 +18,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { ListItemButton } from '@mui/material';
+import CaseTemplateField from '../../common/form/CaseTemplateField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
@@ -514,6 +515,7 @@ const PlaybookAddComponentsContent = ({
       ),
       R.filter(filterByKeyword),
     )(playbookComponents);
+
     return (
       <div className={classes.lines}>
         <List>
@@ -605,6 +607,17 @@ const PlaybookAddComponentsContent = ({
                         multiple={true}
                         alert={false}
                       />
+                    );
+                  }
+                  if (k === 'caseTemplates') {
+                    const isCaseContainer = values?.container_type && ['Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(values?.container_type);
+                    if (values?.caseTemplates && values?.caseTemplates.length > 0 && !isCaseContainer) {
+                      setFieldValue('caseTemplates', []);
+                    }
+                    return (
+                      <Box key={k} sx={{ marginTop: '20px' }}>
+                        <CaseTemplateField label='Case templates' isDisabled={!isCaseContainer} />
+                      </Box>
                     );
                   }
                   if (k === 'filters') {
