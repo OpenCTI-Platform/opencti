@@ -48,23 +48,34 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
   return Math.round((depScore / maxScore) * 100);
 };
 
+export const isPirExplanationsNotInMetaRel = (
+  pirMetaRelExplanations: PirExplanation[],
+  explanations: PirExplanation[],
+) => {
+  return explanations
+    .every((explanation) => pirMetaRelExplanations
+      .some((pirExplanation) => explanation.dependency_ids.every((d) => pirExplanation.dependency_ids.includes(d))
+        && pirExplanation.criterion.weight === explanation.criterion.weight
+        && pirExplanation.criterion.filters === explanation.criterion.filters));
+};
+
 /**
  * Find a meta relationship "in-pir" between an entity and a Pir and update
- * its dependencies (matching criteria).
+ * its explanations (matching criteria).
  *
  * @param context To be able to make the calls.
  * @param user User calling the request.
  * @param sourceId ID of the source entity matching the Pir.
  * @param pirId The if of the Pir matched by the entity.
- * @param pirDependencies The new dependencies.
+ * @param pirExplanations The new explanations
  * @param operation The edit operation (add, replace, ...).
  */
-export const updatePirDependencies = async (
+export const updatePirExplanations = async (
   context: AuthContext,
   user: AuthUser,
   sourceId: string,
   pirId: string,
-  pirDependencies: PirExplanation[],
+  pirExplanations: PirExplanation[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
   const pirMetaRels = await listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
@@ -77,10 +88,17 @@ export const updatePirDependencies = async (
     throw FunctionalError('Find more than one relation between an entity and a Pir', { sourceId, pirId, pirMetaRels });
   }
   const pirMetaRel = pirMetaRels.edges[0].node;
-  // region compute score
-  const deps = operation === 'add' ? [...pirMetaRel.pir_explanations, ...pirDependencies] : pirDependencies;
-  const pir_score = await computePirScore(context, user, pirId, deps);
-  await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: deps, pir_score });
+  console.log('pirMetaRel.pir_explanations', pirMetaRel.pir_explanations);
+  console.log('pirExplanations', pirExplanations);
+  const isExplanationsAlreadyInRel = isPirExplanationsNotInMetaRel(pirMetaRel.pir_explanations, pirExplanations);
+  console.log('isExplanationsAlreadyInRel', isExplanationsAlreadyInRel);
+  if (!isExplanationsAlreadyInRel) {
+    // region compute score
+    const deps = operation === 'add' ? [...pirMetaRel.pir_explanations, ...pirExplanations] : pirExplanations;
+    const pir_score = await computePirScore(context, user, pirId, deps);
+    // replace pir_explanations
+    await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: deps, pir_score });
+  }
 };
 
 /**

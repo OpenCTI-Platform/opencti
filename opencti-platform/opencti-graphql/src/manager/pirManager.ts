@@ -131,21 +131,25 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
     await BluePromise.map(eventsContent, async (event) => {
       const { data } = event;
       const matchingCriteria = await checkEventOnPir(context, event, parsedPir);
-      // If the event matches Pir, do the right thing depending on the type of event.
-      if (matchingCriteria.length > 0) {
+      console.log('matchingCriteria', matchingCriteria);
+      if (matchingCriteria.length > 0) { // the event matches Pir
         const sourceId: string = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
         if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
         const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
         if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
+        const sourcePirRefs = data.extensions?.[STIX_EXT_OCTI]?.source_ref_pir_refs ?? [];
         switch (event.type) {
           case 'create':
-            // send pirFlagElement to queue
             await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria);
             break;
           case 'delete':
             await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
             break;
-          default: // Nothing to do. // TODO PIR update logic
+          case 'update':
+            console.log('data', data);
+            await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria);
+            break;
+          default: // Nothing to do
         }
       }
     }, { concurrency: 5 });

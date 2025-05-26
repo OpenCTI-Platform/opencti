@@ -11,7 +11,7 @@ import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon } from '../../types/store';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
-import { createPirRel, serializePir, updatePirDependencies } from './pir-utils';
+import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
 import { FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
 
@@ -104,7 +104,7 @@ export const pirFlagElement = async (
       },
     }));
     if (sourceFlagged) {
-      await updatePirDependencies(context, user, sourceId, pir.id, pirDependencies, EditOperation.Add);
+      await updatePirExplanations(context, user, sourceId, pir.id, pirDependencies, EditOperation.Add);
     } else {
       await createPirRel(context, user, sourceId, pir.id, pirDependencies);
     }
@@ -142,7 +142,7 @@ export const pirUnflagElement = async (
       await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
-      await updatePirDependencies(context, user, sourceId, pir.id, newRelDependencies);
+      await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies);
     } // nothing to do
   }
   return pir.id;
