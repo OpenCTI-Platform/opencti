@@ -11771,6 +11771,7 @@ type IngestionCsv implements InternalObject & BasicObject {
   current_state_date: DateTime
   last_execution_date: DateTime
   markings: [String!]
+  toConfigurationExport: String!
 }
 
 enum IngestionCsvOrdering {
