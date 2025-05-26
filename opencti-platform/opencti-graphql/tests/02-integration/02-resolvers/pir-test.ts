@@ -1,8 +1,12 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin, testContext } from '../../utils/testQuery';
 import { FilterMode, FilterOperator } from '../../../src/generated/graphql';
 import { RELATION_IN_PIR } from '../../../src/schema/stixRefRelationship';
+import { SYSTEM_USER } from '../../../src/utils/access';
+import { storeLoadById } from '../../../src/database/middleware-loader';
+import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import type { BasicStoreEntity } from '../../../src/types/store';
 
 const LIST_QUERY = gql`
   query pirs(
@@ -47,7 +51,7 @@ const LIST_RELS_QUERY = gql`
           relationship_type
           from {
             ... on StixObject {
-              x_opencti_stix_ids
+              id
             }
           }
           to {
@@ -86,7 +90,7 @@ const READ_QUERY = gql`
 
 describe('PIR resolver standard behavior', () => {
   let pirInternalId: string = '';
-  const flaggedElementId = 'malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263';
+  let flaggedElementId: string = '';
   it('should pir created', async () => {
     const CREATE_QUERY = gql`
       mutation PirAdd($input: PirAddInput!) {
@@ -155,6 +159,10 @@ describe('PIR resolver standard behavior', () => {
     expect(queryResult.data?.pirs.edges.length).toEqual(1);
   });
   it('should flag an element and create a pir meta rel', async () => {
+    // fetch an element standard id
+    const malware = await storeLoadById<BasicStoreEntity>(testContext, SYSTEM_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88', ENTITY_TYPE_MALWARE);
+    flaggedElementId = malware.id;
+    // flag the element
     const FLAG_QUERY = gql`
       mutation pirFlagElement($id: ID!, $input: PirFlagElementInput!) {
         pirFlagElement(id: $id, input: $input)
@@ -182,7 +190,7 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(1);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.x_opencti_stix_ids[0]).toEqual(flaggedElementId);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(67);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(1);
@@ -205,7 +213,7 @@ describe('PIR resolver standard behavior', () => {
       },
       weight: 1,
     };
-    const operation = await queryAsAdmin({
+    await queryAsAdmin({
       query: FLAG_QUERY,
       variables: { id: pirInternalId, input: { relationshipId, sourceId: flaggedElementId, matchingCriteria } },
     });
@@ -216,7 +224,7 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(1);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.x_opencti_stix_ids[0]).toEqual(flaggedElementId);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(100);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(2);
@@ -239,9 +247,9 @@ describe('PIR resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.stixRefRelationships.edges.length).toEqual(1);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.x_opencti_stix_ids[0]).toEqual(flaggedElementId);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.from.id).toEqual(flaggedElementId);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.to.id).toEqual(pirInternalId);
-    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(37);
+    expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_score).toEqual(67);
     expect(queryResult.data?.stixRefRelationships.edges[0].node.pir_explanations.length).toEqual(1);
   });
   it('should unflag an element', async () => {

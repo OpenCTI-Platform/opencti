@@ -68,8 +68,11 @@ export const updatePirDependencies = async (
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
   const pirMetaRels = await listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
-  if (pirMetaRels.edges.length !== 1) {
-    // If < 1 then the meta relationship does not exist.
+  if (pirMetaRels.edges.length === 0) {
+    // If = 0 then the meta relationship does not exist.
+    throw FunctionalError('Relation between the entity and a Pir not found', { sourceId, pirId, pirMetaRels });
+  }
+  if (pirMetaRels.edges.length > 1) {
     // If > 1, well this case should not be possible at all.
     throw FunctionalError('Find more than one relation between an entity and a Pir', { sourceId, pirId, pirMetaRels });
   }
