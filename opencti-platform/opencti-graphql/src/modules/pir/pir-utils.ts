@@ -88,14 +88,14 @@ export const updatePirExplanations = async (
     throw FunctionalError('Find more than one relation between an entity and a Pir', { sourceId, pirId, pirMetaRels });
   }
   const pirMetaRel = pirMetaRels.edges[0].node;
-  const isExplanationsAlreadyInRel = isPirExplanationsNotInMetaRel(pirMetaRel.pir_explanations, pirExplanations);
-  if (!isExplanationsAlreadyInRel) {
-    // region compute score
-    const deps = operation === 'add' ? [...pirMetaRel.pir_explanations, ...pirExplanations] : pirExplanations;
-    const pir_score = await computePirScore(context, user, pirId, deps);
-    // replace pir_explanations
-    await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: deps, pir_score });
+  if (operation === 'add' && isPirExplanationsNotInMetaRel(pirMetaRel.pir_explanations, pirExplanations)) { // case update relationship with source already flagged for it
+    // do nothing
   }
+  // region compute score
+  const deps = operation === 'add' ? [...pirMetaRel.pir_explanations, ...pirExplanations] : pirExplanations;
+  const pir_score = await computePirScore(context, user, pirId, deps);
+  // replace pir_explanations
+  await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: deps, pir_score });
 };
 
 /**
