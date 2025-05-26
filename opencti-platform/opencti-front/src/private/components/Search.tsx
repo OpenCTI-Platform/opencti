@@ -16,6 +16,11 @@ import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPa
 import { useFormatter } from '../../components/i18n';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 
+const unsanitizeSearchTerm = (term: string): string => { // added to avoid erroneous results due to ioC sanitization
+  return term
+    .replace(/\[\.\]/g, '.')          // www[.]google[.]com -> www.google.com
+    .replace(/^hxxps:/i, 'https:')    // hxxps:// -> https://
+};
 const LOCAL_STORAGE_KEY = 'search';
 
 const searchLineFragment = graphql`
@@ -147,7 +152,8 @@ const Search = () => {
   setTitle(t_i18n('Knowledge Search | Advanced Search'));
   const { keyword, filters: paramsFilters } = useParams() as { keyword: string, filters?: string };
 
-  const searchTerm = paramsFilters ? undefined : decodeSearchKeyword(keyword);
+  const rawKeyword = decodeSearchKeyword(keyword);
+  const searchTerm = paramsFilters ? undefined : unsanitizeSearchTerm(rawKeyword);
 
   const initialValues = {
     sortBy: '_score',
@@ -162,6 +168,18 @@ const Search = () => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
+
+  // update search to reflect un-sanitizing
+  useEffect(() => {
+  if (keyword && !paramsFilters) {
+    const cleaned = unsanitizeSearchTerm(keyword);
+    if (cleaned !== keyword) {
+      const newPath = `/dashboard/search/${encodeURIComponent(cleaned)}`;
+      window.history.replaceState({}, '', newPath);
+    }
+  }
+}, [keyword, paramsFilters]);
+
   useEffect(() => {
     if (paramsFilters) {
       storageHelpers.handleSetFilters(deserializeFilterGroupForFrontend(paramsFilters) ?? emptyFilterGroup);
