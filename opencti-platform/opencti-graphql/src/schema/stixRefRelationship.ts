@@ -54,6 +54,7 @@ import {
 } from './stixCyberObservable';
 import { ATTRIBUTE_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { isFeatureEnabled } from '../config/conf';
 
 export const ABSTRACT_STIX_NESTED_REF_RELATIONSHIP = 'stix-nested-ref-relationship'; // Only for front usage
 
@@ -934,8 +935,10 @@ export const META_RELATIONS: RefAttribute[] = [
   // OCTI
   objectOrganization,
   objectAssignee,
-  inPir,
 ];
+if (isFeatureEnabled('Pir')) {
+  META_RELATIONS.push(inPir);
+}
 
 // Register
 schemaTypesDefinition.register(
