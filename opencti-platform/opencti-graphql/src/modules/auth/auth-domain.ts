@@ -173,7 +173,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
   }
   try {
     const authUser = await findById(context, ADMIN_USER, userId);
-    await userEditField(context, authUser, authUser.id, [
+    await userEditField(context, SYSTEM_USER, authUser.id, [
       { key: 'password', value: [input.newPassword] }
     ]);
     await killUserSessions(authUser.id);
