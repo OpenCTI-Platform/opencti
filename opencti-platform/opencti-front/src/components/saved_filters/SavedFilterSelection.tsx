@@ -99,7 +99,12 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
         inputValue={inputValue}
       />
       {!!savedFilterToDelete && (
-        <SavedFilterDeleteDialog savedFilterToDelete={savedFilterToDelete} onClose={resetSavedFilterToDelete} onReset={handleReset} />
+        <SavedFilterDeleteDialog
+          savedFilterToDelete={savedFilterToDelete}
+          onClose={resetSavedFilterToDelete}
+          onReset={handleReset}
+          shouldResetFilters={savedFilterToDelete === selectedSavedFilter?.value.id}
+        />
       )}
     </>
   );

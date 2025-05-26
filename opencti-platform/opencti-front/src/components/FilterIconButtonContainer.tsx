@@ -267,8 +267,9 @@ FilterIconButtonContainerProps
       };
     }
   }
+  console.log('boxStyle : ', boxStyle);
   return (
-    <Box sx={boxStyle}>
+    <Box id='toto' sx={boxStyle}>
       {displayedFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
@@ -390,7 +391,7 @@ FilterIconButtonContainerProps
         );
       })}
       {filterChipsParams.anchorEl && (
-        <Box>
+        <>
           <FilterChipPopover
             filters={filters.filters}
             params={filterChipsParams}
@@ -405,7 +406,7 @@ FilterIconButtonContainerProps
             availableRelationshipTypes={availableRelationshipTypes}
             fintelTemplatesContext={fintelTemplatesContext}
           />
-        </Box>
+        </>
       )}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups
