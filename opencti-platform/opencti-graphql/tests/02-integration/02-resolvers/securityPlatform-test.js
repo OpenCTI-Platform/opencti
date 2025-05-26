@@ -106,9 +106,9 @@ describe('SecurityPlatform resolver tests', () => {
   it('should update security platform', async () => {
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: securityPlatformInternalId, input: { key: 'name', value: ['Security platform - test'] } },
+      variables: { id: securityPlatformInternalId, input: { key: 'description', value: ['Security platform - description'] } },
     });
-    expect(queryResult.data.securityPlatformFieldPatch.name).toEqual('Security platform - test');
+    expect(queryResult.data.securityPlatformFieldPatch.description).toEqual('Security platform - description');
   });
   it.skip('should add relation in security platform', async () => {
     const RELATION_ADD_QUERY = gql`
