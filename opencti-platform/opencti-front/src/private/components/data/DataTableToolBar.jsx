@@ -3007,7 +3007,7 @@ class DataTableToolBar extends Component {
                         { type: 'SHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
                       ];
                       const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
-                      const sharingDescription = `SHARE organizations ${orgaNames}`;
+                      const sharingDescription = `SHARE with organizations ${orgaNames}`;
                       this.setState({ description: sharingDescription, actions: shareActions }, () => {
                         this.handleCloseShare();
                         this.handleOpenTask();
@@ -3073,7 +3073,7 @@ class DataTableToolBar extends Component {
                         { type: 'UNSHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
                       ];
                       const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
-                      const sharingDescription = `UNSHARE organizations ${orgaNames}`;
+                      const sharingDescription = `UNSHARE with organizations ${orgaNames}`;
                       this.setState({ description: sharingDescription, actions: shareActions }, () => {
                         this.handleCloseUnshare();
                         this.handleOpenTask();

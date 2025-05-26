@@ -261,7 +261,7 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const organizations = await internalFindByIds(context, context.user, organizationIds, { baseData: true, baseFields: ['name'] });
   const organizationNames = organizations.map((o) => o.name).join('|');
-  const sharingDescription = `${type} organization ${organizationNames}`;
+  const sharingDescription = `${type} with organization ${organizationNames}`;
   // orderMode is on created_at, see buildQueryFilters in backgroundTask
   // need to be desc for share/unshare to have events in the right order in stream (entity send before relations)
   // containerId required to send an event after all container content is shared.

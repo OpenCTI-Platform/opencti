@@ -60,7 +60,7 @@ export const changeRule = async (ruleId, active) => {
       if (w.errors.length > 0) {
         logApp.info('[RULE TEST] Change rule works failure', { active, errors: w.errors });
       }
-      expect(w.errors.length).toBe(0);
+      expect(w.errors.length, `Something is wrong with this query: ${w.errors.map((e) => e.message).join(' || ')}}`).toBe(0);
     });
     const doneWorks = works.filter((t) => t.status !== 'complete').length === 0;
     // Final status

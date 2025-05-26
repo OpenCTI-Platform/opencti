@@ -287,6 +287,13 @@ const TasksList = ({ data }) => {
             <Grid container={true} spacing={3}>
               <Grid item xs={5}>
                 <Grid container={true} spacing={1}>
+                  {task.description && (
+                  <Grid item xs={12}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {`${t_i18n('Description')}: ${task.description}`}
+                    </Typography>
+                  </Grid>
+                  )}
                   <Grid item xs={12}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n('Targeted entities')} ({n(task.task_expected_number)})
@@ -381,13 +388,6 @@ const TasksList = ({ data }) => {
                           task.actions,
                         )}
                   </Grid>
-                  {task.description && (
-                    <Grid item xs={12}>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {`${t_i18n('Description')}: ${task.description}`}
-                      </Typography>
-                    </Grid>
-                  )}
                 </Grid>
               </Grid>
               <Grid item xs={7}>
