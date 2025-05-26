@@ -17,7 +17,15 @@ import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
-import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, INTERNAL_USERS, isUserCanAccessStixElement, SYSTEM_USER } from '../../utils/access';
+import {
+  AUTOMATION_MANAGER_USER,
+  AUTOMATION_MANAGER_USER_UUID,
+  executionContext,
+  INTERNAL_USERS,
+  isUserCanAccessStixElement,
+  isUserInPlatformOrganization,
+  SYSTEM_USER
+} from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -56,7 +64,7 @@ import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/st
 import { connectorsForPlaybook } from '../../database/repository';
 import { internalFindByIds, listAllEntities, listAllRelations, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
 import { isFeatureEnabled, logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
@@ -68,7 +76,7 @@ import { stixLoadByIds } from '../../database/middleware';
 import { usableNotifiers } from '../notifier/notifier-domain';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../manager/notificationManager';
 import { storeNotificationEvent } from '../../database/redis';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthUser } from '../../types/user';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { createStixPattern } from '../../python/pythonBridge';
@@ -91,6 +99,7 @@ import { generateCreateMessage } from '../../database/generate-message';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
+import type { BasicStoreSettings } from '../../types/settings';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -1035,10 +1044,13 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
     const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
     const { notifiers, authorized_members } = playbookNode.configuration;
     const targetUsers = await convertAuthorizedMemberToUsers(authorized_members as { value: string }[]);
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const notificationsCall = [];
     for (let index = 0; index < targetUsers.length; index += 1) {
       const targetUser = targetUsers[index];
-      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(context, targetUser, o));
+      const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
+      const userContext = { ...context, user_inside_platform_organization };
+      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
       const notificationEvent: DigestEvent = {
         version: EVENT_NOTIFICATION_VERSION,
         playbook_source: playbook.name,

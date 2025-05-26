@@ -23,6 +23,8 @@ import {
   ImportFilesDialogEntityMutation,
   ImportFilesDialogEntityMutation$variables,
 } from '@components/common/files/import_files/__generated__/ImportFilesDialogEntityMutation.graphql';
+import { Close } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 import { useFormatter } from '../../../../../components/i18n';
 import Transition from '../../../../../components/Transition';
 import { handleErrorInForm, MESSAGING$ } from '../../../../../relay/environment';
@@ -444,6 +446,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
       slots={{ transition: Transition }}
       fullWidth
       maxWidth={false}
+      onClose={handleClose}
       slotProps={{
         paper: {
           elevation: 1,
@@ -453,8 +456,16 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
         },
       }}
     >
-      <DialogTitle>
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h5">{t_i18n('Import files')}</Typography>
+        <IconButton
+          aria-label="Close"
+          onClick={handleClose}
+          size="large"
+          color="primary"
+        >
+          <Close fontSize="small" color="primary"/>
+        </IconButton>
       </DialogTitle>
       <DialogContent sx={{ paddingInline: 20, marginBlock: 10 }}>
         {!uploadStatus ? (
