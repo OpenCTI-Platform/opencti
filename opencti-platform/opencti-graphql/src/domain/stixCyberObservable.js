@@ -22,7 +22,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from '../modules/indicator/indicator-domain';
-import { FunctionalError, ValidationError } from '../config/errors';
+import { FunctionalError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';
 import {
@@ -38,7 +38,7 @@ import { RELATION_BASED_ON, RELATION_HAS } from '../schema/stixCoreRelationship'
 import { ENTITY_TYPE_VULNERABILITY } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
-import { now, observableValue } from '../utils/format';
+import { checkScore, now, observableValue } from '../utils/format';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
@@ -190,9 +190,7 @@ export const addStixCyberObservable = async (context, user, input) => {
   if (!input[graphQLType]) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
-  if (x_opencti_score < 0 || x_opencti_score > 100) {
-    throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
-  }
+  checkScore(x_opencti_score);
   const lowerCaseTypes = ['Domain-Name', 'Email-Addr'];
   if (lowerCaseTypes.includes(type) && input[graphQLType].value) {
     // eslint-disable-next-line no-param-reassign
@@ -257,7 +255,14 @@ export const stixCyberObservableDeleteRelation = async (context, user, stixCyber
 
 export const stixCyberObservableEditField = async (context, user, stixCyberObservableId, input, opts = {}) => {
   const originalStixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
-  if (isNotEmptyField(originalStixCyberObservable.payload_bin) && input[0].key === 'url') {
+  const scoreInput = input.find((i) => i.key === 'x_opencti_score');
+  const urlInput = input.find((i) => i.key === 'url');
+  const payloadBinInput = input.find((i) => i.key === 'payload_bin');
+  if (scoreInput) {
+    const newScore = parseFloat(scoreInput.value[0]);
+    checkScore(newScore);
+  }
+  if (isNotEmptyField(originalStixCyberObservable.payload_bin) && urlInput) {
     if (isNotEmptyField(originalStixCyberObservable.url)) {
       await updateAttribute(
         context,
@@ -269,7 +274,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
       );
     }
     throw FunctionalError('Cannot update url when payload_bin is present.');
-  } else if (isNotEmptyField(originalStixCyberObservable.url) && input[0].key === 'payload_bin') {
+  } else if (isNotEmptyField(originalStixCyberObservable.url) && payloadBinInput) {
     if (isNotEmptyField(originalStixCyberObservable.payload_bin)) {
       await updateAttribute(
         context,
@@ -282,6 +287,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     }
     throw FunctionalError('Cannot update payload_bin when url is present.');
   }
+
   const { element: stixCyberObservable } = await updateAttribute(
     context,
     user,
@@ -294,11 +300,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
   Object.entries(stixCyberObservable).forEach(([key, value]) => {
     if (isNumericAttribute(key) && value === '') delete stixCyberObservable[key];
   });
-  if (input[0].key === 'x_opencti_score') {
-    const newScore = parseInt(input[0].value[0], 10);
-    if (newScore < 0 || newScore > 100) {
-      throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
-    }
+  if (scoreInput) {
     const indicators = await listAllFromEntitiesThroughRelations(
       context,
       user,
@@ -307,7 +309,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
       ENTITY_TYPE_INDICATOR
     );
     await Promise.all(
-      indicators.map((indicator) => updateAttribute(context, user, indicator.id, ENTITY_TYPE_INDICATOR, input, opts))
+      indicators.map((indicator) => updateAttribute(context, user, indicator.id, ENTITY_TYPE_INDICATOR, [scoreInput], opts))
     );
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);

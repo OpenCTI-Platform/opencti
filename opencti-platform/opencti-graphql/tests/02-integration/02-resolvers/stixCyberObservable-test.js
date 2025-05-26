@@ -81,6 +81,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
           fieldPatch(input: $input) {
             id
             x_opencti_score
+            observable_value
           }
         }
       }
@@ -100,7 +101,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
-    expect(stixCyberObservable.errors[0].message).toEqual('The score should be between 0 and 100');
+    expect(stixCyberObservable.errors[0].message).toEqual('The score should be an integer between 0 and 100');
   });
   it('should stixCyberObservable created', async () => {
     // Create the stixCyberObservable
@@ -172,7 +173,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
         input: { key: 'x_opencti_score', value: '142' },
       },
     });
-    expect(queryResultAbove100.errors[0].message).toEqual('The score should be between 0 and 100');
+    expect(queryResultAbove100.errors[0].message).toEqual('The score should be an integer between 0 and 100');
     // Update below 0
     const queryResultBelow0 = await queryAsAdmin({
       query: UPDATE_QUERY,
@@ -181,7 +182,28 @@ describe('StixCyberObservable resolver standard behavior', () => {
         input: { key: 'x_opencti_score', value: '-42' },
       },
     });
-    expect(queryResultBelow0.errors[0].message).toEqual('The score should be between 0 and 100');
+    expect(queryResultBelow0.errors[0].message).toEqual('The score should be an integer between 0 and 100');
+  });
+  it('should update mutliple attributes', async () => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: stixCyberObservableInternalId,
+        input: [{ key: 'x_opencti_score', value: '60' }, { key: 'value', value: '8.8.8.9' }],
+      },
+    });
+    expect(queryResult.data.stixCyberObservableEdit.fieldPatch.x_opencti_score).toEqual(60);
+    expect(queryResult.data.stixCyberObservableEdit.fieldPatch.observable_value).toEqual('8.8.8.9');
+  });
+  it('should not update mutliple attributes if incorrect score value', async () => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: stixCyberObservableInternalId,
+        input: [{ key: 'observable_value', value: '8.8.8.9' }, { key: 'x_opencti_score', value: '160' }],
+      },
+    });
+    expect(queryResult.errors[0].message).toEqual('The score should be an integer between 0 and 100');
   });
   it('should context patch stixCyberObservable', async () => {
     const CONTEXT_PATCH_QUERY = gql`
