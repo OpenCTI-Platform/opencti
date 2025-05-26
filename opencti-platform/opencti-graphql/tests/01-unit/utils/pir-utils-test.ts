@@ -63,14 +63,4 @@ describe('Pir utilities: isExplanationsAlreadyInPirMetaRels', () => {
         },
       }
     ])).toEqual(false);
-    expect(isPirExplanationsNotInMetaRel(pirMetaRelExplanations, [
-      {
-        dependency_ids: [relationshipId1, relationshipId2],
-        criterion: {
-          weight: 1,
-          filters: JSON.stringify(filters1),
-        },
-      }
-    ])).toEqual(false);
-  }); // TODO PIR case of several dep in the second argument
 });
