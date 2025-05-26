@@ -20,7 +20,7 @@ class OpenCTIApiWork:
                     }
                 }
                """
-            self.api.query(query, {"id": work_id, "message": message})
+            self.api.query(query, {"id": work_id, "message": message}, True)
 
     def to_processed(self, work_id: str, message: str, in_error: bool = False):
         if self.api.bundle_send_to_queue:
@@ -35,7 +35,7 @@ class OpenCTIApiWork:
                 }
                """
             self.api.query(
-                query, {"id": work_id, "message": message, "inError": in_error}
+                query, {"id": work_id, "message": message, "inError": in_error}, True
             )
 
     def ping(self, work_id: str):
@@ -60,7 +60,7 @@ class OpenCTIApiWork:
                 }
                """
             try:
-                self.api.query(query, {"id": work_id, "error": error})
+                self.api.query(query, {"id": work_id, "error": error}, True)
             except:
                 self.api.app_logger.error("Cannot report expectation")
 
@@ -78,7 +78,9 @@ class OpenCTIApiWork:
                 }
                """
             try:
-                self.api.query(query, {"id": work_id, "expectations": expectations})
+                self.api.query(
+                    query, {"id": work_id, "expectations": expectations}, True
+                )
             except:
                 self.api.app_logger.error("Cannot report expectation")
 
@@ -96,7 +98,9 @@ class OpenCTIApiWork:
                 }
                """
             try:
-                self.api.query(query, {"id": work_id, "draftContext": draft_context})
+                self.api.query(
+                    query, {"id": work_id, "draftContext": draft_context}, True
+                )
             except:
                 self.api.app_logger.error("Cannot report draft context")
 
@@ -111,7 +115,9 @@ class OpenCTIApiWork:
                 }
                """
             work = self.api.query(
-                query, {"connectorId": connector_id, "friendlyName": friendly_name}
+                query,
+                {"connectorId": connector_id, "friendlyName": friendly_name},
+                True,
             )
             return work["data"]["workAdd"]["id"]
 
@@ -122,10 +128,7 @@ class OpenCTIApiWork:
                 delete
             }
         }"""
-        work = self.api.query(
-            query,
-            {"workId": work_id},
-        )
+        work = self.api.query(query, {"workId": work_id}, True)
         return work["data"]
 
     def wait_for_work_to_finish(self, work_id: str):
@@ -179,10 +182,7 @@ class OpenCTIApiWork:
             }
         }
         """
-        result = self.api.query(
-            query,
-            {"id": work_id},
-        )
+        result = self.api.query(query, {"id": work_id}, True)
         return result["data"]["work"]
 
     def get_connector_works(self, connector_id: str) -> List[Dict]:
@@ -243,6 +243,7 @@ class OpenCTIApiWork:
                     "filterGroups": [],
                 },
             },
+            True,
         )
         result = result["data"]["works"]["edges"]
         return_value = []
