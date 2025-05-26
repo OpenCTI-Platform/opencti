@@ -49,7 +49,7 @@ const elWhiteUser = async () => {
 };
 
 const VOCABULARY_COUNT = 347;
-const ENTITY_SETTINGS_COUNT = 42;
+export const ENTITY_SETTINGS_COUNT = 42;
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', async () => {
