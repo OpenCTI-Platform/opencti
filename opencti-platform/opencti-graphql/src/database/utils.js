@@ -350,25 +350,21 @@ export const extractObjectsPirsFromInputs = (inputs, entityType) => {
       }
     });
   }
-  return { pir_ids, };
+  return { pir_ids };
 };
 
 export const extractObjectsRestrictionsFromInputs = (inputs, entityType) => {
   const markings = [];
-  const pir_ids = [];
   if (isStixDomainObjectContainer(entityType)) {
     inputs.forEach((input) => {
       if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
         const objectMarking = input.value.flatMap((value) => value[RELATION_OBJECT_MARKING] ?? []);
-        const pirIds = input.value.flatMap((value) => value[RELATION_IN_PIR] ?? []);
         markings.push(...objectMarking);
-        pir_ids.push(...pirIds);
       }
     });
   }
   return {
     markings,
-    pir_ids,
   };
 };
 
