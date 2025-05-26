@@ -55,6 +55,10 @@ const caseRfiFragment = graphql`
     priority
     severity
     entity_type
+    createdBy {
+      id
+      name
+    }
     draftVersion {
       draft_id
       draft_operation
