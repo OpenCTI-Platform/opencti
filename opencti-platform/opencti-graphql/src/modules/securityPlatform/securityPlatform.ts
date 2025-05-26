@@ -18,7 +18,7 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM]: [{ src: NAME_FIELD }, { src: 'identity_class' }]
+      [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM]: [{ src: NAME_FIELD }, { src: 'identity_class', dependencies: [NAME_FIELD] }]
     },
     resolvers: {
       name(data: object) {
