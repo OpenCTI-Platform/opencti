@@ -264,13 +264,15 @@ class OpenCTIApiClient:
             "" if retry_number is None else str(retry_number)
         )
 
-    def query(self, query, variables=None):
+    def query(self, query, variables=None, disable_impersonate=False):
         """submit a query to the OpenCTI GraphQL API
 
         :param query: GraphQL query string
         :type query: str
         :param variables: GraphQL query variables, defaults to {}
         :type variables: dict, optional
+        :param disable_impersonate: removes impersonate header if set to True, defaults to False
+        :type disable_impersonate: bool, optional
         :return: returns the response json content
         :rtype: Any
         """
@@ -295,6 +297,9 @@ class OpenCTIApiClient:
             else:
                 query_var[key] = val
 
+        query_headers = self.request_headers.copy()
+        if disable_impersonate and "opencti-applicant-id" in query_headers:
+            del query_headers["opencti-applicant-id"]
         # If yes, transform variable (file to null) and create multipart query
         if len(files_vars) > 0:
             multipart_data = {
@@ -361,7 +366,7 @@ class OpenCTIApiClient:
                 self.api_url,
                 data=multipart_data,
                 files=multipart_files,
-                headers=self.request_headers,
+                headers=query_headers,
                 verify=self.ssl_verify,
                 cert=self.cert,
                 proxies=self.proxies,
@@ -372,7 +377,7 @@ class OpenCTIApiClient:
             r = self.session.post(
                 self.api_url,
                 json={"query": query, "variables": variables},
-                headers=self.request_headers,
+                headers=query_headers,
                 verify=self.ssl_verify,
                 cert=self.cert,
                 proxies=self.proxies,
