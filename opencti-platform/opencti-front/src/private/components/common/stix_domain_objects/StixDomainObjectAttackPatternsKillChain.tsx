@@ -81,7 +81,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   defaultStopTime: string;
   storageKey: string;
   killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
-  isInEntity?: boolean;
+  isEntity?: boolean;
 }
 
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
@@ -102,7 +102,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   defaultStopTime,
   storageKey,
   killChainDataQueryRef,
-  isInEntity,
+  isEntity,
 }) => {
   const { t_i18n } = useFormatter();
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
@@ -296,7 +296,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               </FormControl>
             </div>
           )}
-          {!isInEntity && (<div style={{ float: 'right', margin: 0 }}>
+          {!isEntity && (<div style={{ float: 'right', margin: 0 }}>
             <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
               {[...viewButtons]}
               {typeof handleToggleExports === 'function' && !exportDisabled && (
@@ -374,7 +374,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             searchTerm={searchTerm}
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
-            isInEntity={isInEntity}
+            isEntity={isEntity}
           />
         )}
         {currentView === 'matrix-in-line' && (
@@ -414,7 +414,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
             isRelationReversed={false}
-            paddingRight={isInEntity ? 0 : 220}
+            paddingRight={isEntity ? 0 : 220}
             onCreate={refetch}
             targetStixDomainObjectTypes={['Attack-Pattern']}
             paginationOptions={paginationOptions}

@@ -278,7 +278,7 @@ class CaseRfiKnowledgeComponent extends Component {
                 stixDomainObjectId={caseData.id}
                 defaultStartTime={caseData.first_seen}
                 defaultStopTime={caseData.last_seen}
-                isInEntity
+                isEntity
               />
             }
           />
