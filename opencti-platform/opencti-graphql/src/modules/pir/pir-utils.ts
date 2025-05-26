@@ -88,10 +88,7 @@ export const updatePirExplanations = async (
     throw FunctionalError('Find more than one relation between an entity and a Pir', { sourceId, pirId, pirMetaRels });
   }
   const pirMetaRel = pirMetaRels.edges[0].node;
-  console.log('pirMetaRel.pir_explanations', pirMetaRel.pir_explanations);
-  console.log('pirExplanations', pirExplanations);
   const isExplanationsAlreadyInRel = isPirExplanationsNotInMetaRel(pirMetaRel.pir_explanations, pirExplanations);
-  console.log('isExplanationsAlreadyInRel', isExplanationsAlreadyInRel);
   if (!isExplanationsAlreadyInRel) {
     // region compute score
     const deps = operation === 'add' ? [...pirMetaRel.pir_explanations, ...pirExplanations] : pirExplanations;
