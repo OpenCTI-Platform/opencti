@@ -58,6 +58,7 @@ class IdentityTypes(Enum):
     ORGANIZATION = "Organization"
     INDIVIDUAL = "Individual"
     SYSTEM = "System"
+    SECURITYPLATFORM = "SecurityPlatform"
 
     @classmethod
     def has_value(cls, value):
