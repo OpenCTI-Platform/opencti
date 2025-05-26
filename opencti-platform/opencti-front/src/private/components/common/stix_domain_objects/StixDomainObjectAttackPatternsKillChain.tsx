@@ -26,6 +26,7 @@ import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/att
 import StixCoreRelationships from '@components/common/stix_core_relationships/StixCoreRelationships';
 import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixQuery.graphql';
 import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
+import EntitySelect, { EntityOption } from '@components/common/form/EntitySelect';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -107,6 +108,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const { t_i18n } = useFormatter();
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
+  const [selectedSecurityPosture, setSelectedSecurityPosture] = useState<EntityOption | null>(null);
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
   );
@@ -247,7 +249,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               searchContext={{ entityTypes: ['Attack-Pattern'] }}
             />
           </Box>
-          <div
+          <Box
             style={{
               float: 'left',
               display: 'flex',
@@ -261,27 +263,21 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               redirection
               searchContext={{ entityTypes: ['Attack-Pattern'] }}
             />
-          </div>
-          {currentView === 'matrix' && (
-            <div
+          </Box>
+          {currentView === 'matrix' && (<>
+            <Box
               style={{
                 float: 'left',
                 display: 'flex',
-                padding: '0 10px 2px 10px',
+                paddingInline: 10,
+                paddingBlock: 10,
+                gap: 1,
               }}
             >
-              <InputLabel
-                style={{
-                  padding: '10px 10px 0 0',
-                }}
-              >
+              <InputLabel style={{ paddingInlineEnd: 10 }}>
                 {t_i18n('Kill chain :')}
               </InputLabel>
-              <FormControl
-                style={{
-                  paddingTop: 10,
-                }}
-              >
+              <FormControl>
                 <Select
                   size="small"
                   value={selectedKillChain}
@@ -294,7 +290,29 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   ))}
                 </Select>
               </FormControl>
-            </div>
+            </Box>
+
+            <Box
+              style={{
+                float: 'left',
+                display: 'flex',
+                paddingInline: 10,
+              }}
+            >
+              <FormControl style={{ width: 300 }}>
+                <EntitySelect
+                  variant="outlined"
+                  size="small"
+                  value={selectedSecurityPosture}
+                  label={t_i18n('Compare with my security posture')}
+                  types={['SecurityPlatform']}
+                  onChange={(v) => {
+                    setSelectedSecurityPosture(v);
+                  }}
+                />
+              </FormControl>
+            </Box>
+            </>
           )}
           {!isEntity && (<div style={{ float: 'right', margin: 0 }}>
             <ToggleButtonGroup size="small" color="secondary" exclusive={true}>

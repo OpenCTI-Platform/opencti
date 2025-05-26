@@ -1,4 +1,4 @@
-import { Autocomplete, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, TextField, TextFieldProps, TextFieldVariants, Tooltip } from '@mui/material';
 import React, { Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
@@ -34,6 +34,8 @@ export type EntityOption = Pick<FieldOption, 'label' | 'value'> & {
 interface EntitySelectComponentProps {
   label: string
   value: EntityOption | null
+  variant?: TextFieldVariants,
+  size?: TextFieldProps['size'],
   onChange?: (val: EntityOption | null) => void
   onInputChange: (val: string) => void
   queryRef: PreloadedQuery<EntitySelectSearchQuery>
@@ -42,6 +44,8 @@ interface EntitySelectComponentProps {
 const EntitySelectComponent = ({
   label,
   value,
+  variant,
+  size,
   onChange,
   onInputChange,
   queryRef,
@@ -65,7 +69,14 @@ const EntitySelectComponent = ({
       isOptionEqualToValue={(o: EntityOption, v: EntityOption) => o.value === v.value}
       onInputChange={(_, val) => throttleSearch(val)}
       onChange={(_, val) => onChange?.(val)}
-      renderInput={(params) => <TextField {...params} label={label} />}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          variant={variant}
+          size={size}
+          label={label}
+        />
+      )}
       renderOption={(props, option) => (
         <Tooltip title={option.label}>
           <li
