@@ -20,7 +20,7 @@ const EntitySelectField = ({
       value={value}
       label={label}
       types={types}
-      onChange={(v) => {
+      onChange={(v: EntityOption | null) => {
         setFieldValue(name, v);
         onChange?.(v);
       }}

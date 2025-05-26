@@ -1,7 +1,7 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined, ViewColumnOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined, ViewColumnOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -26,6 +26,9 @@ import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/att
 import StixCoreRelationships from '@components/common/stix_core_relationships/StixCoreRelationships';
 import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixQuery.graphql';
 import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
+import EntitySelect, { EntityOption } from '@components/common/form/EntitySelect';
+import { AttackPatternsMatrixColumnsOverlapQuery$data } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumnsOverlapQuery.graphql';
+import { IconButton } from '@mui/material';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -41,6 +44,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
+import { fetchQuery } from '../../../../relay/environment';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -60,6 +64,19 @@ export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
       orderMode: $orderMode
       filters: $filters
     )
+  }
+`;
+
+const stixDomainObjectAttackPatternsKillChainOverlapQuery = graphql`
+  query StixDomainObjectAttackPatternsKillChainOverlapQuery($types: [String], $count: Int!, $filters: FilterGroup) {
+    stixCoreObjects(types: $types, first: $count, filters: $filters) {
+      edges {
+        node {
+          id
+          entity_type
+        }
+      }
+    }
   }
 `;
 
@@ -107,6 +124,9 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const { t_i18n } = useFormatter();
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
+  const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
+  const [attackPatternIdsToOverlap, setAttackPatternIdsToOverlap] = useState<string[] | undefined>();
+  const [isModeOnlyActive, setIsModeOnlyActive] = useState<boolean>(false);
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
   );
@@ -122,6 +142,61 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const handleKillChainChange = (event: SelectChangeEvent<unknown>) => {
     setSelectedKillChain(event.target.value as string);
   };
+
+  const getAttackPatternIdsToOverlap = async (entityIdsToOverlap: string[]) => {
+    return await fetchQuery(
+      stixDomainObjectAttackPatternsKillChainOverlapQuery,
+      {
+        count: 1000,
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'entity_type',
+              operator: 'eq',
+              mode: 'or',
+              values: [
+                'Attack-Pattern',
+              ],
+            },
+            {
+              key: 'regardingOf',
+              operator: 'eq',
+              mode: 'and',
+              values: [
+                {
+                  key: 'id',
+                  values: entityIdsToOverlap,
+                  operator: 'eq',
+                  mode: 'or',
+                },
+                {
+                  key: 'relationship_type',
+                  values: [
+                    'should-cover',
+                  ],
+                  operator: 'eq',
+                  mode: 'or',
+                },
+              ],
+            },
+          ],
+          filterGroups: [],
+        },
+      },
+    ).toPromise() as AttackPatternsMatrixColumnsOverlapQuery$data;
+  };
+
+  useEffect(() => {
+    if (selectedSecurityPlatforms.length > 0) {
+      getAttackPatternIdsToOverlap(selectedSecurityPlatforms.map(({ value }) => value))
+        .then((result) => {
+          setAttackPatternIdsToOverlap(result?.stixCoreObjects?.edges?.map(({ node }) => node.id));
+        });
+    } else {
+      setAttackPatternIdsToOverlap(undefined);
+    }
+  }, [selectedSecurityPlatforms]);
 
   let csvData = null;
   if (currentView === 'courses-of-action') {
@@ -167,7 +242,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   };
 
   const matrixViewButton = (
-    <Tooltip title={t_i18n('Matrix view')}>
+    <Tooltip title={t_i18n('Matrix view')} key="matrix">
       <ToggleButton aria-label="matrix"
         onClick={() => handleChangeView('matrix')}
         value={'matrix'}
@@ -180,28 +255,28 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
     </Tooltip>
   );
   const matrixInLineViewButton = (
-    <Tooltip title={t_i18n('Matrix in line view')}>
+    <Tooltip title={t_i18n('Matrix in line view')} key="matrix-in-line">
       <ToggleButton value={'matrix-in-line'} aria-label="matrix-in-line" onClick={() => handleChangeView('matrix-in-line')}>
         <FiligranIcon icon={ListViewIcon} size="small" color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'} />
       </ToggleButton>
     </Tooltip>
   );
   const killChainViewButton = (
-    <Tooltip title={t_i18n('Kill chain view')}>
+    <Tooltip title={t_i18n('Kill chain view')} key="list">
       <ToggleButton value={'list'} aria-label="list" onClick={() => handleChangeView('list')}>
         <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'} />
       </ToggleButton>
     </Tooltip>
   );
   const courseOfActionView = (
-    <Tooltip title={t_i18n('Courses of action view')}>
+    <Tooltip title={t_i18n('Courses of action view')} key="courses-of-action">
       <ToggleButton value={'courses-of-action'} aria-label="courses-of-action" onClick={() => handleChangeView('courses-of-action')}>
         <ProgressWrench fontSize="small" color={currentView === 'courses-of-action' ? 'secondary' : 'primary'} />
       </ToggleButton>
     </Tooltip>
   );
   const relationshipsView = (
-    <Tooltip title={t_i18n('Relationships view')}>
+    <Tooltip title={t_i18n('Relationships view')} key="relationships">
       <ToggleButton value="relationships" aria-label="relationships" onClick={() => handleChangeView('relationships')}>
         <RelationManyToMany fontSize="small" color={currentView === 'relationships' ? 'secondary' : 'primary'}/>
       </ToggleButton>
@@ -247,7 +322,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               searchContext={{ entityTypes: ['Attack-Pattern'] }}
             />
           </Box>
-          <div
+          <Box
             style={{
               float: 'left',
               display: 'flex',
@@ -261,27 +336,21 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               redirection
               searchContext={{ entityTypes: ['Attack-Pattern'] }}
             />
-          </div>
-          {currentView === 'matrix' && (
-            <div
+          </Box>
+          {currentView === 'matrix' && (<>
+            <Box
               style={{
                 float: 'left',
                 display: 'flex',
-                padding: '0 10px 2px 10px',
+                paddingInline: 10,
+                paddingBlock: 10,
+                gap: 1,
               }}
             >
-              <InputLabel
-                style={{
-                  padding: '10px 10px 0 0',
-                }}
-              >
+              <InputLabel style={{ paddingInlineEnd: 10 }}>
                 {t_i18n('Kill chain :')}
               </InputLabel>
-              <FormControl
-                style={{
-                  paddingTop: 10,
-                }}
-              >
+              <FormControl>
                 <Select
                   size="small"
                   value={selectedKillChain}
@@ -294,43 +363,81 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   ))}
                 </Select>
               </FormControl>
-            </div>
+            </Box>
+            <Box
+              style={{
+                float: 'left',
+                display: 'flex',
+                marginBlockStart: -4,
+                paddingInline: 10,
+              }}
+            >
+              <Tooltip
+                title={
+                    isModeOnlyActive
+                      ? t_i18n('Display the whole matrix')
+                      : t_i18n('Display only used techniques')
+                  }
+              >
+                <span>
+                  <IconButton
+                    color={isModeOnlyActive ? 'secondary' : 'primary'}
+                    onClick={() => setIsModeOnlyActive((value) => !value)}
+                    size="large"
+                  >
+                    <VisibilityOutlined/>
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+
+            <Box
+              style={{
+                float: 'left',
+                display: 'flex',
+                paddingInline: 10,
+              }}
+            >
+              <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300 }}>
+                <EntitySelect
+                  multiple
+                  variant="outlined"
+                  size="small"
+                  value={selectedSecurityPlatforms}
+                  label={t_i18n('Compare with my security posture')}
+                  types={['SecurityPlatform']}
+                  onChange={(newSelectedSecurityPlatforms: EntityOption[]) => {
+                    setSelectedSecurityPlatforms(newSelectedSecurityPlatforms);
+                  }}
+                />
+              </FormControl>
+            </Box>
+            </>
           )}
           {!isEntity && (<div style={{ float: 'right', margin: 0 }}>
             <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
               {[...viewButtons]}
-              {typeof handleToggleExports === 'function' && !exportDisabled && (
-                <Tooltip title={t_i18n('Open export panel')}>
+              {typeof handleToggleExports === 'function' && (
+                <Tooltip
+                  key="export"
+                  title={
+                    exportDisabled
+                      ? `${t_i18n('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`
+                      : t_i18n('Open export panel')
+                  }
+                >
                   <ToggleButton
+                    size="small"
                     value="export"
                     aria-label="export"
-                    onClick={handleToggleExports}
+                    onClick={exportDisabled ? undefined : handleToggleExports}
+                    disabled={exportDisabled}
                   >
                     <FileDownloadOutlined
                       fontSize="small"
-                      color={openExports ? 'secondary' : 'primary'}
+                      color={!exportDisabled && openExports ? 'secondary' : 'primary'}
                     />
                   </ToggleButton>
-                </Tooltip>
-              )}
-              {typeof handleToggleExports === 'function' && exportDisabled && (
-                <Tooltip
-                  title={`${
-                    t_i18n(
-                      'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                    ) + export_max_size
-                  })`}
-                >
-                  <span>
-                    <ToggleButton
-                      size="small"
-                      value="export"
-                      aria-label="export"
-                      disabled={true}
-                    >
-                      <FileDownloadOutlined fontSize="small"/>
-                    </ToggleButton>
-                  </span>
                 </Tooltip>
               )}
             </ToggleButtonGroup>
@@ -374,7 +481,9 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             searchTerm={searchTerm}
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
+            attackPatternIdsToOverlap={attackPatternIdsToOverlap}
             isEntity={isEntity}
+            isModeOnlyActive={isModeOnlyActive}
           />
         )}
         {currentView === 'matrix-in-line' && (

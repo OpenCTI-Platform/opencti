@@ -1,4 +1,4 @@
-import { Autocomplete, TextField, Tooltip } from '@mui/material';
+import { Autocomplete, Chip, TextField, TextFieldProps, TextFieldVariants } from '@mui/material';
 import React, { Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
@@ -10,6 +10,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption } from '../../../../utils/field';
+import { truncate } from '../../../../utils/String';
 
 const entitySelectSearchQuery = graphql`
   query EntitySelectSearchQuery($search: String, $filters: FilterGroup) {
@@ -31,17 +32,34 @@ export type EntityOption = Pick<FieldOption, 'label' | 'value'> & {
   type: string
 };
 
-interface EntitySelectComponentProps {
+interface EntitySelectBaseProps {
   label: string
-  value: EntityOption | null
-  onChange?: (val: EntityOption | null) => void
+  variant?: TextFieldVariants
+  size?: TextFieldProps['size']
   onInputChange: (val: string) => void
   queryRef: PreloadedQuery<EntitySelectSearchQuery>
 }
 
+interface SingleSelectProps extends EntitySelectBaseProps {
+  multiple: false;
+  value: EntityOption | null;
+  onChange?: (val: EntityOption | null) => void;
+}
+
+interface MultiSelectProps extends EntitySelectBaseProps {
+  multiple: true;
+  value: EntityOption[];
+  onChange?: (val: EntityOption[]) => void;
+}
+
+type EntitySelectComponentProps = SingleSelectProps | MultiSelectProps;
+
 const EntitySelectComponent = ({
   label,
   value,
+  variant,
+  size,
+  multiple = false,
   onChange,
   onInputChange,
   queryRef,
@@ -57,37 +75,71 @@ const EntitySelectComponent = ({
     type: sco.node.entity_type,
   }));
 
+  const handleChange = (newValue: EntityOption | EntityOption[] | null) => {
+    if (multiple) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      onChange?.(newValue as EntityOption[]);
+    } else {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      onChange?.(newValue as EntityOption | null);
+    }
+  };
+
   return (
     <Autocomplete
       value={value}
       options={options}
+      multiple={multiple}
+      blurOnSelect={!multiple}
       noOptionsText={t_i18n('No available options')}
-      isOptionEqualToValue={(o: EntityOption, v: EntityOption) => o.value === v.value}
+      isOptionEqualToValue={(option, val) => option.value === val.value}
       onInputChange={(_, val) => throttleSearch(val)}
-      onChange={(_, val) => onChange?.(val)}
-      renderInput={(params) => <TextField {...params} label={label} />}
-      renderOption={(props, option) => (
-        <Tooltip title={option.label}>
-          <li
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: theme.spacing(1.5),
-              height: theme.spacing(6),
-            }}
-            {...props}
+      onChange={(_, val) => handleChange(val)}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          variant={variant}
+          size={size}
+          label={label}
+        />
+      )}
+      renderOption={({ key, ...props }, option) => (
+        <li
+          key={key}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1.5),
+            height: theme.spacing(6),
+          }}
+          {...props}
+        >
+          <ItemIcon type={option.type}/>
+          <span style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
           >
-            <ItemIcon type={option.type} />
-            <span style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+            {option.label}
+          </span>
+        </li>
+      )}
+      renderTags={(values, getTagProps) => (
+        values.map((option, index) => (
+          <Chip
+            {...getTagProps({ index })}
+            key={option.value}
+            label={truncate(option.label, 50)}
+            size="small"
+            style={{
+              marginBlock: 0,
+              marginInline: 3,
             }}
-            >
-              {option.label}
-            </span>
-          </li>
-        </Tooltip>
+          />
+        ))
       )}
     />
   );
@@ -114,7 +166,7 @@ const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
         },
       ],
     },
-  }), [search]);
+  }), [search, types]);
 
   const queryRef = useQueryLoading<EntitySelectSearchQuery>(
     entitySelectSearchQuery,
@@ -124,11 +176,21 @@ const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
   return (
     <Suspense fallback={<Loader />}>
       {queryRef && (
-        <EntitySelectComponent
-          {...otherProps}
-          onInputChange={setSearch}
-          queryRef={queryRef}
-        />
+        otherProps.multiple ? (
+          <EntitySelectComponent
+            {...(otherProps as MultiSelectProps)}
+            onInputChange={setSearch}
+            queryRef={queryRef}
+            multiple={true}
+          />
+        ) : (
+          <EntitySelectComponent
+            {...(otherProps as SingleSelectProps)}
+            onInputChange={setSearch}
+            queryRef={queryRef}
+            multiple={false}
+          />
+        )
       )}
     </Suspense>
   );
