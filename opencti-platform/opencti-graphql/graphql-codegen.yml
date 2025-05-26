@@ -59,6 +59,8 @@ generates:
         FintelTemplate: ../modules/fintelTemplate/fintelTemplate-types#BasicStoreEntityFintelTemplate
         SavedFilter: ../modules/savedFilter/savedFilter-types#BasicStoreEntitySavedFilter
         FintelDesign: ../modules/fintelDesign/fintelDesign-types#BasicStoreEntityFintelDesign
+        SecurityPlatform: ../modules/securityPlatform/securityPlatform-types#BasicStoreEntitySecurityPlatform
+
   ./graphql.schema.json:
     plugins:
       - "introspection"

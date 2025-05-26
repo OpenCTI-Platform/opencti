@@ -22,6 +22,7 @@ import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'attribute_abstract';
@@ -170,7 +171,7 @@ export const registerStixDomainAliased = (type: string) => {
   STIX_DOMAIN_OBJECT_ALIASED.push(type);
 };
 export const isStixObjectAliased = (type: string): boolean => {
-  return STIX_DOMAIN_OBJECT_ALIASED.includes(type) || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type);
+  return STIX_DOMAIN_OBJECT_ALIASED.includes(type) || (isStixDomainObjectIdentity(type) && type !== ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM) || isStixDomainObjectLocation(type);
 };
 
 export const resolveAliasesField = (type: string): AttributeDefinition => {
