@@ -43,6 +43,7 @@ const SCHEMA_ATTRIBUTES_QUERY = gql`
 `;
 
 describe('Attribute resolver standard behavior', () => {
+  const REL_RELATIONSHIP_ATTRIBUTES_NUMBER = 25;
   it('should retrieve runtime attribute for an entity', async () => {
     const queryResult = await queryAsAdmin({
       query: RUNTIME_ATTRIBUTES_QUERY,
@@ -130,7 +131,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: RELATION_OBJECT_LABEL }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(23);
+    expect(attributes.length).toEqual(REL_RELATIONSHIP_ATTRIBUTES_NUMBER);
     expect(attributes.map((node) => node.value).includes('created')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('confidence')).toBeTruthy(); // Direct attribute
 
@@ -149,7 +150,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: RELATION_OPERATING_SYSTEM }
     });
     attributes = queryResult.data.schemaAttributeNames.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(23);
+    expect(attributes.length).toEqual(REL_RELATIONSHIP_ATTRIBUTES_NUMBER);
     expect(attributes.map((node) => node.value).includes('standard_id')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('revoked')).toBeTruthy(); // Direct attribute
 
