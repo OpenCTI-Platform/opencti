@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
+import { Stack } from '@mui/material';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -302,7 +303,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 1, gap: '16px' }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <AttackPatternDeletion
               id={attackPattern.id}
             />
@@ -316,7 +317,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
               id={attackPattern.id}
             />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

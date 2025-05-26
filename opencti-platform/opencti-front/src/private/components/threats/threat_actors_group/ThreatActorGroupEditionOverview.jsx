@@ -4,6 +4,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
+import { Stack } from '@mui/material';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -292,7 +293,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 1, gap: '16px' }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <ThreatActorGroupDeletion
               id={threatActorGroup.id}
             />
@@ -306,7 +307,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
                 id={threatActorGroup.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

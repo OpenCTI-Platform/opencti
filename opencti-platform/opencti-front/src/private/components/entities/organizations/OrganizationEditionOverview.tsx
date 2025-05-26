@@ -6,6 +6,7 @@ import { OrganizationEditionOverview_organization$data } from '@components/entit
 import { OrganizationEditionContainer_organization$data } from '@components/entities/organizations/__generated__/OrganizationEditionContainer_organization.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
+import { Stack } from '@mui/material';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -341,7 +342,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 1, gap: '16px' }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <OrganizationDeletion
               id={organization.id}
             />
@@ -355,7 +356,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
                 id={organization.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { useTheme } from '@mui/styles';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -270,7 +271,7 @@ const CampaignEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 1, gap: '16px' }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <CampaignDeletion
               id={campaign.id}
             />
@@ -284,7 +285,7 @@ const CampaignEditionOverviewComponent = (props) => {
                 id={campaign.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

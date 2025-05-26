@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { useTheme } from '@mui/styles';
+import { Stack } from '@mui/material';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -346,7 +347,7 @@ ThreatActorIndividualEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 1, gap: '16px' }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <ThreatActorIndividualDeletion
               id={threatActorIndividual.id}
             />
@@ -360,7 +361,7 @@ ThreatActorIndividualEditionOverviewProps
                 id={threatActorIndividual.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

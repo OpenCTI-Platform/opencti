@@ -4,6 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
@@ -349,7 +350,7 @@ FeedbackEditionOverviewProps
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 1, gap: '16px' }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <FeedbackDeletion
               id={feedbackData.id}
             />
@@ -363,7 +364,7 @@ FeedbackEditionOverviewProps
                 id={feedbackData.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

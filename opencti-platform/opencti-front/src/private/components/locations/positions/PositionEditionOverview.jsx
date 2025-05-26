@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import { Stack } from '@mui/material';
 import PositionDeletion from './PositionDeletion';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
@@ -338,7 +339,7 @@ const PositionEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 1, gap: '16px' }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <PositionDeletion
               positionId={position.id}
             />
@@ -352,7 +353,7 @@ const PositionEditionOverviewComponent = (props) => {
                 id={position.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

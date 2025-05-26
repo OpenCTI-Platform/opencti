@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import { Stack } from '@mui/material';
 import GroupingDeletion from './GroupingDeletion';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -289,7 +290,7 @@ const GroupingEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', flex: 1, gap: '16px' }}>
+            <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
               <GroupingDeletion
                 groupingId={grouping.id}
               />
@@ -303,7 +304,7 @@ const GroupingEditionOverviewComponent = (props) => {
                   id={grouping.id}
                 />
               )}
-            </div>
+            </Stack>
           </Form>
         </div>
       )}
