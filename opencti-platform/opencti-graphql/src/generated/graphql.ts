@@ -24891,15 +24891,21 @@ export type SecurityPlatformStixCoreRelationshipsDistributionArgs = {
 };
 
 export type SecurityPlatformAddInput = {
+  confidence?: InputMaybe<Scalars['Int']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
+  externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  revoked?: InputMaybe<Scalars['Boolean']['input']>;
   security_platform_type?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
+  update?: InputMaybe<Scalars['Boolean']['input']>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SecurityPlatformConnection = {
@@ -24915,10 +24921,10 @@ export type SecurityPlatformEdge = {
 };
 
 export enum SecurityPlatformOrdering {
+  Score = '_score',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedAt = 'created_at',
-  Description = 'description',
-  Label = 'label',
   Modified = 'modified',
   Name = 'name',
   SecurityPlatformType = 'security_platform_type',
