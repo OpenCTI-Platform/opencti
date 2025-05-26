@@ -81,6 +81,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   defaultStopTime: string;
   storageKey: string;
   killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
+  isInEntity?: boolean;
 }
 
 const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
@@ -101,6 +102,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   defaultStopTime,
   storageKey,
   killChainDataQueryRef,
+  isInEntity,
 }) => {
   const { t_i18n } = useFormatter();
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
@@ -134,9 +136,14 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
     fragmentDef: attackPatternsMatrixColumnsFragment,
     queryRef: killChainDataQueryRef,
   });
+
   const killChainsPhaseData = killChainsData.attackPatternsMatrix?.attackPatternsOfPhases ?? [];
   const killChains = R.uniq(killChainsPhaseData.map((a) => a.kill_chain_name))
     .sort((a, b) => a.localeCompare(b));
+
+  if (killChains.length > 0 && !killChains.includes(selectedKillChain)) {
+    setSelectedKillChain(killChains[0]);
+  }
 
   const exportDisabled = targetEntities.length > export_max_size;
 
@@ -158,12 +165,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
       filterGroups: [],
     },
   };
-  let activKillChainValue;
-  if (killChains.includes(selectedKillChain)) {
-    activKillChainValue = selectedKillChain;
-  } else {
-    activKillChainValue = killChains.length > 0 ? killChains[0] : undefined;
-  }
 
   const matrixViewButton = (
     <Tooltip title={t_i18n('Matrix view')}>
@@ -210,146 +211,147 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   return (
     <>
-      {currentView !== 'matrix-in-line' && currentView !== 'relationships' && <div
-        style={{
-          marginBottom: 20,
-          padding: 0,
-          marginTop: -12,
-        }}
-                                                                              >
+      {currentView !== 'matrix-in-line' && currentView !== 'relationships' && (
         <div
           style={{
-            float: 'left',
+            marginBottom: 20,
+            padding: 0,
+            marginTop: -12,
           }}
         >
-          <SearchInput
-            variant="small"
-            keyword={searchTerm}
-            onSubmit={handleSearch}
-          />
-        </div>
-        <Box
-          style={{
-            display: 'flex',
-            float: 'left',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            marginRight: 20,
-            marginLeft: 8,
-            gap: 10,
-          }}
-        >
-          <Filters
-            availableFilterKeys={availableFilterKeys}
-            helpers={helpers}
-            searchContext={{ entityTypes: ['Attack-Pattern'] }}
-          />
-        </Box>
-        <div
-          style={{
-            float: 'left',
-            display: 'flex',
-            margin: '-6px 4px 0 0',
-          }}
-        >
-          <FilterIconButton
-            filters={filters}
-            helpers={helpers}
-            styleNumber={2}
-            redirection
-            searchContext={{ entityTypes: ['Attack-Pattern'] }}
-          />
-        </div>
-        {currentView === 'matrix' && (
-        <div
-          style={{
-            float: 'left',
-            display: 'flex',
-            padding: '0 10px 2px 10px',
-          }}
-        >
-          <InputLabel
-            style={{
-              padding: '10px 10px 0 0',
-            }}
-          >
-            {t_i18n('Kill chain :')}
-          </InputLabel>
-          <FormControl
-            style={{
-              paddingTop: 10,
-            }}
-          >
-            <Select
-              size="small"
-              value={activKillChainValue}
-              onChange={handleKillChainChange}
-            >
-              {killChains.map((killChainName) => (
-                <MenuItem key={killChainName} value={killChainName}>
-                  {killChainName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-        )}
-        <div style={{ float: 'right', margin: 0 }}>
-          <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
-            {[...viewButtons]}
-            {typeof handleToggleExports === 'function' && !exportDisabled && (
-            <Tooltip title={t_i18n('Open export panel')}>
-              <ToggleButton
-                value="export"
-                aria-label="export"
-                onClick={handleToggleExports}
-              >
-                <FileDownloadOutlined
-                  fontSize="small"
-                  color={openExports ? 'secondary' : 'primary'}
-                />
-              </ToggleButton>
-            </Tooltip>
-            )}
-            {typeof handleToggleExports === 'function' && exportDisabled && (
-            <Tooltip
-              title={`${
-                t_i18n(
-                  'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                ) + export_max_size
-              })`}
-            >
-              <span>
-                <ToggleButton
-                  size="small"
-                  value="export"
-                  aria-label="export"
-                  disabled={true}
-                >
-                  <FileDownloadOutlined fontSize="small"/>
-                </ToggleButton>
-              </span>
-            </Tooltip>
-            )}
-          </ToggleButtonGroup>
-
           <div
             style={{
-              float: 'right',
-              margin: '0 0 0 20px',
+              float: 'left',
             }}
           >
-            <ExportButtons
-              domElementId="container"
-              name={t_i18n('Attack patterns kill chain')}
-              csvData={csvData}
-              csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
+            <SearchInput
+              variant="small"
+              keyword={searchTerm}
+              onSubmit={handleSearch}
             />
           </div>
+          <Box
+            style={{
+              display: 'flex',
+              float: 'left',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              marginRight: 20,
+              marginLeft: 8,
+              gap: 10,
+            }}
+          >
+            <Filters
+              availableFilterKeys={availableFilterKeys}
+              helpers={helpers}
+              searchContext={{ entityTypes: ['Attack-Pattern'] }}
+            />
+          </Box>
+          <div
+            style={{
+              float: 'left',
+              display: 'flex',
+              margin: '-6px 4px 0 0',
+            }}
+          >
+            <FilterIconButton
+              filters={filters}
+              helpers={helpers}
+              styleNumber={2}
+              redirection
+              searchContext={{ entityTypes: ['Attack-Pattern'] }}
+            />
+          </div>
+          {currentView === 'matrix' && (
+            <div
+              style={{
+                float: 'left',
+                display: 'flex',
+                padding: '0 10px 2px 10px',
+              }}
+            >
+              <InputLabel
+                style={{
+                  padding: '10px 10px 0 0',
+                }}
+              >
+                {t_i18n('Kill chain :')}
+              </InputLabel>
+              <FormControl
+                style={{
+                  paddingTop: 10,
+                }}
+              >
+                <Select
+                  size="small"
+                  value={selectedKillChain}
+                  onChange={handleKillChainChange}
+                >
+                  {killChains.map((killChainName) => (
+                    <MenuItem key={killChainName} value={killChainName}>
+                      {killChainName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
+          )}
+          {!isInEntity && (<div style={{ float: 'right', margin: 0 }}>
+            <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+              {[...viewButtons]}
+              {typeof handleToggleExports === 'function' && !exportDisabled && (
+                <Tooltip title={t_i18n('Open export panel')}>
+                  <ToggleButton
+                    value="export"
+                    aria-label="export"
+                    onClick={handleToggleExports}
+                  >
+                    <FileDownloadOutlined
+                      fontSize="small"
+                      color={openExports ? 'secondary' : 'primary'}
+                    />
+                  </ToggleButton>
+                </Tooltip>
+              )}
+              {typeof handleToggleExports === 'function' && exportDisabled && (
+                <Tooltip
+                  title={`${
+                    t_i18n(
+                      'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                    ) + export_max_size
+                  })`}
+                >
+                  <span>
+                    <ToggleButton
+                      size="small"
+                      value="export"
+                      aria-label="export"
+                      disabled={true}
+                    >
+                      <FileDownloadOutlined fontSize="small"/>
+                    </ToggleButton>
+                  </span>
+                </Tooltip>
+              )}
+            </ToggleButtonGroup>
+
+            <div
+              style={{
+                float: 'right',
+                margin: '0 0 0 20px',
+              }}
+            >
+              <ExportButtons
+                domElementId="container"
+                name={t_i18n('Attack patterns kill chain')}
+                csvData={csvData}
+                csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
+              />
+            </div>
+          </div>)}
+          <div className="clearfix"/>
         </div>
-        <div className="clearfix"/>
-      </div>
-      }
+      )}
       <div
         style={{
           width: '100%',
@@ -372,6 +374,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             searchTerm={searchTerm}
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
+            isInEntity={isInEntity}
           />
         )}
         {currentView === 'matrix-in-line' && (
@@ -411,7 +414,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
             isRelationReversed={false}
-            paddingRight={220}
+            paddingRight={isInEntity ? 0 : 220}
             onCreate={refetch}
             targetStixDomainObjectTypes={['Attack-Pattern']}
             paginationOptions={paginationOptions}

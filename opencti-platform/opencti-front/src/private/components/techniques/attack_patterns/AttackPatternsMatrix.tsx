@@ -15,7 +15,6 @@ export interface AttackPatternsMatrixProps {
   searchTerm?: string;
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain?: string;
-  noBottomBar?: boolean;
 }
 
 export const attackPatternsMatrixQuery = graphql`
@@ -30,7 +29,6 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   searchTerm,
   handleAdd,
   selectedKillChain,
-  noBottomBar,
 }) => {
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 
@@ -51,7 +49,6 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
             searchTerm={searchTerm ?? ''}
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
-            noBottomBar={noBottomBar}
           />
         </React.Suspense>
       )}
