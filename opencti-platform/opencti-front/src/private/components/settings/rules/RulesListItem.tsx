@@ -28,6 +28,7 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
   const isEngineEnabled = platformModuleHelpers.isRuleEngineEnable();
 
   const ruleStatus = isEngineEnabled && rule.activated ? t_i18n('Enabled') : t_i18n('Disabled');
+  const taskWork = task?.work;
 
   const styleRuleRoot: CSSProperties = {
     display: 'flex',
@@ -91,9 +92,9 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
                     />
                   </FormGroup>
                 </Grid>
-                {isEngineEnabled && task && (
+                {isEngineEnabled && taskWork && (
                   <Grid size={{ xs: 12 }}>
-                    <RuleListItemProgressBar task={task} />
+                    <RuleListItemProgressBar taskEnable={task.enable ?? false} work={taskWork} />
                   </Grid>
                 )}
               </Grid>

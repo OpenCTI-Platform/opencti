@@ -328,9 +328,6 @@ services:
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-direct-worker
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-    volumes:
-    - name: cache-node-direct-start-backend
-      path: /tmp/direct-start-platform/node_modules
     environment:
       OPENCTI_URL: http://opencti-direct-start:4300
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -446,9 +443,6 @@ services:
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-e2e-worker
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-    volumes:
-      - name: cache-node-e2e-start-backend
-        path: /tmp/e2e-start-platform/node_modules
     environment:
       OPENCTI_URL: http://opencti-e2e-start:4500
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159

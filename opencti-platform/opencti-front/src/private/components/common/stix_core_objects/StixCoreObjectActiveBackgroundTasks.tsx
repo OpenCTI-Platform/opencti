@@ -33,7 +33,7 @@ const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBa
   const filteredActiveTasks = stixCoreBackgroundActiveOperations?.filter((t) => t?.actions?.some((a) => actionsFilter.includes(a?.type ?? ''))) ?? [];
   const currenActiveTasksCount = filteredActiveTasks?.length ?? 0;
   const hasCurrentActiveTask = currenActiveTasksCount > 0;
-  const tooltip = filteredActiveTasks.map((task) => task.description).join(';');
+  const tooltip = filteredActiveTasks.map((task) => task.description).join('\n');
 
   useEffect(() => {
     // Refresh
@@ -48,7 +48,7 @@ const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBa
   return (
     <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px' }}>
       {hasCurrentActiveTask && (
-        <Tooltip title={tooltip}>
+        <Tooltip title={<span style={{ whiteSpace: 'pre-line' }}>{tooltip}</span>}>
           <Badge
             badgeContent={currenActiveTasksCount}
             color="warning"
