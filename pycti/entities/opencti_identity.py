@@ -57,6 +57,9 @@ class Identity:
                     x_opencti_firstname
                     x_opencti_lastname
                 }
+                ... on SecurityPlatform {
+                    security_platform_type
+                }
             }
             objectMarking {
                 id
@@ -113,6 +116,9 @@ class Identity:
                 x_opencti_organization_type
                 x_opencti_score
             }
+            ... on SecurityPlatform {
+                security_platform_type
+            }
         """
         self.properties_with_files = """
             id
@@ -159,6 +165,9 @@ class Identity:
                 ... on Individual {
                     x_opencti_firstname
                     x_opencti_lastname
+                }
+                ... on SecurityPlatform {
+                    security_platform_type
                 }
             }
             objectMarking {
@@ -228,6 +237,9 @@ class Identity:
             ... on Organization {
                 x_opencti_organization_type
                 x_opencti_score
+            }
+            ... on SecurityPlatform {
+                security_platform_type
             }
             importFiles {
                 edges {
@@ -414,6 +426,7 @@ class Identity:
         contact_information = kwargs.get("contact_information", None)
         roles = kwargs.get("roles", None)
         x_opencti_aliases = kwargs.get("x_opencti_aliases", None)
+        security_platform_type = kwargs.get("security_platform_type", None)
         x_opencti_organization_type = kwargs.get("x_opencti_organization_type", None)
         x_opencti_reliability = kwargs.get("x_opencti_reliability", None)
         x_opencti_score = kwargs.get("x_opencti_score", None)
@@ -463,6 +476,24 @@ class Identity:
                 input_variables["x_opencti_reliability"] = x_opencti_reliability
                 input_variables["x_opencti_score"] = x_opencti_score
                 result_data_field = "organizationAdd"
+            elif type == IdentityTypes.SECURITYPLATFORM.value:
+                query = """
+                    mutation SecurityPlatformAdd($input: SecurityPlatformAddInput!) {
+                        securityPlatformAdd(input: $input) {
+                            id
+                            standard_id
+                            entity_type
+                            parent_types
+                        }
+                    }
+                """
+                input_variables["security_platform_type"] = security_platform_type
+                # no need for these attributes for security platform
+                del input_variables["contact_information"]
+                del input_variables["lang"]
+                del input_variables["roles"]
+                del input_variables["x_opencti_aliases"]
+                result_data_field = "securityPlatformAdd"
             elif type == IdentityTypes.INDIVIDUAL.value:
                 query = """
                     mutation IndividualAdd($input: IndividualAddInput!) {
@@ -542,6 +573,8 @@ class Identity:
                     type = "Sector"
                 elif stix_object["identity_class"] == "system":
                     type = "System"
+                elif stix_object["identity_class"] == "securityplatform":
+                    type = "SecurityPlatform"
 
             # Search in extensions
             if "x_opencti_aliases" not in stix_object:
@@ -552,6 +585,12 @@ class Identity:
                 stix_object["x_opencti_organization_type"] = (
                     self.opencti.get_attribute_in_extension(
                         "organization_type", stix_object
+                    )
+                )
+            if "security_platform_type" not in stix_object:
+                stix_object["security_platform_type"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "security_platform_type", stix_object
                     )
                 )
             if "x_opencti_reliability" not in stix_object:
@@ -633,6 +672,11 @@ class Identity:
                 x_opencti_organization_type=(
                     stix_object["x_opencti_organization_type"]
                     if "x_opencti_organization_type" in stix_object
+                    else None
+                ),
+                security_platform_type=(
+                    stix_object["security_platform_type"]
+                    if "security_platform_type" in stix_object
                     else None
                 ),
                 x_opencti_reliability=(
