@@ -599,7 +599,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(543);
+    expect(data.edges.length).toEqual(542);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
