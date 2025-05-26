@@ -267,7 +267,7 @@ FilterIconButtonContainerProps
       };
     }
   }
-  console.log('boxStyle : ', boxStyle);
+
   return (
     <Box id='toto' sx={boxStyle}>
       {displayedFilters.map((currentFilter, index) => {
