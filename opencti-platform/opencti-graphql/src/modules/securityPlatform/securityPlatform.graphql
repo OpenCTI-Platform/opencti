@@ -143,7 +143,6 @@ enum SecurityPlatformOrdering {
   modified
   updated_at
   security_platform_type
-  description
   _score
 }
 
