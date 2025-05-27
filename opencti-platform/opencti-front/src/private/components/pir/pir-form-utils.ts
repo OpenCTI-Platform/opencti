@@ -1,5 +1,5 @@
 import type { FieldOption } from '../../../utils/field';
-import { PirAddInput } from './__generated__/PirCreationFormMutation.graphql';
+import { PirAddInput } from './__generated__/PirCreationMutation.graphql';
 
 export interface PirCreationFormData {
   type: string | null
@@ -26,7 +26,7 @@ const optionsToFilters = (options: FieldOption[]): PirAddInput['pir_criteria'] =
 export const pirFormDataToMutationInput = (data: PirCreationFormData): PirAddInput => {
   return {
     name: data.name ?? '',
-    description: data.description ?? '',
+    description: data.description,
     objectMarking: data.markings.map((m) => m.value),
     pir_filters: {
       mode: 'and',

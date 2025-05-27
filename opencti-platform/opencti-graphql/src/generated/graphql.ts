@@ -19631,7 +19631,7 @@ export type Pir = BasicObject & InternalObject & {
 };
 
 export type PirAddInput = {
-  description: Scalars['String']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   objectMarking?: InputMaybe<Array<Scalars['String']['input']>>;
   pir_criteria: Array<PirCriterionInput>;
