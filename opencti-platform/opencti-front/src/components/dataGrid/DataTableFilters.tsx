@@ -46,12 +46,8 @@ export const DataTableDisplayFilters = ({
     },
   } = useDataTableContext();
 
-  if (!isFilterGroupNotEmpty(filters)) {
-    return null;
-  }
-
   return (
-    <div id="filter-container" style={{ minHeight: 10, display: 'flex', alignItems: 'center' }}>
+    <div id="filter-container" style={{ display: 'flex', alignItems: 'center' }}>
       <FilterIconButton
         helpers={helpers}
         availableFilterKeys={availableFilterKeys}

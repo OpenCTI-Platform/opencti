@@ -119,7 +119,7 @@ interface FilterIconButtonContainerProps {
   chipColor?: ChipOwnProps['color'];
   helpers?: handleFilterHelpers;
   hasRenderedRef: boolean;
-  setHasRenderedRef: () => void;
+  setHasRenderedRef: (value: boolean) => void;
   availableRelationFilterTypes?: Record<string, string[]>;
   entityTypes?: string[];
   filtersRestrictions?: FiltersRestrictions;
@@ -184,14 +184,13 @@ FilterIconButtonContainerProps
       const newFilterAdded = hasRenderedRef
         && itemRefToPopover.current
         && oldItemRefToPopover.current !== itemRefToPopover.current;
-      const firstFilterAdded = !hasRenderedRef && itemRefToPopover.current && oldItemRefToPopover.current === null;
-      if (newFilterAdded || firstFilterAdded) {
+      if (newFilterAdded) {
         setFilterChipsParams({
           filterId: helpers?.getLatestAddFilterId(),
           anchorEl: itemRefToPopover.current as unknown as HTMLElement,
         });
       } else {
-        setHasRenderedRef();
+        setHasRenderedRef(true);
       }
       oldItemRefToPopover.current = itemRefToPopover.current;
     }, [displayedFilters]);
