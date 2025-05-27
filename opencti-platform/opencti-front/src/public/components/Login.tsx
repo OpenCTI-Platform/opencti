@@ -129,6 +129,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const { dimension } = useDimensions();
   const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
   const [resetPassword, setResetPassword] = useState(false);
+  const [email, setEmail] = useState('');
 
   const renderExternalAuthButton = (provider?: string | null) => {
     switch (provider) {
@@ -283,17 +284,17 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
       )}
       {isAuthForm && !isConsentMessage && !resetPassword && (
         <Paper variant="outlined" classes={{ root: classes.login }}>
-          <LoginForm onClickForgotPassword={() => setResetPassword(true)} />
+          <LoginForm onClickForgotPassword={() => setResetPassword(true)} email={email} setEmail={setEmail} />
         </Paper>
       )}
       {isAuthForm && isConsentMessage && checked && !resetPassword && (
         <Paper variant="outlined" classes={{ root: classes.login }}>
-          <LoginForm onClickForgotPassword={() => setResetPassword(true)} />
+          <LoginForm onClickForgotPassword={() => setResetPassword(true)} email={email} setEmail={setEmail} />
         </Paper>
       )}
       {resetPassword && (
         <Paper variant="outlined" classes={{ root: classes.login }}>
-          <ResetPassword onCancel={() => setResetPassword(false)} />
+          <ResetPassword onCancel={() => setResetPassword(false)} email={email} setEmail={setEmail} />
         </Paper>
       )}
       {isAuthButtons && !isConsentMessage && renderExternalAuth(authSSOs)}

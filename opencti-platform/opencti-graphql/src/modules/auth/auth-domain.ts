@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid';
 import { findById, getUserByEmail, userEditField } from '../../domain/user';
 import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
 import { sendMail } from '../../database/smtp';
-import type { AuthContext, AuthUser } from '../../types/user';
+import type { AuthContext } from '../../types/user';
 import type { AskSendOtpInput, ChangePasswordInput, VerifyMfaInput, VerifyOtpInput } from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -19,10 +19,8 @@ import { killUserSessions } from '../../database/session';
 import { logApp } from '../../config/conf';
 import type { SendMailArgs } from '../../types/smtp';
 
-export const getLocalProviderUser = async (email: string): Promise<AuthUser> => {
+export const getLocalProviderUser = async (email: string) => {
   const user: any = await getUserByEmail(email);
-  if (!user) throw UnsupportedError('User not found');
-  if (user.external) throw UnsupportedError('External user');
   return user;
 };
 
@@ -35,38 +33,49 @@ export const generateOtp = () => {
 export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, ADMIN_USER, ENTITY_TYPE_SETTINGS);
   const resetOtp = generateOtp();
+  const hashedOtp = bcrypt.hashSync(resetOtp);
   const transactionId = uuid();
+
+  // Get user, and block if no user found or user is external
+  const user: any = await getUserByEmail(input.email);
+  if (!user || user.external) {
+    await publishUserAction({
+      user: SYSTEM_USER,
+      event_type: 'authentication',
+      event_scope: 'forgot',
+      event_access: 'administration',
+      context_data: undefined,
+      message: `Invalid email ${input.email} provided for password reset`,
+    });
+    return transactionId;
+  }
+  const { user_email, name, otp_activated: mfa_activated, id } = user;
+  const email = user_email.toLowerCase();
+
+  // Don't generate new redis key under 30-second delay
+  const previousKey = await redisGetForgotPasswordOtpPointer(input.email);
+  const isTooRecent = previousKey.ttl > (OTP_TTL - 30);
+  if (isTooRecent) return transactionId;
+
+  // Delete the previous OTP if it exists based on the pointer
+  if (previousKey.id) await redisDelForgotPassword(previousKey.id, email);
+
+  // Store the new OTP; create a new key using the new UUID
+  await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, mfa_activated: mfa_activated ?? false, mfa_validated: false, userId: id });
+
+  // Send email
   try {
-    // Retrieve user information
-    const user = await getLocalProviderUser(input.email);
-    const {
-      user_email,
-      name,
-      otp_activated: mfa_activated,
-      id
-    } = user;
-    const email = user_email.toLowerCase();
-    // Check the 30-second delay key
-    const storedOtp = await redisGetForgotPasswordOtpPointer(input.email);
-    const isTooRecentStoredOtp = storedOtp.ttl > (OTP_TTL - 30);
-    if (isTooRecentStoredOtp) return transactionId;
-    // Delete the previous OTP if it exists based on the pointer
-    const previousPointer = await redisGetForgotPasswordOtpPointer(email);
-    if (previousPointer.id) {
-      await redisDelForgotPassword(previousPointer.id, email);
-    }
-    // Generate and store the new OTP; create a new pointer using the new UUID
-    const hashedOtp = bcrypt.hashSync(resetOtp);
-    await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, mfa_activated: mfa_activated ?? false, mfa_validated: false, userId: id });
-    // Create and send the email
-    const body = `Hi ${name},</br></br>`
-        + 'A request has been made to reset your OpenCTI password.</br></br>'
-        + 'Enter the following password recovery code:</br></br>'
-        + `<b>${resetOtp}</b>`;
+    const body = `<p>Hi ${name},</p>`
+      + '<p>We have received a request to reset the password for your account associated with this email address. To proceed with resetting your password, please use the verification code provided below:</p>'
+      + `<p><b>${resetOtp}</b></p>`
+      + '<p>Please enter this code on the password reset page to create a new password for your account.</p>'
+      + '<p>If you did not request this password reset, it is possible that someone else is trying to access your account. Do not forward or give this code to anyone.</p>'
+      + '<p>For any assistance or if you have concerns, do not hesitate to contact the system administrator.</p>'
+      + '<p>Sincerely,</p>';
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: user_email,
-      subject: `${resetOtp} is your recovery code of your OpenCTI account`,
+      subject: 'Your OpenCTI account - Password recovery code',
       html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
     };
     await sendMail(sendMailArgs);
@@ -77,21 +86,21 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       event_scope: 'forgot',
       event_access: 'administration',
       context_data: undefined,
-      message: `send an OTP to ${user_email}`,
+      message: `sends password reset code to ${user_email}`,
     });
   } catch (e) {
-    // Prevent wrong email address, but return transactionId too if it fails
     logApp.error('Error occurred while sending password reset email:', { cause: e });
-    // Audit log in case of error during OTP sending
     await publishUserAction({
       user: SYSTEM_USER,
       event_type: 'authentication',
       event_scope: 'forgot',
       event_access: 'administration',
       context_data: undefined,
-      message: `failed to send OTP to ${input.email}`,
+      message: `Failed to send password reset code to ${input.email}`,
     });
   }
+
+  // In all cases, return the transaction ID
   return transactionId;
 };
 
@@ -104,9 +113,9 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
       event_scope: 'forgot',
       event_access: 'administration',
       context_data: undefined,
-      message: `OTP checked is expired or not found for ${input.transactionId}`,
+      message: `Password reset code is expired or not found for ${input.transactionId}`,
     });
-    throw UnsupportedError('OTP expired or not found. Please request a new one.');
+    throw UnsupportedError('Password reset code expired or not found. Please request a new one.');
   }
   const isMatch = bcrypt.compareSync(input.otp, hashedOtp);
   if (!isMatch) {
@@ -116,9 +125,9 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
       event_scope: 'forgot',
       event_access: 'administration',
       context_data: undefined,
-      message: `OTP checked is invalid for ${email}`,
+      message: `Password reset code is invalid for ${email}`,
     });
-    throw UnsupportedError('Invalid OTP. Please check the code and try again.');
+    throw UnsupportedError('Invalid password reset code. Please check the code and try again.');
   }
   await publishUserAction({
     user: SYSTEM_USER,
@@ -126,7 +135,7 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
     event_scope: 'forgot',
     event_access: 'administration',
     context_data: undefined,
-    message: `OTP checked is valid for ${email}`,
+    message: `Password reset code is valid for ${email}`,
   });
   return { mfa_activated };
 };
@@ -158,26 +167,25 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
       event_scope: 'forgot',
       event_access: 'administration',
       context_data: undefined,
-      message: `OTP checked is invalid for ${email}`,
+      message: `Password reset code is invalid for ${email}`,
     });
-    throw UnsupportedError('Invalid OTP. Please check the code and try again.');
+    throw UnsupportedError('Invalid password reset code. Please check the code and try again.');
   }
   try {
     const authUser = await findById(context, ADMIN_USER, userId);
-    await userEditField(context, authUser, authUser.id, [
+    await userEditField(context, SYSTEM_USER, authUser.id, [
       { key: 'password', value: [input.newPassword] }
     ]);
     await killUserSessions(authUser.id);
     await redisDelForgotPassword(input.transactionId, email);
-    const body = `Hi ${authUser.name},</br></br>`
-      + 'We wanted to let you know that your account password was successfully changed.</br></br>'
-      + 'If you initiated this change, no further action is required. However, if you did not authorize this change, please reset your password immediately and contact the system administrator so that we may investigate and take appropriate measures to secure your account.</br></br>'
-      + 'Sincerely,</br></br>'
-      + 'Filigran</br></br>';
+    const body = `<p>Hi ${authUser.name},</p>`
+      + '<p>We wanted to let you know that your account password was successfully changed.</p>'
+      + '<p>If you initiated this change, no further action is required. However, if you did not request this change, please reset your password immediately and contact the system administrator.</p>'
+      + '<p>Sincerely,</p>';
     const sendMailArgs: SendMailArgs = {
       from: settings.platform_email,
       to: email,
-      subject: 'The password of your OpenCTI account has been changed',
+      subject: 'Your OpenCTI account - Password updated',
       html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
     };
     await sendMail(sendMailArgs);

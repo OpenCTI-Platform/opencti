@@ -10,13 +10,6 @@ describe('getLocalProviderUser', () => {
     expect(user.user_email).toEqual('anais@opencti.io');
     expect(user.name).toEqual('anais@opencti.io');
   });
-  it('Should throw an error if no user founded', async () => {
-    expect(async () => getLocalProviderUser('noResul@opencti.io')).rejects.toThrow('User not found');
-  });
-  it('Should throw an error if user is external', async () => {
-    // admin is external
-    expect(async () => getLocalProviderUser('admin@opencti.io')).rejects.toThrow('External user');
-  });
 });
 
 describe('generateOtp', () => {
