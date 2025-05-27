@@ -70,7 +70,7 @@ input PirExplanationInput {
 
 input PirAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
-    description: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
     pir_criteria: [PirCriterionInput!]!
     pir_filters: FilterGroup!
     objectMarking: [String!]
