@@ -23,12 +23,11 @@ export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptio
   return listEntitiesPaginated<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
 };
 
-// const PIR_RESCAN_PERIOD = 30 * 24 * 3600 * 1000; // 1 month in milliseconds
-const TEST_PIR_RESCAN_PERIOD = 3600 * 1000; // 1h hour in milliseconds // TODO PIR
+const PIR_RESCAN_PERIOD = 30 * 24 * 3600 * 1000; // 1 month in milliseconds
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
   // -- create Pir --
-  const rescanStartDate = now() - TEST_PIR_RESCAN_PERIOD; // rescan start date in seconds
+  const rescanStartDate = now() - PIR_RESCAN_PERIOD; // rescan start date in seconds
   const finalInput = {
     ...serializePir(input),
     lastEventId: `${rescanStartDate}-0`,
