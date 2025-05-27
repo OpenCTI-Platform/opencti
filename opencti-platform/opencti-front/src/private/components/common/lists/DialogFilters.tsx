@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent, ReactElement } from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { BiotechOutlined } from '@mui/icons-material';
@@ -9,12 +9,28 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { useFormatter } from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { FilterSearchContext } from '../../../../utils/filters/filtersUtils';
 
-const DialogFilters = ({
+interface DialogFiltersProps {
+  handleOpenFilters: (event: React.SyntheticEvent) => void;
+  disabled?: boolean;
+  open: boolean;
+  filters?: FilterGroup;
+  handleCloseFilters: () => void;
+  defaultHandleRemoveFilter: (key: string, id?: string) => void;
+  handleSwitchGlobalMode?: () => void;
+  handleSwitchLocalMode?: (filter: Filter) => void;
+  handleSearch: () => void;
+  filterElement: ReactElement;
+  searchContext?: FilterSearchContext;
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+}
+
+const DialogFilters: FunctionComponent<DialogFiltersProps> = ({
   handleOpenFilters,
   disabled,
-  size,
-  fontSize,
   open,
   filters,
   handleCloseFilters,
@@ -34,9 +50,9 @@ const DialogFilters = ({
         <IconButton
           onClick={handleOpenFilters}
           disabled={disabled}
-          size={size || 'medium'}
+          size={'medium'}
         >
-          <BiotechOutlined fontSize={fontSize || 'medium'} />
+          <BiotechOutlined fontSize={'medium'} />
         </IconButton>
       </Tooltip>
       <Dialog

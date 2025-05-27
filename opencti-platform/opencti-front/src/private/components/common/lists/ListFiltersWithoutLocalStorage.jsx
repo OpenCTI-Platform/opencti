@@ -22,8 +22,6 @@ const useStyles = makeStyles(() => ({
 }));
 
 const ListFiltersWithoutLocalStorage = ({
-  size,
-  fontSize,
   handleOpenFilters,
   handleCloseFilters,
   open,
@@ -34,15 +32,15 @@ const ListFiltersWithoutLocalStorage = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  let icon = <FilterListOutlined fontSize={fontSize || 'medium'} />;
+  let icon = <FilterListOutlined fontSize={'medium'} />;
   let tooltip = t_i18n('Filters');
   let color = 'primary';
   if (type === 'from') {
-    icon = <RayStartArrow fontSize={fontSize || 'medium'} />;
+    icon = <RayStartArrow fontSize={'medium'} />;
     tooltip = t_i18n('Dynamic source filters');
     color = 'warning';
   } else if (type === 'to') {
-    icon = <RayEndArrow fontSize={fontSize || 'medium'} />;
+    icon = <RayEndArrow fontSize={'medium'} />;
     tooltip = t_i18n('Dynamic target filters');
     color = 'success';
   }
@@ -67,7 +65,7 @@ const ListFiltersWithoutLocalStorage = ({
             color={color}
             onClick={handleOpenFilters}
             style={{ float: 'left', marginTop: -2 }}
-            size={size || 'large'}
+            size={'large'}
           >
             {icon}
           </IconButton>

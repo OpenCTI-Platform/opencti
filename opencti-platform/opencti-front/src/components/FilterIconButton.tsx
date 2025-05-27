@@ -33,7 +33,7 @@ export interface FilterIconButtonProps {
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
   filters: FilterGroup,
   hasRenderedRef: boolean;
-  setHasRenderedRef: () => void;
+  setHasRenderedRef: (value: boolean) => void;
 }
 const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButtonIfFiltersProps> = ({
   filters,
@@ -94,15 +94,16 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   );
 };
 
-const EmptyFilter: FunctionComponent<{ setHasRenderedRef: () => void }> = ({ setHasRenderedRef }) => {
+interface EmptyFilterProps {
+  setHasRenderedRef: (value: boolean) => void
+}
+
+const EmptyFilter: FunctionComponent<EmptyFilterProps> = ({ setHasRenderedRef }) => {
   useEffect(() => {
-    setHasRenderedRef();
+    setHasRenderedRef(true);
   }, []);
   return null;
 };
-
-// availableEntityTypes
-// availableRelationshipTypes
 
 const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   availableFilterKeys,
@@ -125,8 +126,8 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   hasSavedFilters,
 }) => {
   const hasRenderedRef = useRef(false);
-  const setHasRenderedRef = () => {
-    hasRenderedRef.current = true;
+  const setHasRenderedRef = (value: boolean) => {
+    hasRenderedRef.current = value;
   };
   const displayedFilters = filters
     ? {
