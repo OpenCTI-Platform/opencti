@@ -327,7 +327,7 @@ const LeftBar = () => {
     'Sector',
     'Event',
     'Organization',
-    'Security platforms',
+    'Security-platforms',
     'System',
     'Individual',
   );

@@ -25,50 +25,50 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
-    subscription RootSecurityPlatformSubscription($id: ID!) {
-        stixDomainObject(id: $id) {
-            ... on SecurityPlatform {
-                ...SecurityPlatform_securityPlatform
+  subscription RootSecurityPlatformSubscription($id: ID!) {
+    stixDomainObject(id: $id) {
+      ... on SecurityPlatform {
+        ...SecurityPlatform_securityPlatform
 #                ...SecurityPlatformEditionContainer_securityPlatform
-            }
-            ...FileImportViewer_entity
-            ...FileExportViewer_entity
-            ...FileExternalReferencesViewer_entity
-            ...WorkbenchFileViewer_entity
-            ...PictureManagementViewer_entity
-        }
+      }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+      ...WorkbenchFileViewer_entity
+      ...PictureManagementViewer_entity
     }
+  }
 `;
 
 const securityPlatformQuery = graphql`
-    query RootSecurityPlatformQuery($id: String!) {
-        securityPlatform(id: $id) {
-            id
-            draftVersion {
-                draft_id
-                draft_operation
-            }
-            entity_type
-            name
-            x_opencti_aliases
-            security_platform_type
-            ...StixCoreObjectKnowledgeBar_stixCoreObject
-            ...SecurityPlatform_securityPlatform
+  query RootSecurityPlatformQuery($id: String!) {
+    securityPlatform(id: $id) {
+      id
+      draftVersion {
+        draft_id
+        draft_operation
+      }
+      entity_type
+      name
+      x_opencti_aliases
+      security_platform_type
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
+      ...SecurityPlatform_securityPlatform
 #            ...SecurityPlatformKnowledge_securityPlatform
-            ...FileImportViewer_entity
-            ...FileExportViewer_entity
-            ...FileExternalReferencesViewer_entity
-            ...WorkbenchFileViewer_entity
-            ...PictureManagementViewer_entity
-            ...StixCoreObjectContent_stixCoreObject
-        }
-        connectorsForImport {
-            ...FileManager_connectorsImport
-        }
-        connectorsForExport {
-            ...FileManager_connectorsExport
-        }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+      ...WorkbenchFileViewer_entity
+      ...PictureManagementViewer_entity
+      ...StixCoreObjectContent_stixCoreObject
     }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
+    }
+  }
 `;
 
 type RootSecurityPlatformProps = {
