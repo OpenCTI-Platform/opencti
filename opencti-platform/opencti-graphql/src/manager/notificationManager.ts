@@ -6,7 +6,7 @@ import { createStreamProcessor, fetchRangeNotifications, storeNotificationEvent,
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
-import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, SYSTEM_USER } from '../utils/access';
+import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
@@ -19,8 +19,8 @@ import {
   ENTITY_TYPE_TRIGGER
 } from '../modules/notification/notification-types';
 import { resolveFiltersMapForUser } from '../utils/filtering/filtering-resolution';
-import { getEntitiesListFromCache } from '../database/cache';
-import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { OPENCTI_ADMIN_UUID, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { extractStixRepresentative, extractStixRepresentativeForUser } from '../database/stix-representative';
@@ -32,6 +32,7 @@ import type { FilterGroup } from '../generated/graphql';
 import { DigestPeriod, TriggerEventType, TriggerType } from '../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import type { Representative } from '../types/store';
+import type { BasicStoreSettings } from '../types/settings';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -473,41 +474,44 @@ export const buildTargetEvents = async (
       : [...event_types, EVENT_TYPE_CREATE]; // create is always included for instance_triggers with update in their event_types
   }
   const targets: Array<{ user: NotificationUser, type: string, message: string }> = [];
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   if (eventType === EVENT_TYPE_UPDATE) {
     const { context: updatePatch } = streamEvent.data as UpdateEvent;
     const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(data), updatePatch.reverse_patch);
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       // For each user for a specific trigger
       const user = users[indexUser];
+      const user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
+      const userContext = { ...context, user_inside_platform_organization };
       const notificationUser = convertToNotificationUser(user, notifiers);
       // TODO: replace with new matcher, but handle side events
       // Check if the event matched/matches the trigger filters and the user rights
-      const isPreviousMatch = await isStixMatchFilterGroup(context, user, previous, finalFilters);
-      const isCurrentlyMatch = await isStixMatchFilterGroup(context, user, data, finalFilters);
+      const isPreviousMatch = await isStixMatchFilterGroup(userContext, user, previous, finalFilters);
+      const isCurrentlyMatch = await isStixMatchFilterGroup(userContext, user, data, finalFilters);
       // Depending on the previous visibility, the displayed event type will be different
       if (!useSideEventMatching) { // Case classic live trigger & instance trigger direct events: user should be notified of the direct event
         const translatedType = eventTypeTranslater(isPreviousMatch, isCurrentlyMatch, eventType);
         // Case 01. No longer visible because of a data update (user loss of rights OR instance_trigger & remove a listened instance in the refs)
         if (isPreviousMatch && !isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translatedType = delete
-          const message = await generateNotificationMessageForInstance(context, user, data);
+          const message = await generateNotificationMessageForInstance(userContext, user, data);
           targets.push({ user: notificationUser, type: translatedType, message });
         } else
           // Case 02. Newly visible because of a data update (gain of rights OR instance_trigger & add a listened instance in the refs)
           if (!isPreviousMatch && isCurrentlyMatch && triggerEventTypes.includes(translatedType)) { // translated type = create
-            const message = await generateNotificationMessageForInstance(context, user, data);
+            const message = await generateNotificationMessageForInstance(userContext, user, data);
             targets.push({ user: notificationUser, type: translatedType, message });
           } else if (isCurrentlyMatch && triggerEventTypes.includes(translatedType)) {
           // Case 03. Just an update
-            const message = await generateNotificationMessageForInstance(context, user, data);
+            const message = await generateNotificationMessageForInstance(userContext, user, data);
             targets.push({ user: notificationUser, type: translatedType, message });
           }
       } else { // useSideEventMatching = true: Case side events for instance triggers
         // eslint-disable-next-line no-lonely-if
         if (isPreviousMatch || isCurrentlyMatch) { // we keep events if : was visible and/or is visible
-          const listenedInstanceIdsMap = await resolveFiltersMapForUser(context, user, finalFilters);
+          const listenedInstanceIdsMap = await resolveFiltersMapForUser(userContext, user, finalFilters);
           // eslint-disable-next-line max-len
-          const translatedType = await eventTypeTranslaterForSideEvents(context, user, isPreviousMatch, isCurrentlyMatch, eventType, previous, data, listenedInstanceIdsMap, updatePatch);
-          const message = await generateNotificationMessageForFilteredSideEvents(context, user, data, finalFilters, translatedType, updatePatch, previous);
+          const translatedType = await eventTypeTranslaterForSideEvents(userContext, user, isPreviousMatch, isCurrentlyMatch, eventType, previous, data, listenedInstanceIdsMap, updatePatch);
+          const message = await generateNotificationMessageForFilteredSideEvents(userContext, user, data, finalFilters, translatedType, updatePatch, previous);
           if (message) {
             targets.push({ user: notificationUser, type: translatedType, message });
           }
@@ -517,14 +521,16 @@ export const buildTargetEvents = async (
   } else if (triggerEventTypes.includes(eventType)) { // create or delete
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       const user = users[indexUser];
+      const user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
+      const userContext = { ...context, user_inside_platform_organization };
       const notificationUser = convertToNotificationUser(user, notifiers);
-      const isCurrentlyMatch = await isStixMatchFilterGroup(context, user, data, finalFilters);
+      const isCurrentlyMatch = await isStixMatchFilterGroup(userContext, user, data, finalFilters);
       if (isCurrentlyMatch) {
         if (!useSideEventMatching) { // classic live trigger or instance trigger with direct event
-          const message = await generateNotificationMessageForInstance(context, user, data);
+          const message = await generateNotificationMessageForInstance(userContext, user, data);
           targets.push({ user: notificationUser, type: eventType, message });
         } else { // instance trigger side events
-          const message = await generateNotificationMessageForFilteredSideEvents(context, user, data, finalFilters, eventType);
+          const message = await generateNotificationMessageForFilteredSideEvents(userContext, user, data, finalFilters, eventType);
           if (message) {
             targets.push({ user: notificationUser, type: eventType, message });
           }

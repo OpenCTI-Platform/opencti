@@ -68,6 +68,7 @@ import './fintelTemplate/fintelTemplate';
 import './disseminationList/disseminationList';
 import './savedFilter/savedFilter';
 import './fintelDesign/fintelDesign';
+import './securityPlatform/securityPlatform';
 
 // incomplete modules
 import './report/report';
@@ -133,5 +134,6 @@ import './disseminationList/disseminationList-graphql';
 import './savedFilter/savedFilter-graphql';
 import './requestAccess/requestAccess-graphql';
 import './fintelDesign/fintelDesign-graphql';
+import './securityPlatform/securityPlatform-graphql';
 import './auth/auth-graphql';
 // endregion

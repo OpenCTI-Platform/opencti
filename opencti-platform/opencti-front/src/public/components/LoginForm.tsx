@@ -35,10 +35,12 @@ interface RelayResponseError extends Error {
 
 interface LoginFormProps {
   onClickForgotPassword: () => void;
+  email: string;
+  setEmail: (value: string) => void;
 }
 
 const FLASH_COOKIE = 'opencti_flash';
-const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword }) => {
+const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, email, setEmail }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
@@ -67,7 +69,7 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword })
   };
 
   const initialValues = {
-    email: '',
+    email,
     password: '',
   };
 
@@ -87,6 +89,9 @@ const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword })
               name="email"
               label={t_i18n('Login')}
               fullWidth={true}
+              onBlur={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                setEmail(e.currentTarget.value);
+              }}
             />
             <Field
               component={TextField}

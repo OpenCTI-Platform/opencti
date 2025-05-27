@@ -1,5 +1,5 @@
 import { graphql, useQueryLoader } from 'react-relay';
-import React, { Dispatch, FunctionComponent, useState } from 'react';
+import React, { Dispatch, FunctionComponent, UIEvent, useState } from 'react';
 import { PopoverProps } from '@mui/material/Popover';
 import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
@@ -16,6 +16,7 @@ import { IngestionCsvLinesPaginationQuery$variables } from '@components/data/ing
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
 import DialogTitle from '@mui/material/DialogTitle';
+import fileDownload from 'js-file-download';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
@@ -23,6 +24,10 @@ import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import useHelper from '../../../../utils/hooks/useHelper';
+import stopEvent from '../../../../utils/domEvent';
+import { fetchQuery } from '../../../../relay/environment';
+import { IngestionCsvPopoverExportQuery$data } from './__generated__/IngestionCsvPopoverExportQuery.graphql';
 
 const ingestionCsvPopoverDeletionMutation = graphql`
   mutation IngestionCsvPopoverDeletionMutation($id: ID!) {
@@ -38,6 +43,14 @@ const ingestionCsvPopoverResetStateMutation = graphql`
     }
 `;
 
+const ingestionCsvPopoverExportQuery = graphql`
+  query IngestionCsvPopoverExportQuery($id: String!) {
+    ingestionCsv(id: $id) {
+      name
+      toConfigurationExport
+    }
+  }
+`;
 interface IngestionCsvPopoverProps {
   ingestionCsvId: string;
   running?: boolean | null;
@@ -52,6 +65,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   setStateHash,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayStart, setDisplayStart] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -171,6 +185,27 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
       },
     });
   };
+
+  // -- Export --
+
+  const exportCsvFeed = async () => {
+    const { ingestionCsv } = await fetchQuery(
+      ingestionCsvPopoverExportQuery,
+      { id: ingestionCsvId },
+    ).toPromise() as IngestionCsvPopoverExportQuery$data;
+
+    if (ingestionCsv) {
+      const blob = new Blob([ingestionCsv.toConfigurationExport], { type: 'text/json' });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_csvFeed_${ingestionCsv.name}.json`;
+      fileDownload(blob, fileName);
+    }
+  };
+  const handleExport = async (e: UIEvent) => {
+    stopEvent(e);
+    setAnchorEl(undefined);
+    await exportCsvFeed();
+  };
   return (
     <>
       <div style={{ margin: 0 }}>
@@ -209,6 +244,12 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
           <MenuItem onClick={handleOpenDelete}>
             {t_i18n('Delete')}
           </MenuItem>
+          {isFeatureEnable('CSV_FEED')
+            && <MenuItem onClick={handleExport}>
+              {t_i18n('Export')}
+            </MenuItem>
+          }
+
         </Menu>
         {queryRef && (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

@@ -51,7 +51,7 @@ import {
 } from '../decayRule/decayRule-domain';
 import { isModuleActivated } from '../../domain/settings';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
-import { prepareDate, utcDate } from '../../utils/format';
+import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 
@@ -254,6 +254,9 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     observableType = 'StixFile';
   }
   const isKnownObservable = observableType !== 'Unknown';
+  if (!isKnownObservable && indicator.pattern_type.toLowerCase() === 'yara') {
+    observableType = 'StixFile';
+  }
   if (isKnownObservable && !isStixCyberObservable(observableType)) {
     throw FunctionalError(`Observable type ${observableType} is not supported.`);
   }
@@ -261,9 +264,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const { formattedPattern } = await validateIndicatorPattern(context, user, indicator.pattern_type, indicator.pattern);
 
   const indicatorBaseScore = indicator.x_opencti_score ?? 50;
-  if (indicatorBaseScore < 0 || indicatorBaseScore > 100) {
-    throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
-  }
+  checkScore(indicatorBaseScore);
 
   const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
@@ -355,9 +356,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
     const newScore = scoreEditInput.value[0];
-    if (newScore < 0 || newScore > 100) {
-      throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
-    }
+    checkScore(newScore);
     if (indicator.decay_applied_rule && !scoreEditInput.value.includes(indicator.decay_base_score)) {
       const updateDate = utcDate();
       finalInput.push({ key: 'decay_base_score', value: [newScore] });

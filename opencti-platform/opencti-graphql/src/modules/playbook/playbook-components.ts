@@ -17,7 +17,15 @@ import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
-import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, INTERNAL_USERS, isUserCanAccessStixElement, SYSTEM_USER } from '../../utils/access';
+import {
+  AUTOMATION_MANAGER_USER,
+  AUTOMATION_MANAGER_USER_UUID,
+  executionContext,
+  INTERNAL_USERS,
+  isUserCanAccessStixElement,
+  isUserInPlatformOrganization,
+  SYSTEM_USER
+} from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -48,16 +56,17 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_TOOL,
-  isStixDomainObjectContainer
+  isStixDomainObjectContainer,
+  STIX_DOMAIN_OBJECT_CONTAINER_CASES
 } from '../../schema/stixDomainObject';
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { internalFindByIds, listAllEntities, listAllRelations, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
-import { logApp } from '../../config/conf';
+import { isFeatureEnabled, logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { extractStixRepresentative } from '../../database/stix-representative';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
@@ -67,7 +76,7 @@ import { stixLoadByIds } from '../../database/middleware';
 import { usableNotifiers } from '../notifier/notifier-domain';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../manager/notificationManager';
 import { storeNotificationEvent } from '../../database/redis';
-import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthUser } from '../../types/user';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { createStixPattern } from '../../python/pythonBridge';
@@ -81,13 +90,16 @@ import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicato
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
-import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
+import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from '../task/task-types';
 import { EditOperation, FilterMode } from '../../generated/graphql';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { generateCreateMessage } from '../../database/generate-message';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
+import { findAllByCaseTemplateId } from '../task/task-domain';
+import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
+import type { BasicStoreSettings } from '../../types/settings';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -414,6 +426,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
 
 interface ContainerWrapperConfiguration {
   container_type: string
+  caseTemplates: { label: string, value: string }[]
   all: boolean
   newContainer: boolean
 }
@@ -421,8 +434,15 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<ContainerWrapp
   type: 'object',
   properties: {
     container_type: { type: 'string', $ref: 'Container type', default: '', oneOf: [] },
+    caseTemplates: {
+      type: 'array',
+      uniqueItems: true,
+      default: [],
+      $ref: 'Case templates',
+      items: { type: 'string', oneOf: [] }
+    },
     all: { type: 'boolean', $ref: 'Wrap all elements included in the bundle', default: false },
-    newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false }
+    newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false },
   },
   required: ['container_type'],
 };
@@ -439,7 +459,42 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS = [
   ENTITY_TYPE_CONTAINER_TASK,
 ];
 
-const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {
+export const buildStixTaskFromTaskTemplate = (taskTemplate: BasicStoreEntityTaskTemplate, container: StixContainer) => {
+  const taskData = {
+    name: taskTemplate.name,
+    description: taskTemplate.description,
+  };
+  const taskStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_TASK, taskData);
+  const storeTask = {
+    internal_id: generateInternalId(),
+    standard_id: taskStandardId,
+    entity_type: ENTITY_TYPE_CONTAINER_TASK,
+    parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
+    ...taskData,
+  } as StoreEntityTask;
+  const task = convertStoreToStix(storeTask) as StixTask;
+  task.object_refs = [container.id];
+  task.object_marking_refs = container.object_marking_refs;
+  return task;
+};
+
+export const addTaskFromCaseTemplates = async (
+  caseTemplates: { label: string, value: string }[],
+  container: StixContainer,
+) => {
+  const context = executionContext('playbook_components');
+  const tasks = [];
+  for (let i = 0; i < caseTemplates.length; i += 1) {
+    const taskTemplates = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
+    for (let j = 0; j < taskTemplates.length; j += 1) {
+      const task = buildStixTaskFromTaskTemplate(taskTemplates[j], container);
+      tasks.push(task);
+    }
+  }
+  return tasks;
+};
+
+export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {
   id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
   name: 'Container wrapper',
   description: 'Create a container and wrap the element inside it',
@@ -454,11 +509,12 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const { container_type, all, newContainer } = playbookNode.configuration;
+    const { container_type, all, newContainer, caseTemplates } = playbookNode.configuration;
     if (!PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.includes(container_type)) {
       throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
     }
     if (container_type) {
+      const isApplyCaseTemplateEnabled = isFeatureEnabled('APPLY_CASE_TEMPLATE_PLAYBOOK');
       const baseData = extractBundleBaseElement(dataInstanceId, bundle);
       const created = newContainer ? now() : baseData.extensions[STIX_EXT_OCTI].created_at;
       const representative = extractStixRepresentative(baseData);
@@ -487,14 +543,14 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
         ...containerData
       } as StoreCommon;
       const container = convertStoreToStix(storeContainer) as StixContainer;
-      // add all objects in the container if requested in the playbook confif
+      // add all objects in the container if requested in the playbook config
       if (all) {
         container.object_refs = bundle.objects.map((o: StixObject) => o.id);
       } else {
         container.object_refs = [baseData.id];
       }
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
-      // Following attributes are the same as the base instance: markings, labels, created_by, assignees, partcipants
+      // Following attributes are the same as the base instance: markings, labels, created_by, assignees, participants
       if (baseData.object_marking_refs) {
         container.object_marking_refs = baseData.object_marking_refs;
       }
@@ -513,6 +569,10 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperCo
       // if the base instance is an incident and we wrap into an Incident Case, we set the same severity
       if ((<StixIncident>baseData).severity && container_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
+      }
+      if (isApplyCaseTemplateEnabled && STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
+        const tasks = await addTaskFromCaseTemplates(caseTemplates, container);
+        bundle.objects.push(...tasks);
       }
       bundle.objects.push(container);
     }
@@ -984,10 +1044,13 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
     const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
     const { notifiers, authorized_members } = playbookNode.configuration;
     const targetUsers = await convertAuthorizedMemberToUsers(authorized_members as { value: string }[]);
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const notificationsCall = [];
     for (let index = 0; index < targetUsers.length; index += 1) {
       const targetUser = targetUsers[index];
-      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(context, targetUser, o));
+      const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
+      const userContext = { ...context, user_inside_platform_organization };
+      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
       const notificationEvent: DigestEvent = {
         version: EVENT_NOTIFICATION_VERSION,
         playbook_source: playbook.name,

@@ -3183,6 +3183,7 @@
   "The value must be a number": "数値を入力してください",
   "The value must be a string": "値は文字列である必要があります",
   "The value must be an email address": "メールアドレスを入力してください",
+  "The value must be an integer": "値は整数でなければならない。",
   "The value must be an URL": "URLを入力してください",
   "The value must be between min and max value": "値は最小値と最大値の間でなければなりません",
   "The value must be greater than or equal to 0": "値は 0 以上である必要があります",

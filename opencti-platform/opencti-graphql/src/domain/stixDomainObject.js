@@ -14,7 +14,7 @@ import {
 import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
-import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -29,7 +29,7 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRe
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
-import { now, utcDate } from '../utils/format';
+import { checkScore, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -205,8 +205,8 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {
     const newScore = scoreEditInput.value[0];
-    if (newScore !== null && newScore !== undefined && (newScore && (newScore < 0 || newScore > 100))) {
-      throw ValidationError('The score should be between 0 and 100', 'x_opencti_score');
+    if (newScore !== null && newScore !== undefined && newScore) {
+      checkScore(newScore);
     }
   }
   // Validate specific relations, created by and markings

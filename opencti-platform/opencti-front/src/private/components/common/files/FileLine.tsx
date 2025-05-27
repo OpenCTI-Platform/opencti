@@ -259,6 +259,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   if (isFail) {
     status = t_i18n('Failed');
   }
+  const lastModifiedDate = fld(file?.lastModified ?? moment());
 
   return (
     <>
@@ -420,15 +421,16 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           </ListItemIcon>
           <Tooltip title={!isFail && !isOutdated ? file?.name : ''}>
             <ListItemText
+              sx={{ maxWidth: '55%' }}
               classes={{
                 root: classes.itemText,
                 primary: classes.fileName,
+                secondary: classes.fileName,
               }}
               primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
               secondary={
                 <>
-                  {status} (
-                  {fld(file?.lastModified ?? moment())})
+                  {`${truncate(status, 80 - lastModifiedDate.length)} (${lastModifiedDate})`}
                 </>
               }
             />
