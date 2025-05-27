@@ -29,7 +29,7 @@ const Policies = lazy(() => import('./Policies'));
 const Retention = lazy(() => import('./Retention'));
 const Roles = lazy(() => import('./Roles'));
 const RootRole = lazy(() => import('./roles/Root'));
-const Rules = lazy(() => import('./Rules'));
+const Rules = lazy(() => import('./rules/Rules'));
 const Sessions = lazy(() => import('./Sessions'));
 const Settings = lazy(() => import('./Settings'));
 const SettingsOrganizations = lazy(() => import('./SettingsOrganizations'));
