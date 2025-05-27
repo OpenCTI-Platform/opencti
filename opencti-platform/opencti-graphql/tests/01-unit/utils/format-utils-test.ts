@@ -22,4 +22,16 @@ describe('checkScoreValue tests', () => {
     const check = checkScore(40);
     expect(check).toEqual(true);
   });
+  it('should return true if score is correct string', () => {
+    const check = checkScore('40');
+    expect(check).toEqual(true);
+  });
+  it('should return true if score is correct string', () => {
+    const check = checkScore('0');
+    expect(check).toEqual(true);
+  });
+  it('should throw validationError for non integer score', () => {
+    expect(() => checkScore('0.5'))
+      .toThrowError('The score should be an integer between 0 and 100');
+  });
 });
