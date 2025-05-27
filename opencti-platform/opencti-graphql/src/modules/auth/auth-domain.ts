@@ -60,7 +60,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   // Delete the previous OTP if it exists based on the pointer
   if (previousKey.id) await redisDelForgotPassword(previousKey.id, email);
 
-  // Generate and store the new OTP; create a new pointer using the new UUID
+  // Store the new OTP; create a new key using the new UUID
   await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, mfa_activated: mfa_activated ?? false, mfa_validated: false, userId: id });
 
   // Send email
