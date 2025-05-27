@@ -8,6 +8,8 @@ import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import { propOr } from 'ramda';
+import { RootSecurityPlatformSubscription } from '@components/entities/securityPlatforms/__generated__/RootSecurityPlatformSubscription.graphql';
+import { RootSecurityPlatformQuery } from '@components/entities/securityPlatforms/__generated__/RootSecurityPlatformQuery.graphql';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import SecurityPlatform from './SecurityPlatform';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -23,7 +25,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
-    subscription SecurityPlatformSubscription($id: ID!) {
+    subscription RootSecurityPlatformSubscription($id: ID!) {
         stixDomainObject(id: $id) {
             ... on SecurityPlatform {
                 ...SecurityPlatform_securityPlatform
@@ -39,7 +41,7 @@ const subscription = graphql`
 `;
 
 const securityPlatformQuery = graphql`
-    query RootSecurityPlatformnQuery($id: String!) {
+    query RootSecurityPlatformQuery($id: String!) {
         securityPlatform(id: $id) {
             id
             draftVersion {
