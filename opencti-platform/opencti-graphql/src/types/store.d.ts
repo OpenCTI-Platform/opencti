@@ -31,6 +31,7 @@ import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
+  RELATION_IN_PIR,
   RELATION_OBJECT,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
@@ -44,6 +45,7 @@ import {
   INPUT_DOMAIN_TO,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
+  INPUT_IN_PIR,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -185,6 +187,7 @@ interface BasicStoreCommon extends BasicStoreBase {
   [RELATION_OBJECT_ASSIGNEE]?: Array<string>;
   [RELATION_OBJECT_PARTICIPANT]?: Array<string>;
   [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
+  [RELATION_IN_PIR]?: Array<string>;
 }
 
 interface StoreCommon {
@@ -198,6 +201,7 @@ interface StoreCommon {
   [INPUT_PARTICIPANT]?: Array<BasicStoreObject>;
   [INPUT_EXTERNAL_REFS]?: Array<StoreExternalReferences>;
   [INPUT_GRANTED_REFS]?: Array<BasicStoreObject>;
+  [INPUT_IN_PIR]?: Array<BasicStoreObject>;
 }
 
 interface StoreProxyRelation extends BasicStoreCommon {

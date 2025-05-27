@@ -154,12 +154,20 @@ export const schemaAttributesDefinition = {
           });
         }
       }
+      let registeredAttribute: AttributeDefinition = { ...attribute };
+      if (registeredAttribute.type === 'object' && registeredAttribute.format !== 'flat' && registeredAttribute.mappings.length > 0) {
+        registeredAttribute = {
+          ...registeredAttribute,
+          // filter feature flagged attributes
+          mappings: registeredAttribute.mappings.filter((a) => !a.featureFlag || isFeatureEnabled(a.featureFlag)),
+        };
+      }
       // set attribute
-      directAttributes.set(attribute.name, attribute);
+      directAttributes.set(registeredAttribute.name, registeredAttribute);
       // add the attribute name and type in the map of all the attributes
       // to do so, we overwrite an eventual attribute having the same name for an other entity type
       // it's not a problem because if 2 attributes have the same name, they also have the same type
-      this.allAttributes.set(attribute.name, attribute);
+      this.allAttributes.set(registeredAttribute.name, registeredAttribute);
     });
     const parentAttributes = new Map(getParentTypes(entityType)
       .map((type) => Array.from((this.attributes[type] ?? new Map()).values()))

@@ -59,6 +59,7 @@ generates:
         FintelTemplate: ../modules/fintelTemplate/fintelTemplate-types#BasicStoreEntityFintelTemplate
         SavedFilter: ../modules/savedFilter/savedFilter-types#BasicStoreEntitySavedFilter
         FintelDesign: ../modules/fintelDesign/fintelDesign-types#BasicStoreEntityFintelDesign
+        Pir: ../modules/pir/pir-types#BasicStoreEntityPir
         SecurityPlatform: ../modules/securityPlatform/securityPlatform-types#BasicStoreEntitySecurityPlatform
 
   ./graphql.schema.json:

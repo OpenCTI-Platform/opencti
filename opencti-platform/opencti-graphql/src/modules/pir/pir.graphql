@@ -1,0 +1,92 @@
+type PirCriterion {
+    filters: String!
+    weight: Int!
+}
+
+# Used in StixRefRelationship
+type PirExplanation {
+    dependency_ids: [ID!]!
+    criterion: PirCriterion!
+}
+
+type Pir implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    parent_types: [String!]!
+    created_at: DateTime!
+    updated_at: DateTime!
+    creators: [Creator!]
+    # Pir
+    name: String!
+    pir_criteria: [PirCriterion!]!
+    pir_filters: String!
+}
+
+# Ordering
+enum PirOrdering {
+    name
+    created_at
+    updated_at
+    creator
+}
+
+# Relay connections
+type PirConnection {
+    pageInfo: PageInfo!
+    edges: [PirEdge!]!
+}
+type PirEdge {
+    cursor: String!
+    node: Pir!
+}
+
+# Queries
+type Query {
+    pir(id: ID!): Pir @auth(for: [KNOWLEDGE])
+    pirs(
+        first: Int
+        after: ID
+        orderBy: PirOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): PirConnection @auth(for: [KNOWLEDGE])
+}
+
+# Mutations inputs
+input PirCriterionInput {
+    weight: Int!
+    filters: FilterGroup!
+}
+
+# Used in StixRefRelationshipAddInput
+input PirExplanationInput {
+    dependency_ids: [ID!]!
+    criterion: PirCriterionInput!
+}
+
+input PirAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    pir_criteria: [PirCriterionInput!]!
+    pir_filters: FilterGroup!
+}
+
+input PirFlagElementInput {
+    relationshipId: ID!
+    sourceId: ID!
+    matchingCriteria: [PirCriterionInput!]!
+}
+
+input PirUnflagElementInput {
+    relationshipId: ID!
+    sourceId: ID!
+}
+
+# Mutations
+type Mutation {
+    pirAdd(input: PirAddInput!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
+    pirDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    pirFlagElement(id: ID!, input: PirFlagElementInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
+    pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
+}

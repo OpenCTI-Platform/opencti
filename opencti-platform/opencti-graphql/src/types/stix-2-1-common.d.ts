@@ -44,6 +44,7 @@ interface StixOpenctiExtension {
   aliases: Array<string>
   granted_refs: Array<StixId>
   granted_refs_ids: string[]
+  pir_refs_ids: string[]
   stix_ids: Array<StixId>
   type: string
   created_at: StixDate
@@ -57,6 +58,7 @@ interface StixOpenctiExtension {
   labels_ids: string[]
   created_by_ref_id: string
   converter_csv?: string | undefined
+  opencti_operation?: string
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {

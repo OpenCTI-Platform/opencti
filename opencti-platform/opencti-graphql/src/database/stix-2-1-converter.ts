@@ -36,6 +36,7 @@ import {
   INPUT_VALUES,
   objects,
   RELATION_GRANTED_TO,
+  RELATION_IN_PIR,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
@@ -111,6 +112,7 @@ import {
   INPUT_CREATED_BY,
   INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
+  INPUT_IN_PIR,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -235,6 +237,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     workflow_id: instance.x_opencti_workflow_id,
     labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id).filter((id) => isNotEmptyField(id)),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
+    pir_refs_ids: (instance[INPUT_IN_PIR] ?? []).map((m) => m.internal_id),
   };
   return cleanObject(octiExtensions);
 };
@@ -1207,11 +1210,13 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
         source_type: instance.from.entity_type,
         source_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
         source_ref_granted_refs: instance.from[RELATION_GRANTED_TO] ?? [],
+        source_ref_pir_refs: instance.from[RELATION_IN_PIR] ?? [],
         target_value: extractEntityRepresentativeName(instance.to),
         target_ref: instance.to.internal_id,
         target_type: instance.to.entity_type,
         target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
         target_ref_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
+        target_ref_pir_refs: instance.to[RELATION_IN_PIR] ?? [],
         kill_chain_phases: buildKillChainPhases(instance)
       })
     }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractObjectsRestrictionsFromInputs } from '../../../src/database/utils';
+import { extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs } from '../../../src/database/utils';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 
 const inputs = [
@@ -149,5 +149,33 @@ describe('extractObjectsRestrictionsFromInputs testing', () => {
     const relatedRestrictions = extractObjectsRestrictionsFromInputs(inputs, ENTITY_TYPE_MALWARE);
     const expected = { markings: [] };
     expect(relatedRestrictions).toEqual(expected);
+  });
+});
+
+describe('Function extractObjectsPirsFromInputs()', () => {
+  const baseInputs = [{
+    key: 'objects',
+    operation: 'add',
+    value: [{ confidence: 100 }]
+  }];
+  const pirInputs = [{
+    key: 'objects',
+    operation: 'add',
+    value: [{ confidence: 100, 'in-pir': ['pir1', 'pir2', 'pir3'] }]
+  }];
+
+  it('should return PIR ids in Report', () => {
+    const { pir_ids } = extractObjectsPirsFromInputs(pirInputs, ENTITY_TYPE_CONTAINER_REPORT);
+    expect(pir_ids).toEqual(['pir1', 'pir2', 'pir3']);
+  });
+
+  it('should return empty array in Report if no PIR ids', () => {
+    const { pir_ids } = extractObjectsPirsFromInputs(baseInputs, ENTITY_TYPE_CONTAINER_REPORT);
+    expect(pir_ids).toEqual([]);
+  });
+
+  it('should return empty array if not a container', () => {
+    const { pir_ids } = extractObjectsPirsFromInputs(pirInputs, ENTITY_TYPE_MALWARE);
+    expect(pir_ids).toEqual([]);
   });
 });
