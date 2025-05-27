@@ -66,7 +66,7 @@ import { internalFindByIds, listAllEntities, listAllRelations, storeLoadById } f
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
-import { isFeatureEnabled, logApp } from '../../config/conf';
+import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { extractStixRepresentative } from '../../database/stix-representative';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
@@ -514,7 +514,6 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
     }
     if (container_type) {
-      const isApplyCaseTemplateEnabled = isFeatureEnabled('APPLY_CASE_TEMPLATE_PLAYBOOK');
       const baseData = extractBundleBaseElement(dataInstanceId, bundle);
       const created = newContainer ? now() : baseData.extensions[STIX_EXT_OCTI].created_at;
       const representative = extractStixRepresentative(baseData);
@@ -570,7 +569,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       if ((<StixIncident>baseData).severity && container_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
       }
-      if (isApplyCaseTemplateEnabled && STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
+      if (STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
         const tasks = await addTaskFromCaseTemplates(caseTemplates, container);
         bundle.objects.push(...tasks);
       }
