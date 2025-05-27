@@ -27,7 +27,7 @@ const PIR_RESCAN_PERIOD = 30 * 24 * 3600 * 1000; // 1 month in milliseconds
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
   // -- create Pir --
-  const rescanStartDate = now() - PIR_RESCAN_PERIOD; // rescan start date in seconds
+  const rescanStartDate = now() - PIR_RESCAN_PERIOD; // rescan start date in milliseconds
   const finalInput = {
     ...serializePir(input),
     lastEventId: `${rescanStartDate}-0`,
