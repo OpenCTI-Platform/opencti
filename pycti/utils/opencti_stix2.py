@@ -2484,6 +2484,14 @@ class OpenCTIStix2:
             self.opencti.stix.merge(id=target_id, object_ids=source_ids)
         elif operation == "patch":
             self.apply_patch(item=item)
+        elif operation == "pir_flag_element":
+            id = item["id"]
+            input = item["input"]
+            self.opencti.pir.pir_flag_element(id=id, input=input)
+        elif operation == "pir_unflag_element":
+            id = item["id"]
+            input = item["input"]
+            self.opencti.pir.pir_unflag_element(id=id, input=input)
         else:
             raise ValueError("Not supported opencti_operation")
 
