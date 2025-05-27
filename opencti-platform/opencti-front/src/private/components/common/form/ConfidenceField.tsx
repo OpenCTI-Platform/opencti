@@ -30,7 +30,7 @@ interface ConfidenceFieldProps {
   onFocus?: (name: string, value: string) => void;
   editContext?: readonly (GenericContext | null)[] | null;
   containerStyle?: Record<string, string | number>;
-  entityType: string;
+  entityType?: string;
   disabled?: boolean;
 }
 

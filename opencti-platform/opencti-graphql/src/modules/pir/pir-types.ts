@@ -11,6 +11,7 @@ export interface PirCriterion {
 
 export interface BasicStoreEntityPir extends BasicStoreEntity {
   name: string
+  description: string
   pir_criteria: PirCriterion[]
   pir_filters: string
   lastEventId: string
@@ -18,6 +19,7 @@ export interface BasicStoreEntityPir extends BasicStoreEntity {
 
 export interface StoreEntityPir extends StoreEntity {
   name: string
+  description: string
   pir_criteria: PirCriterion[]
   pir_filters: string
   lastEventId: string
@@ -35,6 +37,7 @@ export interface ParsedPirCriterion {
 export interface ParsedPir {
   id: string
   name: string
+  description: string
   // Criteria are filters with a weight,
   // they are used to compute matching score.
   pir_criteria: ParsedPirCriterion[]
