@@ -13253,7 +13253,9 @@ type Pir implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   creators: [Creator!]
+  objectMarking: [MarkingDefinition!]
   name: String!
+  description: String!
   pir_criteria: [PirCriterion!]!
   pir_filters: String!
 }
@@ -13287,8 +13289,10 @@ input PirExplanationInput {
 
 input PirAddInput {
   name: String!
+  description: String!
   pir_criteria: [PirCriterionInput!]!
   pir_filters: FilterGroup!
+  objectMarking: [String!]
 }
 
 input PirFlagElementInput {

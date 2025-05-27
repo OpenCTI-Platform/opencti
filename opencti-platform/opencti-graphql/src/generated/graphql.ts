@@ -19618,9 +19618,11 @@ export type Pir = BasicObject & InternalObject & {
   __typename?: 'Pir';
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  description: Scalars['String']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Scalars['String']['output']>;
   pir_criteria: Array<PirCriterion>;
   pir_filters: Scalars['String']['output'];
@@ -19629,7 +19631,9 @@ export type Pir = BasicObject & InternalObject & {
 };
 
 export type PirAddInput = {
+  description: Scalars['String']['input'];
   name: Scalars['String']['input'];
+  objectMarking?: InputMaybe<Array<Scalars['String']['input']>>;
   pir_criteria: Array<PirCriterionInput>;
   pir_filters: FilterGroup;
 };
@@ -40682,9 +40686,11 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
 export type PirResolvers<ContextType = any, ParentType extends ResolversParentTypes['Pir'] = ResolversParentTypes['Pir']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pir_criteria?: Resolver<Array<ResolversTypes['PirCriterion']>, ParentType, ContextType>;
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

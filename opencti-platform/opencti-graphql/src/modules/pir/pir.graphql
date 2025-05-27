@@ -17,8 +17,10 @@ type Pir implements InternalObject & BasicObject {
     created_at: DateTime!
     updated_at: DateTime!
     creators: [Creator!]
+    objectMarking: [MarkingDefinition!]
     # Pir
     name: String!
+    description: String!
     pir_criteria: [PirCriterion!]!
     pir_filters: String!
 }
@@ -68,8 +70,10 @@ input PirExplanationInput {
 
 input PirAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String! @constraint(minLength: 2, format: "not-blank")
     pir_criteria: [PirCriterionInput!]!
     pir_filters: FilterGroup!
+    objectMarking: [String!]
 }
 
 input PirFlagElementInput {

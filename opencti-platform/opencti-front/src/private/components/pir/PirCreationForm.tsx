@@ -1,29 +1,19 @@
 import { DialogTitle, DialogContent, Button, DialogActions } from '@mui/material';
 import React, { useState } from 'react';
 import { Form, Formik } from 'formik';
+import { PirCreationFormData } from './pir-form-utils';
 import PirCreationFormGeneralSettings from './PirCreationFormGeneralSettings';
 import PirCreationFormType from './PirCreationFormType';
 import PirCreationFormStepper from './PirCreationFormStepper';
 import { useFormatter } from '../../../components/i18n';
-import type { FieldOption } from '../../../utils/field';
 import PirCreationFormCriteria from './PirCreationFormCriteria';
-
-interface PirCreationFormData {
-  type: string | null
-  name: string | null
-  description: string | null
-  markings: FieldOption[]
-  confidence: number | null
-  // TODO PIR should have different defs depending of type
-  locations: FieldOption[]
-  sectors: FieldOption[]
-}
 
 interface PirCreationFormProps {
   onCancel: () => void
+  onSubmit: (data: PirCreationFormData) => void
 }
 
-const PirCreationForm = ({ onCancel }: PirCreationFormProps) => {
+const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
   const { t_i18n } = useFormatter();
   const [step, setStep] = useState(0);
 
@@ -32,7 +22,7 @@ const PirCreationForm = ({ onCancel }: PirCreationFormProps) => {
     name: null,
     description: null,
     markings: [],
-    confidence: null,
+    confidence: 60,
     locations: [],
     sectors: [],
   };
@@ -40,7 +30,7 @@ const PirCreationForm = ({ onCancel }: PirCreationFormProps) => {
   return (
     <Formik<PirCreationFormData>
       initialValues={initialValues}
-      onSubmit={() => {}}
+      onSubmit={onSubmit}
     >
       {({ values, errors, isValid, submitForm }) => {
         const step0Valid = !!values.type;

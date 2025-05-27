@@ -2,8 +2,10 @@ import type { Resolvers } from '../../generated/graphql';
 import { pirFlagElement, deletePir, findAll, findById, pirAdd, pirUnflagElement } from './pir-domain';
 import { batchLoader } from '../../database/middleware';
 import { batchCreators } from '../../domain/user';
+import { batchMarkingDefinitions } from '../../domain/stixCoreObject';
 
 const creatorsLoader = batchLoader(batchCreators);
+const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
 
 const pirResolvers: Resolvers = {
   Query: {
@@ -12,6 +14,7 @@ const pirResolvers: Resolvers = {
   },
   Pir: {
     creators: (pir, _, context) => creatorsLoader.load(pir.creator_id, context, context.user),
+    objectMarking: (pir, _, context) => markingDefinitionsLoader.load(pir, context, context.user),
   },
   Mutation: {
     pirAdd: (_, { input }, context) => pirAdd(context, context.user, input),
