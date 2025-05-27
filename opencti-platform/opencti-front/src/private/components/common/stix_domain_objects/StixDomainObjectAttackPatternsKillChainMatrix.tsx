@@ -23,15 +23,13 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
 ) => {
   const attackPatterns = (data.attackPatterns?.edges ?? []).map((n) => n.node);
   return (
-    <>
-      <AttackPatternsMatrix
-        attackPatterns={attackPatterns}
-        searchTerm={searchTerm}
-        marginRight={!isEntity}
-        handleAdd={handleAdd}
-        selectedKillChain={selectedKillChain}
-      />
-    </>
+    <AttackPatternsMatrix
+      attackPatterns={attackPatterns}
+      searchTerm={searchTerm}
+      marginRight={!isEntity}
+      handleAdd={handleAdd}
+      selectedKillChain={selectedKillChain}
+    />
   );
 };
 
