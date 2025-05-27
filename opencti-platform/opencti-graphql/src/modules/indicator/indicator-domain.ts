@@ -382,7 +382,6 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     await validateIndicatorPattern(context, user, indicator.pattern_type, patternEditInput.value[0]);
   }
 
-  logApp.info('indicatorEditField finalInput', { finalInput });
   return stixDomainObjectEditField(context, user, id, finalInput, opts);
 };
 
