@@ -269,7 +269,7 @@ FilterIconButtonContainerProps
   }
 
   return (
-    <Box id='toto' sx={boxStyle}>
+    <Box sx={boxStyle}>
       {displayedFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterLabel = t_i18n(useFilterDefinition(filterKey, entityTypes)?.label ?? filterKey);
