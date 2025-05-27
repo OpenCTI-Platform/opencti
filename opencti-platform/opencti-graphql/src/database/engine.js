@@ -4113,8 +4113,8 @@ const prepareRelation = (thing) => {
       id: thing.internal_id,
       fromId: thing.fromId,
       toId: thing.toId,
-      fromEntityType: from.entity_type,
-      toEntityType: to.entity_type,
+      fromResolved: from,
+      toResolved: to,
     });
   }
 
