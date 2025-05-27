@@ -2,6 +2,7 @@ import { graphql } from 'relay-runtime';
 import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
+import { SecurityPlatform_securityPlatform$key } from '@components/entities/securityPlatforms/__generated__/SecurityPlatform_securityPlatform.graphql';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';

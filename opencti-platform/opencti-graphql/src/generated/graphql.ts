@@ -24991,6 +24991,7 @@ export type SecurityPlatform = BasicObject & Identity & StixCoreObject & StixDom
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_reliability?: Maybe<Scalars['String']['output']>;
+  x_opencti_score?: Maybe<Scalars['Int']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
 
@@ -42010,6 +42011,7 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
