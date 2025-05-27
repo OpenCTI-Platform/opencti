@@ -1,6 +1,11 @@
 import type { FieldOption } from '../../../utils/field';
 import { PirAddInput } from './__generated__/PirCreationMutation.graphql';
 
+export interface PirEditionFormData {
+  name: string | null
+  description: string | null
+}
+
 export interface PirCreationFormData {
   type: string | null
   name: string | null

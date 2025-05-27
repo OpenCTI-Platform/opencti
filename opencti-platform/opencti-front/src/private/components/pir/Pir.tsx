@@ -17,6 +17,7 @@ const pirQuery = graphql`
     pir(id: $id) {
       ...PirHeaderFragment
       ...PirKnowledgeFragment
+      ...PirEditionFragment
     }
   }
 `;
@@ -46,7 +47,7 @@ const PirComponent = ({ pirQueryRef, pirHistoryQueryRef }: PirComponentProps) =>
 
   return (
     <>
-      <PirHeader data={pir} />
+      <PirHeader data={pir} editionData={pir} />
       <PirTabs>
         {({ index }) => (
           <>
