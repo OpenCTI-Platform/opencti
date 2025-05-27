@@ -57,9 +57,9 @@ steps:
 
 services:
   - name: redis
-    image: redis:7.4.2
+    image: redis:7.4.3
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.1
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
@@ -71,7 +71,7 @@ services:
       MINIO_ROOT_PASSWORD: ChangeMe
     command: [ server, /data ]
   - name: rabbitmq
-    image: rabbitmq:4.0-management
+    image: rabbitmq:4.1-management
   - name: opencti
     image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
     environment:
