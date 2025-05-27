@@ -10,6 +10,7 @@ import requests
 
 from pycti import __version__
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
+from pycti.api.opencti_api_pir import OpenCTIApiPir
 from pycti.api.opencti_api_playbook import OpenCTIApiPlaybook
 from pycti.api.opencti_api_work import OpenCTIApiWork
 from pycti.entities.opencti_attack_pattern import AttackPattern
@@ -170,6 +171,7 @@ class OpenCTIApiClient:
         self.playbook = OpenCTIApiPlaybook(self)
         self.connector = OpenCTIApiConnector(self)
         self.stix2 = OpenCTIStix2(self)
+        self.pir = OpenCTIApiPir(self)
 
         # Define the entities
         self.vocabulary = Vocabulary(self)

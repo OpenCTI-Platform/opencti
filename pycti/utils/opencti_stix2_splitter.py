@@ -19,6 +19,7 @@ supported_types = (
     SUPPORTED_STIX_ENTITY_OBJECTS  # entities
     + list(STIX_CYBER_OBSERVABLE_MAPPING.keys())  # observables
     + ["relationship", "sighting"]  # relationships
+    + ["pir"]
 )
 
 
