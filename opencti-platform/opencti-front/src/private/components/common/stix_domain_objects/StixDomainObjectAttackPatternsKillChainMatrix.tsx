@@ -11,6 +11,7 @@ interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain: string;
   isEntity?: boolean;
+  attackPatternIdsToOverlap?: string[];
 }
 const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
   {
@@ -19,6 +20,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
     handleAdd,
     selectedKillChain,
     isEntity,
+    attackPatternIdsToOverlap,
   },
 ) => {
   const attackPatterns = (data.attackPatterns?.edges ?? []).map((n) => n.node);
@@ -29,6 +31,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
       marginRight={!isEntity}
       handleAdd={handleAdd}
       selectedKillChain={selectedKillChain}
+      attackPatternIdsToOverlap={attackPatternIdsToOverlap}
     />
   );
 };

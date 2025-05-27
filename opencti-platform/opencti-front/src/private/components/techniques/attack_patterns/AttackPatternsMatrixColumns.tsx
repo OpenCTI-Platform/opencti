@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Box, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material';
-import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
+import { AddCircleOutlineOutlined, CheckOutlined, InfoOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -26,6 +26,7 @@ interface AttackPatternsMatrixColumnsProps extends AttackPatternsMatrixProps {
   handleToggleModeOnlyActive?: () => void;
   currentModeOnlyActive?: boolean;
   queryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
+  attackPatternIdsToOverlap?: string[];
 }
 
 const LAYOUT_SIZE = {
@@ -75,6 +76,7 @@ export const attackPatternsMatrixColumnsFragment = graphql`
 const AttackPatternsMatrixColumns = ({
   queryRef,
   attackPatterns,
+  attackPatternIdsToOverlap,
   marginRight = false,
   searchTerm = '',
   handleAdd,
@@ -144,10 +146,11 @@ const AttackPatternsMatrixColumns = ({
           ...ap,
           id: ap.attack_pattern_id,
           entity_type: 'Attack-Pattern',
+          overlap: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
           level: getLevel(ap),
         }))
         .sort((f, s) => f.name.localeCompare(s.name)),
-    })), [attackPatternsMatrix, searchTerm, attackPatterns]);
+    })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap]);
 
   const matrixWidth = useMemo(() => {
     const baseOffset = LAYOUT_SIZE.BASE_WIDTH + (navOpen ? LAYOUT_SIZE.NAV_WIDTH : 0);
@@ -194,15 +197,19 @@ const AttackPatternsMatrixColumns = ({
                         onMouseLeave={() => handleToggleHover(ap.id)}
                         onClick={(e) => handleOpen(ap, e)}
                         sx={{
+                          display: 'flex',
                           cursor: 'pointer',
                           border: `1px solid ${colorArray[level][0]}`,
                           backgroundColor: colorArray[level][position],
                           padding: 1.25,
+                          justifyContent: 'space-between',
+                          gap: 1,
                         }}
                       >
                         <Typography variant="body2" fontSize={10}>
                           {ap.name}
                         </Typography>
+                        {ap.overlap && (<CheckOutlined fontSize="medium" color="success"/>)}
                       </Box>
                     );
                   })}
