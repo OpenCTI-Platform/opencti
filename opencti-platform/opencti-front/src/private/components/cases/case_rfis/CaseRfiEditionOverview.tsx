@@ -4,6 +4,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import { Stack } from '@mui/material';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -428,7 +429,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <CaseRfiDeletion id={caseData.id}/>
             {enableReferences && (
               <CommitMessage
@@ -440,7 +441,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
                 id={caseData.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

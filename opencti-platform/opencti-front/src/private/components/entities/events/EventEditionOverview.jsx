@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import { Stack } from '@mui/material';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -306,7 +307,7 @@ const EventEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <EventDeletion
               id={event.id}
             />
@@ -320,7 +321,7 @@ const EventEditionOverviewComponent = (props) => {
                 id={event.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

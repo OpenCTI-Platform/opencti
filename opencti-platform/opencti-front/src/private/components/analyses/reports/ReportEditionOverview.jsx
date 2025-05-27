@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import { Stack } from '@mui/material';
 import ReportDeletion from './ReportDeletion';
 import { buildDate, parse } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -349,7 +350,7 @@ const ReportEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
             required={mandatoryAttributes.includes('objectMarking')}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <ReportDeletion
               reportId={report.id}
             />
@@ -363,7 +364,7 @@ const ReportEditionOverviewComponent = (props) => {
               id={report.id}
             />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

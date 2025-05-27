@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import { useTheme } from '@mui/styles';
+import { Stack } from '@mui/material';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -335,9 +336,9 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             onSubmit={handleSubmitField}
             helperText={<SubscriptionFocus context={context} fieldName="tool_version" />}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <ToolDeletion id={tool.id} />
-          </div>
+          </Stack>
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}

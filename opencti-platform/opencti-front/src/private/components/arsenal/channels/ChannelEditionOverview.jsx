@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -271,7 +272,7 @@ const ChannelEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <ChannelDeletion
               id={channel.id}
             />
@@ -285,7 +286,7 @@ const ChannelEditionOverviewComponent = (props) => {
                 id={channel.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

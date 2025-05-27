@@ -5,6 +5,7 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import ConfidenceField from '@components/common/form/ConfidenceField';
+import { Stack } from '@mui/material';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -343,7 +344,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <CityDeletion
               id={city.id}
             />
@@ -357,7 +358,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
                 id={city.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>

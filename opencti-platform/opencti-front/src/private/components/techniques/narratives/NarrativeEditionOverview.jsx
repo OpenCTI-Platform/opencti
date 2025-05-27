@@ -3,6 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
+import { Stack } from '@mui/material';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -266,7 +267,7 @@ const NarrativeEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-          <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1 }}>
+          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             <NarrativeDeletion
               id={narrative.id}
             />
@@ -280,7 +281,7 @@ const NarrativeEditionOverviewComponent = (props) => {
                 id={narrative.id}
               />
             )}
-          </div>
+          </Stack>
         </Form>
       )}
     </Formik>
