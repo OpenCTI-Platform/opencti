@@ -3,6 +3,7 @@ import { graphql } from 'react-relay';
 import { SecurityPlatformsPaginationQuery, SecurityPlatformsPaginationQuery$variables } from '@components/entities/__generated__/SecurityPlatformsPaginationQuery.graphql';
 import { securityPlatformFragment } from '@components/entities/securityPlatforms/SecurityPlatform';
 import { SecurityPlatformsLines_data$data } from '@components/entities/__generated__/SecurityPlatformsLines_data.graphql';
+import SecurityPlatformCreation from '@components/entities/securityPlatforms/SecurityPlatformCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -137,6 +138,9 @@ const SecurityPlatforms = () => {
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={securityPlatformFragment}
         exportContext={{ entity_type: 'securityPlatform' }}
+        createButton={<SecurityPlatformCreation
+          paginationOptions={queryPaginationOptions}
+                      />}
       />
       )}
     </>
