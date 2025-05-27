@@ -558,6 +558,10 @@ const PlaybookAddComponentsContent = ({
         name: selectedComponent.name,
         ...defaultConfig,
       };
+    const entityTypes = componentId === 'PLAYBOOK_INTERNAL_DATA_CRON'
+      ? ['Stix-Core-Object', 'stix-core-relationship']
+      : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'];
+    const searchContext = { entityTypes };
     return (
       <div className={classes.config}>
         <Formik
@@ -620,15 +624,15 @@ const PlaybookAddComponentsContent = ({
                           <Filters
                             helpers={helpers}
                             availableFilterKeys={componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? availableQueryFilterKeys : stixFilters}
-                            searchContext={{ entityTypes: componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? ['Stix-Core-Object', 'stix-core-relationship'] : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
+                            searchContext={searchContext}
                           />
                         </Box>
                         <div className="clearfix" />
                         <FilterIconButton
                           filters={filters}
                           helpers={helpers}
-                          entityTypes={componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? ['Stix-Core-Object', 'stix-core-relationship'] : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
-                          searchContext={{ entityTypes: componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? ['Stix-Core-Object', 'stix-core-relationship'] : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
+                          entityTypes={entityTypes}
+                          searchContext={searchContext}
                           styleNumber={2}
                           redirection
                         />

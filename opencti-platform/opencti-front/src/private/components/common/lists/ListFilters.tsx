@@ -26,8 +26,6 @@ const useStyles = makeStyles(() => ({
 }));
 
 type ListFiltersProps = {
-  size?: number;
-  fontSize?: number;
   handleOpenFilters: (event: SyntheticEvent) => void;
   handleCloseFilters: (event: SyntheticEvent) => void;
   isOpen: boolean;

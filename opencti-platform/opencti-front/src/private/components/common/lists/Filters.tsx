@@ -14,8 +14,6 @@ interface FiltersProps {
   variant?: string;
   isDatatable?: boolean;
   disabled?: boolean;
-  size?: number;
-  fontSize?: number;
   availableFilterKeys: string[];
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
@@ -35,8 +33,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
   variant,
   isDatatable,
   disabled,
-  size,
-  fontSize,
   availableFilterKeys,
   availableEntityTypes,
   availableRelationshipTypes,
@@ -113,8 +109,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
       <DialogFilters
         handleOpenFilters={handleOpenFilters}
         disabled={disabled}
-        size={size}
-        fontSize={fontSize}
         open={isOpen}
         filters={filters}
         handleCloseFilters={handleCloseFilters}
@@ -148,8 +142,6 @@ const Filters: FunctionComponent<FiltersProps> = ({
         />
       ) : (
         <ListFiltersWithoutLocalStorage
-          size={size}
-          fontSize={fontSize}
           handleOpenFilters={handleOpenFilters}
           handleCloseFilters={handleCloseFilters}
           open={isOpen}
