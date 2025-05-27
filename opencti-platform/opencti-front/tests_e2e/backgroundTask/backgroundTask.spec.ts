@@ -34,7 +34,7 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
   await expect(incidentPage.getPage()).toBeVisible();
 
   // Filter on label
-  await filter.addFilter('Label', 'background-task', true);
+  await filter.addFilter('Label', 'background-task');
   await expect(dataTable.getNumberElements(2)).toBeVisible();
 
   // Select all
@@ -91,13 +91,13 @@ test('Verify background tasks execution', { tag: ['@mutation', '@incident', '@ta
   await expect(entitiesPage.getPage()).toBeVisible();
 
   // Filter by the new label
-  await filter.addFilter('Label', 'background-task-filter-add-label', true);
+  await filter.addFilter('Label', 'background-task-filter-add-label');
   await expect(dataTable.getNumberElements(3)).toBeVisible(); // 2 by this test + 1 in stix imported data
 
   // Clear filter on label
   await filter.removeLastFilter();
 
-  await filter.addFilter('Label', 'background-task-search-add-label', true);
+  await filter.addFilter('Label', 'background-task-search-add-label');
   await sleep(3000);
   if (!await dataTable.getNumberElements(2).isVisible({ timeout: 500 })) {
     // Try to reload page in case it's a flake.

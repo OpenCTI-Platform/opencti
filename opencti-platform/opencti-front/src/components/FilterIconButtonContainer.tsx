@@ -119,7 +119,7 @@ interface FilterIconButtonContainerProps {
   chipColor?: ChipOwnProps['color'];
   helpers?: handleFilterHelpers;
   hasRenderedRef: boolean;
-  setHasRenderedRef: () => void;
+  setHasRenderedRef: (value: boolean) => void;
   availableRelationFilterTypes?: Record<string, string[]>;
   entityTypes?: string[];
   filtersRestrictions?: FiltersRestrictions;
@@ -181,13 +181,16 @@ FilterIconButtonContainerProps
     // activate popover feature on chip only when "helper" is defined, not the best way to handle but
     // it means that the new filter feature is activated. Will be removed in the next version when we generalize the feature on every filter.
     useEffect(() => {
-      if (hasRenderedRef && itemRefToPopover.current && oldItemRefToPopover.current !== itemRefToPopover.current) {
+      const newFilterAdded = hasRenderedRef
+        && itemRefToPopover.current
+        && oldItemRefToPopover.current !== itemRefToPopover.current;
+      if (newFilterAdded) {
         setFilterChipsParams({
           filterId: helpers?.getLatestAddFilterId(),
           anchorEl: itemRefToPopover.current as unknown as HTMLElement,
         });
       } else {
-        setHasRenderedRef();
+        setHasRenderedRef(true);
       }
       oldItemRefToPopover.current = itemRefToPopover.current;
     }, [displayedFilters]);

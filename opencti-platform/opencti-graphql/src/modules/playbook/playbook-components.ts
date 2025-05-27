@@ -933,8 +933,9 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         // Handle first seen synchro for reports creation / modification
         const container = baseData as StixContainer;
         const objectRefsToResolve = [];
-        if (container.object_refs && container.object_refs.length > 0) {
-          objectRefsToResolve.push(...container.object_refs);
+        const objectRefsWithoutMetas = container.object_refs?.filter((o) => !o.startsWith('relationship-meta'));
+        if (objectRefsWithoutMetas && objectRefsWithoutMetas.length > 0) {
+          objectRefsToResolve.push(...objectRefsWithoutMetas);
         }
         if (inferences && container.extensions[STIX_EXT_OCTI].object_refs_inferred && container.extensions[STIX_EXT_OCTI].object_refs_inferred.length > 0) {
           objectRefsToResolve.push(...container.extensions[STIX_EXT_OCTI].object_refs_inferred);

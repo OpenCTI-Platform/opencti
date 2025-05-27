@@ -259,8 +259,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
   const urlInput = input.find((i) => i.key === 'url');
   const payloadBinInput = input.find((i) => i.key === 'payload_bin');
   if (scoreInput) {
-    const newScore = parseFloat(scoreInput.value[0]);
-    checkScore(newScore);
+    checkScore(scoreInput.value[0]);
   }
   if (isNotEmptyField(originalStixCyberObservable.payload_bin) && urlInput) {
     if (isNotEmptyField(originalStixCyberObservable.url)) {
