@@ -11,56 +11,56 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 
 export const securityPlatformFragment = graphql`
-    fragment SecurityPlatform_securityPlatform on SecurityPlatform {
+  fragment SecurityPlatform_securityPlatform on SecurityPlatform {
+    id
+    standard_id
+    entity_type
+    x_opencti_stix_ids
+    spec_version
+    revoked
+    x_opencti_reliability
+    confidence
+    created
+    modified
+    created_at
+    updated_at
+    createdBy {
+      ... on Identity {
         id
-        standard_id
-        entity_type
-        x_opencti_stix_ids
-        spec_version
-        revoked
-        x_opencti_reliability
-        confidence
-        created
-        modified
-        created_at
-        updated_at
-        createdBy {
-            ... on Identity {
-                id
-                name
-                entity_type
-                x_opencti_reliability
-            }
-        }
-        creators {
-            id
-            name
-        }
-        objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-        }
-        objectLabel {
-            id
-            value
-            color
-        }
         name
-        x_opencti_aliases
-        status {
-            id
-            order
-            template {
-                name
-                color
-            }
-        }
-        workflowEnabled
-#        ...SecurityPlatformDetails_securityPlatform
+        entity_type
+        x_opencti_reliability
+      }
     }
+    creators {
+      id
+      name
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    name
+    x_opencti_aliases
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+#        ...SecurityPlatformDetails_securityPlatform
+  }
 `;
 
 interface SecurityPlatformProps {
