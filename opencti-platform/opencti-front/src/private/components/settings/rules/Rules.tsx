@@ -50,6 +50,8 @@ const Rules = () => {
     { label: t_i18n('Rules engine'), current: true },
   ];
 
+  // Use a ref for variables otherwise we have new variables at each calls (with different seconds)
+  // which can cause blink effects with slower networks.
   const queryVariables = useRef({ startDate: yearsAgo(1), endDate: dayAgo() });
   const [rulesQueryRef, loadQuery] = useQueryLoader<RulesQuery>(rulesQuery);
   useInterval(
