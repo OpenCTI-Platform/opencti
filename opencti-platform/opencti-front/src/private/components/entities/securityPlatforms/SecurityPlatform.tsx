@@ -10,7 +10,7 @@ import StixCoreObjectExternalReferences from '../../analyses/external_references
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 
-const securityPlatformFragment = graphql`
+export const securityPlatformFragment = graphql`
     fragment SecurityPlatform_securityPlatform on SecurityPlatform {
         id
         standard_id
