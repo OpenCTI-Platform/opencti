@@ -14,6 +14,8 @@ import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
 import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
 import { FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
+import { elRawUpdateByQuery } from '../../database/engine';
+import { READ_INDEX_HISTORY } from '../../database/utils';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPir>(context, user, id, ENTITY_TYPE_PIR);
@@ -54,13 +56,31 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
 };
 
 export const deletePir = async (context: AuthContext, user: AuthUser, pirId: string) => {
-  // TODO PIR remove pir id from historic events
-  // remove rabbit queue
+  // remove the Pir rabbit queue
   try {
     await unregisterConnectorForIngestion(context, pirId);
   } catch (e) {
     logApp.error('[OPENCTI] Error while unregistering Pir connector', { cause: e });
   }
+  // remove pir id from historic events
+  const source = `
+    for (int i = 0; i < ctx._source.context_data.pir_ids.length; ++i){
+      if(ctx._source.context_data.pir_ids[i] == params.pirId){
+        ctx._source.context_data.pir_ids.remove(i);
+      }
+    }  
+  `;
+  await elRawUpdateByQuery({
+    index: READ_INDEX_HISTORY,
+    body: {
+      script: { source, params: { pirId } },
+      query: {
+        term: {
+          'context_data.pir_ids.keyword': pirId
+        }
+      },
+    },
+  });
   // delete the Pir
   return deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
 };
