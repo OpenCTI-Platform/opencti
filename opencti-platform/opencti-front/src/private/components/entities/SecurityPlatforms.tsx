@@ -1,21 +1,76 @@
 import React from 'react';
-import Grid from '@mui/material/Grid';
-import ToggleButton from '@mui/material/ToggleButton';
-import Tooltip from '@mui/material/Tooltip';
-import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
-import { ThreatActorIndividualCardFragment } from '@components/threats/threat_actors_individual/ThreatActorIndividualCard';
+import { graphql } from 'react-relay';
+import { SecurityPlatformsPaginationQuery, SecurityPlatformsPaginationQuery$variables } from '@components/entities/__generated__/SecurityPlatformsPaginationQuery.graphql';
+import { securityPlatformFragment } from '@components/entities/securityPlatforms/SecurityPlatform';
+import { SecurityPlatformsLines_data$data } from '@components/entities/__generated__/SecurityPlatformsLines_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import ListCards from '../../../components/list_cards/ListCards';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { GenericAttackCardDummy } from '../common/cards/GenericAttackCard';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 
 const LOCAL_STORAGE_KEY_SECURITY_PLATFORMS = 'securityPlatform';
+
+export const securityPlatformsQuery = graphql`
+  query SecurityPlatformsPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: SecurityPlatformOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...SecurityPlatformsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+  }
+`;
+
+export const securityPlatformsFragment = graphql`
+  fragment SecurityPlatformsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "SecurityPlatformOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "SecurityPlatformsLinesRefetchQuery") {
+    securityPlatforms(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_securityPlatforms") {
+      edges {
+        node {
+          id
+          name
+          description
+          ...SecurityPlatform_securityPlatform
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const SecurityPlatforms = () => {
   const { t_i18n } = useFormatter();
@@ -29,7 +84,7 @@ const SecurityPlatforms = () => {
   };
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Security Platform'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SecurityPlatformCardsPaginationQuery$variables>(
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SecurityPlatformsPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_SECURITY_PLATFORMS,
     initialValues,
   );
@@ -38,152 +93,52 @@ const SecurityPlatforms = () => {
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
-  } as unknown as SecurityPlatformIndividualCardsPaginationQuery$variables;
+  } as unknown as SecurityPlatformsPaginationQuery$variables;
 
-  const queryRef = useQueryLoading<>(
-    securityPlatformsCardsPaginationQuery,
+  const queryRef = useQueryLoading<SecurityPlatformsPaginationQuery>(
+    securityPlatformsQuery,
     queryPaginationOptions,
   );
 
-  const renderCards = () => {
-    const {
-      numberOfElements,
-      filters,
-      searchTerm,
-      sortBy,
-      orderAsc,
-      openExports,
-    } = viewStorage;
-    const dataColumns = {
-      name: {
-        label: 'Name',
-      },
-      created: {
-        label: 'Original creation date',
-      },
-      modified: {
-        label: 'Modification date',
-      },
-    };
-    return (
-      <ListCards
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={helpers.handleSort}
-        handleSearch={helpers.handleSearch}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleToggleExports={helpers.handleToggleExports}
-        openExports={openExports}
-        exportContext={{ entity_type: 'securityPlatform' }}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        handleChangeView={helpers.handleChangeView}
-        // createButton={(
-        //   <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        //     <SecurityPlatformsCreation paginationOptions={queryPaginationOptions} />
-        //   </Security>
-        // )}
-      >
-        {queryRef && (
-          <React.Suspense
-            fallback={
-              <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <Grid
-                      item
-                      xs={3}
-                      key={idx}
-                    >
-                      <GenericAttackCardDummy />
-                    </Grid>
-                  ))}
-              </Grid>
-            }
-          >
-            {/* <SecurityPlatformsCards */}
-            {/*  queryRef={queryRef} */}
-            {/*  setNumberOfElements={helpers.handleSetNumberOfElements} */}
-            {/*  onLabelClick={helpers.handleAddFilter} */}
-            {/* /> */}
-          </React.Suspense>
-        )}
-      </ListCards>
-    );
+  const dataColumns: DataTableProps['dataColumns'] = {
+    name: {
+      percentWidth: 15,
+    },
+    security_platform_types: {
+      label: 'Type',
+      percentWidth: 13,
+    },
+    sophistication: {},
+    resource_level: {},
+    creator: {},
+    objectLabel: {},
+    modified: {},
+    objectMarking: { percentWidth: 10 },
   };
 
-  const renderList = () => {
-    const dataColumns = {
-      name: {
-        percentWidth: 15,
-      },
-      security_platform_types: {
-        label: 'Type',
-        percentWidth: 13,
-      },
-      sophistication: {},
-      resource_level: {},
-      creator: {},
-      objectLabel: {},
-      modified: {},
-      objectMarking: { percentWidth: 10 },
-    };
-
-    const preloadedPaginationProps = {
-      linesQuery: securityPlatformsCardsPaginationQuery,
-      linesFragment: securityPlatformsCardsFragment,
-      queryRef,
-      nodePath: ['securityPlatforms', 'pageInfo', 'globalCount'],
-      setNumberOfElements: helpers.handleSetNumberOfElements,
-    } as UsePreloadedPaginationFragment<SecurityPlatformsCardsPaginationQuery>;
-
-    return (
-      <>
-        {queryRef && (
-          <DataTable
-            dataColumns={dataColumns}
-            resolvePath={(data: SecurityPlatformsCards_data$data) => data.securityPlatforms?.edges?.map((n) => n?.node)}
-            storageKey={LOCAL_STORAGE_KEY_SECURITY_PLATFORMS}
-            initialValues={initialValues}
-            toolbarFilters={contextFilters}
-            preloadedPaginationProps={preloadedPaginationProps}
-            lineFragment={ThreatActorIndividualCardFragment}
-            exportContext={{ entity_type: 'securityPlatform' }}
-            additionalHeaderButtons={[
-              (<ToggleButton key="cards" value="cards" aria-label="cards">
-                <Tooltip title={t_i18n('Cards view')}>
-                  <ViewModuleOutlined fontSize="small" color="primary" />
-                </Tooltip>
-              </ToggleButton>),
-              (<ToggleButton key="lines" value="lines" aria-label="lines">
-                <Tooltip title={t_i18n('Lines view')}>
-                  <ViewListOutlined color="secondary" fontSize="small" />
-                </Tooltip>
-              </ToggleButton>),
-            ]}
-            // createButton={(
-            //   <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            //     <SecurityPlatformsCreation paginationOptions={queryPaginationOptions} />
-            //   </Security>
-            // )}
-          />
-        )}
-      </>
-    );
-  };
+  const preloadedPaginationProps = {
+    linesQuery: securityPlatformsQuery,
+    linesFragment: securityPlatformsFragment,
+    queryRef,
+    nodePath: ['securityPlatforms', 'pageInfo', 'globalCount'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<SecurityPlatformsPaginationQuery>;
 
   return (
     <>
       <Breadcrumbs elements={[{ label: t_i18n('Security platforms') }, { label: t_i18n('Security Platforms'), current: true }]} />
-      {viewStorage.view !== 'lines' ? renderCards() : renderList()}
+      {queryRef && (
+      <DataTable
+        dataColumns={dataColumns}
+        resolvePath={(data: SecurityPlatformsLines_data$data) => data.securityPlatforms?.edges?.map((n) => n?.node)}
+        storageKey={LOCAL_STORAGE_KEY_SECURITY_PLATFORMS}
+        initialValues={initialValues}
+        toolbarFilters={contextFilters}
+        preloadedPaginationProps={preloadedPaginationProps}
+        lineFragment={securityPlatformFragment}
+        exportContext={{ entity_type: 'securityPlatform' }}
+      />
+      )}
     </>
   );
 };
