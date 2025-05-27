@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { pirFlagElement, deletePir, findAll, findById, pirAdd, pirUnflagElement } from './pir-domain';
+import { pirFlagElement, deletePir, findAll, findById, pirAdd, pirUnflagElement, updatePir } from './pir-domain';
 import { batchLoader } from '../../database/middleware';
 import { batchCreators } from '../../domain/user';
 import { batchMarkingDefinitions } from '../../domain/stixCoreObject';
@@ -18,6 +18,7 @@ const pirResolvers: Resolvers = {
   },
   Mutation: {
     pirAdd: (_, { input }, context) => pirAdd(context, context.user, input),
+    pirUpdate: (_, { id, input }, context) => updatePir(context, context.user, id, input),
     pirDelete: (_, { id }, context) => deletePir(context, context.user, id),
     pirFlagElement: (_, { id, input }, context) => pirFlagElement(context, context.user, id, input),
     pirUnflagElement: (_, { id, input }, context) => pirUnflagElement(context, context.user, id, input),
