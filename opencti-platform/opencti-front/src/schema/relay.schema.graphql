@@ -9244,6 +9244,7 @@ type Mutation {
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   pirAdd(input: PirAddInput!): Pir
+  pirUpdate(id: ID!, input: [EditInput!]!): Pir
   pirDelete(id: ID!): ID
   pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
@@ -13255,7 +13256,7 @@ type Pir implements InternalObject & BasicObject {
   creators: [Creator!]
   objectMarking: [MarkingDefinition!]
   name: String!
-  description: String!
+  description: String
   pir_criteria: [PirCriterion!]!
   pir_filters: String!
 }

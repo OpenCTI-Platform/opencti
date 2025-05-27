@@ -14355,6 +14355,7 @@ export type Mutation = {
   pirDelete?: Maybe<Scalars['ID']['output']>;
   pirFlagElement?: Maybe<Scalars['ID']['output']>;
   pirUnflagElement?: Maybe<Scalars['ID']['output']>;
+  pirUpdate?: Maybe<Pir>;
   playbookAdd?: Maybe<Playbook>;
   playbookAddLink: Scalars['String']['output'];
   playbookAddNode: Scalars['String']['output'];
@@ -15928,6 +15929,12 @@ export type MutationPirFlagElementArgs = {
 export type MutationPirUnflagElementArgs = {
   id: Scalars['ID']['input'];
   input: PirUnflagElementInput;
+};
+
+
+export type MutationPirUpdateArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
 };
 
 
@@ -19618,7 +19625,7 @@ export type Pir = BasicObject & InternalObject & {
   __typename?: 'Pir';
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
-  description: Scalars['String']['output'];
+  description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
@@ -39677,6 +39684,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   pirDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirDeleteArgs, 'id'>>;
   pirFlagElement?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirFlagElementArgs, 'id' | 'input'>>;
   pirUnflagElement?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirUnflagElementArgs, 'id' | 'input'>>;
+  pirUpdate?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType, RequireFields<MutationPirUpdateArgs, 'id' | 'input'>>;
   playbookAdd?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddArgs, 'input'>>;
   playbookAddLink?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddLinkArgs, 'id' | 'input'>>;
   playbookAddNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddNodeArgs, 'id' | 'input'>>;
@@ -40686,7 +40694,7 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
 export type PirResolvers<ContextType = any, ParentType extends ResolversParentTypes['Pir'] = ResolversParentTypes['Pir']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
-  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
