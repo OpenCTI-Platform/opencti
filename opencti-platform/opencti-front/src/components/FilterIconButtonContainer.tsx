@@ -267,6 +267,7 @@ FilterIconButtonContainerProps
       };
     }
   }
+
   return (
     <Box sx={boxStyle}>
       {displayedFilters.map((currentFilter, index) => {
@@ -390,7 +391,7 @@ FilterIconButtonContainerProps
         );
       })}
       {filterChipsParams.anchorEl && (
-        <Box>
+        <>
           <FilterChipPopover
             filters={filters.filters}
             params={filterChipsParams}
@@ -405,7 +406,7 @@ FilterIconButtonContainerProps
             availableRelationshipTypes={availableRelationshipTypes}
             fintelTemplatesContext={fintelTemplatesContext}
           />
-        </Box>
+        </>
       )}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups

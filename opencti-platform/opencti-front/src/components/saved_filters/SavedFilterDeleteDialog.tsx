@@ -18,9 +18,10 @@ type SavedFilterDeleteDialogProps = {
   savedFilterToDelete: string;
   onClose: () => void;
   onReset: () => void;
+  shouldResetFilters: boolean;
 };
 
-const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset }: SavedFilterDeleteDialogProps) => {
+const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset, shouldResetFilters }: SavedFilterDeleteDialogProps) => {
   const { t_i18n } = useFormatter();
 
   const {
@@ -47,7 +48,7 @@ const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset }: Save
         deleteNode(store, 'SavedFilters_savedFilters', { filters }, savedFilterToDelete);
       },
       onCompleted: () => {
-        onReset();
+        if (shouldResetFilters) onReset();
         onClose();
       },
       onError: () => {
