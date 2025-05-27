@@ -3,6 +3,7 @@ import { graphql } from 'react-relay';
 import { SecurityPlatformsPaginationQuery, SecurityPlatformsPaginationQuery$variables } from '@components/entities/__generated__/SecurityPlatformsPaginationQuery.graphql';
 import { securityPlatformFragment } from '@components/entities/securityPlatforms/SecurityPlatform';
 import { SecurityPlatformsLines_data$data } from '@components/entities/__generated__/SecurityPlatformsLines_data.graphql';
+import { SecurityOutlined } from '@mui/icons-material';
 import SecurityPlatformCreation from '@components/entities/securityPlatforms/SecurityPlatformCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -102,19 +103,30 @@ const SecurityPlatforms = () => {
   );
 
   const dataColumns: DataTableProps['dataColumns'] = {
+    is_security_platform: {
+      id: 'is_security_platform',
+      isSortable: false,
+      percentWidth: 3,
+      render: () => {
+        return (<SecurityOutlined/>);
+      },
+    },
     name: {
-      percentWidth: 15,
+      percentWidth: 20,
     },
     security_platform_types: {
       label: 'Type',
-      percentWidth: 13,
+      percentWidth: 20,
     },
-    sophistication: {},
-    resource_level: {},
-    creator: {},
-    objectLabel: {},
-    modified: {},
-    objectMarking: { percentWidth: 10 },
+    objectLabel: {
+      percentWidth: 20,
+    },
+    modified: {
+      percentWidth: 20,
+    },
+    created_at: {
+      percentWidth: 17,
+    },
   };
 
   const preloadedPaginationProps = {
