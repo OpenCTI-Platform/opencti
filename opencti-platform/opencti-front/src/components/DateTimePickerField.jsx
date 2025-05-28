@@ -7,21 +7,25 @@ import { isNil } from 'ramda';
 import { parse } from '../utils/Time';
 
 const dateTimeFormatsMap = {
+  'de-de': 'dd.MM.yyyy HH:mm',
   'en-us': 'yyyy-MM-dd hh:mm a',
-  'fr-fr': 'dd/MM/yyyy HH:mm',
   'es-es': 'dd/MM/yyyy HH:mm',
+  'fr-fr': 'dd/MM/yyyy HH:mm',
+  'it-it': 'dd/MM/yyyy HH:mm',
   'ja-jp': 'yyyy/MM/dd hh:mm a',
-  'zg-cn': 'yyyy-MM-dd hh:mm a',
   'ko-kr': 'yyyy-MM-dd hh:mm a',
+  'zh-cn': 'yyyy-MM-dd hh:mm a',
 };
 
 const dateTimeFormatsMapWithSeconds = {
+  'de-de': 'dd.MM.yyyy HH:mm:ss',
   'en-us': 'yyyy-MM-dd hh:mm:ss a',
-  'fr-fr': 'dd/MM/yyyy HH:mm:ss',
   'es-es': 'dd/MM/yyyy HH:mm:ss',
+  'fr-fr': 'dd/MM/yyyy HH:mm:ss',
+  'it-it': 'dd/MM/yyyy HH:mm:ss',
   'ja-jp': 'yyyy/MM/dd hh:mm:ss a',
-  'zg-cn': 'yyyy-MM-dd hh:mm:ss a',
   'ko-kr': 'yyyy-MM-dd hh:mm:ss a',
+  'zh-cn': 'yyyy-MM-dd hh:mm:ss a',
 };
 
 const DateTimePickerField = (props) => {
