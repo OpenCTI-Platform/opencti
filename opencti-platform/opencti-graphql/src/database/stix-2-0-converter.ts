@@ -4,8 +4,53 @@ import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SMO from '../types/stix-2-0-smo';
 import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_MALWARE } from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_DATA_COMPONENT,
+  ENTITY_TYPE_DATA_SOURCE,
+  ENTITY_TYPE_MALWARE,
+  isStixDomainObjectCase,
+  isStixDomainObjectIdentity,
+  isStixDomainObjectLocation,
+  isStixDomainObjectThreatActor
+} from '../schema/stixDomainObject';
 import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isInternalRelationship } from '../schema/internalRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
+import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
+
+export const convertTypeToStix2Type = (type: string): string => {
+  if (isStixDomainObjectIdentity(type)) {
+    return 'identity';
+  }
+  if (isStixDomainObjectLocation(type)) {
+    return 'location';
+  }
+  if (type.toLowerCase() === ENTITY_HASHED_OBSERVABLE_STIX_FILE.toLowerCase()) {
+    return 'file';
+  }
+  if (isStixCoreRelationship(type)) {
+    return 'relationship';
+  }
+  if (isInternalRelationship(type)) {
+    return 'internal-relationship';
+  }
+  if (isStixSightingRelationship(type)) {
+    return 'sighting';
+  }
+  if (isStixDomainObjectThreatActor(type)) {
+    return 'threat-actor';
+  }
+  if (isStixDomainObjectCase(type) || type === ENTITY_TYPE_CONTAINER_FEEDBACK || type === ENTITY_TYPE_CONTAINER_TASK) {
+    return `x-opencti-${type.toLowerCase()}`;
+  }
+  if (type === ENTITY_TYPE_DATA_COMPONENT || type === ENTITY_TYPE_DATA_SOURCE) {
+    return `x-mitre-${type.toLowerCase()}`;
+  }
+  return type.toLowerCase();
+};
 
 // Meta
 const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Array<SMO.StixInternalKillChainPhase> => {
@@ -39,7 +84,7 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
     x_opencti_id: instance.id,
     spec_version: '2.0',
     x_opencti_type: instance.entity_type,
-    type: instance.entity_type.toLowerCase(),
+    type: convertTypeToStix2Type(instance.entity_type),
     x_opencti_granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
     x_opencti_workflow_id: instance.x_opencti_workflow_id,
   };
