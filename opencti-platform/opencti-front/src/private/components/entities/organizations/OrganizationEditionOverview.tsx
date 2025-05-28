@@ -116,7 +116,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     x_opencti_reliability: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
-    x_opencti_score: Yup.number()
+    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
       .nullable()
       .min(0, t_i18n('The value must be greater than or equal to 0'))
       .max(100, t_i18n('The value must be less than or equal to 100')),
