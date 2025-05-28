@@ -103,14 +103,6 @@ const SecurityPlatforms = () => {
   );
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    is_security_platform: {
-      id: 'is_security_platform',
-      isSortable: false,
-      percentWidth: 3,
-      render: () => {
-        return (<SecurityOutlined/>);
-      },
-    },
     name: {
       percentWidth: 20,
     },
@@ -125,7 +117,7 @@ const SecurityPlatforms = () => {
       percentWidth: 20,
     },
     created_at: {
-      percentWidth: 17,
+      percentWidth: 20,
     },
   };
 
@@ -147,6 +139,11 @@ const SecurityPlatforms = () => {
         storageKey={LOCAL_STORAGE_KEY_SECURITY_PLATFORMS}
         initialValues={initialValues}
         toolbarFilters={contextFilters}
+        icon={(_) => {
+          return (
+            <SecurityOutlined/>
+          );
+        }}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={securityPlatformFragment}
         exportContext={{ entity_type: 'securityPlatform' }}
