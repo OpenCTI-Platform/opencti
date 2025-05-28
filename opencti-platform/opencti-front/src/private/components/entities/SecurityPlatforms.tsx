@@ -82,7 +82,6 @@ const SecurityPlatforms = () => {
     sortBy: 'name',
     orderAsc: true,
     openExports: false,
-    view: 'cards',
   };
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Security Platform'));
@@ -91,7 +90,7 @@ const SecurityPlatforms = () => {
     initialValues,
   );
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('securityPlatform', viewStorage.filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('SecurityPlatform', viewStorage.filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -146,7 +145,7 @@ const SecurityPlatforms = () => {
         }}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={securityPlatformFragment}
-        exportContext={{ entity_type: 'securityPlatform' }}
+        exportContext={{ entity_type: 'SecurityPlatform' }}
         createButton={<SecurityPlatformCreation
           paginationOptions={queryPaginationOptions}
                       />}

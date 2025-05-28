@@ -119,8 +119,8 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/entities/security_platform/${securityPlatformId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, securityPlatformId, '/dashboard/entities/security_platform', viewAs === 'knowledge');
+  const link = `/dashboard/entities/security_platforms/${securityPlatformId}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, securityPlatformId, '/dashboard/entities/security_platforms', viewAs === 'knowledge');
   return (
     <>
       {securityPlatform ? (
@@ -132,21 +132,11 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
-                    'sectors',
-                    'organizations',
-                    'individuals',
-                    'locations',
-                    'used_tools',
-                    'threats',
-                    'threat_actors',
-                    'intrusion_sets',
-                    'campaigns',
-                    'incidents',
-                    'malwares',
-                    'attack_patterns',
+                    'systems',
+                    'infrastructures',
+                    'indicators',
                     'tools',
-                    'vulnerabilities',
-                    'observables',
+                    'attack_patterns',
                   ]}
                   data={securityPlatform}
                 />
@@ -156,7 +146,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Security Platform'), link: '/dashboard/entities/security_platform' },
+              { label: t_i18n('Security Platform'), link: '/dashboard/entities/security_platforms' },
               { label: securityPlatform.name, current: true },
             ]}
             />
