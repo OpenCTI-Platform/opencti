@@ -23,6 +23,7 @@ type Pir implements InternalObject & BasicObject {
     description: String
     pir_criteria: [PirCriterion!]!
     pir_filters: String!
+    lastEventId: String!
 }
 
 # Ordering

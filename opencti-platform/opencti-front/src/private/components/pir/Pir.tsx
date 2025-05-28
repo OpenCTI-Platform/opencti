@@ -1,16 +1,17 @@
 import React, { Suspense } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { useParams } from 'react-router-dom';
-import { PirQuery } from '@components/pir/__generated__/PirQuery.graphql';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
-import PirHeader from '@components/pir/PirHeader';
-import PirTabs from '@components/pir/PirTabs';
-import PirKnowledge from '@components/pir/PirKnowledge';
-import { PirHistoryQuery } from '@components/pir/__generated__/PirHistoryQuery.graphql';
-import PirOverview from '@components/pir/PirOverview';
+import { PirQuery } from './__generated__/PirQuery.graphql';
+import PirHeader from './PirHeader';
+import PirTabs from './PirTabs';
+import PirKnowledge from './PirKnowledge';
+import { PirHistoryQuery } from './__generated__/PirHistoryQuery.graphql';
+import PirOverview from './PirOverview';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
+import { PirThreatMapQuery } from './__generated__/PirThreatMapQuery.graphql';
 
 const pirQuery = graphql`
   query PirQuery($id: ID!) {
@@ -35,14 +36,26 @@ const pirHistoryQuery = graphql`
   }
 `;
 
+const pirThreatMapQuery = graphql`
+  query PirThreatMapQuery($toId: StixRef!) {
+    ...PirOverviewThreatMapFragment
+  }
+`;
+
 interface PirComponentProps {
   pirQueryRef: PreloadedQuery<PirQuery>
   pirHistoryQueryRef: PreloadedQuery<PirHistoryQuery>
+  pirThreatMapQueryRef: PreloadedQuery<PirThreatMapQuery>
 }
 
-const PirComponent = ({ pirQueryRef, pirHistoryQueryRef }: PirComponentProps) => {
+const PirComponent = ({
+  pirQueryRef,
+  pirHistoryQueryRef,
+  pirThreatMapQueryRef,
+}: PirComponentProps) => {
   const { pir } = usePreloadedQuery(pirQuery, pirQueryRef);
   const history = usePreloadedQuery(pirHistoryQuery, pirHistoryQueryRef);
+  const relationships = usePreloadedQuery(pirThreatMapQuery, pirThreatMapQueryRef);
 
   if (!pir) return <ErrorNotFound/>;
 
@@ -53,7 +66,11 @@ const PirComponent = ({ pirQueryRef, pirHistoryQueryRef }: PirComponentProps) =>
         {({ index }) => (
           <>
             <div role="tabpanel" hidden={index !== 0}>
-              <PirOverview dataHistory={history} dataDetails={pir} />
+              <PirOverview
+                dataHistory={history}
+                dataDetails={pir}
+                dataThreatMap={relationships}
+              />
             </div>
             <div role="tabpanel" hidden={index !== 1}>
               <PirKnowledge data={pir} />
@@ -76,6 +93,7 @@ const Pir = () => {
   if (!pirId) return <ErrorNotFound/>;
 
   const pirQueryRef = useQueryLoading<PirQuery>(pirQuery, { id: pirId });
+  const pirThreatMapQueryRef = useQueryLoading<PirThreatMapQuery>(pirThreatMapQuery, { toId: pirId });
   const pirHistoryQueryRef = useQueryLoading<PirHistoryQuery>(pirHistoryQuery, {
     first: 20,
     orderBy: 'timestamp',
@@ -118,10 +136,11 @@ const Pir = () => {
 
   return (
     <Suspense fallback={<Loader />}>
-      {pirQueryRef && pirHistoryQueryRef && (
+      {pirQueryRef && pirHistoryQueryRef && pirThreatMapQueryRef && (
         <PirComponent
           pirQueryRef={pirQueryRef}
           pirHistoryQueryRef={pirHistoryQueryRef}
+          pirThreatMapQueryRef={pirThreatMapQueryRef}
         />
       )}
     </Suspense>

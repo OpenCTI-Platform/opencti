@@ -19628,6 +19628,7 @@ export type Pir = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  lastEventId: Scalars['String']['output'];
   name: Scalars['String']['output'];
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Scalars['String']['output']>;
@@ -27426,6 +27427,7 @@ export enum StixRefRelationshipsOrdering {
   CreatedAt = 'created_at',
   EntityType = 'entity_type',
   Modified = 'modified',
+  PirScore = 'pir_score',
   RelationshipType = 'relationship_type',
   StartTime = 'start_time',
   StopTime = 'stop_time',
@@ -40697,6 +40699,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  lastEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;

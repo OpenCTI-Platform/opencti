@@ -6,12 +6,15 @@ import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../components/i18n';
 import ItemCreators from '../../../components/ItemCreators';
 import FilterIconButton from '../../../components/FilterIconButton';
+import { parse } from '../../../utils/Time';
 
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {
     description
     created_at
+    lastEventId
     creators {
+      id
       name
     }
     pir_filters
@@ -28,6 +31,8 @@ interface PirOverviewDetailsProps {
 const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
   const { t_i18n, fldt } = useFormatter();
   const pir = useFragment(detailsFragment, data);
+
+  const lastEventDate = parse(parseInt((pir.lastEventId || '-').split('-')[0], 10));
 
   return (
     <Grid container spacing={2}>
@@ -56,10 +61,18 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
           <ItemCreators creators={pir.creators ?? []}/>
         </div>
       </Grid>
+
       <Grid
         size={{ xs: 6 }}
         sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
       >
+        <div>
+          <Typography variant="h3" gutterBottom>
+            {t_i18n('Last event processed')}
+          </Typography>
+          {fldt(lastEventDate)}
+        </div>
+
         <div>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Filters')}
