@@ -2305,7 +2305,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         external_references: references.map((ref) => convertExternalReferenceToStix(ref))
       } : undefined;
       const relatedRestrictions = extractObjectsRestrictionsFromInputs(updatedInputs, initial.entity_type);
-      const relatedPirs = extractObjectsPirsFromInputs(updatedInputs, initial.entity_type);
+      const { pir_ids } = extractObjectsPirsFromInputs(updatedInputs, initial.entity_type);
       const event = await storeUpdateEvent(
         context,
         user,
@@ -2316,7 +2316,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           ...opts,
           commit,
           related_restrictions: relatedRestrictions,
-          pir_ids: relatedPirs
+          pir_ids
         }
       );
       return { element: updatedInstance, event, isCreation: false };
