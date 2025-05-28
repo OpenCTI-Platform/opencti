@@ -68,13 +68,14 @@ steps:
 
   - name: api-tests-post-verification
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    volumes:
+    - name: raw-start-backend-logs
+      path: /tmp/raw-start-platform/opencti-graphql/.logs
     depends_on:
         - api-tests
     commands:
-      - cd /tmp/raw-start-platform
+      - cd /tmp/raw-start-platform/opencti-graphql/.logs
       - ls -lart
-      - cd /tmp/raw-start-platform/.logs
-      - cat /tmp/raw-start-platform/.logs/opencti* | grep -i error
 
   - name: api-coverage
     image: plugins/codecov
@@ -231,6 +232,8 @@ services:
     volumes:
     - name: cache-node-raw-start-backend
       path: /tmp/raw-start-platform/opencti-graphql/node_modules
+    - name: raw-start-backend-logs
+      path: /tmp/raw-start-platform/opencti-graphql/.logs
     environment:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
