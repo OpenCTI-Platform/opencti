@@ -812,7 +812,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'password',
   'draft_context',
 ];
-const AVAILABLE_LANGUAGES = ['es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr'];
+const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr'];
 
 export const meEditField = async (context, user, userId, inputs, password = null) => {
   inputs.forEach((input) => {
