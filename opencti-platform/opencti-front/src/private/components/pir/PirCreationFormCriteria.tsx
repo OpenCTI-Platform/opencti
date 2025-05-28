@@ -22,7 +22,7 @@ const PirCreationFormCriteria = () => {
       <div style={{ overflow: 'hidden' }}>
         <ConfidenceField
           name="confidence"
-          label={t_i18n('Minimum confidence of the source')}
+          label={t_i18n('Minimum confidence of the relationship')}
           containerStyle={fieldSpacingContainerStyle}
         />
       </div>
