@@ -66,6 +66,16 @@ steps:
     depends_on:
       - dependencies-checkout
 
+  - name: api-tests-post-verification
+    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    depends_on:
+        - api-tests
+    commands:
+      - cd /tmp/raw-start-platform
+      - ls -lart
+      - cd /tmp/raw-start-platform/.logs
+      - cat /tmp/raw-start-platform/.logs/opencti* | grep -i error
+
   - name: api-coverage
     image: plugins/codecov
     settings:
