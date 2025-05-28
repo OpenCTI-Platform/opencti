@@ -37,6 +37,7 @@ interface SecurityPlatformDetailsComponentProps {
 }
 
 const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetailsComponentProps> = ({ securityPlatform }) => {
+  console.log('SEC', securityPlatform);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   return (
@@ -90,9 +91,9 @@ const SecurityPlatformDetails = createFragmentContainer(
         security_platform_type
         x_opencti_score
         objectLabel {
-            id
-            value
-            color
+          id
+          value
+          color
         }
       }
     `,

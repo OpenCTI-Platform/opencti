@@ -40,7 +40,7 @@ const subscription = graphql`
   }
 `;
 
-const SecurityPlatformQuery = graphql`
+const securityPlatformQuery = graphql`
   query RootSecurityPlatformQuery($id: String!) {
     securityPlatform(id: $id) {
       id
@@ -115,7 +115,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
     securityPlatform,
     connectorsForExport,
     connectorsForImport,
-  } = usePreloadedQuery<RootSecurityPlatformQuery>(SecurityPlatformQuery, queryRef);
+  } = usePreloadedQuery<RootSecurityPlatformQuery>(securityPlatformQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
@@ -323,7 +323,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
 };
 const Root = () => {
   const { securityPlatformId } = useParams() as { securityPlatformId: string; };
-  const queryRef = useQueryLoading<RootSecurityPlatformQuery>(SecurityPlatformQuery, {
+  const queryRef = useQueryLoading<RootSecurityPlatformQuery>(securityPlatformQuery, {
     id: securityPlatformId,
   });
 

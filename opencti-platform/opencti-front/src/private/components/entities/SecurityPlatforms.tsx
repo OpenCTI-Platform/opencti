@@ -15,7 +15,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 
-const LOCAL_STORAGE_KEY_SECURITY_PLATFORMS = 'securityPlatform';
+const LOCAL_STORAGE_KEY = 'securityPlatform';
 
 export const securityPlatformsQuery = graphql`
   query SecurityPlatformsPaginationQuery(
@@ -87,7 +87,7 @@ const SecurityPlatforms = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Security Platform'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SecurityPlatformsPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_SECURITY_PLATFORMS,
+    LOCAL_STORAGE_KEY,
     initialValues,
   );
 
@@ -136,10 +136,10 @@ const SecurityPlatforms = () => {
       <DataTable
         dataColumns={dataColumns}
         resolvePath={(data: SecurityPlatformsLines_data$data) => data.securityPlatforms?.edges?.map((n) => n?.node)}
-        storageKey={LOCAL_STORAGE_KEY_SECURITY_PLATFORMS}
+        storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
         toolbarFilters={contextFilters}
-        icon={(_) => {
+        icon={() => {
           return (
             <SecurityOutlined/>
           );
