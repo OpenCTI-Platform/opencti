@@ -35,7 +35,6 @@ import {
 } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member } from '../../../src/generated/graphql';
-import { FunctionalError } from '../../../src/config/errors';
 
 const LIST_QUERY = gql`
   query users(
@@ -332,15 +331,16 @@ describe('User resolver standard behavior', () => {
         }
       }
     `;
-    const invalidQueryResult = await queryAsAdmin({
-      query: UPDATE_QUERY,
-      variables: { id: userInternalId, input: { key: 'language', value: ['invalid-value'] } },
-    });
     const validQueryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: { key: 'language', value: ['en-us'] } },
     });
-    expect(invalidQueryResult).toThrow(FunctionalError('The language you have provided is not valid'));
+    expect(async () => {
+      await queryAsAdmin({
+        query: UPDATE_QUERY,
+        variables: { id: userInternalId, input: { key: 'language', value: ['invalid-value'] } },
+      });
+    }).toThrowError('The language you have provided is not valid');
     expect(validQueryResult.data?.userEdit.fieldPatch.language).toEqual('en-us');
   });
   it('should Admin be able renew a user token', async () => {
