@@ -2858,9 +2858,16 @@ type AttackPatternForMatrix {
   name: String!
   description: String
   x_mitre_id: String
+  subAttackPatterns: [SubAttackPatternForMatrix!]
   subAttackPatternsIds: [String!]
   subAttackPatternsSearchText: String
   killChainPhasesIds: [String!]
+}
+
+type SubAttackPatternForMatrix {
+  attack_pattern_id: String!
+  name: String!
+  description: String
 }
 
 type AttackPatternsByKillChain {

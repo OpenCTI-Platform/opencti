@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 
@@ -44,6 +44,7 @@ const MATRIX_QUERY = gql`
           name
           description
           x_mitre_id
+          subAttackPatterns
           subAttackPatternsIds
           subAttackPatternsSearchText
           killChainPhasesIds
