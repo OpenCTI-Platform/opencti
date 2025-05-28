@@ -29,7 +29,6 @@ const PirCreationFormGeneralSettings = () => {
       />
       <ObjectMarkingField
         name="markings"
-        required
         style={fieldSpacingContainerStyle}
         setFieldValue={setFieldValue}
       />

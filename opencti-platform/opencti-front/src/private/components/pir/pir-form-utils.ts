@@ -7,9 +7,9 @@ export interface PirEditionFormData {
 }
 
 export interface PirCreationFormData {
-  type: string | null
-  name: string | null
-  description: string | null
+  type: 'threat-landscape' | 'threat-origin' | 'threat-custom'
+  name: string
+  description: string
   markings: FieldOption[]
   confidence: number | null
   // TODO PIR should have different defs depending of type
@@ -30,8 +30,8 @@ const optionsToFilters = (options: FieldOption[]): PirAddInput['pir_criteria'] =
 
 export const pirFormDataToMutationInput = (data: PirCreationFormData): PirAddInput => {
   return {
-    name: data.name ?? '',
-    description: data.description,
+    name: data.name,
+    description: data.description ?? undefined,
     objectMarking: data.markings.map((m) => m.value),
     pir_filters: {
       mode: 'and',
