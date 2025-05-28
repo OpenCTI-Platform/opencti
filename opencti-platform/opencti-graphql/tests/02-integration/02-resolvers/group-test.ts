@@ -109,7 +109,7 @@ describe('Group resolver standard behavior', () => {
   describe('dashboard preferences', () => {
     describe('when a group does not have a default dashboard', () => {
       it('returns "null"', async () => {
-        const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
+        const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: groupInternalId } });
         expect(queryResult?.data?.group.default_dashboard).toBeNull();
       });
     });
@@ -231,10 +231,10 @@ describe('Group resolver standard behavior', () => {
     const maxMarkings = queryResult?.data?.group.max_shareable_marking;
     expect(maxMarkings).toEqual([]);
   });
-  it('should have auto_new_marking undefined at group creation', async () => {
+  it('should have auto_new_marking false at group creation', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
     const autoNewMarking = queryResult?.data?.group.auto_new_marking;
-    expect(autoNewMarking).toEqual(undefined);
+    expect(autoNewMarking).toBeFalsy();
   });
   it('should add new markings to allowed markings and max shareable markings if auto_new_marking = True', async () => {
     // update group with auto_new_marking = true
