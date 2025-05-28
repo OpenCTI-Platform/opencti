@@ -47,14 +47,17 @@ export const groupNotShareableMarkingTypes = (group) => group.max_shareable_mark
   .map(({ type }) => type) ?? [];
 
 export const groupMaxShareableMarkings = async (context, group) => {
-  const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const groupMaxShareableMarkingsResult = [];
-  for (let i = 0; i < group.max_shareable_markings.length; i += 1) {
-    const currentGroupMaxMarkingId = group.max_shareable_markings[i].value;
-    if (currentGroupMaxMarkingId !== 'none') {
-      const markingDetails = markings.get(currentGroupMaxMarkingId);
-      if (markingDetails) {
-        groupMaxShareableMarkingsResult.push(markingDetails);
+  if (group.max_shareable_markings) {
+    const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+
+    for (let i = 0; i < group.max_shareable_markings.length; i += 1) {
+      const currentGroupMaxMarkingId = group.max_shareable_markings[i].value;
+      if (currentGroupMaxMarkingId !== 'none') {
+        const markingDetails = markings.get(currentGroupMaxMarkingId);
+        if (markingDetails) {
+          groupMaxShareableMarkingsResult.push(markingDetails);
+        }
       }
     }
   }
