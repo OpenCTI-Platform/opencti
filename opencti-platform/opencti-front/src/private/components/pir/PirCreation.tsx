@@ -1,23 +1,30 @@
 import React, { useState } from 'react';
 import { Dialog } from '@mui/material';
 import { graphql } from 'react-relay';
-import { PirCreationFormData, pirFormDataToMutationInput } from '@components/pir/pir-form-utils';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { PirsListQuery$variables } from './__generated__/PirsListQuery.graphql';
+import { PirCreationFormData, pirFormDataToMutationInput } from './pir-form-utils';
 import { PirCreationMutation } from './__generated__/PirCreationMutation.graphql';
 import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
 import Transition from '../../../components/Transition';
 import PirCreationForm from './PirCreationForm';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../components/i18n';
+import { insertNode } from '../../../utils/store';
 
 const pirCreateMutation = graphql`
   mutation PirCreationMutation($input: PirAddInput!) {
     pirAdd(input: $input) {
-      id
+      ...Pirs_PirFragment
     }
   }
 `;
 
-const PirCreation = () => {
+interface PirCreationProps {
+  paginationOptions: PirsListQuery$variables
+}
+
+const PirCreation = ({ paginationOptions }: PirCreationProps) => {
   const { t_i18n } = useFormatter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createMutation] = useApiMutation<PirCreationMutation>(
@@ -36,6 +43,12 @@ const PirCreation = () => {
       onError: () => {
         setDialogOpen(false);
       },
+      updater: (store: RecordSourceSelectorProxy) => insertNode(
+        store,
+        'Pagination_pirs',
+        paginationOptions,
+        'pirAdd',
+      ),
     });
   };
 
