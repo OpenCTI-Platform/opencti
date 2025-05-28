@@ -89,16 +89,22 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
         return !isSub && a[RELATION_KILL_CHAIN_PHASE] && a[RELATION_KILL_CHAIN_PHASE].includes(killChainPhase.id);
       })
       .map((attackPattern) => {
+        const subAttackPatterns: { attack_pattern_id: string, name: string, description?: string }[] = [];
         const subAttackPatternsIds: string[] = [];
         let subAttackPatternsSearchText: string = '';
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         if (attackPattern[RELATION_SUBTECHNIQUE_OF]) {
-          const subAttackPatterns = subTechniquesRelations.filter((s) => s.toId === attackPattern.id);
-          if (subAttackPatterns.length > 0) {
-            subAttackPatterns.forEach((s) => {
+          const subAttackPatternsFromRelation = subTechniquesRelations.filter((s) => s.toId === attackPattern.id);
+          if (subAttackPatternsFromRelation.length > 0) {
+            subAttackPatternsFromRelation.forEach((s) => {
               const subAttackPattern = allAttackPatternsById.get(s.fromId);
               if (subAttackPattern) {
+                subAttackPatterns.push({
+                  attack_pattern_id: subAttackPattern.id,
+                  name: subAttackPattern.name,
+                  description: subAttackPattern.description
+                });
                 subAttackPatternsIds.push(subAttackPattern.id);
                 subAttackPatternsSearchText += `${subAttackPattern.x_mitre_id} ${subAttackPattern.name} ${subAttackPattern.description} | `;
               }
@@ -110,6 +116,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
           name: attackPattern.name,
           description: attackPattern.description,
           x_mitre_id: attackPattern.x_mitre_id,
+          subAttackPatterns,
           subAttackPatternsIds,
           subAttackPatternsSearchText,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
