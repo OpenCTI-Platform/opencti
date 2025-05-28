@@ -21,7 +21,7 @@ describe('Raw streams tests', () => {
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
       // Check some events count
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
-      expect(createEventsByTypes['marking-definition'].length).toBe(20);
+      expect(createEventsByTypes['marking-definition'].length).toBe(21);
       expect(createEventsByTypes['external-reference'].length).toBe(17);
       expect(createEventsByTypes['kill-chain-phase'].length).toBe(3);
       expect(createEventsByTypes['course-of-action'].length).toBe(3);
