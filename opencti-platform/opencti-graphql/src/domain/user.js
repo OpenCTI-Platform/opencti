@@ -709,6 +709,12 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         throw UnsupportedError('Unsupported unit system', { unit });
       }
     }
+    // Check language is valid in case of language change
+    if (input.key === 'language') {
+      if (!(input.value.length === 1 && AVAILABLE_LANGUAGES.includes(input.value[0]))) {
+        throw FunctionalError('The language you have provided is not valid');
+      }
+    }
     inputs.push(input);
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
@@ -806,6 +812,8 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'password',
   'draft_context',
 ];
+const AVAILABLE_LANGUAGES = ['es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr'];
+
 export const meEditField = async (context, user, userId, inputs, password = null) => {
   inputs.forEach((input) => {
     const { key } = input;
