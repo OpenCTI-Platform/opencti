@@ -2,147 +2,18 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { propOr } from 'ramda';
-import { createFragmentContainer, createRefetchContainer, graphql, useFragment } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Route, Routes } from 'react-router-dom';
-import { containerAddStixCoreObjectsLinesRelationAddMutation } from '../../common/containers/ContainerAddStixCoreObjectsLines';
+import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import GroupingKnowledgeGraph, { groupingKnowledgeGraphQuery } from './GroupingKnowledgeGraph';
 import GroupingKnowledgeCorrelation, { groupingKnowledgeCorrelationQuery } from './GroupingKnowledgeCorrelation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat_router/withRouter';
-
-export const groupingKnowledgeAttackPatternsGraphQuery = graphql`
-    query GroupingKnowledgeAttackPatternsGraphQuery($id: String!) {
-        grouping(id: $id) {
-            id
-            name
-            context
-            x_opencti_graph_data
-            confidence
-            createdBy {
-                ... on Identity {
-                    id
-                    name
-                    entity_type
-                }
-            }
-            objectMarking {
-                id
-                definition_type
-                definition
-                x_opencti_order
-                x_opencti_color
-            }
-            ...GroupingKnowledgeAttackPatterns_fragment
-        }
-    }
-`;
-
-const GroupingAttackPatternsFragment = graphql`
-    fragment GroupingKnowledgeAttackPatterns_fragment on Grouping {
-        objects(all: true, types: ["Attack-Pattern"]) {
-            edges {
-                node {
-                    ... on AttackPattern {
-                        id
-                        entity_type
-                        parent_types
-                        name
-                        description
-                        x_mitre_platforms
-                        x_mitre_permissions_required
-                        x_mitre_id
-                        x_mitre_detection
-                        isSubAttackPattern
-                        parentAttackPatterns {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    description
-                                    x_mitre_id
-                                }
-                            }
-                        }
-                        subAttackPatterns {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    description
-                                    x_mitre_id
-                                }
-                            }
-                        }
-                        killChainPhases {
-                            id
-                            kill_chain_name
-                            phase_name
-                            x_opencti_order
-                        }
-                    }
-                }
-            }
-        }
-    }
-`;
-
-const AttackPatternMatrixComponent = (props) => {
-  const {
-    data,
-    grouping,
-    currentKillChain,
-    currentModeOnlyActive,
-    handleChangeKillChain,
-    handleToggleModeOnlyActive,
-  } = props;
-  const attackPatternObjects = useFragment(GroupingAttackPatternsFragment, data.grouping);
-  const attackPatterns = (attackPatternObjects.objects.edges)
-    .map((n) => n.node)
-    .filter((n) => n.entity_type === 'Attack-Pattern');
-
-  const handleAddEntity = (entity) => {
-    const input = {
-      toId: entity.id,
-      relationship_type: 'object',
-    };
-    commitMutation({
-      mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
-      variables: {
-        id: grouping.id,
-        input,
-      },
-      onCompleted: () => {
-        props.relay.refetch({ id: grouping.id });
-      },
-    });
-  };
-
-  return (
-    <AttackPatternsMatrix
-      entity={grouping}
-      attackPatterns={attackPatterns}
-      currentKillChain={currentKillChain}
-      currentModeOnlyActive={currentModeOnlyActive}
-      handleChangeKillChain={handleChangeKillChain}
-      handleToggleModeOnlyActive={handleToggleModeOnlyActive}
-      handleAdd={handleAddEntity}
-    />
-  );
-};
-
-const AttackPatternMatrixContainer = createRefetchContainer(
-  AttackPatternMatrixComponent,
-  {
-    data: GroupingAttackPatternsFragment,
-  },
-  groupingKnowledgeAttackPatternsGraphQuery,
-);
 
 class GroupingKnowledgeComponent extends Component {
   constructor(props) {
@@ -168,18 +39,6 @@ class GroupingKnowledgeComponent extends Component {
     );
   }
 
-  handleToggleModeOnlyActive() {
-    this.setState(
-      { currentModeOnlyActive: !this.state.currentModeOnlyActive },
-      () => this.saveView(),
-    );
-  }
-
-  handleChangeKillChain(event) {
-    const { value } = event.target;
-    this.setState({ currentKillChain: value }, () => this.saveView());
-  }
-
   render() {
     const {
       grouping,
@@ -187,7 +46,7 @@ class GroupingKnowledgeComponent extends Component {
       params: { '*': mode },
       enableReferences,
     } = this.props;
-    const { currentModeOnlyActive, currentKillChain } = this.state;
+
     return (
       <div
         style={{
@@ -264,31 +123,13 @@ class GroupingKnowledgeComponent extends Component {
           <Route
             path="/matrix"
             element={
-              <QueryRenderer
-                query={groupingKnowledgeAttackPatternsGraphQuery}
-                variables={{ id: grouping.id }}
-                render={({ props }) => {
-                  if (props && props.grouping) {
-                    return (
-                      <AttackPatternMatrixContainer
-                        data={props}
-                        grouping={grouping}
-                        currentKillChain={currentKillChain}
-                        currentModeOnlyActive={currentModeOnlyActive}
-                        handleChangeKillChain={this.handleChangeKillChain.bind(this)}
-                        handleToggleModeOnlyActive={this.handleToggleModeOnlyActive.bind(this)}
-                      />
-                    );
-                  }
-                  return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
-                  );
-                }}
+              <StixDomainObjectAttackPatterns
+                stixDomainObjectId={grouping.id}
+                defaultStartTime={grouping.first_seen}
+                defaultStopTime={grouping.last_seen}
+                isEntity
               />
-                }
+            }
           />
           <Route
             path="/relations/:relationId"

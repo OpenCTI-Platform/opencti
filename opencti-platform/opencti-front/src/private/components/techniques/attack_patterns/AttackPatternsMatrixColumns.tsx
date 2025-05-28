@@ -7,7 +7,6 @@ import { useTheme } from '@mui/material/styles';
 import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
 import { AttackPatternsMatrixColumns_data$data, AttackPatternsMatrixColumns_data$key } from './__generated__/AttackPatternsMatrixColumns_data.graphql';
 import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
-import AttackPatternsMatrixBar from './AttackPatternsMatrixBar';
 import { computeLevel } from '../../../../utils/Number';
 import { truncate } from '../../../../utils/String';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -78,19 +77,14 @@ const AttackPatternsMatrixColumns = ({
   attackPatterns,
   marginRight = false,
   searchTerm = '',
-  handleToggleModeOnlyActive,
-  currentModeOnlyActive,
   handleAdd,
   selectedKillChain,
-  noBottomBar = false,
 }: AttackPatternsMatrixColumnsProps) => {
   const theme = useTheme<Theme>();
   const [hover, setHover] = useState<Record<string, boolean>>({});
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
   const [selectedAttackPattern, setSelectedAttackPattern] = useState<AttackPatternElement | null>(null);
   const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
-  const [modeOnlyActive, setModeOnlyActive] = useState(currentModeOnlyActive ?? false);
-  const [currentKillChain, setCurrentKillChain] = useState(selectedKillChain);
 
   const data = usePreloadedQuery<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, queryRef);
   const { attackPatternsMatrix } = useFragment<AttackPatternsMatrixColumns_data$key>(
@@ -119,38 +113,12 @@ const AttackPatternsMatrixColumns = ({
     setHover((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const toggleMode = () => handleToggleModeOnlyActive || setModeOnlyActive((prev) => !prev);
-  const onKillChainChange = (e: React.ChangeEvent<{ value: string }>) => {
-    setCurrentKillChain(e.target.value);
-  };
-
   useEffect(() => {
     const subscription = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
     });
     return () => subscription.unsubscribe();
   }, []);
-
-  // Get deduplicated & sorted kill chains
-  const killChains = useMemo(
-    () => Array.from(
-      new Set(
-        attackPatternsMatrix?.attackPatternsOfPhases
-          ?.map((a) => a.kill_chain_name),
-      ),
-    ).sort((a, b) => a.localeCompare(b)),
-    [attackPatternsMatrix],
-  );
-
-  // Handle kill chain changes
-  useEffect(() => {
-    if (killChains.length > 0) {
-      const initialKillChain = selectedKillChain && killChains.includes(selectedKillChain)
-        ? selectedKillChain
-        : killChains[0];
-      setCurrentKillChain(initialKillChain);
-    }
-  }, [killChains, selectedKillChain]);
 
   const getLevel = (ap: AttackPattern): number => {
     const matchCount = attackPatterns.filter((n) => n.id === ap.attack_pattern_id || (ap.subAttackPatternsIds?.includes(n.id))).length;
@@ -162,7 +130,7 @@ const AttackPatternsMatrixColumns = ({
   };
 
   const filteredData = useMemo(() => attackPatternsMatrix?.attackPatternsOfPhases
-    ?.filter((a) => a.kill_chain_name === currentKillChain)
+    ?.filter((a) => a.kill_chain_name === selectedKillChain)
     .sort((a, b) => a.x_opencti_order - b.x_opencti_order)
     .map((a) => ({
       ...a,
@@ -178,9 +146,8 @@ const AttackPatternsMatrixColumns = ({
           entity_type: 'Attack-Pattern',
           level: getLevel(ap),
         }))
-        .filter((o) => (modeOnlyActive ? o.level > 0 : o.level >= 0))
         .sort((f, s) => f.name.localeCompare(s.name)),
-    })), [attackPatternsMatrix, currentKillChain, searchTerm, modeOnlyActive, attackPatterns]);
+    })), [attackPatternsMatrix, searchTerm, attackPatterns]);
 
   const matrixWidth = useMemo(() => {
     const baseOffset = LAYOUT_SIZE.BASE_WIDTH + (navOpen ? LAYOUT_SIZE.NAV_WIDTH : 0);
@@ -207,16 +174,6 @@ const AttackPatternsMatrixColumns = ({
               marginBlockStart: 3,
             }}
           >
-            {!noBottomBar && (
-              <AttackPatternsMatrixBar
-                currentModeOnlyActive={modeOnlyActive}
-                handleToggleModeOnlyActive={toggleMode}
-                currentKillChain={currentKillChain}
-                handleChangeKillChain={onKillChainChange}
-                killChains={killChains}
-                navOpen={navOpen}
-              />
-            )}
             <Box display="flex">
               {filteredData?.map((col) => (
                 <Box key={col.kill_chain_id} sx={{ mr: 1.5 }}>

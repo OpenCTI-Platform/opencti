@@ -10,6 +10,7 @@ interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   data: StixDomainObjectAttackPatternsKillChainContainer_data$data;
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain: string;
+  isEntity?: boolean;
 }
 const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
   {
@@ -17,6 +18,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
     data,
     handleAdd,
     selectedKillChain,
+    isEntity,
   },
 ) => {
   const attackPatterns = (data.attackPatterns?.edges ?? []).map((n) => n.node);
@@ -24,8 +26,7 @@ const StixDomainObjectAttackPatternsKillChainMatrix: FunctionComponent<StixDomai
     <AttackPatternsMatrix
       attackPatterns={attackPatterns}
       searchTerm={searchTerm}
-      marginRight={true}
-      noBottomBar={true}
+      marginRight={!isEntity}
       handleAdd={handleAdd}
       selectedKillChain={selectedKillChain}
     />
