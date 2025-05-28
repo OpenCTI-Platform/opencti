@@ -10,6 +10,7 @@ import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import { propOr } from 'ramda';
 import { RootSecurityPlatformSubscription } from '@components/entities/securityPlatforms/__generated__/RootSecurityPlatformSubscription.graphql';
 import { RootSecurityPlatformQuery } from '@components/entities/securityPlatforms/__generated__/RootSecurityPlatformQuery.graphql';
+import SecurityPlatformKnowledge from '@components/entities/securityPlatforms/SecurityPlatformKnowledge';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import SecurityPlatform from './SecurityPlatform';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -237,10 +238,10 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    {/* <securityPlatformKnowledge */}
-                    {/*  securityPlatformData={securityPlatform} */}
-                    {/*  viewAs={viewAs} */}
-                    {/* /> */}
+                    <SecurityPlatformKnowledge
+                      securityPlatformData={securityPlatform}
+                      relatedRelationshipTypes={['should-cover']}
+                    />
                   </div>
                 }
               />
