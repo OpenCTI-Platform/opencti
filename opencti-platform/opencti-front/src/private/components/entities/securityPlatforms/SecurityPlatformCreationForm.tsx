@@ -195,15 +195,15 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
             style={fieldSpacingContainerStyle}
           />
           { /* TODO Improve customization (vocab with letter range) 2662 */}
-          {/* <OpenVocabField */}
-          {/*  label={t_i18n('Security Platform type')} */}
-          {/*  type="security_platform_type" */}
-          {/*  name="security_platform_type" */}
-          {/*  required={(mandatoryAttributes.includes('security_platform_type'))} */}
-          {/*  containerStyle={fieldSpacingContainerStyle} */}
-          {/*  multiple={false} */}
-          {/*  onChange={setFieldValue} */}
-          {/* /> */}
+          <OpenVocabField
+            label={t_i18n('Security Platform type')}
+            type="security_platform_type_ov"
+            name="security_platform_type"
+            required={(mandatoryAttributes.includes('security_platform_type'))}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
+            onChange={setFieldValue}
+          />
           <CreatedByField
             name="createdBy"
             required={(mandatoryAttributes.includes('createdBy'))}
