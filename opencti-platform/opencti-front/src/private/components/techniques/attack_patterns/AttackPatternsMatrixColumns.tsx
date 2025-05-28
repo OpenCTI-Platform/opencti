@@ -23,10 +23,7 @@ type AttackPatternElement = AttackPattern & {
 };
 
 interface AttackPatternsMatrixColumnsProps extends AttackPatternsMatrixProps {
-  handleToggleModeOnlyActive?: () => void;
-  currentModeOnlyActive?: boolean;
   queryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
-  attackPatternIdsToOverlap?: string[];
 }
 
 const LAYOUT_SIZE = {
@@ -81,6 +78,7 @@ const AttackPatternsMatrixColumns = ({
   searchTerm = '',
   handleAdd,
   selectedKillChain,
+  isModeOnlyActive,
 }: AttackPatternsMatrixColumnsProps) => {
   const theme = useTheme<Theme>();
   const [hover, setHover] = useState<Record<string, boolean>>({});
@@ -149,8 +147,9 @@ const AttackPatternsMatrixColumns = ({
           isOverlaping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
           level: getLevel(ap),
         }))
+        .filter((o) => (isModeOnlyActive ? o.level > 0 : o.level >= 0))
         .sort((f, s) => f.name.localeCompare(s.name)),
-    })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap]);
+    })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive]);
 
   const matrixWidth = useMemo(() => {
     const baseOffset = LAYOUT_SIZE.BASE_WIDTH + (navOpen ? LAYOUT_SIZE.NAV_WIDTH : 0);

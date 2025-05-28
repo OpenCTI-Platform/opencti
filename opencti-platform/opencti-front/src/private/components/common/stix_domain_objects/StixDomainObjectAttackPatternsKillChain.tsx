@@ -125,6 +125,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
   const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
   const [attackPatternIdsToOverlap, setAttackPatternIdsToOverlap] = useState<string[] | undefined>();
+  const [isModeOnlyActive, setIsModeOnlyActive] = useState<boolean>(false);
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
   );
@@ -363,6 +364,32 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                 </Select>
               </FormControl>
             </Box>
+            <Box
+              style={{
+                float: 'left',
+                display: 'flex',
+                marginBlockStart: -4,
+                paddingInline: 10,
+              }}
+            >
+              <Tooltip
+                title={
+                    isModeOnlyActive
+                      ? t_i18n('Display the whole matrix')
+                      : t_i18n('Display only used techniques')
+                  }
+              >
+                <span>
+                  <IconButton
+                    color={isModeOnlyActive ? 'secondary' : 'primary'}
+                    onClick={() => setIsModeOnlyActive((value) => !value)}
+                    size="large"
+                  >
+                    <VisibilityOutlined/>
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
 
             <Box
               style={{
@@ -467,6 +494,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             selectedKillChain={selectedKillChain}
             attackPatternIdsToOverlap={attackPatternIdsToOverlap}
             isEntity={isEntity}
+            isModeOnlyActive={isModeOnlyActive}
           />
         )}
         {currentView === 'matrix-in-line' && (

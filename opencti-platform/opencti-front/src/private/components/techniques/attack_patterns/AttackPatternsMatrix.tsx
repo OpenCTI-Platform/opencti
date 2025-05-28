@@ -16,6 +16,7 @@ export interface AttackPatternsMatrixProps {
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain?: string;
   attackPatternIdsToOverlap?: string[];
+  isModeOnlyActive: boolean;
 }
 
 export const attackPatternsMatrixQuery = graphql`
@@ -31,6 +32,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   handleAdd,
   selectedKillChain,
   attackPatternIdsToOverlap,
+  isModeOnlyActive,
 }) => {
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 
@@ -52,6 +54,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
             searchTerm={searchTerm ?? ''}
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
+            isModeOnlyActive={isModeOnlyActive}
           />
         </React.Suspense>
       )}
