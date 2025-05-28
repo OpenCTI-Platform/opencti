@@ -56,7 +56,7 @@ const securityPlatformQuery = graphql`
       security_platform_type
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...SecurityPlatform_securityPlatform
-#            ...SecurityPlatformKnowledge_securityPlatform
+        ...SecurityPlatformKnowledge_securityPlatform
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity

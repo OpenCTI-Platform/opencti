@@ -1,12 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
 import React from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import StixDomainObjectKnowledge from '@components/common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixDomainObjectAuthorKnowledge from '@components/common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
+import { SecurityPlatformKnowledge_securityPlatform$key } from '@components/entities/securityPlatforms/__generated__/SecurityPlatformKnowledge_securityPlatform.graphql';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
@@ -30,10 +27,10 @@ const SecurityPlatformKnowledgeComponent = ({
   securityPlatformData,
   relatedRelationshipTypes,
 }: {
-  securityPlatformData: SecurityPlatformKnowledge_SecurityPlatform$key;
+  securityPlatformData: SecurityPlatformKnowledge_securityPlatform$key;
   relatedRelationshipTypes: string[]
 }) => {
-  const securityPlatform = useFragment<SecurityPlatformKnowledge_SecurityPlatform$key>(
+  const securityPlatform = useFragment(
     securityPlatformKnowledgeFragment,
     securityPlatformData,
   );
@@ -65,12 +62,12 @@ const SecurityPlatformKnowledgeComponent = ({
         path="/overview"
         element={(viewAs === 'knowledge' ? (
           <StixDomainObjectKnowledge
-            stixDomainObjectId={organization.id}
+            stixDomainObjectId={securityPlatform.id}
             stixDomainObjectType="SecurityPlatform"
           />
         ) : (
           <StixDomainObjectAuthorKnowledge
-            stixDomainObjectId={organization.id}
+            stixDomainObjectId={securityPlatform.id}
             stixDomainObjectType="SecurityPlatform"
           />
         ))
@@ -84,9 +81,13 @@ const SecurityPlatformKnowledgeComponent = ({
             entityId={securityPlatform.id}
             relationshipTypes={allRelationshipsTypes}
             entityLink={link}
-            defaultStartTime={securityPlatform.startTime}
-            defaultStopTime={securityPlatform.stopTime}
+            defaultStartTime={startTime}
+            defaultStopTime={stopTime}
             allDirections
+            stixCoreObjectTypes={['']}
+            currentView={''}
+            enableContextualView
+            isRelationReversed
           />
         }
       />
@@ -101,42 +102,13 @@ const SecurityPlatformKnowledgeComponent = ({
             defaultStartTime={securityPlatform.first_seen}
             defaultStopTime={securityPlatform.last_seen}
             allDirections
+            stixCoreObjectTypes={['']}
+            currentView={''}
+            enableContextualView
+            isRelationReversed
           />
         }
       />
-      {/* <Route */}
-      {/*  path="/victimology" */}
-      {/*  element={ */}
-      {/*    <StixDomainObjectVictimology */}
-      {/*      stixDomainObjectId={securityPlatform.id} */}
-      {/*      entityLink={link} */}
-      {/*      defaultStartTime={securityPlatform.first_seen} */}
-      {/*      defaultStopTime={securityPlatform.last_seen} */}
-      {/*    /> */}
-      {/*  } */}
-      {/* /> */}
-      {/* <Route */}
-      {/*  path="/threat_actors" */}
-      {/*  element={ */}
-      {/*    <EntityStixCoreRelationships */}
-      {/*      key={location.pathname} */}
-      {/*      entityId={securityPlatform.id} */}
-      {/*      relationshipTypes={[ */}
-      {/*        'part-of', */}
-      {/*        'cooperates-with', */}
-      {/*        'employed-by', */}
-      {/*        'reports-to', */}
-      {/*        'supports', */}
-      {/*        'derived-from', */}
-      {/*      ]} */}
-      {/*      stixCoreObjectTypes={['Threat-Actor']} */}
-      {/*      entityLink={link} */}
-      {/*      defaultStartTime={securityPlatform.first_seen} */}
-      {/*      defaultStopTime={securityPlatform.last_seen} */}
-      {/*      allDirections */}
-      {/*    /> */}
-      {/*  } */}
-      {/* /> */}
       <Route
         path="/attack_patterns"
         element={
@@ -144,6 +116,7 @@ const SecurityPlatformKnowledgeComponent = ({
             stixDomainObjectId={securityPlatform.id}
             defaultStartTime={securityPlatform.first_seen}
             defaultStopTime={securityPlatform.last_seen}
+            disableExport={false}
           />
         }
       />
@@ -158,6 +131,9 @@ const SecurityPlatformKnowledgeComponent = ({
             entityLink={link}
             defaultStartTime={securityPlatform.first_seen}
             defaultStopTime={securityPlatform.last_seen}
+            currentView={''}
+            enableContextualView
+            isRelationReversed
           />
         }
       />
@@ -172,6 +148,9 @@ const SecurityPlatformKnowledgeComponent = ({
             entityLink={link}
             defaultStartTime={securityPlatform.first_seen}
             defaultStopTime={securityPlatform.last_seen}
+            currentView={''}
+            enableContextualView
+            isRelationReversed
           />
         }
       />
@@ -198,6 +177,8 @@ const SecurityPlatformKnowledgeComponent = ({
             isRelationReversed={false}
             defaultStartTime={securityPlatform.first_seen}
             defaultStopTime={securityPlatform.last_seen}
+            currentView={''}
+            enableContextualView
           />
         }
       />
@@ -207,9 +188,7 @@ const SecurityPlatformKnowledgeComponent = ({
           <EntityStixSightingRelationships
             entityId={securityPlatform.id}
             entityLink={link}
-            noRightBar={true}
-            defaultStartTime={securityPlatform.first_seen}
-            defaultStopTime={securityPlatform.last_seen}
+            isTo={false}
             stixCoreObjectTypes={[
               'Region',
               'Country',
