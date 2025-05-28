@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined, ViewColumnOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined, ViewColumnOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -28,6 +28,7 @@ import { AttackPatternsMatrixQuery } from '@components/techniques/attack_pattern
 import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
 import EntitySelect, { EntityOption } from '@components/common/form/EntitySelect';
 import { AttackPatternsMatrixColumnsOverlapQuery$data } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumnsOverlapQuery.graphql';
+import { IconButton } from '@mui/material';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -187,10 +188,9 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   };
 
   useEffect(() => {
-    if (selectedSecurityPlatforms) {
+    if (selectedSecurityPlatforms.length > 0) {
       getAttackPatternIdsToOverlap(selectedSecurityPlatforms.map(({ value }) => value))
         .then((result) => {
-          console.log(result);
           setAttackPatternIdsToOverlap(result?.stixCoreObjects?.edges?.map(({ node }) => node.id));
         });
     } else {
@@ -283,7 +283,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
     </Tooltip>
   );
   const viewButtons = [matrixViewButton, matrixInLineViewButton, killChainViewButton, courseOfActionView, relationshipsView];
-  console.log({ selectedSecurityPlatforms, attackPatternIdsToOverlap });
+
   return (
     <>
       {currentView !== 'matrix-in-line' && currentView !== 'relationships' && (

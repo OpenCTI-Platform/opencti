@@ -178,8 +178,8 @@ const AttackPatternsMatrixColumns = ({
           >
             <Box display="flex">
               {filteredData?.map((col) => (
-                <Box key={col.kill_chain_id} sx={{ mr: 1.5 }}>
-                  <Box sx={{ textAlign: 'center', mb: 1 }}>
+                <Box key={col.kill_chain_id} sx={{ mr: 1.5, display: 'flex', flexDirection: 'column', minWidth: 150 }}>
+                  <Box sx={{ textAlign: 'center', mb: 1, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{truncate(col.phase_name, 18)}</Typography>
                     <Typography variant="caption">{`${col.attackPatterns?.length} techniques`}</Typography>
                   </Box>
@@ -203,16 +203,26 @@ const AttackPatternsMatrixColumns = ({
                           padding: 1.25,
                           justifyContent: 'space-between',
                           gap: 1,
+                          alignItems: 'center',
+                          whiteSpace: 'normal',
                         }}
                       >
                         <Typography variant="body2" fontSize={10}>
                           {ap.name}
                         </Typography>
                         {ap.isOverlaping && (
-                          (ap.level
-                            ? <CheckOutlined fontSize="medium" color="success"/>
-                            : <CloseOutlined fontSize="medium" color="error"/>
-                          )
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              height: 18,
+                            }}
+                          >
+                            {(ap.level
+                              ? <CheckOutlined fontSize="medium" color="success"/>
+                              : <CloseOutlined fontSize="medium" color="error"/>
+                            )}
+                          </Box>
                         )}
                       </Box>
                     );

@@ -1,4 +1,4 @@
-import { Autocomplete, Chip, TextField, TextFieldProps, TextFieldVariants, Tooltip } from '@mui/material';
+import { Autocomplete, Chip, TextField, TextFieldProps, TextFieldVariants } from '@mui/material';
 import React, { Suspense, useMemo, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
@@ -85,9 +85,11 @@ const EntitySelectComponent = ({
     } else {
       onChange?.(newValue as EntityOption | null);
       // Remove focus after selection in single select mode
-      if (inputRef.current) {
-        inputRef.current.blur();
-      }
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.blur();
+        }
+      }, 0);
     }
   };
 
@@ -110,27 +112,25 @@ const EntitySelectComponent = ({
         />
       )}
       renderOption={(props, option) => (
-        <Tooltip title={option.label} key={option.value}>
-          <li
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: theme.spacing(1.5),
-              height: theme.spacing(6),
-            }}
-            {...props}
+        <li
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1.5),
+            height: theme.spacing(6),
+          }}
+          {...props}
+        >
+          <ItemIcon type={option.type}/>
+          <span style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
           >
-            <ItemIcon type={option.type} />
-            <span style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-            >
-              {option.label}
-            </span>
-          </li>
-        </Tooltip>
+            {option.label}
+          </span>
+        </li>
       )}
       renderTags={(values, getTagProps) => (
         values.map((option, index) => (
