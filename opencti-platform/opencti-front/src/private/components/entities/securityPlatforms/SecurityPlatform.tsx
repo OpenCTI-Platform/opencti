@@ -3,12 +3,14 @@ import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
 import { SecurityPlatform_securityPlatform$key } from '@components/entities/securityPlatforms/__generated__/SecurityPlatform_securityPlatform.graphql';
+import SecurityPlatformDetails from '@components/entities/securityPlatforms/SecurityPlatformDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
 export const securityPlatformFragment = graphql`
   fragment SecurityPlatform_securityPlatform on SecurityPlatform {
@@ -65,17 +67,15 @@ export const securityPlatformFragment = graphql`
 
 interface SecurityPlatformProps {
   securityPlatformData: SecurityPlatform_securityPlatform$key;
-  viewAs: string;
 }
 
-const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformData, viewAs }) => {
+const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformData }) => {
   const securityPlatform = useFragment<SecurityPlatform_securityPlatform$key>(
     securityPlatformFragment,
     securityPlatformData,
   );
-  const lastReportsProps = viewAs === 'knowledge'
-    ? { stixCoreObjectOrStixRelationshipId: securityPlatform.id }
-    : { authorId: securityPlatform.id };
+  const overviewLayoutCustomization = useOverviewLayoutCustomization(securityPlatform.entity_type);
+
   return (
     <>
       <Grid
@@ -83,43 +83,69 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
         spacing={3}
         style={{ marginBottom: 20 }}
       >
-        {/* <Grid item xs={6}> */}
-        {/*  <SecurityPlatformDetails securityPlatform={securityPlatform} /> */}
-        {/* </Grid> */}
-        <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={securityPlatform}
-          />
-        </Grid>
-        {viewAs === 'knowledge' && (
-          <Grid item xs={6}>
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-              stixObjectOrStixRelationshipId={securityPlatform.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/entities/securityPlatform/${securityPlatform.id}/knowledge`}
-            />
-          </Grid>
-        )}
-        <Grid
-          item
-          xs={viewAs === 'knowledge' ? 6 : 12}
-        >
-          <StixCoreObjectOrStixRelationshipLastContainers
-            {...lastReportsProps}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={securityPlatform.id}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={securityPlatform.id} />
-        </Grid>
+        {
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <SecurityPlatformDetails securityPlatform={securityPlatform} />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview stixDomainObject={securityPlatform} />
+                  </Grid>
+                );
+              case 'latestCreatedRelationships':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                      stixObjectOrStixRelationshipId={securityPlatform.id}
+                      stixObjectOrStixRelationshipLink={`/dashboard/entities/security_platform/${securityPlatform.id}/knowledge`}
+                    />
+                  </Grid>
+                );
+              case 'latestContainers':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixRelationshipLastContainers
+                      stixCoreObjectOrStixRelationshipId={securityPlatform.id}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={securityPlatform.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={securityPlatform.id}
+                    />
+                  </Grid>
+                );
+              case 'notes':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectOrStixCoreRelationshipNotes
+                      stixCoreObjectOrStixCoreRelationshipId={securityPlatform.id}
+                      defaultMarkings={securityPlatform.objectMarking ?? []}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
-      <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={securityPlatform.id}
-        defaultMarkings={securityPlatform.objectMarking ?? []}
-      />
     </>
   );
 };

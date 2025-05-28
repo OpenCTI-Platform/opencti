@@ -40,7 +40,7 @@ const subscription = graphql`
   }
 `;
 
-const securityPlatformQuery = graphql`
+const SecurityPlatformQuery = graphql`
   query RootSecurityPlatformQuery($id: String!) {
     securityPlatform(id: $id) {
       id
@@ -48,6 +48,7 @@ const securityPlatformQuery = graphql`
         draft_id
         draft_operation
       }
+      standard_id
       entity_type
       name
       x_opencti_aliases
@@ -77,6 +78,7 @@ type RootSecurityPlatformProps = {
 };
 
 const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlatformProps) => {
+  console.log(securityPlatformId);
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootSecurityPlatformSubscription>>(() => ({
     subscription,
     variables: { id: securityPlatformId },
@@ -113,12 +115,12 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
     securityPlatform,
     connectorsForExport,
     connectorsForImport,
-  } = usePreloadedQuery<RootSecurityPlatformQuery>(securityPlatformQuery, queryRef);
+  } = usePreloadedQuery<RootSecurityPlatformQuery>(SecurityPlatformQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/entities/securityPlatform/${securityPlatformId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, securityPlatformId, '/dashboard/entities/securityPlatform', viewAs === 'knowledge');
+  const link = `/dashboard/entities/security_platform/${securityPlatformId}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, securityPlatformId, '/dashboard/entities/security_platform', viewAs === 'knowledge');
   return (
     <>
       {securityPlatform ? (
@@ -154,16 +156,13 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Security Platform'), link: '/dashboard/entities/securityPlatform' },
+              { label: t_i18n('Security Platform'), link: '/dashboard/entities/security_platform' },
               { label: securityPlatform.name, current: true },
             ]}
             />
             <StixDomainObjectHeader
               entityType="securityPlatform"
-              disableSharing={true}
               stixDomainObject={securityPlatform}
-              isOpenctiAlias={true}
-              enableQuickSubscription={true}
               // EditComponent={(
               //   <Security needs={[KNOWLEDGE_KNUPDATE]}>
               //     <SecurityPlatformEdition securityPlatformId={securityPlatform.id} />
@@ -180,48 +179,48 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
               }}
             >
               <Tabs
-                value={getCurrentTab(location.pathname, securityPlatform.id, '/dashboard/entities/securityPlatforms')}
+                value={getCurrentTab(location.pathname, securityPlatform.id, '/dashboard/entities/security_platforms')}
               >
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/securityPlatform/${securityPlatform.id}`}
-                  value={`/dashboard/entities/securityPlatform/${securityPlatform.id}`}
+                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}`}
+                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}`}
                   label={t_i18n('Overview')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/securityPlatform/${securityPlatform.id}/knowledge/overview`}
-                  value={`/dashboard/entities/securityPlatform/${securityPlatform.id}/knowledge`}
+                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/knowledge/overview`}
+                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/knowledge`}
                   label={t_i18n('Knowledge')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/securityPlatform/${securityPlatform.id}/content`}
-                  value={`/dashboard/entities/securityPlatform/${securityPlatform.id}/content`}
+                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/content`}
+                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/content`}
                   label={t_i18n('Content')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/securityPlatform/${securityPlatform.id}/analyses`}
-                  value={`/dashboard/entities/securityPlatform/${securityPlatform.id}/analyses`}
+                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/analyses`}
+                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/analyses`}
                   label={t_i18n('Analyses')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/securityPlatform/${securityPlatform.id}/sightings`}
-                  value={`/dashboard/entities/securityPlatform/${securityPlatform.id}/sightings`}
+                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/sightings`}
+                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/sightings`}
                   label={t_i18n('Sightings')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/securityPlatform/${securityPlatform.id}/files`}
-                  value={`/dashboard/entities/securityPlatform/${securityPlatform.id}/files`}
+                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/files`}
+                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/files`}
                   label={t_i18n('Data')}
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/securityPlatform/${securityPlatform.id}/history`}
-                  value={`/dashboard/entities/securityPlatform/${securityPlatform.id}/history`}
+                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/history`}
+                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/history`}
                   label={t_i18n('History')}
                 />
               </Tabs>
@@ -232,7 +231,6 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                 element={
                   <SecurityPlatform
                     securityPlatformData={securityPlatform}
-                    viewAs={viewAs}
                   />
                 }
               />
@@ -241,7 +239,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                 element={
                   <Navigate
                     replace={true}
-                    to={`/dashboard/entities/securityPlatform/${securityPlatformId}/knowledge/overview`}
+                    to={`/dashboard/entities/security_platforms/${securityPlatformId}/knowledge/overview`}
                   />
                 }
               />
@@ -325,7 +323,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
 };
 const Root = () => {
   const { securityPlatformId } = useParams() as { securityPlatformId: string; };
-  const queryRef = useQueryLoading<RootSecurityPlatformQuery>(securityPlatformQuery, {
+  const queryRef = useQueryLoading<RootSecurityPlatformQuery>(SecurityPlatformQuery, {
     id: securityPlatformId,
   });
 

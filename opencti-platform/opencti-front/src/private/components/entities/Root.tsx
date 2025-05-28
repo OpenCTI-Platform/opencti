@@ -29,7 +29,7 @@ const Root = () => {
     redirect = 'events';
   } else if (!useIsHiddenEntity('Organization')) {
     redirect = 'organizations';
-  } else if (!useIsHiddenEntity('Security platform')) {
+  } else if (!useIsHiddenEntity('Security-Platform')) {
     redirect = 'security_platforms';
   } else if (!useIsHiddenEntity('System')) {
     redirect = 'systems';
@@ -72,7 +72,7 @@ const Root = () => {
           element={boundaryWrapper(Security)}
         />
         <Route
-          path="/security_platforms/:securityId/*"
+          path="/security_platforms/:securityPlatformId/*"
           element={boundaryWrapper(RootSecurity)}
         />
         <Route
