@@ -118,6 +118,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+const unsanitizeSearchTerm = (term: string): string => {
+  return term
+    .replace(/\[([.@/:]+)\]/g, '$1')  // remove [ ] around any combination of '.', '@', '/', ':'
+    .replace(/^hxxps:/i, 'https:')    // hxxps:// -> https://
+    .replace(/^hxxp:/i, 'http:');     // hxxp:// -> http://
+};
 const topBarNotificationNumberSubscription = graphql`
   subscription TopBarNotificationNumberSubscription {
     notificationsNumber {
@@ -229,34 +235,37 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const handleCloseXtm = () => {
     setXtmOpen({ open: false, anchorEl: null });
   };
-  const handleSearch = (searchKeyword: string, askAI = false) => {
-    if (askAI && isEnterpriseEdition) {
-      setIsNLQLoading(true);
-      commitMutationNLQ({
-        variables: {
-          search: searchKeyword,
-        },
-        onCompleted: (response: TopBarAskAINLQMutation$data) => {
-          setIsNLQLoading(false);
-          const notResolvedValues = response.aiNLQ?.notResolvedValues ?? [];
-          const filters = response.aiNLQ?.filters;
-          if (notResolvedValues.length > 0) {
-            MESSAGING$.notifyNLQ(`${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`);
-          } else if (!filters || !isFilterGroupNotEmpty(JSON.parse(filters))) {
-            MESSAGING$.notifyNLQ(t_i18n('The NLQ model didn\'t find filters corresponding to your question'));
-          }
-          handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ?.filters);
-        },
-        onError: (error: Error) => {
-          setIsNLQLoading(false);
-          const { errors } = (error as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
-        },
-      });
-    } else {
-      handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
-    }
-  };
+const handleSearch = (searchKeyword: string, askAI = false) => {
+  // Unsanitize the search term before processing
+  const unsanitizedKeyword = unsanitizeSearchTerm(searchKeyword);
+  
+  if (askAI && isEnterpriseEdition) {
+    setIsNLQLoading(true);
+    commitMutationNLQ({
+      variables: {
+        search: unsanitizedKeyword, // Use unsanitized keyword
+      },
+      onCompleted: (response: TopBarAskAINLQMutation$data) => {
+        setIsNLQLoading(false);
+        const notResolvedValues = response.aiNLQ?.notResolvedValues ?? [];
+        const filters = response.aiNLQ?.filters;
+        if (notResolvedValues.length > 0) {
+          MESSAGING$.notifyNLQ(`${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`);
+        } else if (!filters || !isFilterGroupNotEmpty(JSON.parse(filters))) {
+          MESSAGING$.notifyNLQ(t_i18n('The NLQ model didn\'t find filters corresponding to your question'));
+        }
+        handleSearchByFilter(unsanitizedKeyword, 'nlq', navigate, response.aiNLQ?.filters); // Use unsanitized keyword
+      },
+      onError: (error: Error) => {
+        setIsNLQLoading(false);
+        const { errors } = (error as unknown as RelayError).res;
+        MESSAGING$.notifyError(errors.at(0)?.message);
+      },
+    });
+  } else {
+    handleSearchByKeyword(unsanitizedKeyword, 'knowledge', navigate); // Use unsanitized keyword
+  }
+};
   const handleOpenDrawer = () => {
     setOpenDrawer(true);
     handleCloseMenu();
