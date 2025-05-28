@@ -1,11 +1,15 @@
 import { graphql } from 'react-relay';
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, HTMLAttributes, useState } from 'react';
 import { Field } from 'formik';
+import ListItemText from '@mui/material/ListItemText';
+import ListItem from '@mui/material/ListItem';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption } from '../../../../utils/field';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { SectorFieldSearchQuery$data } from './__generated__/SectorFieldSearchQuery.graphql';
+import ItemIcon from '../../../../components/ItemIcon';
+import ItemEntityType from '../../../../components/ItemEntityType';
 
 const sectorFieldSearchQuery = graphql`
   query SectorFieldSearchQuery($search: String) {
@@ -14,6 +18,7 @@ const sectorFieldSearchQuery = graphql`
         node {
           id
           name
+          entity_type
         }
       }
     }
@@ -49,13 +54,15 @@ const SectorField = ({
       return {
         label: edge.node.name,
         value: edge.node.id,
+        type: edge.node.entity_type,
       };
-    }));
+    }).sort((a, b) => a.type.localeCompare(b.type)));
   };
 
   return (
     <Field
       component={AutocompleteField}
+      groupBy={(option: FieldOption) => option.type}
       multiple
       name={name}
       required={required}
@@ -70,6 +77,15 @@ const SectorField = ({
       noOptionsText={t_i18n('No available options')}
       options={options}
       onInputChange={searchSectors}
+      renderOption={(
+        props: HTMLAttributes<HTMLLIElement>,
+        option: FieldOption,
+      ) => (
+        <ListItem {...props}>
+          <ItemIcon type={option.type} />
+          <ListItemText primary={option.label} sx={{ marginLeft: 2 }}/>
+        </ListItem>
+      )}
     />
   );
 };

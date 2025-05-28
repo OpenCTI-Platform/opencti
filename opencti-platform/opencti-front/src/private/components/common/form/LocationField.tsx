@@ -1,11 +1,14 @@
 import { graphql } from 'react-relay';
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, HTMLAttributes, useState } from 'react';
 import { Field } from 'formik';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption } from '../../../../utils/field';
 import { fetchQuery } from '../../../../relay/environment';
 import { LocationFieldSearchQuery$data } from './__generated__/LocationFieldSearchQuery.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const locationFieldSearchQuery = graphql`
   query LocationFieldSearchQuery($search: String) {
@@ -14,6 +17,7 @@ const locationFieldSearchQuery = graphql`
         node {
           id
           name
+          entity_type
         }
       }
     }
@@ -49,13 +53,15 @@ const LocationField = ({
       return {
         label: edge.node.name,
         value: edge.node.id,
+        type: edge.node.entity_type,
       };
-    }));
+    }).sort((a, b) => a.type.localeCompare(b.type)));
   };
 
   return (
     <Field
       component={AutocompleteField}
+      groupBy={(option: FieldOption) => option.type}
       multiple
       name={name}
       required={required}
@@ -70,6 +76,15 @@ const LocationField = ({
       noOptionsText={t_i18n('No available options')}
       options={options}
       onInputChange={searchLocations}
+      renderOption={(
+        props: HTMLAttributes<HTMLLIElement>,
+        option: FieldOption,
+      ) => (
+        <ListItem {...props}>
+          <ItemIcon type={option.type} />
+          <ListItemText primary={option.label} sx={{ marginLeft: 2 }}/>
+        </ListItem>
+      )}
     />
   );
 };
