@@ -81,6 +81,27 @@ const BASIC = 'Basic ';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
+const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
+const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
+const ME_USER_MODIFIABLE_ATTRIBUTES = [
+  'user_email',
+  'user_name',
+  'description',
+  'firstname',
+  'lastname',
+  'theme',
+  'language',
+  'personal_notifiers',
+  'default_dashboard',
+  'default_time_field',
+  'unit_system',
+  'submenu_show_icons',
+  'submenu_auto_collapse',
+  'monochrome_labels',
+  'password',
+  'draft_context',
+];
+const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr'];
 
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
@@ -791,28 +812,6 @@ export const addBookmark = async (context, user, id, type) => {
   await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
   return storeLoadById(context, user, id, type);
 };
-
-const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
-const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
-const ME_USER_MODIFIABLE_ATTRIBUTES = [
-  'user_email',
-  'user_name',
-  'description',
-  'firstname',
-  'lastname',
-  'theme',
-  'language',
-  'personal_notifiers',
-  'default_dashboard',
-  'default_time_field',
-  'unit_system',
-  'submenu_show_icons',
-  'submenu_auto_collapse',
-  'monochrome_labels',
-  'password',
-  'draft_context',
-];
-const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr'];
 
 export const meEditField = async (context, user, userId, inputs, password = null) => {
   inputs.forEach((input) => {
