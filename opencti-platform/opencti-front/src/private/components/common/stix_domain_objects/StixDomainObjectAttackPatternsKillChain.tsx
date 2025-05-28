@@ -123,7 +123,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const { t_i18n } = useFormatter();
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
-  const [selectedSecurityPlatform, setSelectedSecurityPlatform] = useState<EntityOption | null>(null);
+  const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
   const [attackPatternIdsToOverlap, setAttackPatternIdsToOverlap] = useState<string[] | undefined>();
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
@@ -141,11 +141,11 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
     setSelectedKillChain(event.target.value as string);
   };
 
-  const getAttackPatternIdsToOverlap = async (entityIdToOverlap: string) => {
+  const getAttackPatternIdsToOverlap = async (entityIdsToOverlap: string[]) => {
     return await fetchQuery(
       stixDomainObjectAttackPatternsKillChainOverlapQuery,
       {
-        count: 500,
+        count: 1000,
         filters: {
           mode: 'and',
           filters: [
@@ -164,9 +164,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               values: [
                 {
                   key: 'id',
-                  values: [
-                    entityIdToOverlap,
-                  ],
+                  values: entityIdsToOverlap,
                   operator: 'eq',
                   mode: 'or',
                 },
@@ -188,13 +186,16 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   };
 
   useEffect(() => {
-    if (selectedSecurityPlatform) {
-      getAttackPatternIdsToOverlap(selectedSecurityPlatform.value)
-        .then((result) => setAttackPatternIdsToOverlap(result?.stixCoreObjects?.edges?.map(({ node }) => node.id)));
+    if (selectedSecurityPlatforms) {
+      getAttackPatternIdsToOverlap(selectedSecurityPlatforms.map(({ value }) => value))
+        .then((result) => {
+          console.log(result);
+          setAttackPatternIdsToOverlap(result?.stixCoreObjects?.edges?.map(({ node }) => node.id));
+        });
     } else {
       setAttackPatternIdsToOverlap(undefined);
     }
-  }, [selectedSecurityPlatform]);
+  }, [selectedSecurityPlatforms]);
 
   let csvData = null;
   if (currentView === 'courses-of-action') {
@@ -281,7 +282,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
     </Tooltip>
   );
   const viewButtons = [matrixViewButton, matrixInLineViewButton, killChainViewButton, courseOfActionView, relationshipsView];
-
+  console.log({ selectedSecurityPlatforms, attackPatternIdsToOverlap });
   return (
     <>
       {currentView !== 'matrix-in-line' && currentView !== 'relationships' && (
@@ -370,15 +371,16 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                 paddingInline: 10,
               }}
             >
-              <FormControl style={{ width: 300 }}>
+              <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300 }}>
                 <EntitySelect
+                  multiple
                   variant="outlined"
                   size="small"
-                  value={selectedSecurityPlatform}
+                  value={selectedSecurityPlatforms}
                   label={t_i18n('Compare with my security posture')}
                   types={['SecurityPlatform']}
-                  onChange={(v) => {
-                    setSelectedSecurityPlatform(v);
+                  onChange={(newSelectedSecurityPlatforms: EntityOption[]) => {
+                    setSelectedSecurityPlatforms(newSelectedSecurityPlatforms);
                   }}
                 />
               </FormControl>
