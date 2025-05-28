@@ -15,5 +15,5 @@ export interface StixMalware extends StixDomainObject {
   capabilities: Array<string>; // optional
   operating_system_refs: Array<StixId>; // optional
   sample_refs: Array<StixId>; // optional
-  samples: { id: string }[]; // optional
+  x_opencti_sample_refs_ids: Array<string> // optional
 }
