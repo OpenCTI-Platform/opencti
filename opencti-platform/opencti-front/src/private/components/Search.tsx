@@ -162,7 +162,6 @@ const Search = () => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-
   useEffect(() => {
     if (paramsFilters) {
       storageHelpers.handleSetFilters(deserializeFilterGroupForFrontend(paramsFilters) ?? emptyFilterGroup);
