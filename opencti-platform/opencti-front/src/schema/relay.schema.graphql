@@ -7810,6 +7810,7 @@ enum StixRefRelationshipsOrdering {
   toPatternType
   toCreatedAt
   _score
+  pir_score
 }
 
 type StixRefRelationshipConnection {
@@ -13103,6 +13104,7 @@ type Pir implements InternalObject & BasicObject {
   description: String
   pir_criteria: [PirCriterion!]!
   pir_filters: String!
+  lastEventId: String!
 }
 
 enum PirOrdering {

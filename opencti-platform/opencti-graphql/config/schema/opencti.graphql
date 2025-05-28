@@ -12612,6 +12612,7 @@ enum StixRefRelationshipsOrdering {
   toPatternType
   toCreatedAt
   _score
+  pir_score
 }
 type StixRefRelationshipConnection {
   pageInfo: PageInfo!
