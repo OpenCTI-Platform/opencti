@@ -18,6 +18,7 @@ const pirQuery = graphql`
       ...PirHeaderFragment
       ...PirKnowledgeFragment
       ...PirEditionFragment
+      ...PirOverviewDetailsFragment
     }
   }
 `;
@@ -52,7 +53,7 @@ const PirComponent = ({ pirQueryRef, pirHistoryQueryRef }: PirComponentProps) =>
         {({ index }) => (
           <>
             <div role="tabpanel" hidden={index !== 0}>
-              <PirOverview data={history} />
+              <PirOverview dataHistory={history} dataDetails={pir} />
             </div>
             <div role="tabpanel" hidden={index !== 1}>
               <PirKnowledge data={pir} />
