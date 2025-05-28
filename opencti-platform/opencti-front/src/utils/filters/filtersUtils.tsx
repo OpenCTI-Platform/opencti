@@ -780,7 +780,7 @@ export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: Filte
   return {
     mode: filters.mode,
     filters: filters.filters
-      .filter((f) => availableFilterKeys.includes(f.key))
+      .filter((f) => availableFilterKeys.includes(f.key) || f.key === 'ids')
       .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
