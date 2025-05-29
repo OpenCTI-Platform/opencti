@@ -8,10 +8,13 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../components/PageContainer';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const Connectors = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+  const { isFeatureEnable } = useHelper();
+  const enableComposerFeatureFlag = isFeatureEnable('COMPOSER');
   setTitle(t_i18n('Connectors | Ingestion | Data'));
   return (
     <>
@@ -33,6 +36,7 @@ const Connectors = () => {
         />
         <QueryRenderer
           query={connectorsStatusQuery}
+          variables={{ enableComposerFeatureFlag }}
           render={({ props }) => {
             if (props) {
               return <ConnectorsStatus data={props} />;

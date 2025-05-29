@@ -37,6 +37,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import SortConnectorsHeader from './SortConnectorsHeader';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -114,20 +115,20 @@ const inlineStyles: Record<string, CSSProperties> = {
 };
 
 export const connectorsStatusQuery = graphql`
-  query ConnectorsStatusQuery {
+  query ConnectorsStatusQuery($enableComposerFeatureFlag: Boolean!) {
     ...ConnectorsStatus_data
   }
 `;
 
 const connectorsStatusFragment = graphql`
   fragment ConnectorsStatus_data on Query {
-    connectorManagers {
+    connectorManagers @include(if: $enableComposerFeatureFlag) {
       id
       name
       active
       last_sync_execution
     }
-    catalogs {
+    catalogs @include(if: $enableComposerFeatureFlag) {
       id
       name
       description
@@ -141,12 +142,12 @@ const connectorsStatusFragment = graphql`
       connector_trigger_filters
       connector_type
       connector_scope
-      is_managed
-      manager_current_status
-      manager_requested_status
-      manager_contract_image
-      manager_contract_definition
-      manager_contract_configuration {
+      is_managed @include(if: $enableComposerFeatureFlag)
+      manager_current_status @include(if: $enableComposerFeatureFlag)
+      manager_requested_status @include(if: $enableComposerFeatureFlag)
+      manager_contract_image @include(if: $enableComposerFeatureFlag)
+      manager_contract_definition  @include(if: $enableComposerFeatureFlag)
+      manager_contract_configuration  @include(if: $enableComposerFeatureFlag) {
         key
         value
       }
@@ -526,13 +527,15 @@ const ConnectorsStatusComponent: FunctionComponent<ConnectorsStatusComponentProp
 };
 
 const ConnectorsStatus = () => {
+  const { isFeatureEnable } = useHelper();
+  const enableComposerFeatureFlag = isFeatureEnable('COMPOSER');
   const [queryRef, loadQuery] = useQueryLoader<ConnectorsStatusQuery>(connectorsStatusQuery);
   useEffect(() => {
-    loadQuery({}, { fetchPolicy: 'store-and-network' });
+    loadQuery({ enableComposerFeatureFlag }, { fetchPolicy: 'store-and-network' });
   }, []);
 
   const refetch = React.useCallback(() => {
-    loadQuery({}, { fetchPolicy: 'store-and-network' });
+    loadQuery({ enableComposerFeatureFlag }, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
 
   return (
