@@ -9,7 +9,6 @@ import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import { interval } from 'rxjs';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
 import { InformationOutline } from 'mdi-material-ui';
 import { DeleteOutlined, DeleteSweepOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import Dialog from '@mui/material/Dialog';
@@ -25,12 +24,22 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Alert from '@mui/material/Alert';
 import UpdateIcon from '@mui/icons-material/Update';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import DialogTitle from '@mui/material/DialogTitle';
+import Drawer from '../../common/drawer/Drawer';
+import ManagedConnectorEdition from './ManagedConnectorEdition';
 import DangerZoneBlock from '../../common/danger_zone/DangerZoneBlock';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
-import { useGetConnectorAvailableFilterKeys, useGetConnectorFilterEntityTypes, getConnectorOnlyContextualStatus, getConnectorTriggerStatus } from '../../../../utils/Connector';
+import {
+  useGetConnectorAvailableFilterKeys,
+  useGetConnectorFilterEntityTypes,
+  getConnectorOnlyContextualStatus,
+  getConnectorTriggerStatus,
+  useComputeConnectorStatus,
+} from '../../../../utils/Connector';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -47,6 +56,9 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -54,14 +66,11 @@ const useStyles = makeStyles((theme) => ({
   gridContainer: {
     marginBottom: 20,
   },
-  title: {
-    float: 'left',
-    marginRight: 30,
-    textTransform: 'uppercase',
-  },
   popover: {
     float: 'right',
-    marginTop: '-13px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
   },
   paper: {
     marginTop: theme.spacing(1),
@@ -110,10 +119,24 @@ export const connectorWorkDeleteMutation = graphql`
   }
 `;
 
+const updateRequestedStatus = graphql`
+  mutation ConnectorUpdateStatusMutation($input: RequestConnectorStatusInput!) {
+    updateConnectorRequestedStatus(input: $input) {
+      id
+      manager_current_status
+      manager_requested_status
+    }
+  }
+`;
+
 const ConnectorComponent = ({ connector, relay }) => {
   const { t_i18n, nsdt } = useFormatter();
   const navigate = useNavigate();
   const classes = useStyles();
+
+  const { isFeatureEnable } = useHelper();
+  const isComposerEnable = isFeatureEnable('COMPOSER');
+
   const connectorTriggerStatus = getConnectorTriggerStatus(connector);
   const connectorOnlyContextualStatus = getConnectorOnlyContextualStatus(connector);
   // connector trigger filters
@@ -262,87 +285,135 @@ const ConnectorComponent = ({ connector, relay }) => {
 
   const { isSensitive } = useSensitiveModifications('connector_reset');
 
+  const [editionOpen, setEditionOpen] = useState(false);
+  const computeConnectorStatus = useComputeConnectorStatus();
+
+  const [commitUpdateStatus] = useApiMutation(updateRequestedStatus);
+
   return (
     <>
-      <>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          width: '100%',
+          marginBottom: theme.spacing(2),
+        }}
+      >
         <Typography
           variant="h1"
           gutterBottom={true}
-          classes={{ root: classes.title }}
+          style={{
+            textTransform: 'uppercase',
+            alignItems: 'center',
+            display: 'flex',
+            gap: theme.spacing(1),
+            margin: 0,
+          }}
         >
           {connector.name}
+          <div style={{ display: 'inline-block' }}>
+            {computeConnectorStatus(connector).render}
+          </div>
+          {connector.is_managed && (
+            <div>
+              <Button
+                variant="outlined"
+                size="small"
+                disabled={computeConnectorStatus(connector).processing}
+                color={connector.manager_current_status === 'started' ? 'error' : 'primary'}
+                onClick={() => commitUpdateStatus({
+                  variables: {
+                    input: {
+                      id: connector.id,
+                      status: connector.manager_current_status === 'started' ? 'stopping' : 'starting',
+                    },
+                  },
+                })}
+              >
+                {t_i18n(connector.manager_current_status === 'started' ? 'Stop' : 'Start')}
+              </Button>
+            </div>
+          )}
         </Typography>
-        <ItemBoolean
-          status={connector.active}
-          label={connector.active ? t_i18n('Active') : t_i18n('Inactive')}
-        />
         <div className={classes.popover}>
           <Security needs={[MODULES_MODMANAGE]}>
-            <Tooltip title={t_i18n('Reset the connector state')}>
-              {isSensitive ? (
-                <div style={{ position: 'relative', display: 'inline-block' }}>
-                  <DangerZoneBlock
-                    type="connector_reset"
-                    sx={{
-                      root: { border: 'none', padding: 0, margin: 0 },
-                      title: { position: 'absolute', zIndex: 1, left: 4, top: 9, fontSize: 8 },
-                    }}
-                  >
-                    {({ disabled }) => (
-                      <Button
-                        color="dangerZone"
-                        variant="outlined"
-                        size="small"
-                        disabled={disabled || !!connector.built_in}
-                        onClick={handleOpenResetState}
-                        style={{
-                          minWidth: '6rem',
-                        }}
-                      >
-                        <span style={{ zIndex: 2 }}>
-                          {t_i18n('Reset')}
-                        </span>
-                      </Button>
-                    )}
-                  </DangerZoneBlock>
-                </div>
-              ) : (
-                <IconButton
-                  onClick={handleOpenResetState}
-                  aria-haspopup="true"
-                  color="primary"
-                  size="large"
-                  disabled={connector.built_in}
+            {isSensitive && (
+              <div style={{ position: 'relative', display: 'inline-block' }}>
+                <DangerZoneBlock
+                  type="connector_reset"
+                  sx={{
+                    root: { border: 'none', padding: 0, margin: 0 },
+                    title: { position: 'absolute', zIndex: 1, left: 4, top: 9, fontSize: 8 },
+                  }}
                 >
-                  <PlaylistRemoveOutlined />
-                </IconButton>
+                  {({ disabled }) => (
+                    <Button
+                      color="dangerZone"
+                      variant="outlined"
+                      disabled={disabled || !!connector.built_in}
+                      onClick={handleOpenResetState}
+                      style={{
+                        minWidth: '6rem',
+                      }}
+                    >
+                      <span style={{ zIndex: 2 }}>
+                        {t_i18n('Reset')}
+                      </span>
+                    </Button>
+                  )}
+                </DangerZoneBlock>
+              </div>
+            )}
+            <ToggleButtonGroup
+              size="small"
+            >
+              {!isSensitive && (
+                <Tooltip title={t_i18n('Reset the connector state')}>
+                  <ToggleButton
+                    onClick={handleOpenResetState}
+                    aria-haspopup="true"
+                    disabled={connector.built_in}
+                  >
+                    <PlaylistRemoveOutlined
+                      color="primary"
+                    />
+                  </ToggleButton>
+                </Tooltip>
               )}
-            </Tooltip>
-            <Tooltip title={t_i18n('Clear all works')}>
-              <IconButton
-                onClick={handleOpenClearWorks}
-                aria-haspopup="true"
-                color="primary"
-                size="large"
-              >
-                <DeleteSweepOutlined />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={t_i18n('Clear this connector')}>
-              <IconButton
-                onClick={handleOpenDelete}
-                aria-haspopup="true"
-                color="primary"
-                disabled={connector.active || connector.built_in}
-                size="large"
-              >
-                <DeleteOutlined />
-              </IconButton>
-            </Tooltip>
+              <Tooltip title={t_i18n('Clear all works')}>
+                <ToggleButton
+                  onClick={handleOpenClearWorks}
+                  aria-haspopup="true"
+                >
+                  <DeleteSweepOutlined
+                    color="primary"
+                  />
+                </ToggleButton>
+              </Tooltip>
+              <Tooltip title={t_i18n('Clear this connector')}>
+                <ToggleButton
+                  onClick={handleOpenDelete}
+                  aria-haspopup="true"
+                  disabled={connector.active || connector.built_in}
+                >
+                  <DeleteOutlined
+                    color="primary"
+                  />
+                </ToggleButton>
+              </Tooltip>
+            </ToggleButtonGroup>
+            {connector.is_managed && (
+              <EditEntityControlledDial
+                onOpen={() => setEditionOpen(true)}
+                style={{}}
+              />
+            )}
           </Security>
         </div>
-        <div className="clearfix" />
-      </>
+      </div>
+      {editionOpen
+          && (<ManagedConnectorEdition catalog={connector.manager} connector={connector} onClose={() => setEditionOpen(false)} />)}
       <Grid
         container={true}
         spacing={3}
@@ -638,15 +709,15 @@ const ConnectorComponent = ({ connector, relay }) => {
                         {nsdt(connector.connector_info?.last_run_datetime)}
                       </Typography>
                     </>) : (connector.connector_state
-                        && connectorStateConverted !== null
-                        && checkLastRunExistingInState && checkLastRunIsNumber ? (<>
-                          <Typography variant="h3" gutterBottom={true}>
-                            {t_i18n('Last run (from State)')}
-                          </Typography>
-                          <Typography variant="body1" gutterBottom={true}>
-                            {nsdt(lastRunConverted)}
-                          </Typography>
-                        </>)
+                    && connectorStateConverted !== null
+                    && checkLastRunExistingInState && checkLastRunIsNumber ? (<>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Last run (from State)')}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom={true}>
+                        {nsdt(lastRunConverted)}
+                      </Typography>
+                    </>)
                     : (<>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Last run')}
@@ -688,15 +759,15 @@ const ConnectorComponent = ({ connector, relay }) => {
                 )}
               </Grid>
               <Grid item xs={6}>
-                <Typography variant="h3" gutterBottom={true} >
+                <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Server capacity')}
                 </Typography>
                 {connector.connector_info && (connector.connector_info.queue_messages_size !== 0
-                    || connector.connector_info.last_run_datetime) ? (
-                      <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
-                        <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
-                        <span> / {connector.connector_info?.queue_threshold} Mo</span>
-                      </FieldOrEmpty>
+                  || connector.connector_info.last_run_datetime) ? (
+                    <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
+                      <span style={isBuffering() ? { color: theme.palette.warning.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
+                      <span> / {connector.connector_info?.queue_threshold} Mo</span>
+                    </FieldOrEmpty>
                   ) : (
                     <Typography variant="body1" gutterBottom={true}>
                       {t_i18n('Not provided')}
@@ -704,6 +775,26 @@ const ConnectorComponent = ({ connector, relay }) => {
                   )
                 }
               </Grid>
+              { isComposerEnable && (
+                <Grid item xs={12}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Logs')}
+                    <Drawer>
+                      Coucou
+                    </Drawer>
+                  </Typography>
+                  <pre
+                    style={{
+                      height: '100%',
+                      maxHeight: 400,
+                      overflowX: 'scroll',
+                      paddingBottom: theme.spacing(2),
+                    }}
+                  >
+                    {connector.manager_connector_logs.join('\n')}
+                  </pre>
+                </Grid>
+              )}
             </Grid>
           </Paper>
         </Grid>
@@ -793,7 +884,7 @@ const ConnectorComponent = ({ connector, relay }) => {
         render={({ props }) => {
           if (props) {
             return (
-              <ConnectorWorks data={props} options={optionsInProgress} inProgress={true}/>
+              <ConnectorWorks data={props} options={optionsInProgress} inProgress={true} />
             );
           }
           return <Loader variant="inElement" />;
@@ -805,7 +896,7 @@ const ConnectorComponent = ({ connector, relay }) => {
         variables={optionsFinished}
         render={({ props }) => {
           if (props) {
-            return <ConnectorWorks data={props} options={optionsFinished}/>;
+            return <ConnectorWorks data={props} options={optionsFinished} />;
           }
           return <Loader variant="inElement" />;
         }}
@@ -843,6 +934,16 @@ const Connector = createRefetchContainer(
         connector_scope
         connector_state
         connector_user_id
+        is_managed
+        manager_contract_configuration {
+          key
+          value
+        }
+        manager_contract_definition
+        manager_current_status
+        manager_requested_status
+        manager_contract_image
+        manager_connector_logs
         connector_user {
           id
           name

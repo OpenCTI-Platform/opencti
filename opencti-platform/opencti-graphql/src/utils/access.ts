@@ -15,9 +15,9 @@ import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { telemetry } from '../config/tracing';
 import type { BasicStoreSettings } from '../types/settings';
-import { ACCOUNT_STATUS_ACTIVE } from '../config/conf';
+import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION } from '../database/utils';
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -410,6 +410,12 @@ class TracingContext {
     this.ctx = trace.setSpan(telemetryContext.active(), span);
   }
 }
+
+export const enforceEnableFeatureFlag = (flag: string) => {
+  if (!isFeatureEnabled(flag)) {
+    throw UnsupportedError('Feature is disabled', { flag });
+  }
+};
 
 export const executionContext = (source: string, auth?: AuthUser, draftContext?: string): AuthContext => {
   const tracer = trace.getTracer('instrumentation-opencti', '1.0.0');

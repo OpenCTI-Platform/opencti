@@ -1,0 +1,32 @@
+type Catalog implements InternalObject & BasicObject {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  # Catalog
+  name: String!
+  description: String!
+  contracts: [String!]!
+}
+
+# Ordering
+enum CatalogsOrdering {
+  name
+  _score
+}
+
+# Relay connections
+type CatalogConnection {
+  pageInfo: PageInfo!
+  edges: [CatalogEdge!]!
+}
+type CatalogEdge {
+  cursor: String!
+  node: Catalog!
+}
+
+# Queries
+type Query {
+  catalog(id: String!): Catalog @auth
+  catalogs: [Catalog!]! @auth
+}

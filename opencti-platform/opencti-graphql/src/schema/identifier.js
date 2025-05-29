@@ -169,6 +169,7 @@ const stixBaseEntityContribution = {
     [I.ENTITY_TYPE_ROLE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CONNECTOR]: () => uuidv4(),
+    [I.ENTITY_TYPE_CONNECTOR_MANAGER]: () => uuidv4(),
     [I.ENTITY_TYPE_RULE_MANAGER]: () => uuidv4(),
     [I.ENTITY_TYPE_RULE]: () => uuidv4(),
     [I.ENTITY_TYPE_HISTORY]: () => uuidv4(),
