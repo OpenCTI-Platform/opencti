@@ -9,7 +9,7 @@ import CardHeader from '@mui/material/CardHeader';
 import IconButton from '@mui/material/IconButton';
 import CardContent from '@mui/material/CardContent';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import ManagedConnectorCreation from './ManagedConnectorCreation';
+import ManagedConnectorCreation, { Catalog } from './ManagedConnectorCreation';
 import { ConnectorsStatus_data$data } from './__generated__/ConnectorsStatus_data.graphql';
 import { emptyFilled } from '../../../../utils/String';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -21,13 +21,6 @@ type ManagedConnectorsProps = {
   catalogs: ConnectorsStatus_data$data['catalogs'],
   managers: ConnectorsStatus_data$data['connectorManagers'],
 };
-
-export interface Catalog {
-  readonly contracts: ReadonlyArray<string>;
-  readonly description: string;
-  readonly id: string;
-  readonly name: string;
-}
 
 const Catalogs: React.FC<ManagedConnectorsProps> = ({ catalogs, managers }) => {
   const { t_i18n } = useFormatter();

@@ -21,7 +21,13 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
-import { Catalog } from './Catalogs';
+
+export interface Catalog {
+  readonly contracts: ReadonlyArray<string>;
+  readonly description: string;
+  readonly id: string;
+  readonly name: string;
+}
 
 const registerManagedConnectorMutation = graphql`
   mutation ManagedConnectorCreationMutation($input: AddManagedConnectorInput) {
