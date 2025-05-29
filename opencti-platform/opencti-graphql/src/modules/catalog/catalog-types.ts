@@ -1,3 +1,5 @@
+export const COMPOSER_FF = 'COMPOSER';
+
 export interface CatalogContract {
   $schema: string;
   $id: string;
