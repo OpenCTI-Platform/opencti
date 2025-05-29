@@ -8,7 +8,6 @@ import {
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_MALWARE,
-  isStixDomainObjectCase,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
@@ -16,10 +15,12 @@ import {
 import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
 
 export const convertTypeToStix2Type = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
@@ -34,16 +35,17 @@ export const convertTypeToStix2Type = (type: string): string => {
   if (isStixCoreRelationship(type)) {
     return 'relationship';
   }
-  if (isInternalRelationship(type)) {
-    return 'internal-relationship';
-  }
   if (isStixSightingRelationship(type)) {
     return 'sighting';
   }
   if (isStixDomainObjectThreatActor(type)) {
     return 'threat-actor';
   }
-  if (isStixDomainObjectCase(type) || type === ENTITY_TYPE_CONTAINER_FEEDBACK || type === ENTITY_TYPE_CONTAINER_TASK) {
+  if (type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT
+    || type === ENTITY_TYPE_CONTAINER_CASE_RFI
+    || type === ENTITY_TYPE_CONTAINER_CASE_RFT
+    || type === ENTITY_TYPE_CONTAINER_FEEDBACK
+    || type === ENTITY_TYPE_CONTAINER_TASK) {
     return `x-opencti-${type.toLowerCase()}`;
   }
   if (type === ENTITY_TYPE_DATA_COMPONENT || type === ENTITY_TYPE_DATA_SOURCE) {
