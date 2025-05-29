@@ -1340,6 +1340,7 @@ type Settings implements InternalObject & BasicObject {
   platform_theme_light_logo_login: String
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
+  artifact_zip_whitelist: [String!]!
   platform_openbas_url: String
   platform_openbas_disable_display: Boolean
   platform_openerm_url: String

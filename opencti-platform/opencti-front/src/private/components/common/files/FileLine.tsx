@@ -1,11 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
 import { isEmpty } from 'ramda';
 import moment from 'moment';
-import Alert from '@mui/material/Alert';
 import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
 import IconButton from '@mui/material/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import { DeleteOutlined, DocumentScannerOutlined, GetAppOutlined, WarningOutlined } from '@mui/icons-material';
+import { DeleteOutlined, DocumentScannerOutlined, WarningOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -18,9 +17,6 @@ import Button from '@mui/material/Button';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { PopoverProps } from '@mui/material/Popover';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
 import { ListItem, ListItemButton } from '@mui/material';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useTheme } from '@mui/styles';
@@ -107,24 +103,13 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   isExternalReferenceAttachment,
   onDelete,
   onClick,
-  isArtifact,
 }) => {
   const classes = useStyles();
   const { me } = useAuth();
   const draftContext = useDraftContext();
   const { t_i18n, fld } = useFormatter();
   const theme = useTheme<Theme>();
-
-  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayRemove, setDisplayRemove] = useState(false);
-  const [displayDownload, setDisplayDownload] = useState(false);
-
-  const handleOpen = (event: React.SyntheticEvent) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
 
   const isContainsReference = isNotEmptyField(
     file?.metaData?.external_reference_id,
@@ -163,7 +148,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     .join(', ');
   const encodedFilePath = encodeURIComponent(file?.id ?? '');
 
-  const deletion = useDeletion({ handleClose });
+  const deletion = useDeletion({});
   const { deleting, handleOpenDelete, handleCloseDelete, setDeleting } = deletion;
 
   const handleOpenRemove = () => {
@@ -172,10 +157,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 
   const handleCloseRemove = () => {
     setDisplayRemove(false);
-  };
-
-  const handleCloseDownload = () => {
-    setDisplayDownload(false);
   };
 
   const executeRemove = (
@@ -229,10 +210,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 
   const handleLink = (url: string) => {
     if (isFail || isOutdated || isProgress) return;
-    handleCloseDownload();
-    handleClose();
     window.location.pathname = url;
   };
+
   const generateIcon = () => {
     const fileInDraft = file?.draftVersion;
     const color = fileInDraft ? getDraftModeColor(theme) : theme.palette.primary.main;
@@ -246,9 +226,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const listUri = `${APP_BASE_PATH}/storage/${
     directDownload ? 'get' : 'view'
   }/${encodedFilePath}`;
-  const isWarning = isArtifact
-    || encodedFilePath.endsWith('.exe')
-    || encodedFilePath.endsWith('.dll');
+
   const fileExtension = file?.name.substring(file?.name.lastIndexOf('.')) ?? '';
   const fileNameWithoutExtension = file?.name.substring(0, file?.name.lastIndexOf('.')) ?? '';
 
@@ -292,55 +270,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                   </IconButton>
                 </span>
               </Tooltip>
-            )}
-            {!directDownload && !isFail && (
-              <>
-                <Tooltip title={t_i18n('Download this file')}>
-                  <span>
-                    <IconButton
-                      disabled={isProgress}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        if (isWarning) {
-                          handleOpen(event);
-                        } else {
-                          handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`);
-                        }
-                      }}
-                      aria-haspopup="true"
-                      color={nested ? 'inherit' : 'primary'}
-                      size="small"
-                    >
-                      <GetAppOutlined fontSize="small"/>
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleClose}
-                >
-                  <MenuItem
-                    dense={true}
-                    onClick={() => handleLink(
-                      `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-                    )
-                    }
-                  >
-                    {t_i18n('Encrypted archive')}
-                  </MenuItem>
-                  <MenuItem
-                    dense={true}
-                    onClick={() => handleLink(
-                      `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
-                    )
-                    }
-                  >
-                    {t_i18n('Raw file')}
-                  </MenuItem>
-                </Menu>
-              </>
             )}
             {!isExternalReferenceAttachment && (
               <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
@@ -397,10 +326,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         <ListItemButton
           classes={{ root: nested ? classes.itemNested : classes.item }}
           rel="noopener noreferrer"
-          onClick={
-            onClick
-            || (() => (isWarning ? setDisplayDownload(true) : handleLink(listUri)))
-          }
+          onClick={ onClick || (() => handleLink(listUri))}
         >
           <ListItemIcon>
             {isProgress && (
@@ -471,49 +397,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             disabled={deleting}
           >
             {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={displayDownload}
-        slotProps={{ paper: { elevation: 1 } }}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={handleCloseDownload}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('How do you want to download this file?')}
-          </DialogContentText>
-          <Alert
-            severity="warning"
-            variant="outlined"
-            style={{ position: 'relative', marginTop: 20 }}
-          >
-            {t_i18n(
-              'You are about to download a file related to an Artifact (or a binary). It might be malicious. You can download it as an encrypted archive (password: "infected") in order to protect your workstation and share it safely.',
-            )}
-          </Alert>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDownload} disabled={deleting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            color="warning"
-            onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)
-            }
-          >
-            {t_i18n('Raw file')}
-          </Button>
-          <Button
-            color="success"
-            onClick={() => handleLink(
-              `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-            )
-            }
-          >
-            {t_i18n('Encrypted archive')}
           </Button>
         </DialogActions>
       </Dialog>

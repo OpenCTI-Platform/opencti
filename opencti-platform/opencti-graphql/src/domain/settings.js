@@ -135,6 +135,7 @@ export const getSettings = async (context) => {
     platform_reference_attachment: conf.get('app:reference_attachment'),
     platform_map_tile_server_dark: nconf.get('app:map_tile_server_dark'),
     platform_map_tile_server_light: nconf.get('app:map_tile_server_light'),
+    artifact_zip_whitelist: nconf.get('app:artifact_zip_whitelist') ?? [],
     platform_openbas_url: nconf.get('xtm:openbas_url'),
     platform_openbas_disable_display: nconf.get('xtm:openbas_disable_display'),
     platform_openerm_url: nconf.get('xtm:openerm_url'),

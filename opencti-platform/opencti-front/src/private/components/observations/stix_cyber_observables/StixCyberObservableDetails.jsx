@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { dissoc, filter, includes, map, pipe, toPairs } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Paper from '@mui/material/Paper';
@@ -8,8 +8,6 @@ import { GetAppOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import makeStyles from '@mui/styles/makeStyles';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { APP_BASE_PATH } from '../../../../relay/environment';
@@ -35,15 +33,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
   const { t_i18n, b, fldt } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { dateAttributes, ignoredAttributes } = useAttributes();
-  const [anchorEl, setAnchorEl] = useState(null);
-  const handleOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
   const handleLink = (url) => {
-    handleClose();
     window.location.pathname = url;
   };
   const observableAttributes = pipe(
@@ -88,34 +78,12 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                 color="secondary"
                 size="small"
                 startIcon={<GetAppOutlined />}
-                onClick={handleOpen}
+                onClick={() => handleLink(
+                  `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
+                )}
               >
                 {t_i18n('Download')} ({b(file.size)})
               </Button>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-              >
-                <MenuItem
-                  dense={true}
-                  onClick={() => handleLink(
-                    `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-                  )
-                  }
-                >
-                  {t_i18n('Encrypted archive')}
-                </MenuItem>
-                <MenuItem
-                  dense={true}
-                  onClick={() => handleLink(
-                    `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
-                  )
-                  }
-                >
-                  {t_i18n('Raw file')}
-                </MenuItem>
-              </Menu>
             </Grid>
           )}
           <Grid item xs={6}>

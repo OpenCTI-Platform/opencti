@@ -186,6 +186,17 @@ const createApp = async (app) => {
   // -- Register the encryption module
   archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
 
+  const generateZippedArchive = async (res, fileId, filename) => {
+    res.set('Content-disposition', contentDisposition(filename, { type: 'attachment' }));
+    res.attachment(`${filename}.zip`);
+    const archive = archiver.create('zip-encrypted', {
+      zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password')
+    });
+    archive.append(await downloadFile(fileId), { name: filename });
+    await archive.finalize();
+    return archive;
+  };
+
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
     try {
@@ -198,9 +209,15 @@ const createApp = async (app) => {
       const data = await loadFile(context, context.user, file);
       // If file is attach to a specific instance, we need to contr
       await publishFileDownload(context, context.user, data);
-      const stream = await downloadFile(file);
-      res.attachment(file);
-      stream.pipe(res);
+      const extensionsWhitelist = nconf.get('app:artifact_zip_whitelist') ?? [];
+      if (extensionsWhitelist.length === 0 || extensionsWhitelist.some((ext) => data.name.toLowerCase().endsWith(ext))) {
+        const stream = await downloadFile(file);
+        res.attachment(file);
+        stream.pipe(res);
+      } else {
+        const archive = await generateZippedArchive(res, file, data.name);
+        archive.pipe(res);
+      }
     } catch (e) {
       setCookieError(res, e.message);
       logApp.error('Error getting storage get file', { cause: e });
@@ -228,8 +245,14 @@ const createApp = async (app) => {
       } else {
         res.set('Content-type', data.metaData.mimetype);
       }
-      const stream = await downloadFile(file);
-      stream.pipe(res);
+      const extensionsWhitelist = nconf.get('app:artifact_zip_whitelist') ?? [];
+      if (extensionsWhitelist.length === 0 || extensionsWhitelist.some((ext) => data.name.toLowerCase().endsWith(ext))) {
+        const stream = await downloadFile(file);
+        stream.pipe(res);
+      } else {
+        const archive = await generateZippedArchive(res, file, data.name);
+        archive.pipe(res);
+      }
     } catch (e) {
       setCookieError(res, e.message);
       logApp.error('Error getting storage view file', { cause: e });
@@ -278,10 +301,7 @@ const createApp = async (app) => {
       const data = await loadFile(context, context.user, file);
       const { metaData: { filename } } = data;
       await publishFileDownload(context, context.user, data);
-      const archive = archiver.create('zip-encrypted', { zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
-      archive.append(await downloadFile(file), { name: filename });
-      await archive.finalize();
-      res.attachment(`${filename}.zip`);
+      const archive = await generateZippedArchive(res, file, filename);
       archive.pipe(res);
     } catch (e) {
       setCookieError(res, e.message);

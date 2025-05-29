@@ -32,6 +32,7 @@ export interface ModuleHelper {
   isFileIndexManagerEnable: () => boolean;
   isIndicatorDecayManagerEnable: () => boolean;
   isTelemetryManagerEnable: () => boolean;
+  isFileExtensionWhitelisted: (filename: string) => boolean;
   isTrashEnable: () => boolean;
   isPlaygroundEnable: () => boolean;
   generateDisableMessage: (manager: string) => string;
@@ -83,6 +84,10 @@ const platformModuleHelper = (
   isIndicatorDecayManagerEnable: () => isModuleEnable(settings, INDICATOR_DECAY_MANAGER),
   isTelemetryManagerEnable: () => isModuleEnable(settings, TELEMETRY_MANAGER),
   isTrashEnable: () => settings.platform_trash_enabled,
+  isFileExtensionWhitelisted: (filename: string) => {
+    return settings.artifact_zip_whitelist.length === 0
+    || settings.artifact_zip_whitelist.some((ext) => filename.toLowerCase().endsWith(ext));
+  },
   isPlaygroundEnable: () => settings.playground_enabled,
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
   isRequestAccessEnabled: () => settings.request_access_enabled,

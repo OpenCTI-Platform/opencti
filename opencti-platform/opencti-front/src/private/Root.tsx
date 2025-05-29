@@ -44,6 +44,7 @@ const rootSettingsFragment = graphql`
     platform_map_tile_server_dark
     platform_map_tile_server_light
     platform_openbas_url
+    artifact_zip_whitelist
     platform_openbas_disable_display
     platform_openerm_url
     platform_openmtd_url
