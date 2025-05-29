@@ -22,13 +22,20 @@ type ManagedConnectorsProps = {
   managers: ConnectorsStatus_data$data['connectorManagers'],
 };
 
+export interface Catalog {
+  readonly contracts: ReadonlyArray<string>;
+  readonly description: string;
+  readonly id: string;
+  readonly name: string;
+}
+
 const Catalogs: React.FC<ManagedConnectorsProps> = ({ catalogs, managers }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { isFeatureEnable } = useHelper();
   const isComposerEnable = isFeatureEnable('COMPOSER');
-  const activate_manager = managers.length > 0;
-  const [catalog, setCatalog] = useState<ConnectorsStatus_data$data['catalogs'][0]>();
+  const activate_manager = (managers ?? []).length > 0;
+  const [catalog, setCatalog] = useState<Catalog>();
 
   if (!isComposerEnable) {
     return null;
@@ -43,7 +50,7 @@ const Catalogs: React.FC<ManagedConnectorsProps> = ({ catalogs, managers }) => {
         >
           <>
             {t_i18n('Connector catalogs')}
-            <EEChip feature="Connector catalogs" /> ({managers.length} active manager)
+            <EEChip feature="Connector catalogs" /> ({(managers ?? []).length} active manager)
           </>
         </Typography>
         <div className="clearfix" />
@@ -64,7 +71,7 @@ const Catalogs: React.FC<ManagedConnectorsProps> = ({ catalogs, managers }) => {
                 />
               </Grid>
             )}
-            {catalogs.map((m, id) => (
+            {(catalogs ?? []).map((m, id) => (
               <Grid size={3} key={`${m.name}-${id}`}>
                 <Card variant="outlined">
                   <CardActionArea onClick={() => setCatalog(m)}>

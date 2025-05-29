@@ -9,7 +9,6 @@ import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { graphql } from 'react-relay';
 import { FormikHelpers } from 'formik/dist/types';
-import { ConnectorsStatus_data$data } from '@components/data/connectors/__generated__/ConnectorsStatus_data.graphql';
 import { materialRenderers } from '@jsonforms/material-renderers';
 import { JsonForms } from '@jsonforms/react';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -22,6 +21,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
+import { Catalog } from './Catalogs';
 
 const registerManagedConnectorMutation = graphql`
   mutation ManagedConnectorCreationMutation($input: AddManagedConnectorInput) {
@@ -47,7 +47,7 @@ interface ManagedConnectorValues {
 }
 
 const ManagedConnectorCreation = ({ catalog, onClose }: {
-  catalog: ConnectorsStatus_data$data['catalogs'][0]
+  catalog: Catalog
   onClose: () => void
 }) => {
   const { t_i18n } = useFormatter();
