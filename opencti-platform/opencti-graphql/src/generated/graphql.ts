@@ -967,6 +967,7 @@ export type AttackPatternForMatrix = {
   description?: Maybe<Scalars['String']['output']>;
   killChainPhasesIds?: Maybe<Array<Scalars['String']['output']>>;
   name: Scalars['String']['output'];
+  subAttackPatterns?: Maybe<Array<SubAttackPatternForMatrix>>;
   subAttackPatternsIds?: Maybe<Array<Scalars['String']['output']>>;
   subAttackPatternsSearchText?: Maybe<Scalars['String']['output']>;
   x_mitre_id?: Maybe<Scalars['String']['output']>;
@@ -27733,6 +27734,13 @@ export enum StreamCollectionOrdering {
   StreamPublic = 'stream_public'
 }
 
+export type SubAttackPatternForMatrix = {
+  __typename?: 'SubAttackPatternForMatrix';
+  attack_pattern_id: Scalars['String']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+};
+
 export type SubType = {
   __typename?: 'SubType';
   id: Scalars['ID']['output'];
@@ -33385,6 +33393,7 @@ export type ResolversTypes = ResolversObject<{
   StreamCollectionEditMutations: ResolverTypeWrapper<StreamCollectionEditMutations>;
   StreamCollectionOrdering: StreamCollectionOrdering;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  SubAttackPatternForMatrix: ResolverTypeWrapper<SubAttackPatternForMatrix>;
   SubType: ResolverTypeWrapper<Omit<SubType, 'settings' | 'statuses' | 'statusesRequestAccess'> & { settings?: Maybe<ResolversTypes['EntitySetting']>, statuses: Array<ResolversTypes['Status']>, statusesRequestAccess: Array<ResolversTypes['Status']> }>;
   SubTypeConnection: ResolverTypeWrapper<Omit<SubTypeConnection, 'edges'> & { edges: Array<ResolversTypes['SubTypeEdge']> }>;
   SubTypeEdge: ResolverTypeWrapper<Omit<SubTypeEdge, 'node'> & { node: ResolversTypes['SubType'] }>;
@@ -34236,6 +34245,7 @@ export type ResolversParentTypes = ResolversObject<{
   StreamCollectionEdge: StreamCollectionEdge;
   StreamCollectionEditMutations: StreamCollectionEditMutations;
   String: Scalars['String']['output'];
+  SubAttackPatternForMatrix: SubAttackPatternForMatrix;
   SubType: Omit<SubType, 'settings' | 'statuses' | 'statusesRequestAccess'> & { settings?: Maybe<ResolversParentTypes['EntitySetting']>, statuses: Array<ResolversParentTypes['Status']>, statusesRequestAccess: Array<ResolversParentTypes['Status']> };
   SubTypeConnection: Omit<SubTypeConnection, 'edges'> & { edges: Array<ResolversParentTypes['SubTypeEdge']> };
   SubTypeEdge: Omit<SubTypeEdge, 'node'> & { node: ResolversParentTypes['SubType'] };
@@ -34706,6 +34716,7 @@ export type AttackPatternForMatrixResolvers<ContextType = any, ParentType extend
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   killChainPhasesIds?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  subAttackPatterns?: Resolver<Maybe<Array<ResolversTypes['SubAttackPatternForMatrix']>>, ParentType, ContextType>;
   subAttackPatternsIds?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   subAttackPatternsSearchText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -42863,6 +42874,13 @@ export type StreamCollectionEditMutationsResolvers<ContextType = any, ParentType
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type SubAttackPatternForMatrixResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubAttackPatternForMatrix'] = ResolversParentTypes['SubAttackPatternForMatrix']> = ResolversObject<{
+  attack_pattern_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type SubTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubType'] = ResolversParentTypes['SubType']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44930,6 +44948,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StreamCollectionConnection?: StreamCollectionConnectionResolvers<ContextType>;
   StreamCollectionEdge?: StreamCollectionEdgeResolvers<ContextType>;
   StreamCollectionEditMutations?: StreamCollectionEditMutationsResolvers<ContextType>;
+  SubAttackPatternForMatrix?: SubAttackPatternForMatrixResolvers<ContextType>;
   SubType?: SubTypeResolvers<ContextType>;
   SubTypeConnection?: SubTypeConnectionResolvers<ContextType>;
   SubTypeEdge?: SubTypeEdgeResolvers<ContextType>;
