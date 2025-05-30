@@ -8,6 +8,7 @@ export interface CatalogContract {
   type: string;
   container_type: string;
   container_image: string;
+  container_version: string;
   properties: object;
   required: string[];
   additionalProperties: boolean;

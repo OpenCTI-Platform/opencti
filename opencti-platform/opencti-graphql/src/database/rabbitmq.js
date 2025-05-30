@@ -97,7 +97,8 @@ export const getConnectorQueueDetails = async (connectorId) => {
       messages_size: queueDetailResponse.message_bytes || 0
     };
   } catch (e) {
-    logApp.error('Get connector queue details fail', { cause: e, connectorId });
+    // For managed connector, the queue is available only after the connector is started.
+    logApp.warn('Get connector queue details fail', { cause: e, connectorId });
     return {
       messages_number: 0,
       messages_size: 0

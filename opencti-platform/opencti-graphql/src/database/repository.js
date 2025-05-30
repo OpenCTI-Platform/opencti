@@ -8,7 +8,6 @@ import { isEmptyField, isNotEmptyField } from './utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
-import { PLATFORM_VERSION } from '../config/conf';
 import { shortHash } from '../schema/schemaUtils';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
@@ -55,7 +54,9 @@ export const computeManagerConnectorConfiguration = async (context, _user, cn) =
 };
 
 export const computeManagerConnectorImage = (cn) => {
-  return isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${PLATFORM_VERSION}` : null;
+  const contracts = getSupportedContractsByImage();
+  const contract = contracts.get(cn.manager_contract_image);
+  return isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${contract.container_version}` : null;
 };
 
 export const computeManagerContractHash = async (context, user, cn) => {

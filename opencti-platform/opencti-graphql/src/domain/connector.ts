@@ -37,7 +37,6 @@ import {
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { testSync as testSyncUtils } from './connector-utils';
-import { findById } from './user';
 import { defaultValidationMode, loadFile, uploadJobImport } from '../database/file-storage';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
@@ -45,6 +44,7 @@ import type { BasicStoreCommon } from '../types/store';
 import type { Connector } from '../connector/internalConnector';
 import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import { getEntitiesMapFromCache } from '../database/cache';
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -509,7 +509,8 @@ export const queueDetails = async (connectorId: string) => {
 
 export const connectorUser = async (context: AuthContext, user: AuthUser, userId: string) => {
   if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    return findById(context, user, userId);
+    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    return platformUsers.get(userId);
   }
   return null;
 };
