@@ -21,6 +21,7 @@ import { FunctionalError } from '../config/errors';
 import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION } from '../database/utils';
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import type { UpdateEvent } from '../types/event';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -626,6 +627,29 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const hasPlatformOrg = !!settings.platform_organization;
   return checkUserCanAccessStixElement(context, user, instance, hasPlatformOrg);
+};
+
+const checkUserCanAccessMarkings = async (user: AuthUser, markingIds: string[]) => {
+  if (markingIds.length === 0 || isBypassUser(user)) {
+    return true;
+  }
+  const userMarkingIds = (user.allowed_marking || []).map((m) => m.internal_id);
+  if (markingIds.every((m) => userMarkingIds.includes(m))) {
+    return true;
+  }
+  return false;
+};
+
+export const isUserCanAccessStreamUpdateEvent = async (user: AuthUser, updateEvent: UpdateEvent) => {
+  const relatedRestrictions = updateEvent.context.related_restrictions;
+  if (!relatedRestrictions) {
+    return true;
+  }
+  const markingsRestrictions = relatedRestrictions.markings ?? [];
+  if (markingsRestrictions.length > 0) {
+    return checkUserCanAccessMarkings(user, markingsRestrictions);
+  }
+  return true;
 };
 // end region
 
