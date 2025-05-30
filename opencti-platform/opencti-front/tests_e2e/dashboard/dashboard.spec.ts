@@ -189,6 +189,29 @@ test('Dashboard CRUD', async ({ page }) => {
   await expect(dashboardDetailsPage.getTitle('Full Dashboard')).toBeVisible();
   const errors = page.getByText('An unknown error occurred.');
   await expect(errors).toHaveCount(0);
+
+  await expect(dashboardDetailsPage.getExportPDFButton()).toBeVisible();
+
+  // Export dashboard as PDF, should succeed to get a file.
+  // Dark mode
+  const downloadPDFPromiseDark = page.waitForEvent('download');
+  await dashboardDetailsPage.getExportPDFButton().click();
+  await dashboardDetailsPage.getExportPDFButtonThemeMenu('Dark').click();
+
+  const downloadPdfDark = await downloadPDFPromiseDark;
+  expect(downloadPdfDark.suggestedFilename()).toBeDefined();
+  await downloadPdfDark.saveAs(`./test-results/e2e-files/${downloadPdfDark.suggestedFilename()}`);
+  // Light mode
+  const downloadPDFPromiseLight = page.waitForEvent('download');
+  await dashboardDetailsPage.getExportPDFButton().click();
+  await dashboardDetailsPage.getExportPDFButtonThemeMenu('Light').click();
+
+  const downloadPdfLight = await downloadPDFPromiseLight;
+  expect(downloadPdfLight.suggestedFilename()).toBeDefined();
+  await downloadPdfLight.saveAs(`./test-results/e2e-files/${downloadPdfLight.suggestedFilename()}`);
+  // End Export dashboard as PDF
+
+  // Delete imported dashboard
   await dashboardDetailsPage.getActionsPopover().click();
   await dashboardDetailsPage.getActionButton('Delete').click();
   await dashboardDetailsPage.getConfirmButton().click();
