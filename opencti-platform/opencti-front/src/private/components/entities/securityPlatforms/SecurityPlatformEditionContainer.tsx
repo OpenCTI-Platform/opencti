@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import Drawer from '@components/common/drawer/Drawer';
+import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
 import { createFragmentContainer, graphql } from 'react-relay';
 import {
   SecurityPlatformEditionContainer_securityPlatform$data,
@@ -12,7 +12,7 @@ interface securityPlatformContainerProps {
   handleClose: () => void;
   securityPlatform:SecurityPlatformEditionContainer_securityPlatform$data,
   open: boolean,
-  controlledDial:() => void,
+  controlledDial?: DrawerControlledDialType
 }
 
 const SecurityPlatformEditionContainer: FunctionComponent<securityPlatformContainerProps> = ({
