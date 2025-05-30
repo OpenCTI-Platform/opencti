@@ -32,46 +32,15 @@ describe('Raw streams tests', () => {
       // Check some events count
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
       dumpEventByTypeToFile('create', createEventsByTypes);
-      expect(createEventsByTypes.artifact.length).toBe(testCreatedCounter.artifact);
-      expect(createEventsByTypes['attack-pattern'].length).toBe(testCreatedCounter['attack-pattern']);
-      expect(createEventsByTypes['case-incident'].length).toBe(testCreatedCounter['case-incident']);
-      expect(createEventsByTypes['case-rfi'].length).toBe(testCreatedCounter['case-rfi']);
-      expect(createEventsByTypes.campaign.length).toBe(testCreatedCounter.campaign);
-      expect(createEventsByTypes['course-of-action'].length).toBe(testCreatedCounter['course-of-action']);
-      expect(createEventsByTypes.credential.length).toBe(testCreatedCounter.credential);
-      expect(createEventsByTypes['data-component'].length).toBe(testCreatedCounter['data-component']);
-      expect(createEventsByTypes['data-source'].length).toBe(testCreatedCounter['data-source']);
-      expect(createEventsByTypes['domain-name'].length).toBe(testCreatedCounter['domain-name']);
-      expect(createEventsByTypes['email-addr'].length).toBe(testCreatedCounter['email-addr']);
-      expect(createEventsByTypes['external-reference'].length).toBe(testCreatedCounter['external-reference']);
-      expect(createEventsByTypes.feedback.length).toBe(testCreatedCounter.feedback);
-      expect(createEventsByTypes.file.length).toBe(testCreatedCounter.file);
-      expect(createEventsByTypes.grouping.length).toBe(testCreatedCounter.grouping);
-      expect(createEventsByTypes.identity.length).toBe(testCreatedCounter.identity);
-      expect(createEventsByTypes.incident.length).toBe(testCreatedCounter.incident);
-      expect(createEventsByTypes.indicator.length).toBe(testCreatedCounter.indicator);
-      expect(createEventsByTypes['internal-relationship'].length).toBe(testCreatedCounter['internal-relationship']);
-      expect(createEventsByTypes['ipv4-addr'].length).toBe(testCreatedCounter['ipv4-addr']);
-      expect(createEventsByTypes['kill-chain-phase'].length).toBe(testCreatedCounter['kill-chain-phase']);
-      expect(createEventsByTypes.label.length).toBe(testCreatedCounter.label);
-      expect(createEventsByTypes.location.length).toBe(testCreatedCounter.location);
-      expect(createEventsByTypes.malware.length).toBe(testCreatedCounter.malware);
-      expect(createEventsByTypes['marking-definition'].length).toBe(testCreatedCounter['marking-definition']);
-      expect(createEventsByTypes['network-traffic'].length).toBe(testCreatedCounter['network-traffic']);
-      expect(createEventsByTypes.note.length).toBe(testCreatedCounter.note);
-      expect(createEventsByTypes['observed-data'].length).toBe(testCreatedCounter['observed-data']);
-      expect(createEventsByTypes.opinion.length).toBe(testCreatedCounter.opinion);
-      expect(createEventsByTypes.persona.length).toBe(testCreatedCounter.persona);
-      expect(createEventsByTypes.relationship.length).toBe(testCreatedCounter.relationship);
-      expect(createEventsByTypes.report.length).toBe(testCreatedCounter.report);
-      expect(createEventsByTypes.sighting.length).toBe(testCreatedCounter.sighting);
-      expect(createEventsByTypes.software.length).toBe(testCreatedCounter.software);
-      expect(createEventsByTypes['threat-actor'].length).toBe(testCreatedCounter['threat-actor']);
-      expect(createEventsByTypes.tool.length).toBe(testCreatedCounter.tool);
-      expect(createEventsByTypes['tracking-number'].length).toBe(testCreatedCounter['tracking-number']);
-      expect(createEventsByTypes.vocabulary.length).toBe(VOCABULARY_NUMBERS);
-      expect(createEventsByTypes.vulnerability.length).toBe(testCreatedCounter.vulnerability);
 
+      const allExpectedCounterKeys = Object.keys(testCreatedCounter);
+      for (let i = 0; i < allExpectedCounterKeys.length; i += 1) {
+        const key = allExpectedCounterKeys[i];
+        expect(
+          createEventsByTypes[key].length,
+          `Created ${key} count should be ${testCreatedCounter[key]} but got ${createEventsByTypes[key].length}`
+        ).toBe(testCreatedCounter[key]);
+      }
       expect(createEvents.length).toBe(doTotal(testCreatedCounter));
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
@@ -82,34 +51,15 @@ describe('Raw streams tests', () => {
       const updateEvents = events.filter((e) => e.type === EVENT_TYPE_UPDATE);
       const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
       dumpEventByTypeToFile('update', updateEventsByTypes);
-      expect(updateEventsByTypes['marking-definition'].length).toBe(2);
-      expect(updateEventsByTypes['campaign'].length).toBe(7);
-      expect(updateEventsByTypes['relationship'].length).toBe(8);
-      expect(updateEventsByTypes['identity'].length).toBe(23);
-      expect(updateEventsByTypes['malware'].length).toBe(20);
-      expect(updateEventsByTypes['intrusion-set'].length).toBe(4);
-      expect(updateEventsByTypes['data-component'].length).toBe(4);
-      expect(updateEventsByTypes['location'].length).toBe(14);
-      expect(updateEventsByTypes['attack-pattern'].length).toBe(3);
-      expect(updateEventsByTypes['feedback'].length).toBe(1);
-      expect(updateEventsByTypes['course-of-action'].length).toBe(3);
-      expect(updateEventsByTypes['data-source'].length).toBe(1);
-      expect(updateEventsByTypes['external-reference'].length).toBe(1);
-      expect(updateEventsByTypes['grouping'].length).toBe(3);
-      expect(updateEventsByTypes['incident'].length).toBe(3);
-      expect(updateEventsByTypes['indicator'].length).toBe(6);
-      expect(updateEventsByTypes['label'].length).toBe(1);
-      expect(updateEventsByTypes['malware-analysis'].length).toBe(3);
-      expect(updateEventsByTypes['note'].length).toBe(3);
-      expect(updateEventsByTypes['opinion'].length).toBe(6);
-      expect(updateEventsByTypes['report'].length).toBe(19);
-      expect(updateEventsByTypes['ipv4-addr'].length).toBe(4);
-      expect(updateEventsByTypes['tool'].length).toBe(9);
-      expect(updateEventsByTypes['sighting'].length).toBe(4);
-      expect(updateEventsByTypes['threat-actor'].length).toBe(17);
-      expect(updateEventsByTypes['vocabulary'].length).toBe(3);
-      expect(updateEventsByTypes['vulnerability'].length).toBe(3);
-      expect(updateEvents.length).toBe(198);
+      const allUpdatedCounterKeys = Object.keys(testUpdatedCounter);
+      for (let i = 0; i < allUpdatedCounterKeys.length; i += 1) {
+        const key = allUpdatedCounterKeys[i];
+        expect(
+          updateEventsByTypes[key].length,
+          `Updated ${key} count should be ${testUpdatedCounter[key]} but got ${updateEventsByTypes[key].length}`
+        ).toBe(testUpdatedCounter[key]);
+      }
+      expect(updateEvents.length).toBe(doTotal(testUpdatedCounter));
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
         const event = updateEvents[updateIndex];
         const { data: insideData, origin, type } = event;
@@ -124,8 +74,16 @@ describe('Raw streams tests', () => {
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
       const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       dumpEventByTypeToFile('delete', deleteEventsByTypes);
+      const allDeletedCounterKeys = Object.keys(testDeletedCounter);
+      for (let i = 0; i < allDeletedCounterKeys.length; i += 1) {
+        const key = allDeletedCounterKeys[i];
+        expect(
+          deleteEventsByTypes[key].length,
+          `Deleted ${key} count should be ${testDeletedCounter[key]} but got ${deleteEventsByTypes[key].length}`
+        ).toBe(testDeletedCounter[key]);
+      }
       expect(deleteEvents.length).toBe(doTotal(testDeletedCounter));
-      // const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
+
       for (let delIndex = 0; delIndex < deleteEvents.length; delIndex += 1) {
         const { data: insideData, origin, type } = deleteEvents[delIndex];
         expect(origin).toBeDefined();
@@ -133,7 +91,18 @@ describe('Raw streams tests', () => {
       }
       // 04 - CHECK MERGE EVENTS
       const mergeEvents = events.filter((e) => e.type === EVENT_TYPE_MERGE);
-      expect(mergeEvents.length).toBe(8);
+      const mergeEventsByTypes = R.groupBy((e) => e.data.data.type, mergeEvents);
+      dumpEventByTypeToFile('merge', mergeEventsByTypes);
+      const allMergedCounterKeys = Object.keys(testMergedCounter);
+      for (let i = 0; i < allMergedCounterKeys.length; i += 1) {
+        const key = allMergedCounterKeys[i];
+        expect(
+          mergeEventsByTypes[key].length,
+          `Merged ${key} count should be ${testMergedCounter[key]} but got ${mergeEventsByTypes[key].length}`
+        ).toBe(testMergedCounter[key]);
+      }
+      expect(mergeEvents.length).toBe(doTotal(testMergedCounter));
+
       for (let mergeIndex = 0; mergeIndex < mergeEvents.length; mergeIndex += 1) {
         const { data: insideData, origin } = mergeEvents[mergeIndex];
         const { context } = insideData;
