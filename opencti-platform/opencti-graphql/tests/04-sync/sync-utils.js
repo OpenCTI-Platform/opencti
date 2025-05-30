@@ -62,6 +62,7 @@ export const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
     }
   `;
 
+// 328 created at init + 1 request access + 2 created in tests + 5 vocabulary organizations types + 7 persona
 export const VOCABULARY_NUMBERS = 343;
 export const INDICATOR_NUMBERS = 28;
 export const MALWARE_NUMBERS = 27;
