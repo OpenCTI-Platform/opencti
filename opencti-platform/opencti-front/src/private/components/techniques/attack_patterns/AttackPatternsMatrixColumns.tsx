@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Box, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material';
-import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
+import { AddCircleOutlineOutlined, CheckOutlined, CloseOutlined, InfoOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -23,8 +23,6 @@ type AttackPatternElement = AttackPattern & {
 };
 
 interface AttackPatternsMatrixColumnsProps extends AttackPatternsMatrixProps {
-  handleToggleModeOnlyActive?: () => void;
-  currentModeOnlyActive?: boolean;
   queryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
 }
 
@@ -75,10 +73,12 @@ export const attackPatternsMatrixColumnsFragment = graphql`
 const AttackPatternsMatrixColumns = ({
   queryRef,
   attackPatterns,
+  attackPatternIdsToOverlap,
   marginRight = false,
   searchTerm = '',
   handleAdd,
   selectedKillChain,
+  isModeOnlyActive,
 }: AttackPatternsMatrixColumnsProps) => {
   const theme = useTheme<Theme>();
   const [hover, setHover] = useState<Record<string, boolean>>({});
@@ -144,10 +144,12 @@ const AttackPatternsMatrixColumns = ({
           ...ap,
           id: ap.attack_pattern_id,
           entity_type: 'Attack-Pattern',
+          isOverlaping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
           level: getLevel(ap),
         }))
+        .filter((o) => (isModeOnlyActive ? o.level > 0 : o.level >= 0))
         .sort((f, s) => f.name.localeCompare(s.name)),
-    })), [attackPatternsMatrix, searchTerm, attackPatterns]);
+    })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive]);
 
   const matrixWidth = useMemo(() => {
     const baseOffset = LAYOUT_SIZE.BASE_WIDTH + (navOpen ? LAYOUT_SIZE.NAV_WIDTH : 0);
@@ -176,8 +178,8 @@ const AttackPatternsMatrixColumns = ({
           >
             <Box display="flex">
               {filteredData?.map((col) => (
-                <Box key={col.kill_chain_id} sx={{ mr: 1.5 }}>
-                  <Box sx={{ textAlign: 'center', mb: 1 }}>
+                <Box key={col.kill_chain_id} sx={{ mr: 1.5, display: 'flex', flexDirection: 'column', minWidth: 150 }}>
+                  <Box sx={{ textAlign: 'center', mb: 1, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{truncate(col.phase_name, 18)}</Typography>
                     <Typography variant="caption">{`${col.attackPatterns?.length} techniques`}</Typography>
                   </Box>
@@ -194,15 +196,34 @@ const AttackPatternsMatrixColumns = ({
                         onMouseLeave={() => handleToggleHover(ap.id)}
                         onClick={(e) => handleOpen(ap, e)}
                         sx={{
+                          display: 'flex',
                           cursor: 'pointer',
                           border: `1px solid ${colorArray[level][0]}`,
                           backgroundColor: colorArray[level][position],
                           padding: 1.25,
+                          justifyContent: 'space-between',
+                          gap: 1,
+                          alignItems: 'center',
+                          whiteSpace: 'normal',
                         }}
                       >
                         <Typography variant="body2" fontSize={10}>
                           {ap.name}
                         </Typography>
+                        {ap.isOverlaping && (
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              height: 18,
+                            }}
+                          >
+                            {(ap.level
+                              ? <CheckOutlined fontSize="medium" color="success"/>
+                              : <CloseOutlined fontSize="medium" color="error"/>
+                            )}
+                          </Box>
+                        )}
                       </Box>
                     );
                   })}
