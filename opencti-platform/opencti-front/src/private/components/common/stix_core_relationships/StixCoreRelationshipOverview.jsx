@@ -120,6 +120,12 @@ const styles = (theme) => ({
     padding: 0,
     borderRadius: 4,
   },
+  paperRelationships: {
+    marginTop: theme.spacing(3),
+    position: 'relative',
+    padding: 0,
+    borderRadius: 4,
+  },
   paperReports: {
     minHeight: '100%',
     marginTop: theme.spacing(1),
@@ -241,7 +247,7 @@ class StixCoreRelationshipContainer extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={false} sx={{ float: 'left' }}>
+            <Typography variant="h4" gutterBottom={true} sx={{ float: 'left' }}>
               {t('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip/>)}
             </Typography>
             {!stixCoreRelationship.is_inferred && (
@@ -250,7 +256,7 @@ class StixCoreRelationshipContainer extends Component {
                 color="primary"
                 onClick={this.handleOpenEdition.bind(this)}
                 size="large"
-                sx={{ margin: '-15px 0px 0px -2px' }}
+                sx={{ margin: '-15px 0px 0px -2px', float: 'left' }}
               >
                 <EditOutlined fontSize="small" />
               </IconButton>
@@ -263,9 +269,8 @@ class StixCoreRelationshipContainer extends Component {
             </Security>
             )}
             <Paper
-              classes={{ root: classes.paperWithoutPadding }}
+              classes={{ root: classes.paperRelationships }}
               variant="outlined"
-              style={{ position: 'relative', marginTop: '-4px' }}
               className={'paper-for-grid'}
             >
               <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
