@@ -14,7 +14,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 import SavedFilters from '../../../../components/saved_filters/SavedFilters';
 import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -70,10 +69,7 @@ const ListFilters = ({
   isDatatable = false,
 }: ListFiltersProps) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const [currentSavedFilter, setCurrentSavedFilter] = useState<SavedFiltersSelectionData>();
-
-  const isSavedFiltersFeatureEnabled = isFeatureEnable('SAVED_FILTERS');
 
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
   const [inputValue, setInputValue] = useState('');
@@ -187,7 +183,7 @@ const ListFilters = ({
             )}
             renderOption={(props, option) => <li {...props}>{option.label}</li>}
           />
-          {isSavedFiltersFeatureEnabled && isDatatable && (
+          {isDatatable && (
             <SavedFilters
               currentSavedFilter={currentSavedFilter}
               setCurrentSavedFilter={setCurrentSavedFilter}
@@ -202,7 +198,7 @@ const ListFilters = ({
               <FilterListOffOutlined fontSize='small' />
             </IconButton>
           </Tooltip>
-          {isSavedFiltersFeatureEnabled && isDatatable && (
+          {isDatatable && (
             <SavedFilterButton
               currentSavedFilter={currentSavedFilter}
               setCurrentSavedFilter={setCurrentSavedFilter}
