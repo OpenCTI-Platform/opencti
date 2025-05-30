@@ -19,6 +19,7 @@ import { ConnectorType } from '../generated/graphql';
 import convertEntityPirToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
 import conf, { booleanConf, isFeatureEnabled } from '../config/conf';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'Pir Manager';
@@ -131,21 +132,29 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
     await BluePromise.map(eventsContent, async (event) => {
       const { data } = event;
       const matchingCriteria = await checkEventOnPir(context, event, parsedPir);
-      // If the event matches Pir, do the right thing depending on the type of event.
-      if (matchingCriteria.length > 0) {
+      if (matchingCriteria.length > 0) { // the event matches Pir
         const sourceId: string = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
         if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
         const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
         if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
         switch (event.type) {
-          case 'create':
-            // send pirFlagElement to queue
+          case EVENT_TYPE_CREATE:
+          case EVENT_TYPE_UPDATE:
             await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria);
             break;
-          case 'delete':
+          case EVENT_TYPE_DELETE:
             await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
             break;
-          default: // Nothing to do. // TODO PIR update logic
+          default: // Nothing to do
+        }
+      } else { // the event doesn't match the Pir
+        const sourcePirRefs = data.extensions?.[STIX_EXT_OCTI]?.source_ref_pir_refs ?? [];
+        if (event.type === EVENT_TYPE_UPDATE && sourcePirRefs.length > 0) {
+          const sourceId: string = data.extensions?.[STIX_EXT_OCTI]?.source_ref;
+          if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
+          const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
+          if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
+          await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
         }
       }
     }, { concurrency: 5 });

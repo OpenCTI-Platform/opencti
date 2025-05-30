@@ -14,6 +14,7 @@ const PirCreationFormGeneralSettings = () => {
     <>
       <Field
         name="name"
+        required
         component={TextField}
         variant="standard"
         label={t_i18n('Name')}
