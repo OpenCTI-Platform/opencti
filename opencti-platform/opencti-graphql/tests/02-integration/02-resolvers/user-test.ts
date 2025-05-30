@@ -320,6 +320,29 @@ describe('User resolver standard behavior', () => {
     });
     expect(queryResult.data?.userEdit.fieldPatch.name).toEqual('User - test');
   });
+  it('should update language only if the value is valid', async () => {
+    const UPDATE_QUERY = gql`
+      mutation UserEdit($id: ID!, $input: [EditInput]!) {
+        userEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            language
+          }
+        }
+      }
+    `;
+    const validQueryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: { key: 'language', value: ['en-us'] } },
+    });
+    expect(async () => {
+      await queryAsAdmin({
+        query: UPDATE_QUERY,
+        variables: { id: userInternalId, input: { key: 'language', value: ['invalid-value'] } },
+      });
+    }).toThrowError('The language you have provided is not valid');
+    expect(validQueryResult.data?.userEdit.fieldPatch.language).toEqual('en-us');
+  });
   it('should Admin be able renew a user token', async () => {
     const queryUserBeforeRenew = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
     const tokenBeforeRenew = queryUserBeforeRenew.data?.user.api_token;

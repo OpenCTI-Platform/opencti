@@ -81,6 +81,27 @@ const BASIC = 'Basic ';
 export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 export const MEMBERS_ENTITY_TYPES = [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
+const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
+const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
+const ME_USER_MODIFIABLE_ATTRIBUTES = [
+  'user_email',
+  'user_name',
+  'description',
+  'firstname',
+  'lastname',
+  'theme',
+  'language',
+  'personal_notifiers',
+  'default_dashboard',
+  'default_time_field',
+  'unit_system',
+  'submenu_show_icons',
+  'submenu_auto_collapse',
+  'monochrome_labels',
+  'password',
+  'draft_context',
+];
+const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr'];
 
 const computeImpactedUsers = async (context, user, roleId) => {
   // Get all groups that have this role
@@ -709,6 +730,12 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         throw UnsupportedError('Unsupported unit system', { unit });
       }
     }
+    // Check language is valid in case of language change
+    if (input.key === 'language') {
+      if (!(input.value.length === 1 && AVAILABLE_LANGUAGES.includes(input.value[0]))) {
+        throw FunctionalError('The language you have provided is not valid');
+      }
+    }
     inputs.push(input);
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
@@ -786,26 +813,6 @@ export const addBookmark = async (context, user, id, type) => {
   return storeLoadById(context, user, id, type);
 };
 
-const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
-const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
-const ME_USER_MODIFIABLE_ATTRIBUTES = [
-  'user_email',
-  'user_name',
-  'description',
-  'firstname',
-  'lastname',
-  'theme',
-  'language',
-  'personal_notifiers',
-  'default_dashboard',
-  'default_time_field',
-  'unit_system',
-  'submenu_show_icons',
-  'submenu_auto_collapse',
-  'monochrome_labels',
-  'password',
-  'draft_context',
-];
 export const meEditField = async (context, user, userId, inputs, password = null) => {
   inputs.forEach((input) => {
     const { key } = input;
