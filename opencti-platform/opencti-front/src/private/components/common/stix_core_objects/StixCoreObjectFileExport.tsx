@@ -257,7 +257,6 @@ const StixCoreObjectFileExportComponent = ({
     if ((!values.fileToExport && !values.template) || !values.exportFileName) {
       throw Error(t_i18n('Invalid form to export a template'));
     }
-
     const { setSubmitting, resetForm } = helpers;
     const uploadFile = (variables: StixCoreObjectContentFilesUploadStixCoreObjectMutation$variables) => {
       commitUploadFile({
@@ -304,7 +303,7 @@ const StixCoreObjectFileExportComponent = ({
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
-          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames);
+          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value);
           PDF.getBlob((blob) => {
             uploadFile({
               id: scoId,
@@ -330,7 +329,7 @@ const StixCoreObjectFileExportComponent = ({
         const fileName = `${values.exportFileName}.pdf`;
         const isFromTemplate = fileId.startsWith('fromTemplate');
         const PDF = isFromTemplate
-          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames)
+          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value)
           : htmlToPdf(fileId, fileData);
         PDF.getBlob((blob) => {
           uploadFile({
