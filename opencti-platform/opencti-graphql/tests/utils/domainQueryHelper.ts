@@ -23,14 +23,17 @@ export const getOrganizationEntity = async (testOrg: OrganizationTestData) => {
   return allOrgs.edges.find((currentOrg) => currentOrg.node.name === testOrg.name)?.node as BasicStoreEntityOrganization;
 };
 
+export const getGroupEntityByName = async (groupName: string) => {
+  const groupId = generateStandardId(ENTITY_TYPE_GROUP, { name: groupName });
+  return await storeLoadById(testContext, ADMIN_USER, groupId, ENTITY_TYPE_GROUP) as Group;
+};
+
 /**
  * Resolve test group data to entity group.
  * @param testGroup
  */
 export const getGroupEntity = async (testGroup: GroupTestData) => {
-  const groupId = generateStandardId(ENTITY_TYPE_GROUP, { name: testGroup.name });
-  const data = await storeLoadById(testContext, ADMIN_USER, groupId, ENTITY_TYPE_GROUP) as Group;
-  return data;
+  return getGroupEntityByName(testGroup.name);
 };
 
 export const getFakeAuthUser = (userName: string) => {
