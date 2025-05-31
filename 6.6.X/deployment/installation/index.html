@@ -240,15 +240,94 @@
   
 
   <script type="text/javascript"> !function(){var e,t,n;e="58d967e3f3ca784",t=function(){Reo.init({clientID:"58d967e3f3ca784"})},(n=document.createElement("script")).src="https://static.reo.dev/"+e+"/reo.js",n.async=!0,n.onload=t,document.head.appendChild(n)}(); </script>
-  <script>
-    window.intercomSettings = {
-      api_base: "https://api-iam.intercom.io",
-      app_id: "mjwhgrbh",
-    };
-  </script>
-  <script>
-    // We pre-filled your app ID in the widget URL: 'https://widget.intercom.io/widget/mjwhgrbh'
-    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/mjwhgrbh';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+
+  <script type="module">
+    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+    Chatbot.init({
+      chatflowid: "46a94d00-5058-4550-bf5f-39f908919836",
+      apiHost: "https://platform.filigran.ai",
+      chatflowConfig: {
+        "startState": "[{ \"key\": \"username\", \"value\": \"Samuel\" }]",
+      },
+      observersConfig: {
+        /* Observers Config */
+      },
+      theme: {
+        button: {
+          backgroundColor: '#001BDA',
+          right: 20,
+          bottom: 20,
+          size: 48,
+          dragAndDrop: true,
+          iconColor: 'white',
+          customIconSrc: 'https://filigran.io/app/uploads/2025/05/ai-chat.png',
+          autoWindowOpen: {
+            autoOpen: false,
+            openDelay: 2,
+            autoOpenOnMobile: false
+          }
+        },
+        tooltip: {
+          showTooltip: false,
+        },
+        customCSS: `
+          * {
+            font-family: "IBM Plex Sans" !important;
+          }
+        `,
+        chatWindow: {
+          showTitle: true,
+          showAgentMessages: false,
+          title: 'Ariane Docs Assistant',
+          titleAvatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_blanc.png',
+          welcomeMessage: 'Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?',
+          errorMessage: 'Sorry, an error has occurred, please try again later.',
+          backgroundColor: '#ffffff',
+          height: 700,
+          width: 400,
+          fontSize: 14,
+          starterPromptFontSize: 13,
+          clearChatOnReload: false,
+          sourceDocsTitle: 'Sources:',
+          renderHTML: true,
+          botMessage: {
+            backgroundColor: '#f7f8ff',
+            textColor: '#000000',
+            showAvatar: true,
+            avatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_background.png'
+          },
+          userMessage: {
+            backgroundColor: '#001BDA',
+            textColor: '#ffffff',
+            showAvatar: false,
+          },
+          textInput: {
+            placeholder: 'Ask a question...',
+            backgroundColor: '#ffffff',
+            textColor: '#303235',
+            sendButtonColor: '#001BDA',
+            maxChars: 100,
+            maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
+            autoFocus: true,
+            sendMessageSound: false,
+            receiveMessageSound: false,
+          },
+          feedback: {
+            color: '#303235'
+          },
+          dateTimeToggle: {
+            date: true,
+            time: true
+          },
+          footer: {
+            textColor: '#303235',
+            text: 'Powered by',
+            company: 'Filigran Ariane AI',
+            companyLink: 'https://filigran.io'
+          }
+        }
+      }
+    })
   </script>
 </header>
     
@@ -6068,21 +6147,25 @@ released in the <a href="https://github.com/OpenCTI-Platform/opencti/releases">G
 <div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>docker-compose
 </span></code></pre></div>
 <p><strong><span class="twemoji middle"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 12V6.75l6-1.32v6.48zm17-9v8.75l-10 .15V5.21zM3 13l6 .09v6.81l-6-1.15zm17 .25V22l-10-1.91V13.1z"/></svg></span> Windows and MacOS</strong></p>
-<p>Just download the appropriate <a href="https://www.docker.com/products/docker-desktop">Docker for Desktop</a> version for your operating system.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>winget<span class="w"> </span>install<span class="w"> </span>Docker.DockerDesktop<span class="w"> </span>Git.Git<span class="w"> </span>--accept-package-agreements<span class="w"> </span>--accept-source-agreements
+</span></code></pre></div>
 <h3 id="clone-the-repository">Clone the repository</h3>
 <p>Docker helpers are available in the <a href="https://github.com/OpenCTI-Platform/docker">Docker GitHub repository</a>.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>/path/to/your/app<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/path/to/your/app
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/OpenCTI-Platform/docker.git
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nb">cd</span><span class="w"> </span>docker
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>/path/to/your/app<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/path/to/your/app
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/OpenCTI-Platform/docker.git
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nb">cd</span><span class="w"> </span>docker
 </span></code></pre></div>
 <h3 id="configure-the-environment">Configure the environment</h3>
 <div class="admonition warning">
 <p class="admonition-title">ElasticSearch / OpenSearch configuration</p>
 <ul>
-<li>We strongly recommend that you add the following ElasticSearch / OpenSearch parameter:</li>
+<li>If you are installing from scratch, Filigran strongly recommends that you add the following ElasticSearch / OpenSearch parameter in <code>docker-compose.yml</code>:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>thread_pool.search.queue_size<span class="o">=</span><span class="m">5000</span>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="w">  </span>elasticsearch:
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span>environment:
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">      </span>-<span class="w"> </span>thread_pool.search.queue_size<span class="o">=</span><span class="m">5000</span>
 </span></code></pre></div>
+<p>💡 This parameter is already present in the Docker GitHub repository files.</p>
 <ul>
 <li>Check the <a href="../rollover/#opencti-integration-user-permissions-in-opensearchelasticsearch">OpenCTI Integration User Permissions in OpenSearch/ElasticSearch</a> for detailed information about the user permissions required for the OpenSearch/ElasticSearch integration.</li>
 </ul>
@@ -6090,11 +6173,12 @@ released in the <a href="https://github.com/OpenCTI-Platform/opencti/releases">G
 <div class="admonition warning">
 <p class="admonition-title">RabbitMQ configuration</p>
 <ul>
-<li>We strongly recommend that you add the following RabbitMQ parameter:</li>
+<li>If you are installing from scratch, Filigran strongly recommends that you add the following RabbitMQ parameter in <code>rabbitmq.conf</code>:</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nv">max_message_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">536870912</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nv">consumer_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">86400000</span>
+<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nv">max_message_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">536870912</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nv">consumer_timeout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">86400000</span>
 </span></code></pre></div>
+<p>💡 This parameter is already present in the Docker GitHub repository files.</p>
 </div>
 <p>Before running the <code>docker-compose</code> command, the <code>docker-compose.yml</code> file should be configured. By default, the <code>docker-compose.yml</code> file is using environment variables available in the file <code>.env.sample</code>.</p>
 <p>You can either rename the file <code>.env.sample</code> as <code>.env</code> and enter the values or just directly edit the <code>docker-compose.yml</code> with the values for your environment.</p>
@@ -6103,65 +6187,65 @@ released in the <a href="https://github.com/OpenCTI-Platform/opencti/releases">G
 <p>The complete list of available static parameters is available in the <a href="../configuration/">configuration</a> section.</p>
 </div>
 <p>Here is an example to quickly generate the <code>.env</code> file under Linux, especially all the default UUIDv4:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>jq
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">cd</span><span class="w"> </span>~/docker
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="o">(</span>cat<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="s">OPENCTI_ADMIN_EMAIL=admin@opencti.io</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="s">OPENCTI_ADMIN_PASSWORD=ChangeMePlease</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="s">OPENCTI_ADMIN_TOKEN=$(cat /proc/sys/kernel/random/uuid)</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="s">OPENCTI_BASE_URL=http://localhost:8080</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="s">OPENCTI_HEALTHCHECK_ACCESS_KEY=$(cat /proc/sys/kernel/random/uuid)</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="s">MINIO_ROOT_USER=$(cat /proc/sys/kernel/random/uuid)</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="s">MINIO_ROOT_PASSWORD=$(cat /proc/sys/kernel/random/uuid)</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="s">RABBITMQ_DEFAULT_USER=guest</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="s">RABBITMQ_DEFAULT_PASS=guest</span>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="s">ELASTIC_MEMORY_SIZE=4G</span>
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="s">CONNECTOR_HISTORY_ID=$(cat /proc/sys/kernel/random/uuid)</span>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="s">CONNECTOR_EXPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)</span>
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="s">CONNECTOR_EXPORT_FILE_CSV_ID=$(cat /proc/sys/kernel/random/uuid)</span>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="s">CONNECTOR_IMPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)</span>
-</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="s">CONNECTOR_EXPORT_FILE_TXT_ID=$(cat /proc/sys/kernel/random/uuid)</span>
-</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="s">CONNECTOR_IMPORT_DOCUMENT_ID=$(cat /proc/sys/kernel/random/uuid)</span>
-</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="s">CONNECTOR_ANALYSIS_ID=$(cat /proc/sys/kernel/random/uuid)</span>
-</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="s">SMTP_HOSTNAME=localhost</span>
-</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="s">EOF</span>
-</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="o">)</span><span class="w"> </span>&gt;<span class="w"> </span>.env
+<div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>jq
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">cd</span><span class="w"> </span>~/docker
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="o">(</span>cat<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="s">OPENCTI_ADMIN_EMAIL=admin@opencti.io</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="s">OPENCTI_ADMIN_PASSWORD=ChangeMePlease</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="s">OPENCTI_ADMIN_TOKEN=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="s">OPENCTI_BASE_URL=http://localhost:8080</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="s">OPENCTI_HEALTHCHECK_ACCESS_KEY=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="s">MINIO_ROOT_USER=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="s">MINIO_ROOT_PASSWORD=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="s">RABBITMQ_DEFAULT_USER=guest</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="s">RABBITMQ_DEFAULT_PASS=guest</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="s">ELASTIC_MEMORY_SIZE=4G</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="s">CONNECTOR_HISTORY_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="s">CONNECTOR_EXPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="s">CONNECTOR_EXPORT_FILE_CSV_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="s">CONNECTOR_IMPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="s">CONNECTOR_EXPORT_FILE_TXT_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="s">CONNECTOR_IMPORT_DOCUMENT_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="s">CONNECTOR_ANALYSIS_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="s">SMTP_HOSTNAME=localhost</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="s">EOF</span>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="o">)</span><span class="w"> </span>&gt;<span class="w"> </span>.env
 </span></code></pre></div>
 <p>If your <code>docker-compose</code> deployment does not support <code>.env</code> files, just export all environment variables before launching the platform:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">export</span><span class="w"> </span><span class="k">$(</span>cat<span class="w"> </span>.env<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;#&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="k">)</span>
+<div class="highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">export</span><span class="w"> </span><span class="k">$(</span>cat<span class="w"> </span>.env<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;#&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="k">)</span>
 </span></code></pre></div>
 <p>As OpenCTI has a dependency on ElasticSearch, you have to set <code>vm.max_map_count</code> before running the containers, as mentioned in the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode">ElasticSearch documentation</a>.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>sudo<span class="w"> </span>sysctl<span class="w"> </span>-w<span class="w"> </span>vm.max_map_count<span class="o">=</span><span class="m">1048575</span>
+<div class="highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>sudo<span class="w"> </span>sysctl<span class="w"> </span>-w<span class="w"> </span>vm.max_map_count<span class="o">=</span><span class="m">1048575</span>
 </span></code></pre></div>
 <p>To make this parameter persistent, add the following to the end of your <code>/etc/sysctl.conf</code>:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>vm.max_map_count<span class="o">=</span><span class="m">1048575</span>
+<div class="highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>vm.max_map_count<span class="o">=</span><span class="m">1048575</span>
 </span></code></pre></div>
 <h3 id="persist-data">Persist data</h3>
 <p>The default for OpenCTI data is to be persistent.</p>
 <p>In <code>docker-compose.yml</code>, you will find the list of necessary persistent volumes for the dependencies at the end:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">volumes</span><span class="p">:</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">esdata</span><span class="p">:</span><span class="w">     </span><span class="c1"># ElasticSearch data</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">s3data</span><span class="p">:</span><span class="w">     </span><span class="c1"># S3 bucket data</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">redisdata</span><span class="p">:</span><span class="w">  </span><span class="c1"># Redis data</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="nt">amqpdata</span><span class="p">:</span><span class="w">   </span><span class="c1"># RabbitMQ data</span>
+<div class="highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">volumes</span><span class="p">:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">esdata</span><span class="p">:</span><span class="w">     </span><span class="c1"># ElasticSearch data</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">s3data</span><span class="p">:</span><span class="w">     </span><span class="c1"># S3 bucket data</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">redisdata</span><span class="p">:</span><span class="w">  </span><span class="c1"># Redis data</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">  </span><span class="nt">amqpdata</span><span class="p">:</span><span class="w">   </span><span class="c1"># RabbitMQ data</span>
 </span></code></pre></div>
 <h3 id="run-opencti">Run OpenCTI</h3>
 <h4 id="using-single-node-docker">Using single node Docker</h4>
 <p>After changing your <code>.env</code> file run <code>docker-compose</code> in detached (-d) mode:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>docker.service
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="c1"># Run docker-compose in detached</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+<div class="highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>docker.service
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="c1"># Run docker-compose in detached</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
 </span></code></pre></div>
 <h4 id="using-docker-swarm">Using Docker swarm</h4>
 <p>In order to have the best experience with Docker, we recommend using the Docker stack feature. In this mode you will have the capacity to easily scale your deployment.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># If your virtual machine is not a part of a Swarm cluster, please use:</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>docker<span class="w"> </span>swarm<span class="w"> </span>init
+<div class="highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># If your virtual machine is not a part of a Swarm cluster, please use:</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>docker<span class="w"> </span>swarm<span class="w"> </span>init
 </span></code></pre></div>
 <p>Put your environment variables in <code>/etc/environment</code>:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># If you already exported your variables to .env from above:</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>sudo<span class="w"> </span>cat<span class="w"> </span>.env<span class="w"> </span>&gt;&gt;<span class="w"> </span>/etc/environment
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;cat .env &gt;&gt; /etc/environment&#39;</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>sudo<span class="w"> </span>docker<span class="w"> </span>stack<span class="w"> </span>deploy<span class="w"> </span>--compose-file<span class="w"> </span>docker-compose.yml<span class="w"> </span>opencti
+<div class="highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># If you already exported your variables to .env from above:</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>sudo<span class="w"> </span>cat<span class="w"> </span>.env<span class="w"> </span>&gt;&gt;<span class="w"> </span>/etc/environment
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;cat .env &gt;&gt; /etc/environment&#39;</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>sudo<span class="w"> </span>docker<span class="w"> </span>stack<span class="w"> </span>deploy<span class="w"> </span>--compose-file<span class="w"> </span>docker-compose.yml<span class="w"> </span>opencti
 </span></code></pre></div>
 <div class="admonition success">
 <p class="admonition-title">Installation done</p>
@@ -6171,8 +6255,8 @@ released in the <a href="https://github.com/OpenCTI-Platform/opencti/releases">G
 <h3 id="prerequisites">Prerequisites</h3>
 <h4 id="installation-of-dependencies">Installation of dependencies</h4>
 <p>You have to install all the needed dependencies for the main application and the workers. The example below is for Debian-based systems:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>build-essential<span class="w"> </span>nodejs<span class="w"> </span>npm<span class="w"> </span>python3<span class="w"> </span>python3-pip<span class="w"> </span>python3-dev
+<div class="highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>build-essential<span class="w"> </span>nodejs<span class="w"> </span>npm<span class="w"> </span>python3<span class="w"> </span>python3-pip<span class="w"> </span>python3-dev
 </span></code></pre></div>
 <h4 id="download-the-application-files">Download the application files</h4>
 <p>First, you have to <a href="https://github.com/OpenCTI-Platform/opencti/releases">download and extract the latest release file</a>. Then select the version to install depending of your operating system:</p>
@@ -6183,21 +6267,21 @@ released in the <a href="https://github.com/OpenCTI-Platform/opencti/releases">G
 </ul>
 <p><strong>For Windows:</strong></p>
 <p>We don't provide any Windows release for now. However it is still possible to check the code out, manually install the dependencies and build the software.</p>
-<div class="highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>mkdir<span class="w"> </span>/path/to/your/app<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/path/to/your/app
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>wget<span class="w"> </span>&lt;https://github.com/OpenCTI-Platform/opencti/releases/download/<span class="o">{</span>RELEASE_VERSION<span class="o">}</span>/opencti-release-<span class="o">{</span>RELEASE_VERSION<span class="o">}</span>.tar.gz&gt;
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>tar<span class="w"> </span>xvfz<span class="w"> </span>opencti-release-<span class="o">{</span>RELEASE_VERSION<span class="o">}</span>.tar.gz
+<div class="highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>mkdir<span class="w"> </span>/path/to/your/app<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/path/to/your/app
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>wget<span class="w"> </span>&lt;https://github.com/OpenCTI-Platform/opencti/releases/download/<span class="o">{</span>RELEASE_VERSION<span class="o">}</span>/opencti-release-<span class="o">{</span>RELEASE_VERSION<span class="o">}</span>.tar.gz&gt;
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>tar<span class="w"> </span>xvfz<span class="w"> </span>opencti-release-<span class="o">{</span>RELEASE_VERSION<span class="o">}</span>.tar.gz
 </span></code></pre></div>
 <h3 id="install-the-main-platform">Install the main platform</h3>
 <h4 id="configure-the-application">Configure the application</h4>
 <p>The main application has just one JSON configuration file to change and a few Python modules to install</p>
-<div class="highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nb">cd</span><span class="w"> </span>opencti
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>cp<span class="w"> </span>config/default.json<span class="w"> </span>config/production.json
+<div class="highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nb">cd</span><span class="w"> </span>opencti
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>cp<span class="w"> </span>config/default.json<span class="w"> </span>config/production.json
 </span></code></pre></div>
 <p>Change the <em>config/production.json</em> file according to your configuration of ElasticSearch, Redis, RabbitMQ and S3 bucket as well as default credentials (the <code>ADMIN_TOKEN</code> must be a <a href="https://www.uuidgenerator.net/">valid UUID</a>).</p>
 <h4 id="install-the-python-modules">Install the Python modules</h4>
-<div class="highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nb">cd</span><span class="w"> </span>src/python
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>pip3<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="nb">cd</span><span class="w"> </span>../..
+<div class="highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nb">cd</span><span class="w"> </span>src/python
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>pip3<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="nb">cd</span><span class="w"> </span>../..
 </span></code></pre></div>
 <h4 id="start-the-application">Start the application</h4>
 <p>The application is just a NodeJS process, the creation of the database schema and the migration will be done at starting.</p>
@@ -6205,28 +6289,28 @@ released in the <a href="https://github.com/OpenCTI-Platform/opencti/releases">G
 <p>Please verify that yarn version is greater than 4 and node version is greater or equals to v19.
 Please note that some Node.js version are outdated in linux package manager, you can download a recent one in https://nodejs.org/en/download or alternatively nvm can help to chose a recent version of Node.js https://github.com/nvm-sh/nvm</p>
 </blockquote>
-<div class="highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>yarn<span class="w"> </span>--version
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="c1">#4.1.0</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>node<span class="w"> </span>--version
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1">#v20.11.1</span>
+<div class="highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>yarn<span class="w"> </span>--version
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="c1">#4.1.0</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>node<span class="w"> </span>--version
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="c1">#v20.11.1</span>
 </span></code></pre></div>
 <p>Once Node.js is setup, you can build and run with (from inside <code>opencti</code> folder):
-<div class="highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>yarn<span class="w"> </span>install
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>yarn<span class="w"> </span>build
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>yarn<span class="w"> </span>serv
+<div class="highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>yarn<span class="w"> </span>install
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>yarn<span class="w"> </span>build
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>yarn<span class="w"> </span>serv
 </span></code></pre></div></p>
 <p>The default username and password are those you have put in the <code>config/production.json</code> file.</p>
 <h3 id="install-the-worker">Install the worker</h3>
 <p>The OpenCTI worker is used to write the data coming from the RabbitMQ messages broker.</p>
 <h4 id="configure-the-worker">Configure the worker</h4>
-<div class="highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nb">cd</span><span class="w"> </span>worker
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>pip3<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>cp<span class="w"> </span>config.yml.sample<span class="w"> </span>config.yml
+<div class="highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="nb">cd</span><span class="w"> </span>worker
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>pip3<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>cp<span class="w"> </span>config.yml.sample<span class="w"> </span>config.yml
 </span></code></pre></div>
 <p>Change the <em>config.yml</em> file according to your OpenCTI token.</p>
 <h4 id="start-as-many-workers-as-you-need">Start as many workers as you need</h4>
-<div class="highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>python3<span class="w"> </span>worker.py<span class="w"> </span><span class="p">&amp;</span>
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>python3<span class="w"> </span>worker.py<span class="w"> </span><span class="p">&amp;</span>
+<div class="highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>python3<span class="w"> </span>worker.py<span class="w"> </span><span class="p">&amp;</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>python3<span class="w"> </span>worker.py<span class="w"> </span><span class="p">&amp;</span>
 </span></code></pre></div>
 <div class="admonition success">
 <p class="admonition-title">Installation done</p>
@@ -6267,21 +6351,21 @@ Please note that some Node.js version are outdated in linux package manager, you
 <li><code>APP__BASE_PATH=/opencti</code></li>
 </ul>
 <p>By default OpenCTI use websockets so don't forget to configure your proxy for this usage, an example with <code>Nginx</code>:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span>proxy_cache<span class="w">                 </span>off<span class="p">;</span>
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span>proxy_buffering<span class="w">             </span>off<span class="p">;</span>
-</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span>proxy_http_version<span class="w">          </span><span class="m">1</span>.1<span class="p">;</span>
-</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Upgrade<span class="w">    </span><span class="nv">$http_upgrade</span><span class="p">;</span>
-</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Connection<span class="w"> </span><span class="s2">&quot;upgrade&quot;</span><span class="p">;</span>
-</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Host<span class="w">       </span><span class="nv">$host</span><span class="p">;</span>
-</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="w">    </span>chunked_transfer_encoding<span class="w">   </span>off<span class="p">;</span>
-</span><span id="__span-20-9"><a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="w">    </span>proxy_pass<span class="w">                  </span>http://YOUR_UPSTREAM_BACKEND<span class="p">;</span>
-</span><span id="__span-20-10"><a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="w">  </span><span class="o">}</span>
+<div class="highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span>proxy_cache<span class="w">                 </span>off<span class="p">;</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span>proxy_buffering<span class="w">             </span>off<span class="p">;</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span>proxy_http_version<span class="w">          </span><span class="m">1</span>.1<span class="p">;</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Upgrade<span class="w">    </span><span class="nv">$http_upgrade</span><span class="p">;</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Connection<span class="w"> </span><span class="s2">&quot;upgrade&quot;</span><span class="p">;</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Host<span class="w">       </span><span class="nv">$host</span><span class="p">;</span>
+</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">    </span>chunked_transfer_encoding<span class="w">   </span>off<span class="p">;</span>
+</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">    </span>proxy_pass<span class="w">                  </span>http://YOUR_UPSTREAM_BACKEND<span class="p">;</span>
+</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">  </span><span class="o">}</span>
 </span></code></pre></div>
 <h3 id="additional-memory-information">Additional memory information</h3>
 <h4 id="platform">Platform</h4>
 <p>OpenCTI platform is based on a NodeJS runtime, with a memory limit of <strong>8GB by default</strong>. If you encounter <code>OutOfMemory</code> exceptions, this limit could be changed:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NODE_OPTIONS=--max-old-space-size=8096</span>
+<div class="highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NODE_OPTIONS=--max-old-space-size=8096</span>
 </span></code></pre></div>
 <h4 id="workers-and-connectors">Workers and connectors</h4>
 <p>OpenCTI workers and connectors are Python processes. If you want to limit the memory of the process, we recommend to directly use Docker to do that. You can find more information in the <a href="https://docs.docker.com/compose/compose-file/">official Docker documentation</a>.</p>
@@ -6315,7 +6399,7 @@ Please note that some Node.js version are outdated in linux package manager, you
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="March 14, 2025 16:40:42"><span class="timeago" datetime="2025-03-14T16:40:42+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="March 14, 2025 16:40:42">2025-03-14</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 23, 2025 13:24:26"><span class="timeago" datetime="2025-05-23T13:24:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 23, 2025 13:24:26">2025-05-23</span>
   </span>
 
     
@@ -6343,6 +6427,16 @@ Please note that some Node.js version are outdated in linux package manager, you
     
     <nav>
       
+        <a href="https://github.com/Raton-Laveur" class="md-author" title="@Raton-Laveur">
+          
+          <img src="https://avatars.githubusercontent.com/u/17532038?v=4&size=72" alt="Raton-Laveur">
+        </a>
+      
+        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
+          
+          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
+        </a>
+      
         <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
           
           <img src="https://avatars.githubusercontent.com/u/1334279?v=4&size=72" alt="SamuelHassine">
@@ -6353,21 +6447,11 @@ Please note that some Node.js version are outdated in linux package manager, you
           <img src="https://avatars.githubusercontent.com/u/14978633?v=4&size=72" alt="ialejandro">
         </a>
       
-        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
-          
-          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
-        </a>
-      
-        <a href="https://github.com/seanthegeek" class="md-author" title="@seanthegeek">
-          
-          <img src="https://avatars.githubusercontent.com/u/44679?v=4&size=72" alt="seanthegeek">
-        </a>
-      
       
       
         
           <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/deployment/installation.md" class="md-author md-author--more">
-            +7
+            +8
           </a>
         
       
