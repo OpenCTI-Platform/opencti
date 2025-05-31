@@ -226,6 +226,13 @@ Then just get the token of the user displayed in the interface.
 
 ![User token](assets/user-token.png)
 
+!!! info "Stateless connections"
+
+    The user associated with the connector will be used to authenticate to the platform GraphQL API using the user's token.
+    Please note that, since OpenCTI 6.6.0, token-based connections will never create persistent user sessions in the platform.
+    This is no longer an option "stateless mode" that can be set manually from the user's configuration page.
+
+
 ## Docker activation
 
 You can either directly run the Docker image of connectors or add them to your current `docker-compose.yml` file.
