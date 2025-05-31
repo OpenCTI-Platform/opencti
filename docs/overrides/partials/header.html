@@ -138,14 +138,93 @@
   {% endif %}
 
   <script type="text/javascript"> !function(){var e,t,n;e="58d967e3f3ca784",t=function(){Reo.init({clientID:"58d967e3f3ca784"})},(n=document.createElement("script")).src="https://static.reo.dev/"+e+"/reo.js",n.async=!0,n.onload=t,document.head.appendChild(n)}(); </script>
-  <script>
-    window.intercomSettings = {
-      api_base: "https://api-iam.intercom.io",
-      app_id: "mjwhgrbh",
-    };
-  </script>
-  <script>
-    // We pre-filled your app ID in the widget URL: 'https://widget.intercom.io/widget/mjwhgrbh'
-    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',w.intercomSettings);}else{var d=document;var i=function(){i.c(arguments);};i.q=[];i.c=function(args){i.q.push(args);};w.Intercom=i;var l=function(){var s=d.createElement('script');s.type='text/javascript';s.async=true;s.src='https://widget.intercom.io/widget/mjwhgrbh';var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);};if(document.readyState==='complete'){l();}else if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})();
+
+  <script type="module">
+    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+    Chatbot.init({
+      chatflowid: "46a94d00-5058-4550-bf5f-39f908919836",
+      apiHost: "https://platform.filigran.ai",
+      chatflowConfig: {
+        "startState": "[{ \"key\": \"username\", \"value\": \"Samuel\" }]",
+      },
+      observersConfig: {
+        /* Observers Config */
+      },
+      theme: {
+        button: {
+          backgroundColor: '#001BDA',
+          right: 20,
+          bottom: 20,
+          size: 48,
+          dragAndDrop: true,
+          iconColor: 'white',
+          customIconSrc: 'https://filigran.io/app/uploads/2025/05/ai-chat.png',
+          autoWindowOpen: {
+            autoOpen: false,
+            openDelay: 2,
+            autoOpenOnMobile: false
+          }
+        },
+        tooltip: {
+          showTooltip: false,
+        },
+        customCSS: `
+          * {
+            font-family: "IBM Plex Sans" !important;
+          }
+        `,
+        chatWindow: {
+          showTitle: true,
+          showAgentMessages: false,
+          title: 'Ariane Docs Assistant',
+          titleAvatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_blanc.png',
+          welcomeMessage: 'Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?',
+          errorMessage: 'Sorry, an error has occurred, please try again later.',
+          backgroundColor: '#ffffff',
+          height: 700,
+          width: 400,
+          fontSize: 14,
+          starterPromptFontSize: 13,
+          clearChatOnReload: false,
+          sourceDocsTitle: 'Sources:',
+          renderHTML: true,
+          botMessage: {
+            backgroundColor: '#f7f8ff',
+            textColor: '#000000',
+            showAvatar: true,
+            avatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_background.png'
+          },
+          userMessage: {
+            backgroundColor: '#001BDA',
+            textColor: '#ffffff',
+            showAvatar: false,
+          },
+          textInput: {
+            placeholder: 'Ask a question...',
+            backgroundColor: '#ffffff',
+            textColor: '#303235',
+            sendButtonColor: '#001BDA',
+            maxChars: 100,
+            maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
+            autoFocus: true,
+            sendMessageSound: false,
+            receiveMessageSound: false,
+          },
+          feedback: {
+            color: '#303235'
+          },
+          dateTimeToggle: {
+            date: true,
+            time: true
+          },
+          footer: {
+            textColor: '#303235',
+            text: 'Powered by',
+            company: 'Filigran Ariane AI',
+            companyLink: 'https://filigran.io'
+          }
+        }
+      }
+    })
   </script>
 </header>
