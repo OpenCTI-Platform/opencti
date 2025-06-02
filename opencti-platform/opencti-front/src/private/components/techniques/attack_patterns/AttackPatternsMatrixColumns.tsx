@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material';
-import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
+import { AccordionDetails, Box, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material';
+import { AddCircleOutlineOutlined, ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -13,6 +13,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
 
@@ -63,6 +64,11 @@ export const attackPatternsMatrixColumnsFragment = graphql`
           name
           description
           x_mitre_id
+          subAttackPatterns {
+            attack_pattern_id
+            name
+            description
+          }
           subAttackPatternsIds
           subAttackPatternsSearchText
           killChainPhasesIds
@@ -185,25 +191,79 @@ const AttackPatternsMatrixColumns = ({
                     const isHovered = hover[ap.id];
                     const level = isHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
                     const position = isHovered && level === 0 ? 2 : 1;
-
                     const colorArray = colors(theme.palette.background.accent);
                     return (
-                      <Box
-                        key={ap.id}
-                        onMouseEnter={() => handleToggleHover(ap.id)}
-                        onMouseLeave={() => handleToggleHover(ap.id)}
-                        onClick={(e) => handleOpen(ap, e)}
-                        sx={{
-                          cursor: 'pointer',
-                          border: `1px solid ${colorArray[level][0]}`,
-                          backgroundColor: colorArray[level][position],
-                          padding: 1.25,
-                        }}
-                      >
-                        <Typography variant="body2" fontSize={10}>
-                          {ap.name}
-                        </Typography>
-                      </Box>
+                      ap.subAttackPatterns?.length ? (
+                        <Accordion
+                          id={ap.id}
+                          key={ap.id}
+                          onMouseEnter={() => handleToggleHover(ap.id)}
+                          onMouseLeave={() => handleToggleHover(ap.id)}
+                          sx={{
+                            border: `1px solid ${colorArray[level][0]}`,
+                            borderRadius: 0,
+                            backgroundColor: colorArray[level][position],
+                          }}
+                        >
+                          <AccordionSummary
+                            expandIcon={<ExpandMore />}
+                            sx={{ bgcolor: 'inherit' }}
+                          >
+                            <Typography variant="body2" fontSize={10}>
+                              {ap.name}
+                            </Typography>
+                          </AccordionSummary>
+                          <AccordionDetails
+                            sx={{
+                              padding: `0 0 0 ${theme.spacing(2)}`,
+                              borderTop: `1px solid ${colorArray[level][0]}`,
+                              // backgroundColor: colorArray[level][position + 1],
+                            }}
+                          >
+                            {ap.subAttackPatterns.map((subAttackPattern) => {
+                              const isHovered = hover[subAttackPattern.attack_pattern_id];
+                              const level = isHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
+                              const position = isHovered && level === 0 ? 2 : 1;
+                              const colorArray = colors(theme.palette.background.accent);
+                              return (
+                                <Box
+                                  key={subAttackPattern.attack_pattern_id}
+                                  onMouseEnter={() => handleToggleHover(subAttackPattern.attack_pattern_id)}
+                                  onMouseLeave={() => handleToggleHover(subAttackPattern.attack_pattern_id)}
+                                  onClick={(e) => handleOpen(ap, e)}
+                                  sx={{
+                                    cursor: 'pointer',
+                                    border: `1px solid ${colorArray[level][0]}`,
+                                    backgroundColor: colorArray[level][position],
+                                    padding: 1.25,
+                                  }}
+                                >
+                                  <Typography variant="body2" fontSize={10}>
+                                    {subAttackPattern.name}
+                                  </Typography>
+                                </Box>
+                              );
+                            })}
+                          </AccordionDetails>
+                        </Accordion>
+                      ) : (
+                        <Box
+                          key={ap.id}
+                          onMouseEnter={() => handleToggleHover(ap.id)}
+                          onMouseLeave={() => handleToggleHover(ap.id)}
+                          onClick={(e) => handleOpen(ap, e)}
+                          sx={{
+                            cursor: 'pointer',
+                            border: `1px solid ${colorArray[level][0]}`,
+                            backgroundColor: colorArray[level][position],
+                            padding: 1.25,
+                          }}
+                        >
+                          <Typography variant="body2" fontSize={10}>
+                            {ap.name}
+                          </Typography>
+                        </Box>
+                      )
                     );
                   })}
                 </Box>
