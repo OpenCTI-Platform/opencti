@@ -10,6 +10,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import CardLabel from '../../../../components/CardLabel';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -64,6 +65,8 @@ const ThreatActorIndividualDemographics = ({
       }
     }
   }
+
+  const { isFeatureEnable } = useHelper();
   return (
     <>
       <Typography variant="h4" gutterBottom={true}>
@@ -182,7 +185,7 @@ const ThreatActorIndividualDemographics = ({
           </Grid>
           <Grid item xs={4}>
             <CardLabel >
-              {t_i18n('Gender')}
+              {isFeatureEnable('USG_EO_14168_COMPLIANT') ? t_i18n('Sex') : t_i18n('Gender')}
             </CardLabel>
             <FieldOrEmpty source={threatActorIndividual.gender}>
               <ItemOpenVocab

@@ -50,6 +50,7 @@ import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_PERSONA } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { isFeatureEnabled } from '../../config/conf';
 
 interface Measures {
   measure: number | null
@@ -112,7 +113,7 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
     { name: 'secondary_motivations', label: 'Secondary motivation', type: 'string', format: 'vocabulary', vocabularyCategory: 'attack_motivation_ov', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
     { name: 'personal_motivations', label: 'Personal motivations', type: 'string', format: 'vocabulary', vocabularyCategory: 'attack_motivation_ov', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'date_of_birth', label: 'Date of birth', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'gender', label: 'Gender', type: 'string', format: 'vocabulary', vocabularyCategory: 'gender_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'gender', label: (isFeatureEnabled('USG_EO_14168_COMPLIANT') ? 'Sex' : 'Gender'), type: 'string', format: 'vocabulary', vocabularyCategory: 'gender_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'job_title', label: 'Job title', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'marital_status', label: 'Marital status', type: 'string', format: 'vocabulary', vocabularyCategory: 'marital_status_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'eye_color', label: 'Eye color', type: 'string', format: 'vocabulary', vocabularyCategory: 'eye_color_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

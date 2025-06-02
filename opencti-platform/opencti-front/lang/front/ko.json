@@ -2927,6 +2927,7 @@
   "Settings have been updated": "설정이 업데이트되었습니다",
   "Severity": "심각도",
   "severity": "심각도",
+  "Sex": "성별",
   "SHA-1 values can only include A-F and 0-9, 40 characters": "SHA-1 값은 A-F 및 0-9, 40자만 포함할 수 있습니다",
   "SHA-256 values can only include A-F and 0-9, 64 characters": "SHA-256 값은 A-F 및 0-9, 64자만 포함할 수 있습니다",
   "SHA-512 values can only include A-F and 0-9, 128 characters": "SHA-512 값은 A-F 및 0-9, 128자만 포함할 수 있습니다",

@@ -24,6 +24,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const threatActorIndividualEditionDemographicsFocus = graphql`
   mutation ThreatActorIndividualEditionDemographicsFocusMutation(
@@ -178,6 +179,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
     },
   };
 
+  const { isFeatureEnable } = useHelper();
   return (
     <div>
       <Formik
@@ -248,7 +250,7 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
               />
               <OpenVocabField
                 name="gender"
-                label={t_i18n('Gender')}
+                label={isFeatureEnable('USG_EO_14168_COMPLIANT') ? t_i18n('Sex') : t_i18n('Gender')}
                 required={(mandatoryAttributes.includes('gender'))}
                 type="gender_ov"
                 variant="edit"
