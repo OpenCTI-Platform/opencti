@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { FilterMode } from '../../../src/generated/graphql';
-import { isPirExplanationsNotInMetaRel } from '../../../src/modules/pir/pir-utils';
+import { isPirExplanationsInMetaRel } from '../../../src/modules/pir/pir-utils';
 
 describe('Pir utilities: isExplanationsAlreadyInPirMetaRels', () => {
   it('should return true if', () => {
@@ -36,7 +36,7 @@ describe('Pir utilities: isExplanationsAlreadyInPirMetaRels', () => {
         dependency_ids: [relationshipId2]
       }
     ];
-    expect(isPirExplanationsNotInMetaRel(pirMetaRelExplanations, [
+    expect(isPirExplanationsInMetaRel(pirMetaRelExplanations, [
       {
         dependency_ids: [relationshipId1],
         criterion: {
@@ -45,7 +45,7 @@ describe('Pir utilities: isExplanationsAlreadyInPirMetaRels', () => {
         },
       }
     ])).toEqual(true);
-    expect(isPirExplanationsNotInMetaRel(pirMetaRelExplanations, [
+    expect(isPirExplanationsInMetaRel(pirMetaRelExplanations, [
       {
         dependency_ids: [relationshipId2],
         criterion: {
@@ -54,7 +54,7 @@ describe('Pir utilities: isExplanationsAlreadyInPirMetaRels', () => {
         },
       }
     ])).toEqual(false);
-    expect(isPirExplanationsNotInMetaRel(pirMetaRelExplanations, [
+    expect(isPirExplanationsInMetaRel(pirMetaRelExplanations, [
       {
         dependency_ids: [relationshipId1],
         criterion: {

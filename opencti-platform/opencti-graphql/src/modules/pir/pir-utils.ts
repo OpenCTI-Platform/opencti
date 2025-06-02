@@ -48,7 +48,7 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
   return Math.round((depScore / maxScore) * 100);
 };
 
-export const isPirExplanationsNotInMetaRel = (
+export const isPirExplanationsInMetaRel = (
   pirMetaRelExplanations: PirExplanation[],
   explanations: PirExplanation[],
 ) => {
@@ -88,7 +88,7 @@ export const updatePirExplanations = async (
     throw FunctionalError('Find more than one relation between an entity and a Pir', { sourceId, pirId, pirMetaRels });
   }
   const pirMetaRel = pirMetaRels.edges[0].node;
-  const relationshipUpdateAlreadyFlagged = operation === 'add' && isPirExplanationsNotInMetaRel(pirMetaRel.pir_explanations, pirExplanations); // case update relationship with source already flagged for it
+  const relationshipUpdateAlreadyFlagged = operation === 'add' && isPirExplanationsInMetaRel(pirMetaRel.pir_explanations, pirExplanations); // case update relationship with source already flagged for it
   if (!relationshipUpdateAlreadyFlagged) {
     // region compute score
     const deps = operation === 'add' ? [...pirMetaRel.pir_explanations, ...pirExplanations] : pirExplanations;
