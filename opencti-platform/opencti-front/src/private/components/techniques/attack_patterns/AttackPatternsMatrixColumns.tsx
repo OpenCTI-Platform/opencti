@@ -230,10 +230,10 @@ const AttackPatternsMatrixColumns = ({
                             }}
                           >
                             {ap.subAttackPatterns.map((subAttackPattern) => {
-                              const isHovered = hover[subAttackPattern.attack_pattern_id];
-                              const level = isHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
-                              const position = isHovered && level === 0 ? 2 : 1;
-                              const colorArray = colors(theme.palette.background.accent);
+                              const isSubHovered = hover[subAttackPattern.attack_pattern_id];
+                              const subLevel = isSubHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
+                              const subPosition = isSubHovered && subLevel === 0 ? 2 : 1;
+                              const subColorArray = colors(theme.palette.background.accent);
                               return (
                                 <Box
                                   key={subAttackPattern.attack_pattern_id}
@@ -242,8 +242,8 @@ const AttackPatternsMatrixColumns = ({
                                   onClick={(e) => handleOpen(ap, e)}
                                   sx={{
                                     cursor: 'pointer',
-                                    border: `1px solid ${colorArray[level][0]}`,
-                                    backgroundColor: colorArray[level][position],
+                                    border: `1px solid ${subColorArray[subLevel][0]}`,
+                                    backgroundColor: subColorArray[subLevel][subPosition],
                                     padding: 1.25,
                                   }}
                                 >
