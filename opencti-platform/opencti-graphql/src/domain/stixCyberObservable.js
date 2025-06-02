@@ -382,8 +382,8 @@ export const artifactImport = async (context, user, args) => {
   let resolvedFile = await file;
   // Checking infected ZIP files
 
-  if (file.mimeType !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      && file.mimeType !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+  if (resolvedFile.mimetype !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      && resolvedFile.mimetype !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
     try {
       resolvedFile = await extractInfectedZipFile(resolvedFile);
     } catch {
