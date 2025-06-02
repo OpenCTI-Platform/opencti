@@ -335,13 +335,12 @@ describe('User resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: { key: 'language', value: ['en-us'] } },
     });
-    await expect(async () => {
-      await queryAsAdmin({
-        query: UPDATE_QUERY,
-        variables: { id: userInternalId, input: { key: 'language', value: ['invalid-value'] } },
-      });
-    }).rejects.toThrowError('The language you have provided is not valid');
     expect(validQueryResult.data?.userEdit.fieldPatch.language).toEqual('en-us');
+    const invalidQueryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: userInternalId, input: { key: 'language', value: ['invalid-value'] } },
+    });
+    expect(invalidQueryResult.errors?.[0].message).toEqual('The language you have provided is not valid');
   });
   it('should Admin be able renew a user token', async () => {
     const queryUserBeforeRenew = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
