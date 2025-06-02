@@ -211,6 +211,7 @@
     "loader-utils": "3.3.1",
     "scss-tokenizer": "0.4.3",
     "@types/react": "19.0.0",
+    "@types/relay-runtime": "18.2.0",
     "react": "19.0.0"
   },
   "workspaces": [

@@ -7653,17 +7653,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/relay-runtime@npm:*":
-  version: 19.0.2
-  resolution: "@types/relay-runtime@npm:19.0.2"
-  checksum: 10/cba6508234efe4714204cba61e3b6f3517ac92454e6333de085f275fae6c647324c4499a8458dd19782cb47cdb00c76f3a29685783bf979d319342d4c20ee056
-  languageName: node
-  linkType: hard
-
-"@types/relay-runtime@npm:18.2.5":
-  version: 18.2.5
-  resolution: "@types/relay-runtime@npm:18.2.5"
-  checksum: 10/c456fefb763363e0605c77f80bb32f23ce75471e57d539a0ca7990926f888b804e12f41dfa11cd5e3ffa472fcd87554c4b3b7d431c9ba8eaaff464faf6094173
+"@types/relay-runtime@npm:18.2.0":
+  version: 18.2.0
+  resolution: "@types/relay-runtime@npm:18.2.0"
+  checksum: 10/376424b49f670069705291efbe8ce430c93b27fdf745d01503a1e90060b1f16470797f5f2bf8513679a57281cb2860e1ea4aafd256f96cc48570021789f5ec42
   languageName: node
   linkType: hard
 
