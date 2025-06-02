@@ -6,20 +6,30 @@ type FintelDesign implements BasicObject & InternalObject {
   # Fintel Design
   name: String!
   description: String
-  url: String
+  file_id: String
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
+  file: OpenCtiFile
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection!
 }
 
 # Input
 input FintelDesignAddInput {
   name: String! @constraint(minLength: 1, format: "not-blank")
   description: String
-  url: String
   gradiantFromColor: String
   gradiantToColor: String
   textColor: String
+  file: Upload
 }
 
 # Relay connections
@@ -54,6 +64,5 @@ type Query {
 type Mutation {
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelDesignDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  fintelDesignFieldPatch(id: ID!, input: [EditInput!]!): FintelDesign @auth(for: [SETTINGS_SETCUSTOMIZATION])
-
+  fintelDesignFieldPatch(id: ID!, input: [EditInput!], file: Upload): FintelDesign @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
