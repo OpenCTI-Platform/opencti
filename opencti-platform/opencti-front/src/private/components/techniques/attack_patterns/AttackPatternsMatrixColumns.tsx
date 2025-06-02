@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Badge, Box, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
-import { AddCircleOutlineOutlined, CheckOutlined, CloseOutlined, InfoOutlined } from '@mui/icons-material';
+import { AccordionDetails, Badge, Box, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
+import { AddCircleOutlineOutlined, CheckOutlined, CloseOutlined, ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -12,6 +12,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
+import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 
@@ -55,6 +56,11 @@ export const attackPatternsMatrixColumnsFragment = graphql`
           name
           description
           x_mitre_id
+          subAttackPatterns {
+            attack_pattern_id
+            name
+            description
+          }
           subAttackPatternsIds
           subAttackPatternsSearchText
           killChainPhasesIds
@@ -195,66 +201,120 @@ const AttackPatternsMatrixColumns = ({
                   {col.attackPatterns?.map((ap) => {
                     const isHovered = hover[ap.id];
                     const hasLevel = ap.level > 0;
-
                     return (
-                      <Badge
-                        key={ap.id}
-                        invisible={!ap.level}
-                        badgeContent={!ap.subAttackPatternsTotal ? ap.level : `${ap.level}/${ap.subAttackPatternsTotal}`}
-                        overlap="rectangular"
-                        anchorOrigin={{
-                          vertical: 'top',
-                          horizontal: 'right',
-                        }}
-                        sx={{
-                          '& .MuiBadge-badge': {
-                            backgroundColor: COLORS.BADGE,
-                            color: theme.palette.common.black,
-                            height: '14px',
-                            minWidth: '14px',
-                            fontSize: '10px',
-                            paddingInline: '4px',
-                          },
-                        }}
-                      >
-                        <Box
+                      ap.subAttackPatterns?.length ? (
+                        <Accordion
+                          id={ap.id}
+                          key={ap.id}
                           onMouseEnter={() => handleToggleHover(ap.id)}
                           onMouseLeave={() => handleToggleHover(ap.id)}
-                          onClick={(e) => handleOpen(ap, e)}
                           sx={{
-                            display: 'flex',
-                            cursor: 'pointer',
-                            borderWidth: '1px',
-                            borderStyle: 'solid',
-                            ...getBoxStyles(hasLevel, isHovered),
-                            padding: 1.25,
-                            justifyContent: 'space-between',
-                            gap: 1,
-                            alignItems: 'center',
-                            whiteSpace: 'normal',
-                            width: '100%',
+                            border: `1px solid ${colorArray[level][0]}`,
+                            borderRadius: 0,
+                            backgroundColor: colorArray[level][position],
                           }}
                         >
-                          <Typography variant="body2" fontSize={10}>
-                            {ap.name}
-                          </Typography>
-                          {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && ap.level > 0 && (
-                          <Tooltip
-                            title={t_i18n('Should cover')}
+                          <AccordionSummary
+                            expandIcon={<ExpandMore />}
+                            sx={{ bgcolor: 'inherit' }}
+                          >
+                            <Typography variant="body2" fontSize={10}>
+                              {ap.name}
+                            </Typography>
+                          </AccordionSummary>
+                          <AccordionDetails
                             sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              height: 19,
+                              padding: `0 0 0 ${theme.spacing(2)}`,
+                              borderTop: `1px solid ${colorArray[level][0]}`,
+                              // backgroundColor: colorArray[level][position + 1],
                             }}
                           >
-                            {ap.isOverlapping
-                              ? <CheckOutlined fontSize="medium" color="success"/>
-                              : <CloseOutlined fontSize="medium" color="error"/>
-                            }
-                          </Tooltip>
-                          )}
-                        </Box>
-                      </Badge>
+                            {ap.subAttackPatterns.map((subAttackPattern) => {
+                              const isHovered = hover[subAttackPattern.attack_pattern_id];
+                              const level = isHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
+                              const position = isHovered && level === 0 ? 2 : 1;
+                              const colorArray = colors(theme.palette.background.accent);
+                              return (
+                                <Box
+                                  key={subAttackPattern.attack_pattern_id}
+                                  onMouseEnter={() => handleToggleHover(subAttackPattern.attack_pattern_id)}
+                                  onMouseLeave={() => handleToggleHover(subAttackPattern.attack_pattern_id)}
+                                  onClick={(e) => handleOpen(ap, e)}
+                                  sx={{
+                                    cursor: 'pointer',
+                                    border: `1px solid ${colorArray[level][0]}`,
+                                    backgroundColor: colorArray[level][position],
+                                    padding: 1.25,
+                                  }}
+                                >
+                                  <Typography variant="body2" fontSize={10}>
+                                    {subAttackPattern.name}
+                                  </Typography>
+                                </Box>
+                              );
+                            })}
+                          </AccordionDetails>
+                        </Accordion>
+                      ) : (
+                        <Badge
+                          key={ap.id}
+                          invisible={!ap.level}
+                          badgeContent={!ap.subAttackPatternsTotal ? ap.level : `${ap.level}/${ap.subAttackPatternsTotal}`}
+                          overlap="rectangular"
+                          anchorOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                          }}
+                          sx={{
+                            '& .MuiBadge-badge': {
+                              backgroundColor: COLORS.BADGE,
+                              color: theme.palette.common.black,
+                              height: '14px',
+                              minWidth: '14px',
+                              fontSize: '10px',
+                              paddingInline: '4px',
+                            },
+                          }}
+                        >
+                          <Box
+                            onMouseEnter={() => handleToggleHover(ap.id)}
+                            onMouseLeave={() => handleToggleHover(ap.id)}
+                            onClick={(e) => handleOpen(ap, e)}
+                            sx={{
+                              display: 'flex',
+                              cursor: 'pointer',
+                              borderWidth: '1px',
+                              borderStyle: 'solid',
+                              ...getBoxStyles(hasLevel, isHovered),
+                              padding: 1.25,
+                              justifyContent: 'space-between',
+                              gap: 1,
+                              alignItems: 'center',
+                              whiteSpace: 'normal',
+                              width: '100%',
+                            }}
+                          >
+                            <Typography variant="body2" fontSize={10}>
+                              {ap.name}
+                            </Typography>
+                            {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && ap.level > 0 && (
+                              <Tooltip
+                                title={t_i18n('Should cover')}
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  height: 19,
+                                }}
+                              >
+                                {ap.isOverlapping
+                                  ? <CheckOutlined fontSize="medium" color="success"/>
+                                  : <CloseOutlined fontSize="medium" color="error"/>
+                                }
+                              </Tooltip>
+                            )}
+                          </Box>
+                        </Badge>
+                      )
                     );
                   })}
                 </Box>
