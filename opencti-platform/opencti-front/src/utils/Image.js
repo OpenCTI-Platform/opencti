@@ -1,6 +1,7 @@
 import * as htmlToImage from 'html-to-image';
 import fileDownload from 'js-file-download';
 import pdfMake from 'pdfmake';
+import * as htmlToImageDebug from './debug/htmltoimagedebug';
 
 const ignoredClasses = [
   'MuiDialog-root',
@@ -8,7 +9,7 @@ const ignoredClasses = [
   'MuiIconButton-root',
   'MuiInputBase-root',
   // For some reason apex legend crash pdf and png export.
-  'apexcharts-legend-series',
+  // 'apexcharts-legend-series',
 ];
 
 export const exportImage = (
@@ -22,14 +23,24 @@ export const exportImage = (
 ) => {
   const container = document.getElementById(domElementId);
   return new Promise((resolve, reject) => {
-    htmlToImage
-      .toBlob(container, {
+    console.log('toPixelData');
+    htmlToImageDebug
+      .toBlobDebug(container, {
         useCORS: true,
         allowTaint: true,
         skipFonts: true,
-        pixelRatio,
-        backgroundColor,
-        style: { margin: 0 },
+        skipAutoScale: true,
+        preferredFontFormat: 'woff',
+        pixelRatio: 1,
+        backgroundColor: '#fff',
+        cacheBust: true,
+        includeQueryParams: true,
+        style: {
+          transition: 'none',
+          '-moz-transition': 'none',
+          '-webkit-transition': 'none',
+          '-o-transition': 'none',
+        },
         filter: (domNode) => {
           if (domNode.className) {
             for (const ignoredClass of ignoredClasses) {
@@ -45,6 +56,7 @@ export const exportImage = (
         },
       })
       .then((blob) => {
+        console.log('Got blob:', blob);
         fileDownload(blob, `${name}.png`, 'image/png');
         if (adjust) {
           container.setAttribute(
