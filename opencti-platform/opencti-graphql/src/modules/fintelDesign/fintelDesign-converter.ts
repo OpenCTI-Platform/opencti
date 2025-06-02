@@ -8,7 +8,7 @@ export const convertFintelDesignToStix = (instance: StoreEntityFintelDesign): St
     ...stixObject,
     name: instance.name,
     description: instance.description,
-    url: instance.url,
+    file_id: instance.file_id,
     gradiantFromColor: instance.gradiantFromColor,
     gradiantToColor: instance.gradiantToColor,
     textColor: instance.textColor,

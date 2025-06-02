@@ -4,7 +4,8 @@ import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { FintelDesign } from '@components/settings/sub_types/fintel_templates/FintelTemplatePreviewForm';
-import { fileUri } from '../../relay/environment';
+import Axios from 'axios';
+import { APP_BASE_PATH, fileUri } from '../../relay/environment';
 import { capitalizeWords } from '../String';
 import logoWhite from '../../static/images/logo_text_white.png';
 import { getBase64ImageFromURL } from '../Image';
@@ -82,9 +83,10 @@ export const htmlToPdfReport = async (
 ) => {
   const formattedTemplateName = capitalizeWords(templateName);
   let logoBase64;
+
   try {
-    logoBase64 = await getBase64ImageFromURL(fileUri(fintelDesign && fintelDesign.url && fintelDesign.url.length > 0
-      ? fintelDesign.url
+    logoBase64 = await getBase64ImageFromURL(fileUri(fintelDesign && fintelDesign.file_id && fintelDesign.file_id.length > 0
+      ? fintelDesign.file_id
       : logoWhite));
   } catch { logoBase64 = await getBase64ImageFromURL(fileUri(logoWhite)); }
 

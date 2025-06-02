@@ -79,7 +79,7 @@ const fintelDesignsLineFragment = graphql`
   fragment FintelDesignsLine_node on FintelDesign {
     id
     name
-    url
+    file_id
     description
     gradiantFromColor
     gradiantToColor

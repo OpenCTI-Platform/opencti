@@ -3,6 +3,8 @@ import React, { FunctionComponent, useEffect } from 'react';
 import * as Yup from 'yup';
 import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import { graphql } from 'react-relay';
+import CustomFileUploader from '@components/common/files/CustomFileUploader';
+import { FormikConfig } from 'formik/dist/types';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -11,14 +13,15 @@ import { FintelDesignFormValues } from './FintelDesign';
 import { useFormatter } from '../../../../components/i18n';
 import { isEmptyObject } from '../../../../utils/object';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { handleErrorInForm } from '../../../../relay/environment';
 
 const fintelDesignFormFieldPatchMutation = graphql`
-  mutation FintelDesignFormFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
-    fintelDesignFieldPatch(id: $id, input: $input) {
+  mutation FintelDesignFormFieldPatchMutation($id: ID!, $input: [EditInput!], $file: Upload) {
+    fintelDesignFieldPatch(id: $id, input: $input, file: $file) {
       id
       name
+      file_id
       description
-      url
       gradiantFromColor
       gradiantToColor
       textColor
@@ -37,20 +40,45 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
   const initialValues: FintelDesignFormValues = {
     name: fintelDesign.name,
     description: fintelDesign.description,
-    url: fintelDesign.url,
+    file: null,
     gradiantFromColor: fintelDesign.gradiantFromColor,
     gradiantToColor: fintelDesign.gradiantToColor,
     textColor: fintelDesign.textColor,
   };
 
   const fintelDesignValidation = () => Yup.object().shape({
-    url: Yup.string().nullable(),
     gradiantFromColor: Yup.string().nullable(),
     gradiantToColor: Yup.string().nullable(),
     textColor: Yup.string().nullable(),
   });
 
   const [commitFieldPatch] = useApiMutation(fintelDesignFormFieldPatchMutation);
+
+  const onSubmit: FormikConfig<FintelDesignFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors },
+  ) => {
+    setSubmitting(true);
+    const { file } = values;
+    const inputValues = Object.entries(values)
+      .filter(([key, _]) => !['file'].includes(key))
+      .map(([key, value]) => ({ key, value }));
+
+    commitFieldPatch({
+      variables: {
+        id: fintelDesign.id,
+        input: inputValues,
+        file,
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+      },
+      onError: (error: Error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
+    });
+  };
 
   const handleFieldChange = (name: string, value: string) => {
     commitFieldPatch({
@@ -63,14 +91,14 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
 
   return (
     <Formik<FintelDesignFormValues>
-      onSubmit={() => {}}
+      onSubmit={onSubmit}
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={fintelDesignValidation}
       validateOnChange={true}
       validateOnBlur={true}
     >
-      {({ setFieldValue, values, validateForm }) => {
+      {({ setFieldValue, values, validateForm, submitForm }) => {
         useEffect(() => {
           const validate = async () => {
             const isValid = isEmptyObject(await validateForm(values));
@@ -102,14 +130,10 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
               style={fieldSpacingContainerStyle}
             />
             <Field
-              component={TextField}
-              variant="standard"
-              name="url"
-              label={t_i18n('Logo URL')}
-              fullWidth
+              component={CustomFileUploader}
+              name="file"
               setFieldValue={setFieldValue}
-              onSubmit={handleFieldChange}
-              style={fieldSpacingContainerStyle}
+              submitForm={submitForm}
             />
             <Field
               component={ColorPickerField}

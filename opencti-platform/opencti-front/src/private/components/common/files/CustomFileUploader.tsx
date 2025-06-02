@@ -27,6 +27,7 @@ interface CustomFileUploadProps extends Partial<FieldProps<File | null | undefin
   noFileSelectedLabel?: string
   noMargin?: boolean
   required?: boolean;
+  submitForm?: () => void;
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -76,6 +77,7 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
   noFileSelectedLabel,
   noMargin = false,
   required = false,
+  submitForm,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -130,6 +132,9 @@ const CustomFileUploader: FunctionComponent<CustomFileUploadProps> = ({
     }
 
     await setFieldValue('file', inputElement.files?.[0]);
+    if (submitForm) {
+      submitForm();
+    }
     if (isEmbeddedInExternalReferenceCreation) {
       const externalIdValue = (
         document.getElementById('external_id') as HTMLInputElement

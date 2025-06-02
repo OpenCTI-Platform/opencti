@@ -13,7 +13,7 @@ import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { isEmptyObject } from '../../../../../utils/object';
 
 export interface FintelDesign {
-  url: string | null | undefined,
+  file_id: string | null | undefined,
   gradiantFromColor: string | null | undefined,
   gradiantToColor: string | null | undefined,
   textColor: string | null | undefined,

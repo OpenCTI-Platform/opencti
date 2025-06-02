@@ -19,6 +19,8 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPdf';
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import PdfViewer from '../../../../components/PdfViewer';
+import {APP_BASE_PATH} from "../../../../relay/environment";
+import Axios from "axios";
 
 const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
@@ -34,10 +36,22 @@ const fintelDesignComponentFragment = graphql`
     id
     name
     description
-    url
     gradiantFromColor
     gradiantToColor
     textColor
+    file_id
+    file {
+      name
+      id
+    }
+    importFiles {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
   }
 `;
 
@@ -48,7 +62,7 @@ interface FintelDesignComponentProps {
 export type FintelDesignFormValues = {
   name: string
   description?: string | null | undefined
-  url?: string | null | undefined
+  file: File | null;
   gradiantFromColor?: string | null | undefined
   gradiantToColor?: string | null | undefined
   textColor?: string | null | undefined
@@ -67,6 +81,10 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   if (!fintelDesign) return null;
   const [pdf, setPdf] = useState<File>();
   const { buildFileFromTemplate } = useFileFromTemplate();
+
+  console.log('fintelDesign', fintelDesign);
+  const fileId = fintelDesign && fintelDesign.file_id;
+
 
   const [formValues, setFormValues] = useState<FintelDesignFormValues>();
 
