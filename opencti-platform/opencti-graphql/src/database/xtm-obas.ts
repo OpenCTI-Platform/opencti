@@ -230,7 +230,7 @@ export const getScenarioResult = async (id: string) => {
       human,
     };
   } catch (err) {
-    logApp.debug(`[OPENCTI-MODULE][XTM] Scenario results not found in OpenBAS : ${id}`, ResourceNotFoundError({ reason: 'Scenario results not found in OpenBAS', doc_code: 'ELEMENT_NOT_FOUND' }));
+    logApp.debug(`[OPENCTI-MODULE][XTM] Scenario results not found in OpenBAS : ${id}`, ResourceNotFoundError('Scenario results not found in OpenBAS', { doc_code: 'ELEMENT_NOT_FOUND' }));
     return noResult;
   }
 };
