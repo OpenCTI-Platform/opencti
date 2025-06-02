@@ -2804,8 +2804,8 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           // OR the confidence matches
           // To prevent too much flickering on multi sources the created-by will be replaced only for strict upper confidence
           const isProtectedCreatedBy = relDef.databaseName === RELATION_CREATED_BY && !isCurrentEmptyData && !isConfidenceUpper;
-          const updatable = isUpsertSynchro || (isInputWithData && isCurrentEmptyData) || isConfidenceMatch;
-          if (isInputDifferentFromCurrent && updatable && !isProtectedCreatedBy) {
+          const updatable = ((isInputWithData && isCurrentEmptyData) || isConfidenceMatch) && !isProtectedCreatedBy;
+          if (isInputDifferentFromCurrent && (isUpsertSynchro || updatable)) {
             inputs.push({ key: inputField, value: [patchInputData] });
           }
         }

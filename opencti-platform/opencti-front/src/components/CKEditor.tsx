@@ -204,6 +204,14 @@ const CKEDITOR_DEFAULT_CONFIG: EditorConfig = {
       'mergeTableCells',
     ],
   },
+  heading: {
+    options: [
+      { class: 'ck-heading_paragraph', model: 'paragraph', title: 'Paragraph' },
+      { class: 'ck-heading_heading1', model: 'heading1', view: 'h1', title: 'Heading 1' },
+      { class: 'ck-heading_heading2', model: 'heading2', view: 'h2', title: 'Heading 2' },
+      { class: 'ck-heading_heading3', model: 'heading3', view: 'h3', title: 'Heading 3' },
+    ],
+  },
 };
 
 type CKEditorProps<T extends Editor> = Omit<ReactCKEditor<T>['props'], 'editor' | 'config'>;

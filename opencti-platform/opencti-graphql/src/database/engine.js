@@ -4112,6 +4112,17 @@ const prepareRelation = (thing) => {
     });
   }
   const { from, to } = thing;
+
+  if (!from.entity_type || !to.entity_type) {
+    throw DatabaseError('Cant index relation, error resolving from or to entity type', {
+      id: thing.internal_id,
+      fromId: thing.fromId,
+      toId: thing.toId,
+      fromResolved: from,
+      toResolved: to,
+    });
+  }
+
   connections.push({
     internal_id: from.internal_id,
     name: extractEntityRepresentativeName(from),
