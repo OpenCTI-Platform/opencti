@@ -10,7 +10,7 @@ import { FunctionalError } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
 import { parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
-import { createRedisClient, fetchStreamEventsRange } from '../database/redis';
+import { createRedisClient, fetchStreamEventsRangeFromEventId } from '../database/redis';
 import { updatePir } from '../modules/pir/pir-domain';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { connectorIdFromIngestId } from '../domain/connector';
@@ -26,6 +26,7 @@ const PIR_MANAGER_LABEL = 'Pir Manager';
 const PIR_MANAGER_CONTEXT = 'pir_manager';
 
 const PIR_MANAGER_INTERVAL = conf.get('pir_manager:interval') ?? 10000;
+const PIR_MANAGER_TIME_RANGE = conf.get('pir_manager:time_range') ?? 60000;
 const PIR_MANAGER_LOCK_KEY = conf.get('pir_manager:lock_key');
 const PIR_MANAGER_ENABLED = booleanConf('pir_manager:enabled', false);
 
@@ -169,15 +170,17 @@ const pirManagerHandler = async () => {
   const context = executionContext(PIR_MANAGER_CONTEXT);
   const allPir = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
 
+  console.log('PIR - List of pirs:', allPir.map((p) => p.name));
   // Loop through all Pir one by one.
   await BluePromise.map(allPir, async (pir) => {
     // Fetch stream events since last event id caught by the Pir.
-    const { lastEventId } = await fetchStreamEventsRange(
+    const { lastEventId } = await fetchStreamEventsRangeFromEventId(
       redisClient,
       pir.lastEventId,
       processStreamEventsForPir(context, pir),
-      { streamBatchTime: PIR_MANAGER_INTERVAL }
+      { streamBatchTime: PIR_MANAGER_TIME_RANGE }
     );
+    console.log(`PIR - ${pir.name} last event id:`, lastEventId);
     // Update pir last event id.
     if (lastEventId !== pir.lastEventId) {
       await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
