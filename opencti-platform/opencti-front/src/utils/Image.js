@@ -7,8 +7,6 @@ const ignoredClasses = [
   'MuiDrawer-docked',
   'MuiIconButton-root',
   'MuiInputBase-root',
-  // For some reason apex legend crash pdf and png export.
-  // 'apexcharts-legend-series',
 ];
 
 export const exportImage = (
