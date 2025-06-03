@@ -514,7 +514,7 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
     await publishAnalysisAction(user, analyzedId, connector, element);
     return work;
   }
-  throw new ResourceNotFoundError('No connector found for analysis', { analyzedId, connectorId });
+  throw ResourceNotFoundError('No connector found for analysis', { analyzedId, connectorId });
 };
 
 const askFileAnalysisForConnector = async (context, user, analyzedId, contentSource, connectorId) => {
@@ -551,7 +551,7 @@ const askFileAnalysisForConnector = async (context, user, analyzedId, contentSou
     await publishAnalysisAction(user, analyzedId, connector, element);
     return work;
   }
-  throw new ResourceNotFoundError('No connector found for analysis', { analyzedId, connectorId });
+  throw ResourceNotFoundError('No connector found for analysis', { analyzedId, connectorId });
 };
 
 const getAnalysisFileName = (contentSource, contentType) => {
