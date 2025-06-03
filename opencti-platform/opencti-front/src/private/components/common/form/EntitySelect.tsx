@@ -40,19 +40,11 @@ interface EntitySelectBaseProps {
   queryRef: PreloadedQuery<EntitySelectSearchQuery>
 }
 
-interface SingleSelectProps extends EntitySelectBaseProps {
-  multiple: false;
-  value: EntityOption | null;
-  onChange?: (val: EntityOption | null) => void;
+interface EntitySelectComponentProps extends EntitySelectBaseProps {
+  multiple: boolean;
+  value: EntityOption | EntityOption[] | null;
+  onChange?: (val: EntityOption | EntityOption[] | null) => void;
 }
-
-interface MultiSelectProps extends EntitySelectBaseProps {
-  multiple: true;
-  value: EntityOption[];
-  onChange?: (val: EntityOption[]) => void;
-}
-
-type EntitySelectComponentProps = SingleSelectProps | MultiSelectProps;
 
 const EntitySelectComponent = ({
   label,
@@ -76,15 +68,7 @@ const EntitySelectComponent = ({
   }));
 
   const handleChange = (newValue: EntityOption | EntityOption[] | null) => {
-    if (multiple) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      onChange?.(newValue as EntityOption[]);
-    } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      onChange?.(newValue as EntityOption | null);
-    }
+    onChange?.(newValue);
   };
 
   return (
@@ -176,21 +160,11 @@ const EntitySelect = ({ types, ...otherProps }: EntitySelectProps) => {
   return (
     <Suspense fallback={<Loader />}>
       {queryRef && (
-        otherProps.multiple ? (
-          <EntitySelectComponent
-            {...(otherProps as MultiSelectProps)}
-            onInputChange={setSearch}
-            queryRef={queryRef}
-            multiple={true}
-          />
-        ) : (
-          <EntitySelectComponent
-            {...(otherProps as SingleSelectProps)}
-            onInputChange={setSearch}
-            queryRef={queryRef}
-            multiple={false}
-          />
-        )
+        <EntitySelectComponent
+          {...otherProps}
+          onInputChange={setSearch}
+          queryRef={queryRef}
+        />
       )}
     </Suspense>
   );

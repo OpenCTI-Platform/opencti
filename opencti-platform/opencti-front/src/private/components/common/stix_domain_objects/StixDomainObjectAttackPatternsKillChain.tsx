@@ -27,8 +27,10 @@ import StixCoreRelationships from '@components/common/stix_core_relationships/St
 import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixQuery.graphql';
 import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
 import EntitySelect, { EntityOption } from '@components/common/form/EntitySelect';
-import { AttackPatternsMatrixColumnsOverlapQuery$data } from '@components/techniques/attack_patterns/__generated__/AttackPatternsMatrixColumnsOverlapQuery.graphql';
 import { IconButton } from '@mui/material';
+import {
+  StixDomainObjectAttackPatternsKillChainOverlapQuery$data,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainOverlapQuery.graphql';
 import StixCoreObjectsExports from '../stix_core_objects/StixCoreObjectsExports';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
@@ -46,6 +48,8 @@ import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage'
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { fetchQuery } from '../../../../relay/environment';
 import useHelper from '../../../../utils/hooks/useHelper';
+
+type StixDomainObjectAttackPatternsKillChainOverlapEdges = NonNullable<NonNullable<NonNullable<StixDomainObjectAttackPatternsKillChainOverlapQuery$data['stixCoreObjects']>['edges']>[number]>;
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -187,14 +191,14 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           filterGroups: [],
         },
       },
-    ).toPromise() as AttackPatternsMatrixColumnsOverlapQuery$data;
+    ).toPromise() as StixDomainObjectAttackPatternsKillChainOverlapQuery$data;
   };
 
   useEffect(() => {
     if (selectedSecurityPlatforms.length > 0) {
       getAttackPatternIdsToOverlap(selectedSecurityPlatforms.map(({ value }) => value))
         .then((result) => {
-          setAttackPatternIdsToOverlap(result?.stixCoreObjects?.edges?.map(({ node }) => node.id));
+          setAttackPatternIdsToOverlap(result?.stixCoreObjects?.edges?.map(({ node }: StixDomainObjectAttackPatternsKillChainOverlapEdges) => node.id));
         });
     } else {
       setAttackPatternIdsToOverlap(undefined);
@@ -410,8 +414,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                       value={selectedSecurityPlatforms}
                       label={t_i18n('Compare with my security posture')}
                       types={['SecurityPlatform']}
-                      onChange={(newSelectedSecurityPlatforms: EntityOption[]) => {
-                        setSelectedSecurityPlatforms(newSelectedSecurityPlatforms);
+                      onChange={(newSelectedSecurityPlatforms) => {
+                        setSelectedSecurityPlatforms(newSelectedSecurityPlatforms as EntityOption[]);
                       }}
                     />
                   </FormControl>
