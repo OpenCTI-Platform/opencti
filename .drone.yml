@@ -68,13 +68,12 @@ steps:
 
   - name: api-tests-post-verification
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-    volumes:
-    - name: raw-start-backend-logs
-      path: /tmp/raw-start-platform/opencti-graphql/.logs
     depends_on:
         - api-tests
     commands:
-      - cd /tmp/raw-start-platform/opencti-graphql/.logs
+      - cd $DRONE_WORKSPACE
+      - ls -lart
+      - cd $DRONE_WORKSPACE/logs
       - ls -lart
 
   - name: api-coverage
@@ -227,6 +226,7 @@ services:
     command: [server, /data]
   - name: rabbitmq
     image: rabbitmq:4.1-management
+
   - name: opencti-raw-start
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     volumes:
@@ -242,6 +242,8 @@ services:
         from_secret: ee_license
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
+      APP__APP_LOG__LOGS_FILES: true
+      APP__APP_LOG__LOGS_DIRECTORY: ${DRONE_WORKSPACE}/logs/opencti-raw-start
       APP__HEALTH_ACCESS_KEY: cihealthkey
       REDIS__HOSTNAME: redis
       REDIS__NAMESPACE: raw-start
