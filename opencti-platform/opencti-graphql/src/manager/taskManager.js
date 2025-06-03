@@ -25,14 +25,20 @@ import { now } from '../utils/format';
 import { isEmptyField, MAX_EVENT_LOOP_PROCESSING_TIME, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { elList } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
+import {
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_RELATIONSHIP,
+  INPUT_OBJECTS,
+  RULE_PREFIX
+} from '../schema/general';
 import { executionContext, isUserInPlatformOrganization, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import { getRule } from '../domain/rules';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { generateIndicatorFromObservable } from '../domain/stixCyberObservable';
-import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
   ACTION_TYPE_COMPLETE_DELETE,
   ACTION_TYPE_DELETE,
@@ -290,7 +296,7 @@ const standardOperationCallback = async (context, user, task, actionType, operat
 };
 
 const containerOperationCallback = async (context, user, task, containers, operations) => {
-  const withNeighbours = operations[0].context.options.includeNeighbours;
+  const withNeighbours = operations[0].context.options?.includeNeighbours;
   return async (elements) => {
     const elementIds = new Set();
     const elementStandardIds = new Set();
@@ -315,7 +321,7 @@ const containerOperationCallback = async (context, user, task, containers, opera
     const containerOperations = [{
       type: 'ADD',
       context: {
-        field: RELATION_OBJECT,
+        field: INPUT_OBJECTS,
         values: Array.from(elementIds)
       }
     }];
@@ -416,7 +422,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
       const containerOperations = [{
         type: 'ADD',
         context: {
-          field: RELATION_OBJECT,
+          field: INPUT_OBJECTS,
           values: objects.map((object) => object.id),
         }
       }];
