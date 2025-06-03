@@ -131,7 +131,7 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
 export const createQueryTask = async (context, user, input) => {
   const { actions, filters, excluded_ids = [], search = null, scope, orderMode } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_QUERY);
-  const impactsNumber = await countAllThings(context, context.user, { filters: JSON.parse(filters) });
+  const impactsNumber = await countAllThings(context, context.user, { search, filters: JSON.parse(filters) });
   const countExpected = impactsNumber - excluded_ids.length;
   const task = await createDefaultTask(context, user, input, TASK_TYPE_QUERY, countExpected, scope);
   const queryTask = {
