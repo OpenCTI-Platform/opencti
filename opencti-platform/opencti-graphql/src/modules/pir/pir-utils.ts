@@ -48,17 +48,38 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
   return Math.round((depScore / maxScore) * 100);
 };
 
-// check explanations are contains in the pir explanations
-// Note that we don't handle the case where dependency_ids contains several relationship ids (this case is not possible for the moment)
-export const isPirExplanationsInMetaRel = (
-  pirMetaRelExplanations: PirExplanation[],
-  explanations: PirExplanation[],
+/**
+ * Determines if two explanations are identical or not.
+ *
+ * @param explanation1 First explanation.
+ * @param explanation2 Second explanation.
+ * @returns True if they are the same.
+ */
+export const arePirExplanationsEqual = (
+  explanation1: PirExplanation,
+  explanation2: PirExplanation
 ) => {
-  return explanations
-    .every((explanation) => pirMetaRelExplanations
-      .some((pirExplanation) => explanation.dependency_ids.every((d) => pirExplanation.dependency_ids.includes(d))
-        && pirExplanation.criterion.weight === explanation.criterion.weight
-        && pirExplanation.criterion.filters === explanation.criterion.filters));
+  const sameRelationships = explanation1.dependency_ids.every((d) => explanation2.dependency_ids.includes(d));
+  const sameWeight = explanation1.criterion.weight === explanation2.criterion.weight;
+  const sameFilters = explanation1.criterion.filters === explanation2.criterion.filters;
+  return sameRelationships && sameWeight && sameFilters;
+};
+
+/**
+ * Compare an array of explanations with another array to kept only new explanations.
+ *
+ * @param explanations Array to filter.
+ * @param baseExplanations Base array to make the comparison.
+ * @returns A sub-array of the first argument containing only explanations that are not in the base array.
+ */
+export const diffPirExplanations = (
+  explanations: PirExplanation[],
+  baseExplanations: PirExplanation[]
+) => {
+  return explanations.filter((explanation) => {
+    // For each explanation, check it is different from all explanations in base.
+    return baseExplanations.every((e) => !arePirExplanationsEqual(explanation, e));
+  });
 };
 
 /**
@@ -89,15 +110,22 @@ export const updatePirExplanations = async (
     // If > 1, well this case should not be possible at all.
     throw FunctionalError('Find more than one relation between an entity and a Pir', { sourceId, pirId, pirMetaRels });
   }
+
   const pirMetaRel = pirMetaRels.edges[0].node;
-  const relationshipUpdateAlreadyFlagged = operation === 'add' && isPirExplanationsInMetaRel(pirMetaRel.pir_explanations, pirExplanations); // case update relationship with source already flagged for it
-  if (!relationshipUpdateAlreadyFlagged) {
-    // region compute score
-    const deps = operation === 'add' ? [...pirMetaRel.pir_explanations, ...pirExplanations] : pirExplanations;
-    const pir_score = await computePirScore(context, user, pirId, deps);
-    // replace pir_explanations
-    await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: deps, pir_score });
+  let explanations = pirExplanations; // By default replace the entire array.
+  if (operation === 'add') {
+    const newExplanations = diffPirExplanations(pirExplanations, pirMetaRel.pir_explanations);
+    if (newExplanations.length === 0) {
+      // In this case there is nothing to add so skip.
+      return;
+    }
+    explanations = [...pirMetaRel.pir_explanations, ...newExplanations];
   }
+
+  // region compute score
+  const pir_score = await computePirScore(context, user, pirId, explanations);
+  // replace pir_explanations
+  await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score });
 };
 
 /**
