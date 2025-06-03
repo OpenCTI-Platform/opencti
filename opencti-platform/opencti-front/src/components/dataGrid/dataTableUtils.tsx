@@ -497,13 +497,12 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Source Labels',
     percentWidth: 15,
     isSortable: false,
-    render: ({ from }, { storageHelpers: { handleAddFilter } }) => {
+    render: ({ from }) => {
       const { objectLabel } = from;
       return (
         <StixCoreObjectLabels
           variant="inList"
           labels={objectLabel}
-          onClick={handleAddFilter}
         />
       );
     },
