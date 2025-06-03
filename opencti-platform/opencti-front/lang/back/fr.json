@@ -198,6 +198,7 @@
   "Decryption key": "Clé de décryptage",
   "Default assignation": "Affectation par défaut",
   "Default dashboard": "Tableau de bord par défaut",
+  "Default groupId for ingestion users": "GroupId par défaut pour les utilisateurs d'ingestion",
   "Default hidden types": "Types cachés par défaut",
   "Default marking": "Marquage par défaut",
   "Default time field": "Champ de temps par défaut",

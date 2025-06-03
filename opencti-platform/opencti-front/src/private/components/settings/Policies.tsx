@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, {FunctionComponent, useEffect, useState} from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -23,6 +23,7 @@ import Button from '@mui/material/Button';
 import DialogTitle from '@mui/material/DialogTitle';
 import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import AccessesMenu from './AccessesMenu';
+import GroupField, {groupsQuery} from '../common/form/GroupField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
 import SwitchField from '../../../components/fields/SwitchField';
@@ -41,6 +42,8 @@ import Transition from '../../../components/Transition';
 import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { FieldOption } from '../../../utils/field';
+import {fetchQuery} from "../../../relay/environment";
+import {GroupFieldQuery$data} from "@components/common/form/__generated__/GroupFieldQuery.graphql";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -80,6 +83,7 @@ const PoliciesFragment = graphql`
       name
     }
     otp_mandatory
+    default_group_id_for_ingestion_users
   }
 `;
 
@@ -116,6 +120,7 @@ const policiesValidation = () => Yup.object().shape({
   platform_consent_confirm_text: Yup.string().nullable(),
   platform_banner_level: Yup.string().nullable(),
   platform_banner_text: Yup.string().nullable(),
+  default_group_id_for_ingestion_users: Yup.string().nullable(),
 });
 
 interface PoliciesComponentProps {
@@ -126,8 +131,10 @@ interface PoliciesComponentProps {
 const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   queryRef,
 }) => {
+  const { isFeatureEnable } = useHelper();
   const isEnterpriseEdition = useEnterpriseEdition();
   const [openPlatformOrganizationChanges, setOpenPlatformOrganizationChanges] = useState<boolean>(false);
+  const [defaultGroupSelected, setDefaultGroupSelected] = useState<string>('');
 
   const data = usePreloadedQuery(policiesQuery, queryRef);
   const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
@@ -164,6 +171,29 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
       })
       .catch(() => false);
   };
+
+  const getInitialValueForGroup = () => {
+    fetchQuery(groupsQuery, { orderBy: 'name', orderMode: 'asc' })
+      .toPromise()
+      .then((data) => {
+        const dataGroups = (data as GroupFieldQuery$data).groups?.edges ?? [];
+        const newGroups = dataGroups.map((n) => {
+          const groupLabel = n?.node.name ?? '';
+          return {
+            label: groupLabel,
+            value: n?.node.id ?? '',
+          };
+        });
+        const defaultGroup = (newGroups.find((group) => group.value === settings.default_group_id_for_ingestion_users));
+        setDefaultGroupSelected(defaultGroup.label);
+      });
+  };
+
+  useEffect(() => {
+    if (settings.default_group_id_for_ingestion_users) {
+      getInitialValueForGroup();
+    }
+  }, [settings.default_group_id_for_ingestion_users]);
   const initialValues = {
     platform_organization: platformOrganization,
     platform_login_message: settings.platform_login_message,
@@ -179,7 +209,9 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     platform_banner_level: settings.platform_banner_level,
     platform_banner_text: settings.platform_banner_text,
     otp_mandatory: settings.otp_mandatory,
+    default_group_id_for_ingestion_users: defaultGroupSelected,
   };
+
   const authProviders = settings.platform_providers;
   return (
     <div className={classes.container}>
@@ -434,6 +466,23 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Paper>
                   </Grid>
+                  {isFeatureEnable('CSV_FEED') && <Grid item xs={6}>
+                    <Typography variant="h4" gutterBottom={true}>
+                      {t_i18n('Default group for ingestion user')}
+                    </Typography>
+                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                      <Alert severity="info" variant="outlined">
+                        {t_i18n('Define a group that will be assigned to each user created on the fly for each ingestion type')}
+                      </Alert>
+                      <GroupField
+                        style={{ marginTop: 20 }}
+                        name="default_group_id_for_ingestion_users"
+                        label={t_i18n('Default service account for CSV Feeds')}
+                        multiple={false}
+                        onChange={(name, value) => handleSubmitField(name, value.value)}
+                      />
+                    </Paper>
+                  </Grid>}
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Login messages')}

@@ -198,6 +198,7 @@
   "Decryption key": "Clave de descifrado",
   "Default assignation": "Asignación por defecto",
   "Default dashboard": "Cuadro de mandos por defecto",
+  "Default groupId for ingestion users": "GroupId por defecto para usuarios de ingestión",
   "Default hidden types": "Tipos ocultos por defecto",
   "Default marking": "Marcado por defecto",
   "Default time field": "Campo de hora por defecto",

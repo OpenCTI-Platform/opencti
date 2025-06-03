@@ -198,6 +198,7 @@
   "Decryption key": "Entschlüsselungsschlüssel",
   "Default assignation": "Standardzuweisung",
   "Default dashboard": "Standard-Dashboard",
+  "Default groupId for ingestion users": "Standard groupId für Ingestion-Benutzer",
   "Default hidden types": "Ausgeblendete Standardtypen",
   "Default marking": "Standard Markierung",
   "Default time field": "Standardzeitfeld",

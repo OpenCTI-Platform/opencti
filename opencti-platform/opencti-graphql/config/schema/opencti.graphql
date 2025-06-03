@@ -1302,6 +1302,7 @@ type PlatformProtectedSensitiveConfig {
   file_indexing: PlatformProtectedSubConfig!
   platform_organization: PlatformProtectedSubConfig!
 }
+
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String! @auth
@@ -1379,6 +1380,7 @@ type Settings implements InternalObject & BasicObject {
   analytics_google_analytics_v4: String @auth
   playground_enabled: Boolean!
   request_access_enabled: Boolean! @auth
+  default_group_id_for_ingestion_users: String @auth
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
 }

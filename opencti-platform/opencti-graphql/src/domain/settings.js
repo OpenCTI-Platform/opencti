@@ -179,6 +179,7 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
   'password_policy_min_words',
   'password_policy_min_lowercase',
   'password_policy_min_uppercase',
+  'default_group_id_for_ingestion_users'
 ];
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);

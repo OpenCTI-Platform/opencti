@@ -1456,6 +1456,7 @@ type Settings implements InternalObject & BasicObject {
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
   request_access_enabled: Boolean!
+  default_group_id_for_ingestion_users: String
   editContext: [EditUserContext!]
 }
 

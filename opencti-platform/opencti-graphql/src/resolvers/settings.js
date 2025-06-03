@@ -55,6 +55,7 @@ const settingsResolvers = {
     playground_enabled: () => isPlaygroundEnabled(),
     platform_enterprise_edition: (settings) => getEnterpriseEditionInfo(settings),
     request_access_enabled: (_, __, context) => isRequestAccessEnabled(context, context.user),
+    default_group_id_for_ingestion_users: (settings) => settings.default_group_id_for_ingestion_users,
   },
   AppInfo: {
     memory: getMemoryStatistics(),
