@@ -130,7 +130,8 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
       .filter((e) => e.data.type === STIX_TYPE_RELATION);
 
     // Check every event received to see if it matches the Pir.
-    await BluePromise.map(eventsContent, async (event) => {
+    for (let i = 0; i < eventsContent.length; i += 1) {
+      const event = eventsContent[i];
       const { data } = event;
       const matchingCriteria = await checkEventOnPir(context, event, parsedPir);
       if (matchingCriteria.length > 0) { // the event matches Pir
@@ -158,7 +159,7 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
           await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
         }
       }
-    }, { concurrency: 5 });
+    }
   };
 };
 
