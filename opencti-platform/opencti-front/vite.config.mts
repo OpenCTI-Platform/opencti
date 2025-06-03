@@ -248,6 +248,6 @@ export default defineConfig({
       '/graphql': backProxy(true),
       '/auth': backProxy(),
       '/static/flags': backProxy(),
-    }
+    },
   },
 });
