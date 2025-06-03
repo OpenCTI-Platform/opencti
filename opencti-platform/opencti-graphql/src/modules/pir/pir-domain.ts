@@ -27,7 +27,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptio
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
   // -- create Pir --
-  const rescanStartDate = now() - (input.rescan_period * 1000); // rescan start date in milliseconds
+  const rescanStartDate = now() - (input.pir_rescan_days * 24 * 3600 * 1000); // rescan start date in milliseconds
   const finalInput = {
     ...serializePir(input),
     lastEventId: `${rescanStartDate}-0`,

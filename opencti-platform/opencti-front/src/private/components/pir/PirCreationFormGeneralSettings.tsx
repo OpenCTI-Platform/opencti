@@ -48,15 +48,15 @@ const PirCreationFormGeneralSettings = () => {
       <Select
         style={{ marginTop: 5 }}
         size="small"
-        name="rescan_period"
+        name="pir_rescan_days"
         variant="outlined"
-        value={values.rescan_period}
-        onChange={(event) => setFieldValue('rescan_period', event.target.value)}
+        value={values.pir_rescan_days}
+        onChange={(event) => setFieldValue('pir_rescan_days', event.target.value)}
       >
-        <MenuItem value="0">{t_i18n('No rescan')}</MenuItem>
-        <MenuItem value="1">{t_i18n('1 day')}</MenuItem>
-        <MenuItem value="30">{t_i18n('1 month')}</MenuItem>
-        <MenuItem value="182">{t_i18n('6 months')}</MenuItem>
+        <MenuItem value={0}>{t_i18n('No rescan')}</MenuItem>
+        <MenuItem value={1}>{t_i18n('1 day')}</MenuItem>
+        <MenuItem value={30}>{t_i18n('1 month')}</MenuItem>
+        <MenuItem value={182}>{t_i18n('6 months')}</MenuItem>
       </Select>
     </>
   );

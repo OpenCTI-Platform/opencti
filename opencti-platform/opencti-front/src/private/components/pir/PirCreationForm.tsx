@@ -22,7 +22,7 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
     type: Yup.string().trim().required(t_i18n('This field is required')),
     name: Yup.string().trim().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
-    rescan_period: Yup.number().required(t_i18n('This field is required')),
+    pir_rescan_days: Yup.number().nullable().required(t_i18n('This field is required')),
     confidence: Yup.number().integer().required(t_i18n('This field is required')),
     locations: Yup.array().when('sectors', {
       is: (sectors: unknown[]) => sectors?.length === 0,
@@ -41,7 +41,7 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
     name: '',
     description: '',
     markings: [],
-    rescan_period: 30,
+    pir_rescan_days: 30,
     confidence: 60,
     locations: [],
     sectors: [],
@@ -57,7 +57,7 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
         const step0Valid = !!values.type && !errors.type;
         const step1Valid = (!!values.name && !errors.name)
           && (!errors.description)
-          && (!!values.rescan_period && !errors.rescan_period);
+          && ((!!values.pir_rescan_days || values.pir_rescan_days === 0) && !errors.pir_rescan_days);
 
         const isStepValid = (step === 0 && step0Valid)
           || (step === 1 && step1Valid)

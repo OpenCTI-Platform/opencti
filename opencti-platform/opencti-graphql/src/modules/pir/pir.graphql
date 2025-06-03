@@ -72,7 +72,7 @@ input PirExplanationInput {
 input PirAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
-    rescan_period: Int!
+    pir_rescan_days: Int!
     pir_criteria: [PirCriterionInput!]!
     pir_filters: FilterGroup!
     objectMarking: [String!]

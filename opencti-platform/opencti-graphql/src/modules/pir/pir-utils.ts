@@ -32,7 +32,7 @@ export const parsePir = (pir: BasicStoreEntityPir): ParsedPir => {
  */
 export const serializePir = (pir: PirAddInput) => {
   return {
-    ...dissoc('rescan_period', pir),
+    ...dissoc('pir_rescan_days', pir),
     pir_filters: JSON.stringify(pir.pir_filters),
     pir_criteria: pir.pir_criteria.map((c) => ({
       ...c,
