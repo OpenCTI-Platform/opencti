@@ -45,6 +45,7 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { fetchQuery } from '../../../../relay/environment';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -122,6 +123,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   isEntity,
 }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isSecurityPlatformEnabled = isFeatureEnable('SECURITY_PLATFORM');
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
   const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
@@ -391,27 +394,29 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               </Tooltip>
             </Box>
 
-            <Box
-              style={{
-                float: 'left',
-                display: 'flex',
-                paddingInline: 10,
-              }}
-            >
-              <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300 }}>
-                <EntitySelect
-                  multiple
-                  variant="outlined"
-                  size="small"
-                  value={selectedSecurityPlatforms}
-                  label={t_i18n('Compare with my security posture')}
-                  types={['SecurityPlatform']}
-                  onChange={(newSelectedSecurityPlatforms: EntityOption[]) => {
-                    setSelectedSecurityPlatforms(newSelectedSecurityPlatforms);
+              {isSecurityPlatformEnabled && (
+                <Box
+                  style={{
+                    float: 'left',
+                    display: 'flex',
+                    paddingInline: 10,
                   }}
-                />
-              </FormControl>
-            </Box>
+                >
+                  <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300 }}>
+                    <EntitySelect
+                      multiple
+                      variant="outlined"
+                      size="small"
+                      value={selectedSecurityPlatforms}
+                      label={t_i18n('Compare with my security posture')}
+                      types={['SecurityPlatform']}
+                      onChange={(newSelectedSecurityPlatforms: EntityOption[]) => {
+                        setSelectedSecurityPlatforms(newSelectedSecurityPlatforms);
+                      }}
+                    />
+                  </FormControl>
+                </Box>
+              )}
             </>
           )}
           {!isEntity && (<div style={{ float: 'right', margin: 0 }}>
