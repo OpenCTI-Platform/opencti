@@ -18,13 +18,16 @@ export interface PirCreationFormData {
   sectors: FieldOption[]
 }
 
-const optionsToFilters = (options: FieldOption[]): PirAddInput['pir_criteria'] => {
+const optionsToFilters = (options: FieldOption[], relType: string): PirAddInput['pir_criteria'] => {
   return options.map((option) => ({
     weight: 1,
     filters: {
       mode: 'and',
       filterGroups: [],
-      filters: [{ key: ['toId'], values: [option.value], operator: 'eq', mode: 'or' }],
+      filters: [
+        { key: ['relationship_type'], values: [relType], operator: 'eq', mode: 'or' },
+        { key: ['toId'], values: [option.value], operator: 'eq', mode: 'or' },
+      ],
     },
   }));
 };
@@ -41,8 +44,8 @@ export const pirFormDataToMutationInput = (data: PirCreationFormData): PirAddInp
       filters: [{ key: ['confidence'], values: [`${data.confidence}`], operator: 'gt', mode: 'or' }],
     },
     pir_criteria: [
-      ...optionsToFilters(data.locations),
-      ...optionsToFilters(data.sectors),
+      ...optionsToFilters(data.locations, 'targets'),
+      ...optionsToFilters(data.sectors, 'targets'),
     ],
   };
 };
