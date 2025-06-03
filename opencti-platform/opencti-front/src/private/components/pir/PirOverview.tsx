@@ -32,10 +32,7 @@ const PirOverview = ({
         </Paper>
       </Grid>
       <Grid size={{ xs: 6 }} sx={verticalGridStyle}>
-        <Paper
-          title={t_i18n('Recent history')}
-          variant="outlined"
-        >
+        <Paper title={t_i18n('News feed')}>
           <PirOverviewHistory data={dataHistory} />
         </Paper>
       </Grid>
