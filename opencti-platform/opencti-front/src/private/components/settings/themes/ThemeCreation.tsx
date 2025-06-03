@@ -14,6 +14,8 @@ import { ThemeCreationCreateMutation } from './__generated__/ThemeCreationCreate
 import { insertNode } from '../../../../utils/store';
 import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
 import { serializeThemeManifest } from './ThemeType';
+import { useDynamicSchemaCreationValidation, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import ThemeDetectDuplicate from './ThemeDetectDuplicate';
 
 export const createThemeMutation = graphql`
   mutation ThemeCreationCreateMutation($input: ThemeAddInput!) {
@@ -46,7 +48,17 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
     { successMessage: `${t_i18n('Theme successfully created')}` },
   );
 
-  const themeValidator = Yup.object().shape({
+  const mandatoryAttributes = [
+    'name',
+    'theme_background',
+    'theme_paper',
+    'theme_nav',
+    'theme_primary',
+    'theme_secondary',
+    'theme_accent',
+    'theme_text_color',
+  ];
+  const basicShape = yupShapeConditionalRequired({
     name: Yup.string()
       .trim()
       .min(2)
@@ -74,7 +86,11 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
     theme_logo: Yup.string().nullable(),
     theme_logo_collapsed: Yup.string().nullable(),
     theme_logo_login: Yup.string().nullable(),
-  });
+  }, mandatoryAttributes);
+  const themeValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
+    basicShape,
+  );
 
   const initialValues = {
     name: '',
@@ -130,12 +146,14 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
         enabledReinitalize={true}
         initialValues={initialValues}
         validationSchema={themeValidator}
+        validateOnChange={false}
+        validateOnBlur={false}
       >
         {({
+          values,
           isSubmitting,
           isValid,
           submitForm,
-          handleReset,
         }) => (
           <Form>
             <Field
@@ -144,7 +162,13 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               name="name"
               label={t_i18n('Name')}
               style={{ marginTop: 0 }}
+              helperText={(
+                <ThemeDetectDuplicate
+                  themeName={values.name}
+                />
+              )}
               fullWidth
+              required
             />
             <Field
               component={ColorPickerField}
@@ -156,6 +180,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               }}
               style={{ marginTop: 20 }}
               fullWidth
+              required
               variant="standard"
             />
             <Field
@@ -168,6 +193,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               }}
               style={{ marginTop: 20 }}
               fullWidth
+              required
               variant="standard"
             />
             <Field
@@ -180,6 +206,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               }}
               style={{ marginTop: 20 }}
               fullWidth
+              required
               variant="standard"
             />
             <Field
@@ -192,6 +219,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               }}
               style={{ marginTop: 20 }}
               fullWidth
+              required
               variant="standard"
             />
             <Field
@@ -204,6 +232,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               }}
               style={{ marginTop: 20 }}
               fullWidth
+              required
               variant="standard"
             />
             <Field
@@ -216,6 +245,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               }}
               style={{ marginTop: 20 }}
               fullWidth
+              required
               variant="standard"
             />
             <Field
@@ -228,6 +258,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
               }}
               style={{ marginTop: 20 }}
               fullWidth
+              required
               variant="standard"
             />
             <Field
@@ -273,7 +304,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
             >
               <Button
                 variant="contained"
-                onClick={handleReset}
+                onClick={handleClose}
                 disabled={isSubmitting}
                 style={{
                   marginLeft: theme.spacing(2),
