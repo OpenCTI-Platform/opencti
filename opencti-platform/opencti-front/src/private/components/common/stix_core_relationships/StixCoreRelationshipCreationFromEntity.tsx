@@ -935,7 +935,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   };
 
   const renderForm = (sourceEntity: TargetEntity) => {
-    console.log('sourceEntity : ', sourceEntity);
     let fromEntities = [sourceEntity];
     let toEntities = targetEntities;
     if (isRelationReversed) {
@@ -946,7 +945,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          console.log('schema : ', schema);
           const relationshipTypes = R.uniq(resolveRelationsTypes(
             fromEntities[0].entity_type,
             toEntities[0].entity_type,
