@@ -197,7 +197,7 @@ const TasksList = ({ data }) => {
         id: taskId,
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('The task has been deleted');
+        MESSAGING$.notifySuccess(t_i18n('The task has been deleted'));
       },
     });
   };
