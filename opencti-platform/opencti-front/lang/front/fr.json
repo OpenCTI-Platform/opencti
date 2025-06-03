@@ -3307,7 +3307,7 @@
   "Threat landscape description ...": "Créez un PIR dédié au suivi des menaces en fonction des lieux et des secteurs qu'elles ciblent. Ce PIR devrait vous aider à identifier les logiciels malveillants, les schémas d'attaque, les vulnérabilités et les conteneurs correspondants que vous devriez examiner en priorité.",
   "Threat origin (coming soon)": "Origine des menaces (à venir)",
   "Threat origin description ...": "Créer un PIR dédié au suivi des menaces en fonction de leur origine. Ce PIR devrait vous aider à identifier les logiciels malveillants, les schémas d'attaque, les vulnérabilités et les conteneurs correspondants que vous devriez examiner en priorité.",
-  "Threat with full customization (coming soon)": "Menace avec personnalisation complète (bientôt)",
+  "Threat with full customization (coming soon)": "Menace avec personnalisation complète (à venir)",
   "Threat with full customization description ...": "Cette option vous permet de sélectionner et de suivre manuellement des entités spécifiques, telles que des acteurs de la menace, des vulnérabilités ou des vecteurs d'attaque. Elle vous donne un contrôle total sur les éléments à surveiller, ce qui vous permet de rester informé des menaces les plus importantes pour vous et votre organisation. Idéal si vous connaissez déjà vos priorités et que vous souhaitez les surveiller de près.",
   "Threats": "Menaces",
   "Threats targeting": "Ciblages de menaces",
