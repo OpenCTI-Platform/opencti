@@ -57,18 +57,18 @@ mutation SecurityPlatformEditionOverviewFocusMutation(
 }
 `;
 
-// const securityPlatformMutationRelationAdd = graphql`
-// mutation SecurityPlatformEditionOverviewRelationAddMutation(
-//     $id: ID!
-//     $input: StixRefRelationshipAddInput!
-// ) {
-//     securityPlatformRelationAdd(id: $id, input: $input) {
-//         from {
-//             ...SecurityPlatformEditionOverview_securityPlatform
-//         }
-//     }
-// }
-// `;
+const securityPlatformMutationRelationAdd = graphql`
+mutation SecurityPlatformEditionOverviewRelationAddMutation(
+    $id: ID!
+    $input: StixRefRelationshipAddInput!
+) {
+    securityPlatformRelationAdd(id: $id, input: $input) {
+        from {
+            ...SecurityPlatformEditionOverview_securityPlatform
+        }
+    }
+}
+`;
 
 const securityPlatformMutationRelationDelete = graphql`
 mutation SecurityPlatformEditionOverviewRelationDeleteMutation(
@@ -110,7 +110,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
 
   const queries = {
     fieldPatch: securityPlatformMutationFieldPatch,
-    // relationAdd: securityPlatformMutationRelationAdd,
+    relationAdd: securityPlatformMutationRelationAdd,
     relationDelete: securityPlatformMutationRelationDelete,
     editionFocus: securityPlatformEditionOverviewFocus,
   };
