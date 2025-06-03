@@ -11,11 +11,17 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { computeLink } from '../../../utils/Entity';
+import FilterIconButton from '../../../components/FilterIconButton';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledge_SourceFlaggedFragment on StixRefRelationship {
     id
     pir_score
+    pir_explanations {
+      criterion {
+        filters
+      }
+    }
     from {
       ...on StixCoreObject {
         id
@@ -143,24 +149,43 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     pirScore: {
-      id: 'pirScore',
+      id: 'pir_score',
       label: 'Score',
       percentWidth: 5,
-      isSortable: false,
+      isSortable: true,
       render: ({ pir_score }) => defaultRender(`${pir_score}%`),
     },
     from_entity_type: {},
     fromName: {
       id: 'from_name',
-      percentWidth: 30,
+      label: 'Source name',
+      percentWidth: 25,
     },
     from_creator: {
       id: 'from_creator',
-      percentWidth: 17,
+      percentWidth: 10,
     },
     from_objectLabel: {},
-    from_objectMarking: {},
-    from_created_at: {},
+    from_objectMarking: {
+      isSortable: false,
+    },
+    pirCriteria: {
+      id: 'explanations',
+      label: 'Explanations',
+      percentWidth: 27,
+      render: ({ pir_explanations }) => (
+        <div style={{ display: 'flex' }}>
+          {pir_explanations.map((e: any) => (
+            <FilterIconButton
+              key={e.criterion.filters}
+              filters={JSON.parse(e.criterion.filters)}
+              entityTypes={['Stix-Core-Object']}
+              styleNumber={3}
+            />
+          ))}
+        </div>
+      ),
+    },
   };
 
   return (
