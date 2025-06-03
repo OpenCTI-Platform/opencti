@@ -3,6 +3,7 @@ import React, { ChangeEvent, HTMLAttributes, useState } from 'react';
 import { Field } from 'formik';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
+import EntityTypeSelectAdornment from '@components/common/form/EntityTypeSelectAdornment';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption } from '../../../../utils/field';
 import { fetchQuery } from '../../../../relay/environment';
@@ -11,8 +12,8 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const locationFieldSearchQuery = graphql`
-  query LocationFieldSearchQuery($search: String) {
-    locations(search: $search, orderBy: name) {
+  query LocationFieldSearchQuery($search: String, $types: [String]) {
+    locations(search: $search, types: $types, orderBy: name) {
       edges {
         node {
           id
@@ -41,12 +42,13 @@ const LocationField = ({
 }: LocationFieldProps) => {
   const { t_i18n } = useFormatter();
   const [options, setOptions] = useState<FieldOption[]>([]);
+  const [types, setTypes] = useState<string[]>([]);
 
   const searchLocations = async (e: ChangeEvent<HTMLInputElement>) => {
     const search = e && e.target.value ? e.target.value : '';
     const { locations } = (await fetchQuery(
       locationFieldSearchQuery,
-      { search },
+      { search, types },
     ).toPromise()) as LocationFieldSearchQuery$data;
     setOptions((locations?.edges ?? []).flatMap((edge) => {
       if (!edge) return [];
@@ -76,6 +78,13 @@ const LocationField = ({
       noOptionsText={t_i18n('No available options')}
       options={options}
       onInputChange={searchLocations}
+      endAdornment={(
+        <EntityTypeSelectAdornment
+          value={types}
+          onChange={setTypes}
+          entityTypes={['Region', 'Country', 'Administrative-Area', 'City', 'Position']}
+        />
+      )}
       renderOption={(
         props: HTMLAttributes<HTMLLIElement>,
         option: FieldOption,

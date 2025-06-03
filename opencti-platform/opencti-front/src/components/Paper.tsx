@@ -23,7 +23,7 @@ const Paper = ({ title, children, ...muiProps }: PaperProps) => {
         sx={{
           marginTop: 1,
           padding: 2,
-          borderRadius: 0.5,
+          borderRadius: 1,
           position: 'relative',
         }}
         {...muiProps}
