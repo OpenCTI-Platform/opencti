@@ -2,23 +2,19 @@ import React, { CSSProperties } from 'react';
 import Grid from '@mui/material/Grid2';
 import PirOverviewDetails from './PirOverviewDetails';
 import PirOverviewHistory from './PirOverviewHistory';
-import PirOverviewThreatMap from './PirOverviewThreatMap';
 import Paper from '../../../components/Paper';
 import { useFormatter } from '../../../components/i18n';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
 import { PirOverviewDetailsFragment$key } from './__generated__/PirOverviewDetailsFragment.graphql';
-import { PirOverviewThreatMapFragment$key } from './__generated__/PirOverviewThreatMapFragment.graphql';
 
 interface PirOverviewProps {
   dataHistory: PirOverviewHistoryFragment$key
   dataDetails: PirOverviewDetailsFragment$key
-  dataThreatMap: PirOverviewThreatMapFragment$key
 }
 
 const PirOverview = ({
   dataHistory,
   dataDetails,
-  dataThreatMap,
 }: PirOverviewProps) => {
   const { t_i18n } = useFormatter();
 
@@ -33,9 +29,6 @@ const PirOverview = ({
       <Grid size={{ xs: 6 }} sx={verticalGridStyle}>
         <Paper title={t_i18n('PIR Details')}>
           <PirOverviewDetails data={dataDetails} />
-        </Paper>
-        <Paper title={t_i18n('Threat map')}>
-          <PirOverviewThreatMap data={dataThreatMap} />
         </Paper>
       </Grid>
       <Grid size={{ xs: 6 }} sx={verticalGridStyle}>

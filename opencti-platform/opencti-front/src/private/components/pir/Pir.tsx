@@ -11,7 +11,6 @@ import PirOverview from './PirOverview';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
-import { PirThreatMapQuery } from './__generated__/PirThreatMapQuery.graphql';
 
 const pirQuery = graphql`
   query PirQuery($id: ID!) {
@@ -37,26 +36,17 @@ const pirHistoryQuery = graphql`
   }
 `;
 
-const pirThreatMapQuery = graphql`
-  query PirThreatMapQuery($toId: StixRef!) {
-    ...PirOverviewThreatMapFragment
-  }
-`;
-
 interface PirComponentProps {
   pirQueryRef: PreloadedQuery<PirQuery>
   pirHistoryQueryRef: PreloadedQuery<PirHistoryQuery>
-  pirThreatMapQueryRef: PreloadedQuery<PirThreatMapQuery>
 }
 
 const PirComponent = ({
   pirQueryRef,
   pirHistoryQueryRef,
-  pirThreatMapQueryRef,
 }: PirComponentProps) => {
   const { pir } = usePreloadedQuery(pirQuery, pirQueryRef);
   const history = usePreloadedQuery(pirHistoryQuery, pirHistoryQueryRef);
-  const relationships = usePreloadedQuery(pirThreatMapQuery, pirThreatMapQueryRef);
 
   if (!pir) return <ErrorNotFound/>;
 
@@ -67,13 +57,7 @@ const PirComponent = ({
       <Routes>
         <Route
           path="/"
-          element={(
-            <PirOverview
-              dataHistory={history}
-              dataDetails={pir}
-              dataThreatMap={relationships}
-            />
-          )}
+          element={<PirOverview dataHistory={history} dataDetails={pir} />}
         />
         <Route
           path="/knowledge"
@@ -97,7 +81,6 @@ const Pir = () => {
   if (!pirId) return <ErrorNotFound/>;
 
   const pirQueryRef = useQueryLoading<PirQuery>(pirQuery, { id: pirId });
-  const pirThreatMapQueryRef = useQueryLoading<PirThreatMapQuery>(pirThreatMapQuery, { toId: pirId });
   const pirHistoryQueryRef = useQueryLoading<PirHistoryQuery>(pirHistoryQuery, {
     first: 20,
     orderBy: 'timestamp',
@@ -140,11 +123,10 @@ const Pir = () => {
 
   return (
     <Suspense fallback={<Loader />}>
-      {pirQueryRef && pirHistoryQueryRef && pirThreatMapQueryRef && (
+      {pirQueryRef && pirHistoryQueryRef && (
         <PirComponent
           pirQueryRef={pirQueryRef}
           pirHistoryQueryRef={pirHistoryQueryRef}
-          pirThreatMapQueryRef={pirThreatMapQueryRef}
         />
       )}
     </Suspense>
