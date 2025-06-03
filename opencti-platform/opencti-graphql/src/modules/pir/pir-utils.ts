@@ -48,6 +48,8 @@ export const computePirScore = async (context: AuthContext, user: AuthUser, pirI
   return Math.round((depScore / maxScore) * 100);
 };
 
+// check explanations are contains in the pir explanations
+// Note that we don't handle the case where dependency_ids contains several relationship ids (this case is not possible for the moment)
 export const isPirExplanationsInMetaRel = (
   pirMetaRelExplanations: PirExplanation[],
   explanations: PirExplanation[],
