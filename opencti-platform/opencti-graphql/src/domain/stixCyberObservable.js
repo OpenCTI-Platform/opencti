@@ -377,13 +377,17 @@ const extractInfectedZipFile = async (file) => {
   return { createReadStream: () => Readable.from(extracted), filename: newFile.path, mimetype: mimetype.mime };
 };
 
+const ignore_extract_types = [
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+];
 export const artifactImport = async (context, user, args) => {
   const { file, x_opencti_description: description, createdBy, objectMarking, objectLabel } = args;
   let resolvedFile = await file;
   // Checking infected ZIP files
 
-  if (resolvedFile.mimetype !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      && resolvedFile.mimetype !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+  if (!ignore_extract_types.includes(resolvedFile.mimetype)) {
     try {
       resolvedFile = await extractInfectedZipFile(resolvedFile);
     } catch {
