@@ -347,9 +347,6 @@ services:
       - python3 src/worker.py
   - name: opencti-test-worker
     image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
-    volumes:
-      - name: cache-node-backend
-        path: /tmp/direct-start-platform/node_modules
     environment:
       OPENCTI_URL: http://api-tests:4010
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
