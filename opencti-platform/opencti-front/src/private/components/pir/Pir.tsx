@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { PirQuery } from './__generated__/PirQuery.graphql';
 import PirHeader from './PirHeader';
@@ -16,6 +16,7 @@ import { PirThreatMapQuery } from './__generated__/PirThreatMapQuery.graphql';
 const pirQuery = graphql`
   query PirQuery($id: ID!) {
     pir(id: $id) {
+      id
       ...PirHeaderFragment
       ...PirKnowledgeFragment
       ...PirEditionFragment
@@ -62,28 +63,31 @@ const PirComponent = ({
   return (
     <>
       <PirHeader data={pir} editionData={pir} />
-      <PirTabs>
-        {({ index }) => (
-          <>
-            <div role="tabpanel" hidden={index !== 0}>
-              <PirOverview
-                dataHistory={history}
-                dataDetails={pir}
-                dataThreatMap={relationships}
-              />
-            </div>
-            <div role="tabpanel" hidden={index !== 1}>
-              <PirKnowledge data={pir} />
-            </div>
-            <div role="tabpanel" hidden={index !== 2}>
-              ttps
-            </div>
-            <div role="tabpanel" hidden={index !== 3}>
-              analyses
-            </div>
-          </>
-        )}
-      </PirTabs>
+      <PirTabs pirId={pir.id} />
+      <Routes>
+        <Route
+          path="/"
+          element={(
+            <PirOverview
+              dataHistory={history}
+              dataDetails={pir}
+              dataThreatMap={relationships}
+            />
+          )}
+        />
+        <Route
+          path="/knowledge"
+          element={<PirKnowledge data={pir} />}
+        />
+        <Route
+          path="/ttps"
+          element={<p>ttps</p>}
+        />
+        <Route
+          path="/analyses"
+          element={<p>analyses</p>}
+        />
+      </Routes>
     </>
   );
 };
