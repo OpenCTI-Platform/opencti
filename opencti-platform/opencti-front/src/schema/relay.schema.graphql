@@ -13258,6 +13258,7 @@ type Pir implements InternalObject & BasicObject {
   objectMarking: [MarkingDefinition!]
   name: String!
   description: String
+  pir_rescan_days: Int!
   pir_criteria: [PirCriterion!]!
   pir_filters: String!
   lastEventId: String!

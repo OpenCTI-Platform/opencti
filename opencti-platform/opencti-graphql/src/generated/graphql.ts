@@ -19634,6 +19634,7 @@ export type Pir = BasicObject & InternalObject & {
   parent_types: Array<Scalars['String']['output']>;
   pir_criteria: Array<PirCriterion>;
   pir_filters: Scalars['String']['output'];
+  pir_rescan_days: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
@@ -40706,6 +40707,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pir_criteria?: Resolver<Array<ResolversTypes['PirCriterion']>, ParentType, ContextType>;
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pir_rescan_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

@@ -21,6 +21,7 @@ type Pir implements InternalObject & BasicObject {
     # Pir
     name: String!
     description: String
+    pir_rescan_days: Int!
     pir_criteria: [PirCriterion!]!
     pir_filters: String!
     lastEventId: String!
