@@ -14,6 +14,7 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
 
@@ -82,6 +83,8 @@ const AttackPatternsMatrixColumns = ({
   isModeOnlyActive,
 }: AttackPatternsMatrixColumnsProps) => {
   const theme = useTheme<Theme>();
+  const { isFeatureEnable } = useHelper();
+  const isSecurityPlatformEnabled = isFeatureEnable('SECURITY_PLATFORM');
   const { t_i18n } = useFormatter();
   const [hover, setHover] = useState<Record<string, boolean>>({});
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
@@ -212,7 +215,7 @@ const AttackPatternsMatrixColumns = ({
                         <Typography variant="body2" fontSize={10}>
                           {ap.name}
                         </Typography>
-                        {ap.isOverlaping && (
+                        {isSecurityPlatformEnabled && ap.isOverlaping && (
                           <Tooltip
                             title={t_i18n('Should cover')}
                             sx={{
