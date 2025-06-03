@@ -11,6 +11,7 @@ export interface PirCreationFormData {
   name: string
   description: string
   markings: FieldOption[]
+  rescan_period: number
   confidence: number | null
   // TODO PIR should have different defs depending of type
   locations: FieldOption[]
@@ -33,6 +34,7 @@ export const pirFormDataToMutationInput = (data: PirCreationFormData): PirAddInp
     name: data.name,
     description: data.description ?? undefined,
     objectMarking: data.markings.map((m) => m.value),
+    rescan_period: data.rescan_period * 24 * 3600, // convert days in seconds
     pir_filters: {
       mode: 'and',
       filterGroups: [],

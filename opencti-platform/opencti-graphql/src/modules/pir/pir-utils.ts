@@ -1,3 +1,4 @@
+import { dissoc } from 'ramda';
 import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type ParsedPir, type PirExplanation } from './pir-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
@@ -31,7 +32,7 @@ export const parsePir = (pir: BasicStoreEntityPir): ParsedPir => {
  */
 export const serializePir = (pir: PirAddInput) => {
   return {
-    ...pir,
+    ...dissoc('rescan_period', pir),
     pir_filters: JSON.stringify(pir.pir_filters),
     pir_criteria: pir.pir_criteria.map((c) => ({
       ...c,

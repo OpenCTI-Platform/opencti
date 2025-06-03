@@ -19644,6 +19644,7 @@ export type PirAddInput = {
   objectMarking?: InputMaybe<Array<Scalars['String']['input']>>;
   pir_criteria: Array<PirCriterionInput>;
   pir_filters: FilterGroup;
+  rescan_period: Scalars['Int']['input'];
 };
 
 export type PirConnection = {
