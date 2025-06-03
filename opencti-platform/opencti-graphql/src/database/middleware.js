@@ -186,7 +186,7 @@ import {
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache, getEntityFromCache } from './cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
@@ -231,7 +231,6 @@ import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUt
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
-import { batchCreator } from '../domain/user';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -1969,7 +1968,8 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
   let creators = [];
   if (creatorsIds.length > 0 && !(creatorsIds.length === 1 && creatorsIds.includes(user.id))) {
     // get creators only if it's not the current user (which will be 'itself')
-    creators = await batchCreator(context, user, creatorsIds);
+    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    creators = creatorsIds.map((id) => platformUsers.get(id));
   }
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
 };
