@@ -2,12 +2,10 @@ import React from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import StixDomainObjectKnowledge from '@components/common/stix_domain_objects/StixDomainObjectKnowledge';
-import StixDomainObjectAuthorKnowledge from '@components/common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 import { SecurityPlatformKnowledge_securityPlatform$key } from '@components/entities/securityPlatforms/__generated__/SecurityPlatformKnowledge_securityPlatform.graphql';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
-import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -25,7 +23,6 @@ const securityPlatformKnowledgeFragment = graphql`
 
 const SecurityPlatformKnowledgeComponent = ({
   securityPlatformData,
-  relatedRelationshipTypes,
 }: {
   securityPlatformData: SecurityPlatformKnowledge_securityPlatform$key;
   relatedRelationshipTypes: string[]
@@ -60,17 +57,11 @@ const SecurityPlatformKnowledgeComponent = ({
       />
       <Route
         path="/overview"
-        element={(viewAs === 'knowledge' ? (
+        element={
           <StixDomainObjectKnowledge
             stixDomainObjectId={securityPlatform.id}
             stixDomainObjectType="SecurityPlatform"
           />
-        ) : (
-          <StixDomainObjectAuthorKnowledge
-            stixDomainObjectId={securityPlatform.id}
-            stixDomainObjectType="SecurityPlatform"
-          />
-        ))
         }
       />
       <Route
@@ -81,13 +72,13 @@ const SecurityPlatformKnowledgeComponent = ({
             entityId={securityPlatform.id}
             relationshipTypes={allRelationshipsTypes}
             entityLink={link}
-            defaultStartTime={startTime}
-            defaultStopTime={stopTime}
+            defaultStartTime={null}
+            defaultStopTime={null}
             allDirections
             stixCoreObjectTypes={['']}
             currentView={''}
-            enableContextualView
-            isRelationReversed
+            enableContextualView={true}
+            isRelationReversed={true}
           />
         }
       />
@@ -97,15 +88,15 @@ const SecurityPlatformKnowledgeComponent = ({
           <EntityStixCoreRelationships
             key={location.pathname}
             entityId={securityPlatform.id}
-            relationshipTypes={relatedRelationshipTypes}
+            relationshipTypes={['related-to']}
             entityLink={link}
-            defaultStartTime={securityPlatform.first_seen}
-            defaultStopTime={securityPlatform.last_seen}
+            defaultStartTime={null}
+            defaultStopTime={null}
             allDirections
             stixCoreObjectTypes={['']}
             currentView={''}
-            enableContextualView
-            isRelationReversed
+            enableContextualView={true}
+            isRelationReversed={true}
           />
         }
       />
@@ -114,8 +105,8 @@ const SecurityPlatformKnowledgeComponent = ({
         element={
           <StixDomainObjectAttackPatterns
             stixDomainObjectId={securityPlatform.id}
-            defaultStartTime={securityPlatform.first_seen}
-            defaultStopTime={securityPlatform.last_seen}
+            defaultStartTime={null}
+            defaultStopTime={null}
             disableExport={false}
           />
         }
@@ -126,14 +117,14 @@ const SecurityPlatformKnowledgeComponent = ({
           <EntityStixCoreRelationships
             key={location.pathname}
             entityId={securityPlatform.id}
-            relationshipTypes={['uses']}
+            relationshipTypes={['targets']}
             stixCoreObjectTypes={['Tool']}
             entityLink={link}
-            defaultStartTime={securityPlatform.first_seen}
-            defaultStopTime={securityPlatform.last_seen}
+            defaultStartTime={null}
+            defaultStopTime={null}
             currentView={''}
-            enableContextualView
-            isRelationReversed
+            enableContextualView={true}
+            isRelationReversed={true}
           />
         }
       />
@@ -143,14 +134,14 @@ const SecurityPlatformKnowledgeComponent = ({
           <EntityStixCoreRelationships
             key={location.pathname}
             entityId={securityPlatform.id}
-            relationshipTypes={['employed-by', 'impersonates']}
+            relationshipTypes={['part-of', 'derived-from']}
             stixCoreObjectTypes={['Organization']}
             entityLink={link}
-            defaultStartTime={securityPlatform.first_seen}
-            defaultStopTime={securityPlatform.last_seen}
+            defaultStartTime={null}
+            defaultStopTime={null}
             currentView={''}
-            enableContextualView
-            isRelationReversed
+            enableContextualView={true}
+            isRelationReversed={true}
           />
         }
       />
@@ -160,8 +151,8 @@ const SecurityPlatformKnowledgeComponent = ({
           <EntityStixCoreRelationshipsIndicators
             entityId={securityPlatform.id}
             entityLink={link}
-            defaultStartTime={securityPlatform.first_seen}
-            defaultStopTime={securityPlatform.last_seen}
+            defaultStartTime={null}
+            defaultStopTime={null}
           />
         }
       />
@@ -175,30 +166,10 @@ const SecurityPlatformKnowledgeComponent = ({
             stixCoreObjectTypes={['Infrastructure']}
             entityLink={link}
             isRelationReversed={false}
-            defaultStartTime={securityPlatform.first_seen}
-            defaultStopTime={securityPlatform.last_seen}
+            defaultStartTime={null}
+            defaultStopTime={null}
             currentView={''}
             enableContextualView
-          />
-        }
-      />
-      <Route
-        path="/sightings"
-        element={
-          <EntityStixSightingRelationships
-            entityId={securityPlatform.id}
-            entityLink={link}
-            isTo={false}
-            stixCoreObjectTypes={[
-              'Region',
-              'Country',
-              'City',
-              'Position',
-              'Sector',
-              'Organization',
-              'Individual',
-              'System',
-            ]}
           />
         }
       />

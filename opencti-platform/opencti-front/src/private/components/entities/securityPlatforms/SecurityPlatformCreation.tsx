@@ -39,7 +39,7 @@ const SecurityPlatformCreation: FunctionComponent<SecurityPlatformCreationProps>
   const CreateSecurityPlatformControlledDial = (
     props: DrawerControlledDialProps,
   ) => (
-    <CreateEntityControlledDial entityType='security_Platform' {...props} />
+    <CreateEntityControlledDial entityType='SecurityPlatform' {...props} />
   );
 
   return (

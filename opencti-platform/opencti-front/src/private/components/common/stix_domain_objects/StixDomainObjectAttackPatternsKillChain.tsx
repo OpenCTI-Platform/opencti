@@ -403,7 +403,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             viewButtons={viewButtons}
             targetTypes={['Attack-Pattern']}
             direction={'fromEntity'}
-            relationshipTypes={['uses']}
+            relationshipTypes={['uses', 'should-cover']}
             storageKey={storageKey}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
