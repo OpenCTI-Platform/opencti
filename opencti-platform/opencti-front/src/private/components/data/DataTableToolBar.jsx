@@ -858,7 +858,6 @@ class DataTableToolBar extends Component {
       { label: t('Labels'), value: 'object-label' },
       checkTypes(typesWithAssignee) && { label: t('Assignees'), value: 'object-assignee' },
       checkTypes(typesWithParticipant) && { label: t('Participant'), value: 'object-participant' },
-      actionsInputs[i]?.type === 'ADD' && { label: t('In containers'), value: 'container-object' },
       ((actionsInputs[i]?.type === 'ADD' && isAdmin) || (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && { label: t('Creator'), value: 'creator_id' },
       (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
       checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Kill chains'), value: 'killChainPhases' },
