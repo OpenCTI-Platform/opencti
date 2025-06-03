@@ -40,10 +40,19 @@ export const serializePir = (pir: PirAddInput) => {
   };
 };
 
-export const computePirScore = async (context: AuthContext, user: AuthUser, pirId: string, dependencies: PirExplanation[]) => {
+/**
+ * Determines the score of an array of explanations against a PIR.
+ *
+ * @param context
+ * @param user
+ * @param pirId ID of the PIR to check the score.
+ * @param explanations List of explanations used to compute score.
+ * @returns An integer between 0 and 100.
+ */
+export const computePirScore = async (context: AuthContext, user: AuthUser, pirId: string, explanations: PirExplanation[]) => {
   const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   const maxScore = pir.pir_criteria.reduce((acc, val) => acc + val.weight, 0);
-  const depScore = dependencies.reduce((acc, val) => acc + val.criterion.weight, 0);
+  const depScore = explanations.reduce((acc, val) => acc + val.criterion.weight, 0);
   if (maxScore <= 0) return 0;
   return Math.round((depScore / maxScore) * 100);
 };
