@@ -1,7 +1,6 @@
 import * as htmlToImage from 'html-to-image';
 import fileDownload from 'js-file-download';
 import pdfMake from 'pdfmake';
-import * as htmlToImageDebug from './debug/htmltoimagedebug';
 
 const ignoredClasses = [
   'MuiDialog-root',
@@ -23,24 +22,14 @@ export const exportImage = (
 ) => {
   const container = document.getElementById(domElementId);
   return new Promise((resolve, reject) => {
-    console.log('toPixelData');
-    htmlToImageDebug
-      .toBlobDebug(container, {
+    htmlToImage
+      .toBlob(container, {
         useCORS: true,
         allowTaint: true,
         skipFonts: true,
-        skipAutoScale: true,
-        preferredFontFormat: 'woff',
-        pixelRatio: 1,
-        backgroundColor: '#fff',
-        cacheBust: true,
-        includeQueryParams: true,
-        style: {
-          transition: 'none',
-          '-moz-transition': 'none',
-          '-webkit-transition': 'none',
-          '-o-transition': 'none',
-        },
+        pixelRatio,
+        backgroundColor,
+        style: { margin: 0 },
         filter: (domNode) => {
           if (domNode.className) {
             for (const ignoredClass of ignoredClasses) {
@@ -56,7 +45,6 @@ export const exportImage = (
         },
       })
       .then((blob) => {
-        console.log('Got blob:', blob);
         fileDownload(blob, `${name}.png`, 'image/png');
         if (adjust) {
           container.setAttribute(
