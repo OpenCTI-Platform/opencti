@@ -61,7 +61,8 @@ export const AccordionAttackPattern = ({ ap, handleToggleHover, handleOpen, colo
           <IconButton onClick={handleToggleAccordion}>
             <ArrowForwardIosSharpIcon sx={{
               fontSize: '0.9rem',
-            }} />
+            }}
+            />
           </IconButton>
         }
         sx={{

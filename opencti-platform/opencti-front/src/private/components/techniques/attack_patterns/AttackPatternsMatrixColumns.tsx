@@ -5,6 +5,7 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
+import Typography from '@mui/material/Typography';
 import { AttackPatternsMatrixColumns_data$data, AttackPatternsMatrixColumns_data$key } from './__generated__/AttackPatternsMatrixColumns_data.graphql';
 import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
 import { truncate } from '../../../../utils/String';
@@ -12,7 +13,6 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
-import Typography from '@mui/material/Typography';
 import { AccordionAttackPattern } from '../../../../components/Accordion';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -22,7 +22,7 @@ type SubAttackPattern = NonNullable<AttackPattern['subAttackPatterns']>[number];
 type MinimalAttackPattern = {
   attack_pattern_id: string,
   name: string
-}
+};
 
 interface AttackPatternsMatrixColumnsProps extends AttackPatternsMatrixProps {
   queryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
