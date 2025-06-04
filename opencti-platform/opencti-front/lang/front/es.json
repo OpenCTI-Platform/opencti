@@ -1257,6 +1257,7 @@
   "entity_RetentionRule": "Política de retención",
   "entity_Role": "Función",
   "entity_Sector": "Sector",
+  "entity_SecurityPlatform": "Plataforma de seguridad",
   "entity_Sighting": "Deteccion",
   "entity_Software": "Aplicación",
   "entity_Status-Template": "Plantilla de estado",
