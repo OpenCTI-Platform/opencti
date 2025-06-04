@@ -42,7 +42,7 @@ const SecurityPlatformEditionContainer: FunctionComponent<securityPlatformContai
   );
 };
 
-const SecurityPlatformEditionFragment = createFragmentContainer(
+export default createFragmentContainer(
   SecurityPlatformEditionContainer,
   {
     securityPlatform: graphql`
@@ -57,5 +57,3 @@ const SecurityPlatformEditionFragment = createFragmentContainer(
     `,
   },
 );
-
-export default SecurityPlatformEditionContainer;
