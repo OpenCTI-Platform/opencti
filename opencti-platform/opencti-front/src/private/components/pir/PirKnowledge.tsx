@@ -182,7 +182,7 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
       percentWidth: 27,
       render: ({ pir_explanations }) => (
         <div style={{ display: 'flex' }}>
-          {pir_explanations.map((e: any) => (
+          {pir_explanations.map((e: { criterion: { filters: string } }) => (
             <FilterIconButton
               key={e.criterion.filters}
               filters={JSON.parse(e.criterion.filters)}

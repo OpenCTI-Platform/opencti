@@ -40,7 +40,7 @@ const PirCreationFormGeneralSettings = () => {
         required
         variant="standard"
         name="pir_rescan_days"
-        label={t_i18n('PIR Rescan period')}
+        label={t_i18n('PIR Rescan period (days)')}
         fullWidth={true}
         containerstyle={{ marginTop: 20, width: '100%' }}
         helpertext={t_i18n('Period of events on which a rescan is done to flag elements at PIR creation')}
