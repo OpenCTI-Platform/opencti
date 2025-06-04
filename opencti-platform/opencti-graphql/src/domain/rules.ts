@@ -27,7 +27,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { isEmptyField } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
 import { createEntity } from '../database/middleware';
-import { createRuleTask, deleteRuleTasks } from './backgroundTask';
+import { createRuleTask } from './backgroundTask';
 import { notify } from '../database/redis';
 import { getEntitiesListFromCache } from '../database/cache';
 import { isModuleActivated } from './settings';
@@ -89,9 +89,9 @@ export const setRuleActivation = async (context: AuthContext, user: AuthUser, ru
   await notify(BUS_TOPICS[ENTITY_TYPE_RULE].EDIT_TOPIC, rule, user);
   // Refresh the activated rules
   const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');
+  const ruleTaskDescription = `rule ${rule.name} ${active ? 'activation' : 'deactivation'}`;
   if (isRuleEngineActivated) {
-    await deleteRuleTasks(context, user, ruleId);
-    await createRuleTask(context, user, resolvedRule, { rule: ruleId, enable: active });
+    await createRuleTask(context, user, resolvedRule, { rule: ruleId, enable: active, description: ruleTaskDescription });
   }
   await publishUserAction({
     user,

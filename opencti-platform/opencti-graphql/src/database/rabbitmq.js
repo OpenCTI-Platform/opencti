@@ -9,7 +9,7 @@ import { telemetry } from '../config/tracing';
 import { isEmptyField, RABBIT_QUEUE_PREFIX } from './utils';
 import { getHttpClient } from '../utils/http-client';
 import { listAllEntities } from './middleware-loader';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
@@ -25,6 +25,7 @@ const RABBITMQ_CA_PFX = readFileFromConfig('rabbitmq:use_ssl_pfx');
 const RABBITMQ_CA_PASSPHRASE = conf.get('rabbitmq:use_ssl_passphrase');
 const RABBITMQ_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:use_ssl_reject_unauthorized', false);
 const RABBITMQ_MGMT_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:management_ssl_reject_unauthorized', false);
+export const BACKGROUND_TASK_QUEUES = parseInt(conf.get('app:task_scheduler:max_queues_breakdown') ?? '4', 10);
 const RABBITMQ_PUSH_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}push_`;
 const RABBITMQ_LISTEN_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}listen_`;
 const HOSTNAME = conf.get('rabbitmq:hostname');
@@ -188,6 +189,17 @@ export const getConnectorQueueSize = async (context, user, connectorId) => {
   const targetQueues = stats.queues.filter((queue) => queue.name.includes(connectorId));
   return targetQueues.length > 0 ? targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0)) : 0;
 };
+export const getBestBackgroundConnectorId = async (context, user) => {
+  let stats = metricsCache.get('cached_metrics');
+  if (!stats) {
+    stats = await metrics(context, user);
+    metricsCache.set('cached_metrics', stats);
+  }
+  // Find the least used push queue
+  const targetQueues = stats.queues.filter((queue) => queue.name.includes(`${RABBIT_QUEUE_PREFIX}push_background-task`));
+  const bestQueue = targetQueues.sort((a, b) => (a.messages ?? 0) - (b.messages ?? 0))[0];
+  return bestQueue.name.substring(`${RABBIT_QUEUE_PREFIX}push_`.length);
+};
 
 export const connectorConfig = (id, listen_callback_uri = undefined) => ({
   connection: config(),
@@ -237,11 +249,16 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   return connectorConfig(id);
 };
 
-// region RETRO COMPATIBILITY Register internal queues
-/** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
 export const initializeInternalQueues = async () => {
+  // region deprecated fixed queues
+  /** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
   await registerConnectorQueues('playbook', 'Internal playbook manager', 'internal', 'playbook');
   await registerConnectorQueues('sync', 'Internal sync manager', 'internal', 'sync');
+  // endregion
+  // Background task queues
+  for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
+    await registerConnectorQueues(`background-task-${i}`, `Background ${i} queue`, 'internal', ENTITY_TYPE_BACKGROUND_TASK);
+  }
 };
 
 // This method reinitialize the expected queues in rabbitmq

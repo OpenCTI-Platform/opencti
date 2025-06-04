@@ -21,6 +21,7 @@ import {
   EPSS_SCORE_FILTER,
   INCIDENT_RESPONSE_TYPES_FILTER,
   INCIDENT_TYPE_FILTER,
+  IDS_FILTER,
   INDICATOR_FILTER,
   LABEL_FILTER,
   MAIN_OBSERVABLE_TYPE_FILTER,
@@ -63,6 +64,16 @@ import { UnsupportedError } from '../../../config/errors';
  */
 export const testMarkingFilter = (stix: any, filter: Filter) => {
   const stixValues: string[] = stix.object_marking_refs ?? [];
+  return testStringFilter(filter, stixValues);
+};
+
+/**
+ * ENTITY IDS
+ * - ids is type in stix (in extension or generated from stix data)
+ * - we must also search in other ids
+ */
+export const testIds = (stix: any, filter: Filter) => {
+  const stixValues: string[] = [stix.extensions?.[STIX_EXT_OCTI]?.id, stix.id, ...(stix.extensions?.[STIX_EXT_OCTI]?.stix_ids ?? [])];
   return testStringFilter(filter, stixValues);
 };
 
@@ -441,6 +452,7 @@ export const testCvssSeverity = (stix: any, filter: Filter) => {
  */
 export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   // basic keys
+  [IDS_FILTER]: testIds,
   [ASSIGNEE_FILTER]: testAssignee,
   [PARTICIPANT_FILTER]: testParticipant,
   [AUTHORIZED_FILTER]: testAuthorize,

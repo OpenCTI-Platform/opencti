@@ -3,10 +3,10 @@
     "port": 4010,
     "performance_logger": false,
     "enabled_dev_features": ["*"],
-    "sync_raw_start_remote_uri": "http://localhost:4200/graphql",
-    "sync_live_start_remote_uri": "http://localhost:4200/graphql",
-    "sync_direct_start_remote_uri": "http://localhost:4200/graphql",
-    "sync_restore_start_remote_uri": "http://localhost:4200/graphql",
+    "sync_raw_start_remote_uri": "http://127.0.0.1:4200/graphql",
+    "sync_live_start_remote_uri": "http://127.0.0.1:4200/graphql",
+    "sync_direct_start_remote_uri": "http://127.0.0.1:4200/graphql",
+    "sync_restore_start_remote_uri": "http://127.0.0.1:4200/graphql",
     "app_logs": {
       "logs_level": "info",
       "logs_files": false,
@@ -24,7 +24,7 @@
     "telemetry": {
       "tracing": {
         "enabled": false,
-        "exporter_otlp": "http://localhost:4318/v1/traces"
+        "exporter_otlp": "http://127.0.0.1:4318/v1/traces"
       },
       "metrics": {
         "enabled": false,
@@ -44,26 +44,26 @@
   },
   "http_proxy": "http://proxy.opencti.io:2000",
   "https_proxy": "https://proxy.opencti.io:2100",
-  "no_proxy": "localhost,127.0.0.0/8,internal.opencti.io,rabbitmq",
+  "no_proxy": "127.0.0.1,127.0.0.0/8,internal.opencti.io,rabbitmq",
   "https_proxy_ca": [],
   "https_proxy_reject_unauthorized": false,
   "redis": {
     "namespace": "test",
-    "hostname": "localhost",
+    "hostname": "127.0.0.1",
     "include_inferences": true
   },
   "elasticsearch": {
     "index_prefix": "test",
-    "url": "http://localhost:9200"
+    "url": "http://127.0.0.1:9200"
   },
   "minio": {
     "bucket_name": "test",
-    "endpoint": "localhost",
+    "endpoint": "127.0.0.1",
     "port": 9000
   },
   "rabbitmq": {
     "queue_prefix": "test",
-    "hostname": "localhost"
+    "hostname": "127.0.0.1"
   },
   "subscription_scheduler": {
     "enabled": false

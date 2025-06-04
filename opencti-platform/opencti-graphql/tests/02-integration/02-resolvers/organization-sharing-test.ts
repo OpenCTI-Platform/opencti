@@ -8,6 +8,7 @@ import {
   getOrganizationIdByName,
   PLATFORM_ORGANIZATION,
   PYTHON_PATH,
+  TEN_SECONDS,
   TEST_ORGANIZATION,
   testContext,
   USER_EDITOR
@@ -15,12 +16,12 @@ import {
 import { adminQueryWithSuccess, enableCEAndUnSetOrganization, enableEEAndSetOrganization, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { findById } from '../../../src/domain/report';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import { taskHandler } from '../../../src/manager/taskManager';
+import { wait } from '../../../src/database/utils';
 
 const ORGANIZATION_SHARING_QUERY = gql`
   mutation StixCoreObjectSharingGroupAddMutation(
     $id: ID!
-    $organizationId: ID!
+    $organizationId: [ID!]!
   ) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {
@@ -112,10 +113,7 @@ describe('Organization sharing standard behavior for container', () => {
       variables: { id: reportInternalId, organizationId }
     });
     expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
-    expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization[0].name).toEqual(TEST_ORGANIZATION.name);
-
-    // Need background task magic to happens for sharing
-    await taskHandler();
+    await wait(TEN_SECONDS * 2); // let some time for task manager & worker to handle organization sharing
   });
   it('should Editor user access all objects', async () => {
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {

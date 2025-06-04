@@ -1120,6 +1120,7 @@ type BackgroundTaskAction {
 interface BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1128,11 +1129,13 @@ interface BackgroundTask {
   task_expected_number: Int
   task_processed_number: Int
   errors: [BackgroundTaskError]
+  work: Work
 }
 
 type RuleTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1143,11 +1146,13 @@ type RuleTask implements BackgroundTask {
   errors: [BackgroundTaskError]
   rule: ID!
   enable: Boolean
+  work: Work
 }
 
 type ListTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1160,11 +1165,13 @@ type ListTask implements BackgroundTask {
   authorized_members: [MemberAccess!]
   authorized_authorities: [String]
   task_ids: [ID!]
+  work: Work
 }
 
 type QueryTask implements BackgroundTask {
   id: ID!
   type: BackgroundTaskType
+  description: String
   initiator: Creator
   actions: [BackgroundTaskAction]
   created_at: DateTime
@@ -1178,6 +1185,7 @@ type QueryTask implements BackgroundTask {
   authorized_authorities: [String]
   task_filters: String!
   task_search: String
+  work: Work
 }
 
 type BackgroundTaskConnectionEdge {
@@ -1209,12 +1217,14 @@ input BackgroundTaskActionInput {
 
 input ListTaskAddInput {
   ids: [ID!]
+  description: String
   actions: [BackgroundTaskActionInput]!
   scope: BackgroundTaskScope!
 }
 
 input QueryTaskAddInput {
   filters: String
+  description: String
   search: String
   excluded_ids: [ID]
   actions: [BackgroundTaskActionInput]!
@@ -8087,6 +8097,7 @@ type Query {
   stixCoreObjectAskAiActivity(id: ID!, language: String, forceRefresh: Boolean): AiActivity
   stixCoreObjectAskAiForecast(id: ID!, language: String, forceRefresh: Boolean): AiForecast
   stixCoreObjectAskAiHistory(id: ID!, language: String, forceRefresh: Boolean): AiHistory
+  stixCoreBackgroundActiveOperations(id: ID!): [BackgroundTask!]
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   stixCoreObjectsRestricted(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection
@@ -8460,7 +8471,7 @@ type SynchronizerEditMutations {
 }
 
 type StixEditMutations {
-  delete: ID
+  delete(forceDelete: Boolean): ID
   merge(stixObjectsIds: [String]!): StixObject
 }
 
@@ -8486,6 +8497,7 @@ type ExternalReferenceEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
   askEnrichment(connectorId: ID!): Work
+  askEnrichments(connectorIds: [ID!]!): [Work!]
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean): File
 }
 
@@ -8532,9 +8544,11 @@ type StixCoreObjectEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreObject
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreObject
-  restrictionOrganizationAdd(organizationId: ID!): StixCoreObject
-  restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
+  clearAccessRestriction: StixCoreObject
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
   askEnrichment(connectorId: ID!): Work
+  askEnrichments(connectorIds: [ID!]!): [Work!]
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
@@ -8813,8 +8827,8 @@ type StixCoreRelationshipEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
-  restrictionOrganizationAdd(organizationId: ID!): StixCoreRelationship
-  restrictionOrganizationDelete(organizationId: ID!): StixCoreRelationship
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship
   removeFromDraft: ID
 }
 
@@ -8826,8 +8840,8 @@ type StixSightingRelationshipEditMutations {
   relationAdd(input: StixRefRelationshipAddInput!): StixSightingRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixSightingRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
-  restrictionOrganizationAdd(organizationId: ID!): StixSightingRelationship
-  restrictionOrganizationDelete(organizationId: ID!): StixSightingRelationship
+  restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship
+  restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship
   removeFromDraft: ID
 }
 
@@ -8865,6 +8879,9 @@ type Mutation {
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   ruleSetActivation(id: ID!, enable: Boolean!): Rule!
   ruleManagerClean(eventId: ID): RuleManager!
+  ruleApply(elementId: ID!, ruleId: ID!): Boolean
+  ruleClear(elementId: ID!, ruleId: ID!): Boolean
+  rulesRescan(elementId: ID!): Boolean
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean
   token(input: UserLoginInput): String
   otpActivation(input: UserOTPActivationInput): MeUser

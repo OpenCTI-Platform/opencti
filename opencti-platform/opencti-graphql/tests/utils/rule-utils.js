@@ -2,12 +2,13 @@ import { expect } from 'vitest';
 import gql from 'graphql-tag';
 import { listThings } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
-import { READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait } from '../../src/database/utils';
+import { isNotEmptyField, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait } from '../../src/database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
-import { internalLoadById, listEntities } from '../../src/database/middleware-loader';
+import { internalFindByIds, internalLoadById, listEntities } from '../../src/database/middleware-loader';
 import { queryAsAdmin, testContext } from './testQuery';
 import { fetchStreamInfo } from '../../src/database/redis';
 import { logApp } from '../../src/config/conf';
+import { TASK_TYPE_RULE } from '../../src/domain/backgroundTask-common';
 
 export const inferenceLookup = async (inferences, fromStandardId, toStandardId, type) => {
   for (let index = 0; index < inferences.length; index += 1) {
@@ -44,12 +45,28 @@ export const changeRule = async (ruleId, active) => {
   // Wait for rule to finish activation
   let ruleActivated = false;
   while (ruleActivated !== true) {
+    // Handle tasks
     const tasks = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK], { connectionFormat: false });
-    const allDone = tasks.filter((t) => !t.completed).length === 0;
-    tasks.forEach((t) => {
+    const ruleActivationTask = tasks.filter((t) => t.type === TASK_TYPE_RULE && t.rule === ruleId && t.enable === active);
+    ruleActivationTask.forEach((t) => {
+      if (t.errors.length > 0) {
+        logApp.info('[RULE TEST] Change rule tasks failure', { active, errors: t.errors });
+      }
       expect(t.errors.length).toBe(0);
     });
-    ruleActivated = allDone;
+    const doneProvision = ruleActivationTask.filter((t) => !t.completed).length === 0;
+    // Handle works
+    const workIds = ruleActivationTask.map((task) => task.work_id).filter((workId) => isNotEmptyField(workId));
+    const works = await internalFindByIds(testContext, SYSTEM_USER, workIds, { indices: [READ_INDEX_HISTORY] });
+    works.forEach((w) => {
+      if (w.errors.length > 0) {
+        logApp.info('[RULE TEST] Change rule works failure', { active, errors: w.errors });
+      }
+      expect(w.errors.length, `Something is wrong with this query: ${w.errors.map((e) => e.message).join(' || ')}`).toBe(0);
+    });
+    const doneWorks = works.filter((t) => t.status !== 'complete').length === 0;
+    // Final status
+    ruleActivated = doneProvision && doneWorks;
     await wait(1000);
   }
   // Wait all events to be consumed

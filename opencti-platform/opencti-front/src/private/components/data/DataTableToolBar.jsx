@@ -346,6 +346,7 @@ class DataTableToolBar extends Component {
       actionsInputs: [{}],
       keptEntityId: null,
       mergingElement: null,
+      description: '',
       processing: false,
       markingDefinitions: [],
       labels: [],
@@ -398,6 +399,7 @@ class DataTableToolBar extends Component {
       keptEntityId: null,
       mergingElement: null,
       processing: false,
+      description: '',
     });
   }
 
@@ -749,7 +751,7 @@ class DataTableToolBar extends Component {
 
   submitTask(availableFilterKeys, isInDraft) {
     this.setState({ processing: true });
-    const { actions, mergingElement, promoteToContainer } = this.state;
+    const { description, actions, mergingElement, promoteToContainer } = this.state;
     const {
       filters,
       search,
@@ -787,6 +789,7 @@ class DataTableToolBar extends Component {
         mutation: toolBarQueryTaskAddMutation,
         variables: {
           input: {
+            description,
             filters: jsonFilters,
             search,
             actions: finalActions,
@@ -815,6 +818,7 @@ class DataTableToolBar extends Component {
         mutation: toolBarListTaskAddMutation,
         variables: {
           input: {
+            description,
             ids: mergingElement
               ? [mergingElement.id]
               : Object.keys(selectedElements),
@@ -854,7 +858,6 @@ class DataTableToolBar extends Component {
       { label: t('Labels'), value: 'object-label' },
       checkTypes(typesWithAssignee) && { label: t('Assignees'), value: 'object-assignee' },
       checkTypes(typesWithParticipant) && { label: t('Participant'), value: 'object-participant' },
-      actionsInputs[i]?.type === 'ADD' && { label: t('In containers'), value: 'container-object' },
       ((actionsInputs[i]?.type === 'ADD' && isAdmin) || (actionsInputs[i]?.type === 'REPLACE' && isAdmin)) && { label: t('Creator'), value: 'creator_id' },
       (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REMOVE') && { label: t('External references'), value: 'external-reference' },
       checkTypes(typesWithKillChains) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && { label: t('Kill chains'), value: 'killChainPhases' },
@@ -3002,7 +3005,9 @@ class DataTableToolBar extends Component {
                       const shareActions = [
                         { type: 'SHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
                       ];
-                      this.setState({ actions: shareActions }, () => {
+                      const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
+                      const sharingDescription = `SHARE with organizations ${orgaNames}`;
+                      this.setState({ description: sharingDescription, actions: shareActions }, () => {
                         this.handleCloseShare();
                         this.handleOpenTask();
                       });
@@ -3066,7 +3071,9 @@ class DataTableToolBar extends Component {
                       const shareActions = [
                         { type: 'UNSHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
                       ];
-                      this.setState({ actions: shareActions }, () => {
+                      const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
+                      const sharingDescription = `UNSHARE with organizations ${orgaNames}`;
+                      this.setState({ description: sharingDescription, actions: shareActions }, () => {
                         this.handleCloseUnshare();
                         this.handleOpenTask();
                       });

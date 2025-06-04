@@ -136,9 +136,7 @@ const RootReport = () => {
                       alignItem: 'center',
                     }}
                   >
-                    <Tabs
-                      value={getCurrentTab(location.pathname, report.id, '/dashboard/analyses/reports')}
-                    >
+                    <Tabs value={getCurrentTab(location.pathname, report.id, '/dashboard/analyses/reports')}>
                       <Tab
                         component={Link}
                         to={`/dashboard/analyses/reports/${report.id}`}

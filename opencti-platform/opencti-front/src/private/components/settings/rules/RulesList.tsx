@@ -12,6 +12,7 @@ import type { Theme } from '../../../../components/Theme';
 
 export type Rule = NonNullable<RulesList_data$data['rules']>[number];
 export type Task = NonNullable<NonNullable<NonNullable<RulesList_data$data['backgroundTasks']>['edges']>[number]>['node'];
+export type Work = NonNullable<NonNullable<NonNullable<RulesList_data$data['backgroundTasks']>['edges']>[number]>['node']['work'];
 
 const fragmentData = graphql`
   fragment RulesList_data on Query {
@@ -60,6 +61,36 @@ const fragmentData = graphql`
           task_expected_number
           task_processed_number
           completed
+          ... on RuleTask {
+            rule
+            enable
+          }
+          work {
+            id
+            connector {
+              name
+            }
+            user {
+              name
+            }
+            completed_time
+            received_time
+            tracking {
+              import_expected_number
+              import_processed_number
+            }
+            messages {
+              timestamp
+              message
+            }
+            errors {
+              timestamp
+              message
+            }
+            status
+            timestamp
+            draft_context
+          }
           ... on RuleTask {
             rule
             enable

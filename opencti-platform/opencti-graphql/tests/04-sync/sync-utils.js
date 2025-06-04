@@ -65,7 +65,7 @@ export const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
 export const VOCABULARY_NUMBERS = 344;
 export const INDICATOR_NUMBERS = 28;
 export const MALWARE_NUMBERS = 27;
-export const LABEL_NUMBERS = 13;
+export const LABEL_NUMBERS = 17;
 export const UPLOADED_FILE_SIZE = 42204;
 
 const filterOutDeleteOperationRefs = {
@@ -89,7 +89,7 @@ export const checkPreSyncContent = async () => {
   // Relations
   const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type', filters: filterOutDeleteOperationRefs });
   const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
-  expect(relMap.get('Object')).toEqual(193);
+  expect(relMap.get('Object')).toEqual(191);
   expect(relMap.get('Indicates')).toEqual(59);
   expect(relMap.get('Uses')).toEqual(28);
   // Report content
