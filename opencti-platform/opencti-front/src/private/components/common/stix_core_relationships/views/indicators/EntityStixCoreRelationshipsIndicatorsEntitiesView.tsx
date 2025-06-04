@@ -169,7 +169,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
         key: 'regardingOf',
         values: [
           { key: 'id', values: [entityId] },
-          { key: 'relationship_type', values: ['indicates'] },
+          { key: 'relationship_type', values: relationshipTypes },
         ],
       },
     ],

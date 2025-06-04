@@ -22,6 +22,7 @@ interface EntityStixCoreRelationshipsIndicatorsProps {
   entityLink: string
   defaultStartTime: string
   defaultStopTime: string
+  relationshipTypes?: string[]
 }
 
 const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRelationshipsIndicatorsProps> = ({
@@ -29,9 +30,9 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
   entityLink,
   defaultStartTime,
   defaultStopTime,
+  relationshipTypes = ['indicates'],
 }) => {
   const classes = useStyles();
-  const relationshipTypes = ['indicates', 'should-cover'];
   const entityTypes = ['Indicator'];
   const LOCAL_STORAGE_KEY = `indicators-relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`;
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
