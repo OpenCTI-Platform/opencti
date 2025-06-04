@@ -5,6 +5,8 @@
   "... successfully deleted": "{entity_type} 正常に削除されました",
   "{count} days": "{count}}日",
   "{count} email address(es) extracted from pasted text": "貼り付けられたテキストから抽出された{count}メールアドレス",
+  "{entityType} `{entityName}` added to `{pirName}`": "{entityType}2}}` に `{entityName}` が追加された。",
+  "{entityType} `{entityName}` removed from `{pirName}`": "{entityType}2}}` から `{entityName}` が削除された。",
   "+ N override(s)": "+ {count} オーバーライド（複数可）",
   "0 equals no maximum": "0 は最大値なし",
   "1 day": "1日",

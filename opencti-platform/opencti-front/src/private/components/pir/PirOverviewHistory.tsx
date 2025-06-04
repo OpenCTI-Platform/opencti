@@ -1,5 +1,4 @@
 import Typography from '@mui/material/Typography';
-import Badge from '@mui/material/Badge';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
 import React from 'react';
@@ -8,11 +7,21 @@ import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined } from '@mui/ic
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import { graphql, useFragment } from 'react-relay';
 import { useTheme } from '@mui/material/styles';
+import { PirOverviewHistoryPirFragment$key } from '@components/pir/__generated__/PirOverviewHistoryPirFragment.graphql';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
 import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { isNotEmptyField } from '../../../utils/utils';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
+import { displayEntityTypeForTranslation } from '../../../utils/String';
+import ItemIcon from '../../../components/ItemIcon';
+
+const pirFragment = graphql`
+  fragment PirOverviewHistoryPirFragment on Pir {
+    id
+    name
+  }
+`;
 
 const pirHistoryFragment = graphql`
   fragment PirOverviewHistoryFragment on Query {
@@ -55,48 +64,52 @@ const pirHistoryFragment = graphql`
 const HISTORY_ICON_CONFIG = {
   create: {
     color: pink[500],
-    icon: <AddOutlined sx={{ fontSize: 15 }} />,
+    icon: <AddOutlined sx={{ fontSize: 14 }} />,
   },
   delete: {
     color: red[500],
-    icon: <DeleteOutlined sx={{ fontSize: 15 }} />,
+    icon: <DeleteOutlined sx={{ fontSize: 14 }} />,
   },
   merge: {
     color: teal[500],
-    icon: <Merge sx={{ fontSize: 15 }} />,
+    icon: <Merge sx={{ fontSize: 14 }} />,
   },
   updateReplaces: {
     color: green[500],
-    icon: <EditOutlined sx={{ fontSize: 15 }} />,
+    icon: <EditOutlined sx={{ fontSize: 14 }} />,
   },
   updateChanges: {
     color: green[500],
-    icon: <EditOutlined sx={{ fontSize: 15 }} />,
+    icon: <EditOutlined sx={{ fontSize: 14 }} />,
   },
   updateAdds: {
     color: indigo[500],
-    icon: <LinkVariantPlus sx={{ fontSize: 15 }} />,
+    icon: <LinkVariantPlus sx={{ fontSize: 14 }} />,
   },
   updateRemoves: {
     color: deepOrange[500],
-    icon: <LinkVariantRemove sx={{ fontSize: 15 }} />,
+    icon: <LinkVariantRemove sx={{ fontSize: 14 }} />,
   },
   default: {
     color: yellow[500],
-    icon: <HelpOutlined sx={{ fontSize: 15 }} />,
+    icon: <HelpOutlined sx={{ fontSize: 14 }} />,
   },
 };
 
 interface PirOverviewHistoryProps {
-  data: PirOverviewHistoryFragment$key
+  dataHistory: PirOverviewHistoryFragment$key
+  dataPir: PirOverviewHistoryPirFragment$key
 }
 
-const PirOverviewHistory = ({ data }: PirOverviewHistoryProps) => {
+const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, nsdt } = useFormatter();
 
-  const { logs } = useFragment(pirHistoryFragment, data);
+  const pir = useFragment(pirFragment, dataPir);
+  const { logs } = useFragment(pirHistoryFragment, dataHistory);
   const history = (logs?.edges ?? []).flatMap((e) => e?.node ?? []);
+
+  console.log(history);
 
   const getIconConfig = ({ event_scope, context_data }: typeof history[0]) => {
     if (event_scope === 'create') return HISTORY_ICON_CONFIG.create;
@@ -112,8 +125,41 @@ const PirOverviewHistory = ({ data }: PirOverviewHistoryProps) => {
     return HISTORY_ICON_CONFIG.default;
   };
 
+  const getHistoryMessage = ({ context_data, entity_type, event_scope, user }: typeof history[0]) => {
+    const message = context_data?.message ?? '';
+    const entityType = t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''));
+
+    if (message.match(/adds .+ in `In PIR`/)) {
+      return t_i18n('', {
+        id: '{entityType} `{entityName}` added to `{pirName}`',
+        values: {
+          entityType,
+          entityName: context_data?.entity_name,
+          pirName: pir.name,
+        },
+      });
+    }
+    if (message.match(/removes .+ in `In PIR`/)) {
+      return t_i18n('', {
+        id: '{entityType} `{entityName}` removed from `{pirName}`',
+        values: {
+          entityType,
+          entityName: context_data?.entity_name,
+          pirName: pir.name,
+        },
+      });
+    }
+
+    const isUpdate = entity_type === 'History'
+      && event_scope === 'update'
+      && isNotEmptyField(context_data?.entity_name);
+
+    // Default message
+    return `\`${user?.name}\` ${message} ${isUpdate ? `for \`${context_data?.entity_name}\` (${entityType})` : ''}`;
+  };
+
   return (
-    <div style={{ display: 'flex', gap: theme.spacing(2), flexDirection: 'column' }}>
+    <div style={{ display: 'flex', gap: theme.spacing(3), flexDirection: 'column' }}>
       {history.length === 0 && (
         <Typography variant='body2'>
           {t_i18n('No recent history for this PIR')}
@@ -121,20 +167,9 @@ const PirOverviewHistory = ({ data }: PirOverviewHistoryProps) => {
       )}
 
       {history.map((historyItem) => {
-        const { id, user, context_data, timestamp, entity_type, event_scope } = historyItem;
+        const { id, context_data, timestamp } = historyItem;
         const { color, icon } = getIconConfig(historyItem);
-
-        const isHistoryUpdate = entity_type === 'History'
-          && event_scope === 'update'
-          && isNotEmptyField(context_data?.entity_name);
-
-        const historyMessage = `\`${user?.name}\` ${context_data?.message} ${
-          isHistoryUpdate
-            ? `for \`${context_data?.entity_name}\` (${context_data?.entity_type ? t_i18n(context_data.entity_type.toString()[0] === context_data.entity_type.toString()[0].toUpperCase()
-              ? `entity_${context_data.entity_type.toString()}`
-              : `relationship_${context_data.entity_type.toString()}`) : undefined})` // TODO PIR use displayEntityTypeForTranslation after rebase on master
-            : ''
-        }`;
+        const historyMessage = getHistoryMessage(historyItem);
 
         const content = (
           <MarkdownDisplay
@@ -145,35 +180,41 @@ const PirOverviewHistory = ({ data }: PirOverviewHistoryProps) => {
         );
 
         return (
-          <div
-            style={{ display: 'flex', gap: theme.spacing(2), alignItems: 'center' }}
-            key={id}
-          >
-            <Badge
-              color="secondary"
-              overlap="circular"
-              badgeContent="M"
-              invisible={context_data?.commit === null}
-            >
-              <Avatar
-                sx={{
-                  width: 25,
-                  height: 25,
-                  backgroundColor: 'transparent',
-                  border: `1px solid ${color}`,
-                  color: theme.palette.text?.primary,
-                  cursor: context_data?.commit ? 'pointer' : 'auto',
-                }}
-              >
-                {icon}
-              </Avatar>
-            </Badge>
-            <Tooltip title={content}>
-              <div style={{ flex: '1' }}>{content}</div>
+          <div key={id} style={{ display: 'flex', gap: theme.spacing(2), alignItems: 'flex-start' }}>
+            <Tooltip title={t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''))}>
+              <div>
+                <ItemIcon size="large" type={context_data?.entity_type} />
+              </div>
             </Tooltip>
-            <span style={{ fontSize: 11 }}>
-              {nsdt(timestamp)}
-            </span>
+            <div>
+              <Typography
+                sx={{ marginTop: 0.5, marginBottom: 0 }}
+                variant="h3"
+              >
+                {context_data?.entity_name}
+              </Typography>
+              <Typography
+                color={theme.palette.text?.secondary}
+                sx={{ marginBottom: 1 }}
+                variant="body2"
+              >
+                {nsdt(timestamp)}
+              </Typography>
+              <div style={{ display: 'flex', gap: theme.spacing(2) }}>
+                <Avatar
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    backgroundColor: 'transparent',
+                    border: `1px solid ${color}`,
+                    color: theme.palette.text?.primary,
+                  }}
+                >
+                  <div>{icon}</div>
+                </Avatar>
+                <Tooltip title={content}>{content}</Tooltip>
+              </div>
+            </div>
           </div>
         );
       })}
