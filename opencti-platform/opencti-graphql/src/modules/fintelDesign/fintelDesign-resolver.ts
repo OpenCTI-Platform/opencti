@@ -1,21 +1,11 @@
-import type {File, Resolvers} from '../../generated/graphql';
-import { addFintelDesign, findAll, findById, fintelDesignDelete, fintelDesignEditField } from './fintelDesign-domain';
-import {paginatedForPathWithEnrichment} from "../internal/document/document-domain";
-import {ENTITY_TYPE_FINTEL_TEMPLATE} from "../fintelTemplate/fintelTemplate-types";
-import {ENTITY_TYPE_FINTEL_DESIGN} from "./fintelDesign-types";
-import type {BasicStoreEntityDocument} from "../internal/document/document-types";
+import type { Resolvers } from '../../generated/graphql';
+import { addFintelDesign, findAll, findById, fintelDesignDelete, fintelDesignEditContext, fintelDesignEditField } from './fintelDesign-domain';
 
 const fintelDesignResolvers: Resolvers = {
   Query: {
     fintelDesign: (_, { id }, context) => findById(context, context.user, id),
     fintelDesigns: (_, args, context) => {
       return findAll(context, context.user, args);
-    },
-  },
-  FintelDesign: {
-    importFiles: (fintelDesign: BasicStoreEntityDocument, { first }, context) => {
-      const opts = { first, entity_id: fintelDesign.id, entity_type: ENTITY_TYPE_FINTEL_DESIGN };
-      return paginatedForPathWithEnrichment(context, context.user, `import/${ENTITY_TYPE_FINTEL_DESIGN}/${fintelDesign.id}`, fintelDesign.id, opts);
     },
   },
   Mutation: {
@@ -27,6 +17,9 @@ const fintelDesignResolvers: Resolvers = {
     },
     fintelDesignFieldPatch: (_, args, context) => {
       return fintelDesignEditField(context, context.user, args);
+    },
+    fintelDesignContextPatch: (_, { id, input }, context) => {
+      return fintelDesignEditContext(context, context.user, id, input);
     },
   },
 };

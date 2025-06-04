@@ -1,15 +1,15 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN } from './fintelDesign-types';
-import type {EditInput, FintelDesignAddInput, MutationFintelDesignFieldPatchArgs} from '../../generated/graphql';
+import type { EditContext, FintelDesignAddInput, MutationFintelDesignFieldPatchArgs } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { BUS_TOPICS } from '../../config/conf';
-import { notify } from '../../database/redis';
-import {FunctionalError, UnsupportedError} from "../../config/errors";
-import {type FileUploadData, uploadToStorage} from "../../database/file-storage-helper";
-import {getFileName, guessMimeType} from "../../database/file-storage";
-import {includes} from "ramda";
+import { notify, setEditContext } from '../../database/redis';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { type FileUploadData, uploadToStorage } from '../../database/file-storage-helper';
+import { guessMimeType } from '../../database/file-storage';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityFintelDesign> => {
   return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_DESIGN);
@@ -39,14 +39,14 @@ export const addFintelDesign = async (context: AuthContext, user: AuthUser, fint
 const uploadFintelDesignFile = async (context: AuthContext, user: AuthUser, fintelDesignId: string, file: FileUploadData) => {
   const fullFile = await file;
   const mimeType = guessMimeType(fullFile.filename);
-  const fileName = getFileName(fullFile.filename);
   if (!mimeType.includes('image/')) {
     throw UnsupportedError('Fintel design logo file format must be image/', { mimeType });
   }
-  const fintelDesignLogoFile = { ...fullFile, filename: `${fileName}` };
+  const fintelDesignLogoFile = { ...fullFile, filename: `${fintelDesignId}` };
   const { upload } = await uploadToStorage(context, user, 'fintelDesigns', fintelDesignLogoFile, {});
   return { upload };
 };
+
 export const fintelDesignEditField = async (
   context: AuthContext,
   user: AuthUser,
@@ -57,15 +57,17 @@ export const fintelDesignEditField = async (
   if (!fintelDesign) {
     throw FunctionalError(`Fintel design ${id} cannot be found`);
   }
+  let fileId;
   if (file) {
     const { upload } = await uploadFintelDesignFile(context, user, fintelDesign.internal_id, file);
-    const finalInput = {
-      file_id: upload.id,
-    };
-    await updateAttribute(context, user, id, ENTITY_TYPE_FINTEL_DESIGN, finalInput);
+    fileId = upload.id;
   }
 
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_FINTEL_DESIGN, input);
+  const finalInput = [...(input ?? []), ...(fileId ? [{ key: 'file_id', value: [fileId] }] : [])];
+  if (finalInput.length === 0) {
+    return null;
+  }
+  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_FINTEL_DESIGN, finalInput);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -103,4 +105,11 @@ export const fintelDesignDelete = async (context: AuthContext, user: AuthUser, d
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_DESIGN].DELETE_TOPIC, deleted, user).then(() => designId);
+};
+
+export const fintelDesignEditContext = async (context: AuthContext, user: AuthUser, fintelDesignId: string, input: EditContext) => {
+  await setEditContext(user, fintelDesignId, input);
+  return storeLoadById(context, user, fintelDesignId, ABSTRACT_INTERNAL_OBJECT).then((fintelDesign) => {
+    return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].CONTEXT_TOPIC, fintelDesign, user);
+  });
 };

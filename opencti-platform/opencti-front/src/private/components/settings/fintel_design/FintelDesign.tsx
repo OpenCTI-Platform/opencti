@@ -2,7 +2,6 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { useParams } from 'react-router-dom';
 import { FintelDesignQuery } from '@components/settings/fintel_design/__generated__/FintelDesignQuery.graphql';
-import FintelDesignPopover from '@components/settings/fintel_design/FintelDesignPopover';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
@@ -10,6 +9,7 @@ import Paper from '@mui/material/Paper';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import CustomizationMenu from '@components/settings/CustomizationMenu';
 import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
+import FintelDesignEdition from '@components/settings/fintel_design/FintelDesignEdition';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import PageContainer from '../../../../components/PageContainer';
@@ -19,8 +19,6 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPdf';
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import PdfViewer from '../../../../components/PdfViewer';
-import {APP_BASE_PATH} from "../../../../relay/environment";
-import Axios from "axios";
 
 const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
@@ -40,18 +38,6 @@ const fintelDesignComponentFragment = graphql`
     gradiantToColor
     textColor
     file_id
-    file {
-      name
-      id
-    }
-    importFiles {
-      edges {
-        node {
-          id
-          name
-        }
-      }
-    }
   }
 `;
 
@@ -60,8 +46,6 @@ interface FintelDesignComponentProps {
 }
 
 export type FintelDesignFormValues = {
-  name: string
-  description?: string | null | undefined
   file: File | null;
   gradiantFromColor?: string | null | undefined
   gradiantToColor?: string | null | undefined
@@ -81,10 +65,6 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   if (!fintelDesign) return null;
   const [pdf, setPdf] = useState<File>();
   const { buildFileFromTemplate } = useFileFromTemplate();
-
-  console.log('fintelDesign', fintelDesign);
-  const fileId = fintelDesign && fintelDesign.file_id;
-
 
   const [formValues, setFormValues] = useState<FintelDesignFormValues>();
 
@@ -109,7 +89,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 200 }}>
         <Typography
           variant="h1"
           gutterBottom={true}
@@ -117,8 +97,8 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
         >
           {fintelDesign.name}
         </Typography>
-        <div style={{ marginTop: -6 }}>
-          <FintelDesignPopover data={fintelDesign}/>
+        <div>
+          <FintelDesignEdition fintelDesignId={fintelDesign.id}/>
         </div>
       </div>
       <PageContainer withRightMenu>
