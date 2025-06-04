@@ -171,22 +171,13 @@ const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues }: PirKn
       render: ({ pir_score }) => defaultRender(`${pir_score}%`),
     },
     fromType: {
-      id: 'fromType',
-      label: 'From type',
       percentWidth: 10,
-      isSortable: false,
-      render: (node) => (
-        <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
-      ),
     },
     fromName: {
       percentWidth: 25,
     },
     toType: {
-      id: 'toType',
-      label: 'To type',
       percentWidth: 7,
-      isSortable: false,
       render: () => (
         <ItemEntityType inList showIcon entityType={'Pir'} />
       ),
