@@ -31,7 +31,7 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
   defaultStopTime,
 }) => {
   const classes = useStyles();
-  const relationshipTypes = ['indicates'];
+  const relationshipTypes = ['indicates', 'should-cover'];
   const entityTypes = ['Indicator'];
   const LOCAL_STORAGE_KEY = `indicators-relationships-${entityId}-${entityTypes.join('-')}-${relationshipTypes.join('-')}`;
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
