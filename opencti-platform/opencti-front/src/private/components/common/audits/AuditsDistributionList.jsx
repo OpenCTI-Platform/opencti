@@ -161,7 +161,7 @@ const AuditsDistributionList = ({
             if (displayMode === 'count') {
               const uniqueCount = data.length;
               return (
-                <div style={{ textAlign: 'center', fontSize: 24, padding: 8 }}>
+                <div style={{ verticalAlign: 'middle', textAlign: 'left', fontSize: 40, padding: 8 }}>
                   <string>{uniqueCount}</string>
                 </div>
               );
