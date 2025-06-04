@@ -11,6 +11,7 @@ import { parse } from '../../../utils/Time';
 const detailsFragment = graphql`
   fragment PirOverviewDetailsFragment on Pir {
     description
+    pir_rescan_days
     created_at
     lastEventId
     creators {
@@ -68,6 +69,13 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
       >
         <div>
           <Typography variant="h3" gutterBottom>
+            {t_i18n('PIR Rescan period (days)')}
+          </Typography>
+          {pir.pir_rescan_days}
+        </div>
+
+        <div>
+          <Typography variant="h3" gutterBottom>
             {t_i18n('Last event processed')}
           </Typography>
           {fldt(lastEventDate)}
@@ -84,21 +92,24 @@ const PirOverviewDetails = ({ data }: PirOverviewDetailsProps) => {
             styleNumber={1}
           />
         </div>
+      </Grid>
 
+      <Grid
+        size={{ xs: 12 }}
+        sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+      >
         <div>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Criteria')}
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            {pir.pir_criteria.map((c) => (
-              <FilterIconButton
-                key={c.filters}
-                filters={JSON.parse(c.filters)}
-                entityTypes={['Stix-Core-Object']}
-                styleNumber={1}
-              />
-            ))}
-          </Box>
+          {pir.pir_criteria.map((c) => (
+            <FilterIconButton
+              key={c.filters}
+              filters={JSON.parse(c.filters)}
+              entityTypes={['Stix-Core-Object']}
+              styleNumber={2}
+            />
+          ))}
         </div>
       </Grid>
     </Grid>

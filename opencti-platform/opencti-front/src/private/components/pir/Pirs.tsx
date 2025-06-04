@@ -141,7 +141,7 @@ const Pirs = () => {
     filters: {
       id: 'filters',
       label: 'Filters',
-      percentWidth: 18,
+      percentWidth: 15,
       render: ({ pir_filters }: Pirs_PirFragment$data) => (
         <div style={{ marginLeft: theme.spacing(-0.5) }}>
           <FilterIconButton
@@ -156,7 +156,7 @@ const Pirs = () => {
     criteria: {
       id: 'criteria',
       label: 'Criteria',
-      percentWidth: 35,
+      percentWidth: 38,
       render: ({ pir_criteria }: Pirs_PirFragment$data) => (
         <div style={{ marginLeft: theme.spacing(-0.5), display: 'flex' }}>
           {pir_criteria.map((c) => (
