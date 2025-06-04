@@ -75,7 +75,7 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
     securityPlatformFragment,
     securityPlatformData,
   );
-  const lastReportsProps = viewAs === 'knowledge'
+  const viewAsProps = viewAs === 'knowledge'
     ? { stixCoreObjectOrStixRelationshipId: securityPlatform.id }
     : { authorId: securityPlatform.id };
   return (
@@ -106,7 +106,7 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
           xs={viewAs === 'knowledge' ? 6 : 12}
         >
           <StixCoreObjectOrStixRelationshipLastContainers
-            {...lastReportsProps}
+            {...viewAsProps}
           />
         </Grid>
         <Grid item xs={6}>
