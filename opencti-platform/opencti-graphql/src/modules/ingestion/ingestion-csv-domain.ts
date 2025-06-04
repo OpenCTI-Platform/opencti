@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
@@ -207,6 +208,7 @@ export const csvFeedAddInputFromImport = async (context: AuthContext, user: Auth
   }
 
   return {
+    markings: [], // On some config, marking is missing
     ...parsedData.configuration,
     csvMapper: transformCsvMapperConfig(parsedData.configuration.csv_mapper.configuration, context, user),
   };
@@ -214,7 +216,7 @@ export const csvFeedAddInputFromImport = async (context: AuthContext, user: Auth
 
 export const csvFeedGetCsvMapper = (context: AuthContext, ingestionCsv: BasicStoreEntityIngestionCsv) => {
   return ingestionCsv.csv_mapper_type === 'inline' ? {
-    id: ingestionCsv.id,
+    id: uuid(),
     ...JSON.parse(ingestionCsv.csv_mapper!)
   } : findCsvMapperForIngestionById(context, context.user!, ingestionCsv.csv_mapper_id!);
 };
@@ -222,7 +224,7 @@ export const csvFeedGetCsvMapper = (context: AuthContext, ingestionCsv: BasicSto
 const getCsvMapper = async (context: AuthContext, ingestionCsv: BasicStoreEntityIngestionCsv) => {
   if (ingestionCsv.csv_mapper_type === 'inline') {
     return {
-      id: ingestionCsv.id,
+      id: uuid(),
       ...JSON.parse(ingestionCsv.csv_mapper!)
     };
   }
@@ -249,7 +251,8 @@ export const csvFeedMapperExport = async (context: AuthContext, user: AuthUser, 
     description,
     uri,
     authentication_type,
-    markings
+    markings,
+    scheduling_period
   } = ingestionCsv;
   const csv_mapper = await getCsvMapper(context, ingestionCsv);
   const parsedRepresentations: CsvMapperRepresentation[] = csv_mapper.representations;
@@ -264,6 +267,7 @@ export const csvFeedMapperExport = async (context: AuthContext, user: AuthUser, 
       authentication_type,
       authentication_value: '',
       markings,
+      scheduling_period,
       csv_mapper_type: 'inline',
       csv_mapper: {
         configuration: {

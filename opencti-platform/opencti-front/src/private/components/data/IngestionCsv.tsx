@@ -7,6 +7,7 @@ import { IngestionCsvLinesPaginationQuery, IngestionCsvLinesPaginationQuery$vari
 import { IngestionCsvLineDummy } from '@components/data/ingestionCsv/IngestionCsvLine';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
 import IngestionCsvImport from '@components/data/ingestionCsv/IngestionCsvImport';
+import { IngestionCsvCreationContainerDeprecated } from '@components/data/ingestionCsv/IngestionCsvCreationDeprecated';
 import { useFormatter } from '../../../components/i18n';
 import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -122,15 +123,25 @@ const IngestionCsv = () => {
                   {t_i18n('Import from Hub')}
                 </GradientButton>
               )}
-              <IngestionCsvCreationContainer
-                paginationOptions={paginationOptions}
-                drawerSettings={
+              {isFeatureEnable('CSV_FEED')
+                ? <IngestionCsvCreationContainer
+                    paginationOptions={paginationOptions}
+                    drawerSettings={
                 {
                   title: t_i18n('Create a CSV Feed'),
                   button: t_i18n('Create'),
                 }
                 }
-              />
+                  /> : <IngestionCsvCreationContainerDeprecated
+                    paginationOptions={paginationOptions}
+                    drawerSettings={
+                    {
+                      title: t_i18n('Create a CSV Feed'),
+                      button: t_i18n('Create'),
+                    }
+                  }
+                       />
+              }
 
             </>
           </Security>

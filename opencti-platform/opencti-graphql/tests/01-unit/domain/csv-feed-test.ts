@@ -28,10 +28,8 @@ describe('csvFeedGetCsvMapper', () => {
 
     const result = csvFeedGetCsvMapper(context, ingestionCsv);
 
-    expect(result).toEqual({
-      id: 'test-id-inline',
-      openCTI_version: '6.6.6',
-      type: 'csvMapper',
-    });
+    expect(result.id).toBeTruthy();
+    expect(result.type).toEqual('csvMapper');
+    expect(result.openCTI_version).toEqual('6.6.6');
   });
 });

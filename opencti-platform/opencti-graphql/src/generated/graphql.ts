@@ -1640,6 +1640,7 @@ export type CsvFeedAddInputFromImport = {
   description: Scalars['String']['output'];
   markings: Array<Scalars['String']['output']>;
   name: Scalars['String']['output'];
+  scheduling_period?: Maybe<Scalars['String']['output']>;
   uri: Scalars['String']['output'];
 };
 
@@ -35052,6 +35053,7 @@ export type CsvFeedAddInputFromImportResolvers<ContextType = any, ParentType ext
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   markings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

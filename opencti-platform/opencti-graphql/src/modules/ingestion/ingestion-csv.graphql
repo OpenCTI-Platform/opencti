@@ -57,6 +57,7 @@ type CSVFeedAddInputFromImport {
     authentication_value: String!,
     csvMapper: CsvMapperAddInputFromImport!
     csv_mapper_type : IngestionCsvMapperType
+    scheduling_period: String
 }
 
 
