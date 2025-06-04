@@ -24,7 +24,7 @@ const RootIndividual = lazy(() => import('./individuals/Root'));
 
 const Root = () => {
   const { isFeatureEnable } = useHelper();
-  const enableComposerFeatureFlag = isFeatureEnable('SECURITY_PLATFORM');
+  const enableSecurityPlatformFeatureFlag = isFeatureEnable('SECURITY_PLATFORM');
 
   let redirect: string | null = null;
   if (!useIsHiddenEntity('Sector')) {
@@ -33,7 +33,7 @@ const Root = () => {
     redirect = 'events';
   } else if (!useIsHiddenEntity('Organization')) {
     redirect = 'organizations';
-  } else if (!useIsHiddenEntity('Security-Platform') && enableComposerFeatureFlag) {
+  } else if (!useIsHiddenEntity('Security-Platform') && enableSecurityPlatformFeatureFlag) {
     redirect = 'security_platforms';
   } else if (!useIsHiddenEntity('System')) {
     redirect = 'systems';
@@ -71,7 +71,7 @@ const Root = () => {
           path="/organizations/:organizationId/*"
           element={boundaryWrapper(RootOrganization)}
         />
-        {enableComposerFeatureFlag && (
+        {enableSecurityPlatformFeatureFlag && (
         <>
           <Route
             path="/security_platforms"
