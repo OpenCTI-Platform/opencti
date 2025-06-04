@@ -10,7 +10,7 @@ import {
   PirKnowledgeEntitiesSourcesFlaggedListQuery$variables,
 } from '@components/pir/__generated__/PirKnowledgeEntitiesSourcesFlaggedListQuery.graphql';
 import { PirKnowledgeEntities_SourceFlaggedFragment$data } from '@components/pir/__generated__/PirKnowledgeEntities_SourceFlaggedFragment.graphql';
-import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
+import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import { PaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -20,6 +20,7 @@ import { useFormatter } from '../../../components/i18n';
 import { PaginationOptions } from '../../../components/list_lines';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
+import { LocalStorage } from '../../../utils/hooks/useLocalStorageModel';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeEntities_SourceFlaggedFragment on StixCoreObject {
@@ -99,7 +100,7 @@ const sourcesFlaggedListQuery = graphql`
 interface PirKnowledgeEntitiesProps {
   pirId: string;
   localStorage: PaginationLocalStorage<PaginationOptions>;
-  initialValues: any;
+  initialValues: LocalStorage;
 }
 
 const PirKnowledgeEntities = ({ pirId, localStorage, initialValues }: PirKnowledgeEntitiesProps) => {
@@ -110,6 +111,8 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues }: PirKnowled
     localStorageKey,
     paginationOptions,
   } = localStorage;
+
+  const filters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Stix-Core-Object']);
 
   const contextFilters: FilterGroup = {
     mode: 'and',
@@ -123,8 +126,8 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues }: PirKnowled
         ] as unknown as string[], // Workaround for typescript waiting for better solution
       },
     ],
-    filterGroups: viewStorage.filters && isFilterGroupNotEmpty(viewStorage.filters)
-      ? [viewStorage.filters]
+    filterGroups: filters && isFilterGroupNotEmpty(filters)
+      ? [filters]
       : [],
   };
   const queryPaginationOptions = {
