@@ -20,6 +20,7 @@ import { computeLink } from '../../../utils/Entity';
 import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
 import { PaginationOptions } from '../../../components/list_lines';
+import { LocalStorage } from '../../../utils/hooks/useLocalStorageModel';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeRelationships_SourceFlaggedFragment on StixRefRelationship {
@@ -118,7 +119,7 @@ const sourcesFlaggedListQuery = graphql`
 interface PirKnowledgeRelationshipsProps {
   pirId: string;
   localStorage: PaginationLocalStorage<PaginationOptions>;
-  initialValues: any;
+  initialValues: LocalStorage;
 }
 
 const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues }: PirKnowledgeRelationshipsProps) => {

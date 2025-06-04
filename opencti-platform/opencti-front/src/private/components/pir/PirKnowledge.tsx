@@ -45,7 +45,7 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
             initialValues={initialValues}
           />
         : <PirKnowledgeRelationships
-          pirId={pir.id}
+            pirId={pir.id}
             localStorage={localStorage}
             initialValues={initialValues}
           />
