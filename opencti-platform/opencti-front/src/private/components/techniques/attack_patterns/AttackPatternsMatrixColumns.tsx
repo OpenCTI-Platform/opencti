@@ -226,12 +226,14 @@ const AttackPatternsMatrixColumns = ({
                           sx={{
                             border: `1px solid ${colorArray[level][0]}`,
                             borderRadius: 0,
-                            backgroundColor: colorArray[level][position],
                           }}
                         >
                           <AccordionSummary
                             expandIcon={<ExpandMore />}
-                            sx={{ bgcolor: 'inherit' }}
+                            sx={{
+                              borderRadius: 0,
+                              backgroundColor: colorArray[level][position],
+                            }}
                           >
                             <Typography variant="body2" fontSize={10}>
                               {ap.name}
@@ -245,7 +247,7 @@ const AttackPatternsMatrixColumns = ({
                           >
                             {ap.subAttackPatterns.map((subAttackPattern) => {
                               const isSubHovered = hover[subAttackPattern.id];
-                              const subLevel = isSubHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
+                              const subLevel = isSubHovered && subAttackPattern.level !== 0 ? subAttackPattern.level - 1 : subAttackPattern.level;
                               const subPosition = isSubHovered && subLevel === 0 ? 2 : 1;
                               const subColorArray = colors(theme.palette.background.accent);
                               return (
