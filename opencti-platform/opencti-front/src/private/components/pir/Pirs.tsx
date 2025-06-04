@@ -130,10 +130,10 @@ const Pirs = () => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 15,
+      percentWidth: 13,
     },
     pir_rescan_days: {
-      percentWidth: 7,
+      percentWidth: 9,
       id: 'pir_rescan_days',
       label: 'Rescan (days)',
       render: ({ pir_rescan_days }: Pirs_PirFragment$data) => pir_rescan_days,
