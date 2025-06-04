@@ -35,6 +35,7 @@ const SecurityPlatformKnowledgeComponent = ({
   const link = `/dashboard/entities/security_platforms/${securityPlatform.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(securityPlatform.entity_type, schema);
+  console.log('allRelationshipsTypes', allRelationshipsTypes);
   return (
     <Routes>
       <Route
@@ -117,7 +118,7 @@ const SecurityPlatformKnowledgeComponent = ({
           <EntityStixCoreRelationships
             key={location.pathname}
             entityId={securityPlatform.id}
-            relationshipTypes={['targets']}
+            relationshipTypes={['targets', 'should-cover']}
             stixCoreObjectTypes={['Tool']}
             entityLink={link}
             defaultStartTime={null}
@@ -153,6 +154,7 @@ const SecurityPlatformKnowledgeComponent = ({
             entityLink={link}
             defaultStartTime={null}
             defaultStopTime={null}
+            relationshipTypes={['should-cover']}
           />
         }
       />

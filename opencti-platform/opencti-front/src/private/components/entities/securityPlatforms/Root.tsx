@@ -12,6 +12,7 @@ import { RootSecurityPlatformSubscription } from '@components/entities/securityP
 import { RootSecurityPlatformQuery } from '@components/entities/securityPlatforms/__generated__/RootSecurityPlatformQuery.graphql';
 import SecurityPlatformKnowledge from '@components/entities/securityPlatforms/SecurityPlatformKnowledge';
 import SecurityPlatformEdition from '@components/entities/securityPlatforms/SecurityPlatformEdition';
+import SecurityPlatformAnalysis from '@components/entities/securityPlatforms/SecurityPlatformAnalysis';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import SecurityPlatform from './SecurityPlatform';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -21,7 +22,6 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
-import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
@@ -82,7 +82,6 @@ type RootSecurityPlatformProps = {
 };
 
 const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlatformProps) => {
-  console.log(securityPlatformId);
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootSecurityPlatformSubscription>>(() => ({
     subscription,
     variables: { id: securityPlatformId },
@@ -201,12 +200,6 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                 />
                 <Tab
                   component={Link}
-                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/sightings`}
-                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/sightings`}
-                  label={t_i18n('Sightings')}
-                />
-                <Tab
-                  component={Link}
                   to={`/dashboard/entities/security_platforms/${securityPlatform.id}/files`}
                   value={`/dashboard/entities/security_platforms/${securityPlatform.id}/files`}
                   label={t_i18n('Data')}
@@ -256,34 +249,13 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                   />
                 }
               />
-              {/* <Route */}
-              {/*  path="/analyses" */}
-              {/*  element={ */}
-              {/*    <SecurityPlatformAnalysis */}
-              {/*      organization={securityPlatform} */}
-              {/*      viewAs={viewAs} */}
-              {/*      onViewAs={handleChangeViewAs} */}
-              {/*    /> */}
-              {/*  } */}
-              {/* /> */}
               <Route
-                path="/sightings"
+                path="/analyses"
                 element={
-                  <EntityStixSightingRelationships
-                    entityId={securityPlatform.id}
-                    entityLink={link}
-                    noPadding={true}
-                    isTo={true}
-                    stixCoreObjectTypes={[
-                      'Region',
-                      'Country',
-                      'City',
-                      'Position',
-                      'Sector',
-                      'Organization',
-                      'Individual',
-                      'System',
-                    ]}
+                  <SecurityPlatformAnalysis
+                    securityPlatform={securityPlatform}
+                    viewAs={viewAs}
+                    onViewAs={handleChangeViewAs}
                   />
                 }
               />
