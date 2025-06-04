@@ -182,7 +182,7 @@ const ThreatActorGroupKnowledgeComponent = ({
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
-              relationshipTypes={['uses']}
+              relationshipTypes={['uses', 'belongs-to']}
               stixCoreObjectTypes={['Channel']}
               entityLink={link}
               defaultStartTime={threatActorGroup.first_seen}
