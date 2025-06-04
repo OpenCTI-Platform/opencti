@@ -8,6 +8,10 @@ The main menu "Notifications and triggers" for creating and managing notificatio
 
 ![Notifications](assets/notifications.png)  
 
+Click on the line "Digest with multiples notifiers" to open a drawer and access to detailed notifications. 
+
+![Notifications](assets/digestWithMultipleNotifiers.png)
+
 
 ## Triggers
 
@@ -84,6 +88,11 @@ Digests provide an efficient way to streamline and organize your notifications. 
 5. Choose the notifier(s): Select the notification method(s) (e.g. within the OpenCTI interface, via email, etc.).
 
 ![Digest configuration](assets/digest-creation.png)
+
+### Digest Buffering Configuration 
+
+You can configure digest buffering directly in your configuration file to group notifications if many changes occur within a short period. 
+The buffering configuration is enabled in the platform by default at one minute. You can change it at your convenience.
 
 ### Benefits of digests
 
