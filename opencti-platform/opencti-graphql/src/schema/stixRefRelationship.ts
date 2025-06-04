@@ -919,7 +919,7 @@ export const inPir: RefAttribute = {
   },
   label: 'In PIR',
   datable: false,
-  isFilterable: true,
+  isFilterable: false,
   toTypes: [ENTITY_TYPE_PIR],
 };
 

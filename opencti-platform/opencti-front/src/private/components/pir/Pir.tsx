@@ -1,13 +1,13 @@
 import React, { Suspense } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
-import { useParams } from 'react-router-dom';
-import { PirQuery } from '@components/pir/__generated__/PirQuery.graphql';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
-import PirHeader from '@components/pir/PirHeader';
-import PirTabs from '@components/pir/PirTabs';
-import PirKnowledge from '@components/pir/PirKnowledge';
-import { PirHistoryQuery } from '@components/pir/__generated__/PirHistoryQuery.graphql';
-import PirOverview from '@components/pir/PirOverview';
+import { PirQuery } from './__generated__/PirQuery.graphql';
+import PirHeader from './PirHeader';
+import PirTabs from './PirTabs';
+import PirKnowledge from './PirKnowledge';
+import { PirHistoryQuery } from './__generated__/PirHistoryQuery.graphql';
+import PirOverview from './PirOverview';
 import ErrorNotFound from '../../../components/ErrorNotFound';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader from '../../../components/Loader';
@@ -15,8 +15,11 @@ import Loader from '../../../components/Loader';
 const pirQuery = graphql`
   query PirQuery($id: ID!) {
     pir(id: $id) {
+      id
       ...PirHeaderFragment
       ...PirKnowledgeFragment
+      ...PirEditionFragment
+      ...PirOverviewDetailsFragment
     }
   }
 `;
@@ -38,7 +41,10 @@ interface PirComponentProps {
   pirHistoryQueryRef: PreloadedQuery<PirHistoryQuery>
 }
 
-const PirComponent = ({ pirQueryRef, pirHistoryQueryRef }: PirComponentProps) => {
+const PirComponent = ({
+  pirQueryRef,
+  pirHistoryQueryRef,
+}: PirComponentProps) => {
   const { pir } = usePreloadedQuery(pirQuery, pirQueryRef);
   const history = usePreloadedQuery(pirHistoryQuery, pirHistoryQueryRef);
 
@@ -46,25 +52,26 @@ const PirComponent = ({ pirQueryRef, pirHistoryQueryRef }: PirComponentProps) =>
 
   return (
     <>
-      <PirHeader data={pir} />
-      <PirTabs>
-        {({ index }) => (
-          <>
-            <div role="tabpanel" hidden={index !== 0}>
-              <PirOverview data={history} />
-            </div>
-            <div role="tabpanel" hidden={index !== 1}>
-              <PirKnowledge data={pir} />
-            </div>
-            <div role="tabpanel" hidden={index !== 2}>
-              ttps
-            </div>
-            <div role="tabpanel" hidden={index !== 3}>
-              analyses
-            </div>
-          </>
-        )}
-      </PirTabs>
+      <PirHeader data={pir} editionData={pir} />
+      <PirTabs pirId={pir.id} />
+      <Routes>
+        <Route
+          path="/"
+          element={<PirOverview dataHistory={history} dataDetails={pir} />}
+        />
+        <Route
+          path="/knowledge"
+          element={<PirKnowledge data={pir} />}
+        />
+        <Route
+          path="/ttps"
+          element={<p>ttps</p>}
+        />
+        <Route
+          path="/analyses"
+          element={<p>analyses</p>}
+        />
+      </Routes>
     </>
   );
 };

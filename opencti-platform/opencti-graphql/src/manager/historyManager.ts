@@ -88,7 +88,7 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
   return organizationByIdsMap;
 };
 
-const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
+export const generatePirIdsFromHistoryEvent = (event: SseEvent<StreamDataEvent>) => {
   // Listened events: stix core relationships, 'contains', pir meta rels
   const eventData = event.data.data;
   // 1. detect stix core relationships

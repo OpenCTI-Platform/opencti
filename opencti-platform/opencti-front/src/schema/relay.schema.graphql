@@ -7922,6 +7922,7 @@ enum StixRefRelationshipsOrdering {
   toPatternType
   toCreatedAt
   _score
+  pir_score
 }
 
 type StixRefRelationshipConnection {
@@ -9244,6 +9245,7 @@ type Mutation {
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   pirAdd(input: PirAddInput!): Pir
+  pirFieldPatch(id: ID!, input: [EditInput!]!): Pir
   pirDelete(id: ID!): ID
   pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
@@ -13253,9 +13255,13 @@ type Pir implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   creators: [Creator!]
+  objectMarking: [MarkingDefinition!]
   name: String!
+  description: String
+  pir_rescan_days: Int!
   pir_criteria: [PirCriterion!]!
   pir_filters: String!
+  lastEventId: String!
 }
 
 enum PirOrdering {
@@ -13287,8 +13293,11 @@ input PirExplanationInput {
 
 input PirAddInput {
   name: String!
+  description: String
+  pir_rescan_days: Int!
   pir_criteria: [PirCriterionInput!]!
   pir_filters: FilterGroup!
+  objectMarking: [String!]
 }
 
 input PirFlagElementInput {

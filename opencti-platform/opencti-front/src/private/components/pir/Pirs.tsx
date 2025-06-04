@@ -22,6 +22,7 @@ const pirFragment = graphql`
   fragment Pirs_PirFragment on Pir {
     id
     name
+    pir_rescan_days
     created_at
     updated_at
     entity_type
@@ -129,12 +130,18 @@ const Pirs = () => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 20,
+      percentWidth: 13,
+    },
+    pir_rescan_days: {
+      percentWidth: 9,
+      id: 'pir_rescan_days',
+      label: 'Rescan (days)',
+      render: ({ pir_rescan_days }: Pirs_PirFragment$data) => pir_rescan_days,
     },
     filters: {
       id: 'filters',
       label: 'Filters',
-      percentWidth: 20,
+      percentWidth: 15,
       render: ({ pir_filters }: Pirs_PirFragment$data) => (
         <div style={{ marginLeft: theme.spacing(-0.5) }}>
           <FilterIconButton
@@ -149,7 +156,7 @@ const Pirs = () => {
     criteria: {
       id: 'criteria',
       label: 'Criteria',
-      percentWidth: 35,
+      percentWidth: 38,
       render: ({ pir_criteria }: Pirs_PirFragment$data) => (
         <div style={{ marginLeft: theme.spacing(-0.5), display: 'flex' }}>
           {pir_criteria.map((c) => (
@@ -194,7 +201,7 @@ const Pirs = () => {
           searchContextFinal={{ entityTypes: ['Pir'] }}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <PirCreation />
+              <PirCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />

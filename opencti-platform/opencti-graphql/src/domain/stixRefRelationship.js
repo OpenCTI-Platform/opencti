@@ -1,4 +1,4 @@
-import { dissoc, propOr } from 'ramda';
+import { dissoc } from 'ramda';
 import { storeLoadByIdWithRefs, updateAttribute, updateAttributeFromLoadedWithRefs } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -16,7 +16,7 @@ import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RE
 // Query
 
 export const findAll = async (context, user, args) => {
-  return listRelations(context, user, propOr(STIX_REF_RELATIONSHIP_TYPES, 'relationship_type', args), args);
+  return listRelations(context, user, args.relationship_type ?? STIX_REF_RELATIONSHIP_TYPES, args);
 };
 export const findById = async (context, user, stixRefRelationshipId) => {
   // Not use ABSTRACT_STIX_REF_RELATIONSHIP to have compatibility on parent type with ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP type

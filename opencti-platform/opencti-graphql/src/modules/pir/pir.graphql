@@ -17,10 +17,14 @@ type Pir implements InternalObject & BasicObject {
     created_at: DateTime!
     updated_at: DateTime!
     creators: [Creator!]
+    objectMarking: [MarkingDefinition!]
     # Pir
     name: String!
+    description: String
+    pir_rescan_days: Int!
     pir_criteria: [PirCriterion!]!
     pir_filters: String!
+    lastEventId: String!
 }
 
 # Ordering
@@ -68,8 +72,11 @@ input PirExplanationInput {
 
 input PirAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    pir_rescan_days: Int!
     pir_criteria: [PirCriterionInput!]!
     pir_filters: FilterGroup!
+    objectMarking: [String!]
 }
 
 input PirFlagElementInput {
@@ -86,6 +93,7 @@ input PirUnflagElementInput {
 # Mutations
 type Mutation {
     pirAdd(input: PirAddInput!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
+    pirFieldPatch(id: ID!, input: [EditInput!]!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
     pirDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
     pirFlagElement(id: ID!, input: PirFlagElementInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
     pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])

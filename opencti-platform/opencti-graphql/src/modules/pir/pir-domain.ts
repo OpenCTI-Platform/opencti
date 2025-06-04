@@ -11,9 +11,11 @@ import { deleteInternalObject } from '../../domain/internalObject';
 import { registerConnectorForPir, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { BasicStoreCommon } from '../../types/store';
 import { RELATION_IN_PIR } from '../../schema/stixRefRelationship';
-import { createPirRel, serializePir, updatePirDependencies } from './pir-utils';
+import { createPirRel, serializePir, updatePirExplanations } from './pir-utils';
 import { FunctionalError } from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../schema/general';
+import { elRawUpdateByQuery } from '../../database/engine';
+import { READ_INDEX_HISTORY } from '../../database/utils';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityPir>(context, user, id, ENTITY_TYPE_PIR);
@@ -23,11 +25,9 @@ export const findAll = (context: AuthContext, user: AuthUser, opts?: EntityOptio
   return listEntitiesPaginated<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
 };
 
-const PIR_RESCAN_PERIOD = 30 * 24 * 3600 * 1000; // 1 month in milliseconds
-
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
   // -- create Pir --
-  const rescanStartDate = now() - PIR_RESCAN_PERIOD; // rescan start date in milliseconds
+  const rescanStartDate = now() - (input.pir_rescan_days * 24 * 3600 * 1000); // rescan start date in milliseconds
   const finalInput = {
     ...serializePir(input),
     lastEventId: `${rescanStartDate}-0`,
@@ -54,18 +54,40 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
 };
 
 export const deletePir = async (context: AuthContext, user: AuthUser, pirId: string) => {
-  // TODO PIR remove pir id from historic events
-  // remove rabbit queue
+  // remove the Pir rabbit queue
   try {
     await unregisterConnectorForIngestion(context, pirId);
   } catch (e) {
     logApp.error('[OPENCTI] Error while unregistering Pir connector', { cause: e });
   }
+  // remove pir id from historic events
+  const source = `
+    def pirIdIndex = ctx._source.context_data.pir_ids.indexOf(params.pirId);
+    if (pirIdIndex >=0 ) {
+       ctx._source.context_data.pir_ids.remove(pirIdIndex);
+    }  
+  `;
+  await elRawUpdateByQuery({
+    index: READ_INDEX_HISTORY,
+    body: {
+      script: { source, params: { pirId } },
+      query: {
+        term: {
+          'context_data.pir_ids.keyword': pirId
+        }
+      },
+    },
+  });
   // delete the Pir
   return deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
 };
 
 export const updatePir = async (context: AuthContext, user: AuthUser, pirId: string, input: EditInput[]) => {
+  const allowedKeys = ['lastEventId', 'name', 'description'];
+  const keys = input.map((i) => i.key);
+  if (keys.some((k) => !allowedKeys.includes(k))) {
+    throw FunctionalError('Error while updating the PIR, invalid key.');
+  }
   const { element } = await updateAttribute(context, user, pirId, ENTITY_TYPE_PIR, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_PIR].EDIT_TOPIC, element, user);
 };
@@ -104,7 +126,7 @@ export const pirFlagElement = async (
       },
     }));
     if (sourceFlagged) {
-      await updatePirDependencies(context, user, sourceId, pir.id, pirDependencies, EditOperation.Add);
+      await updatePirExplanations(context, user, sourceId, pir.id, pirDependencies, EditOperation.Add);
     } else {
       await createPirRel(context, user, sourceId, pir.id, pirDependencies);
     }
@@ -142,7 +164,7 @@ export const pirUnflagElement = async (
       await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
     } else if (newRelDependencies.length < relDependencies.length) {
       // update dependencies
-      await updatePirDependencies(context, user, sourceId, pir.id, newRelDependencies);
+      await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies);
     } // nothing to do
   }
   return pir.id;

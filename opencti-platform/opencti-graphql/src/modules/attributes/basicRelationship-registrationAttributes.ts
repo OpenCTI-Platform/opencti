@@ -16,7 +16,7 @@ import {
   updatedAt
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { ABSTRACT_BASIC_RELATIONSHIP } from '../../schema/general';
+import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import {
   INSTANCE_RELATION_TYPES_FILTER,
   INSTANCE_RELATION_FILTER,
@@ -39,6 +39,8 @@ export const connections: AttributeDefinition = {
   isFilterable: false,
   mappings: [
     { ...internalId as IdAttribute,
+      isFilterable: true,
+      entityTypes: [ABSTRACT_STIX_CORE_OBJECT],
       associatedFilterKeys: [
         { key: RELATION_FROM_FILTER, label: 'Source entity' },
         { key: RELATION_TO_FILTER, label: 'Target entity' },
@@ -47,7 +49,7 @@ export const connections: AttributeDefinition = {
     },
     { name: 'name', label: 'Name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'role', label: 'Role', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
-    { name: 'types', label: 'Types', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false, associatedFilterKeys: [{ key: RELATION_FROM_TYPES_FILTER, label: 'Source type' }, { key: RELATION_TO_TYPES_FILTER, label: 'Target type' }, { key: INSTANCE_RELATION_TYPES_FILTER, label: 'Related type' }] },
+    { name: 'types', label: 'Types', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true, associatedFilterKeys: [{ key: RELATION_FROM_TYPES_FILTER, label: 'Source type' }, { key: RELATION_TO_TYPES_FILTER, label: 'Target type' }, { key: INSTANCE_RELATION_TYPES_FILTER, label: 'Related type' }] },
   ],
 };
 
