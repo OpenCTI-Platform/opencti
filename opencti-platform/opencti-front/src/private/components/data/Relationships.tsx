@@ -4,14 +4,20 @@ import {
   RelationshipsStixCoreRelationshipsLinesPaginationQuery,
   RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables,
 } from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLinesPaginationQuery.graphql';
-import { RelationshipsStixCoreRelationshipsLines_data$data } from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLines_data.graphql';
+import {
+  RelationshipsStixCoreRelationshipsLines_data$data
+} from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLines_data.graphql';
 import { AutoFix } from 'mdi-material-ui';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useTheme } from '@mui/styles';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+  useGetDefaultFilterObject
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -19,7 +25,6 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../components/ItemIcon';
 import { itemColor } from '../../../utils/Colors';
-import ItemEntityType from '../../../components/ItemEntityType';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import type { Theme } from '../../../components/Theme';
 
@@ -302,26 +307,10 @@ const Relationships = () => {
         return (<ItemIcon type={entity_type} />);
       },
     },
-    fromType: {
-      id: 'fromType',
-      label: 'From type',
-      percentWidth: 10,
-      isSortable: false,
-      render: (node) => (
-        <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
-      ),
-    },
+    fromType: {},
     fromName: {},
     relationship_type: {},
-    toType: {
-      id: 'toType',
-      label: 'To type',
-      percentWidth: 10,
-      isSortable: false,
-      render: (node) => (
-        <ItemEntityType inList showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
-      ),
-    },
+    toType: {},
     toName: {},
     createdBy: { percentWidth: 7, isSortable: isRuntimeSort },
     creator: { percentWidth: 7, isSortable: isRuntimeSort },
