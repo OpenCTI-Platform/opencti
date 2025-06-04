@@ -131,6 +131,25 @@ class OpenCTIApiWork:
         work = self.api.query(query, {"workId": work_id}, True)
         return work["data"]
 
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is None:
+            self.opencti.admin_logger.error(
+                "[opencti_work] Cant delete work, missing parameter: id"
+            )
+            return None
+        query = """
+        mutation ConnectorWorksMutation($workId: ID!) {
+            workEdit(id: $workId) {
+                delete
+            }
+        }"""
+        work = self.api.query(
+            query,
+            {"workId": id},
+        )
+        return work["data"]
+
     def wait_for_work_to_finish(self, work_id: str):
         status = ""
         cnt = 0

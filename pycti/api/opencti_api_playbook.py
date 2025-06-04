@@ -32,3 +32,23 @@ class OpenCTIApiPlaybook:
                 "bundle": bundle,
             },
         )
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            query = """
+                mutation PlaybookDelete($id: ID!) {
+                    playbookDelete(id: $id)
+                }
+               """
+            self.api.query(
+                query,
+                {
+                    "id": id,
+                },
+            )
+        else:
+            self.opencti.app_logger.error(
+                "[stix_playbook] Cant delete playbook, missing parameters: id"
+            )
+            return None
