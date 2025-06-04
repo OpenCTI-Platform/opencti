@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { AccordionActions, AccordionDetails, Badge, Box, Button, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
-import { AddCircleOutlineOutlined, CheckOutlined, CloseOutlined, ExpandMore, InfoOutlined } from '@mui/icons-material';
+import { Badge, Box, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
+import { AddCircleOutlineOutlined, CheckOutlined, CloseOutlined, InfoOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -12,7 +12,8 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
-import { Accordion, AccordionSummary } from '../../../../components/Accordion';
+import Typography from '@mui/material/Typography';
+import { AccordionAttackPattern } from '../../../../components/Accordion';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 
@@ -212,75 +213,16 @@ const AttackPatternsMatrixColumns = ({
                     const hasLevel = ap.level > 0;
                     return (
                       ap.subAttackPatterns?.length ? (
-                        <Accordion
-                          id={ap.attack_pattern_id}
-                          key={ap.attack_pattern_id}
-                          slotProps={{ transition: { unmountOnExit: true } }}
-                          onMouseEnter={() => handleToggleHover(ap.attack_pattern_id)}
-                          onMouseLeave={() => handleToggleHover(ap.attack_pattern_id)}
-                          sx={{
-                            border: `1px solid ${colorArray[level][0]}`,
-                            borderRadius: 0,
-                          }}
-                        >
-                          <AccordionSummary
-                            expandIcon={<ExpandMore />}
-                            sx={{
-                              borderRadius: 0,
-                              backgroundColor: colorArray[level][position],
-                            }}
-                          >
-                            <Typography variant="body2" fontSize={10}>
-                              {ap.name}
-                            </Typography>
-                          </AccordionSummary>
-                          <AccordionDetails
-                            sx={{
-                              padding: `0 0 0 ${theme.spacing(2)}`,
-                              borderTop: `1px solid ${colorArray[level][0]}`,
-                            }}
-                          >
-                            {ap.subAttackPatterns.map((subAttackPattern) => {
-                              const isSubHovered = hover[subAttackPattern.attack_pattern_id];
-                              const subLevel = isSubHovered && subAttackPattern.level !== 0 ? subAttackPattern.level - 1 : subAttackPattern.level;
-                              const subPosition = isSubHovered && subLevel === 0 ? 2 : 1;
-                              const subColorArray = colors(theme.palette.background.accent);
-                              return (
-                                <Box
-                                  key={subAttackPattern.attack_pattern_id}
-                                  onMouseEnter={() => handleToggleHover(subAttackPattern.attack_pattern_id)}
-                                  onMouseLeave={() => handleToggleHover(subAttackPattern.attack_pattern_id)}
-                                  onClick={(e) => handleOpen(subAttackPattern, e)}
-                                  sx={{
-                                    cursor: 'pointer',
-                                    border: `1px solid ${subColorArray[subLevel][0]}`,
-                                    backgroundColor: subColorArray[subLevel][subPosition],
-                                    padding: 1.25,
-                                  }}
-                                >
-                                  <Typography variant="body2" fontSize={10}>
-                                    {subAttackPattern.name}
-                                  </Typography>
-                                </Box>
-                              );
-                            })}
-                          </AccordionDetails>
-                          <AccordionActions>
-                            <Button
-                              startIcon={<InfoOutlined fontSize="small" />}
-                              href={`/dashboard/techniques/attack_patterns/${ap.attack_pattern_id}`}
-                              target="_blank"
-                            >
-                              View
-                            </Button>
-                            <Button
-                              startIcon={<AddCircleOutlineOutlined fontSize="small" />}
-                              onClick={() => handleAddAttackPattern(ap)}
-                            >
-                              Add
-                            </Button>
-                          </AccordionActions>
-                        </Accordion>
+                        <AccordionAttackPattern
+                          ap={ap}
+                          handleToggleHover={handleToggleHover}
+                          handleOpen={handleOpen}
+                          colorArray={colorArray}
+                          hover={hover}
+                          colors={colors}
+                          level={level}
+                          position={position}
+                        />
                       ) : (
                         <Badge
                           key={ap.attack_pattern_id}
