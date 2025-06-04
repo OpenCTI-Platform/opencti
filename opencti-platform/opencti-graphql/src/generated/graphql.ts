@@ -8480,27 +8480,14 @@ export type FintelDesign = BasicObject & InternalObject & {
   __typename?: 'FintelDesign';
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
-  file?: Maybe<OpenCtiFile>;
   file_id?: Maybe<Scalars['String']['output']>;
   gradiantFromColor?: Maybe<Scalars['String']['output']>;
   gradiantToColor?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
-  importFiles: FileConnection;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
   textColor?: Maybe<Scalars['String']['output']>;
-};
-
-
-export type FintelDesignImportFilesArgs = {
-  after?: InputMaybe<Scalars['ID']['input']>;
-  filters?: InputMaybe<FilterGroup>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<FileOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
-  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type FintelDesignAddInput = {
@@ -14233,6 +14220,7 @@ export type Mutation = {
   feedbackDelete?: Maybe<Scalars['ID']['output']>;
   feedbackEditAuthorizedMembers?: Maybe<Feedback>;
   fintelDesignAdd?: Maybe<FintelDesign>;
+  fintelDesignContextPatch?: Maybe<FintelDesign>;
   fintelDesignDelete?: Maybe<Scalars['ID']['output']>;
   fintelDesignFieldPatch?: Maybe<FintelDesign>;
   fintelTemplateAdd?: Maybe<FintelTemplate>;
@@ -15205,6 +15193,12 @@ export type MutationFeedbackEditAuthorizedMembersArgs = {
 
 export type MutationFintelDesignAddArgs = {
   input: FintelDesignAddInput;
+};
+
+
+export type MutationFintelDesignContextPatchArgs = {
+  id: Scalars['ID']['input'];
+  input?: InputMaybe<EditContext>;
 };
 
 
@@ -37384,12 +37378,10 @@ export type FilterKeysSchemaResolvers<ContextType = any, ParentType extends Reso
 export type FintelDesignResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelDesign'] = ResolversParentTypes['FintelDesign']> = ResolversObject<{
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  file?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   file_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   gradiantFromColor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   gradiantToColor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  importFiles?: Resolver<ResolversTypes['FileConnection'], ParentType, ContextType, Partial<FintelDesignImportFilesArgs>>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -39573,6 +39565,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   feedbackDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFeedbackDeleteArgs, 'id'>>;
   feedbackEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackEditAuthorizedMembersArgs, 'id'>>;
   fintelDesignAdd?: Resolver<Maybe<ResolversTypes['FintelDesign']>, ParentType, ContextType, RequireFields<MutationFintelDesignAddArgs, 'input'>>;
+  fintelDesignContextPatch?: Resolver<Maybe<ResolversTypes['FintelDesign']>, ParentType, ContextType, RequireFields<MutationFintelDesignContextPatchArgs, 'id'>>;
   fintelDesignDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFintelDesignDeleteArgs, 'id'>>;
   fintelDesignFieldPatch?: Resolver<Maybe<ResolversTypes['FintelDesign']>, ParentType, ContextType, RequireFields<MutationFintelDesignFieldPatchArgs, 'id'>>;
   fintelTemplateAdd?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<MutationFintelTemplateAddArgs, 'input'>>;

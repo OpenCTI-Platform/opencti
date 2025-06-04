@@ -5,8 +5,6 @@ import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_desi
 import { graphql } from 'react-relay';
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { FormikConfig } from 'formik/dist/types';
-import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { FintelDesignFormValues } from './FintelDesign';
@@ -38,8 +36,6 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
   const { t_i18n } = useFormatter();
 
   const initialValues: FintelDesignFormValues = {
-    name: fintelDesign.name,
-    description: fintelDesign.description,
     file: null,
     gradiantFromColor: fintelDesign.gradiantFromColor,
     gradiantToColor: fintelDesign.gradiantToColor,
@@ -109,26 +105,6 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
 
         return (
           <Form>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t_i18n('Name')}
-              fullWidth
-              setFieldValue={setFieldValue}
-              onSubmit={handleFieldChange}
-            />
-            <Field
-              component={MarkdownField}
-              name="description"
-              label={t_i18n('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows={2}
-              setFieldValue={setFieldValue}
-              onSubmit={handleFieldChange}
-              style={fieldSpacingContainerStyle}
-            />
             <Field
               component={CustomFileUploader}
               name="file"

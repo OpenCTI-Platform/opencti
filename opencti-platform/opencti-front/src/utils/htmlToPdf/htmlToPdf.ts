@@ -84,11 +84,18 @@ export const htmlToPdfReport = async (
   const formattedTemplateName = capitalizeWords(templateName);
   let logoBase64;
 
-  try {
-    logoBase64 = await getBase64ImageFromURL(fileUri(fintelDesign && fintelDesign.file_id && fintelDesign.file_id.length > 0
-      ? fintelDesign.file_id
-      : logoWhite));
-  } catch { logoBase64 = await getBase64ImageFromURL(fileUri(logoWhite)); }
+  if (fintelDesign?.file_id) {
+    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
+      fintelDesign?.file_id,
+    )}`;
+    const response = await Axios.get(url, { responseType: 'arraybuffer' });
+    const binary = new Uint8Array(response.data).reduce((data, byte) => data + String.fromCharCode(byte), '');
+    logoBase64 = `data:image/;base64,${btoa(binary)}`;
+  }
+
+  if (!logoBase64) {
+    logoBase64 = await getBase64ImageFromURL(fileUri(logoWhite));
+  }
 
   let htmlData = removeUnnecessaryHtml(content);
   htmlData = setImagesWidth(htmlData);
@@ -134,7 +141,6 @@ export const htmlToPdfReport = async (
           {
             image: logoBase64,
             width: 133,
-            height: 29,
           },
           {
             text: dateFormat(new Date()) ?? '',
@@ -172,7 +178,6 @@ export const htmlToPdfReport = async (
       {
         image: logoBase64,
         width: 133,
-        height: 29,
         alignment: 'center',
         margin: [0, 380, 0, 0],
       },
