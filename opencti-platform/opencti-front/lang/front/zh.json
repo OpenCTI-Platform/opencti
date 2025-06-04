@@ -685,6 +685,8 @@
   "Dark theme": "深色主题",
   "Dashboard": "仪表盘",
   "dashboard": "仪表板",
+  "Dashboard cannot be exported to image": "仪表板无法导出为图像",
+  "Dashboard cannot be exported to pdf": "仪表板无法导出为 pdf",
   "Dashboard settings": "仪表盘设置",
   "Dashboards": "仪表盘",
   "Dashboards from your groups & organizations": "来自组和组织的仪表板",
