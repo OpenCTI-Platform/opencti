@@ -67,15 +67,17 @@ export const securityPlatformFragment = graphql`
 
 interface SecurityPlatformProps {
   securityPlatformData: SecurityPlatform_securityPlatform$key;
+  viewAs: string;
 }
 
-const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformData }) => {
+const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformData, viewAs }) => {
   const securityPlatform = useFragment<SecurityPlatform_securityPlatform$key>(
     securityPlatformFragment,
     securityPlatformData,
   );
-  const overviewLayoutCustomization = useOverviewLayoutCustomization(securityPlatform.entity_type);
-
+  const lastReportsProps = viewAs === 'knowledge'
+    ? { stixCoreObjectOrStixRelationshipId: securityPlatform.id }
+    : { authorId: securityPlatform.id };
   return (
     <>
       <Grid
@@ -83,68 +85,47 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
         spacing={3}
         style={{ marginBottom: 20 }}
       >
-        {
-          overviewLayoutCustomization.map(({ key, width }) => {
-            switch (key) {
-              case 'details':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <SecurityPlatformDetails securityPlatform={securityPlatform} />
-                  </Grid>
-                );
-              case 'basicInformation':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixDomainObjectOverview stixDomainObject={securityPlatform} />
-                  </Grid>
-                );
-              case 'latestCreatedRelationships':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-                      stixObjectOrStixRelationshipId={securityPlatform.id}
-                      stixObjectOrStixRelationshipLink={`/dashboard/entities/security_platform/${securityPlatform.id}/knowledge`}
-                    />
-                  </Grid>
-                );
-              case 'latestContainers':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectOrStixRelationshipLastContainers
-                      stixCoreObjectOrStixRelationshipId={securityPlatform.id}
-                    />
-                  </Grid>
-                );
-              case 'externalReferences':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectExternalReferences
-                      stixCoreObjectId={securityPlatform.id}
-                    />
-                  </Grid>
-                );
-              case 'mostRecentHistory':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectLatestHistory
-                      stixCoreObjectId={securityPlatform.id}
-                    />
-                  </Grid>
-                );
-              case 'notes':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectOrStixCoreRelationshipNotes
-                      stixCoreObjectOrStixCoreRelationshipId={securityPlatform.id}
-                      defaultMarkings={securityPlatform.objectMarking ?? []}
-                    />
-                  </Grid>
-                );
-              default:
-                return null;
-            }
-          })
-        }
+        <Grid item xs={6}>
+          <SecurityPlatformDetails securityPlatform={securityPlatform} />
+        </Grid>
+
+        <Grid item xs={6}>
+          <StixDomainObjectOverview stixDomainObject={securityPlatform} />
+        </Grid>
+        {viewAs === 'knowledge' && (
+          <Grid item xs={6}>
+            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+              stixObjectOrStixRelationshipId={securityPlatform.id}
+              stixObjectOrStixRelationshipLink={`/dashboard/entities/security_platforms/${securityPlatform.id}/knowledge`}
+            />
+          </Grid>
+        )}
+        );
+        <Grid
+          item
+          xs={viewAs === 'knowledge' ? 6 : 12}
+        >
+          <StixCoreObjectOrStixRelationshipLastContainers
+            {...lastReportsProps}
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <StixCoreObjectExternalReferences
+            stixCoreObjectId={securityPlatform.id}
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <StixCoreObjectLatestHistory
+            stixCoreObjectId={securityPlatform.id}
+          />
+        </Grid>
+        );
+        <Grid item xs={6}>
+          <StixCoreObjectOrStixCoreRelationshipNotes
+            stixCoreObjectOrStixCoreRelationshipId={securityPlatform.id}
+            defaultMarkings={securityPlatform.objectMarking ?? []}
+          />
+        </Grid>
       </Grid>
     </>
   );

@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import StixDomainObjectKnowledge from '@components/common/stix_domain_objects/StixDomainObjectKnowledge';
 import { SecurityPlatformKnowledge_securityPlatform$key } from '@components/entities/securityPlatforms/__generated__/SecurityPlatformKnowledge_securityPlatform.graphql';
+import StixDomainObjectAuthorKnowledge from '@components/common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
@@ -23,9 +24,11 @@ const securityPlatformKnowledgeFragment = graphql`
 
 const SecurityPlatformKnowledgeComponent = ({
   securityPlatformData,
+  viewAs,
 }: {
   securityPlatformData: SecurityPlatformKnowledge_securityPlatform$key;
-  relatedRelationshipTypes: string[]
+  relatedRelationshipTypes: string[];
+  viewAs: string;
 }) => {
   const securityPlatform = useFragment(
     securityPlatformKnowledgeFragment,
@@ -58,11 +61,17 @@ const SecurityPlatformKnowledgeComponent = ({
       />
       <Route
         path="/overview"
-        element={
+        element={(viewAs === 'knowledge' ? (
           <StixDomainObjectKnowledge
             stixDomainObjectId={securityPlatform.id}
             stixDomainObjectType="SecurityPlatform"
           />
+        ) : (
+          <StixDomainObjectAuthorKnowledge
+            stixDomainObjectId={securityPlatform.id}
+            stixDomainObjectType="SecurityPlatform"
+          />
+        ))
         }
       />
       <Route

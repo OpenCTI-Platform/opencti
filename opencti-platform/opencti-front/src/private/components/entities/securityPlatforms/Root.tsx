@@ -218,6 +218,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                 element={
                   <SecurityPlatform
                     securityPlatformData={securityPlatform}
+                    viewAs={viewAs}
                   />
                 }
               />
@@ -236,6 +237,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                   <div key={forceUpdate}>
                     <SecurityPlatformKnowledge
                       securityPlatformData={securityPlatform}
+                      viewAs={viewAs}
                       relatedRelationshipTypes={['should-cover']}
                     />
                   </div>
