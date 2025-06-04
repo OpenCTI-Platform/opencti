@@ -14155,7 +14155,7 @@ type SynchronizerEditMutations {
 
 ######## STIX OBJECT
 type StixEditMutations {
-  delete(forceDelete: Boolean): ID
+  delete(forceDelete: Boolean): ID @auth(for: [SETTINGS])
   merge(stixObjectsIds: [String]!): StixObject
 }
 
@@ -14623,7 +14623,7 @@ type Mutation {
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 
   ######## STIX OBJECT
-  stixEdit(id: ID!): StixEditMutations @auth(for: [SETTINGS])
+  stixEdit(id: ID!): StixEditMutations @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
 
   ######## STIX OBJECT ENTITIES
 
