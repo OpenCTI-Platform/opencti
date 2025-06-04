@@ -21,6 +21,7 @@ export const csvFeedImportQuery = graphql`
       markings
       authentication_value
       csv_mapper_type
+      scheduling_period
       csvMapper {
         name
         has_header
@@ -77,6 +78,9 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
           const { csvFeedAddInputFromImport } = data as IngestionCsvImportQuery$data;
           setIngestCSVData(csvFeedAddInputFromImport);
           setOpen(true);
+          if (inputFileRef.current) {
+            inputFileRef.current.value = '';
+          }
         })
         .catch((e) => {
           const { errors } = (e as unknown as RelayError).res;
