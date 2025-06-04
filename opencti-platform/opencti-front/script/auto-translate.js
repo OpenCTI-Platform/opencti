@@ -28,13 +28,13 @@ async function translateFiles() {
       const frontCommand = `i18n-auto-translation -a deepl-free -p ./lang/front/en.json -t ${code} -k ${subscriptionKey}`;
       const backCommand = `i18n-auto-translation -a deepl-free -p ./lang/back/en.json -t ${code} -k ${subscriptionKey}`;
       try {
-        const { stdout, stderr } = await execAsync(frontCommand);
+        const { stdout } = await execAsync(frontCommand);
         console.log(stdout)
       } catch (error) {
         console.error(`Error translating ./lang/front/${code}.json:`, error.message);
       }
       try {
-        const { stdout, stderr } = await execAsync(backCommand);
+        const { stdout } = await execAsync(backCommand);
         console.log(stdout)
       } catch (error) {
         console.error(`Error translating ./lang/back/${code}.json:`, error.message);
