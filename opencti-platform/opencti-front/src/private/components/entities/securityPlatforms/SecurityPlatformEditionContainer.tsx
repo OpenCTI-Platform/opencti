@@ -11,14 +11,12 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 interface securityPlatformContainerProps {
   handleClose: () => void;
   securityPlatform:SecurityPlatformEditionContainer_securityPlatform$data,
-  open: boolean,
   controlledDial?: DrawerControlledDialType
 }
 
 const SecurityPlatformEditionContainer: FunctionComponent<securityPlatformContainerProps> = ({
   handleClose,
   securityPlatform,
-  open,
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
@@ -27,7 +25,6 @@ const SecurityPlatformEditionContainer: FunctionComponent<securityPlatformContai
   return (
     <Drawer
       title={t_i18n('Update an security platform')}
-      open={open}
       onClose={handleClose}
       context={editContext}
       controlledDial={controlledDial}

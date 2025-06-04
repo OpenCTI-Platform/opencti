@@ -11,6 +11,7 @@ import { propOr } from 'ramda';
 import { RootSecurityPlatformSubscription } from '@components/entities/securityPlatforms/__generated__/RootSecurityPlatformSubscription.graphql';
 import { RootSecurityPlatformQuery } from '@components/entities/securityPlatforms/__generated__/RootSecurityPlatformQuery.graphql';
 import SecurityPlatformKnowledge from '@components/entities/securityPlatforms/SecurityPlatformKnowledge';
+import SecurityPlatformEdition from '@components/entities/securityPlatforms/SecurityPlatformEdition';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import SecurityPlatform from './SecurityPlatform';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -24,6 +25,8 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const subscription = graphql`
   subscription RootSecurityPlatformSubscription($id: ID!) {
@@ -154,11 +157,11 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
             <StixDomainObjectHeader
               entityType="securityPlatform"
               stixDomainObject={securityPlatform}
-              // EditComponent={(
-              //   <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              //     <SecurityPlatformEdition securityPlatformId={securityPlatform.id} />
-              //   </Security>
-              // )}
+              EditComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <SecurityPlatformEdition securityPlatformId={securityPlatform.id} />
+                </Security>
+              )}
               onViewAs={handleChangeViewAs}
               viewAs={viewAs}
             />
