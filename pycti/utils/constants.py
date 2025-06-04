@@ -48,7 +48,7 @@ class StixCyberObservableTypes(Enum):
     PERSONA = "Persona"
 
     @classmethod
-    def has_value(cls, value):
+    def has_value(cls, value: str) -> bool:
         lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
         return value.lower() in lower_attr
 

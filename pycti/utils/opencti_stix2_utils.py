@@ -2,6 +2,21 @@ from typing import Any, Dict
 
 from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression
 
+SUPPORTED_INTERNAL_OBJECTS = [
+    "user",
+    "group",
+    "capability",
+    "role",
+    "settings",
+    "work",
+    "trash",
+    "draftworkspace",
+    "playbook",
+    "deleteoperation",
+    "workspace",
+    "publicdashboard",
+]
+
 SUPPORTED_STIX_ENTITY_OBJECTS = [
     "attack-pattern",
     "campaign",
@@ -82,6 +97,12 @@ STIX_CYBER_OBSERVABLE_MAPPING = {
     "simple-observable": "Simple-Observable",
     "persona": "Persona",
 }
+
+STIX_OBJECTS = (
+    SUPPORTED_STIX_ENTITY_OBJECTS  # entities
+    + list(STIX_CYBER_OBSERVABLE_MAPPING.keys())  # observables
+    + ["relationship", "sighting"]  # relationships
+)
 
 PATTERN_MAPPING = {
     "Autonomous-System": ["number"],

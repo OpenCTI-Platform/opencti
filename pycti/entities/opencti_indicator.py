@@ -301,6 +301,43 @@ class Indicator:
                 "name or pattern or pattern_type or x_opencti_main_observable_type"
             )
 
+    """
+        Update an Indicator object field
+
+        :param id: the Indicator id
+        :param input: the input of the field
+    """
+
+    def update_field(self, **kwargs):
+        id = kwargs.get("id", None)
+        input = kwargs.get("input", None)
+        if id is not None and input is not None:
+            self.opencti.app_logger.info("Updating Indicator", {"id": id})
+            query = """
+                        mutation IndicatorFieldPatch($id: ID!, $input: [EditInput!]!) {
+                            indicatorFieldPatch(id: $id, input: $input) {
+                                id
+                                standard_id
+                                entity_type
+                            }
+                        }
+                    """
+            result = self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": input,
+                },
+            )
+            return self.opencti.process_multiple_fields(
+                result["data"]["indicatorFieldPatch"]
+            )
+        else:
+            self.opencti.app_logger.error(
+                "[opencti_stix_domain_object] Cant update indicator field, missing parameters: id and input"
+            )
+            return None
+
     def add_stix_cyber_observable(self, **kwargs):
         """
         Add a Stix-Cyber-Observable object to Indicator object (based-on)

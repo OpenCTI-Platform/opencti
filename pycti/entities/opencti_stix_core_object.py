@@ -1681,6 +1681,228 @@ class StixCoreObject:
             return None
 
     """
+        Apply rule to Stix-Core-Object object
+
+        :param element_id: the Stix-Core-Object id
+        :param rule_id: the rule to apply
+        :return void
+    """
+
+    def rule_apply(self, **kwargs):
+        rule_id = kwargs.get("rule_id", None)
+        element_id = kwargs.get("element_id", None)
+        if element_id is not None and rule_id is not None:
+            self.opencti.app_logger.info(
+                "Apply rule stix_core_object", {"id": element_id}
+            )
+            query = """
+                mutation StixCoreApplyRule($elementId: ID!, $ruleId: ID!) {
+                    ruleApply(elementId: $elementId, ruleId: $ruleId)
+                }
+            """
+            self.opencti.query(query, {"elementId": element_id, "ruleId": rule_id})
+        else:
+            self.opencti.app_logger.error(
+                "[stix_core_object] Cant apply rule, missing parameters: id"
+            )
+            return None
+
+    """
+        Apply rule clear to Stix-Core-Object object
+
+        :param element_id: the Stix-Core-Object id
+        :param rule_id: the rule to apply
+        :return void
+    """
+
+    def rule_clear(self, **kwargs):
+        rule_id = kwargs.get("rule_id", None)
+        element_id = kwargs.get("element_id", None)
+        if element_id is not None and rule_id is not None:
+            self.opencti.app_logger.info(
+                "Apply rule clear stix_core_object", {"id": element_id}
+            )
+            query = """
+                mutation StixCoreClearRule($elementId: ID!, $ruleId: ID!) {
+                    ruleClear(elementId: $elementId, ruleId: $ruleId)
+                }
+            """
+            self.opencti.query(query, {"elementId": element_id, "ruleId": rule_id})
+        else:
+            self.opencti.app_logger.error(
+                "[stix_core_object] Cant clear rule, missing parameters: id"
+            )
+            return None
+
+    """
+        Apply rules rescan to Stix-Core-Object object
+
+        :param element_id: the Stix-Core-Object id
+        :return void
+    """
+
+    def rules_rescan(self, **kwargs):
+        element_id = kwargs.get("element_id", None)
+        if element_id is not None:
+            self.opencti.app_logger.info(
+                "Apply rules rescan stix_core_object", {"id": element_id}
+            )
+            query = """
+                mutation StixCoreRescanRules($elementId: ID!) {
+                    rulesRescan(elementId: $elementId)
+                }
+            """
+            self.opencti.query(query, {"elementId": element_id})
+        else:
+            self.opencti.app_logger.error(
+                "[stix_core_object] Cant rescan rule, missing parameters: id"
+            )
+            return None
+
+    """
+        Ask clear restriction
+
+        :param element_id: the Stix-Core-Object id
+        :return void
+    """
+
+    def clear_access_restriction(self, **kwargs):
+        element_id = kwargs.get("element_id", None)
+        if element_id is not None:
+            query = """
+                mutation StixCoreObjectEdit($id: ID!) {
+                    stixCoreObjectEdit(id: $id) {
+                        clearAccessRestriction {
+                          id
+                        }
+                    }
+                }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": element_id,
+                },
+            )
+        else:
+            self.opencti.app_logger.error(
+                "[stix_core_object] Cant clear access restriction, missing parameters: id"
+            )
+            return None
+
+    """
+        Ask enrichment with single connector
+
+        :param element_id: the Stix-Core-Object id
+        :param connector_id the connector
+        :return void
+    """
+
+    def ask_enrichment(self, **kwargs):
+        element_id = kwargs.get("element_id", None)
+        connector_id = kwargs.get("connector_id", None)
+        query = """
+            mutation StixCoreObjectEdit($id: ID!, $connectorId: ID!) {
+                stixCoreObjectEdit(id: $id) {
+                    askEnrichment(connectorId: $connectorId) {
+                      id
+                    }
+                }
+            }
+        """
+        self.opencti.query(
+            query,
+            {
+                "id": element_id,
+                "connectorId": connector_id,
+            },
+        )
+
+    """
+        Ask enrichment with multiple connectors
+
+        :param element_id: the Stix-Core-Object id
+        :param connector_ids the connectors
+        :return void
+    """
+
+    def ask_enrichments(self, **kwargs):
+        element_id = kwargs.get("element_id", None)
+        connector_ids = kwargs.get("connector_ids", None)
+        query = """
+            mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!) {
+                stixCoreObjectEdit(id: $id) {
+                    askEnrichments(connectorIds: $connectorIds) {
+                      id
+                    }
+                }
+            }
+        """
+        self.opencti.query(
+            query,
+            {
+                "id": element_id,
+                "connectorId": connector_ids,
+            },
+        )
+
+    """
+        Share element to multiple organizations
+
+        :param entity_id: the Stix-Core-Object id
+        :param organization_id:s the organization to share with
+        :return void
+    """
+
+    def organization_share(self, entity_id, organization_ids, sharing_direct_container):
+        query = """
+            mutation StixCoreObjectEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) {
+                stixCoreObjectEdit(id: $id) {
+                    restrictionOrganizationAdd(organizationId: $organizationId, directContainerSharing: $directContainerSharing) {
+                      id
+                    }
+                }
+            }
+        """
+        self.opencti.query(
+            query,
+            {
+                "id": entity_id,
+                "organizationId": organization_ids,
+                "directContainerSharing": sharing_direct_container,
+            },
+        )
+
+    """
+        Unshare element from multiple organizations
+
+        :param entity_id: the Stix-Core-Object id
+        :param organization_id:s the organization to share with
+        :return void
+    """
+
+    def organization_unshare(
+        self, entity_id, organization_ids, sharing_direct_container
+    ):
+        query = """
+            mutation StixCoreObjectEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) {
+                stixCoreObjectEdit(id: $id) {
+                    restrictionOrganizationDelete(organizationId: $organizationId, directContainerSharing: $directContainerSharing) {
+                      id
+                    }
+                }
+            }
+        """
+        self.opencti.query(
+            query,
+            {
+                "id": entity_id,
+                "organizationId": organization_ids,
+                "directContainerSharing": sharing_direct_container,
+            },
+        )
+
+    """
         Delete a Stix-Core-Object object
 
         :param id: the Stix-Core-Object id
@@ -1701,4 +1923,29 @@ class StixCoreObject:
             self.opencti.query(query, {"id": id})
         else:
             self.opencti.app_logger.error("[stix_core_object] Missing parameters: id")
+            return None
+
+    """
+        Remove a Stix-Core-Object object from draft (revert)
+
+        :param id: the Stix-Core-Object id
+        :return void
+    """
+
+    def remove_from_draft(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.app_logger.info("Draft remove stix_core_object", {"id": id})
+            query = """
+                mutation StixCoreObjectEditDraftRemove($id: ID!) {
+                    stixCoreObjectEdit(id: $id) {
+                        removeFromDraft
+                    }
+                }
+            """
+            self.opencti.query(query, {"id": id})
+        else:
+            self.opencti.app_logger.error(
+                "[stix_core_object] Cant remove from draft, missing parameters: id"
+            )
             return None

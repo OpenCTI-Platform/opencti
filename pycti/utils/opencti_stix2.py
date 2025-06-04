@@ -30,6 +30,7 @@ from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
 from pycti.utils.opencti_stix2_utils import (
     OBSERVABLES_VALUE_INT,
     STIX_CYBER_OBSERVABLE_MAPPING,
+    STIX_OBJECTS,
 )
 
 datefinder.ValueError = ValueError, OverflowError
@@ -907,6 +908,22 @@ class OpenCTIStix2:
             # relationships
             "relationship": self.opencti.stix_core_relationship,
             "sighting": self.opencti.stix_sighting_relationship,
+        }
+
+    def get_internal_helper(self):
+        # Import
+        return {
+            "user": self.opencti.user,
+            "group": self.opencti.group,
+            "capability": self.opencti.capability,
+            "role": self.opencti.role,
+            "settings": self.opencti.settings,
+            "work": self.opencti.work,
+            "deleteoperation": self.opencti.trash,
+            "draftworkspace": self.opencti.draft,
+            "playbook": self.opencti.playbook,
+            "workspace": self.opencti.workspace,
+            "publicdashboard": self.opencti.public_dashboard,
         }
 
     def generate_standard_id_from_stix(self, data):
@@ -2468,19 +2485,92 @@ class OpenCTIStix2:
                 self.opencti.external_reference.update_field(
                     id=item_id, input=field_patch_without_files
                 )
+            elif item["type"] == "indicator":
+                self.opencti.indicator.update_field(
+                    id=item_id, input=field_patch_without_files
+                )
             else:
                 self.opencti.stix_domain_object.update_field(
                     id=item_id, input=field_patch_without_files
                 )
         self.apply_patch_files(item)
 
+    def rule_apply(self, item):
+        rule_id = self.opencti.get_attribute_in_extension("opencti_rule", item)
+        if rule_id is None:
+            rule_id = item["opencti_rule"]
+        self.opencti.stix_core_object.rule_apply(element_id=item["id"], rule_id=rule_id)
+
+    def rule_clear(self, item):
+        rule_id = self.opencti.get_attribute_in_extension("opencti_rule", item)
+        if rule_id is None:
+            rule_id = item["opencti_rule"]
+        self.opencti.stix_core_object.rule_clear(element_id=item["id"], rule_id=rule_id)
+
+    def rules_rescan(self, item):
+        self.opencti.stix_core_object.rules_rescan(element_id=item["id"])
+
+    def organization_share(self, item):
+        organization_ids = self.opencti.get_attribute_in_extension(
+            "sharing_organization_ids", item
+        )
+        if organization_ids is None:
+            organization_ids = item["sharing_organization_ids"]
+        sharing_direct_container = self.opencti.get_attribute_in_extension(
+            "sharing_direct_container", item
+        )
+        if sharing_direct_container is None:
+            sharing_direct_container = item["sharing_direct_container"]
+        self.opencti.stix_core_object.organization_share(
+            item["id"], organization_ids, sharing_direct_container
+        )
+
+    def organization_unshare(self, item):
+        organization_ids = self.opencti.get_attribute_in_extension(
+            "sharing_organization_ids", item
+        )
+        if organization_ids is None:
+            organization_ids = item["sharing_organization_ids"]
+        sharing_direct_container = self.opencti.get_attribute_in_extension(
+            "sharing_direct_container", item
+        )
+        if sharing_direct_container is None:
+            sharing_direct_container = item["sharing_direct_container"]
+        self.opencti.stix_core_object.organization_unshare(
+            item["id"], organization_ids, sharing_direct_container
+        )
+
+    def element_operation_delete(self, item, operation):
+        # If data is stix, just use the generic stix function for deletion
+        if item["type"] in STIX_OBJECTS:
+            force_delete = operation == "delete_force"
+            self.opencti.stix.delete(id=item["id"], force_delete=force_delete)
+        else:
+            # Element is not knowledge we need to use the right api
+            stix_helper = self.get_internal_helper().get(item["type"])
+            if stix_helper and hasattr(stix_helper, "delete"):
+                stix_helper.delete(id=item["id"])
+            else:
+                raise ValueError(
+                    "Delete operation or no stix helper", {"type": item["type"]}
+                )
+
     def apply_opencti_operation(self, item, operation):
-        if operation == "delete":
-            delete_id = item["id"]
-            self.opencti.stix.delete(id=delete_id)
+        if operation == "delete" or operation == "delete_force":
+            self.element_operation_delete(item=item, operation=operation)
+        elif operation == "revert_draft":
+            self.opencti.stix_core_object.remove_from_draft(id=item["id"])
+        elif operation == "restore":
+            self.opencti.trash.restore(item["id"])
         elif operation == "merge":
-            target_id = item["merge_target_id"]
-            source_ids = item["merge_source_ids"]
+            target_id = self.opencti.get_attribute_in_extension("merge_target_id", item)
+            if target_id is None:
+                target_id = item["merge_target_id"]
+            source_ids = self.opencti.get_attribute_in_extension(
+                "merge_source_ids", item
+            )
+            if source_ids is None:
+                source_ids = item["merge_source_ids"]
             self.opencti.stix.merge(id=target_id, object_ids=source_ids)
         elif operation == "patch":
             self.apply_patch(item=item)
@@ -2492,8 +2582,34 @@ class OpenCTIStix2:
             id = item["id"]
             input = item["input"]
             self.opencti.pir.pir_unflag_element(id=id, input=input)
+        elif operation == "rule_apply":
+            self.rule_apply(item=item)
+        elif operation == "rule_clear":
+            self.rule_clear(item=item)
+        elif operation == "rules_rescan":
+            self.rules_rescan(item=item)
+        elif operation == "share":
+            self.organization_share(item=item)
+        elif operation == "unshare":
+            self.organization_unshare(item=item)
+        elif operation == "clear_access_restriction":
+            self.opencti.stix_core_object.clear_access_restriction(
+                element_id=item["id"]
+            )
+        elif operation == "enrichment":
+            connector_ids = self.opencti.get_attribute_in_extension(
+                "connector_ids", item
+            )
+            if connector_ids is None:
+                connector_ids = item["connector_ids"]
+            self.opencti.stix_core_object.ask_enrichments(
+                element_id=item["id"], connector_ids=connector_ids
+            )
         else:
-            raise ValueError("Not supported opencti_operation")
+            raise ValueError(
+                "Not supported opencti_operation",
+                {"operation": operation},
+            )
 
     def import_item(
         self,
