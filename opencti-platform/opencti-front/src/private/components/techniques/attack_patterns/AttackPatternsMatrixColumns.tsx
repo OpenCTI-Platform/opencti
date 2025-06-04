@@ -17,12 +17,10 @@ import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
 type SubAttackPattern = NonNullable<AttackPattern['subAttackPatterns']>[number];
-
-type AttackPatternElement = AttackPattern & {
-  id: AttackPattern['attack_pattern_id'],
-  entity_type: string,
-  level: number
-};
+type MinimalAttackPattern = {
+  attack_pattern_id: string,
+  name: string
+}
 
 interface AttackPatternsMatrixColumnsProps extends AttackPatternsMatrixProps {
   handleToggleModeOnlyActive?: () => void;
@@ -90,7 +88,7 @@ const AttackPatternsMatrixColumns = ({
   const theme = useTheme<Theme>();
   const [hover, setHover] = useState<Record<string, boolean>>({});
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
-  const [selectedAttackPattern, setSelectedAttackPattern] = useState<AttackPatternElement | null>(null);
+  const [selectedAttackPattern, setSelectedAttackPattern] = useState<MinimalAttackPattern | null>(null);
   const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
 
   const data = usePreloadedQuery<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, queryRef);
@@ -99,7 +97,7 @@ const AttackPatternsMatrixColumns = ({
     data,
   );
 
-  const handleOpen = (element: AttackPatternElement, event: React.MouseEvent) => {
+  const handleOpen = (element: MinimalAttackPattern, event: React.MouseEvent) => {
     setAnchorEl(event.currentTarget);
     setSelectedAttackPattern(element);
   };
@@ -109,9 +107,9 @@ const AttackPatternsMatrixColumns = ({
     setSelectedAttackPattern(null);
   };
 
-  const handleAddAttackPattern = (element: AttackPatternElement) => {
-    const { id, name, entity_type } = element;
-    handleAdd({ id, entity_type, name });
+  const handleAddAttackPattern = (element: MinimalAttackPattern) => {
+    const { attack_pattern_id: id, name } = element;
+    handleAdd({ id, entity_type: 'Attack-Pattern', name });
     handleClose();
   };
 
@@ -157,13 +155,9 @@ const AttackPatternsMatrixColumns = ({
         || ap.subAttackPatternsSearchText?.toLowerCase().includes(searchTerm.toLowerCase()))
         .map((ap) => ({
           ...ap,
-          id: ap.attack_pattern_id,
-          entity_type: 'Attack-Pattern',
           level: getAPLevel(ap),
           subAttackPatterns: ap.subAttackPatterns?.map((sub) => ({
             ...sub,
-            id: sub.attack_pattern_id,
-            entity_type: 'Attack-Pattern',
             level: getSubLevel(sub),
           }))
         }))
@@ -203,17 +197,18 @@ const AttackPatternsMatrixColumns = ({
                     <Typography variant="caption">{`${col.attackPatterns?.length} techniques`}</Typography>
                   </Box>
                   {col.attackPatterns?.map((ap) => {
-                    const isHovered = hover[ap.id];
+                    const isHovered = hover[ap.attack_pattern_id];
                     const level = isHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
                     const position = isHovered && level === 0 ? 2 : 1;
                     const colorArray = colors(theme.palette.background.accent);
                     return (
                       ap.subAttackPatterns?.length ? (
                         <Accordion
-                          id={ap.id}
-                          key={ap.id}
-                          onMouseEnter={() => handleToggleHover(ap.id)}
-                          onMouseLeave={() => handleToggleHover(ap.id)}
+                          id={ap.attack_pattern_id}
+                          key={ap.attack_pattern_id}
+                          slotProps={{ transition: { unmountOnExit: true } }}
+                          onMouseEnter={() => handleToggleHover(ap.attack_pattern_id)}
+                          onMouseLeave={() => handleToggleHover(ap.attack_pattern_id)}
                           sx={{
                             border: `1px solid ${colorArray[level][0]}`,
                             borderRadius: 0,
@@ -237,7 +232,7 @@ const AttackPatternsMatrixColumns = ({
                             }}
                           >
                             {ap.subAttackPatterns.map((subAttackPattern) => {
-                              const isSubHovered = hover[subAttackPattern.id];
+                              const isSubHovered = hover[subAttackPattern.attack_pattern_id];
                               const subLevel = isSubHovered && subAttackPattern.level !== 0 ? subAttackPattern.level - 1 : subAttackPattern.level;
                               const subPosition = isSubHovered && subLevel === 0 ? 2 : 1;
                               const subColorArray = colors(theme.palette.background.accent);
@@ -264,7 +259,7 @@ const AttackPatternsMatrixColumns = ({
                           <AccordionActions>
                             <Button
                               startIcon={<InfoOutlined fontSize="small" />}
-                              href={`/dashboard/techniques/attack_patterns/${ap.id}`}
+                              href={`/dashboard/techniques/attack_patterns/${ap.attack_pattern_id}`}
                               target="_blank"
                             >
                               View
@@ -279,9 +274,9 @@ const AttackPatternsMatrixColumns = ({
                         </Accordion>
                       ) : (
                         <Box
-                          key={ap.id}
-                          onMouseEnter={() => handleToggleHover(ap.id)}
-                          onMouseLeave={() => handleToggleHover(ap.id)}
+                          key={ap.attack_pattern_id}
+                          onMouseEnter={() => handleToggleHover(ap.attack_pattern_id)}
+                          onMouseLeave={() => handleToggleHover(ap.attack_pattern_id)}
                           onClick={(e) => handleOpen(ap, e)}
                           sx={{
                             cursor: 'pointer',
@@ -306,7 +301,7 @@ const AttackPatternsMatrixColumns = ({
                 <>
                   <MenuItem
                     component={Link}
-                    to={`/dashboard/techniques/attack_patterns/${selectedAttackPattern?.id}`}
+                    to={`/dashboard/techniques/attack_patterns/${selectedAttackPattern?.attack_pattern_id}`}
                     target="_blank"
                   >
                     <ListItemIcon><InfoOutlined fontSize="small"/></ListItemIcon>
