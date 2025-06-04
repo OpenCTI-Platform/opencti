@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { AccordionDetails, Box, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material';
+import { AccordionActions, AccordionDetails, Box, Button, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material';
 import { AddCircleOutlineOutlined, ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -245,6 +245,21 @@ const AttackPatternsMatrixColumns = ({
                               );
                             })}
                           </AccordionDetails>
+                          <AccordionActions>
+                            <Button
+                              startIcon={<InfoOutlined fontSize="small" />}
+                              href={`/dashboard/techniques/attack_patterns/${ap.id}`}
+                              target="_blank"
+                            >
+                              View
+                            </Button>
+                            <Button
+                              startIcon={<AddCircleOutlineOutlined fontSize="small" />}
+                              onClick={() => handleAddAttackPattern(ap)}
+                            >
+                              Add
+                            </Button>
+                          </AccordionActions>
                         </Accordion>
                       ) : (
                         <Box
