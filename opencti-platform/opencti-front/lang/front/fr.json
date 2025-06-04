@@ -5,6 +5,8 @@
   "... successfully deleted": "{entity_type} supprimé(e) avec succès",
   "{count} days": "{count} jours",
   "{count} email address(es) extracted from pasted text": "{count} adresse(s) électronique(s) extraite(s) du texte collé",
+  "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName}` ajouté à `{pirName}`",
+  "{entityType} `{entityName}` removed from `{pirName}`": "{entityType} `{entityName}` supprimé de `{pirName}`",
   "+ N override(s)": "+ {count} surcharge(s)",
   "0 equals no maximum": "0 pour aucun maximum",
   "1 day": "1 jour",
