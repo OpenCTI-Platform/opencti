@@ -262,6 +262,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
     { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
   ],
+  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_INTRUSION_SET}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED }
+  ],
   // endregion
   // region COURSE_OF_ACTION
   [`${ENTITY_TYPE_COURSE_OF_ACTION}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
