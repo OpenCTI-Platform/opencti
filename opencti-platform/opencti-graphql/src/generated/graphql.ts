@@ -14353,9 +14353,9 @@ export type Mutation = {
   pingConnector?: Maybe<Connector>;
   pirAdd?: Maybe<Pir>;
   pirDelete?: Maybe<Scalars['ID']['output']>;
+  pirFieldPatch?: Maybe<Pir>;
   pirFlagElement?: Maybe<Scalars['ID']['output']>;
   pirUnflagElement?: Maybe<Scalars['ID']['output']>;
-  pirUpdate?: Maybe<Pir>;
   playbookAdd?: Maybe<Playbook>;
   playbookAddLink: Scalars['String']['output'];
   playbookAddNode: Scalars['String']['output'];
@@ -15920,6 +15920,12 @@ export type MutationPirDeleteArgs = {
 };
 
 
+export type MutationPirFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
+};
+
+
 export type MutationPirFlagElementArgs = {
   id: Scalars['ID']['input'];
   input: PirFlagElementInput;
@@ -15929,12 +15935,6 @@ export type MutationPirFlagElementArgs = {
 export type MutationPirUnflagElementArgs = {
   id: Scalars['ID']['input'];
   input: PirUnflagElementInput;
-};
-
-
-export type MutationPirUpdateArgs = {
-  id: Scalars['ID']['input'];
-  input: Array<EditInput>;
 };
 
 
@@ -39686,9 +39686,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   pirAdd?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType, RequireFields<MutationPirAddArgs, 'input'>>;
   pirDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirDeleteArgs, 'id'>>;
+  pirFieldPatch?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType, RequireFields<MutationPirFieldPatchArgs, 'id' | 'input'>>;
   pirFlagElement?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirFlagElementArgs, 'id' | 'input'>>;
   pirUnflagElement?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPirUnflagElementArgs, 'id' | 'input'>>;
-  pirUpdate?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType, RequireFields<MutationPirUpdateArgs, 'id' | 'input'>>;
   playbookAdd?: Resolver<Maybe<ResolversTypes['Playbook']>, ParentType, ContextType, RequireFields<MutationPlaybookAddArgs, 'input'>>;
   playbookAddLink?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddLinkArgs, 'id' | 'input'>>;
   playbookAddNode?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationPlaybookAddNodeArgs, 'id' | 'input'>>;

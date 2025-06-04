@@ -10,7 +10,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 const pirEditMutation = graphql`
   mutation PirEditionMutation($id: ID!, $input: [EditInput!]!) {
-    pirUpdate(id: $id, input: $input) {
+    pirFieldPatch(id: $id, input: $input) {
       ...PirEditionFragment
     }
   }

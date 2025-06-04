@@ -62,10 +62,9 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   }
   // remove pir id from historic events
   const source = `
-    for (int i = 0; i < ctx._source.context_data.pir_ids.length; ++i){
-      if(ctx._source.context_data.pir_ids[i] == params.pirId){
-        ctx._source.context_data.pir_ids.remove(i);
-      }
+    def pirIdIndex = ctx._source.context_data.pir_ids.indexOf(params.pirId);
+    if (pirIdIndex >=0 ) {
+       ctx._source.context_data.pir_ids.remove(pirIdIndex);
     }  
   `;
   await elRawUpdateByQuery({

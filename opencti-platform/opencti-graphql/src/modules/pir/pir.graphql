@@ -93,7 +93,7 @@ input PirUnflagElementInput {
 # Mutations
 type Mutation {
     pirAdd(input: PirAddInput!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
-    pirUpdate(id: ID!, input: [EditInput!]!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
+    pirFieldPatch(id: ID!, input: [EditInput!]!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
     pirDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
     pirFlagElement(id: ID!, input: PirFlagElementInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
     pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])

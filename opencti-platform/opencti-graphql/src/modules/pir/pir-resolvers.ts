@@ -18,7 +18,7 @@ const pirResolvers: Resolvers = {
   },
   Mutation: {
     pirAdd: (_, { input }, context) => pirAdd(context, context.user, input),
-    pirUpdate: (_, { id, input }, context) => updatePir(context, context.user, id, input),
+    pirFieldPatch: (_, { id, input }, context) => updatePir(context, context.user, id, input),
     pirDelete: (_, { id }, context) => deletePir(context, context.user, id),
     pirFlagElement: (_, { id, input }, context) => pirFlagElement(context, context.user, id, input),
     pirUnflagElement: (_, { id, input }, context) => pirUnflagElement(context, context.user, id, input),

@@ -9245,7 +9245,7 @@ type Mutation {
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   pirAdd(input: PirAddInput!): Pir
-  pirUpdate(id: ID!, input: [EditInput!]!): Pir
+  pirFieldPatch(id: ID!, input: [EditInput!]!): Pir
   pirDelete(id: ID!): ID
   pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
