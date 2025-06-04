@@ -37,7 +37,7 @@ export const pirFormDataToMutationInput = (data: PirCreationFormData): PirAddInp
     name: data.name,
     description: data.description ?? undefined,
     objectMarking: data.markings.map((m) => m.value),
-    pir_rescan_days: data.pir_rescan_days,
+    pir_rescan_days: Number(data.pir_rescan_days),
     pir_filters: {
       mode: 'and',
       filterGroups: [],
