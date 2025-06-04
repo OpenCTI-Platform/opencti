@@ -18,7 +18,7 @@ import removeUnnecessaryHtml from './utils/pdfUnnecessarytHtml';
 import pdfBackground from './utils/pdfBackground';
 import pdfHeader from './utils/pdfHeader';
 import pdfFooter from './utils/pdfFooter';
-import { DARK, GREY, WHITE } from './utils/constants';
+import { DARK, DARK_BLUE, GREY, WHITE } from './utils/constants';
 import { dateFormat } from '../Time';
 
 /**
@@ -116,8 +116,8 @@ export const htmlToPdfReport = async (
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
   const linearGradiant = [
-    fintelDesign?.gradiantFromColor || '#00020C',
-    fintelDesign?.gradiantToColor || '#001BDA',
+    fintelDesign?.gradiantFromColor || DARK,
+    fintelDesign?.gradiantToColor || DARK_BLUE,
   ];
   const textColor = fintelDesign?.textColor || WHITE;
 
