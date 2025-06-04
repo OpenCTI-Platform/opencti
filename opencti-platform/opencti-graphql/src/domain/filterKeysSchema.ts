@@ -29,8 +29,6 @@ import {
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
   OBJECT_CONTAINS_FILTER,
-  RELATION_FROM_FILTER,
-  RELATION_FROM_TYPES_FILTER,
   REPRESENTATIVE_FILTER,
   TYPE_FILTER,
   WORKFLOW_FILTER
@@ -46,7 +44,6 @@ import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malware
 import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { isStixRefRelationship } from '../schema/stixRefRelationship';
 
 export type FilterDefinition = {
   filterKey: string
@@ -358,24 +355,6 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       multiple: true,
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
-    });
-  }
-  if (isStixRefRelationship(type)) {
-    filterDefinitionsMap.set(RELATION_FROM_FILTER, {
-      filterKey: RELATION_FROM_FILTER,
-      type: 'id',
-      label: 'Source entity',
-      multiple: true,
-      subEntityTypes,
-      elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT],
-    });
-    filterDefinitionsMap.set(RELATION_FROM_TYPES_FILTER, {
-      filterKey: RELATION_FROM_TYPES_FILTER,
-      type: 'string',
-      label: 'Source type',
-      multiple: true,
-      subEntityTypes,
-      elementsForFilterValuesSearch: [],
     });
   }
   if (isStixRelationshipExceptRef(type)) {
