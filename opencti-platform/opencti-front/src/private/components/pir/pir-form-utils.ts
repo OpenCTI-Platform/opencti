@@ -25,7 +25,7 @@ const optionsToFilters = (options: FieldOption[], relType: string): PirAddInput[
       mode: 'and',
       filterGroups: [],
       filters: [
-        { key: ['relationship_type'], values: [relType], operator: 'eq', mode: 'or' },
+        { key: ['entity_type'], values: [relType], operator: 'eq', mode: 'or' },
         { key: ['toId'], values: [option.value], operator: 'eq', mode: 'or' },
       ],
     },
