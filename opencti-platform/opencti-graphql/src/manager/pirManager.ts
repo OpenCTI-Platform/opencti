@@ -171,7 +171,6 @@ const pirManagerHandler = async () => {
   const context = executionContext(PIR_MANAGER_CONTEXT);
   const allPir = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
 
-  console.log('PIR - List of pirs:', allPir.map((p) => p.name));
   // Loop through all Pir one by one.
   await BluePromise.map(allPir, async (pir) => {
     // Fetch stream events since last event id caught by the Pir.
@@ -181,7 +180,6 @@ const pirManagerHandler = async () => {
       processStreamEventsForPir(context, pir),
       { streamBatchTime: PIR_MANAGER_TIME_RANGE }
     );
-    console.log(`PIR - ${pir.name} last event id:`, lastEventId);
     // Update pir last event id.
     if (lastEventId !== pir.lastEventId) {
       await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
