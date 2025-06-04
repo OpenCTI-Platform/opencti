@@ -21,6 +21,8 @@ import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
 import { PaginationOptions } from '../../../components/list_lines';
 import { LocalStorage } from '../../../utils/hooks/useLocalStorageModel';
+import ItemEntityType from '../../../components/ItemEntityType';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeRelationships_SourceFlaggedFragment on StixRefRelationship {
@@ -29,6 +31,12 @@ const sourceFlaggedFragment = graphql`
     pir_explanations {
       criterion {
         filters
+      }
+    }
+    created_at
+    to {
+      ...on Pir {
+        name
       }
     }
     from {
@@ -149,6 +157,11 @@ const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues }: PirKn
     queryPaginationOptions,
   );
 
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+
   const dataColumns: DataTableProps['dataColumns'] = {
     pirScore: {
       id: 'pir_score',
@@ -157,24 +170,36 @@ const PirKnowledgeRelationships = ({ pirId, localStorage, initialValues }: PirKn
       isSortable: true,
       render: ({ pir_score }) => defaultRender(`${pir_score}%`),
     },
-    from_entity_type: {},
+    fromType: {
+      id: 'fromType',
+      label: 'From type',
+      percentWidth: 10,
+      isSortable: false,
+      render: (node) => (
+        <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
+      ),
+    },
     fromName: {
-      id: 'from_name',
-      label: 'Source name',
       percentWidth: 25,
     },
-    from_creator: {
-      id: 'from_creator',
-      percentWidth: 10,
-    },
-    from_objectLabel: {},
-    from_objectMarking: {
+    toType: {
+      id: 'toType',
+      label: 'To type',
+      percentWidth: 7,
       isSortable: false,
+      render: () => (
+        <ItemEntityType inList showIcon entityType={'Pir'} />
+      ),
     },
+    toName: {
+      percentWidth: 7,
+    },
+    created_at: { percentWidth: 10 },
+    objectMarking: { isSortable: isRuntimeSort },
     pirCriteria: {
       id: 'explanations',
       label: 'Explanations',
-      percentWidth: 27,
+      percentWidth: 28,
       render: ({ pir_explanations }) => (
         <div style={{ display: 'flex' }}>
           {pir_explanations.map((e: { criterion: { filters: string } }) => (
