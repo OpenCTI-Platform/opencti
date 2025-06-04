@@ -16,6 +16,7 @@ import { hexToRGB } from '../../../../utils/Colors';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 
 type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
+type SubAttackPattern = NonNullable<AttackPattern['subAttackPatterns']>[number];
 
 type AttackPatternElement = AttackPattern & {
   id: AttackPattern['attack_pattern_id'],
@@ -110,7 +111,6 @@ const AttackPatternsMatrixColumns = ({
 
   const handleAddAttackPattern = (element: AttackPatternElement) => {
     const { id, name, entity_type } = element;
-
     handleAdd({ id, entity_type, name });
     handleClose();
   };
@@ -126,8 +126,17 @@ const AttackPatternsMatrixColumns = ({
     return () => subscription.unsubscribe();
   }, []);
 
-  const getLevel = (ap: AttackPattern): number => {
+  const getAPLevel = (ap: AttackPattern): number => {
     const matchCount = attackPatterns.filter((n) => n.id === ap.attack_pattern_id || (ap.subAttackPatternsIds?.includes(n.id))).length;
+    const maxCount = Math.max(...attackPatterns.map((n) => {
+      const all = [n, ...(n.parentAttackPatterns?.edges || []).map((e) => e.node)];
+      return all.length;
+    }));
+    return computeLevel(matchCount, 0, maxCount, 0, 10);
+  };
+
+  const getSubLevel = (ap: SubAttackPattern): number => {
+    const matchCount = attackPatterns.filter((n) => n.id === ap.attack_pattern_id).length;
     const maxCount = Math.max(...attackPatterns.map((n) => {
       const all = [n, ...(n.parentAttackPatterns?.edges || []).map((e) => e.node)];
       return all.length;
@@ -150,7 +159,13 @@ const AttackPatternsMatrixColumns = ({
           ...ap,
           id: ap.attack_pattern_id,
           entity_type: 'Attack-Pattern',
-          level: getLevel(ap),
+          level: getAPLevel(ap),
+          subAttackPatterns: ap.subAttackPatterns?.map((sub) => ({
+            ...sub,
+            id: sub.attack_pattern_id,
+            entity_type: 'Attack-Pattern',
+            level: getSubLevel(sub),
+          }))
         }))
         .sort((f, s) => f.name.localeCompare(s.name)),
     })), [attackPatternsMatrix, searchTerm, attackPatterns]);
@@ -217,11 +232,10 @@ const AttackPatternsMatrixColumns = ({
                             sx={{
                               padding: `0 0 0 ${theme.spacing(2)}`,
                               borderTop: `1px solid ${colorArray[level][0]}`,
-                              // backgroundColor: colorArray[level][position + 1],
                             }}
                           >
                             {ap.subAttackPatterns.map((subAttackPattern) => {
-                              const isSubHovered = hover[subAttackPattern.attack_pattern_id];
+                              const isSubHovered = hover[subAttackPattern.id];
                               const subLevel = isSubHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
                               const subPosition = isSubHovered && subLevel === 0 ? 2 : 1;
                               const subColorArray = colors(theme.palette.background.accent);
@@ -230,7 +244,7 @@ const AttackPatternsMatrixColumns = ({
                                   key={subAttackPattern.attack_pattern_id}
                                   onMouseEnter={() => handleToggleHover(subAttackPattern.attack_pattern_id)}
                                   onMouseLeave={() => handleToggleHover(subAttackPattern.attack_pattern_id)}
-                                  onClick={(e) => handleOpen(ap, e)}
+                                  onClick={(e) => handleOpen(subAttackPattern, e)}
                                   sx={{
                                     cursor: 'pointer',
                                     border: `1px solid ${subColorArray[subLevel][0]}`,
