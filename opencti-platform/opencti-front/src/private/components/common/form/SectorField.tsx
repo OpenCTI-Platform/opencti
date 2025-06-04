@@ -9,7 +9,6 @@ import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { SectorFieldSearchQuery$data } from './__generated__/SectorFieldSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
-import ItemEntityType from '../../../../components/ItemEntityType';
 
 const sectorFieldSearchQuery = graphql`
   query SectorFieldSearchQuery($search: String) {

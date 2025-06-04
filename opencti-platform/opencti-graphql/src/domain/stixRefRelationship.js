@@ -1,4 +1,4 @@
-import { dissoc, propOr } from 'ramda';
+import { dissoc } from 'ramda';
 import { storeLoadByIdWithRefs, updateAttribute, updateAttributeFromLoadedWithRefs } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
