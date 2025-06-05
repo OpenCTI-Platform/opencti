@@ -9253,7 +9253,7 @@ type Mutation {
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!], file: Upload): FintelDesign
-  fintelDesignContextPatch(id: ID!, input: EditContext): FintelDesign
+  fintelDesignContextPatch(id: ID!, input: EditContext!): FintelDesign
   securityPlatformAdd(input: SecurityPlatformAddInput!): SecurityPlatform
   securityPlatformDelete(id: ID!): ID
   securityPlatformFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityPlatform

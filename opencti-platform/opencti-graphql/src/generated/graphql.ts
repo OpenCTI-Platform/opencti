@@ -15198,7 +15198,7 @@ export type MutationFintelDesignAddArgs = {
 
 export type MutationFintelDesignContextPatchArgs = {
   id: Scalars['ID']['input'];
-  input?: InputMaybe<EditContext>;
+  input: EditContext;
 };
 
 
@@ -39565,7 +39565,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   feedbackDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFeedbackDeleteArgs, 'id'>>;
   feedbackEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackEditAuthorizedMembersArgs, 'id'>>;
   fintelDesignAdd?: Resolver<Maybe<ResolversTypes['FintelDesign']>, ParentType, ContextType, RequireFields<MutationFintelDesignAddArgs, 'input'>>;
-  fintelDesignContextPatch?: Resolver<Maybe<ResolversTypes['FintelDesign']>, ParentType, ContextType, RequireFields<MutationFintelDesignContextPatchArgs, 'id'>>;
+  fintelDesignContextPatch?: Resolver<Maybe<ResolversTypes['FintelDesign']>, ParentType, ContextType, RequireFields<MutationFintelDesignContextPatchArgs, 'id' | 'input'>>;
   fintelDesignDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFintelDesignDeleteArgs, 'id'>>;
   fintelDesignFieldPatch?: Resolver<Maybe<ResolversTypes['FintelDesign']>, ParentType, ContextType, RequireFields<MutationFintelDesignFieldPatchArgs, 'id'>>;
   fintelTemplateAdd?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<MutationFintelTemplateAddArgs, 'input'>>;
