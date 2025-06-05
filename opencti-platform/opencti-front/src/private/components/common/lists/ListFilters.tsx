@@ -183,7 +183,7 @@ const ListFilters = ({
             )}
             renderOption={(props, option) => <li {...props}>{option.label}</li>}
           />
-          {isDatatable && (
+          {isDatatable && variant === 'default' && (
             <SavedFilters
               currentSavedFilter={currentSavedFilter}
               setCurrentSavedFilter={setCurrentSavedFilter}
@@ -198,7 +198,7 @@ const ListFilters = ({
               <FilterListOffOutlined fontSize='small' />
             </IconButton>
           </Tooltip>
-          {isDatatable && (
+          {isDatatable && variant === 'default' && (
             <SavedFilterButton
               currentSavedFilter={currentSavedFilter}
               setCurrentSavedFilter={setCurrentSavedFilter}
