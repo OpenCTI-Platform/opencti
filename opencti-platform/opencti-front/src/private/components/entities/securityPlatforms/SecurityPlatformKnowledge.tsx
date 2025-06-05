@@ -103,20 +103,6 @@ const SecurityPlatformKnowledgeComponent = ({
               relationshipTypes={['related-to']}
               entityLink={link}
               allDirections
-              stixCoreObjectTypes={['Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Incident',
-                'Malware',
-                'Tool',
-                'Vulnerability',
-                'Individual',
-                'Organization',
-                'Sector',
-                'Region',
-                'Country',
-                'City',
-                'Position']}
               currentView={''}
               enableContextualView={true}
               isRelationReversed={true}
