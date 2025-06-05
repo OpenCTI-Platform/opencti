@@ -149,7 +149,7 @@ const AttackPatternsMatrixColumns = ({
           ...ap,
           id: ap.attack_pattern_id,
           entity_type: 'Attack-Pattern',
-          isOverlaping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
+          isOverlapping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
           level: getLevel(ap),
         }))
         .filter((o) => (isModeOnlyActive ? o.level > 0 : o.level >= 0))
@@ -192,8 +192,8 @@ const AttackPatternsMatrixColumns = ({
                     const isHovered = hover[ap.id];
                     const level = isHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
                     const position = isHovered && level === 0 ? 2 : 1;
-
                     const colorArray = colors(theme.palette.background.accent);
+
                     return (
                       <Box
                         key={ap.id}
@@ -215,7 +215,7 @@ const AttackPatternsMatrixColumns = ({
                         <Typography variant="body2" fontSize={10}>
                           {ap.name}
                         </Typography>
-                        {isSecurityPlatformEnabled && ap.isOverlaping && (
+                        {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && ap.level > 0 && (
                           <Tooltip
                             title={t_i18n('Should cover')}
                             sx={{
@@ -224,10 +224,10 @@ const AttackPatternsMatrixColumns = ({
                               height: 19,
                             }}
                           >
-                            {(ap.level
+                            {ap.isOverlapping
                               ? <CheckOutlined fontSize="medium" color="success"/>
                               : <CloseOutlined fontSize="medium" color="error"/>
-                            )}
+                            }
                           </Tooltip>
                         )}
                       </Box>
