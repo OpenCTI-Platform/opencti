@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, ViewColumnOutlined, VisibilityOutlined } from '@mui/icons-material';
@@ -48,8 +48,6 @@ import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage'
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { fetchQuery } from '../../../../relay/environment';
 import useHelper from '../../../../utils/hooks/useHelper';
-
-type StixDomainObjectAttackPatternsKillChainOverlapEdges = NonNullable<NonNullable<NonNullable<StixDomainObjectAttackPatternsKillChainOverlapQuery$data['stixCoreObjects']>['edges']>[number]>;
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -151,7 +149,9 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   };
 
   const getAttackPatternIdsToOverlap = async (entityIdsToOverlap: string[]) => {
-    return await fetchQuery(
+    if (entityIdsToOverlap.length === 0) return undefined;
+
+    const { stixCoreObjects } = await fetchQuery(
       stixDomainObjectAttackPatternsKillChainOverlapQuery,
       {
         count: 1000,
@@ -162,9 +162,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               key: 'entity_type',
               operator: 'eq',
               mode: 'or',
-              values: [
-                'Attack-Pattern',
-              ],
+              values: ['Attack-Pattern'],
             },
             {
               key: 'regardingOf',
@@ -179,9 +177,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                 },
                 {
                   key: 'relationship_type',
-                  values: [
-                    'should-cover',
-                  ],
+                  values: ['should-cover'],
                   operator: 'eq',
                   mode: 'or',
                 },
@@ -192,18 +188,17 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
         },
       },
     ).toPromise() as StixDomainObjectAttackPatternsKillChainOverlapQuery$data;
+
+    return stixCoreObjects?.edges?.map(({ node }) => node.id);
   };
 
-  useEffect(() => {
-    if (selectedSecurityPlatforms.length > 0) {
-      getAttackPatternIdsToOverlap(selectedSecurityPlatforms.map(({ value }) => value))
-        .then((result) => {
-          setAttackPatternIdsToOverlap(result?.stixCoreObjects?.edges?.map(({ node }: StixDomainObjectAttackPatternsKillChainOverlapEdges) => node.id));
-        });
-    } else {
-      setAttackPatternIdsToOverlap(undefined);
-    }
-  }, [selectedSecurityPlatforms]);
+  const handleSecurityPlatformsChange = async (newSelectedSecurityPlatforms: EntityOption[]) => {
+    setSelectedSecurityPlatforms(newSelectedSecurityPlatforms);
+
+    const entityIds = newSelectedSecurityPlatforms.map(({ value }) => value);
+    const attackPatternIds = await getAttackPatternIdsToOverlap(entityIds);
+    setAttackPatternIdsToOverlap(attackPatternIds);
+  };
 
   let csvData = null;
   if (currentView === 'courses-of-action') {
@@ -271,14 +266,14 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const killChainViewButton = (
     <Tooltip title={t_i18n('Kill chain view')} key="list">
       <ToggleButton value={'list'} aria-label="list" onClick={() => handleChangeView('list')}>
-        <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'} />
+        <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'}/>
       </ToggleButton>
     </Tooltip>
   );
   const courseOfActionView = (
     <Tooltip title={t_i18n('Courses of action view')} key="courses-of-action">
       <ToggleButton value={'courses-of-action'} aria-label="courses-of-action" onClick={() => handleChangeView('courses-of-action')}>
-        <ProgressWrench fontSize="small" color={currentView === 'courses-of-action' ? 'secondary' : 'primary'} />
+        <ProgressWrench fontSize="small" color={currentView === 'courses-of-action' ? 'secondary' : 'primary'}/>
       </ToggleButton>
     </Tooltip>
   );
@@ -415,7 +410,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                       label={t_i18n('Compare with my security posture')}
                       types={['SecurityPlatform']}
                       onChange={(newSelectedSecurityPlatforms) => {
-                        setSelectedSecurityPlatforms(newSelectedSecurityPlatforms as EntityOption[]);
+                        handleSecurityPlatformsChange(newSelectedSecurityPlatforms as EntityOption[]);
                       }}
                     />
                   </FormControl>
@@ -528,19 +523,19 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           />
         )}
         {currentView !== 'relationships' && currentView !== 'matrix-in-line' && (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCoreRelationshipCreationFromEntity
-            entityId={stixDomainObjectId}
-            isRelationReversed={false}
-            paddingRight={isEntity ? 0 : 220}
-            onCreate={refetch}
-            targetStixDomainObjectTypes={['Attack-Pattern']}
-            paginationOptions={paginationOptions}
-            targetEntities={targetEntities}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
-          />
-        </Security>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreRelationshipCreationFromEntity
+              entityId={stixDomainObjectId}
+              isRelationReversed={false}
+              paddingRight={isEntity ? 0 : 220}
+              onCreate={refetch}
+              targetStixDomainObjectTypes={['Attack-Pattern']}
+              paginationOptions={paginationOptions}
+              targetEntities={targetEntities}
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
+            />
+          </Security>
         )}
         {currentView !== 'matrix-in-line' && <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
           <StixCoreObjectsExports
