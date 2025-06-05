@@ -217,7 +217,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
                         }
           />
           <OpenVocabField
-            label={t_i18n('Security Platform type')}
+            label={t_i18n('Security platform type')}
             type="security_platform_type_ov"
             name="security_platform_type"
             required={(mandatoryAttributes.includes('security_platform_type'))}

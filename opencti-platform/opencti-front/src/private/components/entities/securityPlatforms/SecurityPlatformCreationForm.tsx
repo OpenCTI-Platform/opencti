@@ -196,7 +196,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
           />
           { /* TODO Improve customization (vocab with letter range) 2662 */}
           <OpenVocabField
-            label={t_i18n('Security Platform type')}
+            label={t_i18n('Security platform type')}
             type="security_platform_type_ov"
             name="security_platform_type"
             required={(mandatoryAttributes.includes('security_platform_type'))}

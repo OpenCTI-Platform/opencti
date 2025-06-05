@@ -84,7 +84,7 @@ const SecurityPlatforms = () => {
     openExports: false,
   };
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security Platform'));
+  setTitle(t_i18n('Security platform'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SecurityPlatformsPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
