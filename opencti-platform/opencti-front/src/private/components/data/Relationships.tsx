@@ -4,20 +4,14 @@ import {
   RelationshipsStixCoreRelationshipsLinesPaginationQuery,
   RelationshipsStixCoreRelationshipsLinesPaginationQuery$variables,
 } from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLinesPaginationQuery.graphql';
-import {
-  RelationshipsStixCoreRelationshipsLines_data$data
-} from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLines_data.graphql';
+import { RelationshipsStixCoreRelationshipsLines_data$data } from '@components/data/__generated__/RelationshipsStixCoreRelationshipsLines_data.graphql';
 import { AutoFix } from 'mdi-material-ui';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useTheme } from '@mui/styles';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import {
-  emptyFilterGroup,
-  useBuildEntityTypeBasedFilterContext,
-  useGetDefaultFilterObject
-} from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
