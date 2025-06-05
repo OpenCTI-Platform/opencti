@@ -138,11 +138,6 @@ const SecurityPlatforms = () => {
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
         toolbarFilters={contextFilters}
-        icon={() => {
-          return (
-            <SecurityOutlined/>
-          );
-        }}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={securityPlatformFragment}
         exportContext={{ entity_type: 'SecurityPlatform' }}
