@@ -5,9 +5,10 @@ import { createdAt, creators, updatedAt } from '../../schema/attribute-definitio
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type StixSecurityPlatform, type StoreEntitySecurityPlatform } from './securityPlatform-types';
 import convertSecurityPlatformToStix from './securityPlatform-converter';
 import { isFeatureEnabled } from '../../config/conf';
-import { RELATION_SHOULD_COVER } from '../../schema/stixCoreRelationship';
-import { REL_NEW } from '../../database/stix';
-import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
+import { RELATION_INDICATES, RELATION_SHOULD_COVER, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
+import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_INFRASTRUCTURE, ENTITY_TYPE_TOOL } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 
 const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform, StixSecurityPlatform> = {
   type: {
@@ -43,7 +44,25 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
       targets: [
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
       ]
-    }
+    },
+    {
+      name: RELATION_TARGETS,
+      targets: [
+        { name: ENTITY_TYPE_TOOL, type: REL_EXTENDED },
+      ]
+    },
+    {
+      name: RELATION_INDICATES,
+      targets: [
+        { name: ENTITY_TYPE_INDICATOR, type: REL_BUILT_IN },
+      ]
+    },
+    {
+      name: RELATION_USES,
+      targets: [
+        { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_EXTENDED },
+      ]
+    },
   ],
   representative: (stix: StixSecurityPlatform) => {
     return stix.name;
