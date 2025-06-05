@@ -1,5 +1,5 @@
-import React, { useMemo, Suspense, useState } from 'react';
-import { Route, Routes, Link, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
+import React, { useMemo, Suspense } from 'react';
+import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
@@ -7,7 +7,6 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import { propOr } from 'ramda';
 import { RootSecurityPlatformSubscription } from '@components/entities/securityPlatforms/__generated__/RootSecurityPlatformSubscription.graphql';
 import { RootSecurityPlatformQuery } from '@components/entities/securityPlatforms/__generated__/RootSecurityPlatformQuery.graphql';
 import SecurityPlatformKnowledge from '@components/entities/securityPlatforms/SecurityPlatformKnowledge';
@@ -20,7 +19,6 @@ import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -33,7 +31,7 @@ const subscription = graphql`
     stixDomainObject(id: $id) {
       ... on SecurityPlatform {
         ...SecurityPlatform_securityPlatform
-#                ...SecurityPlatformEditionContainer_securityPlatform
+        ...SecurityPlatformEditionContainer_securityPlatform
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -87,29 +85,6 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
     variables: { id: securityPlatformId },
   }), [securityPlatformId]);
   const location = useLocation();
-  const navigate = useNavigate();
-  const LOCAL_STORAGE_KEY = `securityPlatform-${securityPlatformId}`;
-  const params = buildViewParamsFromUrlAndStorage(
-    navigate,
-    location,
-    LOCAL_STORAGE_KEY,
-  );
-
-  const [viewAs, setViewAs] = useState<string>(propOr('knowledge', 'viewAs', params));
-
-  const saveView = () => {
-    saveViewParameters(
-      navigate,
-      location,
-      LOCAL_STORAGE_KEY,
-      viewAs,
-    );
-  };
-
-  const handleChangeViewAs = (event: React.ChangeEvent<{ value: string }>) => {
-    setViewAs(event.target.value);
-    saveView();
-  };
 
   const { t_i18n } = useFormatter();
   useSubscription<RootSecurityPlatformSubscription>(subConfig);
@@ -123,7 +98,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
   const { forceUpdate } = useForceUpdate();
 
   const link = `/dashboard/entities/security_platforms/${securityPlatformId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, securityPlatformId, '/dashboard/entities/security_platforms', viewAs === 'knowledge');
+  const paddingRight = getPaddingRight(location.pathname, securityPlatformId, '/dashboard/entities/security_platforms');
   return (
     <>
       {securityPlatform ? (
@@ -131,7 +106,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
           <Routes>
             <Route
               path="/knowledge/*"
-              element={viewAs === 'knowledge' && (
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -139,7 +114,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                   ]}
                   data={securityPlatform}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -157,8 +132,6 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                   <SecurityPlatformEdition securityPlatformId={securityPlatform.id} />
                 </Security>
               )}
-              onViewAs={handleChangeViewAs}
-              viewAs={viewAs}
             />
             <Box
               sx={{
@@ -214,7 +187,6 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                 element={
                   <SecurityPlatform
                     securityPlatformData={securityPlatform}
-                    viewAs={viewAs}
                   />
                 }
               />
@@ -233,7 +205,6 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                   <div key={forceUpdate}>
                     <SecurityPlatformKnowledge
                       securityPlatformData={securityPlatform}
-                      viewAs={viewAs}
                       relatedRelationshipTypes={['should-cover']}
                     />
                   </div>
@@ -252,8 +223,6 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                 element={
                   <SecurityPlatformAnalysis
                     securityPlatform={securityPlatform}
-                    viewAs={viewAs}
-                    onViewAs={handleChangeViewAs}
                   />
                 }
               />

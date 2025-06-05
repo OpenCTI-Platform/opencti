@@ -66,17 +66,13 @@ export const securityPlatformFragment = graphql`
 
 interface SecurityPlatformProps {
   securityPlatformData: SecurityPlatform_securityPlatform$key;
-  viewAs: string;
 }
 
-const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformData, viewAs }) => {
+const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformData }) => {
   const securityPlatform = useFragment<SecurityPlatform_securityPlatform$key>(
     securityPlatformFragment,
     securityPlatformData,
   );
-  const viewAsProps = viewAs === 'knowledge'
-    ? { stixCoreObjectOrStixRelationshipId: securityPlatform.id }
-    : { authorId: securityPlatform.id };
   return (
     <>
       <Grid
@@ -91,21 +87,18 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
         <Grid item xs={6}>
           <StixDomainObjectOverview stixDomainObject={securityPlatform} />
         </Grid>
-        {viewAs === 'knowledge' && (
-          <Grid item xs={6}>
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-              stixObjectOrStixRelationshipId={securityPlatform.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/entities/security_platforms/${securityPlatform.id}/knowledge`}
-            />
-          </Grid>
-        )}
-        );
+        <Grid item xs={6}>
+          <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+            stixObjectOrStixRelationshipId={securityPlatform.id}
+            stixObjectOrStixRelationshipLink={`/dashboard/entities/security_platforms/${securityPlatform.id}/knowledge`}
+          />
+        </Grid>
         <Grid
           item
-          xs={viewAs === 'knowledge' ? 6 : 12}
+          xs={6}
         >
           <StixCoreObjectOrStixRelationshipLastContainers
-            {...viewAsProps}
+            stixCoreObjectOrStixRelationshipId={securityPlatform.id}
           />
         </Grid>
         <Grid item xs={6}>
