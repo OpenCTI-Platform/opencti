@@ -6,7 +6,6 @@ import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/contain
 class SecurityPlatformAnalysisComponent extends Component {
   render() {
     const { securityPlatform, viewAs } = this.props;
-    console.log('securityPlatform', securityPlatform);
     return (
       <>
         {viewAs === 'knowledge' ? (
