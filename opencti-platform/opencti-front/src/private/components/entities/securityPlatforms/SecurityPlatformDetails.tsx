@@ -10,7 +10,6 @@ import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import type { Theme } from '../../../../components/Theme';
-import ItemScore from '../../../../components/ItemScore';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -65,14 +64,6 @@ const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetail
               source={securityPlatform.description}
               limit={400}
             />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t_i18n('Score')}
-            </Typography>
-            <ItemScore score={securityPlatform.x_opencti_score} />
           </Grid>
         </Grid>
       </Paper>
@@ -88,7 +79,6 @@ const SecurityPlatformDetails = createFragmentContainer(
         id
         description
         security_platform_type
-        x_opencti_score
         objectLabel {
           id
           value

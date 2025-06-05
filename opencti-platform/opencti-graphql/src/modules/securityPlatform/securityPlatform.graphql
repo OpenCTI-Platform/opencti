@@ -106,7 +106,6 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_reliability: String
   # SecurityPlatform
   security_platform_type: String
-  x_opencti_score: Int
   # Technical
   creators: [Creator!]
   toStix: String

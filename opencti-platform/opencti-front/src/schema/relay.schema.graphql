@@ -13396,7 +13396,6 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_aliases: [String]
   x_opencti_reliability: String
   security_platform_type: String
-  x_opencti_score: Int
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
