@@ -12,10 +12,13 @@ import {
 } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverview_stixRefRelationship.graphql';
 import { buildDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
-import { SubscriptionFocus } from '../../../../components/Subscription';
+import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { useDynamicSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useSchemaEditionValidation
+} from '../../../../utils/hooks/useEntitySettings';
 import type { Theme } from '../../../../components/Theme';
 
 const StixNestedRefRelationshipEditionFragment = graphql`
@@ -102,7 +105,7 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
         "The end date can't be before the start date",
       ),
   };
-  const stixNestedRefRelationshipValidator = useDynamicSchemaEditionValidation([], basicShape);
+  const stixNestedRefRelationshipValidator = useSchemaEditionValidation('stix-ref-relationship', basicShape);
 
   const handleChangeFocus = (name: string) => {
     commitChangeFocus({
@@ -135,7 +138,7 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
     stop_time: buildDate(stixRefRelationshipData.stop_time),
   };
   return (
-    <div>
+    <>
       <div style={{
         backgroundColor: theme.palette.background.nav,
         padding: '20px 20px 20px 60px',
@@ -161,6 +164,7 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
         >
           {t_i18n('Update a relationship')}
         </Typography>
+        <SubscriptionAvatars context={editContext} />
         <div className="clearfix" />
       </div>
       <div style={{
@@ -213,7 +217,7 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
           )}
         />
       </div>
-    </div>
+    </>
   );
 };
 
