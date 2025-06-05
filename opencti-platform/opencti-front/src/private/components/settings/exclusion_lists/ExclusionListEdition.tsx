@@ -122,8 +122,6 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
     });
   };
 
-  console.log('data.file_id', data.file_id);
-
   const loadFileContent = () => {
     const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(data.file_id)}`;
     Axios.get(url).then((res) => {
