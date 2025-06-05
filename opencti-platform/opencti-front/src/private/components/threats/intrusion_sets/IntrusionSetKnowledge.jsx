@@ -183,12 +183,13 @@ const IntrusionSetKnowledgeComponent = ({
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={intrusionSet.id}
-              relationshipTypes={['uses']}
+              relationshipTypes={['uses', 'belongs-to']}
               stixCoreObjectTypes={['Channel']}
               entityLink={link}
               defaultStartTime={intrusionSet.first_seen}
               defaultStopTime={intrusionSet.last_seen}
               isRelationReversed={false}
+              allDirections
             />
           }
         />
