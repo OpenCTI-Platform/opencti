@@ -44,7 +44,7 @@ const SecurityPlatformCreation: FunctionComponent<SecurityPlatformCreationProps>
 
   return (
     <Drawer
-      title={t_i18n('Create a Security Platform')}
+      title={t_i18n('Create a security platform')}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateSecurityPlatformControlledDial}
     >
