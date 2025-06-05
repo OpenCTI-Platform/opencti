@@ -46,7 +46,7 @@ interface FintelDesignComponentProps {
 }
 
 export type FintelDesignFormValues = {
-  file: File | null;
+  file?: File | null;
   gradiantFromColor?: string | null | undefined
   gradiantToColor?: string | null | undefined
   textColor?: string | null | undefined
