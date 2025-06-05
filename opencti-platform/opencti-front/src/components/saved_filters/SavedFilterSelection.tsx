@@ -45,13 +45,11 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
 
   useEffect(() => {
     if (savedFilters) {
-      if (!data.length) {
+      const currentSavedFilters = options.find((item) => item.value.id === savedFilters.id);
+      if (!currentSavedFilters || !data.length) {
         helpers.handleRemoveSavedFilters();
         return;
       }
-
-      const currentSavedFilters = options.find((item) => item.value.id === savedFilters.id);
-      if (!currentSavedFilters) return;
 
       setSelectedSavedFilter(currentSavedFilters);
       setCurrentSavedFilter(currentSavedFilters.value);
