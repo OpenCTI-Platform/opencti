@@ -3177,17 +3177,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:0.5.5":
-  version: 0.5.5
-  resolution: "@langchain/openai@npm:0.5.5"
+"@langchain/openai@npm:0.5.12":
+  version: 0.5.12
+  resolution: "@langchain/openai@npm:0.5.12"
   dependencies:
     js-tiktoken: "npm:^1.0.12"
-    openai: "npm:^4.87.3"
+    openai: "npm:^4.96.0"
     zod: "npm:^3.22.4"
     zod-to-json-schema: "npm:^3.22.3"
   peerDependencies:
-    "@langchain/core": ">=0.3.39 <0.4.0"
-  checksum: 10/1b67b5c96b917cb5245191968ace9373c65d32c31819979864cf626c9bacef4f94388dae2f4eb2a9aab47a26405a949eb3077f9b94ecee86504331d7fa06e4f6
+    "@langchain/core": ">=0.3.48 <0.4.0"
+  checksum: 10/1b3babd442170de1d04a60b735f7ab6df192cf58e87caca38aab9edf3850c560f5c19ffd0dd8c7379e60e5462c569779b63784b45e02070c2dc915cd21cae840
   languageName: node
   linkType: hard
 
@@ -11694,9 +11694,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^4.87.3":
-  version: 4.93.0
-  resolution: "openai@npm:4.93.0"
+"openai@npm:^4.96.0":
+  version: 4.104.0
+  resolution: "openai@npm:4.104.0"
   dependencies:
     "@types/node": "npm:^18.11.18"
     "@types/node-fetch": "npm:^2.6.4"
@@ -11715,7 +11715,7 @@ __metadata:
       optional: true
   bin:
     openai: bin/cli
-  checksum: 10/3135d282ae31294eb78d177a92547497b963d4ee4eb5de75c5ecfa3e0203437d67ff8da7fb9b337ecff1fd19f75f0477e551ed943097fd23b07cbc9d07d77171
+  checksum: 10/e1bdfea7b58f6d6cc0c2787254e9ae0395c7cb78b6ad4383c2777fd929ff43d2cb614c12ff7aaef04e260a6b48f3bc15f3c864abb9df35cfc7594e6aa46d4858
   languageName: node
   linkType: hard
 
@@ -11744,7 +11744,7 @@ __metadata:
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:0.3.57"
     "@langchain/mistralai": "npm:^0.2.0"
-    "@langchain/openai": "npm:0.5.5"
+    "@langchain/openai": "npm:0.5.12"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:1.6.1"
     "@node-saml/passport-saml": "npm:5.0.1"
