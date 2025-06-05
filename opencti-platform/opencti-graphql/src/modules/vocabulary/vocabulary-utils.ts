@@ -1161,10 +1161,11 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'unknown', description: 'There is not enough information available to determine the type of tool' },
   ],
   gender_ov: [
-    { key: 'male' },
-    { key: 'female' },
-    { key: 'nonbinary' },
-    { key: 'other' },
+    { key: 'male' }, // Gender and Sex Option  - USG EO 14168 Compliant
+    { key: 'female' }, // Gender and Sex Option  - USG EO 14168 Compliant
+    { key: 'nonbinary' }, // Gender Option
+    { key: 'other' }, // Gender Option
+    { key: 'unknown' }, // Sex option - USG EO 14168 Compliant
   ],
   marital_status_ov: [
     { key: 'annulled' },

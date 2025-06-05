@@ -2927,6 +2927,7 @@
   "Settings have been updated": "设置已更新",
   "Severity": "严重程度",
   "severity": "严重性",
+  "Sex": "性别",
   "SHA-1 values can only include A-F and 0-9, 40 characters": "SHA-1值只能包含A-F和0-9，40个字符",
   "SHA-256 values can only include A-F and 0-9, 64 characters": "SHA-256 值只能包含 A-F 和 0-9，64 个字符",
   "SHA-512 values can only include A-F and 0-9, 128 characters": "SHA-512 值只能包含 A-F 和 0-9，128 个字符",

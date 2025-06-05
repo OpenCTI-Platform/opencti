@@ -45,6 +45,7 @@ import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextM
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 interface ErrorBadgeProps extends BadgeProps {
   errors?: FormikErrors<ThreatActorIndividualAddInput>;
@@ -320,6 +321,7 @@ ThreatActorIndividualFormProps
     weight: [],
   });
 
+  const { isFeatureEnable } = useHelper();
   return (
     <Formik<ThreatActorIndividualAddInput>
       initialValues={initialValues}
@@ -594,7 +596,7 @@ ThreatActorIndividualFormProps
                 />
                 <OpenVocabField
                   name="gender"
-                  label={t_i18n('Gender')}
+                  label={isFeatureEnable('USG_EO_14168_COMPLIANT') ? t_i18n('Sex') : t_i18n('Gender')}
                   required={(mandatoryAttributes.includes('gender'))}
                   type="gender_ov"
                   variant="edit"

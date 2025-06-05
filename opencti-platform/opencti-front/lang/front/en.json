@@ -2927,6 +2927,7 @@
   "Settings have been updated": "Settings have been updated",
   "Severity": "Severity",
   "severity": "Severity",
+  "Sex": "Sex",
   "SHA-1 values can only include A-F and 0-9, 40 characters": "SHA-1 values can only include A-F and 0-9, 40 characters",
   "SHA-256 values can only include A-F and 0-9, 64 characters": "SHA-256 values can only include A-F and 0-9, 64 characters",
   "SHA-512 values can only include A-F and 0-9, 128 characters": "SHA-512 values can only include A-F and 0-9, 128 characters",

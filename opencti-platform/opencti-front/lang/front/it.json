@@ -2912,6 +2912,7 @@
   "Settings have been updated": "Le impostazioni sono state aggiornate",
   "Severity": "Severità",
   "severity": "severità",
+  "Sex": "Sesso",
   "SHA-1 values can only include A-F and 0-9, 40 characters": "Valori SHA-1 possono includere solo A-F e 0-9, 40 caratteri",
   "SHA-256 values can only include A-F and 0-9, 64 characters": "Valori SHA-256 possono includere solo A-F e 0-9, 64 caratteri",
   "SHA-512 values can only include A-F and 0-9, 128 characters": "Valori SHA-512 possono includere solo A-F e 0-9, 128 caratteri",
