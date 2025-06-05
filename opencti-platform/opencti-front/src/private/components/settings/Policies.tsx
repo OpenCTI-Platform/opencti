@@ -13,6 +13,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { VpnKeyOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
+import GroupSetDefaultGroupForIngestionUsers from '@components/settings/groups/GroupSetDefaultGroupForIngestionUsers';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import Dialog from '@mui/material/Dialog';
@@ -276,7 +277,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Authentication strategies')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+                    <Paper style={{
+                      marginTop: 10,
+                    }} classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined"
+                    >
                       <List style={{ marginTop: -20 }}>
                         {authProviders.map((provider) => (
                           <ListItem key={provider.strategy} divider={true}>
@@ -419,7 +423,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                         component={TextField}
                         type="number"
                         variant="standard"
-                        style={{ marginTop: 20 }}
+                        sx={{ marginTop: 20 }}
                         name="password_policy_min_uppercase"
                         label={t_i18n(
                           'Number of uppercase chars must be greater or equals to',
@@ -434,6 +438,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Paper>
                   </Grid>
+                  <GroupSetDefaultGroupForIngestionUsers/>
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Login messages')}
