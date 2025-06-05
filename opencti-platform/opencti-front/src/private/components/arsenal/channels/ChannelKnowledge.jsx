@@ -127,6 +127,7 @@ const ChannelKnowledgeComponent = ({
               stixCoreObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
+              allDirections
             />
           }
         />
@@ -140,6 +141,7 @@ const ChannelKnowledgeComponent = ({
               stixCoreObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
+              allDirections
             />
           }
         />
@@ -179,6 +181,7 @@ const ChannelKnowledgeComponent = ({
               stixCoreObjectTypes={['Channel']}
               entityLink={link}
               isRelationReversed={false}
+              allDirections
             />
             }
         />

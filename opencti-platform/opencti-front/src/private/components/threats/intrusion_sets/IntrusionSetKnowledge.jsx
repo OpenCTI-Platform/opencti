@@ -189,6 +189,7 @@ const IntrusionSetKnowledgeComponent = ({
               defaultStartTime={intrusionSet.first_seen}
               defaultStopTime={intrusionSet.last_seen}
               isRelationReversed={false}
+              allDirections
             />
           }
         />
