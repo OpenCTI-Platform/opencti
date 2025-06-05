@@ -55,5 +55,5 @@ type Mutation {
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelDesignDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelDesignFieldPatch(id: ID!, input: [EditInput!], file: Upload): FintelDesign @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  fintelDesignContextPatch(id: ID!, input: EditContext): FintelDesign @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  fintelDesignContextPatch(id: ID!, input: EditContext!): FintelDesign @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
