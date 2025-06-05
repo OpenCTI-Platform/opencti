@@ -18,10 +18,10 @@ const useStyles = makeStyles(() => ({
 interface EntityStixCoreRelationshipsProps {
   entityId: string;
   entityLink: string;
-  defaultStartTime: string;
-  defaultStopTime: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
   relationshipTypes: string[];
-  stixCoreObjectTypes: string[];
+  stixCoreObjectTypes?: string[];
   currentView: string;
   enableNestedView?: boolean;
   enableContextualView: boolean;

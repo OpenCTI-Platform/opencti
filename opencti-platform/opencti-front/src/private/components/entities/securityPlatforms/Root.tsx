@@ -135,10 +135,10 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
-                    'systems',
-                    'infrastructures',
-                    'indicators',
-                    'tools',
+                    // 'systems',
+                    // 'infrastructures',
+                    // 'indicators',
+                    // 'tools',
                     'attack_patterns',
                   ]}
                   data={securityPlatform}

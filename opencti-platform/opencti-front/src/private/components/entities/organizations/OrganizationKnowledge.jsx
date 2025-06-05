@@ -30,8 +30,6 @@ const OrganizationKnowledgeComponent = ({
   const link = `/dashboard/entities/organizations/${organization.id}/knowledge`;
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(organization.entity_type, schema);
-  console.log('allRelationshipsTypes', allRelationshipsTypes);
-
   return (
     <Routes>
       <Route
