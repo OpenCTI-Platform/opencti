@@ -78,21 +78,6 @@ const SecurityPlatformKnowledgeComponent = ({
             />
         }
         />
-        {/* <Route */}
-        {/*  path="/systems" */}
-        {/*  element={ */}
-        {/*    <EntityStixCoreRelationships */}
-        {/*      key={location.pathname} */}
-        {/*      entityId={securityPlatform.id} */}
-        {/*      relationshipTypes={['part-of']} */}
-        {/*      stixCoreObjectTypes={['System']} */}
-        {/*      entityLink={link} */}
-        {/*      currentView={''} */}
-        {/*      enableContextualView={true} */}
-        {/*      isRelationReversed={true} */}
-        {/*    /> */}
-        {/* } */}
-        {/* /> */}
         <Route
           path="/related"
           element={
@@ -117,44 +102,6 @@ const SecurityPlatformKnowledgeComponent = ({
             />
         }
         />
-        {/* <Route */}
-        {/*  path="/tools" */}
-        {/*  element={ */}
-        {/*    <EntityStixCoreRelationships */}
-        {/*      key={location.pathname} */}
-        {/*      entityId={securityPlatform.id} */}
-        {/*      stixCoreObjectTypes={['Tool']} */}
-        {/*      relationshipTypes={['targets']} */}
-        {/*      entityLink={link} */}
-        {/*      currentView={''} */}
-        {/*      enableContextualView={true} */}
-        {/*      isRelationReversed={true} */}
-        {/*    /> */}
-        {/* } */}
-        {/* /> */}
-        {/* <Route */}
-        {/*  path="/indicators" */}
-        {/*  element={ */}
-        {/*    <EntityStixCoreRelationshipsIndicators */}
-        {/*      entityId={securityPlatform.id} */}
-        {/*      entityLink={link} */}
-        {/*    /> */}
-        {/* } */}
-        {/* /> */}
-        {/* <Route */}
-        {/*  path="/infrastructures" */}
-        {/*  element={ */}
-        {/*    <EntityStixCoreRelationships */}
-        {/*      key={location.pathname} */}
-        {/*      entityId={securityPlatform.id} */}
-        {/*      relationshipTypes={['uses', 'compromises']} */}
-        {/*      stixCoreObjectTypes={['Infrastructure']} */}
-        {/*      entityLink={link} */}
-        {/*      isRelationReversed={false} */}
-        {/*      currentView={''} */}
-        {/*    /> */}
-        {/* } */}
-        {/* /> */}
       </Routes>
     </>
   );

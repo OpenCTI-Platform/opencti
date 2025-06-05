@@ -44,24 +44,6 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
       ]
     },
-    // {
-    //   name: RELATION_TARGETS,
-    //   targets: [
-    //     { name: ENTITY_TYPE_TOOL, type: REL_EXTENDED },
-    //   ]
-    // },
-    // {
-    //   name: RELATION_INDICATES,
-    //   targets: [
-    //     { name: ENTITY_TYPE_INDICATOR, type: REL_BUILT_IN },
-    //   ]
-    // },
-    // {
-    //   name: RELATION_USES,
-    //   targets: [
-    //     { name: ENTITY_TYPE_INFRASTRUCTURE, type: REL_EXTENDED },
-    //   ]
-    // },
   ],
   representative: (stix: StixSecurityPlatform) => {
     return stix.name;
