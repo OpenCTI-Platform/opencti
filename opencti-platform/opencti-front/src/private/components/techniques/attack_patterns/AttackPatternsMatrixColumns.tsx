@@ -221,7 +221,7 @@ const AttackPatternsMatrixColumns = ({
                             sx={{
                               display: 'flex',
                               alignItems: 'center',
-                              height: 25,
+                              height: 19,
                             }}
                           >
                             {(ap.level

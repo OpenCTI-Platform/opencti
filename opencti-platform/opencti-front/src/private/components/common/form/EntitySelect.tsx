@@ -67,10 +67,6 @@ const EntitySelectComponent = ({
     type: sco.node.entity_type,
   }));
 
-  const handleChange = (newValue: EntityOption | EntityOption[] | null) => {
-    onChange?.(newValue);
-  };
-
   return (
     <Autocomplete
       value={value}
@@ -80,7 +76,7 @@ const EntitySelectComponent = ({
       noOptionsText={t_i18n('No available options')}
       isOptionEqualToValue={(option, val) => option.value === val.value}
       onInputChange={(_, val) => throttleSearch(val)}
-      onChange={(_, val) => handleChange(val)}
+      onChange={(_, val) => onChange?.(val)}
       renderInput={(params) => (
         <TextField
           {...params}
