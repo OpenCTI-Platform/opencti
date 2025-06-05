@@ -37,7 +37,6 @@ interface SecurityPlatformDetailsComponentProps {
 }
 
 const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetailsComponentProps> = ({ securityPlatform }) => {
-  console.log('SEC', securityPlatform);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   return (
