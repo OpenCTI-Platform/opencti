@@ -15,10 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import {
-  useDynamicSchemaEditionValidation,
-  useSchemaEditionValidation
-} from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import type { Theme } from '../../../../components/Theme';
 
 const StixNestedRefRelationshipEditionFragment = graphql`
@@ -119,17 +116,12 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
   };
 
   const handleSubmitField = (name: string, value: string) => {
-    stixNestedRefRelationshipValidator
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitSubmitField({
-          variables: {
-            id: stixRefRelationshipData.id,
-            input: { key: name, value: value || '' },
-          },
-        });
-      })
-      .catch(() => false);
+    commitSubmitField({
+      variables: {
+        id: stixRefRelationshipData.id,
+        input: { key: name, value: value || '' },
+      },
+    });
   };
 
   const { editContext } = stixRefRelationshipData;
