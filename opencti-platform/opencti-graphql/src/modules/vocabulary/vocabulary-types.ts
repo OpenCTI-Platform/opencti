@@ -335,7 +335,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     fields: [{
       key: 'security_platform_type',
       required: false,
-      multiple: false,
+      multiple: true,
     }],
   },
   service_status_ov: {

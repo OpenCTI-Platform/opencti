@@ -197,7 +197,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
       if (dark) {
         return '#4a148c';
       }
-      return '#bfc51d';
+      return '#baff7a';
     case 'Tool':
       if (dark) {
         return '#986937';
