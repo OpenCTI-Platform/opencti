@@ -1855,6 +1855,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.25.0":
+  version: 7.27.4
+  resolution: "@babel/runtime@npm:7.27.4"
+  checksum: 10/ce2495a1773c6f52c7c201f45a1e5c317f2630ff98bec8caa282d574e25f58b0f87ab6e2e2dba0e24ad819792cb0dff3423f90771635620c1f01ff24e73f770d
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.24.7, @babel/template@npm:^7.25.0, @babel/template@npm:^7.3.3":
   version: 7.25.0
   resolution: "@babel/template@npm:7.25.0"
@@ -8216,10 +8223,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/relay-runtime@npm:*, @types/relay-runtime@npm:17.0.4":
+"@types/relay-runtime@npm:*":
   version: 17.0.4
   resolution: "@types/relay-runtime@npm:17.0.4"
   checksum: 10/c163e6d1453d1d37dc45ac09295a66a0cf6417a9da1f81e98d1e286ea37b4c7bb226fa7fecbec8146f37856ff977c68a17121adcfa46126b98456de7e7e7abca
+  languageName: node
+  linkType: hard
+
+"@types/relay-runtime@npm:19.0.2":
+  version: 19.0.2
+  resolution: "@types/relay-runtime@npm:19.0.2"
+  checksum: 10/cba6508234efe4714204cba61e3b6f3517ac92454e6333de085f275fae6c647324c4499a8458dd19782cb47cdb00c76f3a29685783bf979d319342d4c20ee056
   languageName: node
   linkType: hard
 
@@ -17809,7 +17823,7 @@ __metadata:
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-test-renderer": "npm:19.1.0"
     "@types/react-transition-group": "npm:4"
-    "@types/relay-runtime": "npm:17.0.4"
+    "@types/relay-runtime": "npm:19.0.2"
     "@types/relay-test-utils": "npm:17.0.0"
     "@vitejs/plugin-react": "npm:4.4.1"
     analytics: "npm:0.8.16"
@@ -17903,7 +17917,7 @@ __metadata:
     reactflow: "npm:11.11.4"
     recharts: "npm:2.15.3"
     relay-compiler: "npm:17.0.0"
-    relay-runtime: "npm:17.0.0"
+    relay-runtime: "npm:19.0.0"
     relay-test-utils: "npm:17.0.0"
     remark-flexible-markers: "npm:1.2.1"
     remark-gfm: "npm:4.0.1"
@@ -19627,6 +19641,17 @@ __metadata:
     fbjs: "npm:^3.0.2"
     invariant: "npm:^2.2.4"
   checksum: 10/33e0d88a56604a254753bb9a1f2bbd9e7c59bed105d274c82f3ab28086e7a1e6f5308976c4be0bf8ef9f9281c551b5b6ddd26409293613f37b5f1ec9aad47240
+  languageName: node
+  linkType: hard
+
+"relay-runtime@npm:19.0.0":
+  version: 19.0.0
+  resolution: "relay-runtime@npm:19.0.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.25.0"
+    fbjs: "npm:^3.0.2"
+    invariant: "npm:^2.2.4"
+  checksum: 10/f8b8b3496e2de8b38260c4543a1461ba7f9e17c5acb7732c218d86d5e9fba81bd109c26e39c880978b2e98e1f1cdf84c030db6e73c3e65f08786616cb34256ed
   languageName: node
   linkType: hard
 
