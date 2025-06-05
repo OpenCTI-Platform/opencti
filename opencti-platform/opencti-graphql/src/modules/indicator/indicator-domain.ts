@@ -260,13 +260,16 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     observableType = 'StixFile';
   }
   const isKnownObservable = observableType !== 'Unknown';
+  if (!isKnownObservable && indicator.pattern_type.toLowerCase() === 'yara') {
+    observableType = 'StixFile';
+  }
   if (isKnownObservable && !isStixCyberObservable(observableType)) {
     throw FunctionalError(`Observable type ${observableType} is not supported.`);
   }
 
   const { formattedPattern } = await validateIndicatorPattern(context, user, indicator.pattern_type, indicator.pattern);
 
-  const indicatorBaseScore = indicator.x_opencti_score ?? 50;
+  const indicatorBaseScore = indicator.x_opencti_score ?? INDICATOR_DEFAULT_SCORE;
   checkScore(indicatorBaseScore);
 
   const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
@@ -346,11 +349,9 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
  * Return keys for 'decay_history', 'decay_next_reaction_date', 'valid_until'
  * @param fromScore
  * @param indicatorBeforeUpdate
- * @param skipValidUntil
  */
-export const restartDecayComputationOnEdit = (fromScore: number, indicatorBeforeUpdate: BasicStoreEntityIndicator, skipValidUntil = false): EditInput[] => {
+export const restartDecayComputationOnEdit = (fromScore: number, indicatorBeforeUpdate: BasicStoreEntityIndicator): EditInput[] => {
   const indicatorDecayRule = indicatorBeforeUpdate.decay_applied_rule;
-  const revokeScore = indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score;
   const nowDate = new Date();
   const inputToAdd: EditInput[] = [];
   const updateDate = utcDate();
@@ -365,10 +366,6 @@ export const restartDecayComputationOnEdit = (fromScore: number, indicatorBefore
   const nextScoreReactionDate = computeNextScoreReactionDate(fromScore, fromScore, indicatorDecayRule, updateDate);
   if (nextScoreReactionDate) {
     inputToAdd.push({ key: 'decay_next_reaction_date', value: [nextScoreReactionDate.toISOString()] });
-  }
-  if (!skipValidUntil) {
-    const newValidUntilDate = computeDecayPointReactionDate(fromScore, indicatorDecayRule, updateDate, revokeScore);
-    inputToAdd.push({ key: VALID_UNTIL, value: [newValidUntilDate.toISOString()] });
   }
 
   return inputToAdd;
