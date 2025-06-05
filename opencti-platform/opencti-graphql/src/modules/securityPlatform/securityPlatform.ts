@@ -5,10 +5,9 @@ import { createdAt, creators, updatedAt } from '../../schema/attribute-definitio
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type StixSecurityPlatform, type StoreEntitySecurityPlatform } from './securityPlatform-types';
 import convertSecurityPlatformToStix from './securityPlatform-converter';
 import { isFeatureEnabled } from '../../config/conf';
-import { RELATION_INDICATES, RELATION_SHOULD_COVER, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
-import { REL_BUILT_IN, REL_EXTENDED, REL_NEW } from '../../database/stix';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_INFRASTRUCTURE, ENTITY_TYPE_TOOL } from '../../schema/stixDomainObject';
-import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
+import { RELATION_SHOULD_COVER } from '../../schema/stixCoreRelationship';
+import { REL_NEW } from '../../database/stix';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 
 const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform, StixSecurityPlatform> = {
   type: {
