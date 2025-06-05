@@ -40,6 +40,7 @@ import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { extractRepresentative } from '../database/entity-representative';
 import { extractStixRepresentativeForUser } from '../database/stix-representative';
 import { findById } from '../domain/user';
+import { EVENT_TYPE_UPDATE } from '../database/utils';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -179,9 +180,15 @@ const processNotificationEvent = async (
   }
 };
 
-const createFullNotificationMessage = (notificationMessage: string, usersMap: Map<string, AuthUser>, streamMessage?: string, origin?: Partial<UserOrigin>) => {
+const createFullNotificationMessage = (
+  notificationMessage: string,
+  usersMap: Map<string, AuthUser>,
+  streamMessage?: string,
+  origin?: Partial<UserOrigin>,
+  eventType?: string,
+) => {
   let fullMessage = notificationMessage;
-  if (origin && streamMessage) {
+  if (eventType === EVENT_TYPE_UPDATE && origin && streamMessage) { // add precision for update events
     const { user_id } = origin;
     const streamUser = usersMap.get(user_id ?? '');
     if (streamUser) {
@@ -205,7 +212,7 @@ const processLiveNotificationEvent = async (
   const { streamMessage } = event as KnowledgeNotificationEvent;
   for (let index = 0; index < targets.length; index += 1) {
     const { user, type, message } = targets[index];
-    const notificationMessage = createFullNotificationMessage(message, usersMap, streamMessage, origin);
+    const notificationMessage = createFullNotificationMessage(message, usersMap, streamMessage, origin, type);
     const data = [{ notification_id: event.notification_id, instance, type, message: notificationMessage }];
     await processNotificationEvent(context, notificationMap, event.notification_id, user, data);
   }
@@ -215,7 +222,7 @@ const processDigestNotificationEvent = async (context: AuthContext, notification
   const { target: user, data } = event;
   const usersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const dataWithFullMessage = data.map((d) => {
-    return { ...d, message: createFullNotificationMessage(d.message, usersMap, d.streamMessage, d.origin) };
+    return { ...d, message: createFullNotificationMessage(d.message, usersMap, d.streamMessage, d.origin, d.type) };
   });
   await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage);
 };
@@ -236,7 +243,7 @@ const processBufferedEvents = async (
     // For each event, transform it into NotificationData for all targets
     for (let index = 0; index < targets.length; index += 1) {
       const { user, type, message } = targets[index];
-      const notificationMessage = createFullNotificationMessage(message, usersFromCache, event.streamMessage, origin);
+      const notificationMessage = createFullNotificationMessage(message, usersFromCache, event.streamMessage, origin, type);
       const currentData = { notification_id: event.notification_id, instance, type, message: notificationMessage };
       const currentNotifDataForUser = notifDataPerUser[user.user_id];
       if (currentNotifDataForUser) {
