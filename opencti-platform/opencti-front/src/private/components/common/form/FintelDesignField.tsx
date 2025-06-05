@@ -24,6 +24,7 @@ const fintelDesignFieldQuery = graphql`
         node {
           id
           name
+          file_id
           gradiantToColor
           gradiantFromColor
           textColor

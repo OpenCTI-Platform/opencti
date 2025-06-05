@@ -9,8 +9,8 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 
-const fintelDesignPopoverDeletionMutation = graphql`
-  mutation FintelDesignPopoverDeletionMutation($id: ID!) {
+const fintelDesignDeletionMutation = graphql`
+  mutation FintelDesignDeletionMutation($id: ID!) {
     fintelDesignDelete(id: $id)
   }
 `;
@@ -26,7 +26,7 @@ const FintelDesignDeletion = ({
   });
 
   const [commitDelete] = useApiMutation(
-    fintelDesignPopoverDeletionMutation,
+    fintelDesignDeletionMutation,
     undefined,
     { successMessage: deleteSuccessMessage },
   );
