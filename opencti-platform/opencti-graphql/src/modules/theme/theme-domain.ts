@@ -14,6 +14,8 @@ import { type BasicStoreEntityTheme } from './theme-types';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { checkConfigurationImport } from '../workspace/workspace-domain';
+import { elLoadBy } from '../../database/engine';
+import { FunctionalError } from '../../config/errors';
 
 const defaultLightTheme: ThemeAddInput = {
   name: 'Light',
@@ -40,6 +42,23 @@ export const addTheme = async (
   user: AuthUser,
   input: ThemeAddInput,
 ) => {
+  const existingTheme = await elLoadBy(
+    context,
+    SYSTEM_USER,
+    'name',
+    input.name,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error elLoadBy in engine.js implicitly defines type as null
+    ENTITY_TYPE_THEME
+  );
+  if (existingTheme) {
+    throw FunctionalError(
+      'Theme already exists',
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error TypeScript erroneously infers type as string
+      { theme_id: existingTheme.internal_id }
+    );
+  }
   const created = await createEntity(context, user, input, ENTITY_TYPE_THEME);
 
   await publishUserAction({
