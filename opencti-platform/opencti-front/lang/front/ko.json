@@ -2690,6 +2690,7 @@
   "relationship_sample": "샘플",
   "relationship_sender": "보낸 사람",
   "relationship_service-dll": "서비스 DLL",
+  "relationship_should-cover": "는 다음을 포함해야 합니다",
   "relationship_src": "출처",
   "relationship_src-payload": "출처 페이로드",
   "relationship_static-analysis-of": "정적 분석",
