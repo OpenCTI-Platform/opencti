@@ -717,6 +717,8 @@
   "Dark theme": "Tema oscuro",
   "Dashboard": "Cuadro de mando",
   "dashboard": "Panel de control",
+  "Dashboard cannot be exported to image": "El cuadro de mandos no se puede exportar a imagen",
+  "Dashboard cannot be exported to pdf": "El panel de control no se puede exportar a pdf",
   "Dashboard settings": "Cuadro de mando de configuración",
   "Dashboards": "Cuadros de mando",
   "Dashboards from your groups & organizations": "Cuadros de mando de sus grupos & organizaciones",

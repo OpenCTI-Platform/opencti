@@ -717,6 +717,8 @@
   "Dark theme": "Dunkles Thema",
   "Dashboard": "Dashboard",
   "dashboard": "Dashboard",
+  "Dashboard cannot be exported to image": "Dashboard kann nicht als Bild exportiert werden",
+  "Dashboard cannot be exported to pdf": "Dashboard kann nicht als pdf exportiert werden",
   "Dashboard settings": "Dashboard-Einstellungen",
   "Dashboards": "Dashboards",
   "Dashboards from your groups & organizations": "Dashboards aus Ihren Gruppen & Organisationen",

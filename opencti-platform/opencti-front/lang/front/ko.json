@@ -717,6 +717,8 @@
   "Dark theme": "어두운 테마",
   "Dashboard": "대시보드",
   "dashboard": "대시보드",
+  "Dashboard cannot be exported to image": "대시보드를 이미지로 내보낼 수 없습니다",
+  "Dashboard cannot be exported to pdf": "대시보드를 PDF로 내보낼 수 없습니다",
   "Dashboard settings": "대시보드 설정",
   "Dashboards": "대시보드",
   "Dashboards from your groups & organizations": "그룹 및 조직의 대시보드",

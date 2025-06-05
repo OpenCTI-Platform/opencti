@@ -187,7 +187,7 @@ import {
   storeLoadById
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache, getEntityFromCache } from './cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
@@ -197,12 +197,12 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage } from './generate-message';
+import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, MAX_OPERATIONS_FOR_MESSAGE, MAX_PATCH_ELEMENTS_FOR_MESSAGE } from './generate-message';
 import {
   authorizedMembers,
   authorizedMembersActivationDate,
   confidence,
-  creators,
+  creators as creatorsAttribute,
   iAliasedIds,
   iAttributes,
   modified,
@@ -1928,7 +1928,13 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
 const computeDateFromEventId = (context) => {
   return utcDate(parseInt(context.eventId.split('-')[0], 10)).toISOString();
 };
-
+const getKeyValuesFromPatchElements = (patchElements, keyName) => {
+  return patchElements.slice(0, MAX_PATCH_ELEMENTS_FOR_MESSAGE).flatMap(([,operations]) => {
+    return operations.slice(0, MAX_OPERATIONS_FOR_MESSAGE).flatMap(({ key, value }) => {
+      return key === keyName ? (value ?? []) : [];
+    });
+  });
+};
 export const generateUpdateMessage = async (context, user, entityType, inputs) => {
   const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
   const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
@@ -1951,11 +1957,7 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
     throw UnsupportedError('Generating update message with empty inputs fail');
   }
 
-  const authorizedMembersIds = patchElements.slice(0, 3).flatMap(([,operations]) => {
-    return operations.slice(0, 3).flatMap(({ key, value }) => {
-      return key === authorizedMembers.name ? (value ?? []).map(({ id }) => id) : [];
-    });
-  });
+  const authorizedMembersIds = getKeyValuesFromPatchElements(patchElements, authorizedMembers.name).map(({ id }) => id);
   let members = [];
   if (authorizedMembersIds.length > 0) {
     members = await internalFindByIds(context, SYSTEM_USER, authorizedMembersIds, {
@@ -1964,7 +1966,14 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
     });
   }
 
-  return generateUpdatePatchMessage(patchElements, entityType, { members });
+  const creatorsIds = getKeyValuesFromPatchElements(patchElements, creatorsAttribute.name);
+  let creators = [];
+  if (creatorsIds.length > 0 && !(creatorsIds.length === 1 && creatorsIds.includes(user.id))) {
+    // get creators only if it's not the current user (which will be 'itself')
+    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    creators = creatorsIds.map((id) => platformUsers.get(id));
+  }
+  return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
 };
 
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
@@ -2740,7 +2749,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     if (isInputAvailable) { // The attribute is explicitly available in the patch
       const inputData = updatePatch[attributeKey];
       const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
-      const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creators.name; // Ids and creators consolidation is always granted
+      const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
       const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
       const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value

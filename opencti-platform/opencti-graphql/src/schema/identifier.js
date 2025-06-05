@@ -3,7 +3,7 @@ import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import jsonCanonicalize from 'canonicalize';
-import { DatabaseError, UnsupportedError } from '../config/errors';
+import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import * as I from './internalObject';
 import { isInternalObject } from './internalObject';
 import * as D from './stixDomainObject';
@@ -308,7 +308,7 @@ export const idGen = (type, data, namespace) => {
     const contrib = resolveContribution(type);
     const properties = contrib.definition[type];
     const missingKeys = properties.map((p) => p.src).join(' - ');
-    throw UnsupportedError(`Missing required elements for ${type} creation (${missingKeys})`, { properties });
+    throw FunctionalError(`Missing required elements for ${type} creation (${missingKeys})`, { properties });
   }
   // In some cases like TLP, standard id are fixed by the community
   const findStaticId = getStaticIdFromData(data);

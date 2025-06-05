@@ -717,6 +717,8 @@
   "Dark theme": "Thème sombre",
   "Dashboard": "Tableau de bord",
   "dashboard": "Tableau de bord",
+  "Dashboard cannot be exported to image": "Le tableau de bord ne peut pas être exporté vers une image",
+  "Dashboard cannot be exported to pdf": "Le tableau de bord ne peut pas être exporté en pdf",
   "Dashboard settings": "Paramètres du tableau de bord",
   "Dashboards": "Tableaux de bord",
   "Dashboards from your groups & organizations": "Tableaux de bord de vos groupes et organisations",

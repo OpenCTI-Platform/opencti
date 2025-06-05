@@ -717,6 +717,8 @@
   "Dark theme": "ダークテーマ",
   "Dashboard": "ダッシュボード",
   "dashboard": "ダッシュボード",
+  "Dashboard cannot be exported to image": "ダッシュボードを画像にエクスポートできない",
+  "Dashboard cannot be exported to pdf": "ダッシュボードをpdfにエクスポートできない",
   "Dashboard settings": "ダッシュボードの設定",
   "Dashboards": "ダッシュボード",
   "Dashboards from your groups & organizations": "グループ＆組織のダッシュボード",

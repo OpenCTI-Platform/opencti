@@ -40,6 +40,7 @@ import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { extractRepresentative } from '../database/entity-representative';
 import { extractStixRepresentativeForUser } from '../database/stix-representative';
 import { findById } from '../domain/user';
+import { EVENT_TYPE_UPDATE } from '../database/utils';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
