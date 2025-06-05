@@ -77,8 +77,8 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   handleToggleExports?: () => void,
   exportContext: { entity_type: string },
   availableFilterKeys: string[];
-  defaultStartTime: string;
-  defaultStopTime: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
   storageKey: string;
   killChainDataQueryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
   isEntity?: boolean;

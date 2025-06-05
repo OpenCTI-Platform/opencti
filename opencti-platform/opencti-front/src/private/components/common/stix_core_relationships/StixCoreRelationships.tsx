@@ -29,8 +29,8 @@ interface StixCoreRelationshipsProps {
   targetTypes: string[]
   direction: 'fromEntity' | 'toEntity' | 'all'
   relationshipTypes: string[]
-  defaultStartTime: string;
-  defaultStopTime: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
 }
 
 export const stixCoreRelationshipsFragment = graphql`

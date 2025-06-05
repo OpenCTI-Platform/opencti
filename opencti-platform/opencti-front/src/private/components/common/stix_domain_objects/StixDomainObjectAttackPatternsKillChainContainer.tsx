@@ -24,8 +24,8 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   filters?: FilterGroup;
   searchTerm?: string;
   view?: string;
-  defaultStartTime: string;
-  defaultStopTime: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
   disableExport: boolean;
   openExports?: boolean;
   availableFilterKeys: string[];

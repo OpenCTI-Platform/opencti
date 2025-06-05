@@ -26,8 +26,8 @@ interface StixDomainObjectAttackPatternsKillChainMatrixProps {
   entityId: string;
   currentView?: string;
   viewButtons: ReactElement[];
-  defaultStartTime: string;
-  defaultStopTime: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
 }
 
 const StixDomainObjectAttackPatternsKillChainMatrixInline: FunctionComponent<StixDomainObjectAttackPatternsKillChainMatrixProps> = (
