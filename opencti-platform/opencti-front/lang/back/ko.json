@@ -198,6 +198,7 @@
   "Decryption key": "복호화 키",
   "Default assignation": "기본 할당",
   "Default dashboard": "기본 대시보드",
+  "Default Group used for integration user creation": "통합 사용자 생성에 사용되는 기본 그룹",
   "Default hidden types": "기본 숨김 유형",
   "Default marking": "기본 마킹",
   "Default time field": "기본 시간 필드",

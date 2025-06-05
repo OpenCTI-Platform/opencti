@@ -1426,6 +1426,7 @@ type Group implements InternalObject & BasicObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  auto_integration_assignation: [String]!
   parent_types: [String]!
   # Group
   name: String!

@@ -1505,6 +1505,7 @@ type Group implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  auto_integration_assignation: [String]!
   parent_types: [String]!
   name: String!
   default_assignation: Boolean
