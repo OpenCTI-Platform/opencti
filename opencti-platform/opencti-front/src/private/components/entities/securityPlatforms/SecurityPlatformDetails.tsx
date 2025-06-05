@@ -49,7 +49,7 @@ const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetail
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Organization type')}
+              {t_i18n('Security platform type')}
             </Typography>
             <Chip
               classes={{ root: classes.chip }}
