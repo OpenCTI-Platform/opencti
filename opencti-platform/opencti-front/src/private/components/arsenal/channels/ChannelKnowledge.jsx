@@ -103,7 +103,7 @@ const ChannelKnowledgeComponent = ({
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
-              relationshipTypes={['uses']}
+              relationshipTypes={['uses', 'belongs-to']}
               isRelationReversed={true}
               entityLink={link}
               stixCoreObjectTypes={[
