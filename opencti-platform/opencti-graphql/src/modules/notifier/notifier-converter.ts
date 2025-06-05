@@ -1,6 +1,7 @@
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import { buildStixObject, cleanObject } from '../../database/stix-2-1-converter';
+import { buildStixObject } from '../../database/stix-2-1-converter';
 import type { StixNotifier, StoreEntityNotifier } from './notifier-types';
+import { cleanObject } from '../../database/stix-converter-utils';
 
 export const convertNotifierToStix = (instance: StoreEntityNotifier): StixNotifier => {
   const stixObject = buildStixObject(instance);
