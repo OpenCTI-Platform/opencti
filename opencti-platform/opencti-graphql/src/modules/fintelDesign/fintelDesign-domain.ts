@@ -107,8 +107,10 @@ export const fintelDesignDelete = async (context: AuthContext, user: AuthUser, d
   return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_DESIGN].DELETE_TOPIC, deleted, user).then(() => designId);
 };
 
-export const fintelDesignEditContext = async (context: AuthContext, user: AuthUser, fintelDesignId: string, input: EditContext) => {
-  await setEditContext(user, fintelDesignId, input);
+export const fintelDesignEditContext = async (context: AuthContext, user: AuthUser, fintelDesignId: string, input?: EditContext) => {
+  if (input) {
+    await setEditContext(user, fintelDesignId, input);
+  }
   return storeLoadById(context, user, fintelDesignId, ABSTRACT_INTERNAL_OBJECT).then((fintelDesign) => {
     return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].CONTEXT_TOPIC, fintelDesign, user);
   });

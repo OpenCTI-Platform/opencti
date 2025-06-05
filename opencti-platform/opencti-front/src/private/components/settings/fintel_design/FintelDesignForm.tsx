@@ -57,12 +57,12 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
     const { file } = values;
     const inputValues = Object.entries(values)
       .filter(([key, _]) => !['file'].includes(key))
-      .map(([key, value]) => ({ key, value }));
+      .map(([key, value]) => ({ key, value: value ?? [] }));
 
     commitFieldPatch({
       variables: {
         id: fintelDesign.id,
-        input: inputValues,
+        input: inputValues ?? [],
         file,
       },
       onCompleted: () => {
@@ -99,7 +99,6 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
               label={t_i18n('Background primary color')}
               placeholder={t_i18n('Default')}
               fullWidth
-              setFieldValue={setFieldValue}
               onSubmit={submitForm}
               variant="standard"
               style={fieldSpacingContainerStyle}
