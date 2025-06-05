@@ -2690,6 +2690,7 @@
   "relationship_sample": "サンプル",
   "relationship_sender": "送信者",
   "relationship_service-dll": "DLLサービス",
+  "relationship_should-cover": "カバーする必要がある",
   "relationship_src": "送信元",
   "relationship_src-payload": "送信元ペイロード",
   "relationship_static-analysis-of": "静的解析による",

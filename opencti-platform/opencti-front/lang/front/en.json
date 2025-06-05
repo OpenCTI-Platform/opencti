@@ -2690,6 +2690,7 @@
   "relationship_sample": "sample",
   "relationship_sender": "sender",
   "relationship_service-dll": "service dll",
+  "relationship_should-cover": "should cover",
   "relationship_src": "src",
   "relationship_src-payload": "src payload",
   "relationship_static-analysis-of": "static analysis of",
