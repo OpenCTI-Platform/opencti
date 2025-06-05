@@ -453,3 +453,44 @@ class CustomObservableMediaContent:
     """Media-Content observable."""
 
     pass
+
+
+@CustomObservable(
+    "persona",
+    [
+        ("persona_name", StringProperty(required=True)),
+        ("persona_type", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["persona_name", "persona_type"],
+)
+class CustomObservablePersona:
+    """Persona observable."""
+
+    pass
+
+
+@CustomObservable(
+    "cryptographic-key",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableCryptographicKey:
+    """Cryptographic-Key observable."""
+
+    pass
