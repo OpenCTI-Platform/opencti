@@ -105,7 +105,7 @@ const SecurityPlatforms = () => {
     name: {
       percentWidth: 20,
     },
-    security_platform_types: {
+    security_platform_type: {
       label: 'Type',
       percentWidth: 20,
     },
