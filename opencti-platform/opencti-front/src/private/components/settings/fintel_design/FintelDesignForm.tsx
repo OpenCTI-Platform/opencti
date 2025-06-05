@@ -1,5 +1,5 @@
 import { Field, Form, Formik } from 'formik';
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent } from 'react';
 import * as Yup from 'yup';
 import { FintelDesign_fintelDesign$data } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import { graphql } from 'react-relay';
@@ -9,7 +9,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { FintelDesignFormValues } from './FintelDesign';
 import { useFormatter } from '../../../../components/i18n';
-import { isEmptyObject } from '../../../../utils/object';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
 
@@ -68,19 +67,11 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
       },
       onCompleted: () => {
         setSubmitting(false);
+        onChange(values);
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
-      },
-    });
-  };
-
-  const handleFieldChange = (name: string, value: string) => {
-    commitFieldPatch({
-      variables: {
-        id: fintelDesign.id,
-        input: [{ key: name, value: (value) ?? '' }],
       },
     });
   };
@@ -94,22 +85,13 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
       validateOnChange={true}
       validateOnBlur={true}
     >
-      {({ setFieldValue, values, validateForm, submitForm }) => {
-        useEffect(() => {
-          const validate = async () => {
-            const isValid = isEmptyObject(await validateForm(values));
-            if (isValid) onChange(values);
-          };
-          validate();
-        }, [values]);
-
+      {({ setFieldValue, submitForm }) => {
         return (
           <Form>
             <Field
               component={CustomFileUploader}
-              name="file"
               setFieldValue={setFieldValue}
-              submitForm={submitForm}
+              onChange={submitForm}
             />
             <Field
               component={ColorPickerField}
@@ -118,7 +100,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
               placeholder={t_i18n('Default')}
               fullWidth
               setFieldValue={setFieldValue}
-              onSubmit={handleFieldChange}
+              onSubmit={submitForm}
               variant="standard"
               style={fieldSpacingContainerStyle}
             />
@@ -129,7 +111,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
               placeholder={t_i18n('Default')}
               fullWidth
               setFieldValue={setFieldValue}
-              onSubmit={handleFieldChange}
+              onSubmit={submitForm}
               variant="standard"
               style={fieldSpacingContainerStyle}
             />
@@ -140,7 +122,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
               placeholder={t_i18n('Default')}
               fullWidth
               setFieldValue={setFieldValue}
-              onSubmit={handleFieldChange}
+              onSubmit={submitForm}
               variant="standard"
               style={fieldSpacingContainerStyle}
             />

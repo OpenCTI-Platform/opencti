@@ -89,22 +89,9 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: 200 }}>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          style={{ marginRight: 10 }}
-        >
-          {fintelDesign.name}
-        </Typography>
-        <div>
-          <FintelDesignEdition fintelDesignId={fintelDesign.id}/>
-        </div>
-      </div>
       <PageContainer withRightMenu>
-        <CustomizationMenu />
+        <CustomizationMenu/>
         <Breadcrumbs
-          noMargin
           elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Customization') },
@@ -112,6 +99,18 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             { label: `${fintelDesign.name}`, current: true },
           ]}
         />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography
+            variant="h1"
+            gutterBottom={true}
+            style={{ marginRight: 10 }}
+          >
+            {fintelDesign.name}
+          </Typography>
+          <div>
+            <FintelDesignEdition fintelDesignId={fintelDesign.id}/>
+          </div>
+        </div>
         <Grid
           container={true}
           spacing={3}
@@ -148,7 +147,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               variant="outlined"
             >
               {pdf && (
-                <PdfViewer pdf={pdf} />
+                <PdfViewer pdf={pdf}/>
               )}
             </Paper>
           </Grid>
@@ -166,7 +165,7 @@ const FintelDesign = () => {
     { id: fintelDesignId },
   );
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.container}/>}>
       <FintelDesignComponent queryRef={queryRef} />
     </React.Suspense>
   ) : (
