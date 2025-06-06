@@ -48,7 +48,7 @@ steps:
       SMTP__PASSWORD: frhJ2mSPTfaEutpbug
       PYTHONUNBUFFERED: 1
     commands:
-      - apk add build-base git libffi-dev cargo
+      - apk add build-base git libffi-dev cargo procps
       - pip3 install --upgrade setuptools
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
