@@ -77,6 +77,9 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
           const { csvFeedAddInputFromImport } = data as IngestionCsvImportQuery$data;
           setIngestCSVData(csvFeedAddInputFromImport);
           setOpen(true);
+          if (inputFileRef.current) {
+            inputFileRef.current.value = '';
+          }
         })
         .catch((e) => {
           const { errors } = (e as unknown as RelayError).res;

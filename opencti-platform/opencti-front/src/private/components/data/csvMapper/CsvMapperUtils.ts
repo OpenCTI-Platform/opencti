@@ -9,7 +9,7 @@ import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValue
 
 type CsvMapperRepresentations = CsvMapperEditionContainerFragment_csvMapper$data['representations'];
 
-type CsvMapperAddInput = {
+export type CsvMapperAddInput = {
   id: string,
   errors: string | null | undefined,
   representations: CsvMapperRepresentations,

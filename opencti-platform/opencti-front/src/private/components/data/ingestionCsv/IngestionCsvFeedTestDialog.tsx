@@ -37,7 +37,7 @@ interface ingestionCsvFeedTestDialogProps {
     authentication_value?: string | null,
     uri: string,
     ingestion_running?: boolean | null,
-    csv_mapper_id?: string | FieldOption,
+    csv_mapper_id?: string | FieldOption | null,
     user_id: string | FieldOption
     markings: FieldOption[]
   }

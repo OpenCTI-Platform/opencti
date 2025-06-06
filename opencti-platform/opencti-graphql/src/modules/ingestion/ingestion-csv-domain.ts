@@ -207,6 +207,7 @@ export const csvFeedAddInputFromImport = async (context: AuthContext, user: Auth
   }
 
   return {
+    markings: [], // On some config, marking is missing
     ...parsedData.configuration,
     csvMapper: transformCsvMapperConfig(parsedData.configuration.csv_mapper.configuration, context, user),
   };

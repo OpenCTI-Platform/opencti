@@ -23,7 +23,7 @@ import type { Theme } from '../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
 
-const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
+export const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -151,7 +151,7 @@ const CsvMappers = () => {
           schemaAttributesQueryRef={queryRefSchemaAttributes}
         >
           <div className={classes.container}>
-            <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('CSV mappers'), current: true }]} />
+            <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('CSV Mappers'), current: true }]} />
             <ProcessingMenu />
             <ListLines
               helpers={helpers}
