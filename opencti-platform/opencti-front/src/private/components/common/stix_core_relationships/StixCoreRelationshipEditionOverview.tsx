@@ -354,7 +354,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                   label: t_i18n('Start time'),
                   variant: 'standard',
                   fullWidth: true,
-                  style: { marginTop: 20 },
+                  style: { marginTop: 40 },
                   helperText: (
                     <SubscriptionFocus
                       context={editContext}

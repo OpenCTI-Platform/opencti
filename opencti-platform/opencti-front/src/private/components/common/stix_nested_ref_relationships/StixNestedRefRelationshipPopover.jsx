@@ -144,7 +144,6 @@ class StixNestedRefRelationshipPopover extends Component {
           stixNestedRefRelationshipId={stixNestedRefRelationshipId}
           open={this.state.displayUpdate}
           handleClose={this.handleCloseUpdate.bind(this)}
-          handleDelete={() => true}
         />
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}

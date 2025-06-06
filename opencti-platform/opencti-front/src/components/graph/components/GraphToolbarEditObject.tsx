@@ -116,7 +116,6 @@ const GraphToolbarEditObject = ({
             handleClose={closeEditionForm}
           />
           <StixNestedRefRelationshipEdition
-            noStoreUpdate
             open={category === 'nested'}
             stixNestedRefRelationshipId={objectToEdit.id}
             handleClose={closeEditionForm}
