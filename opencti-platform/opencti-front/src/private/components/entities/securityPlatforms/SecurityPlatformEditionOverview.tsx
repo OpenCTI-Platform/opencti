@@ -28,45 +28,45 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 
 const securityPlatformMutationFieldPatch = graphql`
-    mutation SecurityPlatformEditionOverviewFieldPatchMutation(
-        $id: ID!
-        $input: [EditInput]!
-        $commitMessage: String
-        $references: [String]
+  mutation SecurityPlatformEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
+  ) {
+    securityPlatformFieldPatch(
+      id: $id
+      input: $input
+      commitMessage: $commitMessage
+      references: $references
     ) {
-        securityPlatformFieldPatch(
-            id: $id
-            input: $input
-            commitMessage: $commitMessage
-            references: $references
-        ) {
-            ...SecurityPlatformEditionOverview_securityPlatform
-            ...SecurityPlatform_securityPlatform
-        }
+      ...SecurityPlatformEditionOverview_securityPlatform
+      ...SecurityPlatform_securityPlatform
     }
+  }
 `;
 
 export const securityPlatformEditionOverviewFocus = graphql`
 mutation SecurityPlatformEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
+  $id: ID!
+  $input: EditContext!
 ) {
-    securityPlatformContextPatch(id: $id, input: $input) {
-        id
-    }
+  securityPlatformContextPatch(id: $id, input: $input) {
+    id
+  }
 }
 `;
 
 const securityPlatformMutationRelationAdd = graphql`
 mutation SecurityPlatformEditionOverviewRelationAddMutation(
-    $id: ID!
-    $input: StixRefRelationshipAddInput!
+  $id: ID!
+  $input: StixRefRelationshipAddInput!
 ) {
-    securityPlatformRelationAdd(id: $id, input: $input) {
-        from {
-            ...SecurityPlatformEditionOverview_securityPlatform
-        }
+  securityPlatformRelationAdd(id: $id, input: $input) {
+    from {
+      ...SecurityPlatformEditionOverview_securityPlatform
     }
+  }
 }
 `;
 
@@ -272,56 +272,56 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
 
 export default createFragmentContainer(SecurityPlatformEditionOverview, {
   securityPlatform: graphql`
-      fragment SecurityPlatformEditionOverview_securityPlatform on SecurityPlatform {
+    fragment SecurityPlatformEditionOverview_securityPlatform on SecurityPlatform {
+      id
+      description
+      security_platform_type
+      standard_id
+      entity_type
+      x_opencti_stix_ids
+      spec_version
+      revoked
+      x_opencti_reliability
+      confidence
+      created
+      modified
+      created_at
+      updated_at
+      createdBy {
+        ... on Identity {
           id
-          description
-          security_platform_type
-          standard_id
-          entity_type
-          x_opencti_stix_ids
-          spec_version
-          revoked
-          x_opencti_reliability
-          confidence
-          created
-          modified
-          created_at
-          updated_at
-          createdBy {
-              ... on Identity {
-                  id
-                  name
-                  entity_type
-                  x_opencti_reliability
-              }
-          }
-          creators {
-              id
-              name
-          }
-          objectMarking {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-          }
-          objectLabel {
-              id
-              value
-              color
-          }
           name
-          x_opencti_aliases
-          status {
-              id
-              order
-              template {
-                  name
-                  color
-              }
-          }
-          workflowEnabled
+          entity_type
+          x_opencti_reliability
+        }
       }
+      creators {
+        id
+        name
+      }
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      objectLabel {
+        id
+        value
+        color
+      }
+      name
+      x_opencti_aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
   `,
 });

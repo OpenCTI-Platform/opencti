@@ -43,14 +43,14 @@ export default createFragmentContainer(
   SecurityPlatformEditionContainer,
   {
     securityPlatform: graphql`
-        fragment SecurityPlatformEditionContainer_securityPlatform on SecurityPlatform {
-            id
-            ...SecurityPlatformEditionOverview_securityPlatform
-            editContext {
-                name
-                focusOn
-            }
+      fragment SecurityPlatformEditionContainer_securityPlatform on SecurityPlatform {
+        id
+        ...SecurityPlatformEditionOverview_securityPlatform
+        editContext {
+            name
+            focusOn
         }
+      }
     `,
   },
 );
