@@ -530,8 +530,8 @@ const PlaybookAddComponentsContent = ({
                   <ItemIcon type={component.icon}/>
                 </ListItemIcon>
                 <ListItemText
-                  primary={component.name}
-                  secondary={component.description}
+                  primary={t_i18n(component.name)}
+                  secondary={t_i18n(component.description)}
                 />
               </ListItemButton>
             );
@@ -560,10 +560,12 @@ const PlaybookAddComponentsContent = ({
         name: selectedComponent.name,
         ...defaultConfig,
       };
+
     const entityTypes = componentId === 'PLAYBOOK_INTERNAL_DATA_CRON'
       ? ['Stix-Core-Object', 'stix-core-relationship']
       : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'];
     const searchContext = { entityTypes };
+
     return (
       <div className={classes.config}>
         <Formik
@@ -585,6 +587,7 @@ const PlaybookAddComponentsContent = ({
                 component={TextField}
                 variant="standard"
                 name="name"
+                value={t_i18n(values.name)}
                 label={t_i18n('Name')}
                 fullWidth={true}
               />
@@ -594,7 +597,7 @@ const PlaybookAddComponentsContent = ({
                     return (
                       <ObjectMembersField
                         key={k}
-                        label={'Targets'}
+                        label={t_i18n('Targets')}
                         style={{ marginTop: 20 }}
                         multiple={true}
                         name="authorized_members"
@@ -881,21 +884,19 @@ const PlaybookAddComponentsContent = ({
                           <Tooltip
                             {...optionProps}
                             key={value.const}
-                            title={value.title}
+                            title={t_i18n(value.title)}
                             placement="bottom-start"
                           >
                             <MenuItem value={value.const}>
-                              {value.title}
+                              {t_i18n(value.title)}
                             </MenuItem>
                           </Tooltip>
                         )}
-                        isOptionEqualToValue={(option, value) => option.const === value
-                        }
+                        isOptionEqualToValue={(option, value) => option.const === value}
                         onInternalChange={(name, value) => setFieldValue(
                           name,
                           value.map((n) => (n.const ? n.const : n)),
-                        )
-                        }
+                        )}
                         noFieldUpdate={true}
                         options={v.items.oneOf}
                         textfieldprops={{
