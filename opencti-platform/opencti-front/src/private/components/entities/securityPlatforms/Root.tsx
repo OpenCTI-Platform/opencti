@@ -66,6 +66,7 @@ const securityPlatformQuery = graphql`
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
       ...StixCoreObjectContent_stixCoreObject
+      ...SecurityPlatformAnalysis_securityPlatform
     }
     connectorsForImport {
       ...FileManager_connectorsImport
