@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link, useNavigate } from 'react-router-dom';
@@ -8,6 +8,10 @@ import { ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { makeStyles, useTheme } from '@mui/styles';
+import IconButton from '@mui/material/IconButton';
+import MoreVert from '@mui/icons-material/MoreVert';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -29,6 +33,7 @@ import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExp
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import { resolveLink } from '../../../../utils/Entity';
+import stopEvent from '../../../../utils/domEvent';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -454,6 +459,38 @@ const ContainerHeader = (props) => {
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
   const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
+  const [openSharing, setOpenSharing] = useState(false);
+  const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
+
+  const handleOpen = (event) => {
+    stopEvent(event);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = (event) => {
+    setOpenEnrollPlaybook(false);
+    setOpenSharing(false);
+    setOpenAccessRestriction(false);
+    stopEvent(event);
+    setAnchorEl(null);
+  };
+
+  const handleOpenEnrollPlaybook = () => {
+    setOpenEnrollPlaybook(true);
+    setAnchorEl(null);
+  };
+
+  const handleOpenSharing = () => {
+    setOpenSharing(true);
+    setAnchorEl(null);
+  };
+
+  const handleOpenAccessRestriction = () => {
+    setOpenAccessRestriction(true);
+    setAnchorEl(null);
+  };
 
   const handleExportCompleted = (fileName) => {
     // navigate with fileName in query params to select the created file
@@ -626,24 +663,6 @@ const ContainerHeader = (props) => {
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
-            {!knowledge && disableSharing !== true && (
-              <StixCoreObjectSharing elementId={container.id} variant="header" disabled={disableOrgaSharingButton} />
-            )}
-            {!knowledge && (
-              <Security
-                needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                hasAccess={!!enableManageAuthorizedMembers}
-              >
-                <FormAuthorizedMembersDialog
-                  id={container.id}
-                  owner={container.creators?.[0]}
-                  authorizedMembers={authorizedMembersToOptions(
-                    container.authorized_members,
-                  )}
-                  mutation={containerHeaderEditAuthorizedMembersMutation}
-                />
-              </Security>
-            )}
             {!knowledge && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
                 <StixCoreObjectFileExport
@@ -680,13 +699,61 @@ const ContainerHeader = (props) => {
                 />
               </Security>
             )}
-            {enableEnrollPlaybook && (
-              <StixCoreObjectEnrollPlaybook stixCoreObjectId={container.id} />
-            )}
+            <IconButton
+              onClick={handleOpen}
+              aria-haspopup="true"
+              size="small"
+              color="primary"
+              aria-label={t_i18n('Container popover of actions')}
+            >
+              <MoreVert />
+            </IconButton>
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose} aria-label="Container menu">
+              {!knowledge && disableSharing !== true && (
+                <MenuItem onClick={handleOpenSharing}>
+                  {t_i18n('Share with an organization')}
+                </MenuItem>
+              )}
+              {!knowledge && (
+                <Security
+                  needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                  hasAccess={!!enableManageAuthorizedMembers}
+                >
+                  <MenuItem onClick={handleOpenAccessRestriction}>{t_i18n('Manage access restriction')}</MenuItem>
+                </Security>
+              )}
+              {enableEnrollPlaybook && (
+                <MenuItem onClick={handleOpenEnrollPlaybook}>
+                  {t_i18n('Enroll in playbook')}
+                </MenuItem>
+              )}
+            </Menu>
             {EditComponent}
           </div>
         </div>
       </React.Suspense>
+      <StixCoreObjectSharing
+        elementId={container.id}
+        open={openSharing}
+        variant="header"
+        disabled={disableOrgaSharingButton}
+        handleClose={handleClose}
+      />
+      <StixCoreObjectEnrollPlaybook
+        stixCoreObjectId={container.id}
+        open={openEnrollPlaybook}
+        handleClose={handleClose}
+      />
+      <FormAuthorizedMembersDialog
+        id={container.id}
+        owner={container.creators?.[0]}
+        authorizedMembers={authorizedMembersToOptions(
+          container.authorized_members,
+        )}
+        mutation={containerHeaderEditAuthorizedMembersMutation}
+        open={openAccessRestriction}
+        handleClose={handleClose}
+      />
     </div>
   );
 };
