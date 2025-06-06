@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
+import { Badge, Box, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
 import { AddCircleOutlineOutlined, CheckOutlined, CloseOutlined, InfoOutlined } from '@mui/icons-material';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -7,7 +7,6 @@ import { useTheme } from '@mui/material/styles';
 import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
 import { AttackPatternsMatrixColumns_data$data, AttackPatternsMatrixColumns_data$key } from './__generated__/AttackPatternsMatrixColumns_data.graphql';
 import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
-import { computeLevel } from '../../../../utils/Number';
 import { truncate } from '../../../../utils/String';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
@@ -35,20 +34,13 @@ const LAYOUT_SIZE = {
   MARGIN_RIGHT_WIDTH: 195, // Right nav width
 };
 
-const colors = (defaultColor = '#ffffff') => [
-  [defaultColor, 'transparent', hexToRGB('#ffffff', 0.1)],
-  ['#ffffff', hexToRGB('#ffffff', 0.2)],
-  ['#fff59d', hexToRGB('#fff59d', 0.2)],
-  ['#ffe082', hexToRGB('#ffe082', 0.2)],
-  ['#ffb300', hexToRGB('#ffb300', 0.2)],
-  ['#ffb74d', hexToRGB('#ffb74d', 0.2)],
-  ['#fb8c00', hexToRGB('#fb8c00', 0.2)],
-  ['#d95f00', hexToRGB('#d95f00', 0.2)],
-  ['#e64a19', hexToRGB('#e64a19', 0.2)],
-  ['#f44336', hexToRGB('#f44336', 0.2)],
-  ['#d32f2f', hexToRGB('#d32f2f', 0.2)],
-  ['#b71c1c', hexToRGB('#b71c1c', 0.2)],
-];
+const COLORS = {
+  DEFAULT_BG: 'transparent',
+  DEFAULT_BG_HOVER: '#ffffff',
+  HIGHLIGHT: '#b71c1c',
+  HIGHLIGHT_HOVER: '#d32f2f',
+  BADGE: '#fa5e5e',
+};
 
 export const attackPatternsMatrixColumnsFragment = graphql`
   fragment AttackPatternsMatrixColumns_data on Query {
@@ -126,12 +118,7 @@ const AttackPatternsMatrixColumns = ({
   }, []);
 
   const getLevel = (ap: AttackPattern): number => {
-    const matchCount = attackPatterns.filter((n) => n.id === ap.attack_pattern_id || (ap.subAttackPatternsIds?.includes(n.id))).length;
-    const maxCount = Math.max(...attackPatterns.map((n) => {
-      const all = [n, ...(n.parentAttackPatterns?.edges || []).map((e) => e.node)];
-      return all.length;
-    }));
-    return computeLevel(matchCount, 0, maxCount, 0, 10);
+    return attackPatterns.filter((n) => n.id === ap.attack_pattern_id || (ap.subAttackPatternsIds?.includes(n.id))).length;
   };
 
   const filteredData = useMemo(() => attackPatternsMatrix?.attackPatternsOfPhases
@@ -151,6 +138,7 @@ const AttackPatternsMatrixColumns = ({
           entity_type: 'Attack-Pattern',
           isOverlapping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
           level: getLevel(ap),
+          subAttackPatternsTotal: ap.subAttackPatternsIds?.length,
         }))
         .filter((o) => (isModeOnlyActive ? o.level > 0 : o.level >= 0))
         .sort((f, s) => f.name.localeCompare(s.name)),
@@ -161,6 +149,22 @@ const AttackPatternsMatrixColumns = ({
     const rightOffset = marginRight ? LAYOUT_SIZE.MARGIN_RIGHT_WIDTH : 0;
     return baseOffset + rightOffset;
   }, [marginRight, navOpen]);
+
+  const getBoxStyles = (hasLevel: boolean, isHovered: boolean) => {
+    if (hasLevel) {
+      const highlightedColor = isHovered ? COLORS.HIGHLIGHT_HOVER : COLORS.HIGHLIGHT;
+      return {
+        borderColor: highlightedColor,
+        backgroundColor: hexToRGB(highlightedColor, 0.2),
+      };
+    }
+    return {
+      borderColor: theme.palette.background.accent,
+      backgroundColor: isHovered
+        ? hexToRGB(COLORS.DEFAULT_BG_HOVER, 0.1)
+        : COLORS.DEFAULT_BG,
+    };
+  };
 
   return (
     <UserContext.Consumer>
@@ -190,32 +194,51 @@ const AttackPatternsMatrixColumns = ({
                   </Box>
                   {col.attackPatterns?.map((ap) => {
                     const isHovered = hover[ap.id];
-                    const level = isHovered && ap.level !== 0 ? ap.level - 1 : ap.level;
-                    const position = isHovered && level === 0 ? 2 : 1;
-                    const colorArray = colors(theme.palette.background.accent);
+                    const hasLevel = ap.level > 0;
 
                     return (
-                      <Box
+                      <Badge
                         key={ap.id}
-                        onMouseEnter={() => handleToggleHover(ap.id)}
-                        onMouseLeave={() => handleToggleHover(ap.id)}
-                        onClick={(e) => handleOpen(ap, e)}
+                        invisible={!ap.level}
+                        badgeContent={!ap.subAttackPatternsTotal ? ap.level : `${ap.level}/${ap.subAttackPatternsTotal}`}
+                        overlap="rectangular"
+                        anchorOrigin={{
+                          vertical: 'top',
+                          horizontal: 'right',
+                        }}
                         sx={{
-                          display: 'flex',
-                          cursor: 'pointer',
-                          border: `1px solid ${colorArray[level][0]}`,
-                          backgroundColor: colorArray[level][position],
-                          padding: 1.25,
-                          justifyContent: 'space-between',
-                          gap: 1,
-                          alignItems: 'center',
-                          whiteSpace: 'normal',
+                          '& .MuiBadge-badge': {
+                            backgroundColor: COLORS.BADGE,
+                            color: theme.palette.common.black,
+                            height: '14px',
+                            minWidth: '14px',
+                            fontSize: '10px',
+                            paddingInline: '4px',
+                          },
                         }}
                       >
-                        <Typography variant="body2" fontSize={10}>
-                          {ap.name}
-                        </Typography>
-                        {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && ap.level > 0 && (
+                        <Box
+                          onMouseEnter={() => handleToggleHover(ap.id)}
+                          onMouseLeave={() => handleToggleHover(ap.id)}
+                          onClick={(e) => handleOpen(ap, e)}
+                          sx={{
+                            display: 'flex',
+                            cursor: 'pointer',
+                            borderWidth: '1px',
+                            borderStyle: 'solid',
+                            ...getBoxStyles(hasLevel, isHovered),
+                            padding: 1.25,
+                            justifyContent: 'space-between',
+                            gap: 1,
+                            alignItems: 'center',
+                            whiteSpace: 'normal',
+                            width: '100%',
+                          }}
+                        >
+                          <Typography variant="body2" fontSize={10}>
+                            {ap.name}
+                          </Typography>
+                          {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && ap.level > 0 && (
                           <Tooltip
                             title={t_i18n('Should cover')}
                             sx={{
@@ -229,8 +252,9 @@ const AttackPatternsMatrixColumns = ({
                               : <CloseOutlined fontSize="medium" color="error"/>
                             }
                           </Tooltip>
-                        )}
-                      </Box>
+                          )}
+                        </Box>
+                      </Badge>
                     );
                   })}
                 </Box>
