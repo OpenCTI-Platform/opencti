@@ -1,4 +1,4 @@
-import { Autocomplete, Chip, TextField, TextFieldProps, TextFieldVariants } from '@mui/material';
+import { Autocomplete, Checkbox, Chip, TextField, TextFieldProps, TextFieldVariants } from '@mui/material';
 import React, { Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
@@ -72,7 +72,7 @@ const EntitySelectComponent = ({
       value={value}
       options={options}
       multiple={multiple}
-      blurOnSelect={!multiple}
+      disableCloseOnSelect={multiple}
       noOptionsText={t_i18n('No available options')}
       isOptionEqualToValue={(option, val) => option.value === val.value}
       onInputChange={(_, val) => throttleSearch(val)}
@@ -93,9 +93,15 @@ const EntitySelectComponent = ({
             alignItems: 'center',
             gap: theme.spacing(1.5),
             height: theme.spacing(6),
+            paddingInlineStart: multiple ? theme.spacing(1) : theme.spacing(2),
           }}
           {...props}
         >
+          {multiple && (
+            <Checkbox
+              checked={!!(value as EntityOption[]).find((v) => option.value === v.value)}
+            />
+          )}
           <ItemIcon type={option.type}/>
           <span style={{
             overflow: 'hidden',
