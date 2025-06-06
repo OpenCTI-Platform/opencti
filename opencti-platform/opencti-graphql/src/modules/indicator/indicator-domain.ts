@@ -372,8 +372,6 @@ export const restartDecayComputationOnEdit = (fromScore: number, indicatorBefore
 };
 
 export const indicatorEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[], opts = {}) => {
-  logApp.info('Initial input:', { input });
-
   // Region Validation
   const indicatorBeforeUpdate = await findById(context, user, id);
   if (!indicatorBeforeUpdate) {
@@ -458,6 +456,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
       }
 
       if (hasRevokedChangedToFalse) {
+        logApp.info('ANGIE - revoked moved to false');
         // Restart decay as if the score has been put to decay_base_score manually.
         const newScore = indicatorBeforeUpdate.decay_base_score;
         const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
@@ -481,7 +480,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     }
   }
 
-  // Safeguard: if the field as in input and not added by decay computation, keep the input.
+  // Safeguard: if the field has in input and not added by decay computation, keep the input.
   if (validUntilEditInput && !finalInput.find((e) => e.key === VALID_UNTIL)) {
     finalInput.push(validUntilEditInput);
   }
@@ -491,12 +490,13 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   }
 
   if (revokedEditInput && !finalInput.find((e) => e.key === REVOKED)) {
+    logApp.info('revokedEditInput:', revokedEditInput);
     finalInput.push(revokedEditInput);
   }
 
-  // END Decay and {Score, Valid until, Revoke} computation
-  logApp.debug('All changes to apply:', { finalInput });
+  logApp.info('Indicator full computed changes:', finalInput);
 
+  // END Decay and {Score, Valid until, Revoke} computation
   return stixDomainObjectEditField(context, user, id, finalInput, opts);
 };
 
