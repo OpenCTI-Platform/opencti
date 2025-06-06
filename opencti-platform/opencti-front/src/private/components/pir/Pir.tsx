@@ -60,6 +60,7 @@ const PirComponent = ({
           path="/"
           element={(
             <PirOverview
+              pirId={pir.id}
               dataHistory={history}
               dataDetails={pir}
               dataHistoryPir={pir}

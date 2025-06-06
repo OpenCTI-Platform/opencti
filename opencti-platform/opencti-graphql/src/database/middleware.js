@@ -679,7 +679,12 @@ export const distributionHistory = async (context, user, types, args) => {
 export const distributionEntities = async (context, user, types, args) => {
   const distributionArgs = buildEntityFilters(types, args);
   const { limit = 10, order = 'desc', field } = args;
-  if (field.includes('.') && !field.endsWith('internal_id') && !field.includes('opinions_metrics')) {
+  console.log('args', args);
+  const aggregationNotSupported = field.includes('.')
+    && !field.endsWith('internal_id')
+    && !field.includes('opinions_metrics')
+    && field !== 'pir_dependencies.author_id';
+  if (aggregationNotSupported) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
   let finalField = field;

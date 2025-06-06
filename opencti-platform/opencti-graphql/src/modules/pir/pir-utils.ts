@@ -68,10 +68,11 @@ export const arePirExplanationsEqual = (
   explanation1: PirExplanation,
   explanation2: PirExplanation
 ) => {
-  const sameRelationships = explanation1.dependency_ids.every((d) => explanation2.dependency_ids.includes(d));
-  const sameWeight = explanation1.criterion.weight === explanation2.criterion.weight;
-  const sameFilters = explanation1.criterion.filters === explanation2.criterion.filters;
-  return sameRelationships && sameWeight && sameFilters;
+  const sameRelationships = explanation1.dependencies.map((d1) => d1.element_id)
+    .every((d) => explanation2.dependencies.map((d2) => d2.element_id).includes(d));
+  const sameCriteriaWeight = explanation1.criterion.weight === explanation2.criterion.weight;
+  const sameCriteriaFilters = explanation1.criterion.filters === explanation2.criterion.filters;
+  return sameRelationships && sameCriteriaWeight && sameCriteriaFilters;
 };
 
 /**

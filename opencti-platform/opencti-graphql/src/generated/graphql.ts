@@ -19692,6 +19692,17 @@ export type PirCriterionInput = {
   weight: Scalars['Int']['input'];
 };
 
+export type PirDependency = {
+  __typename?: 'PirDependency';
+  author_id?: Maybe<Scalars['ID']['output']>;
+  element_id: Scalars['ID']['output'];
+};
+
+export type PirDependencyInput = {
+  author_id?: InputMaybe<Scalars['ID']['input']>;
+  element_id: Scalars['ID']['input'];
+};
+
 export type PirEdge = {
   __typename?: 'PirEdge';
   cursor: Scalars['String']['output'];
@@ -19701,16 +19712,17 @@ export type PirEdge = {
 export type PirExplanation = {
   __typename?: 'PirExplanation';
   criterion: PirCriterion;
-  dependency_ids: Array<Scalars['ID']['output']>;
+  dependencies: Array<PirDependency>;
 };
 
 export type PirExplanationInput = {
   criterion: PirCriterionInput;
-  dependency_ids: Array<Scalars['ID']['input']>;
+  dependencies: Array<PirDependencyInput>;
 };
 
 export type PirFlagElementInput = {
   matchingCriteria: Array<PirCriterionInput>;
+  relationshipAuthorId?: InputMaybe<Scalars['ID']['input']>;
   relationshipId: Scalars['ID']['input'];
   sourceId: Scalars['ID']['input'];
 };
@@ -33363,6 +33375,8 @@ export type ResolversTypes = ResolversObject<{
   PirConnection: ResolverTypeWrapper<Omit<PirConnection, 'edges'> & { edges: Array<ResolversTypes['PirEdge']> }>;
   PirCriterion: ResolverTypeWrapper<PirCriterion>;
   PirCriterionInput: PirCriterionInput;
+  PirDependency: ResolverTypeWrapper<PirDependency>;
+  PirDependencyInput: PirDependencyInput;
   PirEdge: ResolverTypeWrapper<Omit<PirEdge, 'node'> & { node: ResolversTypes['Pir'] }>;
   PirExplanation: ResolverTypeWrapper<PirExplanation>;
   PirExplanationInput: PirExplanationInput;
@@ -34250,6 +34264,8 @@ export type ResolversParentTypes = ResolversObject<{
   PirConnection: Omit<PirConnection, 'edges'> & { edges: Array<ResolversParentTypes['PirEdge']> };
   PirCriterion: PirCriterion;
   PirCriterionInput: PirCriterionInput;
+  PirDependency: PirDependency;
+  PirDependencyInput: PirDependencyInput;
   PirEdge: Omit<PirEdge, 'node'> & { node: ResolversParentTypes['Pir'] };
   PirExplanation: PirExplanation;
   PirExplanationInput: PirExplanationInput;
@@ -40858,6 +40874,12 @@ export type PirCriterionResolvers<ContextType = any, ParentType extends Resolver
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type PirDependencyResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirDependency'] = ResolversParentTypes['PirDependency']> = ResolversObject<{
+  author_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  element_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PirEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirEdge'] = ResolversParentTypes['PirEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Pir'], ParentType, ContextType>;
@@ -40866,7 +40888,7 @@ export type PirEdgeResolvers<ContextType = any, ParentType extends ResolversPare
 
 export type PirExplanationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirExplanation'] = ResolversParentTypes['PirExplanation']> = ResolversObject<{
   criterion?: Resolver<ResolversTypes['PirCriterion'], ParentType, ContextType>;
-  dependency_ids?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
+  dependencies?: Resolver<Array<ResolversTypes['PirDependency']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -45068,6 +45090,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Pir?: PirResolvers<ContextType>;
   PirConnection?: PirConnectionResolvers<ContextType>;
   PirCriterion?: PirCriterionResolvers<ContextType>;
+  PirDependency?: PirDependencyResolvers<ContextType>;
   PirEdge?: PirEdgeResolvers<ContextType>;
   PirExplanation?: PirExplanationResolvers<ContextType>;
   PlatformCriticalAlert?: PlatformCriticalAlertResolvers<ContextType>;

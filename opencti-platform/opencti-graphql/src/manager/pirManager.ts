@@ -36,6 +36,7 @@ const pirFlagElementToQueue = async (
   relationshipId: string,
   sourceId: string,
   matchingCriteria: ParsedPirCriterion[],
+  relationshipAuthorId?: string,
 ) => {
   const connectorId = connectorIdFromIngestId(pir.id);
   const work: any = await createWork(
@@ -48,7 +49,7 @@ const pirFlagElementToQueue = async (
   stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'pir_flag_element';
   const pirBundle = {
     ...stixPir,
-    input: { relationshipId, sourceId, matchingCriteria },
+    input: { relationshipId, sourceId, matchingCriteria, relationshipAuthorId },
   };
   const stixPirBundle = buildStixBundle([pirBundle]);
   const jsonBundle = JSON.stringify(stixPirBundle);
@@ -139,10 +140,11 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
         if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
         const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
         if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
+        const relationshipAuthorId = data.extensions?.[STIX_EXT_OCTI]?.created_by_ref_id;
         switch (event.type) {
           case EVENT_TYPE_CREATE:
           case EVENT_TYPE_UPDATE:
-            await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria);
+            await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria, relationshipAuthorId);
             break;
           case EVENT_TYPE_DELETE:
             await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
