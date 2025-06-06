@@ -66,14 +66,14 @@ export const AccordionAttackPattern = ({ ap, handleToggleHover, handleOpen, colo
           </IconButton>
         }
         sx={{
+          minHeight: 0,
+          paddingLeft: 0,
           backgroundColor: colorArray[level][position],
           flexDirection: 'row-reverse',
           '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
             transform: 'rotate(90deg)',
           },
-          '& .MuiAccordionSummary-content': {
-            marginLeft: theme.spacing(1),
-          },
+          '.MuiAccordionSummary-content': { marginBlock: 1.25 }
         }}
       >
         <Typography variant="body2" fontSize={10}>
