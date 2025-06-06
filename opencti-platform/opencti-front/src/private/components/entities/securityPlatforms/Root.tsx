@@ -32,6 +32,8 @@ const subscription = graphql`
       ... on SecurityPlatform {
         ...SecurityPlatform_securityPlatform
         ...SecurityPlatformEditionContainer_securityPlatform
+        ...SecurityPlatformDetails_securityPlatform
+        ...SecurityPlatformAnalysis_securityPlatform
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
