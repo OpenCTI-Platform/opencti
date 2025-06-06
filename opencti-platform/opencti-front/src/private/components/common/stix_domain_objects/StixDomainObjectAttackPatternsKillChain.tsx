@@ -401,7 +401,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                     paddingInline: 10,
                   }}
                 >
-                  <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300 }}>
+                  <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300, maxWidth: 500 }}>
                     <EntitySelect
                       multiple
                       variant="outlined"
