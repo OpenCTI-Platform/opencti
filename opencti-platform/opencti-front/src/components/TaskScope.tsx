@@ -30,7 +30,7 @@ const inlineStyles = {
     color: '#ff9800',
   },
   rose: {
-    backgroundColor: 'rgba(255, 192, 203, 0.08)',
+    backgroundColor: 'rgba(255, 192, 203, 0.2)',
     color: '#FFC0CB',
   },
   red: {
