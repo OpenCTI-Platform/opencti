@@ -165,8 +165,6 @@ class ExportButtons extends Component {
       handleExportDashboard,
       investigationAddFromContainer,
       navigate,
-      handleDashboardDuplication,
-      variant,
     } = this.props;
     return (
       <UserContext.Consumer>
@@ -174,18 +172,6 @@ class ExportButtons extends Component {
           const isInDraft = me.draftContext;
           return (
             <div className={classes.exportButtons} id="export-buttons">
-              {handleDashboardDuplication && variant === 'dashboard' && (
-              <Tooltip title={t('Duplicate the dashboard')}>
-                <ToggleButton
-                  size="small"
-                  value="duplicate-dashboard"
-                  onClick={handleDashboardDuplication.bind(this)}
-                  style={{ marginRight: 3 }}
-                >
-                  <ContentCopyOutlined fontSize="small" color="primary" />
-                </ToggleButton>
-              </Tooltip>
-              )}
               <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
                 <Tooltip title={t('Export to image')}>
                   <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value={'Export-to-image'} style={{ marginRight: 3 }}>
