@@ -17,8 +17,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 interface StixDomainObjectAttackPatternsProps {
   stixDomainObjectId: string,
-  defaultStartTime: string,
-  defaultStopTime: string,
+  defaultStartTime?: string,
+  defaultStopTime?: string,
   disableExport: boolean,
   isEntity?: boolean,
 }

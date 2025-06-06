@@ -193,6 +193,11 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#4a148c';
       }
       return '#9c27b0';
+    case 'SecurityPlatform':
+      if (dark) {
+        return '#4a148c';
+      }
+      return '#baff7a';
     case 'Tool':
       if (dark) {
         return '#986937';

@@ -17,8 +17,8 @@ import { Filter, FilterGroup } from '../../../../../utils/filters/filtersHelpers
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
-  defaultStartTime: string;
-  defaultStopTime: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
   localStorage: PaginationLocalStorage<PaginationOptions>;
   relationshipTypes: string[];
   stixCoreObjectTypes?: string[];

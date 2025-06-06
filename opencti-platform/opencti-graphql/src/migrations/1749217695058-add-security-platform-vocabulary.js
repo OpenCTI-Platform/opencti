@@ -4,11 +4,11 @@ import { VocabularyCategory } from '../generated/graphql';
 import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 
-const message = '[MIGRATION] Vocabulary add SecurityPlatformTypesOv';
+const message = '[MIGRATION] Vocabulary add SecurityPlatformTypeOv';
 export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration');
-  const category = VocabularyCategory.SecurityPlatformTypesOv;
+  const category = VocabularyCategory.SecurityPlatformTypeOv;
   const vocabularies = openVocabularies[category] ?? [];
   for (let i = 0; i < vocabularies.length; i += 1) {
     const { key, description } = vocabularies[i];

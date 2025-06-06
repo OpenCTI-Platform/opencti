@@ -12163,6 +12163,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | CourseOfAction
   | Individual
   | Organization
+  | SecurityPlatform
   | Sector
   | System
   | Indicator
