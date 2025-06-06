@@ -137,6 +137,7 @@ const DataTableFilters = ({
             <Filters
               isDatatable
               helpers={helpers}
+              variant={variant}
               searchContext={searchContextFinal}
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={helpers.handleAddFilter}
