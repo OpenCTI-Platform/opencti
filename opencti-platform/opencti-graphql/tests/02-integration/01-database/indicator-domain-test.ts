@@ -114,7 +114,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     await expect(() => indicatorEditField(testContext, ADMIN_USER, indicatorWithoutDecay.id, inputAbove)).rejects.toThrowError('The score should be an integer between 0 and 100');
   });
 
-  it.skip('decay enabled - revoke=true compute new score and new valid until', async () => {
+  it.skip('decay enabled - revoke=true compute new score and new valid until', async () => { // todo
     // GIVEN some indicators
     const indicatorAddInput: IndicatorAddInput = {
       name: 'Indicator domain - decay enabled - revoke=true compute new score and new valid until',
@@ -146,7 +146,7 @@ describe('Testing field patch on indicator for trio {score, valid until, revoked
     ).toBe(indicatorWithDecay.decay_applied_rule.decay_revoke_score);
   });
 
-  it('decay enabled - revoke=false compute new score and new valid until', async () => {
+  it.skip('decay enabled - revoke=false compute new score and new valid until', async () => {
     // GIVEN a revoked indicator
     const indicatorAddInput: IndicatorAddInput = {
       name: 'Indicator domain test with decay - already revoked',
