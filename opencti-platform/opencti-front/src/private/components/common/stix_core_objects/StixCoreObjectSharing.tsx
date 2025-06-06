@@ -31,6 +31,8 @@ interface ContainerHeaderSharedProps {
   elementId: string;
   variant: string;
   disabled?: boolean;
+  handleClose: () => void,
+  open?: boolean,
 }
 
 interface OrganizationForm {
@@ -109,6 +111,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   elementId,
   variant,
   disabled = false,
+  open,
+  handleClose,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -166,7 +170,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
     if (variant === 'header') {
       return (
         <>
-          {edges.map((edge) => (
+        {!handleClose &&
+          <>{edges.map((edge) => (
             <Tooltip key={edge.id} title={edge.name}>
               <Chip
                 icon={<AccountBalanceOutlined />}
@@ -179,7 +184,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               />
             </Tooltip>
           ))}
-          <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
+
+            <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
             <ToggleButton
               value="shared"
               onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
@@ -193,15 +199,17 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               />
             </ToggleButton>
           </EETooltip>
+            </>
+          }
           <Formik
             initialValues={{ objectOrganization: { value: '', label: '' } }}
             onSubmit={onSubmitOrganizations}
-            onReset={handleCloseSharing}
+            onReset={handleClose || handleCloseSharing}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Dialog
                 slotProps={{ paper: { elevation: 1 } }}
-                open={displaySharing}
+                open={open || displaySharing}
                 onClose={() => handleReset()}
                 fullWidth={true}
               >
@@ -239,7 +247,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Organizations sharing')}
         </Typography>
-        <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
+        {!handleClose && <><EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
           <IconButton
             color="primary"
             aria-label="Label"
@@ -265,16 +273,17 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
             />
           </Tooltip>
         ))}
+          </>}
         <div className="clearfix" />
         <Formik
           initialValues={{ objectOrganization: { value: '', label: '' } }}
           onSubmit={onSubmitOrganizations}
-          onReset={handleCloseSharing}
+          onReset={handleClose || handleCloseSharing}
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Dialog
               slotProps={{ paper: { elevation: 1 } }}
-              open={displaySharing}
+              open={open || displaySharing}
               onClose={() => handleReset()}
               fullWidth={true}
             >
