@@ -198,6 +198,7 @@
   "Decryption key": "解密密钥",
   "Default assignation": "默认分配",
   "Default dashboard": "默认仪表板",
+  "Default Group used for integration user creation": "创建集成用户时使用的默认组",
   "Default hidden types": "默认隐藏类型",
   "Default marking": "默认标记",
   "Default time field": "默认时间域",
