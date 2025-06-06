@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { INDEX_HISTORY } from '../../../src/database/utils';
-import { buildHistoryElementsFromEvents, resolveGrantedRefsIds } from '../../../src/manager/historyManager';
+import { buildHistoryElementsFromEvents, generatePirIdsFromHistoryEvent, resolveGrantedRefsIds } from '../../../src/manager/historyManager';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import { testContext } from '../../utils/testQuery';
 
@@ -246,7 +246,7 @@ describe('history manager test buildHistoryElementsFromEvents', () => {
     expect(historyElement.organization_ids).toEqual(eventWithGrantedRefsOnly.data.origin.organization_ids);
     expect(historyElement['rel_granted.internal_id'].length).toEqual(1);
   });
-  it('should build history with markins for related entities', async () => {
+  it('should build history with markings for related entities', async () => {
     const historyElements = await buildHistoryElementsFromEvents(testContext, [eventWithRelatedRestriction]);
 
     expect(historyElements.length).toEqual(1);
@@ -259,5 +259,94 @@ describe('history manager test buildHistoryElementsFromEvents', () => {
     expect(historyElement.user_id).toEqual(eventWithRelatedRestriction.data.origin.user_id);
     expect(historyElement.group_ids).toEqual(eventWithRelatedRestriction.data.origin.group_ids);
     expect(historyElement['rel_object-marking.internal_id'].length).toEqual(2);
+  });
+});
+
+describe('History manager test generatePirIdsFromHistoryEvent', () => {
+  const pirId1 = '36d9bdf2-6639-4995-ab75-a5e9575594cd';
+  const pirId2 = '445023c8-0827-42a0-b8aa-3865cf99cf18';
+  it('should return pir ids to flag a relationship event', async () => {
+    const relationshipEventWithSourceFlagged = {
+      id: '1748415773588-0',
+      event: 'create',
+      data: {
+        version: '4',
+        type: 'create',
+        scope: 'external',
+        message: 'creates the relation participates-in from `myThreatActorGroup` (Threat-Actor-Group) to `myCampaign` (Campaign)',
+        data: {
+          id: 'relationship--14570c9a-6b16-5174-ac70-263b67c4229a',
+          spec_version: '2.1',
+          type: 'relationship',
+          extensions: {
+            'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+              extension_type: 'new-sro',
+              id: 'ddc47198-7208-442d-96b2-0dfd16a900ff',
+              type: 'participates-in',
+              created_at: '2025-05-28T07:06:04.303Z',
+              updated_at: '2025-05-28T07:06:04.303Z',
+              is_inferred: false,
+              creator_ids: ['88ec0c6a-13ce-5e39-b486-354fe4a7084f'],
+              source_value: 'myThreatActorGroup',
+              source_ref: '42e68a45-55e0-425e-aa11-51947f96e6bc',
+              source_type: 'Threat-Actor-Group',
+              source_ref_object_marking_refs: ['3973d9bd-7d9b-4604-b5fb-7f50608132bd'],
+              source_ref_pir_refs: [pirId1],
+              target_value: 'myCampaign',
+              target_ref: 'e5503163-d8b7-4e80-985a-fb1c5220fb20',
+              target_type: 'Campaign'
+            },
+          },
+          created: '2025-05-28T07:02:53.492Z',
+          modified: '2025-05-28T07:02:53.492Z',
+          revoked: false,
+          confidence: 100,
+          lang: 'en',
+          relationship_type: 'participates-in',
+          source_ref: 'threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd',
+          target_ref: 'campaign--fdcacc8e-de4d-5a13-8886-401d363664fd',
+          start_time: '2025-05-28T07:01:50.000Z',
+          stop_time: '2025-05-28T07:02:50.000Z'
+        }
+      }
+    };
+    expect(generatePirIdsFromHistoryEvent(relationshipEventWithSourceFlagged)).toEqual([pirId1]);
+  });
+  it('should return pir ids to flag a relationship event', async () => {
+    const updateEventAddFlaggedEntityInContainer = {
+      id: '1748416417346-0',
+      event: 'update',
+      data: {
+        version: '4',
+        type: 'update',
+        scope: 'external',
+        message: 'adds `Paradise Ransomware` in `Contains`',
+        data: {
+          id: 'report--f129ed22-106f-5c2d-bae1-d95b30565161',
+          spec_version: '2.1',
+          type: 'report',
+          extensions: [],
+          created: '2025-05-28T07:13:16.000Z',
+          modified: '2025-05-28T07:13:22.411Z',
+          revoked: false,
+          confidence: 100,
+          lang: 'en',
+          name: 'myReport',
+          published: '2025-05-28T07:13:16.000Z',
+          object_refs: []
+        },
+        context: {
+          patch: [{
+            op: 'add',
+            path: '/object_refs/0',
+            value: 'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714',
+          }],
+          reverse_patch: [{ op: 'remove', path: '/object_refs/0' }],
+          related_restrictions: [{ markings: [] }],
+          pir_ids: [pirId1, pirId2]
+        }
+      }
+    };
+    expect(generatePirIdsFromHistoryEvent(updateEventAddFlaggedEntityInContainer)).toEqual([pirId1, pirId2]);
   });
 });

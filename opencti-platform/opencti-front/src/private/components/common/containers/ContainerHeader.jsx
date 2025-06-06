@@ -8,6 +8,7 @@ import { ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { makeStyles, useTheme } from '@mui/styles';
+import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
 import StixCoreObjectsSuggestions from '../stix_core_objects/StixCoreObjectsSuggestions';
@@ -480,7 +481,6 @@ const ContainerHeader = (props) => {
       right: 24,
     };
   }
-
   const triggersPaginationOptions = {
     includeAuthorities: true,
     filters: {
@@ -509,9 +509,7 @@ const ContainerHeader = (props) => {
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
   return (
-    <div
-      style={containerStyle}
-    >
+    <div style={containerStyle}>
       <React.Suspense fallback={<span />}>
         {!knowledge && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -524,13 +522,7 @@ const ContainerHeader = (props) => {
               || `${fd(container.first_observed)} - ${fd(container.last_observed)}`
             }
           >
-            <Typography
-              variant="h1"
-              sx={{
-                margin: 0,
-                lineHeight: 'unset',
-              }}
-            >
+            <Typography variant="h1" sx={{ margin: 0, lineHeight: 'unset' }}>
               {truncate(
                 container.name
                 || container.attribute_abstract
@@ -630,6 +622,7 @@ const ContainerHeader = (props) => {
         )}
         <div>
           <div className={classes.actionButtons}>
+            <StixCoreObjectBackgroundTasks id={container.id} actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']} />
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}

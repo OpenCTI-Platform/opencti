@@ -6,7 +6,7 @@ import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE } from '../schem
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
-import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
+import { buildEntityFilters, countAllThings, listEntities, storeLoadById } from '../database/middleware-loader';
 import { checkActionValidity, createDefaultTask, TASK_TYPE_QUERY, TASK_TYPE_RULE } from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ForbiddenAccess } from '../config/errors';
@@ -57,7 +57,7 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-const buildQueryFilters = async (context, user, filters, search, taskPosition, scope, orderMode) => {
+export const buildQueryFilters = async (context, user, filters, search, taskPosition, scope, orderMode) => {
   let inputFilters = filters ? JSON.parse(filters) : undefined;
   if (scope === BackgroundTaskScope.Import) {
     const entityIdFilters = inputFilters.filters.findIndex(({ key }) => key.includes('entity_id'));
@@ -109,11 +109,6 @@ const buildQueryFilters = async (context, user, filters, search, taskPosition, s
   };
 };
 
-export const executeTaskQuery = async (context, user, filters, search, scope, orderMode, start = null) => {
-  const options = await buildQueryFilters(context, user, filters, search, start, scope, orderMode);
-  return elPaginate(context, user, READ_DATA_INDICES, options);
-};
-
 export const createRuleTask = async (context, user, ruleDefinition, input) => {
   const { rule, enable } = input;
   const { scan } = ruleDefinition;
@@ -127,7 +122,7 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
     };
   const queryData = await elPaginate(context, user, READ_DATA_INDICES, { ...opts, first: 1 });
   const countExpected = queryData.pageInfo.globalCount;
-  const task = createDefaultTask(user, input, TASK_TYPE_RULE, countExpected);
+  const task = await createDefaultTask(context, user, input, TASK_TYPE_RULE, countExpected);
   const ruleTask = { ...task, rule, enable };
   await elIndex(INDEX_INTERNAL_OBJECTS, ruleTask);
   return ruleTask;
@@ -136,9 +131,9 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
 export const createQueryTask = async (context, user, input) => {
   const { actions, filters, excluded_ids = [], search = null, scope, orderMode } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_QUERY);
-  const queryData = await executeTaskQuery(context, user, filters, search, scope, orderMode);
-  const countExpected = queryData.pageInfo.globalCount - excluded_ids.length;
-  const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected, scope);
+  const impactsNumber = await countAllThings(context, context.user, { search, filters: JSON.parse(filters) });
+  const countExpected = impactsNumber - excluded_ids.length;
+  const task = await createDefaultTask(context, user, input, TASK_TYPE_QUERY, countExpected, scope);
   const queryTask = {
     ...task,
     actions,

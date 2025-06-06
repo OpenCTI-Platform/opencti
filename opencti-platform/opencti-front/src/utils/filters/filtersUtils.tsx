@@ -780,7 +780,7 @@ export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: Filte
   return {
     mode: filters.mode,
     filters: filters.filters
-      .filter((f) => availableFilterKeys.includes(f.key))
+      .filter((f) => availableFilterKeys.includes(f.key) || f.key === 'ids')
       .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
@@ -831,9 +831,10 @@ export const useBuildEntityTypeBasedFilterContext = (
   entityTypeParam: string | string[],
   filters: FilterGroup | undefined,
   excludedEntityTypeParam?: string | string[] | undefined,
+  entityTypesContext?: string[],
 ): FilterGroup => {
   const entityTypes = Array.isArray(entityTypeParam) ? entityTypeParam : [entityTypeParam];
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypesContext ?? entityTypes);
   const entityTypeFilter = { key: 'entity_type', values: entityTypes, operator: 'eq', mode: 'or' };
   const entityTypeFilters = [entityTypeFilter];
   if (excludedEntityTypeParam && excludedEntityTypeParam.length > 0) {

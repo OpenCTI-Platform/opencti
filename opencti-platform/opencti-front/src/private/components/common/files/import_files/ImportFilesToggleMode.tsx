@@ -36,7 +36,7 @@ const ImportFilesToggleMode = () => {
         gap: 4,
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: '50vh',
+        minHeight: '60vh',
         flexWrap: 'wrap',
       }}
     >

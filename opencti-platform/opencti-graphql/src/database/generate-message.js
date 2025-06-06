@@ -7,7 +7,7 @@ import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, isNotEmptyField } from './utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FROM_START_STR, truncate, UNTIL_END_STR } from '../utils/format';
-import { authorizedMembers, creators } from '../schema/attribute-definition';
+import { authorizedMembers, creators as creatorsAttribute } from '../schema/attribute-definition';
 import { X_WORKFLOW_ID } from '../schema/identifier';
 
 export const generateMergeMessage = (instance, sources) => {
@@ -53,15 +53,17 @@ export const generateRestoreMessage = (instance) => {
 };
 
 const ACTION_KEYS = ['x_opencti_request_access'];
+export const MAX_PATCH_ELEMENTS_FOR_MESSAGE = 3;
+export const MAX_OPERATIONS_FOR_MESSAGE = 3;
 export const generateUpdatePatchMessage = (patchElements, entityType, data = {}) => {
-  const { members } = data;
+  const { members, creators } = data;
   // noinspection UnnecessaryLocalVariableJS
   const generatedMessage = patchElements
-    .slice(0, 3).map(([type, operations]) => {
+    .slice(0, MAX_PATCH_ELEMENTS_FOR_MESSAGE).map(([type, operations]) => {
       const actionRequestAccess = operations.find((op) => op.key === 'x_opencti_request_access');
       return `${type}s ${operations
         .filter((op) => !ACTION_KEYS.includes(op.key))
-        .slice(0, 3).map(({ key, value, object_path }) => {
+        .slice(0, MAX_OPERATIONS_FOR_MESSAGE).map(({ key, value, object_path }) => {
           let message = 'nothing';
           let convertedKey;
           const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
@@ -77,8 +79,15 @@ export const generateUpdatePatchMessage = (patchElements, entityType, data = {})
             // If update is based on internal ref, we need to extract the value
             if (relationsRefDefinition) {
               message = values.map((val) => truncate(extractEntityRepresentativeName(val), 250)).join(', ');
-            } else if (key === creators.name) {
-              message = 'itself'; // Creator special case
+            } else if (key === creatorsAttribute.name) {
+              if (creators?.length > 0) {
+                message = value.map((creatorId) => {
+                  const creator = creators.find((c) => c.id === creatorId);
+                  return `${creator?.name ?? creatorId}`;
+                }).join(', ');
+              } else {
+                message = 'itself'; // Creator special case
+              }
             } else if (key === X_WORKFLOW_ID) {
               if (actionRequestAccess) {
                 const { status } = JSON.parse(actionRequestAccess.value[0]);

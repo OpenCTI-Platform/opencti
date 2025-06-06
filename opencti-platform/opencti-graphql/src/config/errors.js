@@ -156,7 +156,7 @@ export const ValidationError = (message, field, data) => error(VALIDATION_ERROR,
 });
 
 export const RESOURCE_NOT_FOUND_ERROR = 'RESOURCE_NOT_FOUND';
-export const ResourceNotFoundError = (data) => error(RESOURCE_NOT_FOUND_ERROR, 'Resource not found', {
+export const ResourceNotFoundError = (reason, data) => error(RESOURCE_NOT_FOUND_ERROR, reason || 'Resource not found', {
   http_status: 404,
   ...data,
 });

@@ -472,7 +472,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           <>
             <ImportFilesStepper/>
             {/* Remove stepper height (25px) */}
-            <Box sx={{ paddingBlock: 10, height: 'calc(100% - 25px)' }}>
+            <Box sx={{ paddingBlock: 5, height: 'calc(100% - 25px)' }}>
               {activeStep === 0 && (<ImportFilesToggleMode/>)}
               {activeStep === 1 && (<ImportFilesUploader connectorsForImport={connectorsForImport}/>)}
               {activeStep === 2 && (

@@ -40,31 +40,74 @@ export const serializePir = (pir: PirAddInput) => {
   };
 };
 
-export const computePirScore = async (context: AuthContext, user: AuthUser, pirId: string, dependencies: PirExplanation[]) => {
+/**
+ * Determines the score of an array of explanations against a PIR.
+ *
+ * @param context
+ * @param user
+ * @param pirId ID of the PIR to check the score.
+ * @param explanations List of explanations used to compute score.
+ * @returns An integer between 0 and 100.
+ */
+export const computePirScore = async (context: AuthContext, user: AuthUser, pirId: string, explanations: PirExplanation[]) => {
   const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   const maxScore = pir.pir_criteria.reduce((acc, val) => acc + val.weight, 0);
-  const depScore = dependencies.reduce((acc, val) => acc + val.criterion.weight, 0);
+  const depScore = explanations.reduce((acc, val) => acc + val.criterion.weight, 0);
   if (maxScore <= 0) return 0;
   return Math.round((depScore / maxScore) * 100);
 };
 
 /**
+ * Determines if two explanations are identical or not.
+ *
+ * @param explanation1 First explanation.
+ * @param explanation2 Second explanation.
+ * @returns True if they are the same.
+ */
+export const arePirExplanationsEqual = (
+  explanation1: PirExplanation,
+  explanation2: PirExplanation
+) => {
+  const sameRelationships = explanation1.dependency_ids.every((d) => explanation2.dependency_ids.includes(d));
+  const sameWeight = explanation1.criterion.weight === explanation2.criterion.weight;
+  const sameFilters = explanation1.criterion.filters === explanation2.criterion.filters;
+  return sameRelationships && sameWeight && sameFilters;
+};
+
+/**
+ * Compare an array of explanations with another array to kept only new explanations.
+ *
+ * @param explanations Array to filter.
+ * @param baseExplanations Base array to make the comparison.
+ * @returns A sub-array of the first argument containing only explanations that are not in the base array.
+ */
+export const diffPirExplanations = (
+  explanations: PirExplanation[],
+  baseExplanations: PirExplanation[]
+) => {
+  return explanations.filter((explanation) => {
+    // For each explanation, check it is different from all explanations in base.
+    return baseExplanations.every((e) => !arePirExplanationsEqual(explanation, e));
+  });
+};
+
+/**
  * Find a meta relationship "in-pir" between an entity and a Pir and update
- * its dependencies (matching criteria).
+ * its explanations (matching criteria).
  *
  * @param context To be able to make the calls.
  * @param user User calling the request.
  * @param sourceId ID of the source entity matching the Pir.
  * @param pirId The if of the Pir matched by the entity.
- * @param pirDependencies The new dependencies.
+ * @param pirExplanations The new explanations
  * @param operation The edit operation (add, replace, ...).
  */
-export const updatePirDependencies = async (
+export const updatePirExplanations = async (
   context: AuthContext,
   user: AuthUser,
   sourceId: string,
   pirId: string,
-  pirDependencies: PirExplanation[],
+  pirExplanations: PirExplanation[],
   operation?: string, // 'add' to add a new dependency, 'replace' by default
 ) => {
   const pirMetaRels = await listRelationsPaginated<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pirId, });
@@ -76,11 +119,22 @@ export const updatePirDependencies = async (
     // If > 1, well this case should not be possible at all.
     throw FunctionalError('Find more than one relation between an entity and a Pir', { sourceId, pirId, pirMetaRels });
   }
+
   const pirMetaRel = pirMetaRels.edges[0].node;
+  let explanations = pirExplanations; // By default replace the entire array.
+  if (operation === 'add') {
+    const newExplanations = diffPirExplanations(pirExplanations, pirMetaRel.pir_explanations);
+    if (newExplanations.length === 0) {
+      // In this case there is nothing to add so skip.
+      return;
+    }
+    explanations = [...pirMetaRel.pir_explanations, ...newExplanations];
+  }
+
   // region compute score
-  const deps = operation === 'add' ? [...pirMetaRel.pir_explanations, ...pirDependencies] : pirDependencies;
-  const pir_score = await computePirScore(context, user, pirId, deps);
-  await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: deps, pir_score });
+  const pir_score = await computePirScore(context, user, pirId, explanations);
+  // replace pir_explanations
+  await patchAttribute(context, user, pirMetaRel.id, RELATION_IN_PIR, { pir_explanations: explanations, pir_score });
 };
 
 /**

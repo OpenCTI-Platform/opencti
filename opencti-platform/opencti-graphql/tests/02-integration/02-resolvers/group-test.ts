@@ -1,9 +1,13 @@
 import { expect, it, describe, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin, TESTING_GROUPS } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext, TESTING_GROUPS } from '../../utils/testQuery';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
+import { adminQueryWithError, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { getGroupEntityByName } from '../../utils/domainQueryHelper';
+import type { BasicStoreEntityMarkingDefinition } from '../../../src/types/store';
+import { deleteElementById } from '../../../src/database/middleware';
 
 const LIST_QUERY = gql`
   query groups($first: Int, $after: ID, $orderBy: GroupsOrdering, $orderMode: OrderingMode, $search: String) {
@@ -25,23 +29,28 @@ const READ_QUERY = gql`
       id
       name
       description
+      auto_new_marking
       default_dashboard {
         name
       }
       max_shareable_marking {
         id
+        definition
+        definition_type
       }
       allowed_marking {
-          id
+        id
+        definition_type
+        definition
       }
     }
   }
 `;
 
 describe('Group resolver standard behavior', () => {
-  let groupInternalId; // the one we will use in all tests
-  const groupsToDeleteIds = []; // keep track for deletion at the end of the tests
-  let markingDefinitionInternalId; // the marking used in these tests
+  let groupInternalId: string; // the one we will use in all tests
+  const groupsToDeleteIds: string[] = []; // keep track for deletion at the end of the tests
+  let markingDefinitionInternalId: string; // the marking used in these tests
   it('should group created', async () => {
     const CREATE_QUERY = gql`
       mutation GroupAdd($input: GroupAddInput!) {
@@ -72,12 +81,13 @@ describe('Group resolver standard behavior', () => {
       variables: GROUP_TO_CREATE,
     });
     expect(group).not.toBeNull();
-    expect(group.data.groupAdd).not.toBeNull();
-    expect(group.data.groupAdd.name).toEqual('Group');
-    expect(group.data.groupAdd.group_confidence_level.max_confidence).toEqual(50);
+    const groupData1 = group?.data?.groupAdd;
+    expect(groupData1).not.toBeNull();
+    expect(groupData1.name).toEqual('Group');
+    expect(groupData1.group_confidence_level.max_confidence).toEqual(50);
     // we will use this one in all the subsequent tests
-    groupInternalId = group.data.groupAdd.id;
-    groupsToDeleteIds.push(group.data.groupAdd.id);
+    groupInternalId = groupData1.id;
+    groupsToDeleteIds.push(groupData1.id);
 
     // create some more with different configuration of confidence level
     const GROUP_TO_CREATE_WITH_OVERRIDES = {
@@ -91,16 +101,16 @@ describe('Group resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: GROUP_TO_CREATE_WITH_OVERRIDES,
     });
-    expect(group.data.groupAdd.group_confidence_level.overrides[0]).toEqual({ entity_type: 'Report', max_confidence: 80 });
-    groupsToDeleteIds.push(group.data.groupAdd.id);
+    const groupData2 = group?.data?.groupAdd;
+    expect(groupData2.group_confidence_level.overrides[0]).toEqual({ entity_type: 'Report', max_confidence: 80 });
+    groupsToDeleteIds.push(groupData2.id);
   });
 
   describe('dashboard preferences', () => {
     describe('when a group does not have a default dashboard', () => {
       it('returns "null"', async () => {
-        const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
-
-        expect(queryResult.data.group.default_dashboard).toBeNull();
+        const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: groupInternalId } });
+        expect(queryResult?.data?.group.default_dashboard).toBeNull();
       });
     });
 
@@ -122,7 +132,7 @@ describe('Group resolver standard behavior', () => {
             }
           }
         });
-        dashboardId = dashboardCreationQuery.data.workspaceAdd.id;
+        dashboardId = dashboardCreationQuery?.data?.workspaceAdd.id;
       });
 
       afterAll(async () => {
@@ -159,8 +169,8 @@ describe('Group resolver standard behavior', () => {
           }
         });
 
-        expect(setDefaultDashboardMutation.data.groupEdit.fieldPatch.default_dashboard.id).toEqual(dashboardId);
-        expect(setDefaultDashboardMutation.data.groupEdit.fieldPatch.default_dashboard.name).toEqual('dashboard de test');
+        expect(setDefaultDashboardMutation?.data?.groupEdit.fieldPatch.default_dashboard.id).toEqual(dashboardId);
+        expect(setDefaultDashboardMutation?.data?.groupEdit.fieldPatch.default_dashboard.name).toEqual('dashboard de test');
       });
 
       it('can remove the reference to the default dashboard', async () => {
@@ -184,7 +194,7 @@ describe('Group resolver standard behavior', () => {
             }]
           }
         });
-        expect(removeDefaultDashboardMutation.data.groupEdit.fieldPatch.default_dashboard).toBeNull();
+        expect(removeDefaultDashboardMutation?.data?.groupEdit.fieldPatch.default_dashboard).toBeNull();
       });
     });
   });
@@ -192,12 +202,12 @@ describe('Group resolver standard behavior', () => {
   it('should group loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.group).not.toBeNull();
-    expect(queryResult.data.group.id).toEqual(groupInternalId);
+    expect(queryResult?.data?.group).not.toBeNull();
+    expect(queryResult?.data?.group.id).toEqual(groupInternalId);
   });
   it('should list groups', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.groups.edges.length).toEqual(TESTING_GROUPS.length + 4);
+    expect(queryResult?.data?.groups.edges.length).toEqual(TESTING_GROUPS.length + 4);
   });
   it('should update group', async () => {
     const UPDATE_QUERY = gql`
@@ -214,17 +224,17 @@ describe('Group resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: { id: groupInternalId, input: { key: 'name', value: ['Group - test'] } },
     });
-    expect(queryResult.data.groupEdit.fieldPatch.name).toEqual('Group - test');
+    expect(queryResult?.data?.groupEdit.fieldPatch.name).toEqual('Group - test');
   });
   it('should have nothing shareable at the group creation', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
-    const maxMarkings = queryResult.data.group.max_shareable_marking;
+    const maxMarkings = queryResult?.data?.group.max_shareable_marking;
     expect(maxMarkings).toEqual([]);
   });
-  it('should have auto_new_marking undefined at group creation', async () => {
+  it('should have auto_new_marking false at group creation', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
-    const autoNewMarking = queryResult.data.group.auto_new_marking;
-    expect(autoNewMarking).toEqual(undefined);
+    const autoNewMarking = queryResult?.data?.group.auto_new_marking;
+    expect(autoNewMarking).toBeFalsy();
   });
   it('should add new markings to allowed markings and max shareable markings if auto_new_marking = True', async () => {
     // update group with auto_new_marking = true
@@ -242,11 +252,11 @@ describe('Group resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: { id: groupInternalId, input: { key: 'auto_new_marking', value: [true] } },
     });
-    expect(updateQueryResult.data.groupEdit.fieldPatch.auto_new_marking).toEqual(true);
+    expect(updateQueryResult?.data?.groupEdit.fieldPatch.auto_new_marking).toEqual(true);
     // check the group markings before creating a new marking
     const queryResultBefore = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
-    expect(queryResultBefore.data.group.allowedMarking).toBeUndefined();
-    expect(queryResultBefore.data.group.max_shareable_marking).toEqual([]);
+    expect(queryResultBefore?.data?.group.allowedMarking).toBeUndefined();
+    expect(queryResultBefore?.data?.group.max_shareable_marking).toEqual([]);
     // create a new marking definition
     const CREATE_MARKING_QUERY = gql`
         mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput!) {
@@ -271,15 +281,15 @@ describe('Group resolver standard behavior', () => {
       variables: MARKING_DEFINITION_TO_CREATE,
     });
     expect(markingDefinition).not.toBeNull();
-    expect(markingDefinition.data.markingDefinitionAdd).not.toBeNull();
-    expect(markingDefinition.data.markingDefinitionAdd.definition).toEqual('TLP:TEST_AUTO_MARKING');
-    markingDefinitionInternalId = markingDefinition.data.markingDefinitionAdd.id;
+    expect(markingDefinition?.data?.markingDefinitionAdd).not.toBeNull();
+    expect(markingDefinition?.data?.markingDefinitionAdd.definition).toEqual('TLP:TEST_AUTO_MARKING');
+    markingDefinitionInternalId = markingDefinition?.data?.markingDefinitionAdd.id;
     // reset the cache for markings
     resetCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION);
     // check the added marking is allowed and shareable for the group
     const queryResultAfter = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
-    const allowedMarking = queryResultAfter.data.group.allowed_marking;
-    const maxShareableMarking = queryResultAfter.data.group.max_shareable_marking;
+    const allowedMarking = queryResultAfter?.data?.group.allowed_marking;
+    const maxShareableMarking = queryResultAfter?.data?.group.max_shareable_marking;
     expect(allowedMarking.length).toEqual(1);
     expect(allowedMarking[0].id).toEqual(markingDefinitionInternalId);
     expect(maxShareableMarking.length).toEqual(1);
@@ -300,11 +310,11 @@ describe('Group resolver standard behavior', () => {
     });
     const deleteQueryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: markingDefinitionInternalId } });
     expect(deleteQueryResult).not.toBeNull();
-    expect(deleteQueryResult.data.markingDefinition).toBeUndefined();
+    expect(deleteQueryResult?.data?.markingDefinition).toBeUndefined();
     // check the deleted marking is not in allowed marking and max shareable marking of the group
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
-    expect(queryResult.data.group.allowedMarking).toBeUndefined();
-    expect(queryResult.data.group.max_shareable_marking).toEqual([]);
+    expect(queryResult?.data?.group.allowedMarking).toBeUndefined();
+    expect(queryResult?.data?.group.max_shareable_marking).toEqual([]);
   });
   it('should update group confidence level', async () => {
     const UPDATE_QUERY = gql`
@@ -334,7 +344,7 @@ describe('Group resolver standard behavior', () => {
         input: { key: 'group_confidence_level', value: [group_confidence_level] }
       },
     });
-    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual(group_confidence_level);
+    expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual(group_confidence_level);
 
     // update by patching
     queryResult = await queryAsAdmin({
@@ -344,7 +354,7 @@ describe('Group resolver standard behavior', () => {
         input: { key: 'group_confidence_level', object_path: '/group_confidence_level/max_confidence', value: [87] }
       },
     });
-    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+    expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
       max_confidence: 87,
       overrides: [{ entity_type: 'Report', max_confidence: 50 }], // unchanged!
     });
@@ -362,7 +372,7 @@ describe('Group resolver standard behavior', () => {
         }
       },
     });
-    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+    expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
       max_confidence: 87,
       overrides: [
         { entity_type: 'Report', max_confidence: 70 },
@@ -376,7 +386,7 @@ describe('Group resolver standard behavior', () => {
         input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/0', value: [{ entity_type: 'Case-Rfi', max_confidence: 70 }] }
       },
     });
-    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+    expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
       max_confidence: 87,
       overrides: [
         { entity_type: 'Case-Rfi', max_confidence: 70 },
@@ -390,7 +400,7 @@ describe('Group resolver standard behavior', () => {
         input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/1/max_confidence', value: [63] }
       },
     });
-    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+    expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
       max_confidence: 87,
       overrides: [
         { entity_type: 'Case-Rfi', max_confidence: 70 },
@@ -404,7 +414,7 @@ describe('Group resolver standard behavior', () => {
         input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides/1', value: [], operation: 'remove' }
       },
     });
-    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+    expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
       max_confidence: 87,
       overrides: [
         { entity_type: 'Case-Rfi', max_confidence: 70 },
@@ -417,7 +427,7 @@ describe('Group resolver standard behavior', () => {
         input: { key: 'group_confidence_level', object_path: '/group_confidence_level/overrides', value: [] }
       },
     });
-    expect(queryResult.data.groupEdit.fieldPatch.group_confidence_level).toEqual({
+    expect(queryResult?.data?.groupEdit.fieldPatch.group_confidence_level).toEqual({
       max_confidence: 87,
       overrides: [],
     });
@@ -432,7 +442,7 @@ describe('Group resolver standard behavior', () => {
         }
       }
     `;
-    let queryResult = await queryAsAdmin({
+    await adminQueryWithError({
       query: UPDATE_QUERY,
       variables: {
         id: groupInternalId,
@@ -445,51 +455,52 @@ describe('Group resolver standard behavior', () => {
           ],
         }
       },
-    });
-    expect(queryResult.errors).toBeDefined();
-    expect(queryResult.errors[0].message).toBe('Validation against schema failed on attribute [max_confidence]: this mandatory field cannot be nil');
+    }, 'Validation against schema failed on attribute [max_confidence]: this mandatory field cannot be nil');
 
-    queryResult = await queryAsAdmin({
-      query: UPDATE_QUERY,
-      variables: {
-        id: groupInternalId,
-        input: {
-          key: 'group_confidence_level',
-          object_path: '/group_confidence_level/overrides/1',
-          value: { entity_type: 'Malware' }
-        }
-      },
-    });
-    expect(queryResult.errors).toBeDefined();
-    expect(queryResult.errors[0].message).toBe('Validation against schema failed on attribute [overrides]: mandatory field [max_confidence] is not present');
-
-    queryResult = await queryAsAdmin({
-      query: UPDATE_QUERY,
-      variables: {
-        id: groupInternalId,
-        input: {
-          key: 'group_confidence_level',
-          value: {
-            max_confidence: 87,
+    await adminQueryWithError(
+      {
+        query: UPDATE_QUERY,
+        variables: {
+          id: groupInternalId,
+          input: {
+            key: 'group_confidence_level',
+            object_path: '/group_confidence_level/overrides/1',
+            value: { entity_type: 'Malware' }
           }
-        }
+        },
       },
-    });
-    expect(queryResult.errors).toBeDefined();
-    expect(queryResult.errors[0].message).toBe('Validation against schema failed on attribute [group_confidence_level]: mandatory field [overrides] is not present');
+      'Validation against schema failed on attribute [overrides]: mandatory field [max_confidence] is not present'
+    );
 
-    queryResult = await queryAsAdmin({
-      query: UPDATE_QUERY,
-      variables: {
-        id: groupInternalId,
-        input: {
-          key: 'group_confidence_level',
-          value: 45
-        }
+    await adminQueryWithError(
+      {
+        query: UPDATE_QUERY,
+        variables: {
+          id: groupInternalId,
+          input: {
+            key: 'group_confidence_level',
+            value: {
+              max_confidence: 87,
+            }
+          }
+        },
       },
-    });
-    expect(queryResult.errors).toBeDefined();
-    expect(queryResult.errors[0].message).toBe('Validation against schema failed on attribute [group_confidence_level]: value must be an object');
+      'Validation against schema failed on attribute [group_confidence_level]: mandatory field [overrides] is not present'
+    );
+
+    await adminQueryWithError(
+      {
+        query: UPDATE_QUERY,
+        variables: {
+          id: groupInternalId,
+          input: {
+            key: 'group_confidence_level',
+            value: 45
+          }
+        },
+      },
+      'Validation against schema failed on attribute [group_confidence_level]: value must be an object'
+    );
   });
   it('should context patch group', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -505,7 +516,7 @@ describe('Group resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: groupInternalId, input: { focusOn: 'description' } },
     });
-    expect(queryResult.data.groupEdit.contextPatch.id).toEqual(groupInternalId);
+    expect(queryResult?.data?.groupEdit.contextPatch.id).toEqual(groupInternalId);
   });
   it('should context clean group', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -521,7 +532,7 @@ describe('Group resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: groupInternalId },
     });
-    expect(queryResult.data.groupEdit.contextClean.id).toEqual(groupInternalId);
+    expect(queryResult?.data?.groupEdit.contextClean.id).toEqual(groupInternalId);
   });
   it('should add relation in group', async () => {
     const RELATION_ADD_QUERY = gql`
@@ -555,7 +566,7 @@ describe('Group resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.groupEdit.relationAdd.to.members.edges.length).toEqual(1);
+    expect(queryResult?.data?.groupEdit.relationAdd.to.members.edges.length).toEqual(1);
   });
   it('should delete relation in group', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -583,7 +594,7 @@ describe('Group resolver standard behavior', () => {
         relationship_type: 'member-of',
       },
     });
-    expect(queryResult.data.groupEdit.relationDelete.members.edges.length).toEqual(0);
+    expect(queryResult?.data?.groupEdit.relationDelete.members.edges.length).toEqual(0);
   });
   it('should add default marking in group', async () => {
     const EDIT_DEFAULT_VALUES_QUERY = gql`
@@ -611,7 +622,7 @@ describe('Group resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.groupEdit.editDefaultMarking.default_marking[0].values.length).toEqual(1);
+    expect(queryResult?.data?.groupEdit.editDefaultMarking.default_marking[0].values.length).toEqual(1);
   });
   it('should delete default marking in group', async () => {
     const EDIT_DEFAULT_VALUES_QUERY = gql`
@@ -639,7 +650,7 @@ describe('Group resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.groupEdit.editDefaultMarking.default_marking[0].values.length).toEqual(0);
+    expect(queryResult?.data?.groupEdit.editDefaultMarking.default_marking[0].values.length).toEqual(0);
   });
   it('should group deleted', async () => {
     const DELETE_QUERY = gql`
@@ -659,7 +670,72 @@ describe('Group resolver standard behavior', () => {
       // Verify is no longer found
       const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });
       expect(queryResult).not.toBeNull();
-      expect(queryResult.data.group).toBeNull();
+      expect(queryResult?.data?.group).toBeNull();
     }
+  });
+});
+
+describe('Groups should still work fine when a marking has been deleted in database.', () => {
+  // GIVEN a marking is created and used in groups like Administrators (because this group has auto new marking)
+  // WHEN the marking is silently deleted
+  // THEN all query on group still works
+
+  let markingDefinitionInternalId: string;
+
+  it('should markingDefinition created', async () => {
+    const CREATE_QUERY = gql`
+      mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput!) {
+        markingDefinitionAdd(input: $input) {
+          id
+          definition_type
+          definition
+        }
+      }
+    `;
+    // Create the markingDefinition
+    const MARKING_DEFINITION_TO_CREATE = {
+      input: {
+        definition_type: 'GROUPTEST',
+        definition: 'GROUPTEST:TESTDELETE',
+        x_opencti_order: 100, // the highest !
+      },
+    };
+    const markingDefinition = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: MARKING_DEFINITION_TO_CREATE,
+    });
+    expect(markingDefinition?.data?.markingDefinitionAdd.definition).toEqual('GROUPTEST:TESTDELETE');
+    markingDefinitionInternalId = markingDefinition?.data?.markingDefinitionAdd.id;
+  });
+
+  it('should group Administrators have this new marking in configuration', async () => {
+    const administratorGroup = await getGroupEntityByName('Administrators');
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: administratorGroup.id } });
+    const groupQueryData = queryResult?.data?.group;
+    expect(groupQueryData.id).toEqual(administratorGroup.id);
+    expect(groupQueryData.auto_new_marking).toBeTruthy(); // if Administrators changes, do not move to false, use a group with auto_new_marking set to true.
+    const maxShareableMarkings: BasicStoreEntityMarkingDefinition[] = groupQueryData.max_shareable_marking;
+    const newMarkingIsInMaxShareable = maxShareableMarkings.find((marking) => marking.definition_type === 'GROUPTEST' && marking.definition === 'GROUPTEST:TESTDELETE');
+    expect(newMarkingIsInMaxShareable?.definition, 'GROUPTEST:TESTDELETE should be in max_shareable_marking').toBe('GROUPTEST:TESTDELETE');
+
+    const allowedMarkings: BasicStoreEntityMarkingDefinition[] = groupQueryData.allowed_marking;
+    const newMarkingIsInAllowedMarkings = allowedMarkings.find((marking) => marking.definition_type === 'GROUPTEST' && marking.definition === 'GROUPTEST:TESTDELETE');
+    expect(newMarkingIsInAllowedMarkings?.definition, 'GROUPTEST:TESTDELETE should be in allowed_marking').toBe('GROUPTEST:TESTDELETE');
+  });
+
+  it('should delete marking by direct access (no API in purpose)', async () => {
+    await deleteElementById(testContext, ADMIN_USER, markingDefinitionInternalId, ENTITY_TYPE_MARKING_DEFINITION, { forceDelete: true });
+    resetCacheForEntity(ENTITY_TYPE_MARKING_DEFINITION);
+  });
+
+  it('should group Administrators still be query without errors', async () => {
+    const administratorGroup = await getGroupEntityByName('Administrators');
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: administratorGroup.id } });
+    const groupQueryData = queryResult?.data?.group;
+    expect(groupQueryData.id).toEqual(administratorGroup.id);
+    const maxMarkings: BasicStoreEntityMarkingDefinition[] = groupQueryData.max_shareable_marking;
+    expect(maxMarkings.find((marking) => marking.definition === 'TLP:RED')).toBeTruthy();
+    expect(maxMarkings.find((marking) => marking.definition === 'PAP:RED')).toBeTruthy();
+    expect(maxMarkings.find((marking) => marking.definition === 'GROUPTEST:TESTDELETE')).toBeFalsy();
   });
 });

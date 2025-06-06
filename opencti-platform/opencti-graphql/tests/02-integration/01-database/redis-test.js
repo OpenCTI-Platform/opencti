@@ -20,7 +20,7 @@ describe('Redis basic and utils', () => {
   it('should redis in correct version', async () => {
     // Just wait one second to let redis client initialize
     const redisVersion = await getRedisVersion();
-    expect(redisVersion).toEqual(expect.stringMatching(/^7\./g));
+    expect(redisVersion).toMatch(/^7|8\./g);
   });
 
   it('should redis telemetry add, get and clean work', async () => {

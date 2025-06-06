@@ -61,6 +61,9 @@ const ImportFilesFreeText = ({ onSumbit, onClose }: { onSumbit: (file: File) => 
               variant="standard"
               InputProps={{ sx: { background: theme.palette.background.paper } }}
               InputLabelProps={{ shrink: true }}
+              slotProps={{
+                htmlInput: { style: { padding: 8 } },
+              }}
             />
             <Box sx={{ display: 'flex', marginLeft: 'auto' }}>
               <Button

@@ -1,51 +1,63 @@
 import { DialogTitle, DialogContent, Button, DialogActions } from '@mui/material';
 import React, { useState } from 'react';
 import { Form, Formik } from 'formik';
+import * as Yup from 'yup';
+import { PirCreationFormData } from './pir-form-utils';
 import PirCreationFormGeneralSettings from './PirCreationFormGeneralSettings';
 import PirCreationFormType from './PirCreationFormType';
 import PirCreationFormStepper from './PirCreationFormStepper';
 import { useFormatter } from '../../../components/i18n';
-import type { FieldOption } from '../../../utils/field';
 import PirCreationFormCriteria from './PirCreationFormCriteria';
-
-interface PirCreationFormData {
-  type: string | null
-  name: string | null
-  description: string | null
-  markings: FieldOption[]
-  confidence: number | null
-  // TODO PIR should have different defs depending of type
-  locations: FieldOption[]
-  sectors: FieldOption[]
-}
 
 interface PirCreationFormProps {
   onCancel: () => void
+  onSubmit: (data: PirCreationFormData) => void
 }
 
-const PirCreationForm = ({ onCancel }: PirCreationFormProps) => {
+const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
   const { t_i18n } = useFormatter();
   const [step, setStep] = useState(0);
 
+  const validation = Yup.object().shape({
+    type: Yup.string().trim().required(t_i18n('This field is required')),
+    name: Yup.string().trim().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+    pir_rescan_days: Yup.number().nullable().required(t_i18n('This field is required')),
+    confidence: Yup.number().integer().required(t_i18n('This field is required')),
+    locations: Yup.array().when('sectors', {
+      is: (sectors: unknown[]) => sectors?.length === 0,
+      then: (schema) => schema.min(1, t_i18n('At least 1 location or 1 sector is required')),
+      otherwise: (schema) => schema.min(0),
+    }),
+    sectors: Yup.array().when('locations', {
+      is: (locations: unknown[]) => locations?.length === 0,
+      then: (schema) => schema.min(1, t_i18n('At least 1 location or 1 sector is required')),
+      otherwise: (schema) => schema.min(0),
+    }),
+  }, [['sectors', 'locations']]);
+
   const initialValues: PirCreationFormData = {
-    type: null,
-    name: null,
-    description: null,
+    type: 'threat-landscape',
+    name: '',
+    description: '',
     markings: [],
-    confidence: null,
+    pir_rescan_days: 30,
+    confidence: 60,
     locations: [],
     sectors: [],
   };
 
   return (
     <Formik<PirCreationFormData>
+      validationSchema={validation}
       initialValues={initialValues}
-      onSubmit={() => {}}
+      onSubmit={onSubmit}
     >
       {({ values, errors, isValid, submitForm }) => {
-        const step0Valid = !!values.type;
+        const step0Valid = !!values.type && !errors.type;
         const step1Valid = (!!values.name && !errors.name)
-          && (values.markings.length > 0 && !errors.markings);
+          && (!errors.description)
+          && ((!!values.pir_rescan_days || values.pir_rescan_days === 0) && !errors.pir_rescan_days);
 
         const isStepValid = (step === 0 && step0Valid)
           || (step === 1 && step1Valid)

@@ -787,29 +787,26 @@ export const createStreamProcessor = <T extends BaseEvent> (
 // endregion
 
 // region fetch stream event range
-export const fetchStreamEventsRange = async (
+export const fetchStreamEventsRangeFromEventId = async (
   client: Cluster | Redis,
-  startEventId: string | undefined,
+  startEventId: string,
   callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
   opts: StreamOption = {},
 ) => {
   let effectiveStartEventId = startEventId;
+  const [startTimestamp] = startEventId.split('-');
+  const endTimestamp = startTimestamp + (opts.streamBatchTime ?? STREAM_BATCH_TIME);
   try {
     // Consume the data stream
     const streamResult = await client.call(
-      'XREAD',
-      'COUNT',
-      MAX_RANGE_MESSAGES,
-      'BLOCK',
-      opts.streamBatchTime ?? STREAM_BATCH_TIME,
-      'STREAMS',
+      'XRANGE',
       opts.streamName ?? REDIS_STREAM_NAME,
-      effectiveStartEventId ?? '$',
+      startTimestamp,
+      endTimestamp
     ) as any[];
     // Process the event results
     if (streamResult && streamResult.length > 0) {
-      const [, results] = streamResult[0];
-      const lastElementId = await processStreamResult(results, callback, opts.withInternal);
+      const lastElementId = await processStreamResult(streamResult, callback, opts.withInternal);
       if (lastElementId) {
         effectiveStartEventId = lastElementId;
       }
@@ -1028,7 +1025,7 @@ const TELEMETRY_EVENT_KEY = 'telemetry_events';
 /**
  * Increment a gauge by its name
  * @param gaugeName
- * @param countToAdd: 1 or more to be added in count
+ * @param countToAdd 1 or more to be added in count
  */
 export const redisSetTelemetryAdd = async (gaugeName: string, countToAdd: number) => {
   const currentCountStr = await getClientBase().hget(TELEMETRY_EVENT_KEY, gaugeName);

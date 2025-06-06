@@ -4,18 +4,24 @@ import { PirKnowledge_SourceFlaggedFragment$data } from '@components/pir/__gener
 import { PirKnowledgeSourcesFlaggedListQuery, PirKnowledgeSourcesFlaggedListQuery$variables } from './__generated__/PirKnowledgeSourcesFlaggedListQuery.graphql';
 import { PirKnowledge_SourcesFlaggedFragment$data } from './__generated__/PirKnowledge_SourcesFlaggedFragment.graphql';
 import { PirKnowledgeFragment$key } from './__generated__/PirKnowledgeFragment.graphql';
-import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { computeLink } from '../../../utils/Entity';
+import FilterIconButton from '../../../components/FilterIconButton';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledge_SourceFlaggedFragment on StixRefRelationship {
     id
     pir_score
+    pir_explanations {
+      criterion {
+        filters
+      }
+    }
     from {
       ...on StixCoreObject {
         id
@@ -48,6 +54,7 @@ const sourcesFlaggedFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: asc }
     toId: { type: "StixRef" }
     relationship_type: { type: "[String]" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "PirsSourcesFlaggedRefetchQuery") {
     stixRefRelationships(
@@ -58,6 +65,7 @@ const sourcesFlaggedFragment = graphql`
       orderMode: $orderMode
       toId: $toId
       relationship_type: $relationship_type
+      filters: $filters
     ) @connection(key: "PaginationPirKnowledge_stixRefRelationships") {
       edges {
         node {
@@ -83,6 +91,7 @@ const sourcesFlaggedListQuery = graphql`
     $orderMode: OrderingMode
     $toId: StixRef
     $relationship_type: [String]
+    $filters: FilterGroup
   ) {
     ...PirKnowledge_SourcesFlaggedFragment
     @arguments(
@@ -93,6 +102,7 @@ const sourcesFlaggedListQuery = graphql`
       orderMode: $orderMode
       toId: $toId
       relationship_type: $relationship_type
+      filters: $filters
     )
   }
 `;
@@ -112,6 +122,7 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   const LOCAL_STORAGE_KEY = `PirSourcesFlaggedList-${pir.id}`;
 
   const initialValues = {
+    filters: emptyFilterGroup,
     searchTerm: '',
     sortBy: 'created',
     orderAsc: true,
@@ -129,6 +140,8 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   const contextFilters = useBuildEntityTypeBasedFilterContext(
     'in-pir',
     viewStorage.filters,
+    undefined,
+    ['stix-ref-relationship'],
   );
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -143,24 +156,43 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     pirScore: {
-      id: 'pirScore',
+      id: 'pir_score',
       label: 'Score',
       percentWidth: 5,
-      isSortable: false,
+      isSortable: true,
       render: ({ pir_score }) => defaultRender(`${pir_score}%`),
     },
     from_entity_type: {},
     fromName: {
       id: 'from_name',
-      percentWidth: 30,
+      label: 'Source name',
+      percentWidth: 25,
     },
     from_creator: {
       id: 'from_creator',
-      percentWidth: 17,
+      percentWidth: 10,
     },
     from_objectLabel: {},
-    from_objectMarking: {},
-    from_created_at: {},
+    from_objectMarking: {
+      isSortable: false,
+    },
+    pirCriteria: {
+      id: 'explanations',
+      label: 'Explanations',
+      percentWidth: 27,
+      render: ({ pir_explanations }) => (
+        <div style={{ display: 'flex' }}>
+          {pir_explanations.map((e: { criterion: { filters: string } }) => (
+            <FilterIconButton
+              key={e.criterion.filters}
+              filters={JSON.parse(e.criterion.filters)}
+              entityTypes={['Stix-Core-Object']}
+              styleNumber={3}
+            />
+          ))}
+        </div>
+      ),
+    },
   };
 
   return (
@@ -184,8 +216,9 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
             setNumberOfElements: helpers.handleSetNumberOfElements,
           }}
           lineFragment={sourceFlaggedFragment}
-          entityTypes={['in-pir']}
-          searchContextFinal={{ entityTypes: ['in-pir'] }}
+          availableFilterKeys={['fromId', 'fromTypes', 'pir_score']}
+          entityTypes={['stix-ref-relationship']}
+          searchContextFinal={{ entityTypes: ['stix-ref-relationship'] }}
           useComputeLink={(e: PirKnowledge_SourceFlaggedFragment$data) => {
             if (!e.from || !e.from.id || !e.from.entity_type) return '';
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment

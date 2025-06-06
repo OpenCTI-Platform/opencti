@@ -105,6 +105,7 @@ describe('PIR resolver standard behavior', () => {
     const PIR_TO_CREATE = {
       input: {
         name: 'MyPir',
+        pir_rescan_days: 30,
         pir_filters: {
           mode: FilterMode.And,
           filterGroups: [],

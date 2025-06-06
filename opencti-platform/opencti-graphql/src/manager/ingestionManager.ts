@@ -262,7 +262,7 @@ const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndown
     // Push the bundle to absorption queue
     await pushBundleToConnectorQueue(context, ingestion, bundle);
     // Update the state
-    lastPubDate = R.last(items)?.pubDate;
+    lastPubDate = R.last(items)?.pubDate.toISOString();
     logApp.info('[OPENCTI-MODULE] lastPubDate:', { lastPubDate });
     await patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { current_state_date: lastPubDate, last_execution_date: now() });
     // Patch the related connector

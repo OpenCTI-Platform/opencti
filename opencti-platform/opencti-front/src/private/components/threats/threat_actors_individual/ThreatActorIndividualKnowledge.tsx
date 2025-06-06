@@ -196,11 +196,12 @@ const ThreatActorIndividualKnowledgeComponent = ({
           <EntityStixCoreRelationships
             key={location.pathname}
             entityId={threatActorIndividual.id}
-            relationshipTypes={['uses']}
+            relationshipTypes={['uses', 'belongs-to']}
             stixCoreObjectTypes={['Channel']}
             entityLink={link}
             defaultStartTime={threatActorIndividual.first_seen}
             defaultStopTime={threatActorIndividual.last_seen}
+            allDirections
           />
         }
       />
