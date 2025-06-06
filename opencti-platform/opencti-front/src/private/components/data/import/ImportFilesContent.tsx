@@ -216,7 +216,6 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
           taskScope={'IMPORT'}
-          redirectionModeEnabled
           onLineClick={(file: ImportFilesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
