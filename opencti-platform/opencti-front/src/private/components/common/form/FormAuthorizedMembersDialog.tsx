@@ -18,6 +18,8 @@ interface FormAuthorizedMembersDialogProps {
   mutation: GraphQLTaggedNode;
   authorizedMembers?: AuthorizedMemberOption[];
   owner?: Creator;
+  open?: boolean;
+  handleClose?: () => void;
 }
 
 const FormAuthorizedMembersDialog = ({
@@ -25,11 +27,13 @@ const FormAuthorizedMembersDialog = ({
   mutation,
   authorizedMembers,
   owner,
+  open,
+  handleClose,
 }: FormAuthorizedMembersDialogProps) => {
   const draftContext = useDraftContext();
   const disabledInDraft = !!draftContext;
   const { t_i18n } = useFormatter();
-  const [open, setOpen] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
   const { settings } = useAuth();
   const showAllMembersLine = !settings.platform_organization?.id;
@@ -60,7 +64,7 @@ const FormAuthorizedMembersDialog = ({
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        setOpen(false);
+        setOpenDrawer(false);
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -71,9 +75,9 @@ const FormAuthorizedMembersDialog = ({
   const lockColor = (authorizedMembers && authorizedMembers.length > 0) ? 'warning' : 'primary';
   return (
     <>
-      <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Manage access restriction')}>
+      {!handleClose && <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Manage access restriction')}>
         <ToggleButton
-          onClick={() => !disabledInDraft && isEnterpriseEdition && setOpen(true)}
+          onClick={() => !disabledInDraft && isEnterpriseEdition && setOpenDrawer(true)}
           value="manage-access"
           size="small"
           style={{ marginRight: 3 }}
@@ -83,11 +87,11 @@ const FormAuthorizedMembersDialog = ({
             color={!disabledInDraft && isEnterpriseEdition ? lockColor : 'disabled'}
           />
         </ToggleButton>
-      </EETooltip>
+      </EETooltip>}
       <FormAuthorizedMembers
         existingAccessRules={authorizedMembers ?? null}
-        open={open}
-        handleClose={() => setOpen(false)}
+        open={open || openDrawer}
+        handleClose={handleClose || (() => setOpenDrawer(false))}
         onSubmit={onSubmit}
         owner={owner}
         canDeactivate
