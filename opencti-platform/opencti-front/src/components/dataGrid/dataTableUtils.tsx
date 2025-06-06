@@ -466,6 +466,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value, displayDraftChip);
     },
   },
+  fromType: {
+    id: 'fromType',
+    label: 'From type',
+    percentWidth: 10,
+    isSortable: false,
+    render: (node) => (
+      <ItemEntityType inList showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
+    ),
+  },
   from_created_at: {
     id: 'from_created_at',
     label: 'Platform creation date',
@@ -1142,6 +1151,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const displayDraftChip = !!to?.draftVersion;
       return defaultRender(value, displayDraftChip);
     },
+  },
+  toType: {
+    id: 'toType',
+    label: 'To type',
+    percentWidth: 10,
+    isSortable: false,
+    render: (node) => (
+      <ItemEntityType inList showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
+    ),
   },
   to_entity_type: {
     id: 'to_entity_type',

@@ -6,15 +6,18 @@ import Paper from '../../../components/Paper';
 import { useFormatter } from '../../../components/i18n';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
 import { PirOverviewDetailsFragment$key } from './__generated__/PirOverviewDetailsFragment.graphql';
+import { PirOverviewHistoryPirFragment$key } from './__generated__/PirOverviewHistoryPirFragment.graphql';
 
 interface PirOverviewProps {
   dataHistory: PirOverviewHistoryFragment$key
   dataDetails: PirOverviewDetailsFragment$key
+  dataHistoryPir: PirOverviewHistoryPirFragment$key
 }
 
 const PirOverview = ({
   dataHistory,
   dataDetails,
+  dataHistoryPir,
 }: PirOverviewProps) => {
   const { t_i18n } = useFormatter();
 
@@ -33,7 +36,10 @@ const PirOverview = ({
       </Grid>
       <Grid size={{ xs: 6 }} sx={verticalGridStyle}>
         <Paper title={t_i18n('News feed')}>
-          <PirOverviewHistory data={dataHistory} />
+          <PirOverviewHistory
+            dataHistory={dataHistory}
+            dataPir={dataHistoryPir}
+          />
         </Paper>
       </Grid>
     </Grid>
