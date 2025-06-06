@@ -62,7 +62,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
     commitFieldPatch({
       variables: {
         id: fintelDesign.id,
-        input: inputValues ?? [],
+        input: inputValues,
         file,
       },
       onCompleted: () => {
