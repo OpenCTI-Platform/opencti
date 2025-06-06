@@ -1,5 +1,8 @@
 {
   "app": {
+    "child_locking_process": {
+      "enabled": false
+    },
     "port": 4010,
     "performance_logger": false,
     "enabled_dev_features": ["*"],
