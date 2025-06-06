@@ -6,10 +6,12 @@ import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
-import { StixNestedRefRelationshipEditionQuery } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionQuery.graphql';
 import {
   StixNestedRefRelationshipEditionOverview_stixRefRelationship$key,
 } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverview_stixRefRelationship.graphql';
+import {
+  StixNestedRefRelationshipEditionOverviewQuery,
+} from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipEditionOverviewQuery.graphql';
 import { buildDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
@@ -67,7 +69,7 @@ export const stixNestedRefRelationshipEditionQuery = graphql`
 
 interface StixNestedRefRelationshipEditionOverviewProps {
   handleClose?: () => void,
-  queryRef: PreloadedQuery<StixNestedRefRelationshipEditionQuery>,
+  queryRef: PreloadedQuery<StixNestedRefRelationshipEditionOverviewQuery>,
 }
 
 const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefRelationshipEditionOverviewProps> = ({
@@ -76,7 +78,7 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { stixRefRelationship } = usePreloadedQuery<StixNestedRefRelationshipEditionQuery>(
+  const { stixRefRelationship } = usePreloadedQuery<StixNestedRefRelationshipEditionOverviewQuery>(
     stixNestedRefRelationshipEditionQuery,
     queryRef,
   );
