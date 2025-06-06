@@ -85,17 +85,6 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
 
   return (
     <>
-      <div style={{ display: 'flex', gap: 7 }}>
-        {tags.slice(0, 2).map(
-          (tag) => tag.length > 0 && (
-            <Chip
-              key={tag}
-              label={tag}
-              onDelete={deleteTag(tag)}
-            />
-          ),
-        )}
-      </div>
       <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
         <>
           {tags.length > 1 ? (
@@ -125,7 +114,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
           )}
 
           <Slide
-            direction="left"
+            direction="right"
             in={isTagInputOpen}
             mountOnEnter
             unmountOnExit
@@ -210,6 +199,17 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
           </Dialog>
         </>
       </Security>
+      <div style={{ display: 'flex', gap: 7 }}>
+        {tags.slice(0, 2).map(
+          (tag) => tag.length > 0 && (
+            <Chip
+              key={tag}
+              label={tag}
+              onDelete={deleteTag(tag)}
+            />
+          ),
+        )}
+      </div>
     </>
   );
 };
