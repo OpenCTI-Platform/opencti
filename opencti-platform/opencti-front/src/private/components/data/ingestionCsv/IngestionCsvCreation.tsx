@@ -23,6 +23,7 @@ import {
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
+import IngestionCsvCreationUserHandling from '@components/data/ingestionCsv/IngestionCsvCreationUserHandling';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -41,6 +42,7 @@ import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassw
 import useAuth from '../../../../utils/hooks/useAuth';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -141,6 +143,8 @@ const CreateIngestionCsvControlledDial = (props: DrawerControlledDialProps) => (
 
 const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ paginationOptions, handleClose, ingestionCsvData, drawerSettings }) => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+
   const classes = useStyles();
   const isGranted = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
   const { me } = useAuth();
@@ -292,13 +296,14 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
-          <CreatorField
+          {isFeatureEnable('CSV_FEED') && <IngestionCsvCreationUserHandling/>}
+          {!isFeatureEnable('CSV_FEED') && <CreatorField
             name="user_id"
             label={t_i18n('User responsible for data creation (empty = System)')}
             containerStyle={fieldSpacingContainerStyle}
             onChange={(_, option) => onCreatorSelection(option)}
             showConfidence
-          />
+                                           />}
           {
               queryRef && (
               <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
