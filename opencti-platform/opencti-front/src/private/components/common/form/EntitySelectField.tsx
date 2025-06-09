@@ -5,7 +5,8 @@ import EntitySelect, { EntityOption } from '@components/common/form/EntitySelect
 interface EntitySelectFieldProps extends FieldProps<EntityOption | null> {
   label: string
   types: string[]
-  onChange?: (val: EntityOption | null) => void
+  onChange?: (val: EntityOption | EntityOption[] | null) => void
+  multiple?: boolean
 }
 
 const EntitySelectField = ({
@@ -14,9 +15,11 @@ const EntitySelectField = ({
   label,
   types,
   onChange,
+  multiple = false,
 }: EntitySelectFieldProps) => {
   return (
     <EntitySelect
+      multiple={multiple}
       value={value}
       label={label}
       types={types}
