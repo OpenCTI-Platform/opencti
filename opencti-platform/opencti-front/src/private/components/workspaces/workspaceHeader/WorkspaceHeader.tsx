@@ -8,8 +8,7 @@ import handleExportJson from 'src/private/components/workspaces/workspaceExportH
 import { fetchQuery } from 'src/relay/environment';
 import Security from 'src/utils/Security';
 import { nowUTC } from 'src/utils/Time';
-import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from 'src/utils/hooks/useGranted';
-import WorkspacePopover from 'src/private/components/workspaces/WorkspacePopover';
+import { EXPLORE_EXUPDATE } from 'src/utils/hooks/useGranted';
 import ExportButtons from 'src/components/ExportButtons';
 import { useGetCurrentUserAccessRight } from 'src/utils/authorizedMembers';
 import { truncate } from 'src/utils/String';
@@ -79,12 +78,6 @@ const WorkspaceHeader = ({
           workspaceId={workspace.id}
           canEdit={canEdit}
         />
-        <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
-          <WorkspacePopover
-            workspace={workspace}
-            paginationOptions={undefined}
-          />
-        </Security>
       </div>
       <div style={{ display: 'flex' }}>
         <ExportButtons
@@ -95,10 +88,7 @@ const WorkspaceHeader = ({
           handleDownloadAsStixReport={handleDownloadAsStixReport}
           handleExportDashboard={handleExportDashboard}
         />
-        <WorkspaceKebabMenu
-          variant={variant}
-          workspace={workspace}
-        />
+        <WorkspaceKebabMenu workspace={workspace} />
         {variant === 'dashboard' && (<>
           <Security
             needs={[EXPLORE_EXUPDATE]}

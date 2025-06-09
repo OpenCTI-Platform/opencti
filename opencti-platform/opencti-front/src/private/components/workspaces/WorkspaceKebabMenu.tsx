@@ -8,56 +8,185 @@ import ToggleButton from '@mui/material/ToggleButton';
 import WorkspaceManageAccessDialog from '@components/workspaces/WorkspaceManageAccessDialog';
 import WorkspaceTurnToContainerDialog from '@components/workspaces/WorkspaceTurnToContainerDialog';
 import WorkspaceDuplicationDialog from '@components/workspaces/WorkspaceDuplicationDialog';
+import Drawer from '@components/common/drawer/Drawer';
+import PublicDashboardCreationForm from '@components/workspaces/dashboards/public_dashboards/PublicDashboardCreationForm';
+import WorkspaceEditionContainer from '@components/workspaces/WorkspaceEditionContainer';
+import { graphql } from 'react-relay';
+import { useNavigate } from 'react-router-dom';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import Security from '../../../utils/Security';
-import useGranted, { EXPLORE_EXUPDATE, EXPLORE_EXUPDATE_PUBLISH, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  EXPLORE_EXUPDATE,
+  EXPLORE_EXUPDATE_EXDELETE,
+  EXPLORE_EXUPDATE_PUBLISH,
+  INVESTIGATION_INUPDATE,
+  INVESTIGATION_INUPDATE_INDELETE,
+} from '../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../components/i18n';
+import DeleteDialog from '../../../components/DeleteDialog';
+import { QueryRenderer } from '../../../relay/environment';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
+import { deleteNode, insertNode } from '../../../utils/store';
+import useDeletion from '../../../utils/hooks/useDeletion';
 
 interface WorkspaceKebabMenuProps {
-  variant: 'dashboard' | 'investigation';
   workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
+  paginationOptions?: {
+    search: string;
+    orderBy: string;
+    orderMode: string;
+    filters: Array<{ key: string; values: Array<string> }>;
+  };
 }
 
-export default function WorkspaceKebabMenu({
-  variant,
-  workspace,
-}: WorkspaceKebabMenuProps) {
+const noop = () => {};
+
+const workspaceEditionQuery = graphql`
+    query WorkspacePopoverContainerQuery($id: String!) {
+        workspace(id: $id) {
+            ...WorkspaceEditionContainer_workspace
+        }
+    }
+`;
+
+const WorkspacePopoverDeletionMutation = graphql`
+    mutation WorkspacePopoverDeletionMutation($id: ID!) {
+        workspaceDelete(id: $id)
+    }
+`;
+
+function useDuplicate(isGranted = false, onDuplicate = noop) {
+  const [displayDuplicate, setDisplayDuplicate] = useState(false);
+  const handleCloseDuplicate = () => setDisplayDuplicate(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const handleDashboardDuplication = isGranted ? () => {
+    onDuplicate();
+    setDisplayDuplicate(true);
+  } : () => {};
+
+  return {
+    displayDuplicate,
+    setDisplayDuplicate,
+    handleCloseDuplicate,
+    duplicating,
+    setDuplicating,
+    handleDashboardDuplication,
+  };
+}
+
+function useManageAccess(onManageAccess = noop) {
+  const [displayManageAccess, setDisplayManageAccess] = useState(false);
+  const handleCloseManageAccess = () => setDisplayManageAccess(false);
+  const handleOpenManageAccess = () => {
+    onManageAccess();
+    setDisplayManageAccess(true);
+  };
+
+  return { displayManageAccess, handleOpenManageAccess, handleCloseManageAccess };
+}
+
+function useAddToContainer(onAddToContainer = noop) {
+  const [isAddToContainerDialogOpen, setIsAddToContainerDialogOpen] = useState(false);
+  const handleCloseTurnToReportOrCaseContainer = () => setIsAddToContainerDialogOpen(false);
+  const handleOpenTurnToReportOrCaseContainer = () => {
+    onAddToContainer();
+    setIsAddToContainerDialogOpen(true);
+  };
+
+  return { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer };
+}
+
+export default function WorkspaceKebabMenu({ workspace, paginationOptions }: WorkspaceKebabMenuProps) {
+  const variant = workspace.type;
+  const { id, type } = workspace;
+  const navigate = useNavigate();
+  const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
-
-  const { t_i18n } = useFormatter();
-
-  const { canManage } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
+  const { canManage, canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
   const isGrantedToUpdateDashboard = useGranted([EXPLORE_EXUPDATE]);
 
-  const [displayDuplicate, setDisplayDuplicate] = useState<boolean>(false);
-  const [duplicating, setDuplicating] = useState<boolean>(false);
-  const handleDashboardDuplication = isGrantedToUpdateDashboard ? () => {
-    handleClose();
-    setDisplayDuplicate(true);
-  } : () => {};
-  const handleCloseDuplicate = () => setDisplayDuplicate(false);
+  const {
+    displayDuplicate,
+    duplicating,
+    setDuplicating,
+    handleDashboardDuplication,
+    handleCloseDuplicate,
+  } = useDuplicate(isGrantedToUpdateDashboard, handleClose);
+  const { displayManageAccess, handleOpenManageAccess, handleCloseManageAccess } = useManageAccess(handleClose);
+  const { isAddToContainerDialogOpen, handleOpenTurnToReportOrCaseContainer, handleCloseTurnToReportOrCaseContainer } = useAddToContainer(handleClose);
 
-  const [displayManageAccess, setDisplayManageAccess] = useState<boolean>(false);
-  const handleOpenManageAccess = () => {
-    handleClose();
-    setDisplayManageAccess(true);
-  };
-  const handleCloseManageAccess = () => setDisplayManageAccess(false);
+  const [commit] = useApiMutation(WorkspacePopoverDeletionMutation);
 
-  const [isAddToContainerDialogOpen, setIsAddToContainerDialogOpen] = useState<boolean>(false);
-  const handleOpenTurnToReportOrCaseContainer = () => {
-    handleClose();
-    setIsAddToContainerDialogOpen(true);
+  const updater = (store: any) => {
+    if (paginationOptions) {
+      insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');
+    }
   };
-  const handleCloseTurnToReportOrCaseContainer = () => setIsAddToContainerDialogOpen(false);
+
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
+
+  const submitDelete = () => {
+    setDeleting(true);
+    commit({
+      variables: { id },
+      updater: (store) => {
+        if (paginationOptions) {
+          deleteNode(store, 'Pagination_workspaces', paginationOptions, id);
+        }
+      },
+      onCompleted: () => {
+        setDeleting(false);
+        handleClose();
+        if (paginationOptions) {
+          handleCloseDelete();
+        } else {
+          navigate(`/dashboard/workspaces/${type}s`);
+        }
+      },
+    });
+  };
+
+  const [displayEdit, setDisplayEdit] = useState(false);
+  const handleOpenEdit = () => {
+    setDisplayEdit(true);
+    handleClose();
+  };
+
+  const handleCloseEdit = () => setDisplayEdit(false);
+
+  const goToPublicDashboards = () => {
+    const filter = {
+      mode: 'and',
+      filterGroups: [],
+      filters: [{
+        key: 'dashboard_id',
+        values: [workspace.id],
+        mode: 'or',
+        operator: 'eq',
+      }],
+    };
+    navigate(`/dashboard/workspaces/dashboards_public?filters=${JSON.stringify(filter)}`);
+  };
+
+  // -- Creation public dashboard --
+  const [displayCreate, setDisplayCreate] = useState(false);
+
+  const handleOpenCreation = () => {
+    setDisplayCreate(true);
+    handleClose();
+  };
+
+  const handleCloseCreate = () => {
+    setDisplayCreate(false);
+  };
 
   return (
     <div>
@@ -71,7 +200,7 @@ export default function WorkspaceKebabMenu({
         aria-expanded={open ? 'true' : undefined}
         onClick={handleClick}
       >
-        <MoreVert color="primary" />
+        <MoreVert color="primary" fontSize="small" />
       </ToggleButton>
       <Menu
         id="workspace-kebab-menu"
@@ -105,6 +234,31 @@ export default function WorkspaceKebabMenu({
             <MenuItem onClick={handleDashboardDuplication}>{t_i18n('Duplicate the dashboard')}</MenuItem>
           </Security>
         )}
+        <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
+          <>
+            <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
+              <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
+            </Security>
+            {workspace.type === 'dashboard' && (
+              <>
+                <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canManage}>
+                  <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+                </Security>
+                <MenuItem onClick={goToPublicDashboards}>
+                  {t_i18n('View associated public dashboards')}
+                </MenuItem>
+                <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>
+                  <MenuItem onClick={handleOpenCreation}>{t_i18n('Create a public dashboard')}</MenuItem>
+                </Security>
+              </>
+            )}
+            {workspace.type === 'investigation' && (
+              <Security needs={[INVESTIGATION_INUPDATE_INDELETE]} hasAccess={canManage}>
+                <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+              </Security>
+            )}
+          </>
+        </Security>
       </Menu>
 
       <WorkspaceManageAccessDialog
@@ -130,6 +284,51 @@ export default function WorkspaceKebabMenu({
           setDuplicating={setDuplicating}
         />
       )}
+      <Drawer
+        title={t_i18n('Create a public dashboard')}
+        open={displayCreate}
+        onClose={handleCloseCreate}
+      >
+        {({ onClose }) => (
+          <PublicDashboardCreationForm
+            onCompleted={onClose}
+            dashboard_id={workspace.id || undefined}
+          />
+        )}
+      </Drawer>
+      <WorkspaceDuplicationDialog
+        workspace={workspace}
+        displayDuplicate={displayDuplicate}
+        handleCloseDuplicate={handleCloseDuplicate}
+        duplicating={duplicating}
+        setDuplicating={setDuplicating}
+        updater={updater}
+        paginationOptions={paginationOptions}
+      />
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={workspace.type === 'investigation'
+          ? t_i18n('Do you want to delete this investigation?')
+          : t_i18n('Do you want to delete this dashboard?')}
+      />
+      <QueryRenderer
+        query={workspaceEditionQuery}
+        variables={{ id }}
+        render={({ props: editionProps }: { props: any }) => {
+          if (!editionProps) {
+            return <div />;
+          }
+          return (
+            <WorkspaceEditionContainer
+              workspace={editionProps.workspace}
+              handleClose={handleCloseEdit}
+              open={displayEdit}
+              type={type}
+            />
+          );
+        }}
+      />
     </div>
   );
 }
