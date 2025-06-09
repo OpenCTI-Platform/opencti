@@ -45,7 +45,6 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
-import stopEvent from '../../../../utils/domEvent';
 import PopoverMenu from '../../../../components/PopoverMenu';
 
 export const stixDomainObjectMutation = graphql`
@@ -782,7 +781,7 @@ const StixDomainObjectHeader = (props) => {
         </Formik>
       )}
       {(enableEnricher && isKnowledgeEnricher) && (
-        <StixCoreObjectEnrichment handleClose={handleCloseEnrichment} isOpen={isEnrichmentOpen} stixCoreObjectId={stixDomainObject.id} />
+        <StixCoreObjectEnrichment onClose={handleCloseEnrichment} isOpen={isEnrichmentOpen} stixCoreObjectId={stixDomainObject.id} />
       )}
       {disableSharing !== true && (
         <StixCoreObjectSharing
