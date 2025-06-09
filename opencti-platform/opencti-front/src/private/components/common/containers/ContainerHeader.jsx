@@ -515,7 +515,7 @@ const ContainerHeader = (props) => {
   const disableOrgaSharingButton = (!enableManageAuthorizedMembers && currentAccessRight.canEdit) || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
-  const numberOfButtons = (!knowledge ?? 0) + (enableQuickSubscription ?? 0) + (enableEnricher ?? 0);
+  const numberOfButtons = (!knowledge ? 0 : 1) + (enableQuickSubscription ? 0 : 1) + (enableEnricher ? 0 : 1);
   const enrollPlaybookButton = numberOfButtons < 3;
   const sharingButton = numberOfButtons < 2;
   const displayPopoverMenu = (!knowledge && disableSharing !== true && !sharingButton)

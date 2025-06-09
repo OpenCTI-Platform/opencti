@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
-import { Add, Close, Delete, MoreVert } from '@mui/icons-material';
+import { Add, Close, Delete } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -23,8 +23,6 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
-import Menu from '@mui/material/Menu';
-import ToggleButton from '@mui/material/ToggleButton';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -36,7 +34,11 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
+  KNOWLEDGE_KNUPDATE
+} from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
@@ -262,6 +264,7 @@ const StixDomainObjectHeader = (props) => {
   const handleOpenEnrollPlaybook = () => setEnrollPlaybookOpen(true);
 
   const handleCloseEnrollPlaybook = () => setEnrollPlaybookOpen(false);
+
   const handleOpenSharing = () => setIsSharingOpen(true);
 
   const handleCloseSharing = () => setIsSharingOpen(false);
