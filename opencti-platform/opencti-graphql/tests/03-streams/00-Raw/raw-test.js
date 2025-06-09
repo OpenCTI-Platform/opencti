@@ -6,7 +6,6 @@ import { checkStreamData, checkStreamGenericContent, fetchStreamEvents, } from '
 import { PORT } from '../../../src/config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../../src/database/utils';
 import { writeTestDataToFile } from '../../utils/testOutput';
-import { VOCABULARY_NUMBERS } from '../../04-sync/sync-utils';
 import { doTotal, RAW_EVENTS_SIZE, testCreatedCounter, testDeletedCounter, testMergedCounter, testUpdatedCounter } from '../../utils/syncCountHelper';
 
 export const dumpEventByTypeToFile = (eventTypeName, eventsByTypesRecords) => {
