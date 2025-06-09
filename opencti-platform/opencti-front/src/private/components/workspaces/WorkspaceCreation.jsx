@@ -61,7 +61,7 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
   const inputRef = useRef();
   const { settings } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
-    ? `${settings.platform_xtmhub_url}/redirect/custom_dashboards?octi_instance_id=${settings.id}`
+    ? `${settings.platform_xtmhub_url}/redirect/octi_custom_dashboards?octi_instance_id=${settings.id}`
     : '';
 
   const [commitImportMutation] = useApiMutation(importMutation);
