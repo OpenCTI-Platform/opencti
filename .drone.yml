@@ -4,7 +4,7 @@ name: opencti-tests
 
 steps:
   - name: dependencies-checkout
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     environment:
       GITHUB_TOKEN:
           from_secret: github_token
@@ -21,7 +21,7 @@ steps:
 
 
   - name: api-tests
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-backend
       path: /drone/src/opencti-platform/opencti-graphql/node_modules
@@ -216,15 +216,15 @@ services:
     command: [server, /data]
   - name: rabbitmq
     image: rabbitmq:4.1-management
+
   - name: opencti-raw-start
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-raw-start-backend
       path: /tmp/raw-start-platform/opencti-graphql/node_modules
     environment:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
-      APP__ENABLED_DEV_FEATURES: '["*"]'
       APP__CHILD_LOCKING_PROCESS__ENABLED: true
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
@@ -255,7 +255,7 @@ services:
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
 
   - name: opencti-live-start
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-live-start-backend
       path: /tmp/live-start-platform/opencti-graphql/node_modules
@@ -290,8 +290,9 @@ services:
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+
   - name: opencti-direct-start
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-direct-start-backend
       path: //tmp/direct-start-platform/opencti-graphql/node_modules
@@ -326,8 +327,9 @@ services:
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+
   - name: opencti-direct-worker
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     environment:
       OPENCTI_URL: http://opencti-direct-start:4300
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -345,8 +347,9 @@ services:
       - sed -i '/^pycti==/d' src/requirements.txt
       - pip3 install -r src/requirements.txt
       - python3 src/worker.py
+
   - name: opencti-test-worker
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     environment:
       OPENCTI_URL: http://api-tests:4010
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
@@ -363,8 +366,9 @@ services:
       - cd /tmp/opencti-test-worker
       - pip install -r src/requirements.txt
       - python3 src/worker.py
+
   - name: opencti-restore-start
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-restore-start-backend
       path: /tmp/restore-start-platform/node_modules
@@ -399,8 +403,9 @@ services:
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+
   - name: opencti-e2e-start
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-e2e-start-backend
       path: /tmp/e2e-start-platform/node_modules
@@ -438,8 +443,9 @@ services:
       - yarn build:dev
       - yarn wait-api && node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy &
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+
   - name: opencti-e2e-worker
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     environment:
       OPENCTI_URL: http://opencti-e2e-start:4500
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
