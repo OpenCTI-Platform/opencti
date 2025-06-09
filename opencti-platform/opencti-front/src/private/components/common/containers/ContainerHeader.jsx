@@ -9,6 +9,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTheme } from '@mui/styles';
 import MenuItem from '@mui/material/MenuItem';
+import { Box } from '@mui/material';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
@@ -643,14 +644,15 @@ const ContainerHeader = (props) => {
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
             <StixCoreObjectSharingList data={container} />
-            {!knowledge && disableSharing !== true
-              && <StixCoreObjectSharing
+            {!knowledge && disableSharing !== true && (
+              <StixCoreObjectSharing
                 elementId={container.id}
                 open={openSharing}
                 variant="header"
                 disabled={disableOrgaSharingButton}
                 handleClose={sharingButton ? undefined : handleCloseSharing}
-                 />}
+              />
+            )}
             {!knowledge && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
                 <StixCoreObjectFileExport
@@ -693,47 +695,49 @@ const ContainerHeader = (props) => {
                 open={openEnrollPlaybook}
                 handleClose={enrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
                  />}
-            {displayPopoverMenu && <PopoverMenu>
-              {({ closeMenu }) => (
-                <>
-                  {!knowledge && disableSharing !== true && !sharingButton && (
-                    <MenuItem
-                      onClick={() => {
-                        setOpenSharing(true);
-                        closeMenu();
-                      }}
-                    >
-                      {t_i18n('Share with an organization')}
-                    </MenuItem>
-                  )}
-                  {!knowledge && (
-                    <Security
-                      needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                      hasAccess={!!enableManageAuthorizedMembers}
-                    >
+            {displayPopoverMenu && (
+              <PopoverMenu>
+                {({ closeMenu }) => (
+                  <Box>
+                    {!knowledge && disableSharing !== true && !sharingButton && (
                       <MenuItem
                         onClick={() => {
-                          setOpenAccessRestriction(true);
+                          setOpenSharing(true);
                           closeMenu();
                         }}
                       >
-                        {t_i18n('Manage access restriction')}
+                        {t_i18n('Share with an organization')}
                       </MenuItem>
-                    </Security>
-                  )}
-                  {enableEnrollPlaybook && !enrollPlaybookButton && (
-                    <MenuItem
-                      onClick={() => {
-                        setOpenEnrollPlaybook(true);
-                        closeMenu();
-                      }}
-                    >
-                      {t_i18n('Enroll in playbook')}
-                    </MenuItem>
-                  )}
-                </>
-              )}
-            </PopoverMenu>}
+                    )}
+                    {!knowledge && (
+                      <Security
+                        needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                        hasAccess={!!enableManageAuthorizedMembers}
+                      >
+                        <MenuItem
+                          onClick={() => {
+                            setOpenAccessRestriction(true);
+                            closeMenu();
+                          }}
+                        >
+                          {t_i18n('Manage access restriction')}
+                        </MenuItem>
+                      </Security>
+                    )}
+                    {enableEnrollPlaybook && !enrollPlaybookButton && (
+                      <MenuItem
+                        onClick={() => {
+                          setOpenEnrollPlaybook(true);
+                          closeMenu();
+                        }}
+                      >
+                        {t_i18n('Enroll in playbook')}
+                      </MenuItem>
+                    )}
+                  </Box>
+                )}
+              </PopoverMenu>
+            )}
 
             {EditComponent}
           </div>
