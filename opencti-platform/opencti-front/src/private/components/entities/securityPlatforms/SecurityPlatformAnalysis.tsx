@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
-import { SecurityPlatformAnalysis_securityPlatform$data } from '@components/entities/securityPlatforms/__generated__/SecurityPlatformAnalysis_securityPlatform.graphql';
+import { SecurityPlatformAnalysis_securityPlatform$key } from '@components/entities/securityPlatforms/__generated__/SecurityPlatformAnalysis_securityPlatform.graphql';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
 interface SecurityPlatformAnalysisComponentProps {
-  securityPlatform: SecurityPlatformAnalysis_securityPlatform$data;
+  securityPlatform: SecurityPlatformAnalysis_securityPlatform$key;
 }
 
 const SecurityPlatformAnalysisComponent: FunctionComponent<SecurityPlatformAnalysisComponentProps> = ({ securityPlatform }) => {
