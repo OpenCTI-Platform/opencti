@@ -76,6 +76,16 @@ steps:
     depends_on:
       - api-tests
 
+  - name: backend-generate-licenses
+    image: node:22.14.0
+    volumes:
+      - name: cache-node-frontend-e2e
+        path: /drone/src/opencti-platform/opencti-graphql/node_modules
+    commands:
+      - cd opencti-platform/opencti-graphql
+      - yarn install
+      - yarn verify-licenses
+
   - name: frontend-generate-licenses
     image: node:22.14.0
     volumes:
@@ -85,8 +95,8 @@ steps:
       - cd opencti-platform/opencti-front
       - yarn install
       - yarn generate-licenses
+      - yarn verify-licenses
       - test -f ../third-party-licenses.txt
-      - cat ../third-party-licenses.txt
 
   - name: frontend-tests
     image: node:22-alpine
