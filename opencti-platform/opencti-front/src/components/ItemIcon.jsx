@@ -539,6 +539,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'static-analysis-of':
     case 'subnarrative-of':
     case 'subtechnique-of':
+    case 'should-cover':
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     case 'notifier':
       return <UpcomingOutlined style={style} fontSize={fontSize} role="img" />;
@@ -552,6 +553,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <AttachEmailOutlined style={style} fontSize={fontSize} role="img" />;
     case 'fintel-design':
       return <DrawOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'securityplatform':
+      return <SecurityOutlined style={style} fontSize={fontSize} role="img" />;
     case 'autofix':
       return <AutoFix style={style} fontSize={fontSize} role="img" />;
     case 'default':

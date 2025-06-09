@@ -908,7 +908,12 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
   ],
   // S
   security_platform_type_ov: [
-    { key: 'none' },
+    { key: 'EDR' },
+    { key: 'XDR' },
+    { key: 'SIEM' },
+    { key: 'SOAR' },
+    { key: 'NDR' },
+    { key: 'ISPM' },
   ],
   service_status_ov: [
     {

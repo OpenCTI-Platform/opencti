@@ -7,6 +7,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import Loader from '../../../components/Loader';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const Sectors = lazy(() => import('./Sectors'));
 const RootSector = lazy(() => import('./sectors/Root'));
@@ -14,12 +15,17 @@ const Events = lazy(() => import('./Events'));
 const RootEvent = lazy(() => import('./events/Root'));
 const Organizations = lazy(() => import('./Organizations'));
 const RootOrganization = lazy(() => import('./organizations/Root'));
+const Security = lazy(() => import('./SecurityPlatforms'));
+const RootSecurity = lazy(() => import('./securityPlatforms/Root'));
 const Systems = lazy(() => import('./Systems'));
 const RootSystem = lazy(() => import('./systems/Root'));
 const Individuals = lazy(() => import('./Individuals'));
 const RootIndividual = lazy(() => import('./individuals/Root'));
 
 const Root = () => {
+  const { isFeatureEnable } = useHelper();
+  const enableSecurityPlatformFeatureFlag = isFeatureEnable('SECURITY_PLATFORM');
+
   let redirect: string | null = null;
   if (!useIsHiddenEntity('Sector')) {
     redirect = 'sectors';
@@ -27,6 +33,8 @@ const Root = () => {
     redirect = 'events';
   } else if (!useIsHiddenEntity('Organization')) {
     redirect = 'organizations';
+  } else if (!useIsHiddenEntity('Security-Platform') && enableSecurityPlatformFeatureFlag) {
+    redirect = 'security_platforms';
   } else if (!useIsHiddenEntity('System')) {
     redirect = 'systems';
   } else if (!useIsHiddenEntity('Individual')) {
@@ -63,6 +71,18 @@ const Root = () => {
           path="/organizations/:organizationId/*"
           element={boundaryWrapper(RootOrganization)}
         />
+        {enableSecurityPlatformFeatureFlag && (
+        <>
+          <Route
+            path="/security_platforms"
+            element={boundaryWrapper(Security)}
+          />
+          <Route
+            path="/security_platforms/:securityPlatformId/*"
+            element={boundaryWrapper(RootSecurity)}
+          />
+        </>
+        )}
         <Route
           path="/systems"
           element={boundaryWrapper(Systems)}

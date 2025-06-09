@@ -461,8 +461,8 @@ interface StixCoreRelationshipCreationFromEntityProps {
   isRelationReversed?: boolean;
   targetStixDomainObjectTypes?: string[];
   targetStixCyberObservableTypes?: string[];
-  defaultStartTime: string;
-  defaultStopTime: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
   paginationOptions: Record<string, unknown>;
   connectionKey?: string;
   paddingRight: number;

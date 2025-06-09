@@ -43,7 +43,7 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
       targets: [
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
       ]
-    }
+    },
   ],
   representative: (stix: StixSecurityPlatform) => {
     return stix.name;

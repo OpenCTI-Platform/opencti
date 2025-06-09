@@ -34,6 +34,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/entities/individuals';
     case 'Organization':
       return '/dashboard/entities/organizations';
+    case 'SecurityPlatform':
+      return '/dashboard/entities/security_platforms';
     case 'Sector':
       return '/dashboard/entities/sectors';
     case 'System':
