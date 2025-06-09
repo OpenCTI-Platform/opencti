@@ -44,14 +44,6 @@ interface OrganizationForm {
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
-  organizationInHeader: {
-    margin: '4px 7px 0 0',
-    float: 'left',
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 28,
-    borderRadius: 4,
-  },
   organization: {
     margin: '0 7px 0 0',
     float: 'left',
@@ -171,21 +163,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
     if (variant === 'header') {
       return (
         <>
-          {!handleClose
-          && <>{edges.map((edge) => (
-            <Tooltip key={edge.id} title={edge.name}>
-              <Chip
-                icon={<AccountBalanceOutlined />}
-                classes={{ root: classes.organizationInHeader }}
-                color="primary"
-                variant="outlined"
-                label={truncate(edge.name, 15)}
-                onDelete={() => removeOrganization(edge.id)}
-                disabled={disabled || disabledInDraft}
-              />
-            </Tooltip>
-          ))}
-
+          {!handleClose && (
             <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
               <ToggleButton
                 value="shared"
@@ -200,8 +178,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                 />
               </ToggleButton>
             </EETooltip>
-            </>
-          }
+          )}
           <Formik
             initialValues={{ objectOrganization: { value: '', label: '' } }}
             onSubmit={onSubmitOrganizations}
