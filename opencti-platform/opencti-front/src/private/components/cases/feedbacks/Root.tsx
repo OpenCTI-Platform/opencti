@@ -74,6 +74,7 @@ const feedbackQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...StixCoreObjectContent_stixCoreObject
+      ...ContainerHeader_container
     }
     connectorsForExport {
       ...FileManager_connectorsExport

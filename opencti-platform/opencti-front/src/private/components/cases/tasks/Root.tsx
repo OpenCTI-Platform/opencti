@@ -55,6 +55,7 @@ const TaskQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...StixCoreObjectContent_stixCoreObject
+      ...ContainerHeader_container
     }
     connectorsForExport {
       ...StixCoreObjectFilesAndHistory_connectorsExport
@@ -82,6 +83,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);
+  console.log(data);
   const paddingRight = getPaddingRight(location.pathname, data?.id, '/dashboard/cases/tasks');
   return (
     <>
