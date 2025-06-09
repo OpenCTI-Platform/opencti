@@ -8,7 +8,6 @@ import { ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { makeStyles, useTheme } from '@mui/styles';
-import IconButton from '@mui/material/IconButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -470,11 +469,20 @@ const ContainerHeader = (props) => {
   };
 
   const handleClose = (event) => {
-    setOpenEnrollPlaybook(false);
-    setOpenSharing(false);
-    setOpenAccessRestriction(false);
     stopEvent(event);
     setAnchorEl(null);
+  };
+
+  const handleCloseEnrollPlaybook = () => {
+    setOpenEnrollPlaybook(false);
+  };
+
+  const handleCloseSharing = () => {
+    setOpenSharing(false);
+  };
+
+  const handleCloseAccessRestriction = () => {
+    setOpenAccessRestriction(false);
   };
 
   const handleOpenEnrollPlaybook = () => {
@@ -735,12 +743,12 @@ const ContainerHeader = (props) => {
             open={openSharing}
             variant="header"
             disabled={disableOrgaSharingButton}
-            handleClose={handleClose}
+            handleClose={handleCloseSharing}
           />
           <StixCoreObjectEnrollPlaybook
             stixCoreObjectId={container.id}
             open={openEnrollPlaybook}
-            handleClose={handleClose}
+            handleClose={handleCloseEnrollPlaybook}
           />
           <FormAuthorizedMembersDialog
             id={container.id}
@@ -750,7 +758,7 @@ const ContainerHeader = (props) => {
             )}
             mutation={containerHeaderEditAuthorizedMembersMutation}
             open={openAccessRestriction}
-            handleClose={handleClose}
+            handleClose={handleCloseAccessRestriction}
           />
         </div>
       </React.Suspense>

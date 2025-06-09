@@ -155,6 +155,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         onCompleted: () => {
           setSubmitting(false);
           resetForm();
+          handleClose?.();
           handleCloseSharing();
         },
         updater: undefined,
