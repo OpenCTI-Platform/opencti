@@ -64,6 +64,7 @@ const FormAuthorizedMembersDialog = ({
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
+        handleClose?.();
         setOpenDrawer(false);
       },
       onError: (error) => {
