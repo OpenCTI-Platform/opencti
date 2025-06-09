@@ -77,14 +77,17 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
   const location = useLocation();
   const enableReferences = useIsEnforceReference('Task') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
+
   useSubscription(subConfig);
+
   const {
     task: data,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);
-  console.log(data);
+
   const paddingRight = getPaddingRight(location.pathname, data?.id, '/dashboard/cases/tasks');
+
   return (
     <>
       {data ? (
