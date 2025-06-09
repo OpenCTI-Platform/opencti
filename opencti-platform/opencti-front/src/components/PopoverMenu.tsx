@@ -47,6 +47,8 @@ const PopoverMenu = ({ children }: PopoverMenuProps) => {
         open={Boolean(anchorPopover)}
         onClose={onClosePopover}
         aria-label={t_i18n('Popover menu')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
         {children({ closeMenu })}
       </Menu>

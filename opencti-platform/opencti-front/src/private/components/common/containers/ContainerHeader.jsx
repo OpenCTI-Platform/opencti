@@ -8,9 +8,8 @@ import { ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTheme } from '@mui/styles';
-import MoreVert from '@mui/icons-material/MoreVert';
-import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import StixCoreObjectSharingList from '@components/common/stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -32,7 +31,7 @@ import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExp
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import { resolveLink } from '../../../../utils/Entity';
-import stopEvent from '../../../../utils/domEvent';
+import PopoverMenu from '../../../../components/PopoverMenu';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -446,20 +445,9 @@ const ContainerHeader = (props) => {
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState(null);
   const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
   const [openSharing, setOpenSharing] = useState(false);
   const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
-
-  const handleOpen = (event) => {
-    stopEvent(event);
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = (event) => {
-    stopEvent(event);
-    setAnchorEl(null);
-  };
 
   const handleCloseEnrollPlaybook = () => {
     setOpenEnrollPlaybook(false);
@@ -471,21 +459,6 @@ const ContainerHeader = (props) => {
 
   const handleCloseAccessRestriction = () => {
     setOpenAccessRestriction(false);
-  };
-
-  const handleOpenEnrollPlaybook = () => {
-    setOpenEnrollPlaybook(true);
-    setAnchorEl(null);
-  };
-
-  const handleOpenSharing = () => {
-    setOpenSharing(true);
-    setAnchorEl(null);
-  };
-
-  const handleOpenAccessRestriction = () => {
-    setOpenAccessRestriction(true);
-    setAnchorEl(null);
   };
 
   const handleExportCompleted = (fileName) => {
@@ -655,7 +628,12 @@ const ContainerHeader = (props) => {
         )}
         <div>
           <div style={{ display: 'flex' }}>
-            <StixCoreObjectBackgroundTasks id={container.id} actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']} />
+            <StixCoreObjectBackgroundTasks
+              id={container.id}
+              actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
+            />
+            <StixCoreObjectSharingList data={container} />
+
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
@@ -695,35 +673,49 @@ const ContainerHeader = (props) => {
                 />
               </Security>
             )}
-            <ToggleButton
-              onClick={handleOpen}
-              aria-haspopup="true"
-              size="small"
-              color="primary"
-              aria-label={t_i18n('Popover of actions')}
-            >
-              <MoreVert color="primary" />
-            </ToggleButton>
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose} aria-label="Popover menu">
-              {!knowledge && disableSharing !== true && (
-                <MenuItem onClick={handleOpenSharing}>
-                  {t_i18n('Share with an organization')}
-                </MenuItem>
+
+            <PopoverMenu>
+              {({ closeMenu }) => (
+                <>
+                  {!knowledge && disableSharing !== true && (
+                    <MenuItem
+                      onClick={() => {
+                        setOpenSharing(true);
+                        closeMenu();
+                      }}
+                    >
+                      {t_i18n('Share with an organization')}
+                    </MenuItem>
+                  )}
+                  {!knowledge && (
+                    <Security
+                      needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                      hasAccess={!!enableManageAuthorizedMembers}
+                    >
+                      <MenuItem
+                        onClick={() => {
+                          setOpenAccessRestriction(true);
+                          closeMenu();
+                        }}
+                      >
+                        {t_i18n('Manage access restriction')}
+                      </MenuItem>
+                    </Security>
+                  )}
+                  {enableEnrollPlaybook && (
+                    <MenuItem
+                      onClick={() => {
+                        setOpenEnrollPlaybook(true);
+                        closeMenu();
+                      }}
+                    >
+                      {t_i18n('Enroll in playbook')}
+                    </MenuItem>
+                  )}
+                </>
               )}
-              {!knowledge && (
-                <Security
-                  needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                  hasAccess={!!enableManageAuthorizedMembers}
-                >
-                  <MenuItem onClick={handleOpenAccessRestriction}>{t_i18n('Manage access restriction')}</MenuItem>
-                </Security>
-              )}
-              {enableEnrollPlaybook && (
-                <MenuItem onClick={handleOpenEnrollPlaybook}>
-                  {t_i18n('Enroll in playbook')}
-                </MenuItem>
-              )}
-            </Menu>
+            </PopoverMenu>
+
             {EditComponent}
           </div>
           <StixCoreObjectSharing
@@ -757,6 +749,7 @@ const ContainerHeader = (props) => {
 export default createFragmentContainer(ContainerHeader, {
   container: graphql`
     fragment ContainerHeader_container on Container {
+      ...StixCoreObjectSharingListFragment
       id
       draftVersion {
         draft_id
