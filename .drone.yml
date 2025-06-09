@@ -22,10 +22,15 @@ steps:
   - name: backend-generate-licenses
     image: node:22.14.0
     volumes:
-      - name: cache-node-frontend-e2e
+      - name: cache-node-backend
         path: /drone/src/opencti-platform/opencti-graphql/node_modules
     commands:
-      - cd opencti-platform/opencti-graphql
+      - apk add build-base git libffi-dev cargo
+      - pip3 install --upgrade setuptools
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
+      - pip install -e .[dev,doc]
+      - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - yarn install
       - yarn verify-licenses
 
