@@ -26,7 +26,7 @@ const SecurityPlatformDeletion = ({ id }: { id: string }) => {
 
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('SecurityPlatform') },
+    values: { entity_type: ('entity_SecurityPlatform') },
   });
 
   const [commit] = useApiMutation(
