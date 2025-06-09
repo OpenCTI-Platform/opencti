@@ -704,11 +704,11 @@ const ContainerHeader = (props) => {
               aria-haspopup="true"
               size="small"
               color="primary"
-              aria-label={t_i18n('Container popover of actions')}
+              aria-label={t_i18n('Popover of actions')}
             >
               <MoreVert color="primary" />
             </ToggleButton>
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose} aria-label="Container menu">
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose} aria-label="Popover menu">
               {!knowledge && disableSharing !== true && (
                 <MenuItem onClick={handleOpenSharing}>
                   {t_i18n('Share with an organization')}
@@ -730,30 +730,30 @@ const ContainerHeader = (props) => {
             </Menu>
             {EditComponent}
           </div>
+          <StixCoreObjectSharing
+            elementId={container.id}
+            open={openSharing}
+            variant="header"
+            disabled={disableOrgaSharingButton}
+            handleClose={handleClose}
+          />
+          <StixCoreObjectEnrollPlaybook
+            stixCoreObjectId={container.id}
+            open={openEnrollPlaybook}
+            handleClose={handleClose}
+          />
+          <FormAuthorizedMembersDialog
+            id={container.id}
+            owner={container.creators?.[0]}
+            authorizedMembers={authorizedMembersToOptions(
+              container.authorized_members,
+            )}
+            mutation={containerHeaderEditAuthorizedMembersMutation}
+            open={openAccessRestriction}
+            handleClose={handleClose}
+          />
         </div>
       </React.Suspense>
-      <StixCoreObjectSharing
-        elementId={container.id}
-        open={openSharing}
-        variant="header"
-        disabled={disableOrgaSharingButton}
-        handleClose={handleClose}
-      />
-      <StixCoreObjectEnrollPlaybook
-        stixCoreObjectId={container.id}
-        open={openEnrollPlaybook}
-        handleClose={handleClose}
-      />
-      <FormAuthorizedMembersDialog
-        id={container.id}
-        owner={container.creators?.[0]}
-        authorizedMembers={authorizedMembersToOptions(
-          container.authorized_members,
-        )}
-        mutation={containerHeaderEditAuthorizedMembersMutation}
-        open={openAccessRestriction}
-        handleClose={handleClose}
-      />
     </div>
   );
 };
