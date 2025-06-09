@@ -27,9 +27,7 @@ const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybo
   const handleCloseEnrollPlaybook = () => {
     setOpenDrawer(false);
   };
-  console.log('in playbook');
-  console.log('openDrawer', openDrawer);
-  console.log('open', open);
+
   return (
     <>
       {!handleClose && (
