@@ -7,7 +7,7 @@ import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
 import { ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import { makeStyles, useTheme } from '@mui/styles';
+import { useTheme } from '@mui/styles';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -33,17 +33,6 @@ import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import { resolveLink } from '../../../../utils/Entity';
 import stopEvent from '../../../../utils/domEvent';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  modes: {
-    marginLeft: theme.spacing(2),
-  },
-  actionButtons: {
-    display: 'flex',
-  },
-}));
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -454,7 +443,6 @@ const ContainerHeader = (props) => {
     redirectToContent,
     enableEnricher,
   } = props;
-  const classes = useStyles();
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
   const navigate = useNavigate();
@@ -598,7 +586,7 @@ const ContainerHeader = (props) => {
           </div>
         )}
         {modes && (
-          <div className={classes.modes}>
+          <div style={{ marginLeft: theme.spacing(2) }}>
             <ToggleButtonGroup size="small" exclusive={true}>
               {modes.includes('graph') && (
                 <Tooltip title={t_i18n('Graph view')}>
@@ -666,7 +654,7 @@ const ContainerHeader = (props) => {
           </div>
         )}
         <div>
-          <div className={classes.actionButtons}>
+          <div style={{ display: 'flex' }}>
             <StixCoreObjectBackgroundTasks id={container.id} actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']} />
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />

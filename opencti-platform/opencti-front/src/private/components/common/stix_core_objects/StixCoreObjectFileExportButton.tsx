@@ -35,7 +35,7 @@ const StixCoreObjectFileExportButton = ({
           aria-haspopup="true"
           color="primary"
           size="small"
-          style={{ marginRight: 3 }}
+          style={{ marginRight: 4, height: '100%' }}
         >
           <FileExportOutline
             fontSize="small"
