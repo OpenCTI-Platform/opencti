@@ -517,6 +517,9 @@ const ContainerHeader = (props) => {
   const numberOfButtons = (!knowledge ?? 0) + (enableQuickSubscription ?? 0) + (enableEnricher ?? 0);
   const enrollPlaybookButton = numberOfButtons < 3;
   const sharingButton = numberOfButtons < 2;
+  const displayPopoverMenu = (!knowledge && disableSharing !== true && !sharingButton)
+    || (!knowledge && !!enableManageAuthorizedMembers)
+    || (enableEnrollPlaybook && !enrollPlaybookButton);
 
   return (
     <div style={containerStyle}>
@@ -640,13 +643,14 @@ const ContainerHeader = (props) => {
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
             <StixCoreObjectSharingList data={container} />
-            {!knowledge && disableSharing !== true && <StixCoreObjectSharing
-              elementId={container.id}
-              open={openSharing}
-              variant="header"
-              disabled={disableOrgaSharingButton}
-              handleClose={sharingButton ? undefined : handleCloseSharing}
-                                                      />}
+            {!knowledge && disableSharing !== true
+              && <StixCoreObjectSharing
+                elementId={container.id}
+                open={openSharing}
+                variant="header"
+                disabled={disableOrgaSharingButton}
+                handleClose={sharingButton ? undefined : handleCloseSharing}
+                 />}
             {!knowledge && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
                 <StixCoreObjectFileExport
@@ -689,8 +693,7 @@ const ContainerHeader = (props) => {
                 open={openEnrollPlaybook}
                 handleClose={enrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
                  />}
-
-            <PopoverMenu>
+            {displayPopoverMenu && <PopoverMenu>
               {({ closeMenu }) => (
                 <>
                   {!knowledge && disableSharing !== true && !sharingButton && (
@@ -730,7 +733,7 @@ const ContainerHeader = (props) => {
                   )}
                 </>
               )}
-            </PopoverMenu>
+            </PopoverMenu>}
 
             {EditComponent}
           </div>
