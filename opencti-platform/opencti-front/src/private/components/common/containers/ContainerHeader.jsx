@@ -514,6 +514,10 @@ const ContainerHeader = (props) => {
   const disableOrgaSharingButton = (!enableManageAuthorizedMembers && currentAccessRight.canEdit) || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
+  const numberOfButtons = (!knowledge ?? 0) + (enableQuickSubscription ?? 0) + (enableEnricher ?? 0);
+  const enrollPlaybookButton = numberOfButtons < 3;
+  const sharingButton = numberOfButtons < 2;
+
   return (
     <div style={containerStyle}>
       <React.Suspense fallback={<span />}>
@@ -632,11 +636,17 @@ const ContainerHeader = (props) => {
               id={container.id}
               actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
             />
-            <StixCoreObjectSharingList data={container} />
-
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
+            <StixCoreObjectSharingList data={container} />
+            {!knowledge && disableSharing !== true && <StixCoreObjectSharing
+              elementId={container.id}
+              open={openSharing}
+              variant="header"
+              disabled={disableOrgaSharingButton}
+              handleClose={sharingButton ? undefined : handleCloseSharing}
+                                                      />}
             {!knowledge && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
                 <StixCoreObjectFileExport
@@ -673,11 +683,17 @@ const ContainerHeader = (props) => {
                 />
               </Security>
             )}
+            {enableEnrollPlaybook
+              && <StixCoreObjectEnrollPlaybook
+                stixCoreObjectId={container.id}
+                open={openEnrollPlaybook}
+                handleClose={enrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+                 />}
 
             <PopoverMenu>
               {({ closeMenu }) => (
                 <>
-                  {!knowledge && disableSharing !== true && (
+                  {!knowledge && disableSharing !== true && !sharingButton && (
                     <MenuItem
                       onClick={() => {
                         setOpenSharing(true);
@@ -702,7 +718,7 @@ const ContainerHeader = (props) => {
                       </MenuItem>
                     </Security>
                   )}
-                  {enableEnrollPlaybook && (
+                  {enableEnrollPlaybook && !enrollPlaybookButton && (
                     <MenuItem
                       onClick={() => {
                         setOpenEnrollPlaybook(true);
@@ -718,18 +734,6 @@ const ContainerHeader = (props) => {
 
             {EditComponent}
           </div>
-          <StixCoreObjectSharing
-            elementId={container.id}
-            open={openSharing}
-            variant="header"
-            disabled={disableOrgaSharingButton}
-            handleClose={handleCloseSharing}
-          />
-          <StixCoreObjectEnrollPlaybook
-            stixCoreObjectId={container.id}
-            open={openEnrollPlaybook}
-            handleClose={handleCloseEnrollPlaybook}
-          />
           <FormAuthorizedMembersDialog
             id={container.id}
             owner={container.creators?.[0]}
