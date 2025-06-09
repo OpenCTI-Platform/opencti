@@ -9,7 +9,7 @@ import inject18n from '../../../../components/i18n';
 import StixCoreObjectEnrichmentLines, { stixCoreObjectEnrichmentLinesQuery } from './StixCoreObjectEnrichmentLines';
 
 const StixCoreObjectEnrichment = (props) => {
-  const { t, stixCoreObjectId } = props;
+  const { t, stixCoreObjectId, onClose, isOpen } = props;
   // otherwise, a button + internal state allow to open and close
   const [openDrawer, setOpenDrawer] = useState(false);
   const [search, setSearch] = useState('');
@@ -18,21 +18,27 @@ const StixCoreObjectEnrichment = (props) => {
     setOpenDrawer(true);
   };
 
+  const handleClose = () => {
+    setOpenDrawer(false); setSearch('');
+  };
+
   return (
     <>
-      <Tooltip title={t('Enrichment')}>
-        <ToggleButton
-          onClick={handleOpenEnrichment}
-          value="enrich"
-          size="small"
-          style={{ marginRight: 3 }}
-        >
-          <CloudRefreshOutline fontSize="small" color="primary" />
-        </ToggleButton>
-      </Tooltip>
+      {!onClose && (
+        <Tooltip title={t('Enrichment')}>
+          <ToggleButton
+            onClick={handleOpenEnrichment}
+            value="enrich"
+            size="small"
+            style={{ marginRight: 3 }}
+          >
+            <CloudRefreshOutline fontSize="small" color="primary" />
+          </ToggleButton>
+        </Tooltip>
+      )}
       <Drawer
-        open={openDrawer}
-        onClose={() => { setOpenDrawer(false); setSearch(''); }}
+        open={isOpen || openDrawer}
+        onClose={onClose || handleClose}
         title={t('Enrichment connectors')}
       >
         <QueryRenderer

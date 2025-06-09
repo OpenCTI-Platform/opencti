@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
-import { Add, Close, Delete } from '@mui/icons-material';
+import { Add, Close, Delete, MoreVert } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -23,6 +23,8 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
+import Menu from '@mui/material/Menu';
+import ToggleButton from '@mui/material/ToggleButton';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -43,6 +45,8 @@ import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObject
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
+import stopEvent from '../../../../utils/domEvent';
+import PopoverMenu from '../../../../components/PopoverMenu';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -252,34 +256,37 @@ const StixDomainObjectHeader = (props) => {
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
 
-  const handleToggleOpenAliases = () => {
-    setOpenAliases(!openAliases);
-  };
+  const [isEnrollPlaybookOpen, setEnrollPlaybookOpen] = useState(false);
+  const [isSharingOpen, setIsSharingOpen] = useState(false);
+  const [isEnrichmentOpen, setIsEnrichmentOpen] = useState(false);
 
-  const handleToggleCreateAlias = () => {
-    setOpenAlias(!openAlias);
-  };
+  const handleOpenEnrollPlaybook = () => setEnrollPlaybookOpen(true);
 
-  const handleOpenCommitCreate = () => {
-    setOpenCommitCreate(true);
-  };
+  const handleCloseEnrollPlaybook = () => setEnrollPlaybookOpen(false);
+  const handleOpenSharing = () => setIsSharingOpen(true);
 
-  const handleCloseCommitCreate = () => {
-    setOpenCommitCreate(false);
-  };
+  const handleCloseSharing = () => setIsSharingOpen(false);
+
+  const handleOpenEnrichment = () => setIsEnrichmentOpen(true);
+
+  const handleCloseEnrichment = () => setIsEnrichmentOpen(false);
+
+  const handleToggleOpenAliases = () => setOpenAliases(!openAliases);
+
+  const handleToggleCreateAlias = () => setOpenAlias(!openAlias);
+
+  const handleOpenCommitCreate = () => setOpenCommitCreate(true);
+
+  const handleCloseCommitCreate = () => setOpenCommitCreate(false);
 
   const handleOpenCommitDelete = (label) => {
     setOpenCommitDelete(true);
     setAliasToDelete(label);
   };
 
-  const handleCloseCommitDelete = () => {
-    setOpenCommitDelete(false);
-  };
+  const handleCloseCommitDelete = () => setOpenCommitDelete(false);
 
-  const handleChangeNewAlias = (name, value) => {
-    setNewAlias(value);
-  };
+  const handleChangeNewAlias = (name, value) => setNewAlias(value);
 
   const getCurrentAliases = () => {
     return isOpenctiAlias
@@ -554,12 +561,6 @@ const StixDomainObjectHeader = (props) => {
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
-            {disableSharing !== true && (
-              <StixCoreObjectSharing
-                elementId={stixDomainObject.id}
-                variant="header"
-              />
-            )}
             <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
               <StixCoreObjectFileExport
                 scoId={stixDomainObject.id}
@@ -578,12 +579,39 @@ const StixDomainObjectHeader = (props) => {
                 triggerData={triggerData}
               />
             )}
-            {(enableEnricher && isKnowledgeEnricher) && (
-              <StixCoreObjectEnrichment stixCoreObjectId={stixDomainObject.id} />
-            )}
-            {enableEnrollPlaybook && (
-              <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixDomainObject.id} />
-            )}
+            <PopoverMenu>
+              {({ closeMenu }) => (
+                <>
+                  {disableSharing !== true && (
+                    <MenuItem onClick={() => {
+                      handleOpenSharing();
+                      closeMenu();
+                    }}
+                    >
+                      {t_i18n('Share with an organization')}
+                    </MenuItem>
+                  )}
+                  {(enableEnricher && isKnowledgeEnricher) && (
+                    <MenuItem onClick={() => {
+                      handleOpenEnrichment();
+                      closeMenu();
+                    }}
+                    >
+                      {t_i18n('Enrichment')}
+                    </MenuItem>
+                  )}
+                  {enableEnrollPlaybook && (
+                    <MenuItem onClick={() => {
+                      handleOpenEnrollPlaybook();
+                      closeMenu();
+                    }}
+                    >
+                      {t_i18n('Enroll in playbook')}
+                    </MenuItem>
+                  )}
+                </>
+              )}
+            </PopoverMenu>
             {EditComponent}
           </div>
         </div>
@@ -752,6 +780,20 @@ const StixDomainObjectHeader = (props) => {
             </Form>
           )}
         </Formik>
+      )}
+      {(enableEnricher && isKnowledgeEnricher) && (
+        <StixCoreObjectEnrichment handleClose={handleCloseEnrichment} isOpen={isEnrichmentOpen} stixCoreObjectId={stixDomainObject.id} />
+      )}
+      {disableSharing !== true && (
+        <StixCoreObjectSharing
+          open={isSharingOpen}
+          handleClose={handleCloseSharing}
+          elementId={stixDomainObject.id}
+          variant="header"
+        />
+      )}
+      {enableEnrollPlaybook && (
+        <StixCoreObjectEnrollPlaybook open={isEnrollPlaybookOpen} handleClose={handleCloseEnrollPlaybook} stixCoreObjectId={stixDomainObject.id} />
       )}
     </React.Suspense>
   );
