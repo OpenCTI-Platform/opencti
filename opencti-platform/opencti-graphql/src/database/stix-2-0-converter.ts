@@ -1,4 +1,4 @@
-import type { StoreEntity, StoreObject, StoreRelation } from '../types/store';
+import type { StoreEntity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
 import type * as S from '../types/stix-2-0-common';
 import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SMO from '../types/stix-2-0-smo';
@@ -21,6 +21,7 @@ import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
+import { getFileContent } from './file-storage';
 
 export const convertTypeToStix2Type = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
@@ -80,7 +81,7 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
 };
 
 // Builders
-const buildStixObject = (instance: StoreObject): S.StixObject => {
+const buildStixObject = async (instance: StoreObject): Promise<S.StixObject> => {
   return {
     id: instance.standard_id,
     x_opencti_id: instance.id,
@@ -89,13 +90,19 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
     type: convertTypeToStix2Type(instance.entity_type),
     x_opencti_granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
     x_opencti_workflow_id: instance.x_opencti_workflow_id,
+    x_opencti_files: await Promise.all((instance.x_opencti_files ?? []).map(async (file: StoreFileWithRefs) => ({
+      name: file.name,
+      data: await getFileContent(file.id, 'base64'),
+      mime_type: file.mime_type,
+      version: file.version,
+    }))),
   };
 };
 
 // General
-const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
+const buildStixDomain = async (instance: StoreEntity | StoreRelation): Promise<S.StixDomainObject> => {
   return {
-    ...buildStixObject(instance),
+    ...await buildStixObject(instance),
     created: convertToStixDate(instance.created),
     modified: convertToStixDate(instance.modified),
     revoked: instance.revoked,
@@ -108,10 +115,10 @@ const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObj
   };
 };
 
-export const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.StixMalware => {
+export const convertMalwareToStix = async (instance: StoreEntity, type: string): Promise<SDO.StixMalware> => {
   assertType(ENTITY_TYPE_MALWARE, type);
   return {
-    ...buildStixDomain(instance),
+    ...await buildStixDomain(instance),
     name: instance.name,
     description: instance.description,
     malware_types: instance.malware_types,
