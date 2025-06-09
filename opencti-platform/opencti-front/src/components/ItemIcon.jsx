@@ -554,8 +554,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'fintel-design':
       return <DrawOutlined style={style} fontSize={fontSize} role="img" />;
     case 'securityplatform':
-      return;
-        <SecurityOutlined style={style} fontSize={fontSize} role="img" />;
+      return <SecurityOutlined style={style} fontSize={fontSize} role="img" />;
     case 'autofix':
       return <AutoFix style={style} fontSize={fontSize} role="img" />;
     case 'default':
