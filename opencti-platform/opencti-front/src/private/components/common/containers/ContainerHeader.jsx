@@ -676,13 +676,13 @@ const ContainerHeader = (props) => {
               </Security>
             )}
             {enableSuggestions && (
-            <StixCoreObjectsSuggestions
-              containerId={container.id}
-              currentMode={currentMode}
-              onApplied={onApplied}
-              containerHeaderObjectsQuery={containerHeaderObjectsQuery}
-              container={container}
-            />
+              <StixCoreObjectsSuggestions
+                containerId={container.id}
+                currentMode={currentMode}
+                onApplied={onApplied}
+                containerHeaderObjectsQuery={containerHeaderObjectsQuery}
+                container={container}
+              />
             )}
             {enableQuickSubscription && (
               <StixCoreObjectQuickSubscription
@@ -699,15 +699,15 @@ const ContainerHeader = (props) => {
                 />
               </Security>
             )}
-            <IconButton
+            <ToggleButton
               onClick={handleOpen}
               aria-haspopup="true"
               size="small"
               color="primary"
               aria-label={t_i18n('Container popover of actions')}
             >
-              <MoreVert />
-            </IconButton>
+              <MoreVert color="primary" />
+            </ToggleButton>
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose} aria-label="Container menu">
               {!knowledge && disableSharing !== true && (
                 <MenuItem onClick={handleOpenSharing}>
