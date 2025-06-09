@@ -76,19 +76,21 @@ const FormAuthorizedMembersDialog = ({
   const lockColor = (authorizedMembers && authorizedMembers.length > 0) ? 'warning' : 'primary';
   return (
     <>
-      {!handleClose && <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Manage access restriction')}>
-        <ToggleButton
-          onClick={() => !disabledInDraft && isEnterpriseEdition && setOpenDrawer(true)}
-          value="manage-access"
-          size="small"
-          style={{ marginRight: 3 }}
-        >
-          <LockPersonOutlined
-            fontSize="small"
-            color={!disabledInDraft && isEnterpriseEdition ? lockColor : 'disabled'}
-          />
-        </ToggleButton>
-      </EETooltip>}
+      {!handleClose && (
+        <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Manage access restriction')}>
+          <ToggleButton
+            onClick={() => !disabledInDraft && isEnterpriseEdition && setOpenDrawer(true)}
+            value="manage-access"
+            size="small"
+            style={{ marginRight: 3 }}
+          >
+            <LockPersonOutlined
+              fontSize="small"
+              color={!disabledInDraft && isEnterpriseEdition ? lockColor : 'disabled'}
+            />
+          </ToggleButton>
+        </EETooltip>
+      )}
       <FormAuthorizedMembers
         existingAccessRules={authorizedMembers ?? null}
         open={open || openDrawer}
