@@ -4,7 +4,7 @@ name: opencti-tests
 
 steps:
   - name: dependencies-checkout
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     environment:
       GITHUB_TOKEN:
           from_secret: github_token
@@ -19,9 +19,8 @@ steps:
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
       - git log -n 1
 
-
   - name: api-tests
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-backend
       path: /drone/src/opencti-platform/opencti-graphql/node_modules
@@ -216,8 +215,9 @@ services:
     command: [server, /data]
   - name: rabbitmq
     image: rabbitmq:4.1-management
+
   - name: opencti-raw-start
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-raw-start-backend
       path: /tmp/raw-start-platform/opencti-graphql/node_modules
@@ -254,7 +254,7 @@ services:
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
 
   - name: opencti-live-start
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-live-start-backend
       path: /tmp/live-start-platform/opencti-graphql/node_modules
@@ -288,8 +288,9 @@ services:
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+
   - name: opencti-direct-start
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-direct-start-backend
       path: //tmp/direct-start-platform/opencti-graphql/node_modules
@@ -323,8 +324,9 @@ services:
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+
   - name: opencti-direct-worker
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-direct-start-backend
       path: /tmp/direct-start-platform/node_modules
@@ -345,8 +347,9 @@ services:
       - sed -i '/^pycti==/d' src/requirements.txt
       - pip3 install -r src/requirements.txt
       - python3 src/worker.py
+
   - name: opencti-restore-start
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-restore-start-backend
       path: /tmp/restore-start-platform/node_modules
@@ -380,8 +383,9 @@ services:
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+
   - name: opencti-e2e-start
-    image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-node-e2e-start-backend
       path: /tmp/e2e-start-platform/node_modules
