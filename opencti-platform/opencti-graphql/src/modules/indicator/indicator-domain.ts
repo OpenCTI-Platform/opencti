@@ -368,6 +368,9 @@ export const restartDecayComputationOnEdit = (fromScore: number, indicatorBefore
     inputToAdd.push({ key: 'decay_next_reaction_date', value: [nextScoreReactionDate.toISOString()] });
   }
 
+  const newValidUntil = utcDate().add(indicatorDecayRule.decay_lifetime, 'days');
+  inputToAdd.push({ key: VALID_UNTIL, value: [newValidUntil.toISOString()] });
+
   return inputToAdd;
 };
 
