@@ -19,6 +19,27 @@ steps:
       - echo "[INFO] using client-python on branch $(git branch --show-current)"
       - git log -n 1
 
+  - name: backend-generate-licenses
+    image: node:22.14.0
+    volumes:
+      - name: cache-node-frontend-e2e
+        path: /drone/src/opencti-platform/opencti-graphql/node_modules
+    commands:
+      - cd opencti-platform/opencti-graphql
+      - yarn install
+      - yarn verify-licenses
+
+  - name: frontend-generate-licenses
+    image: node:22.14.0
+    volumes:
+      - name: cache-node-frontend-e2e
+        path: /drone/src/opencti-platform/opencti-front/node_modules
+    commands:
+      - cd opencti-platform/opencti-front
+      - yarn install
+      - yarn generate-licenses
+      - yarn verify-licenses
+      - test -f ../third-party-licenses.txt
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
@@ -65,6 +86,7 @@ steps:
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
     depends_on:
       - dependencies-checkout
+      - backend-generate-licenses
 
   - name: api-coverage
     image: plugins/codecov
@@ -75,28 +97,6 @@ steps:
         - opencti-platform/opencti-graphql/coverage
     depends_on:
       - api-tests
-
-  - name: backend-generate-licenses
-    image: node:22.14.0
-    volumes:
-      - name: cache-node-frontend-e2e
-        path: /drone/src/opencti-platform/opencti-graphql/node_modules
-    commands:
-      - cd opencti-platform/opencti-graphql
-      - yarn install
-      - yarn verify-licenses
-
-  - name: frontend-generate-licenses
-    image: node:22.14.0
-    volumes:
-      - name: cache-node-frontend-e2e
-        path: /drone/src/opencti-platform/opencti-front/node_modules
-    commands:
-      - cd opencti-platform/opencti-front
-      - yarn install
-      - yarn generate-licenses
-      - yarn verify-licenses
-      - test -f ../third-party-licenses.txt
 
   - name: frontend-tests
     image: node:22-alpine
