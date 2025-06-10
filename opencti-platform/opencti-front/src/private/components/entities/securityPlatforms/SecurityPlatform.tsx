@@ -25,6 +25,7 @@ export const securityPlatformFragment = graphql`
     modified
     created_at
     updated_at
+    security_platform_type
     createdBy {
       ... on Identity {
         id
@@ -111,7 +112,6 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
             stixCoreObjectId={securityPlatform.id}
           />
         </Grid>
-        );
         <Grid item xs={6}>
           <StixCoreObjectOrStixCoreRelationshipNotes
             stixCoreObjectOrStixCoreRelationshipId={securityPlatform.id}

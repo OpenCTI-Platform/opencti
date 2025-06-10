@@ -61,6 +61,7 @@ export const securityPlatformsFragment = graphql`
           id
           name
           description
+          security_platform_type
           ...SecurityPlatform_securityPlatform
         }
       }

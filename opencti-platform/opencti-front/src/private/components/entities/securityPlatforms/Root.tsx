@@ -131,6 +131,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
             <StixDomainObjectHeader
               entityType="securityPlatform"
               stixDomainObject={securityPlatform}
+              noAliases
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SecurityPlatformEdition securityPlatformId={securityPlatform.id} />
