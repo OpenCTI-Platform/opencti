@@ -495,7 +495,7 @@ enum LogsOrdering {
 
 type LogConnection {
   pageInfo: PageInfo!
-  edges: [LogEdge]
+  edges: [LogEdge!]!
 }
 
 type LogEdge {
@@ -512,6 +512,7 @@ type ContextData {
   message: String!
   commit: String
   external_references: [ExternalReference!]
+  workspace_type: String
 }
 
 type Log {
