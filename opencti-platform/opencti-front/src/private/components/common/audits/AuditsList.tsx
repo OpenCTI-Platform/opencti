@@ -1,0 +1,103 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
+import React, { FunctionComponent } from 'react';
+import AuditsListContent, { auditsListContentQuery } from '@components/common/audits/AuditsListContent';
+import { AuditsListContentQuery } from '@components/common/audits/__generated__/AuditsListContentQuery.graphql';
+import { useFormatter } from '../../../../components/i18n';
+import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
+
+interface AuditsListProps {
+  variant?: string,
+  height?: number,
+  startDate?: string | null,
+  endDate?: string | null,
+  dataSelection: WidgetDataSelection,
+  parameters?: WidgetParameters,
+}
+
+const AuditsList = ({
+  variant,
+  height,
+  startDate,
+  endDate,
+  dataSelection,
+  parameters,
+}): FunctionComponent<AuditsListProps> => {
+  const { t_i18n } = useFormatter();
+  const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
+  const isEnterpriseEdition = useEnterpriseEdition();
+
+  const renderContent = () => {
+    if (!isGrantedToSettings || !isEnterpriseEdition) {
+      return (
+        <div style={{ display: 'table', height: '100%', width: '100%' }}>
+          <span
+            style={{
+              display: 'table-cell',
+              verticalAlign: 'middle',
+              textAlign: 'center',
+            }}
+          >
+            {!isEnterpriseEdition
+              ? t_i18n('This feature is only available in OpenCTI Enterprise Edition.')
+              : t_i18n('You are not authorized to see this data.')}
+          </span>
+        </div>
+      );
+    }
+    const selection = dataSelection[0];
+    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'timestamp';
+    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { removeTypeAll: true, startDate, endDate, dateAttribute });
+
+    const queryRef = useQueryLoading<AuditsListContentQuery>(auditsListContentQuery, {
+      types: ['History', 'Activity'],
+      first: selection.number ?? 10,
+      orderBy: dateAttribute,
+      orderMode: 'desc',
+      filters,
+    });
+
+    return (
+      <>
+        {queryRef && (
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <AuditsListContent queryRef={queryRef} />
+          </React.Suspense>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <WidgetContainer
+      height={height}
+      title={parameters.title ?? t_i18n('Audits list')}
+      variant={variant}
+    >
+      {renderContent()}
+    </WidgetContainer>
+  );
+};
+
+export default AuditsList;
