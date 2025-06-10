@@ -4291,6 +4291,7 @@ export const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemoved
 
 export const elReindexElements = async (context, user, ids, sourceIndex, destIndex, opts = {}) => {
   const { dbId, sourceUpdate = {} } = opts;
+  // TODO remove this script since clean up is done in migration ?
   const sourceCleanupScript = "ctx._source.remove('fromType'); ctx._source.remove('toType'); "
     + "ctx._source.remove('spec_version'); ctx._source.remove('representative'); ctx._source.remove('objectOrganization'); "
     + "ctx._source.remove('rel_has-reference'); ctx._source.remove('rel_has-reference.internal_id'); "
