@@ -143,11 +143,6 @@ const investigationGraphObjectsFragment = graphql`
             ... on Organization {
               name
             }
-            ... on SecurityPlatform{
-              name
-              description
-              security_platform_type
-            }
             ... on Sector {
               name
             }
