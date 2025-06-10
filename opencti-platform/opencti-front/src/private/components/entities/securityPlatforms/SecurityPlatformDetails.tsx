@@ -21,13 +21,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   chip: {
     fontSize: 12,
-    height: 25,
-    marginRight: 7,
+    lineHeight: '12px',
+    backgroundColor: theme.palette.background.accent,
+    color: theme.palette.text?.primary,
     textTransform: 'uppercase',
     borderRadius: 4,
-    width: 150,
-    backgroundColor: 'rgba(229,152,137, 0.08)',
-    color: '#e59889',
+    margin: '0 5px 5px 0',
   },
 }));
 
