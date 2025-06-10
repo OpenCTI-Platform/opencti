@@ -12253,6 +12253,7 @@ union StixObjectOrStixRelationship =
   | CourseOfAction
   | Individual
   | Organization
+  | SecurityPlatform
   | Sector
   | System
   | Indicator
@@ -12320,7 +12321,6 @@ union StixObjectOrStixRelationship =
   | CsvMapper
   | PublicDashboard
   | Pir
-  | SecurityPlatform
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -12336,6 +12336,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | CourseOfAction
   | Individual
   | Organization
+  | SecurityPlatform
   | Sector
   | Indicator
   | Infrastructure
