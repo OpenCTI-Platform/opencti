@@ -24,7 +24,6 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
-import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
