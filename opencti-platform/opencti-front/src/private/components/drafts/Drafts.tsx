@@ -218,8 +218,6 @@ const Drafts: React.FC = () => {
           toolbarFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={DraftLineFragment}
-          exportContext={{ entity_type: 'DraftWorkspace' }}
-          redirectionModeEnabled
           createButton={!draftContext && (
             <DraftCreation paginationOptions={queryPaginationOptions}/>
           )}

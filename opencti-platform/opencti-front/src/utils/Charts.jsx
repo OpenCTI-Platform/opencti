@@ -418,13 +418,13 @@ export const horizontalBarsChartOptions = (
           && (
             (dataPointIndex >= 0 // case click on a bar
               && (
-                (seriesIndex >= 0 && redirectionUtils[dataPointIndex].series // case multi bars
+                (seriesIndex >= 0 && redirectionUtils[dataPointIndex]?.series // case multi bars
                   && redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type
                   && resolveLink(redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type)
                 )
                 || (
-                  !(seriesIndex >= 0 && redirectionUtils[dataPointIndex].series) // case not multi bars
-                  && redirectionUtils[dataPointIndex].entity_type
+                  !(seriesIndex >= 0 && redirectionUtils[dataPointIndex]?.series) // case not multi bars
+                  && redirectionUtils[dataPointIndex]?.entity_type
                   && resolveLink(redirectionUtils[dataPointIndex].entity_type)
                 )
               )

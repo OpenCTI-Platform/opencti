@@ -223,7 +223,6 @@ const ImportWorkbenchesContent = () => {
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
           taskScope={'IMPORT'}
-          redirectionModeEnabled
           useComputeLink={({ id }: ImportWorkbenchesContentFileLine_file$data) => (
             `/dashboard/data/import/workbench/${toB64(id)}`
           )}
