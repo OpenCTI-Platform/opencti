@@ -134,7 +134,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </CollaborativeSecurity>
       </Menu>
-      <StixCoreObjectEnrichment stixCoreObjectId={id} />
+      <StixCoreObjectEnrichment stixCoreObjectId={id} onClose={undefined} isOpen={undefined} />
       <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
       <DeleteDialog
         deletion={deletion}
