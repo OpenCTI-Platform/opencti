@@ -7,7 +7,16 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_DETECTS, RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
-import { batchListEntitiesThroughRelationsPaginated, type EntityOptions, findEntitiesIdsWithRelations, listAllEntities, listAllRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import {
+  batchListEntitiesThroughRelationsPaginated,
+  type EntityOptions,
+  findEntitiesIdsWithRelations,
+  listAllEntities,
+  listAllRelations,
+  listEntities,
+  listEntitiesThroughRelationsPaginated,
+  storeLoadById
+} from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreRelation } from '../types/store';
 import { type AttackPatternAddInput, FilterMode } from '../generated/graphql';
