@@ -31,7 +31,7 @@ export const groups = new Map<string, string[]>([
       'Data-Source',
     ],
   ],
-  ['Entities', ['Sector', 'Event', 'Organization', 'Security-Platform', 'System', 'Individual']],
+  ['Entities', ['Sector', 'Event', 'Organization', 'SecurityPlatform', 'System', 'Individual']],
   [
     'Locations',
     ['Region', 'Country', 'Administrative-Area', 'City', 'Position'],
