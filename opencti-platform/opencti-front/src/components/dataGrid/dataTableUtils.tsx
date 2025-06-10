@@ -1033,7 +1033,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: ({ secondary_motivations }) => {
-      const value = secondary_motivations ? secondary_motivations.join(', ') : '-';
+      const value = secondary_motivations || '-';
       return defaultRender(value);
     },
   },
@@ -1042,21 +1042,9 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 20,
     isSortable: true,
-    render: ({ security_platform_type }, { storageHelpers: { handleAddFilter } }) => {
-      const classes = useStyles();
-      return (
-        <Chip
-          classes={{ root: classes.chipInList }}
-          color="primary"
-          variant="outlined"
-          label={security_platform_type || 'Unknown'}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAddFilter('security_platform_type', security_platform_type ?? null, 'eq');
-          }}
-        />
-      );
+    render: ({ security_platform_type }) => {
+      const value = isNotEmptyField(security_platform_type) ? security_platform_type : '-';
+      return defaultRender(value);
     },
   },
   severity: {
