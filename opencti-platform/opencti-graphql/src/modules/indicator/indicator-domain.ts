@@ -44,6 +44,7 @@ import {
   computeScoreFromExpectedTime,
   computeScoreList,
   computeTimeFromExpectedScore,
+  dayToMs,
   type DecayChartData,
   type DecayHistory,
   type DecayLiveDetails,
@@ -54,6 +55,11 @@ import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
+import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
+
+export const INDICATOR_DEFAULT_SCORE: number = 50;
+export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
+export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
 
 export const findById = (context: AuthContext, user: AuthUser, indicatorId: string) => {
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
@@ -263,7 +269,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   const { formattedPattern } = await validateIndicatorPattern(context, user, indicator.pattern_type, indicator.pattern);
 
-  const indicatorBaseScore = indicator.x_opencti_score ?? 50;
+  const indicatorBaseScore = indicator.x_opencti_score ?? INDICATOR_DEFAULT_SCORE;
   checkScore(indicatorBaseScore);
 
   const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
@@ -275,7 +281,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     R.dissoc('basedOn'),
     R.assoc('pattern', formattedPattern),
     R.assoc('x_opencti_main_observable_type', observableType),
-    R.assoc('x_opencti_score', indicatorBaseScore),
+    R.assoc(X_SCORE, indicatorBaseScore),
     R.assoc('x_opencti_detection', indicator.x_opencti_detection ?? false),
     R.assoc('valid_from', validFrom.toISOString()),
     R.assoc('valid_until', validUntil.toISOString()),
@@ -338,50 +344,162 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
+/**
+ * Compute decay data when it's needed from indicator updates.
+ * Return keys for 'decay_history', 'decay_next_reaction_date', 'valid_until'
+ * @param fromScore
+ * @param indicatorBeforeUpdate
+ */
+export const restartDecayComputationOnEdit = (fromScore: number, indicatorBeforeUpdate: BasicStoreEntityIndicator): EditInput[] => {
+  const indicatorDecayRule = indicatorBeforeUpdate.decay_applied_rule;
+  const nowDate = new Date();
+  const inputToAdd: EditInput[] = [];
+  const updateDate = utcDate();
+  inputToAdd.push({ key: 'decay_base_score', value: [fromScore] });
+  inputToAdd.push({ key: 'decay_base_score_date', value: [updateDate.toISOString()] });
+  const decayHistory: DecayHistory[] = [...(indicatorBeforeUpdate.decay_history ?? [])];
+  decayHistory.push({
+    updated_at: nowDate,
+    score: fromScore,
+  });
+  inputToAdd.push({ key: 'decay_history', value: decayHistory });
+  const nextScoreReactionDate = computeNextScoreReactionDate(fromScore, fromScore, indicatorDecayRule, updateDate);
+  if (nextScoreReactionDate) {
+    inputToAdd.push({ key: 'decay_next_reaction_date', value: [nextScoreReactionDate.toISOString()] });
+  }
+
+  const newValidUntil = utcDate().add(indicatorDecayRule.decay_lifetime, 'days');
+  inputToAdd.push({ key: VALID_UNTIL, value: [newValidUntil.toISOString()] });
+
+  return inputToAdd;
+};
+
 export const indicatorEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[], opts = {}) => {
-  const finalInput = [...input];
-  const indicator = await findById(context, user, id);
-  if (!indicator) {
+  // Region Validation
+  const indicatorBeforeUpdate = await findById(context, user, id);
+  if (!indicatorBeforeUpdate) {
     throw FunctionalError('Cannot edit the field, Indicator cannot be found.');
   }
   // validation check because according to STIX 2.1 specification the valid_until must be greater than the valid_from
-  let { valid_from, valid_until } = indicator;
+  let { valid_from, valid_until } = indicatorBeforeUpdate;
   input.forEach((e) => {
-    if (e.key === 'valid_from') [valid_from] = e.value;
-    if (e.key === 'valid_until') [valid_until] = e.value;
+    if (e.key === VALID_FROM) [valid_from] = e.value;
+    if (e.key === VALID_UNTIL) [valid_until] = e.value;
   });
   if (new Date(valid_until) <= new Date(valid_from)) {
-    throw ValidationError('The valid until date must be greater than the valid from date', 'valid_from');
-  }
-  const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
-  if (scoreEditInput) {
-    const newScore = scoreEditInput.value[0];
-    checkScore(newScore);
-    if (indicator.decay_applied_rule && !scoreEditInput.value.includes(indicator.decay_base_score)) {
-      const updateDate = utcDate();
-      finalInput.push({ key: 'decay_base_score', value: [newScore] });
-      finalInput.push({ key: 'decay_base_score_date', value: [updateDate.toISOString()] });
-      const decayHistory: DecayHistory[] = [...(indicator.decay_history ?? [])];
-      decayHistory.push({
-        updated_at: updateDate.toDate(),
-        score: newScore,
-      });
-      finalInput.push({ key: 'decay_history', value: decayHistory });
-      const model = indicator.decay_applied_rule;
-      const nextScoreReactionDate = computeNextScoreReactionDate(newScore, newScore, model, updateDate);
-      if (nextScoreReactionDate) {
-        finalInput.push({ key: 'decay_next_reaction_date', value: [nextScoreReactionDate.toISOString()] });
-      }
-      const newValidUntilDate = computeDecayPointReactionDate(newScore, model, updateDate, model.decay_revoke_score);
-      finalInput.push({ key: 'valid_until', value: [newValidUntilDate.toISOString()] });
-    }
+    throw ValidationError('The valid until date must be greater than the valid from date', VALID_FROM, input);
   }
   // check indicator pattern syntax
   const patternEditInput = input.find((e) => e.key === 'pattern');
   if (patternEditInput) {
-    await validateIndicatorPattern(context, user, indicator.pattern_type, patternEditInput.value[0]);
+    await validateIndicatorPattern(context, user, indicatorBeforeUpdate.pattern_type, patternEditInput.value[0]);
+  }
+  const scoreEditInput = input.find((e) => e.key === X_SCORE);
+  if (scoreEditInput) {
+    const newScore = scoreEditInput.value[0];
+    checkScore(newScore);
+  }
+  // END Region Validation
+
+  // Region Decay and {Score, Valid until, Revoke} computation
+  // We keep everything EXCEPT fields that can be changed by decay computation
+  const finalInput = input.filter((editInput) => { return editInput.key !== VALID_UNTIL && editInput.key !== X_SCORE && editInput.key !== REVOKED; });
+
+  const isDecayEnabledOnIndicator: boolean = indicatorBeforeUpdate.decay_applied_rule !== undefined && indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score !== undefined;
+  const validUntilEditInput = input.find((e) => e.key === VALID_UNTIL);
+  const revokedEditInput = input.find((e) => e.key === REVOKED);
+  const nowDate = new Date();
+  let hasRevokedChangedToTrue: boolean = false;
+  let hasRevokedChangedToFalse: boolean = false;
+
+  // Revoke value is taken only if valid until and score are not updated at the same time too.
+  if (revokedEditInput && !validUntilEditInput && !scoreEditInput) {
+    hasRevokedChangedToTrue = revokedEditInput.value[0] === true && !indicatorBeforeUpdate.revoked;
+    hasRevokedChangedToFalse = revokedEditInput.value[0] === false && indicatorBeforeUpdate.revoked;
+    finalInput.push(revokedEditInput);
   }
 
+  if (validUntilEditInput) {
+    const untilDateTime = utcDate(validUntilEditInput?.value[0]).toDate();
+    if (untilDateTime < nowDate && !indicatorBeforeUpdate.revoked) {
+      finalInput.push({ key: REVOKED, value: [true] });
+      hasRevokedChangedToTrue = true;
+    }
+
+    if (untilDateTime > nowDate && indicatorBeforeUpdate.revoked) {
+      finalInput.push({ key: REVOKED, value: [false] });
+      hasRevokedChangedToFalse = true;
+    }
+  }
+
+  if (isDecayEnabledOnIndicator) {
+    const revokeScore = indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score;
+    const baseScore = indicatorBeforeUpdate.decay_base_score;
+
+    // Check if score is in input, unless it's the original score
+    // Only if there is no valid until in input too
+    if (scoreEditInput && !scoreEditInput.value.includes(baseScore) && !validUntilEditInput) {
+      const newScore = scoreEditInput.value[0];
+      const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
+      finalInput.push(...allChanges);
+      finalInput.push({ key: X_SCORE, value: [newScore] });
+    } else {
+      // score has not been changed, but maybe decay need to be computed again anyway
+      if (hasRevokedChangedToTrue) {
+        finalInput.push({ key: X_SCORE, value: [revokeScore] });
+        finalInput.push({ key: X_DETECTION, value: [false] });
+        finalInput.push({ key: VALID_UNTIL, value: [nowDate.toISOString()] });
+
+        const decayHistory: DecayHistory[] = [...(indicatorBeforeUpdate.decay_history ?? [])];
+        decayHistory.push({
+          updated_at: nowDate,
+          score: revokeScore,
+        });
+        finalInput.push({ key: 'decay_history', value: decayHistory });
+      }
+
+      if (hasRevokedChangedToFalse) {
+        logApp.info('ANGIE - revoked moved to false');
+        // Restart decay as if the score has been put to decay_base_score manually.
+        const newScore = indicatorBeforeUpdate.decay_base_score;
+        const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
+        finalInput.push(...allChanges);
+        finalInput.push({ key: X_SCORE, value: [newScore] });
+      }
+    }
+  } else {
+    // No decay on indicator
+    if (hasRevokedChangedToTrue) {
+      finalInput.push({ key: X_SCORE, value: [NO_DECAY_DEFAULT_REVOKED_SCORE] });
+      finalInput.push({ key: X_DETECTION, value: [false] });
+      finalInput.push({ key: VALID_UNTIL, value: [nowDate.toISOString()] });
+    }
+
+    if (hasRevokedChangedToFalse) {
+      const in90Days = new Date(nowDate.getTime() + NO_DECAY_DEFAULT_VALID_PERIOD);
+      finalInput.push({ key: X_SCORE, value: [INDICATOR_DEFAULT_SCORE] });
+      finalInput.push({ key: VALID_UNTIL, value: [in90Days.toISOString()] });
+      finalInput.push({ key: VALID_FROM, value: [nowDate.toISOString()] });
+    }
+  }
+
+  // Safeguard: if the field has in input and not added by decay computation, keep the input.
+  if (validUntilEditInput && !finalInput.find((e) => e.key === VALID_UNTIL)) {
+    finalInput.push(validUntilEditInput);
+  }
+
+  if (scoreEditInput && !finalInput.find((e) => e.key === X_SCORE)) {
+    finalInput.push(scoreEditInput);
+  }
+
+  if (revokedEditInput && !finalInput.find((e) => e.key === REVOKED)) {
+    logApp.info('revokedEditInput:', revokedEditInput);
+    finalInput.push(revokedEditInput);
+  }
+
+  logApp.info('Indicator full computed changes:', finalInput);
+
+  // END Decay and {Score, Valid until, Revoke} computation
   return stixDomainObjectEditField(context, user, id, finalInput, opts);
 };
 
