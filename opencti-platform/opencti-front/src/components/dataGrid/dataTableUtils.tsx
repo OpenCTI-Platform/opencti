@@ -1037,6 +1037,28 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
+  security_platform_type: {
+    id: 'security_platform_type',
+    label: 'Type',
+    percentWidth: 20,
+    isSortable: true,
+    render: ({ security_platform_type }, { storageHelpers: { handleAddFilter } }) => {
+      const classes = useStyles();
+      return (
+        <Chip
+          classes={{ root: classes.chipInList }}
+          color="primary"
+          variant="outlined"
+          label={security_platform_type || 'Unknown'}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAddFilter('security_platform_type', security_platform_type ?? null, 'eq');
+          }}
+        />
+      );
+    },
+  },
   severity: {
     id: 'severity',
     label: 'Severity',

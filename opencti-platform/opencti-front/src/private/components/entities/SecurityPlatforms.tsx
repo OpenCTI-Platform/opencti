@@ -100,13 +100,11 @@ const SecurityPlatforms = () => {
     securityPlatformsQuery,
     queryPaginationOptions,
   );
-
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       percentWidth: 20,
     },
     security_platform_type: {
-      label: 'Type',
       percentWidth: 20,
     },
     objectLabel: {
