@@ -317,8 +317,8 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             fullWidth={true}
             containerstyle={{ width: '100%', marginTop: 20 }}
           >
-            <MenuItem value="GET">{t_i18n('Get')}</MenuItem>
-            <MenuItem value="POST">{t_i18n('Post')}</MenuItem>
+            <MenuItem value="GET">GET</MenuItem>
+            <MenuItem value="POST">POST</MenuItem>
           </Field>
 
           {values.verb === 'POST' && (
@@ -355,9 +355,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
 
           <Alert severity="info" variant="standard" style={{ position: 'relative', marginTop: 20, marginBottom: 20, padding: '0px 10px 10px 10px' }}>
             <div>
-              {t_i18n(
-                'For specific api (like Trino), sometimes it required to have sub pagination. To activate only for this specific use cases',
-              )}
+              {t_i18n('For specific api (like Trino), sometimes it required to have sub pagination. To activate only for this specific use cases')}
             </div>
             <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
               <FormControlLabel
@@ -381,8 +379,8 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                   marginTop: 20,
                 }}
               >
-                <MenuItem value="GET">{t_i18n('Get')}</MenuItem>
-                <MenuItem value="POST">{t_i18n('Post')}</MenuItem>
+                <MenuItem value="GET">GET</MenuItem>
+                <MenuItem value="POST">POST</MenuItem>
               </Field>
 
               <Field
