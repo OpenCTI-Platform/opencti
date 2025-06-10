@@ -5,23 +5,43 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import { Link } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/AttackPatternsMatrix';
-import Typography from '@mui/material/Typography';
+import AccordionAttackPattern from '@components/techniques/attack_patterns/AttackPatternsMatrixAccordion';
 import { AttackPatternsMatrixColumns_data$data, AttackPatternsMatrixColumns_data$key } from './__generated__/AttackPatternsMatrixColumns_data.graphql';
 import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
 import { truncate } from '../../../../utils/String';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
-import { AccordionAttackPattern } from '../../../../components/Accordion';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { computeLevel } from '../../../../utils/Number';
+import { Theme } from '../../../../components/Theme';
 
-type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
-type SubAttackPattern = NonNullable<AttackPattern['subAttackPatterns']>[number];
-type MinimalAttackPattern = {
-  attack_pattern_id: string,
-  name: string
+export type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
+export type SubAttackPattern = NonNullable<AttackPattern['subAttackPatterns']>[number];
+export type MinimalAttackPattern = {
+  attack_pattern_id: string;
+  name: string;
+};
+export type FilteredSubAttackPattern = SubAttackPattern & {
+  level: number;
+  isOverlapping?: boolean;
+  subAttackPatternsTotal?: number;
+};
+
+export type FilteredAttackPattern = AttackPattern & {
+  level: number;
+  isOverlapping?: boolean;
+  subAttackPatternsTotal?: number;
+  subAttackPatterns: FilteredSubAttackPattern[] | undefined;
+};
+
+type FilteredData = {
+  readonly kill_chain_id: string;
+  readonly kill_chain_name: string;
+  readonly x_opencti_order: number;
+  attackPatterns: FilteredAttackPattern[] | undefined;
+  readonly phase_name: string;
 };
 
 interface AttackPatternsMatrixColumnsProps extends AttackPatternsMatrixProps {
@@ -69,6 +89,22 @@ export const attackPatternsMatrixColumnsFragment = graphql`
     }
   }
 `;
+
+export const getBoxStyles = (hasLevel: boolean, isHovered: boolean, theme: Theme) => {
+  if (hasLevel) {
+    const highlightedColor = isHovered ? COLORS.HIGHLIGHT_HOVER : COLORS.HIGHLIGHT;
+    return {
+      border: `1px solid ${highlightedColor}`,
+      backgroundColor: hexToRGB(highlightedColor, 0.2),
+    };
+  }
+  return {
+    border: `1px solid ${theme.palette.background.accent}`,
+    backgroundColor: isHovered
+      ? hexToRGB(COLORS.DEFAULT_BG_HOVER, 0.1)
+      : COLORS.DEFAULT_BG,
+  };
+};
 
 const AttackPatternsMatrixColumns = ({
   queryRef,
@@ -135,7 +171,7 @@ const AttackPatternsMatrixColumns = ({
     return computeLevel(matchCount, 0, maxCount, 0, 10);
   };
 
-  const filteredData = useMemo(() => attackPatternsMatrix?.attackPatternsOfPhases
+  const filteredData: FilteredData[] | undefined = useMemo(() => attackPatternsMatrix?.attackPatternsOfPhases
     ?.filter((a) => a.kill_chain_name === selectedKillChain)
     .sort((a, b) => a.x_opencti_order - b.x_opencti_order)
     .map((a) => ({
@@ -166,22 +202,6 @@ const AttackPatternsMatrixColumns = ({
     return baseOffset + rightOffset;
   }, [marginRight, navOpen]);
 
-  const getBoxStyles = (hasLevel: boolean, isHovered: boolean) => {
-    if (hasLevel) {
-      const highlightedColor = isHovered ? COLORS.HIGHLIGHT_HOVER : COLORS.HIGHLIGHT;
-      return {
-        borderColor: highlightedColor,
-        backgroundColor: hexToRGB(highlightedColor, 0.2),
-      };
-    }
-    return {
-      borderColor: theme.palette.background.accent,
-      backgroundColor: isHovered
-        ? hexToRGB(COLORS.DEFAULT_BG_HOVER, 0.1)
-        : COLORS.DEFAULT_BG,
-    };
-  };
-
   return (
     <UserContext.Consumer>
       {({ bannerSettings }) => {
@@ -211,18 +231,40 @@ const AttackPatternsMatrixColumns = ({
                   {col.attackPatterns?.map((ap) => {
                     const isHovered = hover[ap.attack_pattern_id];
                     const hasLevel = ap.level > 0;
+                    const { border, backgroundColor } = getBoxStyles(hasLevel, isHovered, theme);
                     return (
                       ap.subAttackPatterns?.length ? (
-                        <AccordionAttackPattern
-                          ap={ap}
-                          handleToggleHover={handleToggleHover}
-                          handleOpen={handleOpen}
-                          colorArray={colorArray}
-                          hover={hover}
-                          colors={colors}
-                          level={level}
-                          position={position}
-                        />
+                        <Badge
+                          key={ap.attack_pattern_id}
+                          invisible={!ap.level}
+                          badgeContent={!ap.subAttackPatternsTotal ? ap.level : `${ap.level}/${ap.subAttackPatternsTotal}`}
+                          overlap="rectangular"
+                          anchorOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                          }}
+                          sx={{
+                            '& .MuiBadge-badge': {
+                              backgroundColor: COLORS.BADGE,
+                              color: theme.palette.common.black,
+                              height: '14px',
+                              minWidth: '14px',
+                              fontSize: '10px',
+                              paddingInline: '4px',
+                            },
+                          }}
+                        >
+                          <AccordionAttackPattern
+                            ap={ap}
+                            handleToggleHover={handleToggleHover}
+                            handleOpen={handleOpen}
+                            hover={hover}
+                            border={border}
+                            backgroundColor={backgroundColor}
+                            isSecurityPlatformEnabled={isSecurityPlatformEnabled}
+                            attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+                          />
+                        </Badge>
                       ) : (
                         <Badge
                           key={ap.attack_pattern_id}
@@ -251,9 +293,8 @@ const AttackPatternsMatrixColumns = ({
                             sx={{
                               display: 'flex',
                               cursor: 'pointer',
-                              borderWidth: '1px',
-                              borderStyle: 'solid',
-                              ...getBoxStyles(hasLevel, isHovered),
+                              border,
+                              backgroundColor,
                               padding: 1.25,
                               justifyContent: 'space-between',
                               gap: 1,
