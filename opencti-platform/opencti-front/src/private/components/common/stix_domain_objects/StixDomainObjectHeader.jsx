@@ -389,7 +389,8 @@ const StixDomainObjectHeader = (props) => {
   const initialNumberOfButtons = 1 + (isKnowledgeUpdater ? 1 : 0) + (enableQuickSubscription ? 1 : 0);
   const displayEnrollPlaybookButton = initialNumberOfButtons < 3;
   const displaySharingButton = initialNumberOfButtons < 2 || (initialNumberOfButtons < 3 && !enableEnrollPlaybook);
-  const displayPopoverMenu = (disableSharing !== true && !displaySharingButton) || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
+  const displayPopoverMenu = (disableSharing !== true && !displaySharingButton)
+    || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
 
   return (
     <React.Suspense fallback={<span />}>
