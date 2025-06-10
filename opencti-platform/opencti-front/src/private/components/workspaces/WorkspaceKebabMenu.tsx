@@ -11,8 +11,9 @@ import WorkspaceDuplicationDialog from '@components/workspaces/WorkspaceDuplicat
 import Drawer from '@components/common/drawer/Drawer';
 import PublicDashboardCreationForm from '@components/workspaces/dashboards/public_dashboards/PublicDashboardCreationForm';
 import WorkspaceEditionContainer from '@components/workspaces/WorkspaceEditionContainer';
-import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
+import { workspaceEditionQuery, WorkspacePopoverDeletionMutation } from '@components/workspaces/WorkspacePopover';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import Security from '../../../utils/Security';
 import useGranted, {
@@ -29,6 +30,10 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { deleteNode, insertNode } from '../../../utils/store';
 import useDeletion from '../../../utils/hooks/useDeletion';
 
+interface EditionQueryRendererProps {
+  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data
+}
+
 interface WorkspaceKebabMenuProps {
   workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
   paginationOptions?: {
@@ -40,20 +45,6 @@ interface WorkspaceKebabMenuProps {
 }
 
 const noop = () => {};
-
-const workspaceEditionQuery = graphql`
-    query WorkspacePopoverContainerQuery($id: String!) {
-        workspace(id: $id) {
-            ...WorkspaceEditionContainer_workspace
-        }
-    }
-`;
-
-const WorkspacePopoverDeletionMutation = graphql`
-    mutation WorkspacePopoverDeletionMutation($id: ID!) {
-        workspaceDelete(id: $id)
-    }
-`;
 
 function useDuplicate(isGranted = false, onDuplicate = noop) {
   const [displayDuplicate, setDisplayDuplicate] = useState(false);
@@ -124,7 +115,7 @@ export default function WorkspaceKebabMenu({ workspace, paginationOptions }: Wor
 
   const [commit] = useApiMutation(WorkspacePopoverDeletionMutation);
 
-  const updater = (store: any) => {
+  const updater = (store: RecordSourceSelectorProxy) => {
     if (paginationOptions) {
       insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceDuplicate');
     }
@@ -315,7 +306,7 @@ export default function WorkspaceKebabMenu({ workspace, paginationOptions }: Wor
       <QueryRenderer
         query={workspaceEditionQuery}
         variables={{ id }}
-        render={({ props: editionProps }: { props: any }) => {
+        render={({ props: editionProps }: { props: EditionQueryRendererProps }) => {
           if (!editionProps) {
             return <div />;
           }

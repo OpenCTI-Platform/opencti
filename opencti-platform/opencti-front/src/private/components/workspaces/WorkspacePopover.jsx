@@ -32,7 +32,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const workspaceEditionQuery = graphql`
+export const workspaceEditionQuery = graphql`
   query WorkspacePopoverContainerQuery($id: String!) {
     workspace(id: $id) {
       ...WorkspaceEditionContainer_workspace
@@ -40,7 +40,7 @@ const workspaceEditionQuery = graphql`
   }
 `;
 
-const WorkspacePopoverDeletionMutation = graphql`
+export const WorkspacePopoverDeletionMutation = graphql`
   mutation WorkspacePopoverDeletionMutation($id: ID!) {
     workspaceDelete(id: $id)
   }
