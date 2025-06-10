@@ -5,7 +5,6 @@ import { Badge } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { interval } from 'rxjs';
 import { StixCoreObjectActiveBackgroundTasksQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectActiveBackgroundTasksQuery.graphql';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { ONE_SECOND } from '../../../../utils/Time';
 
 const stixCoreObjectActiveBackgroundTasksQuery = graphql`
@@ -82,7 +81,7 @@ const StixCoreObjectBackgroundTasks: FunctionComponent<StixCoreObjectBackgroundT
   return (
     <>
       {queryRef && (
-        <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+        <Suspense>
           <StixCoreObjectBackgroundTasksComponent actionsFilter={actionsFilter} queryRef={queryRef} refetch={refetch} />
         </Suspense>
       )}
