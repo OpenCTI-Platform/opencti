@@ -44,7 +44,11 @@ const MATRIX_QUERY = gql`
           name
           description
           x_mitre_id
-          subAttackPatterns
+          subAttackPatterns {
+            attack_pattern_id
+            name
+            description
+          }
           subAttackPatternsIds
           subAttackPatternsSearchText
           killChainPhasesIds
