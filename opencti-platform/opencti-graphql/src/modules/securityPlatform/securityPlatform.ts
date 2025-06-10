@@ -8,6 +8,7 @@ import { isFeatureEnabled } from '../../config/conf';
 import { RELATION_SHOULD_COVER } from '../../schema/stixCoreRelationship';
 import { REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
+import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform, StixSecurityPlatform> = {
   type: {
@@ -44,6 +45,9 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
       ]
     },
+  ],
+  relationsRefs: [
+    { ...objectOrganization, isFilterable: false }
   ],
   representative: (stix: StixSecurityPlatform) => {
     return stix.name;
