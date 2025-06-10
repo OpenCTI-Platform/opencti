@@ -387,6 +387,11 @@ const StixDomainObjectHeader = (props) => {
   };
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
+  const initialNumberOfButtons = 1 + (isKnowledgeUpdater ? 1 : 0) + (enableQuickSubscription ? 1 : 0);
+  const displayEnrollPlaybookButton = initialNumberOfButtons < 3;
+  const displaySharingButton = initialNumberOfButtons < 2 || (initialNumberOfButtons < 3 && !enableEnrollPlaybook);
+  const displayPopoverMenu = (disableSharing !== true && !displaySharingButton) || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
+
   return (
     <React.Suspense fallback={<span />}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: theme.spacing(1) }}>
@@ -588,39 +593,55 @@ const StixDomainObjectHeader = (props) => {
                 triggerData={triggerData}
               />
             )}
-            <PopoverMenu>
-              {({ closeMenu }) => (
-                <Box>
-                  {disableSharing !== true && (
-                    <MenuItem onClick={() => {
-                      handleOpenSharing();
-                      closeMenu();
-                    }}
-                    >
-                      {t_i18n('Share with an organization')}
-                    </MenuItem>
-                  )}
-                  {(enableEnricher && isKnowledgeEnricher) && (
-                    <MenuItem onClick={() => {
-                      handleOpenEnrichment();
-                      closeMenu();
-                    }}
-                    >
-                      {t_i18n('Enrichment')}
-                    </MenuItem>
-                  )}
-                  {enableEnrollPlaybook && (
-                    <MenuItem onClick={() => {
-                      handleOpenEnrollPlaybook();
-                      closeMenu();
-                    }}
-                    >
-                      {t_i18n('Enroll in playbook')}
-                    </MenuItem>
-                  )}
-                </Box>
-              )}
-            </PopoverMenu>
+            {(enableEnricher && isKnowledgeEnricher) && (
+              <StixCoreObjectEnrichment
+                onClose={handleCloseEnrichment}
+                isOpen={isEnrichmentOpen}
+                stixCoreObjectId={stixDomainObject.id}
+              />
+            )}
+            {enableEnrollPlaybook && (
+              <StixCoreObjectEnrollPlaybook
+                open={isEnrollPlaybookOpen}
+                handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+                stixCoreObjectId={stixDomainObject.id}
+              />
+            )}
+            {displayPopoverMenu ? (
+              <PopoverMenu>
+                {({ closeMenu }) => (
+                  <Box>
+                    {disableSharing !== true && (
+                      <MenuItem onClick={() => {
+                        handleOpenSharing();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Share with an organization')}
+                      </MenuItem>
+                    )}
+                    {(enableEnricher && isKnowledgeEnricher) && (
+                      <MenuItem onClick={() => {
+                        handleOpenEnrichment();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Enrichment')}
+                      </MenuItem>
+                    )}
+                    {enableEnrollPlaybook && (
+                      <MenuItem onClick={() => {
+                        handleOpenEnrollPlaybook();
+                        closeMenu();
+                      }}
+                      >
+                        {t_i18n('Enroll in playbook')}
+                      </MenuItem>
+                    )}
+                  </Box>
+                )}
+              </PopoverMenu>
+            ) : null}
             {EditComponent}
           </div>
         </div>
@@ -790,9 +811,6 @@ const StixDomainObjectHeader = (props) => {
           )}
         </Formik>
       )}
-      {(enableEnricher && isKnowledgeEnricher) && (
-        <StixCoreObjectEnrichment onClose={handleCloseEnrichment} isOpen={isEnrichmentOpen} stixCoreObjectId={stixDomainObject.id} />
-      )}
       {disableSharing !== true && (
         <StixCoreObjectSharing
           open={isSharingOpen}
@@ -800,9 +818,6 @@ const StixDomainObjectHeader = (props) => {
           elementId={stixDomainObject.id}
           variant="header"
         />
-      )}
-      {enableEnrollPlaybook && (
-        <StixCoreObjectEnrollPlaybook open={isEnrollPlaybookOpen} handleClose={handleCloseEnrollPlaybook} stixCoreObjectId={stixDomainObject.id} />
       )}
     </React.Suspense>
   );
