@@ -163,7 +163,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
   const initialValues = {
     name: securityPlatform.name,
     description: securityPlatform.description,
-    securityPlatform_type: securityPlatform.security_platform_type,
+    security_platform_type: securityPlatform.security_platform_type,
     createdBy: convertCreatedBy(securityPlatform) as FieldOption,
     objectMarking: convertMarkings(securityPlatform),
     references: [],
