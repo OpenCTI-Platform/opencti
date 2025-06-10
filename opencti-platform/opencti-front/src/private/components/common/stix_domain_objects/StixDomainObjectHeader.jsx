@@ -286,7 +286,7 @@ const StixDomainObjectHeader = (props) => {
 
   const handleCloseCommitDelete = () => setOpenCommitDelete(false);
 
-  const handleChangeNewAlias = (name, value) => setNewAlias(value);
+  const handleChangeNewAlias = (_, value) => setNewAlias(value);
 
   const getCurrentAliases = () => {
     return isOpenctiAlias
@@ -563,12 +563,6 @@ const StixDomainObjectHeader = (props) => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex' }}>
-            {disableSharing !== true && (
-              <StixCoreObjectBackgroundTasks
-                id={stixDomainObject.id}
-                actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
-              />
-            )}
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
