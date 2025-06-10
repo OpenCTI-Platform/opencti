@@ -11,11 +11,15 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 interface StixCoreObjectEnrollPlaybookLinesProps {
   stixCoreObjectId: string,
-  handleClose: () => void,
-  open: boolean,
+  handleClose?: () => void,
+  open?: boolean,
 }
 
-const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybookLinesProps> = ({ stixCoreObjectId, handleClose, open }) => {
+const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybookLinesProps> = ({
+  stixCoreObjectId,
+  handleClose,
+  open,
+}) => {
   const [openDrawer, setOpenDrawer] = useState(false);
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
@@ -27,6 +31,7 @@ const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybo
   const handleCloseEnrollPlaybook = () => {
     setOpenDrawer(false);
   };
+
   return (
     <>
       {!handleClose && (

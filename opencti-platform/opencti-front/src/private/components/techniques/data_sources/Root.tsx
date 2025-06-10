@@ -60,6 +60,7 @@ const dataSourceQuery = graphql`
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...StixCoreObjectContent_stixCoreObject
+      ...StixCoreObjectSharingListFragment
     }
     connectorsForImport {
       ...FileManager_connectorsImport

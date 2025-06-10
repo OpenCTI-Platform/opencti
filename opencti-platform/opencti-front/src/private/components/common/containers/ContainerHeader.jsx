@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link, useNavigate } from 'react-router-dom';
@@ -7,7 +7,10 @@ import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
 import { ViewColumnOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import { makeStyles, useTheme } from '@mui/styles';
+import { useTheme } from '@mui/styles';
+import MenuItem from '@mui/material/MenuItem';
+import { Box } from '@mui/material';
+import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -29,17 +32,7 @@ import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExp
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import { resolveLink } from '../../../../utils/Entity';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  modes: {
-    marginLeft: theme.spacing(2),
-  },
-  actionButtons: {
-    display: 'flex',
-  },
-}));
+import PopoverMenu from '../../../../components/PopoverMenu';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -450,10 +443,24 @@ const ContainerHeader = (props) => {
     redirectToContent,
     enableEnricher,
   } = props;
-  const classes = useStyles();
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
   const navigate = useNavigate();
+  const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
+  const [openSharing, setOpenSharing] = useState(false);
+  const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
+
+  const handleCloseEnrollPlaybook = () => {
+    setOpenEnrollPlaybook(false);
+  };
+
+  const handleCloseSharing = () => {
+    setOpenSharing(false);
+  };
+
+  const handleCloseAccessRestriction = () => {
+    setOpenAccessRestriction(false);
+  };
 
   const handleExportCompleted = (fileName) => {
     // navigate with fileName in query params to select the created file
@@ -508,6 +515,14 @@ const ContainerHeader = (props) => {
   const disableOrgaSharingButton = (!enableManageAuthorizedMembers && currentAccessRight.canEdit) || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
+  const initialNumberOfButtons = (!knowledge ? 1 : 0) + (enableQuickSubscription ? 1 : 0) + (enableEnricher ? 1 : 0);
+  const displayEnrollPlaybookButton = initialNumberOfButtons < 3;
+  const displaySharingButton = initialNumberOfButtons < 2
+    || (initialNumberOfButtons < 3 && !enableEnrollPlaybook);
+  const displayPopoverMenu = (!knowledge && disableSharing !== true && !displaySharingButton)
+    || (!knowledge && !!enableManageAuthorizedMembers)
+    || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
+
   return (
     <div style={containerStyle}>
       <React.Suspense fallback={<span />}>
@@ -553,7 +568,7 @@ const ContainerHeader = (props) => {
           </div>
         )}
         {modes && (
-          <div className={classes.modes}>
+          <div style={{ marginLeft: theme.spacing(2) }}>
             <ToggleButtonGroup size="small" exclusive={true}>
               {modes.includes('graph') && (
                 <Tooltip title={t_i18n('Graph view')}>
@@ -621,28 +636,23 @@ const ContainerHeader = (props) => {
           </div>
         )}
         <div>
-          <div className={classes.actionButtons}>
-            <StixCoreObjectBackgroundTasks id={container.id} actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']} />
+          <div style={{ display: 'flex' }}>
+            <StixCoreObjectBackgroundTasks
+              id={container.id}
+              actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
+            />
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
+            <StixCoreObjectSharingList data={container} />
             {!knowledge && disableSharing !== true && (
-              <StixCoreObjectSharing elementId={container.id} variant="header" disabled={disableOrgaSharingButton} />
-            )}
-            {!knowledge && (
-              <Security
-                needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
-                hasAccess={!!enableManageAuthorizedMembers}
-              >
-                <FormAuthorizedMembersDialog
-                  id={container.id}
-                  owner={container.creators?.[0]}
-                  authorizedMembers={authorizedMembersToOptions(
-                    container.authorized_members,
-                  )}
-                  mutation={containerHeaderEditAuthorizedMembersMutation}
-                />
-              </Security>
+              <StixCoreObjectSharing
+                elementId={container.id}
+                open={openSharing}
+                variant="header"
+                disabled={disableOrgaSharingButton}
+                handleClose={displaySharingButton ? undefined : handleCloseSharing}
+              />
             )}
             {!knowledge && (
               <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
@@ -657,13 +667,13 @@ const ContainerHeader = (props) => {
               </Security>
             )}
             {enableSuggestions && (
-            <StixCoreObjectsSuggestions
-              containerId={container.id}
-              currentMode={currentMode}
-              onApplied={onApplied}
-              containerHeaderObjectsQuery={containerHeaderObjectsQuery}
-              container={container}
-            />
+              <StixCoreObjectsSuggestions
+                containerId={container.id}
+                currentMode={currentMode}
+                onApplied={onApplied}
+                containerHeaderObjectsQuery={containerHeaderObjectsQuery}
+                container={container}
+              />
             )}
             {enableQuickSubscription && (
               <StixCoreObjectQuickSubscription
@@ -680,11 +690,68 @@ const ContainerHeader = (props) => {
                 />
               </Security>
             )}
-            {enableEnrollPlaybook && (
-              <StixCoreObjectEnrollPlaybook stixCoreObjectId={container.id} />
+            {enableEnrollPlaybook
+              && <StixCoreObjectEnrollPlaybook
+                stixCoreObjectId={container.id}
+                open={openEnrollPlaybook}
+                handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+                 />}
+            {displayPopoverMenu && (
+              <PopoverMenu>
+                {({ closeMenu }) => (
+                  <Box>
+                    {!knowledge && disableSharing !== true && !displaySharingButton && (
+                      <MenuItem
+                        onClick={() => {
+                          setOpenSharing(true);
+                          closeMenu();
+                        }}
+                      >
+                        {t_i18n('Share with an organization')}
+                      </MenuItem>
+                    )}
+                    {!knowledge && (
+                      <Security
+                        needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
+                        hasAccess={!!enableManageAuthorizedMembers}
+                      >
+                        <MenuItem
+                          onClick={() => {
+                            setOpenAccessRestriction(true);
+                            closeMenu();
+                          }}
+                        >
+                          {t_i18n('Manage access restriction')}
+                        </MenuItem>
+                      </Security>
+                    )}
+                    {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
+                      <MenuItem
+                        onClick={() => {
+                          setOpenEnrollPlaybook(true);
+                          closeMenu();
+                        }}
+                      >
+                        {t_i18n('Enroll in playbook')}
+                      </MenuItem>
+                    )}
+                  </Box>
+                )}
+              </PopoverMenu>
             )}
+
             {EditComponent}
           </div>
+          <FormAuthorizedMembersDialog
+            id={container.id}
+            owner={container.creators?.[0]}
+            authorizedMembers={authorizedMembersToOptions(
+              container.authorized_members,
+            )}
+            mutation={containerHeaderEditAuthorizedMembersMutation}
+            open={openAccessRestriction}
+            handleClose={handleCloseAccessRestriction}
+          />
         </div>
       </React.Suspense>
     </div>
@@ -694,6 +761,7 @@ const ContainerHeader = (props) => {
 export default createFragmentContainer(ContainerHeader, {
   container: graphql`
     fragment ContainerHeader_container on Container {
+      ...StixCoreObjectSharingListFragment
       id
       draftVersion {
         draft_id

@@ -31,6 +31,8 @@ interface ContainerHeaderSharedProps {
   elementId: string;
   variant: string;
   disabled?: boolean;
+  handleClose: () => void,
+  open?: boolean,
 }
 
 interface OrganizationForm {
@@ -42,14 +44,6 @@ interface OrganizationForm {
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
-  organizationInHeader: {
-    margin: '4px 7px 0 0',
-    float: 'left',
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 28,
-    borderRadius: 4,
-  },
   organization: {
     margin: '0 7px 0 0',
     float: 'left',
@@ -109,6 +103,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   elementId,
   variant,
   disabled = false,
+  open,
+  handleClose,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -151,7 +147,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         onCompleted: () => {
           setSubmitting(false);
           resetForm();
-          setDisplaySharing(false);
+          handleClose?.();
+          handleCloseSharing();
         },
         updater: undefined,
         optimisticUpdater: undefined,
@@ -166,42 +163,31 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
     if (variant === 'header') {
       return (
         <>
-          {edges.map((edge) => (
-            <Tooltip key={edge.id} title={edge.name}>
-              <Chip
-                icon={<AccountBalanceOutlined />}
-                classes={{ root: classes.organizationInHeader }}
-                color="primary"
-                variant="outlined"
-                label={truncate(edge.name, 15)}
-                onDelete={() => removeOrganization(edge.id)}
-                disabled={disabled || disabledInDraft}
-              />
-            </Tooltip>
-          ))}
-          <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
-            <ToggleButton
-              value="shared"
-              onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
-              size="small"
-              style={{ marginRight: 3 }}
-              disabled={disabled}
-            >
-              <BankPlus
-                fontSize="small"
-                color={!disabled && !disabledInDraft && isEnterpriseEdition ? 'primary' : 'disabled'}
-              />
-            </ToggleButton>
-          </EETooltip>
+          {!handleClose && (
+            <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
+              <ToggleButton
+                value="shared"
+                onClick={isEnterpriseEdition && !disabledInDraft ? handleOpenSharing : () => {}}
+                size="small"
+                style={{ marginRight: 3 }}
+                disabled={disabled}
+              >
+                <BankPlus
+                  fontSize="small"
+                  color={!disabled && !disabledInDraft && isEnterpriseEdition ? 'primary' : 'disabled'}
+                />
+              </ToggleButton>
+            </EETooltip>
+          )}
           <Formik
             initialValues={{ objectOrganization: { value: '', label: '' } }}
             onSubmit={onSubmitOrganizations}
-            onReset={handleCloseSharing}
+            onReset={handleClose || handleCloseSharing}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Dialog
                 slotProps={{ paper: { elevation: 1 } }}
-                open={displaySharing}
+                open={open || displaySharing}
                 onClose={() => handleReset()}
                 fullWidth={true}
               >
@@ -239,42 +225,45 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Organizations sharing')}
         </Typography>
-        <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
-          <IconButton
-            color="primary"
-            aria-label="Label"
-            onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
-            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-            size="large"
-            disabled={disabled}
-          >
-            <BankPlus fontSize="small" color={!disabled && !disabledInDraft && isEnterpriseEdition ? 'primary' : 'disabled'} />
-          </IconButton>
-        </EETooltip>
-        <div className="clearfix" />
-        {edges.map((edge) => (
-          <Tooltip key={edge.id} title={edge.name}>
-            <Chip
-              icon={<AccountBalanceOutlined />}
-              classes={{ root: classes.organization }}
+        {!handleClose && <>
+          <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
+            <IconButton
               color="primary"
-              variant="outlined"
-              label={truncate(edge.name, 15)}
-              onDelete={() => removeOrganization(edge.id)}
-              disabled={disabled || disabledInDraft}
-            />
-          </Tooltip>
-        ))}
+              aria-label="Label"
+              onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
+              style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+              size="large"
+              disabled={disabled}
+            >
+              <BankPlus fontSize="small" color={!disabled && !disabledInDraft && isEnterpriseEdition ? 'primary' : 'disabled'} />
+            </IconButton>
+          </EETooltip>
+          <div className="clearfix" />
+          {edges.map((edge) => (
+            <Tooltip key={edge.id} title={edge.name}>
+              <Chip
+                icon={<AccountBalanceOutlined />}
+                classes={{ root: classes.organization }}
+                color="primary"
+                variant="outlined"
+                label={truncate(edge.name, 15)}
+                onDelete={() => removeOrganization(edge.id)}
+                disabled={disabled || disabledInDraft}
+              />
+            </Tooltip>
+          ))}
+          </>
+        }
         <div className="clearfix" />
         <Formik
           initialValues={{ objectOrganization: { value: '', label: '' } }}
           onSubmit={onSubmitOrganizations}
-          onReset={handleCloseSharing}
+          onReset={handleClose || handleCloseSharing}
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Dialog
               slotProps={{ paper: { elevation: 1 } }}
-              open={displaySharing}
+              open={open || displaySharing}
               onClose={() => handleReset()}
               fullWidth={true}
             >

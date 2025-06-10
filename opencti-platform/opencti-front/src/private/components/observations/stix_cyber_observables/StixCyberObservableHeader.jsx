@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/material/styles';
+import MenuItem from '@mui/material/MenuItem';
+import StixCoreObjectSharingList from '../../common/stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../../common/draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectContainer from '../../common/stix_core_objects/StixCoreObjectContainer';
@@ -12,46 +12,28 @@ import StixCoreObjectSharing from '../../common/stix_core_objects/StixCoreObject
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
 import Security from '../../../../utils/Security';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  title: {
-    float: 'left',
-  },
-  actions: {
-    margin: '-6px 0 0 0',
-    float: 'right',
-  },
-  actionButtons: {
-    display: 'flex',
-  },
-}));
+import { useFormatter } from '../../../../components/i18n';
+import PopoverMenu from '../../../../components/PopoverMenu';
 
 const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
-  const theme = useTheme();
-  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+  const [openSharing, setOpenSharing] = useState(false);
+
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
+
   return (
-    <>
-      <Typography
-        variant="h1"
-        gutterBottom={true}
-        classes={{ root: classes.title }}
-        style={{ marginRight: theme.spacing(1) }}
-      >
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <Typography variant="h1" sx={{ marginBottom: 0, flex: 1 }}>
         {truncate(stixCyberObservable.observable_value, 50)}
       </Typography>
-      {stixCyberObservable.draftVersion && (
-        <DraftChip />
-      )}
-      <div className={classes.actions}>
-        <div className={classes.actionButtons}>
-          <StixCoreObjectSharing
-            elementId={stixCyberObservable.id}
-            variant="header"
-          />
+
+      {stixCyberObservable.draftVersion && <DraftChip />}
+
+      <div>
+        <div style={{ display: 'flex' }}>
+          <StixCoreObjectSharingList data={stixCyberObservable} />
+
           {isKnowledgeUpdater && (
             <StixCoreObjectContainer elementId={stixCyberObservable.id} />
           )}
@@ -59,15 +41,36 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
             <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
           )}
           <StixCoreObjectEnrollPlaybook stixCoreObjectId={stixCyberObservable.id} />
+
+          <PopoverMenu>
+            {({ closeMenu }) => (
+              <MenuItem
+                onClick={() => {
+                  setOpenSharing(true);
+                  closeMenu();
+                }}
+              >
+                {t_i18n('Share with an organization')}
+              </MenuItem>
+            )}
+          </PopoverMenu>
+
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCyberObservableEdition
               stixCyberObservableId={stixCyberObservable.id}
             />
           </Security>
+
+          <StixCoreObjectSharing
+            elementId={stixCyberObservable.id}
+            open={openSharing}
+            variant="header"
+            handleClose={() => setOpenSharing(false)}
+          />
         </div>
       </div>
       <div className="clearfix" />
-    </>
+    </div>
   );
 };
 
@@ -83,6 +86,7 @@ const StixCyberObservableHeader = createFragmentContainer(
         }
         entity_type
         observable_value
+        ...StixCoreObjectSharingListFragment
       }
     `,
   },
