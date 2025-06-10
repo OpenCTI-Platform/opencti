@@ -7,7 +7,6 @@ import { IngestionCsvLinesPaginationQuery, IngestionCsvLinesPaginationQuery$vari
 import { IngestionCsvLineDummy } from '@components/data/ingestionCsv/IngestionCsvLine';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
 import IngestionCsvImport from '@components/data/ingestionCsv/IngestionCsvImport';
-import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../components/i18n';
 import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
