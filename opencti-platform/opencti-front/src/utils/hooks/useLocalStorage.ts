@@ -651,6 +651,7 @@ export const usePaginationLocalStorage = <U>(
         ...viewStorage,
         filters: initialValue.filters ?? emptyFilterGroup,
         searchTerm: initialValue.searchTerm ?? '',
+        savedFilters: undefined,
         view: value,
       };
       setValue(newValue);
