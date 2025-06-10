@@ -285,6 +285,12 @@ export const searchBulkQuery = graphql`
               secondary
             }
           }
+          ... on HashedObservable {
+            hashes {
+              algorithm
+              hash
+            }
+          }
           createdBy {
             ... on Identity {
               name
@@ -336,6 +342,19 @@ const buildQueryParams = (textFieldValue) => {
   return { values, searchPaginationOptions };
 };
 
+const matchStixObjectWithSearchValue = (stixObject, value) => {
+  const representativeMatch = value.toLowerCase() === getMainRepresentative(stixObject).toLowerCase();
+  if (!representativeMatch) {
+    // try to find in hashes
+    if (stixObject.hashes) {
+      const hashMatch = stixObject.hashes.some((h) => h.hash === value);
+      if (hashMatch) return hashMatch;
+    }
+    // other cases ?
+  }
+  return representativeMatch;
+};
+
 const SearchBulk = () => {
   const { t_i18n, nsd, n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
@@ -366,7 +385,7 @@ const SearchBulk = () => {
                     (o) => o.node,
                   );
                   return values.map((value) => {
-                    const resolvedStixCoreObjects = stixCoreObjects.filter((o) => value.toLowerCase() === getMainRepresentative(o).toLowerCase());
+                    const resolvedStixCoreObjects = stixCoreObjects.filter((o) => matchStixObjectWithSearchValue(o, value));
                     if (resolvedStixCoreObjects.length > 0) {
                       return resolvedStixCoreObjects.map(
                         (resolvedStixCoreObject) => ({

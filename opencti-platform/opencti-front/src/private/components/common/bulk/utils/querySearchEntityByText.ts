@@ -36,7 +36,6 @@ export const allEntitiesKeyList = [
   'hashes.SHA-512',
   'url',
   'card_number',
-  'value',
   'account_type',
   'user_id',
   'account_login',
