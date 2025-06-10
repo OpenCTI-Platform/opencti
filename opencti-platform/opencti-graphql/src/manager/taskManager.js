@@ -25,14 +25,7 @@ import { now } from '../utils/format';
 import { isEmptyField, MAX_EVENT_LOOP_PROCESSING_TIME, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { elList } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import {
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_RELATIONSHIP,
-  INPUT_OBJECTS,
-  RULE_PREFIX
-} from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { executionContext, isUserInPlatformOrganization, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
 import { getRule } from '../domain/rules';
@@ -66,11 +59,10 @@ import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
 import { generateStandardId } from '../schema/identifier';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, isStixDomainObjectContainer, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
-import { schemaTypesDefinition } from '../schema/schema-types';
-import { getParentTypes } from '../schema/schemaUtils';
+import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
+import { objects as getContainerObjects } from '../domain/container';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -446,28 +438,6 @@ const promoteOperationCallback = async (context, user, task, container) => {
   };
 };
 
-const sharingTaskFilters = (containerId) => {
-  const allowedDomainsShared = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT).filter((s) => {
-    if (s === ENTITY_TYPE_CONTAINER_OPINION || s === ENTITY_TYPE_CONTAINER_NOTE) return false;
-    return !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(s).includes(o));
-  });
-  const SCAN_ENTITIES = [...allowedDomainsShared, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_RELATIONSHIP];
-  return {
-    mode: 'and',
-    filters: [
-      {
-        key: ['objects'],
-        values: [containerId],
-      },
-      {
-        key: ['entity_type'],
-        values: SCAN_ENTITIES,
-      }
-    ],
-    filterGroups: [],
-  };
-};
-
 const sharingOperationCallback = async (context, user, task, actionType, operations) => {
   return async (elements) => {
     const objects = [];
@@ -477,12 +447,14 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
       // We also need to push a no split bundle directly
       if (isStixDomainObjectContainer(element.entity_type)) {
         const containerObjects = [];
-        const filters = sharingTaskFilters(element.internal_id);
-        const sharingElements = await elList(context, user, READ_DATA_INDICES, { filters, baseData: true });
+        const sharingElements = await getContainerObjects(context, user, element.internal_id, { all: true });
         let startProcessingTime = new Date().getTime();
         for (let shareIndex = 0; shareIndex < sharingElements.length; shareIndex += 1) {
           const sharingElement = sharingElements[shareIndex];
-          containerObjects.push(buildBundleElement(sharingElement, actionType, operations));
+          const sharingElementBundle = buildBundleElement(sharingElement, actionType, operations);
+          // We do not want to recursively share elements: we only share elements directly contained in current container
+          sharingElementBundle.extensions[STIX_EXT_OCTI].sharing_direct_container = true;
+          containerObjects.push(sharingElementBundle);
           // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
           if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
             startProcessingTime = new Date().getTime();
