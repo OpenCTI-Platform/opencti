@@ -19,7 +19,7 @@ const StixCoreObjectEnrichment = (props) => {
   };
 
   const handleClose = () => {
-    setOpenDrawer(false); 
+    setOpenDrawer(false);
     setSearch('');
   };
 
