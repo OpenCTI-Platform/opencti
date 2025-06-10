@@ -1033,7 +1033,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: ({ secondary_motivations }) => {
-      const value = secondary_motivations || '-';
+      const value = secondary_motivations ? secondary_motivations.join(', ') : '-';
       return defaultRender(value);
     },
   },
