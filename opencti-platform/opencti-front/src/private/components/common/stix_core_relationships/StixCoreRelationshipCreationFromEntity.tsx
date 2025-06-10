@@ -206,9 +206,9 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
       x_opencti_aliases
     }
     ... on SecurityPlatform{
-        name
-        description
-        security_platform_type
+      name
+      description
+      security_platform_type
     }
     ... on Sector {
       name
