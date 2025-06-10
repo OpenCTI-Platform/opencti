@@ -23,6 +23,8 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
+import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
+import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectFileExportButton from '../stix_core_objects/StixCoreObjectFileExportButton';
@@ -556,8 +558,17 @@ const StixDomainObjectHeader = (props) => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <div style={{ display: 'flex' }}>
+            {disableSharing !== true && (
+              <StixCoreObjectBackgroundTasks
+                id={stixDomainObject.id}
+                actionsFilter={['SHARE', 'UNSHARE', 'SHARE_MULTIPLE', 'UNSHARE_MULTIPLE']}
+              />
+            )}
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
+            )}
+            {disableSharing !== true && (
+              <StixCoreObjectSharingList data={stixDomainObject} />
             )}
             <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
               <StixCoreObjectFileExport
