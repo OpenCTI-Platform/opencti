@@ -968,7 +968,6 @@ export type AttackPatternForMatrix = {
   killChainPhasesIds?: Maybe<Array<Scalars['String']['output']>>;
   name: Scalars['String']['output'];
   subAttackPatterns?: Maybe<Array<SubAttackPatternForMatrix>>;
-  subAttackPatternsIds?: Maybe<Array<Scalars['String']['output']>>;
   subAttackPatternsSearchText?: Maybe<Scalars['String']['output']>;
   x_mitre_id?: Maybe<Scalars['String']['output']>;
 };
@@ -34793,7 +34792,6 @@ export type AttackPatternForMatrixResolvers<ContextType = any, ParentType extend
   killChainPhasesIds?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   subAttackPatterns?: Resolver<Maybe<Array<ResolversTypes['SubAttackPatternForMatrix']>>, ParentType, ContextType>;
-  subAttackPatternsIds?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   subAttackPatternsSearchText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

@@ -49,7 +49,6 @@ const MATRIX_QUERY = gql`
             name
             description
           }
-          subAttackPatternsIds
           subAttackPatternsSearchText
           killChainPhasesIds
         }

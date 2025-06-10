@@ -7,16 +7,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_DETECTS, RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
-import {
-  batchListEntitiesThroughRelationsPaginated,
-  type EntityOptions,
-  findEntitiesIdsWithRelations,
-  listAllEntities,
-  listAllRelations,
-  listEntities,
-  listEntitiesThroughRelationsPaginated,
-  storeLoadById
-} from '../database/middleware-loader';
+import { batchListEntitiesThroughRelationsPaginated, type EntityOptions, findEntitiesIdsWithRelations, listAllEntities, listAllRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreRelation } from '../types/store';
 import { type AttackPatternAddInput, FilterMode } from '../generated/graphql';
@@ -90,7 +81,6 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
       })
       .map((attackPattern) => {
         const subAttackPatterns: { attack_pattern_id: string, name: string, description?: string }[] = [];
-        const subAttackPatternsIds: string[] = [];
         let subAttackPatternsSearchText: string = '';
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -105,7 +95,6 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
                   name: subAttackPattern.name,
                   description: subAttackPattern.description
                 });
-                subAttackPatternsIds.push(subAttackPattern.id);
                 subAttackPatternsSearchText += `${subAttackPattern.x_mitre_id} ${subAttackPattern.name} ${subAttackPattern.description} | `;
               }
             });
@@ -117,7 +106,6 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
           description: attackPattern.description,
           x_mitre_id: attackPattern.x_mitre_id,
           subAttackPatterns,
-          subAttackPatternsIds,
           subAttackPatternsSearchText,
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore

@@ -10,7 +10,7 @@ import { Box, Tooltip } from '@mui/material';
 import { FilteredAttackPattern, FilteredSubAttackPattern, getBoxStyles, MinimalAttackPattern } from '@components/techniques/attack_patterns/AttackPatternsMatrixColumns';
 import { CheckOutlined, CloseOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 interface AccordionAttackPatternProps {
   ap: FilteredAttackPattern,

@@ -15,7 +15,7 @@ import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { computeLevel } from '../../../../utils/Number';
-import { Theme } from '../../../../components/Theme';
+import type { Theme } from '../../../../components/Theme';
 
 export type AttackPattern = NonNullable<NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number]['attackPatterns']>[number];
 export type SubAttackPattern = NonNullable<AttackPattern['subAttackPatterns']>[number];
@@ -81,7 +81,6 @@ export const attackPatternsMatrixColumnsFragment = graphql`
             name
             description
           }
-          subAttackPatternsIds
           subAttackPatternsSearchText
           killChainPhasesIds
         }
@@ -159,7 +158,7 @@ const AttackPatternsMatrixColumns = ({
   }, []);
 
   const getAPLevel = (ap: AttackPattern): number => {
-    return attackPatterns.filter((n) => n.id === ap.attack_pattern_id || (ap.subAttackPatternsIds?.includes(n.id))).length;
+    return attackPatterns.filter((n) => n.id === ap.attack_pattern_id || (ap.subAttackPatterns?.find((sub) => n.id === sub.attack_pattern_id))).length;
   };
 
   const getSubLevel = (ap: SubAttackPattern): number => {
@@ -190,7 +189,7 @@ const AttackPatternsMatrixColumns = ({
             level: getSubLevel(sub),
           })),
           isOverlapping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
-          subAttackPatternsTotal: ap.subAttackPatternsIds?.length,
+          subAttackPatternsTotal: ap.subAttackPatterns?.length,
         }))
         .filter((o) => (isModeOnlyActive ? o.level > 0 : o.level >= 0))
         .sort((f, s) => f.name.localeCompare(s.name)),
