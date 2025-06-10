@@ -16,7 +16,7 @@ import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_FRONTEND_EXPORT, K
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { logApp } from '../config/conf';
+import { isFeatureEnabled, logApp } from '../config/conf';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -350,6 +350,7 @@ const createBasicRolesAndCapabilities = async (context) => {
     name: 'Connectors',
     description: 'Connector group',
     auto_new_marking: true,
+    ...(isFeatureEnabled('CSV_FEED') && { auto_integration_assignation: ['global'] })
   });
   const connectorRoleRelationInput = {
     toId: connectorRole.id,
