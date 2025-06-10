@@ -66,6 +66,7 @@ const ThreatActorIndividualQuery = graphql`
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
       ...StixCoreObjectContent_stixCoreObject
+      ...StixCoreObjectSharingListFragment
     }
     connectorsForExport {
       ...FileManager_connectorsExport

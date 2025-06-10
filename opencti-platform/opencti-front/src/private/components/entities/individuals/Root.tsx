@@ -66,6 +66,7 @@ const individualQuery = graphql`
       ...WorkbenchFileViewer_entity
       ...PictureManagementViewer_entity
       ...StixCoreObjectContent_stixCoreObject
+      ...StixCoreObjectSharingListFragment
     }
     connectorsForImport {
       ...FileManager_connectorsImport

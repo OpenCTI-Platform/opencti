@@ -66,6 +66,7 @@ const incidentQuery = graphql`
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
+      ...StixCoreObjectSharingListFragment
     }
     connectorsForExport {
       ...FileManager_connectorsExport

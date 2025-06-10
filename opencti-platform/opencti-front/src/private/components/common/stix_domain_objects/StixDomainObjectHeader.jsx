@@ -15,7 +15,7 @@ import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { DialogTitle } from '@mui/material';
+import { Box, DialogTitle } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
@@ -590,7 +590,7 @@ const StixDomainObjectHeader = (props) => {
             )}
             <PopoverMenu>
               {({ closeMenu }) => (
-                <>
+                <Box>
                   {disableSharing !== true && (
                     <MenuItem onClick={() => {
                       handleOpenSharing();
@@ -618,7 +618,7 @@ const StixDomainObjectHeader = (props) => {
                       {t_i18n('Enroll in playbook')}
                     </MenuItem>
                   )}
-                </>
+                </Box>
               )}
             </PopoverMenu>
             {EditComponent}
