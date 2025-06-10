@@ -1,6 +1,6 @@
 import { expect, it, describe, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, testContext, TESTING_GROUPS } from '../../utils/testQuery';
+import { queryAsAdmin, testContext, TESTING_GROUPS, USER_PLATFORM_ADMIN, ADMIN_USER } from '../../utils/testQuery';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
@@ -8,10 +8,11 @@ import { adminQueryWithError, queryAsAdminWithSuccess } from '../../utils/testQu
 import { getGroupEntityByName } from '../../utils/domainQueryHelper';
 import type { BasicStoreEntityMarkingDefinition } from '../../../src/types/store';
 import { deleteElementById } from '../../../src/database/middleware';
+import { queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
-  query groups($first: Int, $after: ID, $orderBy: GroupsOrdering, $orderMode: OrderingMode, $search: String) {
-    groups(first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, search: $search) {
+  query groups($first: Int, $after: ID, $orderBy: GroupsOrdering, $orderMode: OrderingMode, $search: String, $filters: FilterGroup) {
+    groups(first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, search: $search, filters: $filters) {
       edges {
         node {
           id
@@ -225,6 +226,45 @@ describe('Group resolver standard behavior', () => {
       variables: { id: groupInternalId, input: { key: 'name', value: ['Group - test'] } },
     });
     expect(queryResult?.data?.groupEdit.fieldPatch.name).toEqual('Group - test');
+  });
+  it('should update select default group for ingestion users', async () => {
+    const UPDATE_QUERY = gql`
+        mutation GroupEdit($id: ID!, $input: [EditInput]!) {
+            groupEdit(id: $id) {
+                fieldPatch(input: $input) {
+                    id
+                    name
+                    auto_integration_assignation
+                }
+            }
+        }
+    `;
+    const queryResult = await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+      query: UPDATE_QUERY,
+      variables: { id: groupInternalId, input: { key: 'auto_integration_assignation', value: ['global'] } },
+    });
+    expect(queryResult.data.groupEdit.fieldPatch.auto_integration_assignation).toEqual(['global']);
+  });
+  it('should return default group for ingestion users', async () => {
+    const queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'auto_integration_assignation',
+              values: [
+                'global'
+              ]
+            }
+          ],
+          filterGroups: []
+        }
+      }
+    });
+    expect(queryResult.data?.groups.edges[0].node.id).toEqual(groupInternalId);
+    expect(queryResult.data?.groups.edges.length).toEqual(1);
   });
   it('should have nothing shareable at the group creation', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: groupInternalId } });

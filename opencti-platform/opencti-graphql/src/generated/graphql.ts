@@ -8592,6 +8592,7 @@ export type GetMetrics = {
 export type Group = BasicObject & InternalObject & {
   __typename?: 'Group';
   allowed_marking?: Maybe<Array<MarkingDefinition>>;
+  auto_integration_assignation: Array<Maybe<Scalars['String']['output']>>;
   auto_new_marking?: Maybe<Scalars['Boolean']['output']>;
   created_at?: Maybe<Scalars['DateTime']['output']>;
   default_assignation?: Maybe<Scalars['Boolean']['output']>;
@@ -37440,6 +37441,7 @@ export type GetMetricsResolvers<ContextType = any, ParentType extends ResolversP
 
 export type GroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['Group'] = ResolversParentTypes['Group']> = ResolversObject<{
   allowed_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
+  auto_integration_assignation?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   auto_new_marking?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   default_assignation?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
