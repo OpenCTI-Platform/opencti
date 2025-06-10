@@ -515,12 +515,13 @@ const ContainerHeader = (props) => {
   const disableOrgaSharingButton = (!enableManageAuthorizedMembers && currentAccessRight.canEdit) || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
-  const numberOfButtons = (!knowledge ? 1 : 0) + (enableQuickSubscription ? 1 : 0) + (enableEnricher ? 1 : 0);
-  const enrollPlaybookButton = numberOfButtons < 3;
-  const sharingButton = numberOfButtons < 2;
-  const displayPopoverMenu = (!knowledge && disableSharing !== true && !sharingButton)
+  const initialNumberOfButtons = (!knowledge ? 1 : 0) + (enableQuickSubscription ? 1 : 0) + (enableEnricher ? 1 : 0);
+  const displayEnrollPlaybookButton = initialNumberOfButtons < 3;
+  const displaySharingButton = initialNumberOfButtons < 2
+    || (initialNumberOfButtons < 3 && !enableEnrollPlaybook);
+  const displayPopoverMenu = (!knowledge && disableSharing !== true && !displaySharingButton)
     || (!knowledge && !!enableManageAuthorizedMembers)
-    || (enableEnrollPlaybook && !enrollPlaybookButton);
+    || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
 
   return (
     <div style={containerStyle}>
@@ -650,7 +651,7 @@ const ContainerHeader = (props) => {
                 open={openSharing}
                 variant="header"
                 disabled={disableOrgaSharingButton}
-                handleClose={sharingButton ? undefined : handleCloseSharing}
+                handleClose={displaySharingButton ? undefined : handleCloseSharing}
               />
             )}
             {!knowledge && (
@@ -693,13 +694,13 @@ const ContainerHeader = (props) => {
               && <StixCoreObjectEnrollPlaybook
                 stixCoreObjectId={container.id}
                 open={openEnrollPlaybook}
-                handleClose={enrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
+                handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
                  />}
             {displayPopoverMenu && (
               <PopoverMenu>
                 {({ closeMenu }) => (
                   <Box>
-                    {!knowledge && disableSharing !== true && !sharingButton && (
+                    {!knowledge && disableSharing !== true && !displaySharingButton && (
                       <MenuItem
                         onClick={() => {
                           setOpenSharing(true);
@@ -724,7 +725,7 @@ const ContainerHeader = (props) => {
                         </MenuItem>
                       </Security>
                     )}
-                    {enableEnrollPlaybook && !enrollPlaybookButton && (
+                    {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
                       <MenuItem
                         onClick={() => {
                           setOpenEnrollPlaybook(true);
