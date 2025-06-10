@@ -254,7 +254,7 @@ const AttackPatternsMatrixColumns = ({
                           }}
                         >
                           <AccordionAttackPattern
-                            ap={ap}
+                            attackPattern={ap}
                             handleToggleHover={handleToggleHover}
                             handleOpen={handleOpen}
                             hover={hover}

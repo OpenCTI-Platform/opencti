@@ -13,7 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 
 interface AccordionAttackPatternProps {
-  ap: FilteredAttackPattern,
+  attackPattern: FilteredAttackPattern,
   handleToggleHover: (id: string) => void,
   handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void,
   hover: Record<string, boolean>,
@@ -24,7 +24,7 @@ interface AccordionAttackPatternProps {
 }
 
 const AccordionAttackPattern = ({
-  ap,
+  attackPattern,
   handleToggleHover,
   handleOpen,
   hover,
@@ -43,11 +43,11 @@ const AccordionAttackPattern = ({
       square
       disableGutters
       elevation={0}
-      id={ap.attack_pattern_id}
-      key={ap.attack_pattern_id}
+      id={attackPattern.attack_pattern_id}
+      key={attackPattern.attack_pattern_id}
       slotProps={{ transition: { unmountOnExit: true } }}
-      onMouseEnter={() => handleToggleHover(ap.attack_pattern_id)}
-      onMouseLeave={() => handleToggleHover(ap.attack_pattern_id)}
+      onMouseEnter={() => handleToggleHover(attackPattern.attack_pattern_id)}
+      onMouseLeave={() => handleToggleHover(attackPattern.attack_pattern_id)}
       sx={{
         width: '100%',
         border,
@@ -55,7 +55,7 @@ const AccordionAttackPattern = ({
       }}
     >
       <MuiAccordionSummary
-        onClick={(e) => handleOpen(ap, e)}
+        onClick={(e) => handleOpen(attackPattern, e)}
         expandIcon={
           <IconButton onClick={(event) => {
             event.stopPropagation();
@@ -81,7 +81,7 @@ const AccordionAttackPattern = ({
         }}
       >
         <Typography variant="body2" fontSize={10}>
-          {ap.name}
+          {attackPattern.name}
         </Typography>
       </MuiAccordionSummary>
       <AccordionDetails
@@ -90,7 +90,7 @@ const AccordionAttackPattern = ({
           borderTop: border,
         }}
       >
-        {ap.subAttackPatterns?.map((subAttackPattern: FilteredSubAttackPattern) => {
+        {attackPattern.subAttackPatterns?.map((subAttackPattern: FilteredSubAttackPattern) => {
           const isSubHovered = hover[subAttackPattern.attack_pattern_id];
           const hasSubLevel = subAttackPattern.level > 0;
           return (
@@ -114,7 +114,7 @@ const AccordionAttackPattern = ({
               <Typography variant="body2" fontSize={10}>
                 {subAttackPattern.name}
               </Typography>
-              {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && ap.level > 0 && (
+              {isSecurityPlatformEnabled && attackPatternIdsToOverlap?.length !== undefined && attackPattern.level > 0 && (
                 <Tooltip
                   title={t_i18n('Should cover')}
                   sx={{
