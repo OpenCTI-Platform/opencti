@@ -390,7 +390,7 @@ const StixDomainObjectHeader = (props) => {
   const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
   if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
   const displaySharingButton = disableSharing !== true && initialNumberOfButtons < 3;
-  if (displaySharingButton) initialNumberOfButtons += 1;
+
   const displayPopoverMenu = (disableSharing !== true && !displaySharingButton)
     || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
 

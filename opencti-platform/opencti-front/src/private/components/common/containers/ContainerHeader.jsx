@@ -526,7 +526,6 @@ const ContainerHeader = (props) => {
   const displaySharingButton = displaySharing && initialNumberOfButtons < 3;
   if (displaySharingButton) initialNumberOfButtons += 1;
   const displayAuthorizedMembersButton = displayAuthorizedMembers && initialNumberOfButtons < 3;
-  if (displayAuthorizedMembersButton) initialNumberOfButtons += 1;
 
   const displayPopoverMenu = (displaySharing && !displaySharingButton)
     || (displayAuthorizedMembers && !displayAuthorizedMembersButton)
