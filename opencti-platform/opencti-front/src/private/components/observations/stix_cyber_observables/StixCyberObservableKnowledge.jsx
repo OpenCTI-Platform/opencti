@@ -8,7 +8,7 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 const StixCyberObservableKnowledgeComponent = (props) => {
   const { stixCyberObservable } = props;
   return (
-    <>
+    <div data-testid="observable-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId/"
@@ -30,7 +30,7 @@ const StixCyberObservableKnowledgeComponent = (props) => {
           entityId={stixCyberObservable.id}
         />
       </div>
-    </>
+    </div>
   );
 };
 
