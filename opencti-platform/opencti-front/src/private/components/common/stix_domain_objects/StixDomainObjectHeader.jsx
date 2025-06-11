@@ -24,7 +24,7 @@ import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
 import StixCoreObjectMenuItemEnrollPlaybook
-  from '@components/common/stix_core_objects/StixCoreObjectMenuItemEnrollPlaybook';
+  from '../stix_core_objects/StixCoreObjectMenuItemEnrollPlaybook';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';

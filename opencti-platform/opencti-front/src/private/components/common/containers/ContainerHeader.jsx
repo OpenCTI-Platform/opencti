@@ -10,7 +10,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTheme } from '@mui/styles';
 import MenuItem from '@mui/material/MenuItem';
 import { Box } from '@mui/material';
-import StixCoreObjectMenuItemEnrollPlaybook from '@components/common/stix_core_objects/StixCoreObjectMenuItemEnrollPlaybook';
+import StixCoreObjectMenuItemEnrollPlaybook from '../stix_core_objects/StixCoreObjectMenuItemEnrollPlaybook';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
