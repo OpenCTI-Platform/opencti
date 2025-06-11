@@ -24,8 +24,7 @@ export const up = async (next) => {
     query: {
       range: {
         created_at: {
-          gte: '2025-04-08T00:00:00',
-          lte: '2025-06-13T00:00:00'
+          gte: '2025-04-08T00:00:00'
         }
       }
     }
