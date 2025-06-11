@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
-import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
+import EETooltip from '../../common/entreprise_edition/EETooltip';
 import StixCoreObjectSharingList from '../../common/stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../../common/draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
@@ -50,7 +50,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
           <PopoverMenu>
             {({ closeMenu }) => (
               <Box>
-                <Tooltip title={sharingNotPossibleMessage}>
+                <EETooltip title={sharingNotPossibleMessage}>
                   <span>
                     <MenuItem
                       onClick={() => {
@@ -62,7 +62,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
                       {t_i18n('Share with an organization')}
                     </MenuItem>
                   </span>
-                </Tooltip>
+                </EETooltip>
               </Box>
             )}
           </PopoverMenu>

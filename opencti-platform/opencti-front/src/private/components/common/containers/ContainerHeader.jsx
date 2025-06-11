@@ -34,6 +34,7 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useSharingDisabled from '../../../../utils/hooks/useSharingDisabled';
+import EETooltip from '../entreprise_edition/EETooltip';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -724,7 +725,7 @@ const ContainerHeader = (props) => {
                 {({ closeMenu }) => (
                   <Box>
                     {displaySharing && !displaySharingButton && (
-                      <Tooltip title={sharingNotPossibleMessage}>
+                      <EETooltip title={sharingNotPossibleMessage}>
                         <span>
                           <MenuItem
                             onClick={() => {
@@ -736,7 +737,7 @@ const ContainerHeader = (props) => {
                             {t_i18n('Share with an organization')}
                           </MenuItem>
                         </span>
-                      </Tooltip>
+                      </EETooltip>
                     )}
                     {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
                       <Security

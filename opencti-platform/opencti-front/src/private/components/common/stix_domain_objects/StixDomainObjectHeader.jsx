@@ -46,6 +46,7 @@ import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useSharingDisabled from '../../../../utils/hooks/useSharingDisabled';
+import EETooltip from '../../common/entreprise_edition/EETooltip';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -619,7 +620,7 @@ const StixDomainObjectHeader = (props) => {
                 {({ closeMenu }) => (
                   <Box>
                     {disableSharing !== true && !displaySharingButton && (
-                      <Tooltip title={sharingNotPossibleMessage}>
+                      <EETooltip title={sharingNotPossibleMessage}>
                         <span>
                           <MenuItem
                             onClick={() => {
@@ -631,7 +632,7 @@ const StixDomainObjectHeader = (props) => {
                             {t_i18n('Share with an organization')}
                           </MenuItem>
                         </span>
-                      </Tooltip>
+                      </EETooltip>
                     )}
                     {(enableEnricher && isKnowledgeEnricher) && (
                       <MenuItem onClick={() => {
