@@ -27,7 +27,8 @@
     "types": ["@testing-library/jest-dom"]
   },
   "include": [
-    "src", "index.d.ts", ".eslintrc.js", "tests_e2e"
+    "src", "index.d.ts",
+    "eslint.config.js", "tests_e2e"
   ],
   "references": [
     {
