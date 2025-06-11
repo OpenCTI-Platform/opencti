@@ -1,10 +1,11 @@
 import { Page } from '@playwright/test';
 import StixCoreObjectDataTab from 'tests_e2e/model/StixCoreObjectDataTab.pageModel';
+import FeedbackDetailsPage from 'tests_e2e/model/feedbackDetails.pageModel';
+import ObservedDataPage from 'tests_e2e/model/observedData.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ReportPage from '../model/report.pageModel';
 import ReportDetailsPage from '../model/reportDetails.pageModel';
-import StixDomainObjectContentTabPage from '../model/StixDomainObjectContentTab.pageModel';
 import ContainerObservablesPage from '../model/containerObservables.pageModel';
 import GroupingsPage from '../model/grouping.pageModel';
 import GroupingDetailsPage from '../model/groupingDetails.pageModel';
@@ -24,17 +25,16 @@ import CaseRfiPage from '../model/caseRfi.pageModel';
 import CaseRfiDetailsPage from '../model/caseRfiDetails.pageModel';
 import TaskPage from '../model/tasks.pageModel';
 import TaskDetailsPage from '../model/tasksDetails.pageModel';
-import FeedbackPage from "../model/feedback.pageModel";
-import FeedbackDetailsPage from 'tests_e2e/model/feedbackDetails.pageModel';
-import EventsIncidentPage from "../model/EventsIncident.pageModel";
-import EventsIncidentDetailsPage from "../model/EventsIncidentDetails.pageModel";
-import SightingsPage from "../model/sightings.pageModel";
-import SightingsOverviewPage from "../model/sightingsOverview.pageModel";
-import ObservedDataPage from 'tests_e2e/model/observedData.pageModel';
-import ObservedDataDetailsPage from "../model/observedDataDetails.pageModel";
-import EntitiesTabPageModel from "../model/EntitiesTab.pageModel";
-import ObservablesTabPageModel from "../model/ObservablesTab.pageModel";
-import ArtifactPage from "../model/Artifact.pageModel";
+import FeedbackPage from '../model/feedback.pageModel';
+import EventsIncidentPage from '../model/EventsIncident.pageModel';
+import EventsIncidentDetailsPage from '../model/EventsIncidentDetails.pageModel';
+import SightingsPage from '../model/sightings.pageModel';
+import SightingsOverviewPage from '../model/sightingsOverview.pageModel';
+import ObservedDataDetailsPage from '../model/observedDataDetails.pageModel';
+import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
+import ObservablesTabPageModel from '../model/ObservablesTab.pageModel';
+import ArtifactPage from '../model/Artifact.pageModel';
+import StixCoreObjectContentTabPage from "../model/StixCoreObjectContentTab.pageModel";
 
 /**
  * Goal: validate that everything is opening without errors in Analyses > Note.
@@ -106,7 +106,7 @@ const navigateMalwareAnalyses = async (page: Page) => {
 
   // -- Content
   await malwareAnalysesDetailsPage.tabs.goToContentTab();
-  const contentTab = new StixDomainObjectContentTabPage(page);
+  const contentTab = new StixCoreObjectContentTabPage(page);
   await expect(contentTab.getPage()).toBeVisible();
 
   // -- Data
@@ -144,7 +144,7 @@ const navigateGroupings = async (page: Page) => {
 
   // -- Content
   await groupingsDetailsPage.tabs.goToContentTab();
-  const contentTab = new StixDomainObjectContentTabPage(page);
+  const contentTab = new StixCoreObjectContentTabPage(page);
   await expect(contentTab.getPage()).toBeVisible();
   await contentTab.getContentMappingViewButton().click();
   await expect(page.getByRole('button', { name: 'Clear mappings' })).toBeVisible();
@@ -203,7 +203,7 @@ const navigateReports = async (page: Page) => {
 
   // -- Content
   await reportDetailsPage.tabs.goToContentTab();
-  const contentTab = new StixDomainObjectContentTabPage(page);
+  const contentTab = new StixCoreObjectContentTabPage(page);
   await expect(contentTab.getPage()).toBeVisible();
   await contentTab.getContentMappingViewButton().click();
   await expect(page.getByRole('button', { name: 'Clear mappings' })).toBeVisible();
@@ -253,7 +253,7 @@ const navigateIncidentResponse = async (page: Page) => {
 
   // -- Content
   await incidentResponseDetailsPage.tabs.goToContentTab();
-  const contentTab = new StixDomainObjectContentTabPage(page);
+  const contentTab = new StixCoreObjectContentTabPage(page);
   await expect(contentTab.getPage()).toBeVisible();
   await contentTab.getContentMappingViewButton().click();
   await expect(page.getByRole('button', { name: 'Clear mappings' })).toBeVisible();
@@ -304,7 +304,7 @@ const navigateRfi = async (page: Page) => {
 
   // -- Content
   await caseRfiDetailsPage.tabs.goToContentTab();
-  const contentTab = new StixDomainObjectContentTabPage(page);
+  const contentTab = new StixCoreObjectContentTabPage(page);
   await expect(contentTab.getPage()).toBeVisible();
   await contentTab.getContentMappingViewButton().click();
   await expect(page.getByRole('button', { name: 'Clear mappings' })).toBeVisible();
@@ -355,7 +355,7 @@ const navigateRft = async (page: Page) => {
 
   // -- Content
   await caseRftDetailsPage.tabs.goToContentTab();
-  const contentTab = new StixDomainObjectContentTabPage(page);
+  const contentTab = new StixCoreObjectContentTabPage(page);
   await expect(contentTab.getPage()).toBeVisible();
   await contentTab.getContentMappingViewButton().click();
   await expect(page.getByRole('button', { name: 'Clear mappings' })).toBeVisible();
@@ -396,7 +396,7 @@ const navigateTasks = async (page: Page) => {
   const taskDetailsPage = new TaskDetailsPage(page);
   // -- Content
   await taskDetailsPage.tabs.goToContentTab();
-  const contentTab = new StixDomainObjectContentTabPage(page);
+  const contentTab = new StixCoreObjectContentTabPage(page);
   await expect(contentTab.getPage()).toBeVisible();
 
   // -- Data
@@ -426,7 +426,7 @@ const navigateFeedbacks = async (page: Page) => {
   const feedbackDetailsPage = new FeedbackDetailsPage(page);
   // -- Content
   await feedbackDetailsPage.tabs.goToContentTab();
-  const contentTab = new StixDomainObjectContentTabPage(page);
+  const contentTab = new StixCoreObjectContentTabPage(page);
   await expect(contentTab.getPage()).toBeVisible();
 
   // -- Data
@@ -462,7 +462,7 @@ const navigateEventsIncident = async (page: Page) => {
 
   // -- Content
   await eventsIncidentDetailsPage.tabs.goToContentTab();
-  const contentTab = new StixDomainObjectContentTabPage(page);
+  const contentTab = new StixCoreObjectContentTabPage(page);
   await expect(contentTab.getPage()).toBeVisible();
 
   // -- Analyses
@@ -551,8 +551,16 @@ const navigateObservables = async (page: Page) => {
   const observableDetailsPage = new ObservableDetailsPage(page);
   await expect(observableDetailsPage.getPage()).toBeVisible();
   await observableDetailsPage.getEnrichButton().click();
-
   await expect(page.getByText('Enrichment connectors')).toBeVisible();
+
+  // - Knowledge
+  await observableDetailsPage.tabs.goToKnowledgeTab();
+  await expect(page.getByTestId('observable-knowledge')).toBeVisible();
+
+  // -- Content
+  await observableDetailsPage.tabs.goToContentTab();
+  const contentTab = new StixCoreObjectContentTabPage(page);
+  await expect(contentTab.getPage()).toBeVisible();
 };
 
 /**
@@ -567,11 +575,7 @@ const navigateArtifact = async (page: Page) => {
   await expect(artifactPage.getPage()).toBeVisible();
   await expect(page.getByText(artifactInitData)).toBeVisible();
   await artifactPage.getItemFromList(artifactInitData).click();
-
-
-
-}
-
+};
 
 const navigateAllMenu = async (page: Page) => {
   const leftBarPage = new LeftBarPage(page);
