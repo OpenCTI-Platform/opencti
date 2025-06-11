@@ -1,5 +1,5 @@
 import type { Filter, FilterGroup } from '../../../generated/graphql';
-import type { ActivityStreamEvent } from '../../../manager/activityListener';
+import type { ActivityStreamEvent } from '../../../types/event';
 import { FILTER_WITH_EVENTS_KEY_TESTERS_MAP } from './activity-event-testers';
 import { testFilterGroup } from '../boolean-logic-engine';
 import { UnsupportedError } from '../../../config/errors';

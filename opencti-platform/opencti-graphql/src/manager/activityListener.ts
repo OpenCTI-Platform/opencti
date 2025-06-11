@@ -18,7 +18,6 @@ import { type ActionHandler, type ActionListener, registerUserActionListener, ty
 import conf, { logAudit } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { EVENT_ACTIVITY_VERSION, storeActivityEvent } from '../database/redis';
-import type { UserOrigin } from '../types/user';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -26,6 +25,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { REDACTED_INFORMATION } from '../database/utils';
+import type { ActivityStreamEvent } from '../types/event';
 
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
@@ -34,18 +34,6 @@ export const EVENT_SCOPE_VALUES = ['create', 'update', 'delete', 'read', 'search
 export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command'];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
-
-export interface ActivityStreamEvent {
-  version: string
-  type: 'authentication' | 'read' | 'mutation' | 'file' | 'command'
-  event_access: 'extended' | 'administration'
-  prevent_indexing: boolean
-  event_scope: string
-  message: string
-  status: 'error' | 'success'
-  origin: Partial<UserOrigin>
-  data: Partial<{ id: string, object_marking_refs_ids?: string[], granted_refs_ids?: string[], marking_definitions?: string[] }>
-}
 
 const initActivityManager = () => {
   const activityReadCache = new LRUCache({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour

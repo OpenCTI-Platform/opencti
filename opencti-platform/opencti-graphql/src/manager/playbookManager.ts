@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import moment from 'moment';
 import type { Moment } from 'moment/moment';
@@ -43,6 +42,7 @@ import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resol
 import { elPaginate } from '../database/engine';
 import { stixLoadById } from '../database/middleware';
 import { convertRelationRefsFilterKeys } from '../utils/filtering/filtering-utils';
+import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../types/playbookExecution';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
@@ -54,23 +54,6 @@ const CRON_SCHEDULE_TIME = 60000; // 1 minute
 // Don't try to understand, just trust
 function keyStep<V>(k: `step_${string}`, v: V): { [P in `step_${string}`]: V } {
   return { [k]: v } as any; // Trust the entry checking
-}
-interface ExecutionEnvelopStep {
-  message: string,
-  previous_step_id?: string,
-  status: 'success' | 'error',
-  in_timestamp: string,
-  out_timestamp: string,
-  duration: number,
-  bundle?: StixBundle | null,
-  patch?: Operation[],
-  error?: string,
-}
-export interface ExecutionEnvelop {
-  playbook_id: string
-  playbook_execution_id: string
-  last_execution_step: string | undefined
-  [k: `step_${string}`]: ExecutionEnvelopStep
 }
 
 type ObservationFn = {
