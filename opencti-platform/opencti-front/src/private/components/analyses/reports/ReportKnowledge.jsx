@@ -274,7 +274,7 @@ class ReportKnowledgeComponent extends Component {
                 stixDomainObjectId={report.id}
                 defaultStartTime={report.first_seen}
                 defaultStopTime={report.last_seen}
-                isEntity
+                entityType={report.entity_type}
               />
             )}
           />

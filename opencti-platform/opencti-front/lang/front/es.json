@@ -2904,6 +2904,8 @@
   "Security platform": "Plataforma de seguridad",
   "Security platform type": "Tipo de plataforma de seguridad",
   "Security platforms": "Plataformas de seguridad",
+  "Security posture does not cover the threat": "La postura de seguridad no cubre la amenaza",
+  "Security posture should cover the threat": "La postura de seguridad debe cubrir la amenaza",
   "See all entities created by user": "Ver todas las entidades creadas por el usuario",
   "See all relationships created by user": "Ver todas las relaciones creadas por el usuario",
   "See more": "Ver más",

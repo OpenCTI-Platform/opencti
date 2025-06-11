@@ -127,7 +127,7 @@ class GroupingKnowledgeComponent extends Component {
                 stixDomainObjectId={grouping.id}
                 defaultStartTime={grouping.first_seen}
                 defaultStopTime={grouping.last_seen}
-                isEntity
+                entityType={grouping.entity_type}
               />
             }
           />

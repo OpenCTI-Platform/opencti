@@ -30,7 +30,7 @@ interface StixDomainObjectAttackPatternsKillChainProps {
   openExports?: boolean;
   availableFilterKeys: string[];
   storageKey: string;
-  isEntity?: boolean;
+  entityType?: string;
 }
 
 export const stixDomainObjectAttackPatternsKillChainContainerLineFragment = graphql`
@@ -175,7 +175,7 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
   openExports,
   availableFilterKeys,
   storageKey,
-  isEntity,
+  entityType,
 }) => {
   const dataPreloaded = usePreloadedQuery<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
@@ -206,7 +206,7 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
         availableFilterKeys={availableFilterKeys}
         storageKey={storageKey}
         killChainDataQueryRef={killChainDataQueryRef}
-        isEntity={isEntity}
+        entityType={entityType}
       />
     </React.Suspense>
   ) : (

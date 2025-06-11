@@ -10,13 +10,13 @@ import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 
 export interface AttackPatternsMatrixProps {
-  marginRight?: boolean;
   attackPatterns: NonNullable<NonNullable<StixDomainObjectAttackPatternsKillChainContainer_data$data>['attackPatterns']>['edges'][0]['node'][];
   searchTerm?: string;
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain?: string;
   attackPatternIdsToOverlap?: string[];
   isModeOnlyActive: boolean;
+  entityType?: string;
 }
 
 export const attackPatternsMatrixQuery = graphql`
@@ -27,12 +27,12 @@ export const attackPatternsMatrixQuery = graphql`
 
 const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   attackPatterns,
-  marginRight,
   searchTerm,
   handleAdd,
   selectedKillChain,
   attackPatternIdsToOverlap,
   isModeOnlyActive,
+  entityType,
 }) => {
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 
@@ -50,7 +50,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
             queryRef={queryRef}
             attackPatternIdsToOverlap={attackPatternIdsToOverlap}
             attackPatterns={attackPatterns}
-            marginRight={marginRight}
+            entityType={entityType}
             searchTerm={searchTerm ?? ''}
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
