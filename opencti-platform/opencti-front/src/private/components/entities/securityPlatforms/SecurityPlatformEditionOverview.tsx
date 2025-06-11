@@ -16,12 +16,13 @@ import {
 import {
   SecurityPlatformEditionContainer_securityPlatform$data,
 } from '@components/entities/securityPlatforms/__generated__/SecurityPlatformEditionContainer_securityPlatform.graphql';
+import StatusField from '@components/common/form/StatusField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
-import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -95,6 +96,7 @@ interface SecurityPlatformEditionFormData {
   message?: string;
   createdBy?: FieldOption;
   objectMarking?: FieldOption[];
+  x_opencti_workflow_id: FieldOption;
   references: ExternalReferencesValues | undefined;
 }
 
@@ -124,6 +126,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
     const inputValues = Object.entries({
       ...otherValues,
       createdBy: values.createdBy?.value,
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
@@ -143,6 +146,10 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
 
   const handleSubmitField = (name: string, value: string | string[] | number | number[] | FieldOption | null) => {
     if (!enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = (value as FieldOption).value;
+      }
       securityPlatformValidator
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -151,7 +158,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
               id: securityPlatform.id,
               input: {
                 key: name,
-                value: value ?? [null],
+                value: finalValue ?? [null],
               },
             },
           });
@@ -163,7 +170,8 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
   const initialValues = {
     name: securityPlatform.name,
     description: securityPlatform.description,
-    securityPlatform_type: securityPlatform.security_platform_type,
+    security_platform_type: securityPlatform.security_platform_type,
+    x_opencti_workflow_id: convertStatus(t_i18n, securityPlatform) as FieldOption,
     createdBy: convertCreatedBy(securityPlatform) as FieldOption,
     objectMarking: convertMarkings(securityPlatform),
     references: [],
@@ -229,6 +237,19 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
             variant="edit"
             containerStyle={fieldSpacingContainerStyle}
           />
+          {securityPlatform.workflowEnabled && (
+          <StatusField
+            name="x_opencti_workflow_id"
+            type="SecurityPlatform"
+            onFocus={editor.changeFocus}
+            onChange={handleSubmitField}
+            setFieldValue={setFieldValue}
+            style={{ marginTop: 20 }}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+                  }
+          />
+          )}
           <CreatedByField
             name="createdBy"
             required={(mandatoryAttributes.includes('createdBy'))}

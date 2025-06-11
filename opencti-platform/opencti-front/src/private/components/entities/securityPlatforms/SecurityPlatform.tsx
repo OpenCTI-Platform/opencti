@@ -25,6 +25,7 @@ export const securityPlatformFragment = graphql`
     modified
     created_at
     updated_at
+    security_platform_type
     createdBy {
       ... on Identity {
         id
@@ -93,10 +94,7 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
             stixObjectOrStixRelationshipLink={`/dashboard/entities/security_platforms/${securityPlatform.id}/knowledge`}
           />
         </Grid>
-        <Grid
-          item
-          xs={6}
-        >
+        <Grid item xs={6}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={securityPlatform.id}
           />
@@ -111,8 +109,7 @@ const SecurityPlatform: React.FC<SecurityPlatformProps> = ({ securityPlatformDat
             stixCoreObjectId={securityPlatform.id}
           />
         </Grid>
-        );
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <StixCoreObjectOrStixCoreRelationshipNotes
             stixCoreObjectOrStixCoreRelationshipId={securityPlatform.id}
             defaultMarkings={securityPlatform.objectMarking ?? []}

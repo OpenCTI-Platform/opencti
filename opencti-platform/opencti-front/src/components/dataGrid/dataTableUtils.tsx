@@ -1037,6 +1037,16 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
+  security_platform_type: {
+    id: 'security_platform_type',
+    label: 'Type',
+    percentWidth: 20,
+    isSortable: true,
+    render: ({ security_platform_type }) => {
+      const value = isNotEmptyField(security_platform_type) ? security_platform_type : '-';
+      return defaultRender(value);
+    },
+  },
   severity: {
     id: 'severity',
     label: 'Severity',
