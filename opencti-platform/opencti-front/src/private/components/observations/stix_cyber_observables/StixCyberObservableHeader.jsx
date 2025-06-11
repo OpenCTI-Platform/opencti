@@ -14,7 +14,7 @@ import StixCyberObservableEdition from './StixCyberObservableEdition';
 import Security from '../../../../utils/Security';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
-import StixCoreObjectMenuItemOrganizationSharing from '../stix_core_objects/StixCoreObjectMenuItemOrganizationSharing';
+import StixCoreObjectMenuItemOrganizationSharing from '../../common/stix_core_objects/StixCoreObjectMenuItemOrganizationSharing';
 
 const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
   const [openSharing, setOpenSharing] = useState(false);

@@ -13,8 +13,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
-import { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import Security, { CollaborativeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
@@ -135,7 +135,9 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </CollaborativeSecurity>
       </Menu>
-      <StixCoreObjectEnrichment stixCoreObjectId={id} onClose={undefined} isOpen={undefined} />
+      <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+        <StixCoreObjectEnrichment stixCoreObjectId={id} onClose={undefined} isOpen={undefined} />
+      </Security>
       <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
       <DeleteDialog
         deletion={deletion}

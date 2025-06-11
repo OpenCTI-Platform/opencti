@@ -23,8 +23,7 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
-import StixCoreObjectMenuItemEnrollPlaybook
-  from '../stix_core_objects/StixCoreObjectMenuItemEnrollPlaybook';
+import StixCoreObjectMenuItemEnrollPlaybook from '../stix_core_objects/StixCoreObjectMenuItemEnrollPlaybook';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
@@ -37,11 +36,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import useGranted, {
-  KNOWLEDGE_KNENRICHMENT,
-  KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
-  KNOWLEDGE_KNUPDATE
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
@@ -52,9 +47,7 @@ import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
-import EETooltip from '../entreprise_edition/EETooltip';
-import StixCoreObjectMenuItemOrganizationSharing
-  from "@components/common/stix_core_objects/StixCoreObjectMenuItemOrganizationSharing";
+import StixCoreObjectMenuItemOrganizationSharing from '../stix_core_objects/StixCoreObjectMenuItemOrganizationSharing';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
