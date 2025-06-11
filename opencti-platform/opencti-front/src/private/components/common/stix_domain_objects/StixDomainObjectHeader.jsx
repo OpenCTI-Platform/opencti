@@ -386,9 +386,11 @@ const StixDomainObjectHeader = (props) => {
   };
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
-  const initialNumberOfButtons = 1 + (isKnowledgeUpdater ? 1 : 0) + (enableQuickSubscription ? 1 : 0);
-  const displayEnrollPlaybookButton = initialNumberOfButtons < 3;
-  const displaySharingButton = initialNumberOfButtons < 2 || (initialNumberOfButtons < 3 && !enableEnrollPlaybook);
+  let initialNumberOfButtons = 1 + (isKnowledgeUpdater ? 1 : 0) + (enableQuickSubscription ? 1 : 0);
+  const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
+  if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
+  const displaySharingButton = disableSharing !== true && initialNumberOfButtons < 3;
+  if (displaySharingButton) initialNumberOfButtons += 1;
   const displayPopoverMenu = (disableSharing !== true && !displaySharingButton)
     || (enableEnrollPlaybook && !displayEnrollPlaybookButton);
 
