@@ -22,7 +22,7 @@ import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import stopEvent from '../../../utils/domEvent';
 import DeleteDialog from '../../../components/DeleteDialog';
 import useDeletion from '../../../utils/hooks/useDeletion';
-import WorkspaceEditionQuery from './WorkspaceEditionQuery';
+import WorkspaceEditionQuery from './WorkspacePopoverContainerQuery';
 import WorkspacePopoverDeletionMutation from './WorkspacePopoverDeletionMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/

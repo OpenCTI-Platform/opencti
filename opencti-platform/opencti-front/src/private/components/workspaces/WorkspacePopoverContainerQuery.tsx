@@ -1,6 +1,6 @@
 import { graphql } from 'react-relay';
 
-const WorkspaceEditionQuery = graphql`
+const WorkspacePopoverContainerQuery = graphql`
     query WorkspacePopoverContainerQuery($id: String!) {
         workspace(id: $id) {
             ...WorkspaceEditionContainer_workspace
@@ -8,4 +8,4 @@ const WorkspaceEditionQuery = graphql`
     }
 `;
 
-export default WorkspaceEditionQuery;
+export default WorkspacePopoverContainerQuery;

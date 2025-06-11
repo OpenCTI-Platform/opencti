@@ -18,9 +18,9 @@ import { InvestigationGraph_fragment$data } from '@components/workspaces/investi
 import WorkspaceKebabMenu from '@components/workspaces/WorkspaceKebabMenu';
 import WorkspaceHeaderTagManager from '@components/workspaces/workspaceHeader/WorkspaceHeaderTagManager';
 import Button from '@mui/material/Button';
-import { workspaceEditionQuery } from '@components/workspaces/WorkspacePopover';
 import WorkspaceEditionContainer from '@components/workspaces/WorkspaceEditionContainer';
 import { useFormatter } from '../../../../components/i18n';
+import WorkspacePopoverContainerQuery from '../WorkspacePopoverContainerQuery';
 
 const workspaceHeaderToStixReportBundleQuery = graphql`
   query WorkspaceHeaderToStixReportBundleQuery($id: String!) {
@@ -126,7 +126,7 @@ const WorkspaceHeader = ({
         </div>
       </div>
       <QueryRenderer
-        query={workspaceEditionQuery}
+        query={WorkspacePopoverContainerQuery}
         variables={{ id: workspace.id }}
         render={({ props: editionProps }: { props: EditionQueryRendererProps }) => {
           if (!editionProps) {
