@@ -30,7 +30,7 @@ describe('Raw streams tests', () => {
       expect(createEventsByTypes.location.length).toBe(19);
       expect(createEventsByTypes.relationship.length).toBe(133);
       expect(createEventsByTypes.sighting.length).toBe(4);
-      expect(createEventsByTypes.indicator.length).toBe(49);
+      expect(createEventsByTypes.indicator.length).toBe(43);
       expect(createEventsByTypes['attack-pattern'].length).toBe(9);
       expect(createEventsByTypes['threat-actor'].length).toBe(17);
       expect(createEventsByTypes['observed-data'].length).toBe(1);
@@ -50,7 +50,7 @@ describe('Raw streams tests', () => {
       // 328 created at init + 1 request access + 2 created in tests + 5 vocabulary organizations types + 7 persona
       expect(createEventsByTypes.vocabulary.length).toBe(VOCABULARY_NUMBERS);
       expect(createEventsByTypes.vulnerability.length).toBe(7);
-      expect(createEvents.length).toBe(851);
+      expect(createEvents.length).toBe(845);
       for (let createIndex = 0; createIndex < createEvents.length; createIndex += 1) {
         const { data: insideData, origin, type } = createEvents[createIndex];
         expect(origin).toBeDefined();
