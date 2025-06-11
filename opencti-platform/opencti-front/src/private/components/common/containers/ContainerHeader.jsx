@@ -652,7 +652,7 @@ const ContainerHeader = (props) => {
                 variant="header"
                 disabled={disableOrgaSharingButton}
                 handleClose={displaySharingButton ? undefined : handleCloseSharing}
-                inContainer
+                inContainer={true}
               />
             )}
             {!knowledge && (
