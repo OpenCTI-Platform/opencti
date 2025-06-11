@@ -162,7 +162,16 @@ nav:
         - Locations: usage/exploring-locations.md
       - Pivot and investigate: usage/pivoting.md
     - Create knowledge:
-      - Automated import: usage/import-automated.md
+      - Automated import:
+        - Getting started: usage/import/getting-started.md
+        - Connectors: usage/import/external-connectors.md
+        - Streams: usage/import/internal-streams.md
+        - Feeds:
+          - TAXII Feed: usage/import/taxii-feed.md
+          - TAXII push: usage/import/taxii-push.md
+          - RSS Feed: usage/import/rss-feed.md
+          - CSV Feed: usage/import/csv-feed.md
+          - JSON Feed: usage/import/json-feed.md
       - Import from files: usage/import-files.md
       - Manual creations: usage/manual-creation.md
       - Draft workspaces: usage/draftWorkspaces.md
@@ -194,7 +203,7 @@ nav:
     - Data management:
       - Merging and de-duplication: administration/merging.md
       - CSV Mappers: administration/csv-mappers.md
-      - CSV Feeds: usage/feeds.md
+      - JSON Mappers: administration/json-mappers.md
     - Platform settings:
       - Parameters: administration/parameters.md
       - Security:

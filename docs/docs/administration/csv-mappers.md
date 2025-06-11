@@ -1,6 +1,6 @@
 # CSV Mappers
 
-In OpenCTI, CSV Mappers allow to parse CSV files in a STIX 2.1 Object. The mappers are created and configured by users with the Manage CSV mapper capability. Then, they are available to users who import CSV files, for instance inside a report or in the global import view.
+In OpenCTI, CSV Mappers allow to parse CSV files in a STIX 2.1 Object. The mappers are created and configured by users with the Manage data mappers capability. Then, they are available to users who import CSV files, for instance inside a report or in the global import view.
 
 ## Principles
 
@@ -36,6 +36,7 @@ You can do the same for all the relationships between entities that might be def
 
 ![New representation](assets/csv-mappers-rep-1.png)
 
+<a id="new-reference-representation"></a>
 ## Create a new reference representation (label, author, markings,..)
 
  **Reference attributes** like author, markings, label, external references or kill chain phase, are modeled in the platform as entities. As such, they should be extracted from the CSV files through new entity representations in the mapper.
@@ -92,6 +93,7 @@ set 2 representatives for IPv4 and URL entities, with dynamic mapping depending 
 
 ![Dynamic mapping (2)](assets/csv-mappers-dynamic-2.png)
 
+<a id="field-options"></a>
 ### Field options
 
 Fields might have options besides the mandatory column index, to help extract relevant data:
@@ -150,6 +152,7 @@ The file will then be parsed following the representation rules set in the mappe
 
 By default, the imported elements will be added in a new Analyst Workbench where you will be able to check the result of the import.
 
+<a id="default-values-for-attributes"></a>
 ## Default values for attributes
 
 In the case of the CSV file misses some data, you can complete it with default values. To achieve this, you have two possibilities:
