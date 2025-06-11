@@ -48,6 +48,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import SwitchField from '../../../../components/fields/SwitchField';
+import { fetchQuery } from '../../../../relay/environment';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -72,6 +73,8 @@ const initCSVCreateForm: IngestionCsvAddInput = {
   authentication_type: 'none',
   authentication_value: '',
   user_id: '',
+  automatic_user: true,
+  confidence_level: '50',
   username: '',
   password: '',
   cert: '',
@@ -86,6 +89,23 @@ const ingestionCsvCreationMutation = graphql`
       ...IngestionCsvLine_node
     }
   }
+`;
+
+export const ingestionCsvCreationUsersQuery = graphql`
+    query IngestionCsvCreationUsersQuery(
+        $filters: FilterGroup
+    ) {
+        users(
+            filters: $filters
+        ) {
+            edges {
+                node {
+                    id
+                    name
+                }
+            }
+        }
+    }
 `;
 
 interface IngestionCsvCreationProps {
@@ -119,6 +139,8 @@ export interface IngestionCsvAddInput {
   authentication_value?: string | null
   ingestion_running?: boolean | null
   user_id: string | FieldOption
+  automatic_user?: boolean
+  confidence_level?: string
   username?: string
   password?: string
   cert?: string
@@ -202,13 +224,36 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     key: Yup.string().nullable(),
     ca: Yup.string().nullable(),
     user_id: Yup.object().nullable(),
+    automatic_user: Yup.boolean(),
+    confidence_level: Yup.string().nullable(),
   });
 
   const [commit] = useApiMutation(ingestionCsvCreationMutation);
-  const onSubmit: FormikConfig<IngestionCsvAddInput>['onSubmit'] = (
+  const onSubmit: FormikConfig<IngestionCsvAddInput>['onSubmit'] = async (
     values,
-    { setSubmitting, resetForm },
+    { setSubmitting, resetForm, setFieldError },
   ) => {
+    // Check if user does not already exist.
+    const existingUsers = await fetchQuery(ingestionCsvCreationUsersQuery, { filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: ['name'],
+          values: [
+            values.user_id.value,
+          ],
+        },
+      ],
+      filterGroups: [],
+    } })
+      .toPromise();
+
+    if (existingUsers.users.edges.length > 0) {
+      setSubmitting(false);
+      setFieldError('user_id', t_i18n('This user already exists. Change the feed\'s name to change the automatically created user\'s name'));
+      return;
+    }
+
     let authenticationValue = ingestionCsvData?.authentication_value ?? values.authentication_value;
     if (values.authentication_type === 'basic') {
       authenticationValue = `${values.username}:${values.password}`;
@@ -228,6 +273,8 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
+      ...(isFeatureEnable('CSV_FEED') && { automatic_user: values.automatic_user ?? true }),
+      ...(isFeatureEnable('CSV_FEED') && (values.automatic_user !== false) && { confidence_level: values.confidence_level }),
       markings: markings ?? [],
     };
     commit({

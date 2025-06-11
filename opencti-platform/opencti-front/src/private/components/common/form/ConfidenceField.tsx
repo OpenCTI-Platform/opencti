@@ -26,6 +26,7 @@ interface ConfidenceFieldProps {
   name?: string;
   label?: string;
   variant?: string;
+  showAlert?: boolean;
   onSubmit?: (name: string, value: string) => void;
   onFocus?: (name: string, value: string) => void;
   editContext?: readonly (GenericContext | null)[] | null;
@@ -38,6 +39,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   name = 'confidence',
   label,
   variant,
+  showAlert = true,
   onFocus,
   onSubmit,
   editContext,
@@ -51,14 +53,14 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   const { getEffectiveConfidenceLevel } = useConfidenceLevel();
   const userEffectiveMaxConfidence = getEffectiveConfidenceLevel(entityType);
   return (
-    <Alert
-      classes={{ root: classes.alert, message: classes.message }}
+    <>{showAlert ? (<Alert
+      classes={{root: classes.alert, message: classes.message}}
       severity="info"
       icon={false}
       variant="outlined"
       style={{ position: 'relative' }}
       aria-label={finalLabel}
-    >
+                    >
       <Field
         component={InputSliderField}
         variant={variant}
@@ -74,7 +76,22 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
         disabled={disabled}
         maxLimit={userEffectiveMaxConfidence}
       />
-    </Alert>
+    </Alert>) : (<Field
+      component={InputSliderField}
+      variant={variant}
+      containerstyle={containerStyle}
+      fullWidth={true}
+      entityType={entityType}
+      attributeName={name}
+      name={name}
+      label={finalLabel}
+      onFocus={onFocus}
+      onSubmit={onSubmit}
+      editContext={editContext}
+      disabled={disabled}
+      maxLimit={userEffectiveMaxConfidence}
+                 />)
+}</>
   );
 };
 

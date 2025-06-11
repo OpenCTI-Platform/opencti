@@ -21,6 +21,7 @@ interface CreatorFieldProps {
   showConfidence?: boolean;
   helpertext?: string;
   required?: boolean;
+  disabled?: boolean;
 }
 
 const CreatorFieldQuery = graphql`
@@ -56,6 +57,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
   containerStyle,
   onChange,
   showConfidence = false,
+  disabled=false
 }) => {
   const { t_i18n } = useFormatter();
   const isGrantedToUsers = useGranted([SETTINGS_SETACCESSES]);
@@ -118,6 +120,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
   return (
     <div style={{ width: '100%' }}>
       <Field
+        disabled={disabled}
         component={AutocompleteField}
         name={name}
         textfieldprops={{
