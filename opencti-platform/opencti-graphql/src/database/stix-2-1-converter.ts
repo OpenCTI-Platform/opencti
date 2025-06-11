@@ -238,7 +238,7 @@ export const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Arr
     return cleanObject(data);
   });
 };
-export const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalExternalReference> => {
+const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalExternalReference> => {
   return (instance[INPUT_EXTERNAL_REFS] ?? []).map((e) => {
     const data: SMO.StixInternalExternalReference = {
       source_name: e.source_name,
