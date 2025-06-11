@@ -15,6 +15,7 @@ export const up = async (next) => {
   const allUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   allUsers.forEach((u) => { userGroupIdsMap[u.internal_id] = u.groups?.map((g) => g.internal_id) ?? []; });
 
+  // Since bug was introduced with 6.6 release, we filter history from the data of 6.6 release: 8th of April 2025
   const activityUpdateQuery = {
     script: {
       params: { userGroupIdsMap },
