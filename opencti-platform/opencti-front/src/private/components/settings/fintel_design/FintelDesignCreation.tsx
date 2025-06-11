@@ -24,8 +24,6 @@ const fintelDesignCreationMutation = graphql`
   mutation FintelDesignCreationAddMutation($input: FintelDesignAddInput!) {
     fintelDesignAdd(input: $input) {
       id
-      name
-      description
       ...FintelDesignsLine_node
     }
   }
@@ -84,10 +82,10 @@ const FintelDesignCreationForm: FunctionComponent<FintelDesignCreationFormProps>
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        navigate(`${resolveLink('FintelDesign')}/${response.fintelDesignAdd?.id}`);
         if (onCompleted) {
           onCompleted();
         }
+        navigate(`${resolveLink('FintelDesign')}/${response.fintelDesignAdd?.id}`);
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);

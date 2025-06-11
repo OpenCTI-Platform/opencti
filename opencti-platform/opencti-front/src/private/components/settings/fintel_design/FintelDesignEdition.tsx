@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import FintelDesignEditionContainer, { fintelDesignEditionQuery } from '@components/settings/fintel_design/FintelDesignEditionContainer';
 import { fintelDesignEditionOverviewFocus } from '@components/settings/fintel_design/FintelDesignEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -8,10 +8,12 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { FintelDesignEditionContainerQuery } from './__generated__/FintelDesignEditionContainerQuery.graphql';
 import { FintelDesignEditionOverviewFocusMutation } from './__generated__/FintelDesignEditionOverviewFocusMutation.graphql';
 
-const FintelDesignEdition = ({
-  fintelDesignId,
-}: {
+interface FintelDesignEditionProps {
   fintelDesignId: string;
+}
+
+const FintelDesignEdition: FunctionComponent<FintelDesignEditionProps> = ({
+  fintelDesignId,
 }) => {
   const [commit] = useApiMutation<FintelDesignEditionOverviewFocusMutation>(
     fintelDesignEditionOverviewFocus,

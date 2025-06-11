@@ -34,11 +34,23 @@ const fintelDesignFieldQuery = graphql`
   }
 `;
 
+export interface FintelDesign {
+  file_id: string | null | undefined,
+  gradiantFromColor: string | null | undefined,
+  gradiantToColor: string | null | undefined,
+  textColor: string | null | undefined,
+}
+
+export type FintelDesignFieldOption = {
+  label: string;
+  value: FintelDesign
+};
+
 interface FintelDesignFieldComponentProps {
   label?: string
   name: string;
   style?: React.CSSProperties,
-  helpertext?: string;
+  helperText?: string;
   onChange: (name: string, value: FieldOption[]) => void;
   required?: boolean
   queryRef: PreloadedQuery<FintelDesignFieldQuery>
@@ -48,7 +60,7 @@ const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentPr
   label,
   name,
   style,
-  helpertext,
+  helperText,
   onChange,
   required = false,
   queryRef,
@@ -67,11 +79,11 @@ const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentPr
         disabled={false}
         textfieldprops={{
           variant: 'standard',
-          label: label ?? t_i18n('Fintel Designs'),
-          helperText: helpertext,
+          label: label ?? t_i18n('Fintel designs'),
+          helperText,
         }}
         required={required}
-        onChange={typeof onChange === 'function' ? onChange : null}
+        onChange={onChange}
         style={fieldSpacingContainerStyle ?? style}
         noOptionsText={t_i18n('No available options')}
         options={fintelDesigns}

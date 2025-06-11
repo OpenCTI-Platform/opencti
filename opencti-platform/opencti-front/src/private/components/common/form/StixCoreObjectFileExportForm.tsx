@@ -399,7 +399,7 @@ const StixCoreObjectFileExportForm = ({
                     {values.connector.value === BUILT_IN_FROM_TEMPLATE.value && (
                       <FintelDesignField
                         name="fintelDesign"
-                        label={t_i18n('Fintel Design')}
+                        label={t_i18n('Fintel design')}
                         style={fieldSpacingContainerStyle}
                         onChange={setFieldValue}
                       />

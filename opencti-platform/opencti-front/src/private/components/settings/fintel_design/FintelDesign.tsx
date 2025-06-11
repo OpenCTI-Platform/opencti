@@ -8,7 +8,7 @@ import { useTheme } from '@mui/styles';
 import Paper from '@mui/material/Paper';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import CustomizationMenu from '@components/settings/CustomizationMenu';
-import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
+import FintelDesignForm, { FintelDesignFormValues } from '@components/settings/fintel_design/FintelDesignForm';
 import FintelDesignEdition from '@components/settings/fintel_design/FintelDesignEdition';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -44,13 +44,6 @@ const fintelDesignComponentFragment = graphql`
 interface FintelDesignComponentProps {
   queryRef: PreloadedQuery<FintelDesignQuery>
 }
-
-export type FintelDesignFormValues = {
-  file?: File | null;
-  gradiantFromColor?: string | null | undefined
-  gradiantToColor?: string | null | undefined
-  textColor?: string | null | undefined
-};
 
 const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   queryRef,

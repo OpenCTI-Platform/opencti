@@ -105,7 +105,7 @@ FintelDesignEditionOverviewProps
   return (
     <Formik
       enableReinitialize={true}
-      initialValues={initialValues as never}
+      initialValues={initialValues}
       validateOnChange={true}
       validateOnBlur={true}
       validationSchema={fintelDesignValidation}

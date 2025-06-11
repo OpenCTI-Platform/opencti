@@ -7,7 +7,6 @@ import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import { FormikConfig } from 'formik/dist/types';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import { FintelDesignFormValues } from './FintelDesign';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -30,6 +29,13 @@ interface FintelDesignFormProps {
   onChange: (val: FintelDesignFormValues) => void;
   fintelDesign: FintelDesign_fintelDesign$data;
 }
+
+export type FintelDesignFormValues = {
+  file?: File | null;
+  gradiantFromColor?: string | null | undefined
+  gradiantToColor?: string | null | undefined
+  textColor?: string | null | undefined
+};
 
 const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, fintelDesign }) => {
   const { t_i18n } = useFormatter();
@@ -90,6 +96,7 @@ const FintelDesignForm: FunctionComponent<FintelDesignFormProps> = ({ onChange, 
           <Form>
             <Field
               component={CustomFileUploader}
+              label={t_i18n('Logo')}
               setFieldValue={setFieldValue}
               onChange={submitForm}
             />

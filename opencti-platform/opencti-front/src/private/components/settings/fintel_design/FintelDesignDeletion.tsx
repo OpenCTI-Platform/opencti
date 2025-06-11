@@ -30,10 +30,9 @@ const FintelDesignDeletion = ({
     undefined,
     { successMessage: deleteSuccessMessage },
   );
-  const handleClose = () => { };
 
   // delete
-  const deletion = useDeletion({ handleClose });
+  const deletion = useDeletion({});
   const { setDeleting, handleOpenDelete, deleting } = deletion;
   const submitDelete = () => {
     commitDelete({
@@ -42,7 +41,6 @@ const FintelDesignDeletion = ({
       },
       onCompleted: () => {
         setDeleting(false);
-        handleClose();
         navigate('/dashboard/settings/customization/fintel_designs');
       },
       onError: (error) => {

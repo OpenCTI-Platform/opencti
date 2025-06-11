@@ -29,24 +29,24 @@ const FintelDesignEditionContainer: FunctionComponent<FintelDesignEditionContain
 }) => {
   const { t_i18n } = useFormatter();
   const { fintelDesign } = usePreloadedQuery(fintelDesignEditionQuery, queryRef);
-  if (fintelDesign) {
-    return (
-      <Drawer
-        title={t_i18n('Update a Fintel design')}
-        onClose={handleClose}
-        open={open}
-        controlledDial={controlledDial}
-      >
-        {({ onClose }) => (
-          <FintelDesignEditionOverview
-            fintelDesignRef={fintelDesign}
-            handleClose={onClose}
-          />
-        )}
-      </Drawer>
-    );
+  if (!fintelDesign) {
+    return <Loader variant={LoaderVariant.inline} />;
   }
-  return <Loader variant={LoaderVariant.inline} />;
+  return (
+    <Drawer
+      title={t_i18n('Update a Fintel design')}
+      onClose={handleClose}
+      open={open}
+      controlledDial={controlledDial}
+    >
+      {({ onClose }) => (
+        <FintelDesignEditionOverview
+          fintelDesignRef={fintelDesign}
+          handleClose={onClose}
+        />
+      )}
+    </Drawer>
+  );
 };
 
 export default FintelDesignEditionContainer;

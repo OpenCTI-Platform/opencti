@@ -6,23 +6,11 @@ import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '@co
 import { useParams } from 'react-router-dom';
 import EntitySelectField from '@components/common/form/EntitySelectField';
 import { EntityOption } from '@components/common/form/EntitySelect';
-import FintelDesignField from '@components/common/form/FintelDesignField';
+import FintelDesignField, { FintelDesignFieldOption } from '@components/common/form/FintelDesignField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { useFormatter } from '../../../../../components/i18n';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { isEmptyObject } from '../../../../../utils/object';
-
-export interface FintelDesign {
-  file_id: string | null | undefined,
-  gradiantFromColor: string | null | undefined,
-  gradiantToColor: string | null | undefined,
-  textColor: string | null | undefined,
-}
-
-export type FintelDesignFieldOption = {
-  label: string;
-  value: FintelDesign
-};
 
 export interface FintelTemplatePreviewFormInputs {
   entity: EntityOption | null;
@@ -79,7 +67,7 @@ const FintelTemplatePreviewForm = ({
             />
             <FintelDesignField
               name="fintelDesign"
-              label={t_i18n('Fintel Design')}
+              label={t_i18n('Fintel design')}
               onChange={setFieldValue}
             />
             <ObjectMarkingField
