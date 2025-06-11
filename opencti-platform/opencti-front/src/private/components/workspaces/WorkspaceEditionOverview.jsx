@@ -8,7 +8,6 @@ import * as Yup from 'yup';
 import Button from '@mui/material/Button';
 import { Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { WorkspacePopoverDeletionMutation } from './WorkspacePopover';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
@@ -18,6 +17,7 @@ import useDeletion from '../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../utils/store';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../components/DeleteDialog';
+import WorkspacePopoverDeletionMutation from './WorkspacePopoverDeletionMutation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -86,7 +86,7 @@ const WorkspaceEditionOverviewComponent = ({ paginationOptions, t, workspace, co
     commitMutation({
       mutation: workspaceEditionOverviewFocus,
       variables: {
-        id: this.props.workspace.id,
+        id,
         input: {
           focusOn: name,
         },
@@ -95,13 +95,13 @@ const WorkspaceEditionOverviewComponent = ({ paginationOptions, t, workspace, co
   };
 
   const handleSubmitField = (name, value) => {
-    workspaceValidation(this.props.t)
+    workspaceValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: workspaceMutationFieldPatch,
           variables: {
-            id: this.props.workspace.id,
+            id,
             input: { key: name, value: value || '' },
           },
         });
