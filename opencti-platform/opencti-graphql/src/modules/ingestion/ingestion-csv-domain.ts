@@ -22,6 +22,12 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
+import { addUser } from '../../domain/user';
+import { findAll } from '../../domain/group';
+import { getEntityFromCache } from '../../database/cache';
+import { SYSTEM_USER } from '../../utils/access';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import type { BasicStoreSettings } from '../../types/settings';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
 export const CSV_FEED_FEATURE_FLAG = 'CSV_FEED';
@@ -44,6 +50,37 @@ export const findCsvMapperForIngestionById = (context: AuthContext, user: AuthUs
   return storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
 };
 
+export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
+  const groups = await findAll(context, context.user, {
+    filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: ['auto_integration_assignation'],
+          values: [
+            'global',
+          ],
+        },
+      ],
+      filterGroups: [],
+    }
+  });
+  if (groups.edges.length === 0) {
+    throw FunctionalError('You have not defined a default group for ingestion users', {});
+  }
+  const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const newlyCreatedUser = await addUser(context, context.user, {
+    user_email: `${input.user_id}@opencti.invalid`,
+    name: input.user_id,
+    prevent_default_groups: true,
+    groups: groups.edges[0].node,
+    objectOrganization: platform_organization ? [platform_organization] : [],
+    external: true,
+    user_confidence_level: { max_confidence: +input.confidence_level, overrides: {} }
+  });
+  return newlyCreatedUser;
+};
+
 export const addIngestionCsv = async (context: AuthContext, user: AuthUser, input: IngestionCsvAddInput) => {
   const parsedInput: IngestionCsvAddInput = {
     ...input,
@@ -55,15 +92,19 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
   if (parsedInput.authentication_value) {
     verifyIngestionAuthenticationContent(parsedInput.authentication_type, parsedInput.authentication_value);
   }
-
-  const { element, isCreation } = await createEntity(context, user, parsedInput, ENTITY_TYPE_INGESTION_CSV, { complete: true });
+  let onTheFlyCreatedUser;
+  if (isFeatureEnabled('CSV_FEED') && parsedInput.automatic_user) {
+    onTheFlyCreatedUser = await createOnTheFlyUser(context, user, parsedInput);
+  }
+  const { automatic_user: _automatic_user, confidence_level: _confidence_level, ...inputWithoutAutomaticUserFields } = parsedInput;
+  const { element, isCreation } = await createEntity(context, user, inputWithoutAutomaticUserFields, ENTITY_TYPE_INGESTION_CSV, { complete: true });
   if (isCreation) {
     await registerConnectorForIngestion(context, {
       id: element.id,
       type: 'CSV',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: parsedInput.user_id
+      connector_user_id: isFeatureEnabled('CSV_FEED') && input.automatic_user ? onTheFlyCreatedUser.id : parsedInput.user_id
     });
     await publishUserAction({
       user,

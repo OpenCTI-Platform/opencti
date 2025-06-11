@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Field, useFormikContext } from 'formik';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Alert from '@mui/material/Alert';
@@ -10,6 +10,7 @@ import {
 } from '@components/data/ingestionCsv/__generated__/IngestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery.graphql';
 import { groupSetDefaultGroupForIngestionUsersQuery } from '@components/settings/groups/GroupSetDefaultGroupForIngestionUsers';
 import { IngestionCsvAddInput } from '@components/data/ingestionCsv/IngestionCsvCreation';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -30,19 +31,30 @@ const ingestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery = graph
         }
     }
 `;
-interface IngestionCsvUserInput extends IngestionCsvAddInput {
-  automatic_user: boolean;
-}
-
 interface IngestionCsvCreationUserHandlingComponentProps {
   queryRef: PreloadedQuery<IngestionCsvCreationUserHandlingDefaultGroupForIngestionUsersQuery>
 }
 
 const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCreationUserHandlingComponentProps) => {
   const { t_i18n } = useFormatter();
-  const { values } = useFormikContext<IngestionCsvUserInput>();
+  const { values, setFieldValue } = useFormikContext<IngestionCsvAddInput>();
   const [displayDefaultGroupWarning, setDisplayDefaultGroupWarning] = useState<boolean>(false);
   const { groups } = usePreloadedQuery(groupSetDefaultGroupForIngestionUsersQuery, queryRef);
+
+  useEffect(() => {
+    setFieldValue(
+      'user_id',
+      values.automatic_user === false
+        ? ''
+        : { label: `[F] ${values.name}`, value: `[F] ${values.name}` },
+    );
+  }, [values.name, values.automatic_user]);
+  useEffect(() => {
+    setFieldValue(
+      'confidence_level',
+      '50',
+    );
+  }, [values.automatic_user]);
 
   const handleSwitchChanged = () => {
     if (groups?.edges?.length === 0) {
@@ -50,11 +62,12 @@ const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCre
     }
   };
 
-  return (<><Box sx={{ marginTop: 5 }}>
+  return (<><Box sx={{ marginTop: 2 }}>
     <Field
       component={SwitchField}
       type="checkbox"
       name="automatic_user"
+      checked={values.automatic_user ?? true}
       onChange={handleSwitchChanged}
       label={'Automatically create a user'}
     />
@@ -69,13 +82,20 @@ const IngestionCsvCreationUserHandlingComponent = ({ queryRef }: IngestionCsvCre
       </Alert>
     </Box>}
   </Box>
-    {(!values.automatic_user)
-      && <CreatorField
-        name="user_id"
-        label={t_i18n('User responsible for data creation (empty = System)')}
+    <CreatorField
+      name="user_id"
+      label={t_i18n('User responsible for data creation (empty = System)')}
+      containerStyle={fieldSpacingContainerStyle}
+      showConfidence disabled={values.automatic_user !== false}
+    />
+    {values.automatic_user !== false && <Box sx={{marginTop: '20px'}}>
+      <ConfidenceField
+        name="confidence_level"
+        entityType={'User'}
         containerStyle={fieldSpacingContainerStyle}
-        showConfidence
-         /> }
+        showAlert={false}
+      />
+    </Box>}
   </>);
 };
 
