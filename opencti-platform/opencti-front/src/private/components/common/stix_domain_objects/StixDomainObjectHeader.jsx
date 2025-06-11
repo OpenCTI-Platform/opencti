@@ -46,7 +46,7 @@ import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useSharingDisabled from '../../../../utils/hooks/useSharingDisabled';
-import EETooltip from '../../common/entreprise_edition/EETooltip';
+import EETooltip from '../entreprise_edition/EETooltip';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
