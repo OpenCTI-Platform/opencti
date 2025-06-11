@@ -88,9 +88,7 @@ export const htmlToPdfReport = async (
     const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
       fintelDesign?.file_id,
     )}`;
-    const response = await Axios.get(url, { responseType: 'arraybuffer' });
-    const binary = new Uint8Array(response.data).reduce((data, byte) => data + String.fromCharCode(byte), '');
-    logoBase64 = `data:image/;base64,${btoa(binary)}`;
+    logoBase64 = await getBase64ImageFromURL(url);
   }
 
   if (!logoBase64) {
