@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
+import Tooltip from '@mui/material/Tooltip';
+import Box from '@mui/material/Box';
 import StixCoreObjectSharingList from '../../common/stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../../common/draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../../common/stix_core_objects/StixCoreObjectEnrollPlaybook';
@@ -14,6 +16,7 @@ import StixCyberObservableEdition from './StixCyberObservableEdition';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import PopoverMenu from '../../../../components/PopoverMenu';
+import useSharingDisabled from '../../../../utils/hooks/useSharingDisabled';
 
 const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
   const { t_i18n } = useFormatter();
@@ -21,6 +24,8 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
 
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
+
+  const { isSharingNotPossible, sharingNotPossibleMessage } = useSharingDisabled(stixCyberObservable, false);
 
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -44,14 +49,21 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable }) => {
 
           <PopoverMenu>
             {({ closeMenu }) => (
-              <MenuItem
-                onClick={() => {
-                  setOpenSharing(true);
-                  closeMenu();
-                }}
-              >
-                {t_i18n('Share with an organization')}
-              </MenuItem>
+              <Box>
+                <Tooltip title={sharingNotPossibleMessage}>
+                  <span>
+                    <MenuItem
+                      onClick={() => {
+                        setOpenSharing(true);
+                        closeMenu();
+                      }}
+                      disabled={isSharingNotPossible}
+                    >
+                      {t_i18n('Share with an organization')}
+                    </MenuItem>
+                  </span>
+                </Tooltip>
+              </Box>
             )}
           </PopoverMenu>
 

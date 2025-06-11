@@ -45,6 +45,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import Transition from '../../../../components/Transition';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import PopoverMenu from '../../../../components/PopoverMenu';
+import useSharingDisabled from '../../../../utils/hooks/useSharingDisabled';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -386,6 +387,8 @@ const StixDomainObjectHeader = (props) => {
   };
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
+  const { isSharingNotPossible, sharingNotPossibleMessage } = useSharingDisabled(stixDomainObject, false);
+
   let initialNumberOfButtons = 1 + (isKnowledgeUpdater ? 1 : 0) + (enableQuickSubscription ? 1 : 0);
   const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
   if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
@@ -616,13 +619,19 @@ const StixDomainObjectHeader = (props) => {
                 {({ closeMenu }) => (
                   <Box>
                     {disableSharing !== true && !displaySharingButton && (
-                      <MenuItem onClick={() => {
-                        handleOpenSharing();
-                        closeMenu();
-                      }}
-                      >
-                        {t_i18n('Share with an organization')}
-                      </MenuItem>
+                      <Tooltip title={sharingNotPossibleMessage}>
+                        <span>
+                          <MenuItem
+                            onClick={() => {
+                              handleOpenSharing();
+                              closeMenu();
+                            }}
+                            disabled={isSharingNotPossible}
+                          >
+                            {t_i18n('Share with an organization')}
+                          </MenuItem>
+                        </span>
+                      </Tooltip>
                     )}
                     {(enableEnricher && isKnowledgeEnricher) && (
                       <MenuItem onClick={() => {

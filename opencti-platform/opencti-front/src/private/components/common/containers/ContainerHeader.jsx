@@ -33,6 +33,7 @@ import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
 import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
+import useSharingDisabled from '../../../../utils/hooks/useSharingDisabled';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -512,8 +513,9 @@ const ContainerHeader = (props) => {
   const isAuthorizedMembersEnabled = !disableAuthorizedMembers;
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && isAuthorizedMembersEnabled;
-  const disableOrgaSharingButton = (!enableManageAuthorizedMembers && !currentAccessRight.canEdit)
-    || (enableManageAuthorizedMembers && container.authorized_members?.length > 0);
+
+  const { isSharingNotPossible, sharingNotPossibleMessage } = useSharingDisabled(container, true, enableManageAuthorizedMembers);
+
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
   const displaySharing = !knowledge && disableSharing !== true;
@@ -658,7 +660,7 @@ const ContainerHeader = (props) => {
                 elementId={container.id}
                 open={openSharing}
                 variant="header"
-                disabled={disableOrgaSharingButton}
+                disabled={isSharingNotPossible}
                 handleClose={displaySharingButton ? undefined : handleCloseSharing}
                 inContainer={true}
               />
@@ -722,14 +724,19 @@ const ContainerHeader = (props) => {
                 {({ closeMenu }) => (
                   <Box>
                     {displaySharing && !displaySharingButton && (
-                      <MenuItem
-                        onClick={() => {
-                          setOpenSharing(true);
-                          closeMenu();
-                        }}
-                      >
-                        {t_i18n('Share with an organization')}
-                      </MenuItem>
+                      <Tooltip title={sharingNotPossibleMessage}>
+                        <span>
+                          <MenuItem
+                            onClick={() => {
+                              setOpenSharing(true);
+                              closeMenu();
+                            }}
+                            disabled={isSharingNotPossible}
+                          >
+                            {t_i18n('Share with an organization')}
+                          </MenuItem>
+                        </span>
+                      </Tooltip>
                     )}
                     {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
                       <Security
