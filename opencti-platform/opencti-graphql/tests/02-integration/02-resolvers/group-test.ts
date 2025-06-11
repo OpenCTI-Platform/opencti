@@ -228,6 +228,24 @@ describe('Group resolver standard behavior', () => {
     expect(queryResult?.data?.groupEdit.fieldPatch.name).toEqual('Group - test');
   });
   it('should update select default group for ingestion users', async () => {
+    const queryDefault = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'auto_integration_assignation',
+              values: [
+                'global'
+              ]
+            }
+          ],
+          filterGroups: []
+        }
+      }
+    });
+
     const UPDATE_QUERY = gql`
         mutation GroupEdit($id: ID!, $input: [EditInput]!) {
             groupEdit(id: $id) {
@@ -239,6 +257,12 @@ describe('Group resolver standard behavior', () => {
             }
         }
     `;
+    // remove default group Connectors set in data-initialization
+    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+      query: UPDATE_QUERY,
+      variables: { id: queryDefault.data?.groups.edges[0].node.id, input: { key: 'auto_integration_assignation', value: [] } },
+    });
+    // Add the field to another group
     const queryResult = await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
       query: UPDATE_QUERY,
       variables: { id: groupInternalId, input: { key: 'auto_integration_assignation', value: ['global'] } },
