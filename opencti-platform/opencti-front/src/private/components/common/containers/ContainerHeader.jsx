@@ -10,6 +10,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { useTheme } from '@mui/styles';
 import MenuItem from '@mui/material/MenuItem';
 import { Box } from '@mui/material';
+import StixCoreObjectMenuItemEnrollPlaybook from '@components/common/stix_core_objects/StixCoreObjectMenuItemEnrollPlaybook';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
@@ -35,8 +36,6 @@ import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
 import EETooltip from '../entreprise_edition/EETooltip';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -520,10 +519,6 @@ const ContainerHeader = (props) => {
   // if some buttons should be greyed out
   // case sharing
   const { isOrgaSharingPossible, orgaSharingNotPossibleMessage } = useOrgaSharingPossible(container, true, enableManageAuthorizedMembers);
-  // case enroll in playbook
-  const draftContext = useDraftContext();
-  const isEnterpriseEdition = useEnterpriseEdition();
-  const isEnrollPlaybookPossible = !draftContext && isEnterpriseEdition;
 
   const triggerData = useLazyLoadQuery(stixCoreObjectQuickSubscriptionContentQuery, { first: 20, ...triggersPaginationOptions });
 
@@ -764,19 +759,10 @@ const ContainerHeader = (props) => {
                       </Security>
                     )}
                     {displayEnrollPlaybook && !displayEnrollPlaybookButton && (
-                      <EETooltip title={draftContext ? t_i18n('Not available in draft') : t_i18n('Enroll in playbook')}>
-                        <span>
-                          <MenuItem
-                            onClick={() => {
-                              setOpenEnrollPlaybook(true);
-                              closeMenu();
-                            }}
-                            disabled={!isEnrollPlaybookPossible}
-                          >
-                            {t_i18n('Enroll in playbook')}
-                          </MenuItem>
-                        </span>
-                      </EETooltip>
+                      <StixCoreObjectMenuItemEnrollPlaybook
+                        setOpenEnrollPlaybook={setOpenEnrollPlaybook}
+                        handleCloseMenu={closeMenu}
+                      />
                     )}
                   </Box>
                 )}

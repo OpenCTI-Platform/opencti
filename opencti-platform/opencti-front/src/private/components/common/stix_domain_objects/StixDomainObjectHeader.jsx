@@ -23,6 +23,8 @@ import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
+import StixCoreObjectMenuItemEnrollPlaybook
+  from '@components/common/stix_core_objects/StixCoreObjectMenuItemEnrollPlaybook';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import { DraftChip } from '../draft/DraftChip';
 import StixCoreObjectEnrollPlaybook from '../stix_core_objects/StixCoreObjectEnrollPlaybook';
@@ -35,7 +37,11 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
+  KNOWLEDGE_KNUPDATE
+} from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
@@ -47,8 +53,6 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useOrgaSharingPossible from '../../../../utils/hooks/useOrgaSharingPossible';
 import EETooltip from '../entreprise_edition/EETooltip';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -262,8 +266,6 @@ const StixDomainObjectHeader = (props) => {
   const [isSharingOpen, setIsSharingOpen] = useState(false);
   const [isEnrichmentOpen, setIsEnrichmentOpen] = useState(false);
 
-  const handleOpenEnrollPlaybook = () => setEnrollPlaybookOpen(true);
-
   const handleCloseEnrollPlaybook = () => setEnrollPlaybookOpen(false);
 
   const handleOpenSharing = () => setIsSharingOpen(true);
@@ -393,10 +395,6 @@ const StixDomainObjectHeader = (props) => {
   // if some buttons should be greyed out
   // case sharing
   const { isOrgaSharingPossible, orgaSharingNotPossibleMessage } = useOrgaSharingPossible(stixDomainObject, false);
-  // case enroll in playbook
-  const draftContext = useDraftContext();
-  const isEnterpriseEdition = useEnterpriseEdition();
-  const isEnrollPlaybookPossible = !draftContext && isEnterpriseEdition;
 
   let initialNumberOfButtons = 1 + (isKnowledgeUpdater ? 1 : 0) + (enableQuickSubscription ? 1 : 0);
   const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
@@ -652,19 +650,10 @@ const StixDomainObjectHeader = (props) => {
                       </MenuItem>
                     )}
                     {enableEnrollPlaybook && !displayEnrollPlaybookButton && (
-                      <EETooltip title={draftContext ? t_i18n('Not available in draft') : t_i18n('Enroll in playbook')}>
-                        <span>
-                          <MenuItem
-                            onClick={() => {
-                              handleOpenEnrollPlaybook();
-                              closeMenu();
-                            }}
-                            disabled={!isEnrollPlaybookPossible}
-                          >
-                            {t_i18n('Enroll in playbook')}
-                          </MenuItem>
-                        </span>
-                      </EETooltip>
+                      <StixCoreObjectMenuItemEnrollPlaybook
+                        setOpenEnrollPlaybook={setEnrollPlaybookOpen}
+                        handleCloseMenu={closeMenu}
+                      />
                     )}
                   </Box>
                 )}

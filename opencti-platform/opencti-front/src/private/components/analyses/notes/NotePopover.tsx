@@ -8,6 +8,7 @@ import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import StixCoreObjectEnrollPlaybook from '@components/common/stix_core_objects/StixCoreObjectEnrollPlaybook';
 import StixCoreObjectEnrichment from '@components/common/stix_core_objects/StixCoreObjectEnrichment';
+import StixCoreObjectMenuItemEnrollPlaybook from '@components/common/stix_core_objects/StixCoreObjectMenuItemEnrollPlaybook';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
@@ -126,7 +127,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
             {t_i18n('Remove from this entity')}
           </MenuItem>
         )}
-        <MenuItem onClick={handleOpenEnroll}>{t_i18n('Enroll in playbook')}</MenuItem>
+        <StixCoreObjectMenuItemEnrollPlaybook setOpenEnrollPlaybook={handleOpenEnroll} />
         <CollaborativeSecurity
           data={note}
           needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
