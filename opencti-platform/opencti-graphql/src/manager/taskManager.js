@@ -448,9 +448,10 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
       if (isStixDomainObjectContainer(element.entity_type)) {
         const containerObjects = [];
         const sharingElements = await getContainerObjects(context, user, element.internal_id, { all: true });
+        const allSharingElements = sharingElements.edges?.map((n) => n.node);
         let startProcessingTime = new Date().getTime();
-        for (let shareIndex = 0; shareIndex < sharingElements.length; shareIndex += 1) {
-          const sharingElement = sharingElements[shareIndex];
+        for (let shareIndex = 0; shareIndex < allSharingElements.length; shareIndex += 1) {
+          const sharingElement = allSharingElements[shareIndex];
           const sharingElementBundle = buildBundleElement(sharingElement, actionType, operations);
           // We do not want to recursively share elements: we only share elements directly contained in current container
           sharingElementBundle.extensions[STIX_EXT_OCTI].sharing_direct_container = true;
