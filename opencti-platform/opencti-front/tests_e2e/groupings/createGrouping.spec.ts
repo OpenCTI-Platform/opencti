@@ -1,14 +1,14 @@
+import StixCoreObjectContentTabPage from 'tests_e2e/model/StixCoreObjectContentTab.pageModel';
 import { expect, test } from '../fixtures/baseFixtures';
 import GroupingsPage from '../model/grouping.pageModel';
 import GroupingFormPage from '../model/form/groupingForm.pageModel';
 import GroupingDetailsPage from '../model/groupingDetails.pageModel';
-import StixDomainObjectContentTabPage from '../model/StixDomainObjectContentTab.pageModel';
 
 test('Create a new grouping', async ({ page }) => {
   const groupingsPage = new GroupingsPage(page);
   const groupingForm = new GroupingFormPage(page);
   const groupingDetails = new GroupingDetailsPage(page);
-  const stixDomainObjectContentTab = new StixDomainObjectContentTabPage(page);
+  const stixDomainObjectContentTab = new StixCoreObjectContentTabPage(page);
 
   // go to groupings
   await groupingsPage.goto();
