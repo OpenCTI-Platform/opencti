@@ -24,7 +24,6 @@ import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
-import { FintelDesignFieldOption } from '@components/settings/sub_types/fintel_templates/FintelTemplatePreviewForm';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import SelectField from '../../../../components/fields/SelectField';
@@ -33,7 +32,7 @@ import TextField from '../../../../components/TextField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAI from '../../../../utils/hooks/useAI';
 import { now } from '../../../../utils/Time';
-import FintelDesignField from './FintelDesignField';
+import FintelDesignField, { FintelDesignFieldOption } from './FintelDesignField';
 
 export type FileOption = Pick<FieldOption, 'label' | 'value'> & {
   fileMarkings: {
@@ -401,7 +400,6 @@ const StixCoreObjectFileExportForm = ({
                         name="fintelDesign"
                         label={t_i18n('Fintel design')}
                         style={fieldSpacingContainerStyle}
-                        onChange={setFieldValue}
                       />
                     )}
                     {!isBuiltInConnector(values.connector.value) && (

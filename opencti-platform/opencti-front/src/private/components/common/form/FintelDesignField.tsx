@@ -51,7 +51,7 @@ interface FintelDesignFieldComponentProps {
   name: string;
   style?: React.CSSProperties,
   helperText?: string;
-  onChange: (name: string, value: FieldOption[]) => void;
+  onChange?: (name: string, value: FieldOption[]) => void;
   required?: boolean
   queryRef: PreloadedQuery<FintelDesignFieldQuery>
 }
