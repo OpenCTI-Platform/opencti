@@ -16,8 +16,9 @@ import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
+import { Link } from 'react-router-dom';
 import ObjectOrganizationField from '../form/ObjectOrganizationField';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { StixCoreObjectSharingQuery$data } from './__generated__/StixCoreObjectSharingQuery.graphql';
@@ -33,6 +34,7 @@ interface ContainerHeaderSharedProps {
   disabled?: boolean;
   handleClose: () => void,
   open?: boolean,
+  inContainer?: boolean,
 }
 
 interface OrganizationForm {
@@ -105,6 +107,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   disabled = false,
   open,
   handleClose,
+  inContainer = false,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -113,6 +116,13 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   const [displaySharing, setDisplaySharing] = useState(false);
   const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const notifySuccessMessage = (<span>
+    {t_i18n(
+      'The background task has been executed. You can monitor it on',
+    )}{' '}
+    {<Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>}
+    .
+  </span>);
   // If user not an organization organizer, return empty div
   if (!userIsOrganizationEditor) {
     return variant === 'header' ? (
@@ -146,6 +156,9 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         variables: { id: elementId, organizationId: objectOrganization.value },
         onCompleted: () => {
           setSubmitting(false);
+          if (inContainer) {
+            MESSAGING$.notifySuccess(notifySuccessMessage);
+          }
           resetForm();
           handleClose?.();
           handleCloseSharing();

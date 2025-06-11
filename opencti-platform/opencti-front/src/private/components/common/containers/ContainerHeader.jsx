@@ -644,7 +644,7 @@ const ContainerHeader = (props) => {
             {enableQuickSubscription && (
               <StixCoreObjectSubscribers triggerData={triggerData} />
             )}
-            <StixCoreObjectSharingList data={container} />
+            <StixCoreObjectSharingList data={container} inContainer={true} />
             {!knowledge && disableSharing !== true && (
               <StixCoreObjectSharing
                 elementId={container.id}
@@ -652,6 +652,7 @@ const ContainerHeader = (props) => {
                 variant="header"
                 disabled={disableOrgaSharingButton}
                 handleClose={displaySharingButton ? undefined : handleCloseSharing}
+                inContainer
               />
             )}
             {!knowledge && (
