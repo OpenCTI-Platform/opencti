@@ -5,7 +5,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 
-const message = '[MIGRATION] remove multiple authors from entities that have multiple rel_created-by.internal_id';
+const message = '[MIGRATION] adding missing group_ids in activity due to regression bug in 6.6';
 
 export const up = async (next) => {
   logMigration.info(`${message} > started`);
