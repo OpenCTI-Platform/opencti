@@ -10,9 +10,8 @@ import WorkspaceTurnToContainerDialog from '@components/workspaces/WorkspaceTurn
 import WorkspaceDuplicationDialog from '@components/workspaces/WorkspaceDuplicationDialog';
 import Drawer from '@components/common/drawer/Drawer';
 import PublicDashboardCreationForm from '@components/workspaces/dashboards/public_dashboards/PublicDashboardCreationForm';
-import WorkspaceEditionContainer from '@components/workspaces/WorkspaceEditionContainer';
 import { useNavigate } from 'react-router-dom';
-import { workspaceEditionQuery, WorkspacePopoverDeletionMutation } from '@components/workspaces/WorkspacePopover';
+import { WorkspacePopoverDeletionMutation } from '@components/workspaces/WorkspacePopover';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import Security from '../../../utils/Security';
@@ -25,14 +24,9 @@ import useGranted, {
 } from '../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../components/i18n';
 import DeleteDialog from '../../../components/DeleteDialog';
-import { QueryRenderer } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { deleteNode, insertNode } from '../../../utils/store';
 import useDeletion from '../../../utils/hooks/useDeletion';
-
-interface EditionQueryRendererProps {
-  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data
-}
 
 interface WorkspaceKebabMenuProps {
   workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
@@ -145,14 +139,6 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
     });
   };
 
-  const [displayEdit, setDisplayEdit] = useState(false);
-  const handleOpenEdit = () => {
-    setDisplayEdit(true);
-    handleClose();
-  };
-
-  const handleCloseEdit = () => setDisplayEdit(false);
-
   const goToPublicDashboards = () => {
     const filter = {
       mode: 'and',
@@ -228,9 +214,6 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
         )}
         <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={canEdit}>
           <>
-            <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
-              <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-            </Security>
             {workspace.type === 'dashboard' && (
               <>
                 <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={canManage}>
@@ -304,23 +287,6 @@ const WorkspaceKebabMenu = ({ workspace, paginationOptions }: WorkspaceKebabMenu
         message={workspace.type === 'investigation'
           ? t_i18n('Do you want to delete this investigation?')
           : t_i18n('Do you want to delete this dashboard?')}
-      />
-      <QueryRenderer
-        query={workspaceEditionQuery}
-        variables={{ id }}
-        render={({ props: editionProps }: { props: EditionQueryRendererProps }) => {
-          if (!editionProps) {
-            return <div />;
-          }
-          return (
-            <WorkspaceEditionContainer
-              workspace={editionProps.workspace}
-              handleClose={handleCloseEdit}
-              open={displayEdit}
-              type={type}
-            />
-          );
-        }}
       />
     </div>
   );

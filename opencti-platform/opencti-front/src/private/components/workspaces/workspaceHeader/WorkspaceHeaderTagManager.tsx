@@ -1,7 +1,7 @@
 import IconButton from '@mui/material/IconButton';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import { CloseOutlined, Delete, LabelOutlined } from '@mui/icons-material';
+import { CloseOutlined, Delete, AddOutlined } from '@mui/icons-material';
 import React, { useState } from 'react';
 import { useFormatter } from 'src/components/i18n';
 import { FormikConfig } from 'formik/dist/types';
@@ -107,7 +107,7 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                 {isTagInputOpen ? (
                   <CloseOutlined fontSize="small" />
                 ) : (
-                  <LabelOutlined fontSize="small" />
+                  <AddOutlined fontSize="small" />
                 )}
               </IconButton>
             </Tooltip>
